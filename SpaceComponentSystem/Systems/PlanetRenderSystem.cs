@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
-using Engine.Math;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -83,7 +83,7 @@ namespace Space.ComponentSystem.Systems
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
             // Get all renderable entities in the viewport.
-            var view = (RectangleF)camera.ComputeVisibleBounds(_planet.GraphicsDevice.Viewport);
+            var view = camera.ComputeVisibleBounds(_planet.GraphicsDevice.Viewport);
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
 
             // Skip there rest if nothing is visible.
@@ -93,10 +93,8 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Set/get loop invariants.
-            var translation = camera.GetTranslation();
-            var zoom = camera.Zoom;
+            var transform = camera.Transform;
             _planet.Time = frame;
-            _planet.Scale = zoom;
             
             // Iterate over the shorter list.
             if (_drawablesInView.Count < Components.Count)
@@ -108,7 +106,7 @@ namespace Space.ComponentSystem.Systems
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        RenderPlanet(component, ref translation);
+                        RenderPlanet(component, ref transform);
                     }
                 }
             }
@@ -119,7 +117,7 @@ namespace Space.ComponentSystem.Systems
                     // Skip disabled or invisible entities.
                     if (component.Enabled && _drawablesInView.Contains(component.Entity))
                     {
-                        RenderPlanet(component, ref translation);
+                        RenderPlanet(component, ref transform);
                     }
                 }
             }
@@ -127,10 +125,12 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
         }
 
-        private void RenderPlanet(PlanetRenderer component, ref Vector2 translation)
+        private void RenderPlanet(PlanetRenderer component, ref FarTransform transform)
         {
             // The position and orientation we're rendering at and in.
-            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            var positionAndRotation = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            var position = positionAndRotation.Translation;
+            var rotation = positionAndRotation.Rotation;
 
             // Get position relative to our sun, to rotate atmosphere and shadow.
             var toSun = Vector2.Zero;
@@ -140,22 +140,27 @@ namespace Space.ComponentSystem.Systems
                 var sunTransform = ((Transform)Manager.GetComponent(sun, Transform.TypeId));
                 if (sunTransform != null)
                 {
-                    toSun = sunTransform.Translation - transform.Translation;
-                    var matrix = Matrix.CreateRotationZ(-transform.Rotation);
+                    toSun = (Vector2)(sunTransform.Translation - position);
+                    var matrix = Matrix.CreateRotationZ(-rotation);
                     Vector2.Transform(ref toSun, ref matrix, out toSun);
                     toSun.Normalize();
                 }
             }
 
-            // Set parameters and draw.
-            _planet.Center = transform.Translation + translation;
-            _planet.Rotation = transform.Rotation;
+            // Apply transformation.
+            _planet.Center = (Vector2)(position + transform.Translation);
+            _planet.SetTransform(transform.Matrix);
+
+            // Set remaining parameters for draw.
+            _planet.Rotation = rotation;
             _planet.SetSize(component.Radius * 2);
             _planet.SurfaceTexture = component.Texture;
             _planet.SurfaceTint = component.PlanetTint;
             _planet.AtmosphereTint = component.AtmosphereTint;
             _planet.SurfaceRotation = component.SurfaceRotation;
             _planet.LightDirection = toSun;
+
+            // And draw it.
             _planet.Draw();
         }
 

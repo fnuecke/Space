@@ -79,6 +79,7 @@
     <Compile Include="ComponentSystem\Common\Systems\SpinSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\TextureRenderSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\ManagerTest.cs" />
+    <Compile Include="FarMath\FarValueTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +103,10 @@
       <Project>{10945D08-8588-4F0E-9671-0E90D374EB78}</Project>
       <Name>Engine.Controller</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
+      <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
+      <Name>Engine.FarMath</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
       <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>
       <Name>Engine.Session</Name>
@@ -116,8 +121,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set PROGPATH=%25PROGRAMFILES(X86)%25||%25PROGRAMFILES%25
-"%25PROGPATH%25\NUnit 2.6\bin\nunit-console-x86.exe" "$(TargetPath)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

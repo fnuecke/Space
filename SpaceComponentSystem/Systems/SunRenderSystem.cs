@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
-using Engine.Math;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -66,7 +66,7 @@ namespace Space.ComponentSystem.Systems
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
             // Get all renderable entities in the viewport.
-            var view = (RectangleF)camera.ComputeVisibleBounds(_sun.GraphicsDevice.Viewport);
+            var view = camera.ComputeVisibleBounds(_sun.GraphicsDevice.Viewport);
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
 
             // Skip there rest if nothing is visible.
@@ -76,9 +76,8 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Set/get loop invariants.
-            var translation = camera.GetTranslation();
+            var transform = camera.Transform;
             _sun.Time = frame;
-            _sun.Scale = camera.Zoom;
 
             // Iterate over the shorter list.
             if (_drawablesInView.Count < Components.Count)
@@ -90,7 +89,7 @@ namespace Space.ComponentSystem.Systems
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        RenderSun(component, ref translation);
+                        RenderSun(component, ref transform);
                     }
                 }
             }
@@ -101,7 +100,7 @@ namespace Space.ComponentSystem.Systems
                     // Skip disabled or invisible entities.
                     if (component.Enabled && _drawablesInView.Contains(component.Entity))
                     {
-                        RenderSun(component, ref translation);
+                        RenderSun(component, ref transform);
                     }
                 }
             }
@@ -109,15 +108,22 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
         }
 
-        private void RenderSun(SunRenderer component, ref Vector2 translation)
+        private void RenderSun(SunRenderer component, ref FarTransform transform)
         {
-            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            // Get absolute position of sun.
+            var position = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
 
+            // Apply transformation.
+            _sun.Center = (Vector2)(position + transform.Translation);
+            _sun.SetTransform(transform.Matrix);
+
+            // Set remaining parameters for draw.
             _sun.SetSize(component.Radius * 2);
-            _sun.Center = transform.Translation + translation;
             _sun.SurfaceRotation = component.SurfaceRotation;
             _sun.PrimaryTurbulenceRotation = component.PrimaryTurbulenceRotation;
             _sun.SecondaryTurbulenceRotation = component.SecondaryTurbulenceRotation;
+
+            // And draw it.
             _sun.Draw();
         }
 

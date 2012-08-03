@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -47,14 +48,14 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
+        public void CreateAttackingShip(ref FarPosition startPosition, int targetEntity, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
             var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
             ai.Attack(targetEntity);
         }
 
-        public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
+        public void CreateAttackingShip(ref FarPosition startPosition, ref FarPosition targetPosition, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
             var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
@@ -82,7 +83,7 @@ namespace Space.ComponentSystem.Systems
                     var cellInfo = ((UniverseSystem)Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(info.Id);
                     
                     // The area covered by the cell.
-                    Rectangle cellArea;
+                    FarRectangle cellArea;
                     cellArea.X = CellSystem.CellSize * info.X;
                     cellArea.Y = CellSystem.CellSize * info.Y;
                     cellArea.Width = CellSystem.CellSize;
@@ -92,8 +93,8 @@ namespace Space.ComponentSystem.Systems
                     for (var i = 0; i < 10; i++)
                     {
                         Vector2 spawnPoint;
-                        spawnPoint.X = _random.NextInt32(cellArea.Left, cellArea.Right);
-                        spawnPoint.Y = _random.NextInt32(cellArea.Top, cellArea.Bottom);
+                        spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
+                        spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
                         var ship = EntityFactory.CreateAIShip(
                             Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
                         var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
@@ -133,7 +134,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
-            packet.ReadPacketizableInto(_random);
+            packet.ReadPacketizableInto(ref _random);
         }
 
         /// <summary>

@@ -130,7 +130,8 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Get entities.
-            packet.ReadPacketizableInto(Manager);
+            var manager = Manager;
+            packet.ReadPacketizableInto(ref manager);
 
             // Continue with reading the list of commands.
             Commands.Clear();

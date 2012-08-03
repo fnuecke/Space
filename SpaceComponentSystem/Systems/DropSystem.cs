@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
@@ -49,7 +49,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="poolName">The name of the item pool to sample from.</param>
         /// <param name="position">The position at which to drop the items.</param>
-        public void Drop(string poolName, ref Vector2 position)
+        public void Drop(string poolName, ref FarPosition position)
         {
             // Get the actual item pool to pull items from.
             var pool = _itemPools[poolName];

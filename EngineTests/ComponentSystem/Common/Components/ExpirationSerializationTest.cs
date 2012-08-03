@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 
 namespace Engine.Tests.ComponentSystem.Common.Components
@@ -14,10 +15,11 @@ namespace Engine.Tests.ComponentSystem.Common.Components
         /// <returns>A list of instances to test with.</returns>
         protected override IEnumerable<Expiration> NewInstances()
         {
+            var manager = new Manager();
             return new[]
                    {
-                       new Expiration(), 
-                       new Expiration().Initialize(10)
+                       manager.AddComponent<Expiration>(manager.AddEntity()), 
+                       manager.AddComponent<Expiration>(manager.AddEntity()).Initialize(10)
                    };
         }
 

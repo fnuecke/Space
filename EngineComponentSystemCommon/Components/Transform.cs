@@ -2,6 +2,7 @@
 using System.Globalization;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -41,7 +42,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// make sure the <c>TranslationChanged</c> message is sent whenever
         /// this value changes.
         /// </remarks>
-        public Vector2 Translation
+        public FarPosition Translation
 #if DEBUG
         // Don't allow directly changing from outside.
         { get; private set; }
@@ -63,7 +64,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <summary>
         /// The translation to move to when performing the position update.
         /// </summary>
-        private Vector2 _nextTranslation;
+        private FarPosition _nextTranslation;
 
         /// <summary>
         /// Don't rely on float equality checks.
@@ -99,7 +100,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </summary>
         /// <param name="translation">The translation.</param>
         /// <param name="rotation">The rotation.</param>
-        public Transform Initialize(Vector2 translation, float rotation)
+        public Transform Initialize(FarPosition translation, float rotation)
         {
             SetTranslation(ref translation);
             SetRotation(MathHelper.WrapAngle(rotation));
@@ -116,7 +117,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// Initialize with the specified translation.
         /// </summary>
         /// <param name="translation">The translation.</param>
-        public Transform Initialize(Vector2 translation)
+        public Transform Initialize(FarPosition translation)
         {
             Initialize(translation, 0);
 
@@ -129,7 +130,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="rotation">The rotation.</param>
         public Transform Initialize(float rotation)
         {
-            Initialize(Vector2.Zero, rotation);
+            Initialize(FarPosition.Zero, rotation);
 
             return this;
         }
@@ -142,8 +143,8 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Reset();
 
-            Translation = Vector2.Zero;
-            _nextTranslation = Vector2.Zero;
+            Translation = FarPosition.Zero;
+            _nextTranslation = FarPosition.Zero;
             _translationChanged = false;
             Rotation = 0;
         }
@@ -159,7 +160,9 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="y">The new y translation to add.</param>
         public void AddTranslation(float x, float y)
         {
-            SetTranslation(Translation.X + x, Translation.Y + y);
+            _nextTranslation.X += x;
+            _nextTranslation.Y += y;
+            _translationChanged = true;
         }
 
         /// <summary>
@@ -168,7 +171,8 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(ref Vector2 value)
         {
-            SetTranslation(Translation.X + value.X, Translation.Y + value.Y);
+            _nextTranslation += value;
+            _translationChanged = true;
         }
 
         /// <summary>
@@ -177,7 +181,8 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(Vector2 value)
         {
-            AddTranslation(ref value);
+            _nextTranslation += value;
+            _translationChanged = true;
         }
 
         /// <summary>
@@ -189,14 +194,10 @@ namespace Engine.ComponentSystem.Common.Components
         /// </remarks>
         /// <param name="x">The new x coordinate.</param>
         /// <param name="y">The new y coordinate.</param>
-        public void SetTranslation(float x, float y)
+        public void SetTranslation(FarValue x, FarValue y)
         {
-            Debug.Assert(!float.IsNaN(x));
-            Debug.Assert(!float.IsNaN(y));
-
             _nextTranslation.X = x;
             _nextTranslation.Y = y;
-
             _translationChanged = true;
         }
 
@@ -204,18 +205,20 @@ namespace Engine.ComponentSystem.Common.Components
         /// Set the translation to the specified value.
         /// </summary>
         /// <param name="value">The new translation.</param>
-        public void SetTranslation(ref Vector2 value)
+        public void SetTranslation(ref FarPosition value)
         {
-            SetTranslation(value.X, value.Y);
+            _nextTranslation = value;
+            _translationChanged = true;
         }
 
         /// <summary>
         /// Set the translation to the specified value.
         /// </summary>
         /// <param name="value">The new translation.</param>
-        public void SetTranslation(Vector2 value)
+        public void SetTranslation(FarPosition value)
         {
-            SetTranslation(ref value);
+            _nextTranslation = value;
+            _translationChanged = true;
         }
 
         /// <summary>
@@ -301,7 +304,7 @@ namespace Engine.ComponentSystem.Common.Components
 
             base.Depacketize(packet);
 
-            Translation = packet.ReadVector2();
+            Translation = packet.ReadFarPosition();
             _nextTranslation = Translation;
             Rotation = packet.ReadSingle();
         }
@@ -333,7 +336,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Translation=" + Translation.X.ToString(CultureInfo.InvariantCulture) + ":" + Translation.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture);
+            return base.ToString() + ", Translation=" + Translation + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 
 namespace Engine.Tests.ComponentSystem.Common.Components
@@ -14,10 +15,11 @@ namespace Engine.Tests.ComponentSystem.Common.Components
         /// <returns>A list of instances to test with.</returns>
         protected override IEnumerable<EllipsePath> NewInstances()
         {
+            var manager = new Manager();
             return new[]
                    {
-                       new EllipsePath(), 
-                       new EllipsePath().Initialize(1, 10, 20, 5, 6, 7)
+                       manager.AddComponent<EllipsePath>(manager.AddEntity()), 
+                       manager.AddComponent<EllipsePath>(manager.AddEntity()).Initialize(1, 10, 20, 5, 6, 7)
                    };
         }
 

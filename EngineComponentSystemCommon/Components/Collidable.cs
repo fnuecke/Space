@@ -1,6 +1,5 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
-using Engine.Math;
+﻿using Engine.ComponentSystem.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -45,7 +44,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <summary>
         /// Previous position of the underlying physics component (for sweep tests).
         /// </summary>
-        public Vector2 PreviousPosition;
+        public FarPosition PreviousPosition;
 
         #endregion
 
@@ -86,7 +85,7 @@ namespace Engine.ComponentSystem.Common.Components
             base.Reset();
 
             CollisionGroups = 0;
-            PreviousPosition = Vector2.Zero;
+            PreviousPosition = FarPosition.Zero;
         }
 
         #endregion
@@ -97,7 +96,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// Computes the current minimal bounding box for this collidable.
         /// </summary>
         /// <returns>The minimal boundsing box for this object.</returns>
-        public abstract RectangleF ComputeBounds();
+        public abstract FarRectangle ComputeBounds();
 
         /// <summary>
         /// Test if this collidable collides with the specified one.
@@ -106,9 +105,9 @@ namespace Engine.ComponentSystem.Common.Components
         /// <returns>Whether the two collide or not.</returns>
         public abstract bool Intersects(Collidable collidable);
 
-        internal abstract bool Intersects(ref Vector2 extents, ref Vector2 previousPosition, ref Vector2 position);
+        internal abstract bool Intersects(ref Vector2 extents, ref FarPosition previousPosition, ref FarPosition position);
 
-        internal abstract bool Intersects(float radius, ref Vector2 previousPosition, ref Vector2 position);
+        internal abstract bool Intersects(float radius, ref FarPosition previousPosition, ref FarPosition position);
 
         #endregion
 
@@ -137,7 +136,7 @@ namespace Engine.ComponentSystem.Common.Components
             base.Depacketize(packet);
 
             CollisionGroups = packet.ReadUInt32();
-            PreviousPosition = packet.ReadVector2();
+            PreviousPosition = packet.ReadFarPosition();
         }
 
         /// <summary>
@@ -165,7 +164,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", PreviousPosition=" + PreviousPosition.X.ToString(CultureInfo.InvariantCulture) + ":" + PreviousPosition.Y.ToString(CultureInfo.InvariantCulture);
+            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", PreviousPosition=" + PreviousPosition;
         }
 
         #endregion

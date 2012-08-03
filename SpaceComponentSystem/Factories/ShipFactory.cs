@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -93,7 +94,7 @@ namespace Space.ComponentSystem.Factories
         /// <param name="position">The position at which to spawn the ship.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public int SampleShip(IManager manager, Factions faction, Vector2 position, IUniformRandom random)
+        public int SampleShip(IManager manager, Factions faction, FarPosition position, IUniformRandom random)
         {
             var entity = CreateShip(manager, faction, position);
 
@@ -125,7 +126,7 @@ namespace Space.ComponentSystem.Factories
         /// <param name="faction"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        private int CreateShip(IManager manager, Factions faction, Vector2 position)
+        private int CreateShip(IManager manager, Factions faction, FarPosition position)
         {
             var entity = manager.AddEntity();
 

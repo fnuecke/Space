@@ -1,6 +1,6 @@
-﻿using Engine.Serialization;
+﻿using Engine.FarMath;
+using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
 {
@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <summary>
         /// The region we're roaming in.
         /// </summary>
-        public Rectangle Area;
+        public FarRectangle Area;
 
         #endregion
 
@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             base.Reset();
 
-            Area = Rectangle.Empty;
+            Area = FarRectangle.Empty;
         }
 
         #endregion
@@ -54,9 +54,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected override bool UpdateInternal()
         {
             // We got here, so we have to pick a new destination.
-            Vector2 target;
-            target.X = Random.NextInt32(Area.Left, Area.Right);
-            target.Y = Random.NextInt32(Area.Top, Area.Bottom);
+            FarPosition target;
+            target.X = Random.NextInt32((int)Area.Left, (int)Area.Right);
+            target.Y = Random.NextInt32((int)Area.Top, (int)Area.Bottom);
 
             // And move towards it.
             AI.AttackMove(ref target);
@@ -90,7 +90,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             base.Depacketize(packet);
 
-            Area = packet.ReadRectangle();
+            Area = packet.ReadFarRectangle();
         }
 
         /// <summary>

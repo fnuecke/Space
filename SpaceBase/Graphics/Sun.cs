@@ -234,8 +234,7 @@ namespace Space.Graphics
 
             // And draw it.
             Effect.CurrentTechnique.Passes[0].Apply();
-            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2,
-                                              VertexDeclaration);
+            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
 
             // Then get the turbulence.
             GraphicsDevice.SetRenderTarget(_turbulenceSphere);
@@ -243,8 +242,7 @@ namespace Space.Graphics
 
             // And draw that, too.
             Effect.CurrentTechnique.Passes[1].Apply();
-            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2,
-                                              VertexDeclaration);
+            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
 
             // Create the down-sampled versions.
             GraphicsDevice.SetRenderTarget(_mipmaps[0]);

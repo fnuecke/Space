@@ -217,7 +217,7 @@ namespace Space.ComponentSystem.Systems
                 _cooldowns.Add(key, value);
             }
 
-            packet.ReadPacketizableInto(_random);
+            packet.ReadPacketizableInto(ref _random);
         }
 
         /// <summary>

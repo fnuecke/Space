@@ -401,7 +401,7 @@ namespace Engine.Controller
                     {
                         // Read data.
                         var serverHash = args.Data.ReadInt32();
-                        args.Data.ReadPacketizableInto(Tss);
+                        args.Data.ReadPacketizableInto(ref Tss);
 
                         // Validate the data we got.
                         var hasher = new Hasher();

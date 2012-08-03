@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -167,7 +168,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Get the ship's current position.
         /// </summary>
-        public Vector2 Position
+        public FarPosition Position
         {
             get
             {
@@ -387,7 +388,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", IsAlive=" + IsAlive + ", Health=" + Health.ToString(CultureInfo.InvariantCulture) + ", MaxHealth=" + MaxHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", Energy=" + Energy.ToString(CultureInfo.InvariantCulture) + ", MaxEnergy=" + MaxEnergy.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", Position=" + Position.X.ToString(CultureInfo.InvariantCulture) + ":" + Position.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture) + ", IsAccelerating=" + IsAccelerating + ", IsStabilizing=" + IsStabilizing + ", Speed=" + Speed.ToString(CultureInfo.InvariantCulture) + ", MaxSpeed=" + MaxSpeed.ToString(CultureInfo.InvariantCulture) + ", MaxAcceleration=" + MaxAcceleration.ToString(CultureInfo.InvariantCulture) + ", RotationSpeed=" + RotationSpeed.ToString(CultureInfo.InvariantCulture) + ", Mass=" + Mass.ToString(CultureInfo.InvariantCulture) + ", RadarRange=" + RadarRange.ToString(CultureInfo.InvariantCulture) + ", WeaponRange=" + WeaponRange.ToString(CultureInfo.InvariantCulture) + ", InventoryCapacity=" + InventoryCapacity;
+            return base.ToString() + ", IsAlive=" + IsAlive + ", Health=" + Health.ToString(CultureInfo.InvariantCulture) + ", MaxHealth=" + MaxHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", Energy=" + Energy.ToString(CultureInfo.InvariantCulture) + ", MaxEnergy=" + MaxEnergy.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", Position=" + Position + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture) + ", IsAccelerating=" + IsAccelerating + ", IsStabilizing=" + IsStabilizing + ", Speed=" + Speed.ToString(CultureInfo.InvariantCulture) + ", MaxSpeed=" + MaxSpeed.ToString(CultureInfo.InvariantCulture) + ", MaxAcceleration=" + MaxAcceleration.ToString(CultureInfo.InvariantCulture) + ", RotationSpeed=" + RotationSpeed.ToString(CultureInfo.InvariantCulture) + ", Mass=" + Mass.ToString(CultureInfo.InvariantCulture) + ", RadarRange=" + RadarRange.ToString(CultureInfo.InvariantCulture) + ", WeaponRange=" + WeaponRange.ToString(CultureInfo.InvariantCulture) + ", InventoryCapacity=" + InventoryCapacity;
         }
 
         #endregion

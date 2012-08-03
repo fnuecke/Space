@@ -1,6 +1,6 @@
 ﻿// Adjust this as necessary, it just have to share a compatible
 // interface with the XNA types.
-using TRectangle = Engine.Math.RectangleF;
+using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Tests.MichaelCoyle
 {

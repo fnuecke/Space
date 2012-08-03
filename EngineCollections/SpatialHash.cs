@@ -6,8 +6,8 @@ using Engine.Util;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Vector2;
-using TRectangle = Engine.Math.RectangleF;
+using TPoint = Engine.FarMath.FarPosition;
+using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Engine.Collections
 {
@@ -259,9 +259,9 @@ namespace Engine.Collections
             var top = rectangle.Y / _cellSize;
             var bottom = rectangle.Bottom / _cellSize;
 
-            for (var x = left; x <= right; x++)
+            for (var x = (int)left; x <= right; x++)
             {
-                for (var y = top; y <= bottom; y++)
+                for (var y = (int)top; y <= bottom; y++)
                 {
                     yield return BitwiseMagic.Pack(x.GetHashCode(), y.GetHashCode());
                 }

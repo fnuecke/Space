@@ -57,6 +57,10 @@
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineCollections\Engine.Collections.csproj">
+      <Project>{D73BAEF1-9B31-4548-A982-E19D68745757}</Project>
+      <Name>Engine.Collections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
       <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
       <Name>Engine.ComponentSystem.Common</Name>
@@ -64,6 +68,10 @@
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
+      <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
+      <Name>Engine.FarMath</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>

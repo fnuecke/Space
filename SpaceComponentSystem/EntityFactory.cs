@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -69,7 +70,7 @@ namespace Space.ComponentSystem
         /// <returns>
         /// The new ship.
         /// </returns>
-        public static int CreateAIShip(IManager manager, string blueprint, Factions faction, Vector2 position, IUniformRandom random)
+        public static int CreateAIShip(IManager manager, string blueprint, Factions faction, FarPosition position, IUniformRandom random)
         {
             var entity = FactoryLibrary.SampleShip(manager, blueprint, faction, position, random);
 

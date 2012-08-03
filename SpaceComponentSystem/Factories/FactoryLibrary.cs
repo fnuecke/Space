@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -121,7 +122,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>
         /// The sampled item.
         /// </returns>
-        public static int SampleItem(IManager manager, string name, Vector2 position, IUniformRandom random)
+        public static int SampleItem(IManager manager, string name, FarPosition position, IUniformRandom random)
         {
             var factory = Factories[name] as ItemFactory;
             if (factory == null)
@@ -154,7 +155,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>
         /// The sampled ship.
         /// </returns>
-        public static int SampleShip(IManager manager, string name, Factions faction, Vector2 position, IUniformRandom random)
+        public static int SampleShip(IManager manager, string name, Factions faction, FarPosition position, IUniformRandom random)
         {
             var factory = Factories[name] as ShipFactory;
             return factory != null ? factory.SampleShip(manager, faction, position, random) : 0;

@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
@@ -73,7 +74,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                 {
                     // Friend. Closer than any other?
                     var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
-                    var neighborDistanceSquared = (position - neighborPosition).LengthSquared();
+                    var neighborDistanceSquared = ((Vector2)(position - neighborPosition)).LengthSquared();
                     if (neighborDistanceSquared < distanceSquared)
                     {
                         distanceSquared = neighborDistanceSquared;
@@ -87,7 +88,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             {
                 var neighborPosition = ((Transform)AI.Manager.GetComponent(closestStation, Transform.TypeId)).Translation;
                 // Close enough to dock?
-                if ((position - neighborPosition).LengthSquared() < DockingRange * DockingRange)
+                if (((Vector2)(position - neighborPosition)).LengthSquared() < DockingRange * DockingRange)
                 {
                     // Yes! Kill ourselves.
                     // TODO: display some particle effects to hint we're docking.

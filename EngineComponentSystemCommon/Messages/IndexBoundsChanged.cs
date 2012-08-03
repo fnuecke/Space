@@ -1,4 +1,4 @@
-﻿using Engine.Math;
+﻿using Engine.FarMath;
 
 namespace Engine.ComponentSystem.Common.Messages
 {
@@ -15,6 +15,6 @@ namespace Engine.ComponentSystem.Common.Messages
         /// <summary>
         /// The new bounds of the indexable.
         /// </summary>
-        public RectangleF Bounds;
+        public FarRectangle Bounds;
     }
 }

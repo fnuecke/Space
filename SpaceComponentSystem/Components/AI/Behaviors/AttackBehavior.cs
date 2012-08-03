@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Globalization;
 using Engine.ComponentSystem.Common.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <summary>
         /// The position we were at when we started attacking.
         /// </summary>
-        private Vector2? _start;
+        private FarPosition? _start;
 
         #endregion
 
@@ -96,7 +96,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // Check if we've traveled too far.
             if (_start.HasValue)
             {
-                if ((position - _start.Value).LengthSquared() > ChaseDistance * ChaseDistance)
+                if (((Vector2)(position - _start.Value)).LengthSquared() > ChaseDistance * ChaseDistance)
                 {
                     // Yeah, that's it, let's give up and return to what we
                     // were doing before.
@@ -117,7 +117,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
             // Target still lives, see how far away it is.
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = position - targetPosition;
+            var toTarget = (Vector2)(position - targetPosition);
 
             // If we're close enough, open fire.
             var weaponRange = info.WeaponRange + WeaponRangeEpsilon;
@@ -137,17 +137,17 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <returns>
         /// The coordinate we want to fly to.
         /// </returns>
-        protected override Vector2 GetTargetPosition()
+        protected override FarPosition GetTargetPosition()
         {
             // Don't fly directly towards the enemy, but to a point slightly
             // offset, and at something slightly above the flocking separation.
             // This will lead to a circling effect.
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = position - targetPosition;
+            var toTarget = (Vector2)(position - targetPosition);
             var separationIntercept = 1 - FlockingSeparation * FlockingSeparation / toTarget.LengthSquared();
-            Vector2 separationPosition;
-            Vector2.Lerp(ref position, ref targetPosition, separationIntercept, out separationPosition);
+            FarPosition separationPosition;
+            FarPosition.Lerp(ref position, ref targetPosition, separationIntercept, out separationPosition);
             if (toTarget != Vector2.Zero && separationIntercept > 0 && separationIntercept < 0.7f)
             {
                 toTarget.Normalize();
@@ -169,7 +169,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = targetPosition - position;
+            var toTarget = (Vector2)(targetPosition - position);
             return (float)Math.Atan2(toTarget.Y, toTarget.X);
         }
 
@@ -187,7 +187,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // Decrease output if we're getting closer to our target.
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = position - targetPosition;
+            var toTarget = (Vector2)(position - targetPosition);
             var weaponRange = info.WeaponRange;
             var thrusterPower = Math.Min(1, toTarget.LengthSquared() / weaponRange);
 
@@ -292,7 +292,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Target=" + Target + ", Start=" + (_start.HasValue ? (_start.Value.X.ToString(CultureInfo.InvariantCulture) + ": " + _start.Value.Y.ToString(CultureInfo.InvariantCulture)) : "null");
+            return base.ToString() + ", Target=" + Target + ", Start=" + (_start.HasValue ? _start.Value.ToString() : "null");
         }
 
         #endregion

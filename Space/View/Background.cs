@@ -106,7 +106,8 @@ namespace Space.View
             // Get local camera position.
             if (Client != null)
             {
-                Effect.Parameters["Position"].SetValue(Client.GetCameraPosition() / Width);
+                // TODO introduce const period for background and modulo the far position by that, first
+                //Effect.Parameters["Position"].SetValue(Client.GetCameraPosition().ToVector2() / Width);
             }
         }
 

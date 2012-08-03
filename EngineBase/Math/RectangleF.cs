@@ -90,7 +90,9 @@ namespace Engine.Math
         /// </summary>
         public bool IsEmpty
         {
+// ReSharper disable CompareOfFloatsByEqualityOperator
             get { return Width == 0 && Height == 0 && X == 0 && Y == 0; }
+// ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         #endregion
@@ -410,7 +412,9 @@ namespace Engine.Math
         /// </returns>
         public static bool operator ==(RectangleF a, RectangleF b)
         {
+// ReSharper disable CompareOfFloatsByEqualityOperator
             return a.X == b.X && a.Y == b.Y && a.Width == b.Width && a.Height == b.Height;
+// ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -423,7 +427,9 @@ namespace Engine.Math
         /// </returns>
         public static bool operator !=(RectangleF a, RectangleF b)
         {
+// ReSharper disable CompareOfFloatsByEqualityOperator
             return a.X != b.X || a.Y != b.Y || a.Width != b.Width || a.Height != b.Height;
+// ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -456,10 +462,12 @@ namespace Engine.Math
         /// </returns>
         public bool Equals(RectangleF other)
         {
+// ReSharper disable CompareOfFloatsByEqualityOperator
             return (X == other.X) &&
                    (Y == other.Y) &&
                    (Width == other.Width) &&
                    (Height == other.Height);
+// ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -500,38 +508,9 @@ namespace Engine.Math
         /// </returns>
         public override string ToString()
         {
-            var currentCulture = CultureInfo.CurrentCulture;
             return string.Format(CultureInfo.CurrentCulture, "{{X:{0} Y:{1} Width:{2} Height:{3}}}", X.ToString(CultureInfo.CurrentCulture), Y.ToString(CultureInfo.CurrentCulture), Width.ToString(CultureInfo.CurrentCulture), Height.ToString(CultureInfo.CurrentCulture));
         }
 
         #endregion
-
-        public Vector2 lowerBound
-        {
-            get
-            {
-                Vector2 v;
-                v.X = X;
-                v.Y = Y;
-                return v;
-            }
-        }
-
-        public Vector2 upperBound
-        {
-            get
-            {
-                Vector2 v;
-                v.X = X + Width;
-                v.Y = Y + Height;
-                return v;
-            }
-        }
-
-        public float GetPerimeter()
-        {
-            return Width * Height;
-        }
-
     }
 }

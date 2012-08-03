@@ -70,12 +70,12 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Manager for entity ids.
         /// </summary>
-        private readonly IdManager _entityIds = new IdManager();
+        private IdManager _entityIds = new IdManager();
 
         /// <summary>
         /// Manager for entity ids.
         /// </summary>
-        private readonly IdManager _componentIds = new IdManager();
+        private IdManager _componentIds = new IdManager();
 
         /// <summary>
         /// List of systems registered with this manager.
@@ -475,8 +475,8 @@ namespace Engine.ComponentSystem
             _components.Clear();
 
             // Get the managers for ids (restores "known" ids before restoring components).
-            packet.ReadPacketizableInto(_entityIds);
-            packet.ReadPacketizableInto(_componentIds);
+            packet.ReadPacketizableInto(ref _entityIds);
+            packet.ReadPacketizableInto(ref _componentIds);
 
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
@@ -485,7 +485,7 @@ namespace Engine.ComponentSystem
             {
                 var type = packet.ReadType();
                 var component = AllocateComponent(type);
-                packet.ReadPacketizableInto(component);
+                packet.ReadPacketizableInto(ref component);
                 component.Manager = this;
                 _components[component.Id] = component;
 
@@ -516,7 +516,8 @@ namespace Engine.ComponentSystem
                 {
                     throw new PacketException("Could not depacketize system of unknown type " + type.FullName);
                 }
-                packet.ReadPacketizableInto(_systemsByTypeId[GetSystemTypeId(type)]);
+                var instance = _systemsByTypeId[GetSystemTypeId(type)];
+                packet.ReadPacketizableInto(ref instance);
             }
 
             // All done, send message to allow post-processing.

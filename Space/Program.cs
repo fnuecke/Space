@@ -451,10 +451,8 @@ namespace Space
                         {
                             _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) { Color = Color.LightGreen * 0.25f, Thickness = 2f };
                         }
-
-                        _indexRectangle.Scale = camera.Zoom;
-                        var translation = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon;
-                        index.DrawIndex(_indexGroupMask, _indexRectangle, translation);
+                        _indexRectangle.SetTransform(camera.Transform.Matrix);
+                        index.DrawIndex(_indexGroupMask, _indexRectangle, camera.Transform.Translation);
                     }
                 }
             }

@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
+using Engine.FarMath;
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Engine.Util;
@@ -174,7 +175,7 @@ namespace Space.Control
         /// coordinates.
         /// </summary>
         /// <returns>Current camera position.</returns>
-        public Vector2 GetCameraPosition()
+        public FarPosition GetCameraPosition()
         {
             var system = GetSystem<CameraSystem>();
             if (system != null)

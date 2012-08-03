@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <summary>
         /// The position to move to.
         /// </summary>
-        public Vector2 Target;
+        public FarPosition Target;
 
         #endregion
 
@@ -50,7 +50,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             base.Reset();
 
-            Target = Vector2.Zero;
+            Target = FarPosition.Zero;
         }
 
         #endregion
@@ -66,7 +66,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected override bool UpdateInternal()
         {
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            if ((Target - position).LengthSquared() < ReachedEpsilon * ReachedEpsilon)
+            if (((Vector2)(Target - position)).LengthSquared() < ReachedEpsilon * ReachedEpsilon)
             {
                 // We have reached our target, pop self.
                 AI.PopBehavior();
@@ -82,7 +82,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <returns>
         /// The coordinate we want to fly to.
         /// </returns>
-        protected override Vector2 GetTargetPosition()
+        protected override FarPosition GetTargetPosition()
         {
             return Target;
         }
@@ -157,7 +157,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Target=" + Target.X.ToString(CultureInfo.InvariantCulture) + ":" + Target.Y.ToString(CultureInfo.InvariantCulture);
+            return base.ToString() + ", Target=" + Target;
         }
 
         #endregion

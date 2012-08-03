@@ -95,7 +95,7 @@ namespace Space.ComponentSystem.Systems
                 Debug.Assert(otherTransform != null);
 
                 // Get the delta vector between the two positions.
-                var delta = otherTransform.Translation - myTransform.Translation;
+                var delta = (Vector2)(otherTransform.Translation - myTransform.Translation);
 
                 // Compute the angle between us and the other entity.
                 var distanceSquared = delta.LengthSquared();

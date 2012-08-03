@@ -73,6 +73,9 @@
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\Index.cs" />
+    <Compile Include="Components\Intersection\AABBSweep.cs" />
+    <Compile Include="Components\Intersection\SphereAABBSweep.cs" />
+    <Compile Include="Components\Intersection\SphereSweep.cs" />
     <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\TextureRenderer.cs" />
@@ -102,9 +105,17 @@
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineCollections\Engine.Collections.csproj">
+      <Project>{D73BAEF1-9B31-4548-A982-E19D68745757}</Project>
+      <Name>Engine.Collections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
+      <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
+      <Name>Engine.FarMath</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

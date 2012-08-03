@@ -1,6 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.FarMath;
+using Engine.Math;
+using Microsoft.Xna.Framework;
 
-namespace Engine.Physics.Intersection
+namespace Engine.ComponentSystem.Common.Components.Intersection
 {
     /// <summary>
     /// Performs a sweep test between two AABBs.
@@ -18,79 +20,80 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">its current position</param>
         /// <returns>true if the boxes (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=3"/>
-        public static bool Test(ref Vector2 Ea, ref Vector2 A0, ref Vector2 A1, ref Vector2 Eb, ref Vector2 B0,
-                                ref Vector2 B1)
+        public static bool Test(ref Vector2 Ea, ref FarPosition A0, ref FarPosition A1,
+            ref Vector2 Eb, ref FarPosition B0, ref FarPosition B1)
         {
-            var A = new Rectangle((int)A0.X, (int)A0.Y, (int)Ea.X, (int)Ea.Y); //previous state of AABB A
-            var B = new Rectangle((int)B0.X, (int)B0.Y, (int)Eb.X, (int)Eb.Y); //previous state of AABB B
+            var a = new RectangleF(0, 0, Ea.X, Ea.Y); //previous state of AABB A in local co-sy
+            var relB0 = (Vector2)(B0 - A0); // previous state of AABB B in A's local co-sy
+            var b = new RectangleF(relB0.X, relB0.Y, Eb.X, Eb.Y);
 
             //check if they were overlapping
             // on the previous frame
-            if (A.Intersects(B))
+            if (a.Intersects(b))
             {
                 return true;
             }
 
-            var va = A1 - A0; //displacement of A
-            var vb = B1 - B0; //displacement of B 
+            var va = (Vector2)(A0 - A1); //displacement of A
+            var vb = (Vector2)(B0 - B1); //displacement of B 
 
             //the problem is solved in A's frame of reference
 
             //relative velocity (in normalized time)
-            Vector2 v = vb - va;
+            var v = vb - va;
 
             //first times of overlap along each axis
-            Vector2 u_0 = Vector2.Zero;
+            var v0 = Vector2.Zero;
 
             //last times of overlap along each axis
-            Vector2 u_1 = Vector2.One;
+            var v1 = Vector2.One;
 
             //find the possible first and last times
             //of overlap along each axis
 
             // X
-            if (A.Right < B.Left && v.X < 0)
+            if (a.Right < b.Left && v.X < 0)
             {
-                u_0.X = (A.Right - B.Left) / v.X;
+                v0.X = (a.Right - b.Left) / v.X;
             }
-            else if (B.Right < A.Left && v.X > 0)
+            else if (b.Right < a.Left && v.X > 0)
             {
-                u_0.X = (A.Left - B.Right) / v.X;
+                v0.X = (a.Left - b.Right) / v.X;
             }
 
-            if (B.Right > A.Left && v.X < 0)
+            if (b.Right > a.Left && v.X < 0)
             {
-                u_1.X = (A.Left - B.Right) / v.X;
+                v1.X = (a.Left - b.Right) / v.X;
             }
-            else if (A.Right > B.Left && v.X > 0)
+            else if (a.Right > b.Left && v.X > 0)
             {
-                u_1.X = (A.Right - B.Left) / v.X;
+                v1.X = (a.Right - b.Left) / v.X;
             }
 
             // Y
-            if (A.Bottom < B.Top && v.Y < 0)
+            if (a.Bottom < b.Top && v.Y < 0)
             {
-                u_0.Y = (A.Bottom - B.Top) / v.Y;
+                v0.Y = (a.Bottom - b.Top) / v.Y;
             }
-            else if (B.Bottom < A.Top && v.Y > 0)
+            else if (b.Bottom < a.Top && v.Y > 0)
             {
-                u_0.Y = (A.Top - B.Bottom) / v.Y;
+                v0.Y = (a.Top - b.Bottom) / v.Y;
             }
 
-            if (B.Bottom > A.Top && v.Y < 0)
+            if (b.Bottom > a.Top && v.Y < 0)
             {
-                u_1.Y = (A.Top - B.Bottom) / v.Y;
+                v1.Y = (a.Top - b.Bottom) / v.Y;
             }
-            else if (A.Bottom > B.Top && v.Y > 0)
+            else if (a.Bottom > b.Top && v.Y > 0)
             {
-                u_1.Y = (A.Bottom - B.Top) / v.Y;
+                v1.Y = (a.Bottom - b.Top) / v.Y;
             }
 
             //possible first time of overlap
-            var u0 = System.Math.Max(u_0.X, u_0.Y); //normalized time of first collision
+            var u0 = System.Math.Max(v0.X, v0.Y); //normalized time of first collision
 
             //possible last time of overlap
-            var u1 = System.Math.Min(u_1.X, u_1.Y); //normalized time of second collision 
+            var u1 = System.Math.Min(v1.X, v1.Y); //normalized time of second collision 
 
             //they could have only collided if
             //the first time of overlap occurred

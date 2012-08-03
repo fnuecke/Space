@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.FarMath;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -41,9 +41,9 @@ namespace Space.ComponentSystem.Systems
         /// <returns>
         /// The translation.
         /// </returns>
-        protected override Matrix GetTransform()
+        protected override FarTransform GetTransform()
         {
-            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).GetTransformation();
+            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).Transform;
         }
 
         #endregion

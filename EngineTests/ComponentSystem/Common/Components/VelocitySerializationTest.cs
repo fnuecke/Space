@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Microsoft.Xna.Framework;
 
@@ -15,10 +16,11 @@ namespace Engine.Tests.ComponentSystem.Common.Components
         /// <returns>A list of instances to test with.</returns>
         protected override IEnumerable<Velocity> NewInstances()
         {
+            var manager = new Manager();
             return new[]
                    {
-                       new Velocity(), 
-                       new Velocity().Initialize(new Vector2(1, 0))
+                       manager.AddComponent<Velocity>(manager.AddEntity()), 
+                       manager.AddComponent<Velocity>(manager.AddEntity()).Initialize(new Vector2(1, 0))
                    };
         }
 

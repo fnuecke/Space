@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Microsoft.Xna.Framework;
 
@@ -15,12 +16,13 @@ namespace Engine.Tests.ComponentSystem.Common.Components
         /// <returns>A list of instances to test with.</returns>
         protected override IEnumerable<Transform> NewInstances()
         {
+            var manager = new Manager();
             return new[]
                    {
-                       new Transform(), 
-                       new Transform().Initialize(new Vector2(1, 0)),
-                       new Transform().Initialize(2),
-                       new Transform().Initialize(new Vector2(100, 5), 51)
+                       manager.AddComponent<Transform>(manager.AddEntity()), 
+                       manager.AddComponent<Transform>(manager.AddEntity()).Initialize(new Vector2(1, 0)),
+                       manager.AddComponent<Transform>(manager.AddEntity()).Initialize(2),
+                       manager.AddComponent<Transform>(manager.AddEntity()).Initialize(new Vector2(100, 5), 51)
                    };
         }
 
@@ -32,8 +34,16 @@ namespace Engine.Tests.ComponentSystem.Common.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.AddTranslation(new Vector2(12, 34)),
-                       instance => instance.SetTranslation(new Vector2(-10, 34)),
+                       instance =>
+                       {
+                           instance.AddTranslation(new Vector2(12, 34));
+                           instance.ApplyTranslation();
+                       },
+                       instance =>
+                       {
+                           instance.SetTranslation(new Vector2(-10, 34));
+                           instance.ApplyTranslation();
+                       },
                        instance => instance.AddRotation(5),
                        instance => instance.SetRotation(-2)
                    }.Concat(base.GetValueChangers());

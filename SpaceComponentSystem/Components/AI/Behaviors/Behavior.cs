@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -208,7 +209,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var targetPosition = GetTargetPosition();
 
             // And accordingly, which way to accelerate to get there.
-            var direction = targetPosition - ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var direction = (Vector2)(targetPosition - ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation);
 
             // Normalize if it's not zero.
             var norm = direction.LengthSquared();
@@ -251,7 +252,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <returns>
         /// The coordinate we want to fly to.
         /// </returns>
-        protected virtual Vector2 GetTargetPosition()
+        protected virtual FarPosition GetTargetPosition()
         {
             // Per default we just stand still.
             return ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
@@ -325,7 +326,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                 // Does it pull?
                 var neighborGravitation = ((Gravitation)AI.Manager.GetComponent(neighbor, Gravitation.TypeId));
                 var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
-                var toNeighbor = position - neighborPosition;
+                var toNeighbor = (Vector2)(position - neighborPosition);
 
                 if (neighborGravitation != null &&
                     (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
@@ -362,7 +363,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
                 // Get the position, needed for everything that follows.
                 var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
-                var toNeighbor = position - neighborPosition;
+                var toNeighbor = (Vector2)(position - neighborPosition);
 
                 // See if separation kicks in.
                 if (toNeighbor.LengthSquared() < FlockingSeparation * FlockingSeparation)

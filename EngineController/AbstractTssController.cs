@@ -114,7 +114,7 @@ namespace Engine.Controller
         /// discouraged, as it will lead to clients having to resynchronize
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        protected readonly TSS Tss;
+        protected TSS Tss;
 
         /// <summary>
         /// The adjusted speed we're currently running at, based on how well

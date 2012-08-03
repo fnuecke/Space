@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using System.Diagnostics;
-using TRectangle = Engine.Math.RectangleF;
+using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Tests.MichaelCoyle
 {
@@ -195,7 +195,7 @@ namespace Tests.MichaelCoyle
         private void CreateSubNodes()
         {
             // the smallest subnode has an area 
-            if ((_bounds.Height * _bounds.Width) <= 10)
+            if (((int)_bounds.Height * (int)_bounds.Width) <= 10)
                 return;
 
             var halfWidth = (_bounds.Width / 2);

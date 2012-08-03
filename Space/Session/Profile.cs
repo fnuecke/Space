@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;

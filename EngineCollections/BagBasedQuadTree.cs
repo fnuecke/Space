@@ -5,8 +5,8 @@ using System.Diagnostics;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Vector2;
-using TRectangle = Engine.Math.RectangleF;
+using TPoint = Engine.FarMath.FarPosition;
+using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Engine.Collections
 {
@@ -679,13 +679,17 @@ namespace Engine.Collections
 
             // Check if the bounds are on the splits.
             var midX = nodeBounds.X + halfNodeSize;
-            if (IsInInterval(entryBounds.Left, entryBounds.X + entryBounds.Width, midX))
+            var lowX = entryBounds.Left;
+            var highX = entryBounds.X + entryBounds.Width;
+            if (midX >= lowX && midX <= highX)
             {
                 // Y split runs through the bounds.
                 return -1;
             }
             var midY = nodeBounds.Y + halfNodeSize;
-            if (IsInInterval(entryBounds.Top, entryBounds.Y + entryBounds.Height, midY))
+            var lowY = entryBounds.Top;
+            var highY = entryBounds.Y + entryBounds.Height;
+            if (midY >= lowY && midY <= highY)
             {
                 // X split runs through the bounds.
                 return -1;
@@ -704,30 +708,6 @@ namespace Engine.Collections
                 cell |= 2;
             }
             return cell;
-        }
-
-        /// <summary>
-        /// Tests if the specified value lies in the specified interval.
-        /// </summary>
-        /// <param name="low">The low end of the interval (inclusive).</param>
-        /// <param name="high">The high end of the interval (inclusive).</param>
-        /// <param name="value">The value to test for.</param>
-        /// <returns><code>true</code> if the value lies in the interval.</returns>
-        private static bool IsInInterval(int low, int high, int value)
-        {
-            return value >= low && value <= high;
-        }
-
-        /// <summary>
-        /// Tests if the specified value lies in the specified interval.
-        /// </summary>
-        /// <param name="low">The low end of the interval (inclusive).</param>
-        /// <param name="high">The high end of the interval (inclusive).</param>
-        /// <param name="value">The value to test for.</param>
-        /// <returns><code>true</code> if the value lies in the interval.</returns>
-        private static bool IsInInterval(float low, float high, float value)
-        {
-            return value >= low && value <= high;
         }
 
         /// <summary>
@@ -930,8 +910,8 @@ namespace Engine.Collections
                     closest.Y = bottom;
                 }
             }
-            var distanceX = closest.X - center.X;
-            var distanceY = closest.Y - center.Y;
+            var distanceX = (float)(closest.X - center.X);
+            var distanceY = (float)(closest.Y - center.Y);
             var radiusSquared = radius * radius;
             if ((distanceX * distanceX + distanceY * distanceY) > radiusSquared)
             {
@@ -940,8 +920,8 @@ namespace Engine.Collections
 
             // At least intersection, check furthest point to check if the
             // box is contained within the circle.
-            distanceX = System.Math.Max(System.Math.Abs(center.X - bounds.X), System.Math.Abs(center.X - right));
-            distanceY = System.Math.Max(System.Math.Abs(center.Y - bounds.Y), System.Math.Abs(center.Y - bottom));
+            distanceX = System.Math.Max(System.Math.Abs((int)(center.X - bounds.X)), System.Math.Abs((int)(center.X - right)));
+            distanceY = System.Math.Max(System.Math.Abs((int)(center.Y - bounds.Y)), System.Math.Abs((int)(center.Y - bottom)));
             var outside = (distanceX * distanceX + distanceY * distanceY) > radiusSquared;
             return outside ? IntersectionType.Intersects : IntersectionType.Contains;
         }

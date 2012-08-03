@@ -359,7 +359,7 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Unwrap the trailing state and mirror it to all the newer ones.
-            packet.ReadPacketizableInto(_simulations[_simulations.Length - 1]);
+            packet.ReadPacketizableInto(ref _simulations[_simulations.Length - 1]);
             MirrorSimulation(_simulations[_simulations.Length - 1], _simulations.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep

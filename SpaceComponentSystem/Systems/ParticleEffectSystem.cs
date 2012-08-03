@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -98,7 +99,8 @@ namespace Space.ComponentSystem.Systems
             var transform = GetTransform();
             foreach (var effect in _effects.Values)
             {
-                _renderer.RenderEffect(effect, ref transform);
+                // TODO adjust for far transform
+                //_renderer.RenderEffect(effect, ref transform);
             }
         }
 
@@ -122,9 +124,9 @@ namespace Space.ComponentSystem.Systems
         /// <returns>
         /// The translation.
         /// </returns>
-        protected virtual Matrix GetTransform()
+        protected virtual FarTransform GetTransform()
         {
-            return Matrix.Identity;
+            return FarTransform.Identity;
         }
 
         #endregion
@@ -139,7 +141,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="impulse">The initial (additional) impulse of the particle.</param>
         /// <param name="rotation">The rotation.</param>
         /// <param name="scale">The scale.</param>
-        public void Play(string effectName, ref Vector2 position, ref Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
+        public void Play(string effectName, ref FarPosition position, ref Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
@@ -150,7 +152,7 @@ namespace Space.ComponentSystem.Systems
 
             var transform = GetTransform();
             Vector2 translation;
-            Vector2.Transform(ref position, ref transform, out translation);
+            FarPosition.Transform(ref position, ref transform, out translation);
             var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
             bounds.Inflate((int)(256 * scale), (int)(256 * scale));
             if (!bounds.Contains((int)translation.X, (int)translation.Y))
@@ -160,7 +162,8 @@ namespace Space.ComponentSystem.Systems
 
             // Let there be graphics!
             var effect = GetEffect(effectName);
-            effect.Trigger(ref position, ref impulse, rotation, scale);
+            // TODO adjust for far transform
+            //effect.Trigger(ref position, ref impulse, rotation, scale);
         }
 
         /// <summary>
@@ -177,7 +180,7 @@ namespace Space.ComponentSystem.Systems
         public void Play(string effect, int entity, ref Vector2 offset, float scale = 1.0f)
         {
             var transform = ((Transform)Manager.GetComponent(entity, Transform.TypeId));
-            var position = Vector2.Zero;
+            var position = FarPosition.Zero;
             var rotation = 0.0f;
             if (transform != null)
             {

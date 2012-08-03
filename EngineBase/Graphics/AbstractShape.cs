@@ -41,6 +41,15 @@ namespace Engine.Graphics
         public GraphicsDevice GraphicsDevice { get { return Device; } }
 
         /// <summary>
+        /// The transformation to apply when rendering.
+        /// </summary>
+        public Matrix Transform
+        {
+            get { return _transform; }
+            set { SetTransform(ref value); }
+        }
+
+        /// <summary>
         /// The center for this shape.
         /// </summary>
         public Vector2 Center
@@ -134,6 +143,11 @@ namespace Engine.Graphics
         protected readonly QuadVertex[] Vertices = new QuadVertex[4];
 
         /// <summary>
+        /// The transformation to apply when rendering.
+        /// </summary>
+        protected Matrix _transform;
+
+        /// <summary>
         /// Whether our vertices are valid, i.e. correspond to the set shape
         /// parameters.
         /// </summary>
@@ -196,11 +210,33 @@ namespace Engine.Graphics
             Vertices[2].Tex0.Y = 1;
             Vertices[3].Tex0.X = 1;
             Vertices[3].Tex0.Y = 1;
+
+            // Set default transformation to map to center of screen.
+            _transform = Matrix.CreateTranslation(-GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f, 0);
         }
 
         #endregion
 
         #region Accessors
+
+        /// <summary>
+        /// Sets the transform to use when rendering (for perspective projection).
+        /// </summary>
+        /// <param name="transform">The transform to use.</param>
+        public void SetTransform(ref Matrix transform)
+        {
+            _transform = transform * Matrix.CreateTranslation(-GraphicsDevice.Viewport.Width / 2f, -GraphicsDevice.Viewport.Height / 2f, 0);
+            InvalidateVertices();
+        }
+
+        /// <summary>
+        /// Sets the transform to use when rendering (for perspective projection).
+        /// </summary>
+        /// <param name="transform">The transform to use.</param>
+        public void SetTransform(Matrix transform)
+        {
+            SetTransform(ref transform);
+        }
 
         /// <summary>
         /// Sets a new center for this shape.
@@ -303,19 +339,34 @@ namespace Engine.Graphics
             // Adjust bounds.
             AdjustBounds();
 
+            // Apply perspective projection operations.
+            Vector3 scale;
+            Quaternion rotation;
+            Vector3 translation;
+            _transform.Decompose(out scale, out rotation, out translation);
+
             // Build transforms.
             var transform =
+                Matrix.Identity
+
                 // Rotate as specified, around the origin.
-                Matrix.CreateRotationZ(-_rotation)
+                * Matrix.CreateRotationZ(-_rotation)
+                * Matrix.CreateFromQuaternion(rotation)
+
                 // Position to the specified center. Make our coordinate system
                 // start at the top left, so subtract half the screen width,
                 // and invert the y axis (also subtract there).
-                * Matrix.CreateTranslation(_center.X - Device.Viewport.Width / 2f, Device.Viewport.Height / 2f - _center.Y, 0)
+                * Matrix.CreateTranslation(_center.X, -_center.Y, 0)
+                * Matrix.CreateTranslation(translation)
+
                 // Apply scaling to the object (at this point to scale relative
                 // to its center)
                 * Matrix.CreateScale(_scale)
+                * Matrix.CreateScale(scale)
+
                 // Finally map what we have to screen space.
                 * Matrix.CreateOrthographic(Device.Viewport.Width, Device.Viewport.Height, Device.Viewport.MinDepth, Device.Viewport.MaxDepth);
+
             // Apply transform to each corner.
             Vector3.Transform(ref Vertices[0].Position, ref transform, out Vertices[0].Position);
             Vector3.Transform(ref Vertices[1].Position, ref transform, out Vertices[1].Position);

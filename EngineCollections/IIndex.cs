@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Vector2;
-using TRectangle = Engine.Math.RectangleF;
+using TPoint = Engine.FarMath.FarPosition;
+using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Engine.Collections
 {

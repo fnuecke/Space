@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components.AI.Behaviors;
 
 namespace Space.ComponentSystem.Components
@@ -31,7 +31,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The randomizer we use to make pseudo random decisions.
         /// </summary>
-        private readonly MersenneTwister _random = new MersenneTwister(0);
+        private MersenneTwister _random = new MersenneTwister(0);
 
         /// <summary>
         /// The currently running behaviors, ordered as they were issued.
@@ -145,7 +145,7 @@ namespace Space.ComponentSystem.Components
         /// Makes the AI roams the specified area.
         /// </summary>
         /// <param name="area">The area.</param>
-        public void Roam(ref Rectangle area)
+        public void Roam(ref FarRectangle area)
         {
             ((RoamBehavior)_behaviors[Behavior.BehaviorType.Roam]).Area = area;
             PushBehavior(Behavior.BehaviorType.Roam);
@@ -165,7 +165,7 @@ namespace Space.ComponentSystem.Components
         /// Tells the AI to attack-move to the specified location.
         /// </summary>
         /// <param name="target">The target to move to.</param>
-        public void AttackMove(ref Vector2 target)
+        public void AttackMove(ref FarPosition target)
         {
             ((AttackMoveBehavior)_behaviors[Behavior.BehaviorType.AttackMove]).Target = target;
             PushBehavior(Behavior.BehaviorType.AttackMove);
@@ -239,7 +239,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            packet.ReadPacketizableInto(_random);
+            packet.ReadPacketizableInto(ref _random);
             _currentBehaviors.Clear();
             var numBehaviors = packet.ReadInt32();
             for (var i = 0; i < numBehaviors; i++)
@@ -247,9 +247,10 @@ namespace Space.ComponentSystem.Components
                 _currentBehaviors.Push((Behavior.BehaviorType)packet.ReadByte());
             }
 
-            foreach (var behavior in _behaviors.Values)
+            foreach (var behaviorType in _behaviors.Keys)
             {
-                packet.ReadPacketizableInto(behavior);
+                var behavior = _behaviors[behaviorType];
+                packet.ReadPacketizableInto(ref behavior);
             }
         }
 

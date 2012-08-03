@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.FarMath;
 
 namespace Engine.ComponentSystem.Common.Messages
 {
@@ -20,11 +20,11 @@ namespace Engine.ComponentSystem.Common.Messages
         /// <summary>
         /// The previous translation before the change.
         /// </summary>
-        public Vector2 PreviousPosition;
+        public FarPosition PreviousPosition;
 
         /// <summary>
         /// The current translation after the change.
         /// </summary>
-        public Vector2 CurrentPosition;
+        public FarPosition CurrentPosition;
     }
 }

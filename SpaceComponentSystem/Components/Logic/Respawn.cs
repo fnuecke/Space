@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Engine.ComponentSystem.Components;
+using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -56,7 +56,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The position at which to respawn the entity.
         /// </summary>
-        public Vector2 Position;
+        public FarPosition Position;
 
         /// <summary>
         /// The relative amount of its maximum health the entity should have
@@ -109,7 +109,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="position">The position.</param>
         /// <param name="relativeHealth">The relative health.</param>
         /// <param name="relativeEnergy">The relative energy.</param>
-        public Respawn Initialize(int delay, IEnumerable<Type> disableComponents, Vector2 position, float relativeHealth = 1f, float relativeEnergy = 1f)
+        public Respawn Initialize(int delay, IEnumerable<Type> disableComponents, FarPosition position, float relativeHealth = 1f, float relativeEnergy = 1f)
         {
             Delay = delay;
             Position = position;
@@ -229,7 +229,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Delay=" + Delay + ", Position=" + Position.X.ToString(CultureInfo.InvariantCulture) + ":" + Position.Y.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", TimeToRespawn=" + TimeToRespawn;
+            return base.ToString() + ", Delay=" + Delay + ", Position=" + Position + ", TimeToRespawn=" + TimeToRespawn;
         }
 
         #endregion

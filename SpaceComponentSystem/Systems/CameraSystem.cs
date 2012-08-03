@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -50,7 +51,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The current camera position.
         /// </summary>
-        public Vector2 CameraPositon
+        public FarPosition CameraPositon
         { 
             get
             {
@@ -60,6 +61,15 @@ namespace Space.ComponentSystem.Systems
             {
                 _customCameraPosition = value; 
             }
+        }
+
+        /// <summary>
+        /// Gets the transformation to use for perspective projection.
+        /// </summary>
+        /// <returns>The transformation.</returns>
+        public FarTransform Transform
+        {
+            get { return _transform; }
         }
 
         /// <summary>
@@ -94,18 +104,18 @@ namespace Space.ComponentSystem.Systems
         /// Previous offset to the ship, use to slowly interpolate, giving a
         /// more organic feel.
         /// </summary>
-        private Vector2 _currentOffset;
+        private FarPosition _currentOffset;
 
         /// <summary>
         /// The current camera position.
         /// </summary>
-        private Vector2 _cameraPosition;
+        private FarPosition _cameraPosition;
 
         /// <summary>
         /// Flag to tell if the current camera position was set from outside,
         /// or was dynamically computed.
         /// </summary>
-        private Vector2? _customCameraPosition;
+        private FarPosition? _customCameraPosition;
 
         /// <summary>
         /// The current target zoom of the camera.
@@ -119,9 +129,9 @@ namespace Space.ComponentSystem.Systems
         private float _currentZoom = 1.0f;
 
         /// <summary>
-        /// The Transform Matrix Containing position and zoom of the camera
+        /// The transformation to use for perspective projection.
         /// </summary>
-        private Matrix _transform;
+        private FarTransform _transform;
 
         #endregion
 
@@ -138,37 +148,11 @@ namespace Space.ComponentSystem.Systems
         #region Accessors
 
         /// <summary>
-        /// Returns a translation, that when applied to world objects will
-        /// make them appear relative in a way as if the camera were centered
-        /// on the screen.
-        /// </summary>
-        /// <returns>The offset to apply to objects when rendering them.</returns>
-        public Vector2 GetTranslation()
-        {
-            // Get viewport, to center objects around the camera position.
-            var viewport = _game.GraphicsDevice.Viewport;
-            var cameraPosition = CameraPositon;
-
-            // Return the *negative* camera position, because that's the
-            // actual amount we need to translate game objects to be drawn
-            // at the correct position.
-            Vector2 result;
-            result.X = viewport.Width / 2f - cameraPosition.X;
-            result.Y = viewport.Height / 2f - cameraPosition.Y;
-            return result;
-        }
-
-        public Matrix GetTransformation()
-        {
-            return _transform;
-        }
-
-        /// <summary>
         /// Returns the current bounds of the viewport, i.e. the rectangle of
         /// the world to actually render.
         /// </summary>
         /// <param name="view">The viewport to compute the visible bounds for.</param>
-        public Rectangle ComputeVisibleBounds(Viewport view)
+        public FarRectangle ComputeVisibleBounds(Viewport view)
         {
             var center = CameraPositon;
             var zoom = Zoom;
@@ -176,10 +160,10 @@ namespace Space.ComponentSystem.Systems
             var height = (int)(view.Height / zoom);
             // Return scaled viewport bounds, translated to camera position
             // with a 1 pixel increase as safety against rounding errors.
-            return new Rectangle
+            return new FarRectangle
                    {
-                       X = (int)(center.X - (width >> 1)) - 1,
-                       Y = (int)(center.Y - (height >> 1)) - 1,
+                       X = (center.X - (width >> 1)) - 1,
+                       Y = (center.Y - (height >> 1)) - 1,
                        Width = width + 2,
                        Height = height + 2
                    };
@@ -243,11 +227,19 @@ namespace Space.ComponentSystem.Systems
                         // Non-fixed camera, update our offset based on the game pad
                         // or mouse position, relative to the ship.
                         var targetOffset = GetInputInducedOffset();
-                        var avatarPosition = ((Transform)Manager.GetComponent(avatar.Value, Transform.TypeId)).Translation;
-
+                        if (targetOffset.X > 2000f)
+                        {
+                            targetOffset.X = 0;
+                        }
+                        var avatarPosition = ((Transform)Manager.GetComponent(avatar.Value, Engine.ComponentSystem.Common.Components.Transform.TypeId)).Translation;
+                        var oldoffset = _currentOffset;
                         // The interpolate to our new offset, slowly to make the
                         // effect less brain-melting.
-                        _currentOffset = Vector2.Lerp(_currentOffset, targetOffset, 0.05f);
+                        _currentOffset = FarPosition.Lerp(_currentOffset, targetOffset, 0.05f);
+                        if ((float)_currentOffset.X > 2000f)
+                        {
+                            _currentOffset.X = 0;
+                        }
 
                         // The camera *position* is then the avatar position, plus
                         // the offset, correcting for the viewport center which was
@@ -332,11 +324,11 @@ namespace Space.ComponentSystem.Systems
         private void UpdateTransformation()
         {
             var viewport = _game.GraphicsDevice.Viewport;
-            // Thanks to o KB o for this solution
-            // fn: wtf is KB?
-            _transform = Matrix.CreateTranslation(new Vector3(-CameraPositon.X, -CameraPositon.Y, 0)) *
-                         Matrix.CreateScale(new Vector3(_currentZoom, _currentZoom, 1)) *
-                         Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
+            // Use far position for camera translation.
+            _transform.Translation = -CameraPositon;
+            // Apply zoom and viewport offset via normal matrix.
+            _transform.Matrix = Matrix.CreateScale(new Vector3(_currentZoom, _currentZoom, 1)) *
+                                Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
         }
 
         #endregion
@@ -352,12 +344,12 @@ namespace Space.ComponentSystem.Systems
             var copy = (CameraSystem)base.NewInstance();
 
             copy._lastFrame = 0;
-            copy._currentOffset = Vector2.Zero;
-            copy._cameraPosition = Vector2.Zero;
+            copy._currentOffset = FarPosition.Zero;
+            copy._cameraPosition = FarPosition.Zero;
             copy._customCameraPosition = null;
             copy._targetZoom = MaximumZoom;
             copy._currentZoom = MaximumZoom;
-            copy._transform = Matrix.Identity;
+            copy._transform = FarTransform.Identity;
 
             return copy;
         }

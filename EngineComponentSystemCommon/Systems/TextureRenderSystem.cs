@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -67,10 +68,13 @@ namespace Engine.ComponentSystem.Common.Systems
             origin.X = component.Texture.Width / 2f;
             origin.Y = component.Texture.Height / 2f;
 
+            // Get the transformation to use.
+            var cameraTransform = GetTransform();
+
             // Draw. Use transformation of the camera for sprites drawn, so no transformation
             // for the sprite itself is needed.
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, GetTransform());
-            SpriteBatch.Draw(component.Texture, transform.Translation, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
+            SpriteBatch.Draw(component.Texture, (Vector2)(transform.Translation + cameraTransform.Translation), null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
             SpriteBatch.End();
         }
 
@@ -78,9 +82,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Returns the <em>transformation</em> for offsetting and scaling rendered content.
         /// </summary>
         /// <returns>The transformation.</returns>
-        protected virtual Matrix GetTransform()
+        protected virtual FarTransform GetTransform()
         {
-            return Matrix.Identity;
+            return FarTransform.Identity;
         }
 
         #endregion

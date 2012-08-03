@@ -60,7 +60,8 @@ namespace Engine.Tests.Base.Serialization
                     packet.Reset();
 
                     Assert.AreEqual(123, packet.ReadInt32());
-                    packet.ReadPacketizableInto(instance);
+                    var instanceByRef = instance;
+                    packet.ReadPacketizableInto(ref instanceByRef);
                     Assert.AreEqual(hash, GetHash(instance));
                     Assert.AreEqual(456, packet.ReadInt32());
                 }

@@ -6,7 +6,7 @@ using Engine.Collections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
-using Engine.Math;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -168,7 +168,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(Vector2 query, float range, ref ICollection<int> list, ulong groups)
+        public void Find(FarPosition query, float range, ref ICollection<int> list, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
@@ -184,7 +184,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(ref RectangleF query, ref ICollection<int> list, ulong groups)
+        public void Find(ref FarRectangle query, ref ICollection<int> list, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
@@ -248,7 +248,7 @@ namespace Engine.ComponentSystem.Common.Systems
             EnsureIndexesExist(groups);
 
             // Compute the bounds for the indexable as well as possible.
-            var bounds = new RectangleF();
+            var bounds = new FarRectangle();
             var collidable = ((Collidable)Manager.GetComponent(entity, Collidable.TypeId));
             if (collidable != null)
             {
@@ -447,7 +447,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
                 for (var j = 0; j < count; ++j)
                 {
-                    var bounds = packet.ReadRectangleF();
+                    var bounds = packet.ReadFarRectangle();
                     var entity = packet.ReadInt32();
                     _trees[i].Add(bounds, entity);
                 }
@@ -569,7 +569,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="shape">Shape to use for drawing.</param>
         /// <param name="translation">Translation to apply when drawing.</param>
         [Conditional("DEBUG")]
-        public void DrawIndex(ulong groups, Graphics.AbstractShape shape, Vector2 translation)
+        public void DrawIndex(ulong groups, Graphics.AbstractShape shape, FarPosition translation)
         {
             foreach (var tree in TreesForGroups(groups))
             {

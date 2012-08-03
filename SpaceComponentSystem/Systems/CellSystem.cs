@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
-using Engine.Math;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -211,7 +211,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Kill any remaining entities in the area covered by the
                 // cell that just died.
-                RectangleF cellBounds;
+                FarRectangle cellBounds;
                 cellBounds.X = xy.Item1 * CellSize;
                 cellBounds.Y = xy.Item2 * CellSize;
                 cellBounds.Width = CellSize;

@@ -631,8 +631,8 @@ namespace Space.View
             {
                 return JSValue.CreateUndefined();
             }
-            
-            return new JSValue(Math.Round(info.Position.X,2));
+
+            return new JSValue((int)info.Position.X);
         }
 
         private JSValue GetYCoordinate(JSValue[] args)
@@ -643,7 +643,7 @@ namespace Space.View
                 return JSValue.CreateUndefined();
             }
 
-            return new JSValue(Math.Round(info.Position.Y,2));
+            return new JSValue((int)info.Position.Y);
         }
 
         private JSValue GetXCell(JSValue[] args)

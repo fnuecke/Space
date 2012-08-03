@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
@@ -208,7 +209,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
         /// <param name="velocity">The velocity of the sound's emitter.</param>
-        public Cue Play(string soundCue, ref Vector2 position, ref Vector2 velocity)
+        public Cue Play(string soundCue, ref FarPosition position, ref Vector2 velocity)
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
@@ -225,7 +226,7 @@ namespace Engine.ComponentSystem.Common.Systems
             var listenerVelocity = GetListenerVelocity();
 
             // Skip if too far away.
-            if (Vector2.Distance(listenerPosition, position) > 5000.0f)
+            if (((Vector2)(position - listenerPosition)).Length() > 5000.0f)
             {
                 return null;
             }
@@ -254,7 +255,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
-        public Cue Play(string soundCue, ref Vector2 position)
+        public Cue Play(string soundCue, ref FarPosition position)
         {
             var zero = Vector2.Zero;
             return Play(soundCue, ref  position, ref zero);
@@ -290,9 +291,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Get the position of the listener (e.g. player avatar).
         /// </summary>
         /// <returns>The position of the listener.</returns>
-        protected virtual Vector2 GetListenerPosition()
+        protected virtual FarPosition GetListenerPosition()
         {
-            return Vector2.Zero;
+            return FarPosition.Zero;
         }
 
         /// <summary>
@@ -319,6 +320,21 @@ namespace Engine.ComponentSystem.Common.Systems
             result.X = v2.X;
             result.Y = 0;
             result.Z = v2.Y;
+            return result;
+        }
+
+        /// <summary>
+        /// Converts a far position to a XACT compatible 3D vector.
+        /// </summary>
+        /// <param name="v2">The position to convert.</param>
+        /// <returns>The converted vector.</returns>
+        private static Vector3 ToV3(ref FarPosition v2)
+        {
+            // TODO this will get inaccurate, but maybe we don't have to bother because for sound no one will notice?
+            Vector3 result;
+            result.X = (float)v2.X;
+            result.Y = 0;
+            result.Z = (float)v2.Y;
             return result;
         }
 

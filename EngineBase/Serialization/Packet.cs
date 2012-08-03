@@ -719,7 +719,7 @@ namespace Engine.Serialization
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public void ReadPacketizableInto<T>(T existingInstance)
+        public void ReadPacketizableInto<T>(ref T existingInstance)
             where T : IPacketizable
         {
             using (var packet = ReadPacket())
@@ -747,7 +747,7 @@ namespace Engine.Serialization
             where T : IPacketizable, new()
         {
             var instance = new T();
-            ReadPacketizableInto(instance);
+            ReadPacketizableInto(ref instance);
             return instance;
         }
 
@@ -774,7 +774,7 @@ namespace Engine.Serialization
             else
             {
                 var instance = (T)Activator.CreateInstance(type);
-                ReadPacketizableInto(instance);
+                ReadPacketizableInto(ref instance);
                 return instance;
             }
         }

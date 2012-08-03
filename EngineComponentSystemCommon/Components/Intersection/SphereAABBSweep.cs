@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.FarMath;
+using Microsoft.Xna.Framework;
 
-namespace Engine.Physics.Intersection
+namespace Engine.ComponentSystem.Common.Components.Intersection
 {
     /// <summary>
     /// Performs a sweep test for a sphere and an AABB.
@@ -20,11 +21,12 @@ namespace Engine.Physics.Intersection
         /// <param name="B0">previous position of AABB</param>
         /// <param name="B1">current position of AABB</param>
         /// <returns>true if the objects (did) collide.</returns>
-        public static bool Test(float ra, ref Vector2 A0, ref Vector2 A1, ref Vector2 eb, ref Vector2 B0, ref Vector2 B1)
+        public static bool Test(float ra, ref FarPosition A0, ref FarPosition A1,
+            ref Vector2 eb, ref FarPosition B0, ref FarPosition B1)
         {
             // Convert circle center to box coordinates.
-            Vector2 diff = A1 - (B1 + eb / 2);
-            Vector2 vel = (B1 - B0) - (A1 - A0);
+            var diff = (Vector2)(A1 - B1) - (eb / 2);
+            var vel = (Vector2)(B1 - B0) - (Vector2)(A1 - A0);
 
             if (diff.X < -eb.X)
             {
@@ -83,24 +85,24 @@ namespace Engine.Physics.Intersection
 
         private static bool TestVertexRegion(float ra, float cx, float cy, float vx, float vy, float ex, float ey)
         {
-            float dx = cx + ex;
-            float dy = cy + ey;
-            float rsqr = ra * ra;
-            float diff = dx * dx + dy * dy - rsqr;
+            var dx = cx + ex;
+            var dy = cy + ey;
+            var rsqr = ra * ra;
+            var diff = dx * dx + dy * dy - rsqr;
             if (diff <= 0)
             {
                 // Circle is already intersecting the box.
                 return true;
             }
 
-            float dot = vx * dx + vy * dy;
+            var dot = vx * dx + vy * dy;
             if (dot >= 0)
             {
                 // Circle not moving towards box.
                 return false;
             }
 
-            float dotPerp = vx * dy - vy * dx;
+            var dotPerp = vx * dy - vy * dx;
             if (dotPerp >= 0)
             {
                 // Potential contact on left edge.
@@ -116,7 +118,7 @@ namespace Engine.Physics.Intersection
                     return false;
                 }
 
-                float vsqr = vx * vx + vy * vy;
+                var vsqr = vx * vx + vy * vy;
                 dy = cy - ey;
                 dotPerp = vx * dy - vy * dx;
                 if (dotPerp >= 0 && dotPerp * dotPerp > rsqr * vsqr)
@@ -140,7 +142,7 @@ namespace Engine.Physics.Intersection
                     return false;
                 }
 
-                float vsqr = vx * vx + vy * vy;
+                var vsqr = vx * vx + vy * vy;
                 dx = cx - ex;
                 dotPerp = vx * dy - vy * dx;
                 if (-dotPerp >= 0 && dotPerp * dotPerp > rsqr * vsqr)
@@ -155,8 +157,8 @@ namespace Engine.Physics.Intersection
 
         private static bool TestEdgeRegion(float ra, float cx, float cy, float vx, float vy, float ex, float ey)
         {
-            float dx = cx + ex;
-            float xSignedDist = dx + ra;
+            var dx = cx + ex;
+            var xSignedDist = dx + ra;
             if (xSignedDist >= 0)
             {
                 // Circle is already intersecting the box.
@@ -169,12 +171,12 @@ namespace Engine.Physics.Intersection
                 return false;
             }
 
-            float rsqr = ra * ra;
-            float vsqr = vx * vx + vy * vy;
+            var rsqr = ra * ra;
+            var vsqr = vx * vx + vy * vy;
             if (vy >= 0)
             {
-                float dy = cy - ey;
-                float dotPerp = vx * dy - vy * dx;
+                var dy = cy - ey;
+                var dotPerp = vx * dy - vy * dx;
                 if (dotPerp >= 0 && dotPerp * dotPerp > rsqr * vsqr)
                 {
                     // Circle misses box.
@@ -183,8 +185,8 @@ namespace Engine.Physics.Intersection
             }
             else
             {
-                float dy = cy + ey;
-                float dotPerp = vx * dy - vy * dx;
+                var dy = cy + ey;
+                var dotPerp = vx * dy - vy * dx;
                 if (dotPerp <= 0 && dotPerp * dotPerp > rsqr * vsqr)
                 {
                     // Circle misses box.

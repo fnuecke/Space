@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.FarMath;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -63,7 +64,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Returns the position of the local player's avatar.
         /// </summary>
-        protected override Vector2 GetListenerPosition()
+        protected override FarPosition GetListenerPosition()
         {
             if (_session.ConnectionState == ClientState.Connected)
             {
@@ -73,7 +74,7 @@ namespace Space.ComponentSystem.Systems
                     return ((Transform)Manager.GetComponent(avatar.Value, Transform.TypeId)).Translation;
                 }
             }
-            return Vector2.Zero;
+            return FarPosition.Zero;
         }
 
         /// <summary>

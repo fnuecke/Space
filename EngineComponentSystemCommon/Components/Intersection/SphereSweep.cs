@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.FarMath;
+using Microsoft.Xna.Framework;
 
-namespace Engine.Physics.Intersection
+namespace Engine.ComponentSystem.Common.Components.Intersection
 {
     /// <summary>
     /// Performs a sweep test for two spheres.
@@ -18,27 +19,28 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">current position of sphere B</param>
         /// <returns>true if the spheres (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=2"/> 
-        public static bool Test(float ra, ref Vector2 A0, ref Vector2 A1, float rb, ref Vector2 B0, ref Vector2 B1)
+        public static bool Test(float ra, ref FarPosition A0, ref FarPosition A1,
+            float rb, ref FarPosition B0, ref FarPosition B1)
         {
-            Vector2 va = A1 - A0;
-            Vector2 vb = B1 - B0;
-            Vector2 AB = B0 - A0;
+            var va = (Vector2)(A1 - A0);
+            var vb = (Vector2)(B1 - B0);
+            var ab = (Vector2)(B0 - A0);
 
             //relative velocity (in normalized time)
-            Vector2 vab = vb - va;
-            float rab = ra + rb;
+            var vab = vb - va;
+            var rab = ra + rb;
 
             //u*u coefficient
-            float a = Vector2.Dot(vab, vab);
+            var a = Vector2.Dot(vab, vab);
 
             //u coefficient
-            float b = 2 * Vector2.Dot(vab, AB);
+            var b = 2 * Vector2.Dot(vab, ab);
 
             //constant term 
-            float c = Vector2.Dot(AB, AB) - rab * rab;
+            var c = Vector2.Dot(ab, ab) - rab * rab;
 
             //check if they're currently overlapping
-            if (Vector2.Dot(AB, AB) <= rab * rab)
+            if (Vector2.Dot(ab, ab) <= rab * rab)
             {
                 return true;
             }
@@ -54,7 +56,7 @@ namespace Engine.Physics.Intersection
             if (q >= 0)
             {
                 q = (float)System.Math.Sqrt(q);
-                float d = 1 / (a + a);
+                var d = 1 / (a + a);
                 if (d > 0)
                 {
                     var r1 = (-b + q) * d;

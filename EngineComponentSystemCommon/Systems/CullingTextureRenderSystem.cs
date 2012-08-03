@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.Math;
-using Microsoft.Xna.Framework;
+using Engine.FarMath;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -47,7 +46,7 @@ namespace Engine.ComponentSystem.Common.Systems
         public override void Draw(long frame)
         {
             // Get all renderable entities in the viewport.
-            var view = (RectangleF)ComputeViewport();
+            var view = ComputeViewport();
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
 
             // Skip there rest if nothing is visible.
@@ -90,7 +89,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Returns the current bounds of the viewport, i.e. the rectangle of
         /// the world to actually render.
         /// </summary>
-        protected abstract Rectangle ComputeViewport();
+        protected abstract FarRectangle ComputeViewport();
 
         #endregion
 

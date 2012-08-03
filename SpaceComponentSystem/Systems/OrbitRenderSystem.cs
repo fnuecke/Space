@@ -167,7 +167,7 @@ namespace Space.ComponentSystem.Systems
                 // We don't show the icons for anything that's inside our
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
-                var direction = neighborTransform.Translation - position;
+                var direction = (Vector2)(neighborTransform.Translation - position);
 
                 // We'll make stuff far away a little less opaque. First get
                 // the linear relative distance.
@@ -196,11 +196,14 @@ namespace Space.ComponentSystem.Systems
                     ellipseCenter.Y = 0;
                     var rotation = Matrix.CreateRotationZ(ellipse.Angle);
                     Vector2.Transform(ref ellipseCenter, ref rotation, out ellipseCenter);
-                    ellipseCenter += focusTransform;
+                    focusTransform += ellipseCenter;
+
+                    // Get relative vector from position to ellipse center.
+                    var toCenter = (Vector2)(focusTransform - position);
 
                     // Far clipping, i.e. don't render if we're outside and
                     // not seeing the ellipse.
-                    var distanceToCenterSquared = (ellipseCenter - position).LengthSquared();
+                    var distanceToCenterSquared = toCenter.LengthSquared();
                     var farClipDistance = ellipse.MajorRadius + radius;
                     farClipDistance *= farClipDistance;
 
@@ -215,7 +218,7 @@ namespace Space.ComponentSystem.Systems
                         nearClipDistance <= distanceToCenterSquared)
                     {
                         // Yes, set the properties for our ellipse renderer.
-                        _orbitEllipse.Center = ellipseCenter - position + center;
+                        _orbitEllipse.Center = toCenter + center;
                         _orbitEllipse.MajorRadius = ellipse.MajorRadius;
                         _orbitEllipse.MinorRadius = ellipse.MinorRadius;
                         _orbitEllipse.Rotation = ellipse.Angle;
@@ -250,7 +253,7 @@ namespace Space.ComponentSystem.Systems
                 var maxAcceleration = info.MaxAcceleration;
                 var neighborMass = neighborGravitation.Mass;
                 var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborMass / maxAcceleration);
-                _deadZoneEllipse.Center = neighborTransform.Translation - position + center;
+                _deadZoneEllipse.Center = (Vector2)(neighborTransform.Translation - position) + center;
                 // Add the complete diffuse width, not just the half (which
                 // would be the exact point), because it's unlikely someone
                 // will exactly hit that point, so give them some fair

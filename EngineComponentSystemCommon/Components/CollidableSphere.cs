@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
+using Engine.ComponentSystem.Common.Components.Intersection;
 using Engine.ComponentSystem.Components;
-using Engine.Math;
-using Engine.Physics.Intersection;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -92,9 +92,9 @@ namespace Engine.ComponentSystem.Common.Components
         /// Computes the current minimal bounding box for this collidable.
         /// </summary>
         /// <returns>The minimal boundsing box for this object.</returns>
-        public override RectangleF ComputeBounds()
+        public override FarRectangle ComputeBounds()
         {
-            return new RectangleF {Height = Radius * 2, Width = Radius * 2};
+            return new FarRectangle(0, 0, Radius * 2, Radius * 2);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Engine.ComponentSystem.Common.Components
             return collidable.Intersects(Radius, ref PreviousPosition, ref currentPosition);
         }
 
-        internal override bool Intersects(ref Vector2 extents, ref Vector2 previousPosition, ref Vector2 position)
+        internal override bool Intersects(ref Vector2 extents, ref FarPosition previousPosition, ref FarPosition position)
         {
             var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
             return SphereAABBSweep.Test(
@@ -116,7 +116,7 @@ namespace Engine.ComponentSystem.Common.Components
                 ref extents, ref previousPosition, ref position);
         }
 
-        internal override bool Intersects(float radius, ref Vector2 previousPosition, ref Vector2 position)
+        internal override bool Intersects(float radius, ref FarPosition previousPosition, ref FarPosition position)
         {
             var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
             return SphereSweep.Test(

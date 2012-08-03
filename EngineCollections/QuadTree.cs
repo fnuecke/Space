@@ -5,8 +5,8 @@ using System.Diagnostics;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Vector2;
-using TRectangle = Engine.Math.RectangleF;
+using TPoint = Engine.FarMath.FarPosition;
+using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Engine.Collections
 {
@@ -208,12 +208,14 @@ namespace Engine.Collections
             // extend the bounds accordingly, to avoid tree updates.
             delta.X *= MovingBoundMultiplier;
             delta.Y *= MovingBoundMultiplier;
-            newBounds.Width += System.Math.Abs(delta.X);
+            var absDeltaX = delta.X < 0 ? -delta.X : delta.X;
+            var absDeltaY = delta.Y < 0 ? -delta.Y : delta.Y;
+            newBounds.Width += absDeltaX;
             if (delta.X < 0)
             {
                 newBounds.X += delta.X;
             }
-            newBounds.Height += System.Math.Abs(delta.Y);
+            newBounds.Height += absDeltaY;
             if (delta.Y < 0)
             {
                 newBounds.Y += delta.Y;
@@ -1379,8 +1381,8 @@ namespace Engine.Collections
                     closest.Y = bottom;
                 }
             }
-            var distanceX = closest.X - center.X;
-            var distanceY = closest.Y - center.Y;
+            var distanceX = (float)(closest.X - center.X);
+            var distanceY = (float)(closest.Y - center.Y);
             var radiusSquared = radius * radius;
             if ((distanceX * distanceX + distanceY * distanceY) > radiusSquared)
             {
@@ -1389,8 +1391,8 @@ namespace Engine.Collections
 
             // At least intersection, check furthest point to check if the
             // box is contained within the circle.
-            distanceX = System.Math.Max(System.Math.Abs(center.X - bounds.X), System.Math.Abs(center.X - right));
-            distanceY = System.Math.Max(System.Math.Abs(center.Y - bounds.Y), System.Math.Abs(center.Y - bottom));
+            distanceX = System.Math.Max(System.Math.Abs((int)(center.X - bounds.X)), System.Math.Abs((int)(center.X - right)));
+            distanceY = System.Math.Max(System.Math.Abs((int)(center.Y - bounds.Y)), System.Math.Abs((int)(center.Y - bottom)));
             var outside = (distanceX * distanceX + distanceY * distanceY) > radiusSquared;
             return outside ? IntersectionType.Intersects : IntersectionType.Contains;
         }

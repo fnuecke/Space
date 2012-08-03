@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Engine.FarMath;
 using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Vector2;
-using TRectangle = Engine.Math.RectangleF;
+using TPoint = Engine.FarMath.FarPosition;
+using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Engine.Collections
 {
@@ -331,13 +332,13 @@ namespace Engine.Collections
 
         private InnerNode MMBMinNode(InnerNode testnode, TRectangle boundingbox)
         {
-            float minexpansion = float.PositiveInfinity;
+            FarValue minexpansion = float.PositiveInfinity;
             Node returnNode= null;
             foreach (var childnode in testnode.Nodes)
             {
                 var mbb = childnode.Boundingbox;
                 var area = TRectangle.Union(boundingbox, mbb);
-                var size = area.Height * area.Width;
+                var size = (int)area.Height * (int)area.Width;
                 if (size < minexpansion)
                 {
                     minexpansion = size;
@@ -355,7 +356,7 @@ namespace Engine.Collections
         private Node MMBMinNode(InnerNode node, ref TPoint point)
         {
             var minExpanision = float.PositiveInfinity;
-            var minArea = float.PositiveInfinity;
+            FarValue minArea = float.PositiveInfinity;
             Node returnNode = null;
             foreach (var childNode in node.Nodes)
             {
@@ -363,7 +364,7 @@ namespace Engine.Collections
                 //check if point is already in bounding box
                 if (box.Contains((int)point.X, (int)point.Y))
                 {
-                    var area = box.Width * box.Height;
+                    var area = (int)box.Width * (int)box.Height;
                     //check if area is smaller
                     if (minExpanision > 0 || minExpanision == 0 && area < minArea)
                     {
@@ -382,23 +383,23 @@ namespace Engine.Collections
                     var y = point.Y;
                     var distX = 0f;
                     var distY = 0f;
-                    var boxWidht = box.Width;
-                    var boxheigth = box.Height;
+                    var boxWidht = (int)box.Width;
+                    var boxheigth = (int)box.Height;
                     if (box.Left > x)
                     {
-                        distX = box.Left - x;
+                        distX = (float)(box.Left - x);
                     }
                     else if (box.Right < x)
                     {
-                        distX = x - box.Right;
+                        distX = (float)(x - box.Right);
                     }
                     if (box.Top > y)
                     {
-                        distY = box.Top - y;
+                        distY = (float)(box.Top - y);
                     }
                     else if (box.Bottom < y)
                     {
-                        distY = y - box.Bottom;
+                        distY = (float)(y - box.Bottom);
                     }
                     distX = System.Math.Abs(distX);
                     distY = System.Math.Abs(distY);
@@ -430,9 +431,9 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rect"></param>
         /// <returns></returns>
-        private float RectangleArea(TRectangle rect)
+        private int RectangleArea(TRectangle rect)
         {
-            return rect.Width * rect.Height;
+            return (int)rect.Width * (int)rect.Height;
         }
 
         /// <summary>
@@ -443,8 +444,8 @@ namespace Engine.Collections
         /// <returns></returns>
         private int SortTupleListByOverlapValue(Tuple<TRectangle, TRectangle,int> tuple1, Tuple<TRectangle, TRectangle,int> tuple2)
         {
-            return (int)System.Math.Round(RectangleArea(TRectangle.Intersect(tuple1.Item1, tuple1.Item2)) -
-                   RectangleArea(TRectangle.Intersect(tuple2.Item1, tuple2.Item2)), MidpointRounding.AwayFromZero);
+            return RectangleArea(TRectangle.Intersect(tuple1.Item1, tuple1.Item2)) -
+                   RectangleArea(TRectangle.Intersect(tuple2.Item1, tuple2.Item2));
         }
         /// <summary>
         /// Splits the given Node
@@ -549,9 +550,9 @@ namespace Engine.Collections
 
             if (xLeft == yLeft)
             {
-                return (int)System.Math.Round(xRight - yRight, MidpointRounding.AwayFromZero);
+                return (int)System.Math.Round((float)(xRight - yRight), MidpointRounding.AwayFromZero);
             }
-            return (int)System.Math.Round(xLeft - yLeft, MidpointRounding.AwayFromZero);
+            return (int)System.Math.Round((float)(xLeft - yLeft), MidpointRounding.AwayFromZero);
         }
 
 
@@ -570,9 +571,9 @@ namespace Engine.Collections
 
             if (xTop == yTop)
             {
-                return (int)System.Math.Round(xBottom - yBottom, MidpointRounding.AwayFromZero);
+                return (int)System.Math.Round((float)(xBottom - yBottom), MidpointRounding.AwayFromZero);
             }
-            return (int)System.Math.Round(xTop - yTop, MidpointRounding.AwayFromZero);
+            return (int)System.Math.Round((float)(xTop - yTop), MidpointRounding.AwayFromZero);
         }
         /// <summary>
         /// Chooses the Split Axis of the Given Node
@@ -584,7 +585,7 @@ namespace Engine.Collections
 
 
             node.Entrys.Sort(CompareEntrysByXAxis);
-            var sumX = 0f;
+            FarValue sumX = 0f;
             var listx = new List<Tuple<TRectangle, TRectangle, int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
@@ -606,7 +607,7 @@ namespace Engine.Collections
                 sumX += box2.Height * 2 + box2.Width * 2;
             }
             node.Entrys.Sort(CompareEntrysByYAxis);
-            var sumY = 0f;
+            FarValue sumY = 0f;
             var listy = new List<Tuple<TRectangle, TRectangle, int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
@@ -646,7 +647,7 @@ namespace Engine.Collections
         {
 
             node.Nodes.Sort(CompareNodesByXAxis);
-            var sumX = 0f;
+            FarValue sumX = 0f;
             var listx = new List<Tuple<TRectangle, TRectangle,int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
@@ -668,7 +669,7 @@ namespace Engine.Collections
                 sumX += box2.Height * 2 + box2.Width * 2;
             }
             node.Nodes.Sort(CompareNodesByYAxis);
-            var sumY = 0f;
+            FarValue sumY = 0f;
             var listy = new List<Tuple<TRectangle, TRectangle,int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
@@ -908,8 +909,8 @@ namespace Engine.Collections
             {
                 closest.Y = rect.Bottom;
             }
-            float distanceX = closest.X - center.X;
-            float distanceY = closest.Y - center.Y;
+            var distanceX = (float)(closest.X - center.X);
+            var distanceY = (float)(closest.Y - center.Y);
             if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
             {
                 return false;
@@ -945,8 +946,8 @@ namespace Engine.Collections
             {
                 closest.Y = vector2.Y;
             }
-            float distanceX = closest.X - center.X;
-            float distanceY = closest.Y - center.Y;
+            var distanceX = (float)(closest.X - center.X);
+            var distanceY = (float)(closest.Y - center.Y);
             if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
             {
                 return false;

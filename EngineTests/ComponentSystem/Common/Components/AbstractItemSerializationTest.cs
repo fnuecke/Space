@@ -15,7 +15,6 @@ namespace Engine.Tests.ComponentSystem.Common.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.Enabled = !instance.Enabled,
                        instance => instance.Name += "b",
                        instance => instance.IconName += "b"
                    }.Concat(base.GetValueChangers());
