@@ -325,6 +325,22 @@ namespace Engine.FarMath
         }
 
         /// <summary>
+        /// Adds the specified <see cref="FarValue"/> and the specified <see cref="float"/> together.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The sum of the two values.
+        /// </returns>
+        public static FarValue operator +(float value1, FarValue value2)
+        {
+            var result = value2;
+            result._offset += value1;
+            result.Normalize();
+            return result;
+        }
+
+        /// <summary>
         /// Adds the specified <see cref="FarValue"/> and the specified <see cref="int"/> together.
         /// </summary>
         /// <param name="value1">The first value.</param>
@@ -337,6 +353,22 @@ namespace Engine.FarMath
             var result = value1;
             result._segment += (short)(value2 / SegmentSize);
             result._offset += value2 % SegmentSize;
+            return result;
+        }
+
+        /// <summary>
+        /// Adds the specified <see cref="FarValue"/> and the specified <see cref="int"/> together.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The sum of the two values.
+        /// </returns>
+        public static FarValue operator +(int value1, FarValue value2)
+        {
+            var result = value2;
+            result._segment += (short)(value1 / SegmentSize);
+            result._offset += value1 % SegmentSize;
             return result;
         }
 

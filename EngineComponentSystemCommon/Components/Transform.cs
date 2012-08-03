@@ -169,6 +169,26 @@ namespace Engine.ComponentSystem.Common.Components
         /// Add the given translation to the current translation.
         /// </summary>
         /// <param name="value">The translation to add.</param>
+        public void AddTranslation(ref FarPosition value)
+        {
+            _nextTranslation += value;
+            _translationChanged = true;
+        }
+
+        /// <summary>
+        /// Add the given translation to the current translation.
+        /// </summary>
+        /// <param name="value">The translation to add.</param>
+        public void AddTranslation(FarPosition value)
+        {
+            _nextTranslation += value;
+            _translationChanged = true;
+        }
+
+        /// <summary>
+        /// Add the given translation to the current translation.
+        /// </summary>
+        /// <param name="value">The translation to add.</param>
         public void AddTranslation(ref Vector2 value)
         {
             _nextTranslation += value;

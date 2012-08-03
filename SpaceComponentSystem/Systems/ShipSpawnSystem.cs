@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -92,7 +91,7 @@ namespace Space.ComponentSystem.Systems
                     // Create some ships at random positions.
                     for (var i = 0; i < 10; i++)
                     {
-                        Vector2 spawnPoint;
+                        FarPosition spawnPoint;
                         spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
                         spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
                         var ship = EntityFactory.CreateAIShip(

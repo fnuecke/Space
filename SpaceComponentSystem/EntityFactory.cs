@@ -27,7 +27,7 @@ namespace Space.ComponentSystem
         /// <returns>
         /// The new ship.
         /// </returns>
-        public static int CreatePlayerShip(IManager manager, PlayerClassType playerClass, int playerNumber, Vector2 position)
+        public static int CreatePlayerShip(IManager manager, PlayerClassType playerClass, int playerNumber, FarPosition position)
         {
             // Player ships must be 'static', i.e. not have random attributes, so we don't need a randomizer.
             var entity = FactoryLibrary.SampleShip(manager, playerClass.GetShipFactoryName(), playerNumber.ToFaction(), position, null);

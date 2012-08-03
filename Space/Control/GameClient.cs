@@ -184,7 +184,7 @@ namespace Space.Control
             }
             else
             {
-                return Vector2.Zero;
+                return FarPosition.Zero;
             }
         }
 

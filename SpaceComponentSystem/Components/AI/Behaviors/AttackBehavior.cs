@@ -244,7 +244,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             Target = packet.ReadInt32();
             if (packet.ReadBoolean())
             {
-                _start = packet.ReadVector2();
+                _start = packet.ReadFarPosition();
             }
         }
 
@@ -258,7 +258,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             base.Hash(hasher);
 
             hasher.Put(Target);
-            hasher.Put(_start.HasValue ? _start.Value : Vector2.Zero);
+            hasher.Put(_start.HasValue ? _start.Value : FarPosition.Zero);
         }
 
         #endregion

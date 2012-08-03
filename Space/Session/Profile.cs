@@ -8,7 +8,6 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
@@ -495,7 +494,7 @@ namespace Space.Session
                 PlayerClass = playerClass;
 
                 // Read the respawn position.
-                var position = _data.ReadVector2();
+                var position = _data.ReadFarPosition();
 
                 // Create the ship.
                 avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
@@ -627,7 +626,7 @@ namespace Space.Session
         {
             // Store the character's base values. This is a little roundabout,
             // but this way it'll always be up-to-date.
-            var ship = EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new Vector2(50000, 50000));
+            var ship = EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new FarPosition(50000, 50000));
             var equipment = ((Equipment)manager.GetComponent(ship, Equipment.TypeId));
 
             // Basic starter outfit for that class.

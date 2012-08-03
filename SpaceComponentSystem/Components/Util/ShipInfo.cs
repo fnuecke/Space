@@ -173,7 +173,7 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var transform = (Transform)Manager.GetComponent(Entity, Transform.TypeId);
-                return transform != null ? transform.Translation : Vector2.Zero;
+                return transform != null ? transform.Translation : FarPosition.Zero;
             }
         }
 

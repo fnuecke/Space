@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Serialization;
-using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
 {
@@ -133,7 +132,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="disableComponents">The disable components.</param>
         public Respawn Initialize(int delay = 0, IEnumerable<Type> disableComponents = null)
         {
-            return Initialize(delay, disableComponents, Vector2.Zero);
+            return Initialize(delay, disableComponents, FarPosition.Zero);
         }
 
         /// <summary>
@@ -145,7 +144,7 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Delay = 0;
-            Position = Vector2.Zero;
+            Position = FarPosition.Zero;
             ComponentsToDisable.Clear();
             RelativeHealth = 1;
             RelativeEnergy = 1;
@@ -189,7 +188,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Delay = packet.ReadInt32();
-            Position = packet.ReadVector2();
+            Position = packet.ReadFarPosition();
             RelativeHealth = packet.ReadSingle();
             RelativeEnergy = packet.ReadSingle();
 

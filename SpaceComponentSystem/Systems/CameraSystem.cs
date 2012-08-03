@@ -231,7 +231,7 @@ namespace Space.ComponentSystem.Systems
 
                         // The interpolate to our new offset, slowly to make the
                         // effect less brain-melting.
-                        _currentOffset = FarPosition.SmoothStep(_currentOffset, targetOffset, 0.15f);
+                        _currentOffset = FarPosition.SmoothStep(_currentOffset, (FarPosition)targetOffset, 0.15f);
 
                         // The camera *position* is then the avatar position, plus
                         // the offset, correcting for the viewport center which was

@@ -14,9 +14,10 @@ namespace Engine.Collections
     /// This is a two level index structure, using a spatial hash as the primary
     /// structure and working with <seealso cref="FarValue"/>s. It splits areas
     /// into those defined by the segment size of far values and indexes these
-    /// areas using quad trees.
+    /// areas using quad trees. On that level the index works with normal float
+    /// values for better performance.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type to store in the index.</typeparam>
     public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
         #region Constants
@@ -313,6 +314,7 @@ namespace Engine.Collections
         /// </remarks>
         public void Find(FarPosition point, float range, ref ICollection<T> list)
         {
+            // Compute the area bounds for that query to get the involved trees.
             var bounds = new TRectangle
             {
                 X = point.X - range,
@@ -320,9 +322,12 @@ namespace Engine.Collections
                 Width = range + range,
                 Height = range + range
             };
+
+            // Do the query, but into a temporary set, to avoid duplicates.
             ICollection<T> result = new HashSet<T>();
             foreach (var cell in ComputeCells(bounds))
             {
+                // Only if the cell exists.
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
@@ -332,6 +337,8 @@ namespace Engine.Collections
                     _entries[cell.Item1].Find(relativePoint, range, ref result);
                 }
             }
+
+            // Copy results over to actual result list.
             foreach (var hit in result)
             {
                 list.Add(hit);
@@ -372,7 +379,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The rectangle.</param>
         /// <returns>The cells the rectangle intersects with.</returns>
-        private IEnumerable<Tuple<uint, TPoint>> ComputeCells(TRectangle rectangle)
+        private static IEnumerable<Tuple<uint, TPoint>> ComputeCells(TRectangle rectangle)
         {
             var left = rectangle.X.Segment;
             var right = rectangle.Right.Segment;

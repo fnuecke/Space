@@ -112,7 +112,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             base.Depacketize(packet);
 
-            Target = packet.ReadVector2();
+            Target = packet.ReadFarPosition();
         }
 
         /// <summary>

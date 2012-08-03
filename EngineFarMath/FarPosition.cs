@@ -72,7 +72,7 @@ namespace Engine.FarMath
         /// <param name="position">The position to transform.</param>
         /// <param name="transform">The transformation to apply.</param>
         /// <returns>The result of the transformation.</returns>
-        public static FarPosition Transform(FarPosition position, FarTransform transform)
+        public static Vector2 Transform(FarPosition position, FarTransform transform)
         {
             var translatedPosition = (Vector2)(position + transform.Translation);
             return Vector2.Transform(translatedPosition, transform.Matrix);
@@ -291,6 +291,22 @@ namespace Engine.FarMath
         }
 
         /// <summary>
+        /// Adds the specified <see cref="FarPosition"/> and a <see cref="Vector2"/> together.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The sum of the two values.
+        /// </returns>
+        public static FarPosition operator +(Vector2 value1, FarPosition value2)
+        {
+            var result = value2;
+            result.X += value1.X;
+            result.Y += value1.Y;
+            return result;
+        }
+
+        /// <summary>
         /// Adds the specified <see cref="FarPosition"/> and the specified <see cref="Point"/> together.
         /// </summary>
         /// <param name="value1">The first value.</param>
@@ -303,6 +319,22 @@ namespace Engine.FarMath
             var result = value1;
             result.X += value2.X;
             result.Y += value2.Y;
+            return result;
+        }
+
+        /// <summary>
+        /// Adds the specified <see cref="FarPosition"/> and a <see cref="Point"/> together.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The sum of the two values.
+        /// </returns>
+        public static FarPosition operator +(Point value1, FarPosition value2)
+        {
+            var result = value2;
+            result.X += value1.X;
+            result.Y += value1.Y;
             return result;
         }
 
@@ -399,7 +431,7 @@ namespace Engine.FarMath
         /// <returns>
         /// The result of the conversion.
         /// </returns>
-        public static implicit operator FarPosition(Vector2 value)
+        public static explicit operator FarPosition(Vector2 value)
         {
             FarPosition result;
             result.X = value.X;
@@ -414,7 +446,7 @@ namespace Engine.FarMath
         /// <returns>
         /// The result of the conversion.
         /// </returns>
-        public static implicit operator FarPosition(Point value)
+        public static explicit operator FarPosition(Point value)
         {
             FarPosition result;
             result.X = value.X;

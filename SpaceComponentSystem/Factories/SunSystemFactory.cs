@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -40,7 +41,7 @@ namespace Space.ComponentSystem.Factories
         /// <param name="cellCenter">The center of the cell for which the sun system is created.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public void SampleSunSystem(IManager manager, Vector2 cellCenter, IUniformRandom random)
+        public void SampleSunSystem(IManager manager, FarPosition cellCenter, IUniformRandom random)
         {
             var sun = FactoryLibrary.SampleSun(manager, Sun, cellCenter, random);
 

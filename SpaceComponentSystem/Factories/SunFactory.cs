@@ -1,6 +1,7 @@
 ﻿using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -47,7 +48,7 @@ namespace Space.ComponentSystem.Factories
         /// <param name="cellCenter">The center of the cell the sun will be inserted in.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public int SampleSun(IManager manager, Vector2 cellCenter, IUniformRandom random)
+        public int SampleSun(IManager manager, FarPosition cellCenter, IUniformRandom random)
         {
             var entity = manager.AddEntity();
 

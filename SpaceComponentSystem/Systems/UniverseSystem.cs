@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
@@ -114,7 +114,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Get center of our cell.
                     const int cellSize = CellSystem.CellSize;
-                    var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
+                    var center = new FarPosition(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
 
                     // Check if it's the start system or not.
                     if (info.X == 0 && info.Y == 0)

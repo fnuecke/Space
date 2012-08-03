@@ -3,7 +3,6 @@ using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.FarMath;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.Data;
 
@@ -193,7 +192,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>
         /// The sampled sun.
         /// </returns>
-        public static int SampleSun(IManager manager, string name, Vector2 cellCenter, IUniformRandom random)
+        public static int SampleSun(IManager manager, string name, FarPosition cellCenter, IUniformRandom random)
         {
             var factory = Factories[name] as SunFactory;
             if (factory != null)
@@ -213,7 +212,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>
         /// The sampled sun.
         /// </returns>
-        public static void SampleSunSystem(IManager manager, string name, Vector2 cellCenter, IUniformRandom random)
+        public static void SampleSunSystem(IManager manager, string name, FarPosition cellCenter, IUniformRandom random)
         {
             var factory = Factories[name] as SunSystemFactory;
             if (factory != null)

@@ -2,7 +2,7 @@
 using System.Linq;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
-using Microsoft.Xna.Framework;
+using Engine.FarMath;
 
 namespace Engine.Tests.ComponentSystem.Common.Components
 {
@@ -20,9 +20,9 @@ namespace Engine.Tests.ComponentSystem.Common.Components
             return new[]
                    {
                        manager.AddComponent<Transform>(manager.AddEntity()), 
-                       manager.AddComponent<Transform>(manager.AddEntity()).Initialize(new Vector2(1, 0)),
+                       manager.AddComponent<Transform>(manager.AddEntity()).Initialize(new FarPosition(1, 0)),
                        manager.AddComponent<Transform>(manager.AddEntity()).Initialize(2),
-                       manager.AddComponent<Transform>(manager.AddEntity()).Initialize(new Vector2(100, 5), 51)
+                       manager.AddComponent<Transform>(manager.AddEntity()).Initialize(new FarPosition(100, 5), 51)
                    };
         }
 
@@ -36,12 +36,12 @@ namespace Engine.Tests.ComponentSystem.Common.Components
                    {
                        instance =>
                        {
-                           instance.AddTranslation(new Vector2(12, 34));
+                           instance.AddTranslation(new FarPosition(12, 34));
                            instance.ApplyTranslation();
                        },
                        instance =>
                        {
-                           instance.SetTranslation(new Vector2(-10, 34));
+                           instance.SetTranslation(new FarPosition(-10, 34));
                            instance.ApplyTranslation();
                        },
                        instance => instance.AddRotation(5),
