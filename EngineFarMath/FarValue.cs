@@ -394,6 +394,7 @@ namespace Engine.FarMath
             var result = value1;
             result._segment -= (short)(value2 / SegmentSize);
             result._offset -= value2 % SegmentSize;
+            result.Normalize();
             return result;
         }
 
