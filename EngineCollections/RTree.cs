@@ -12,7 +12,7 @@ using TRectangle = Engine.FarMath.FarRectangle;
 
 namespace Engine.Collections
 {
-    public sealed class RTree<T> : IIndex<T>
+    public sealed class RTree<T> : IIndex<T, TRectangle, TPoint>
     {
         public void Test(List<T> list)
         {
@@ -103,7 +103,7 @@ namespace Engine.Collections
         /// <param name="delta"> </param>
         /// <param name="item">The item for which to update the bounds.</param>
         /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
-        public bool Update(TRectangle newBounds, TPoint delta, T item)
+        public bool Update(TRectangle newBounds, Vector2 delta, T item)
         {
             throw new NotImplementedException();
         }

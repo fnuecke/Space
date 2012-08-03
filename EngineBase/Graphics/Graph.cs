@@ -243,8 +243,8 @@ namespace Engine.Graphics
             }
             DrawBackground();
 
-            float min, max, average;
-            var anchors = BuildCurves(out min, out max, out average);
+            float min, max, average, now;
+            var anchors = BuildCurves(out min, out max, out average, out now);
 
             if (anchors != null)
             {
@@ -259,7 +259,7 @@ namespace Engine.Graphics
                 }
             }
 
-            DrawCaptions(min, max, average);
+            DrawCaptions(min, max, average, now);
         }
 
         private void DrawBackground()
@@ -287,7 +287,8 @@ namespace Engine.Graphics
         /// <param name="min">The min value.</param>
         /// <param name="max">The max value.</param>
         /// <param name="average">The average value.</param>
-        private void DrawCaptions(float min, float max, float average)
+        /// <param name="now">The current value.</param>
+        private void DrawCaptions(float min, float max, float average, float now)
         {
             _spriteBatch.Begin();
 
@@ -300,11 +301,13 @@ namespace Engine.Graphics
             var minText = "min: " + Format(min);
 
             var avgText = "avg: " + Format(average);
+            var nowText = "now: " + Format(now);
 
             _spriteBatch.DrawString(_font, maxText, new Vector2(Bounds.X + Padding, Bounds.Bottom - Padding - VerticalCaptionSize * 2), Color.White);
             _spriteBatch.DrawString(_font, minText, new Vector2(Bounds.X + Padding, Bounds.Bottom - Padding - VerticalCaptionSize), Color.White);
 
             _spriteBatch.DrawString(_font, avgText, new Vector2(Bounds.X + Padding + Bounds.Width / 2, Bounds.Bottom - Padding - VerticalCaptionSize * 2), Color.White);
+            _spriteBatch.DrawString(_font, nowText, new Vector2(Bounds.X + Padding + Bounds.Width / 2, Bounds.Bottom - Padding - VerticalCaptionSize), Color.White);
 
             _spriteBatch.End();
         }
@@ -453,19 +456,21 @@ namespace Engine.Graphics
         /// <param name="min">The min value.</param>
         /// <param name="max">The max value.</param>
         /// <param name="average">The average value.</param>
+        /// <param name="now">The current value.</param>
         /// <returns></returns>
-        private IEnumerable<float[]> BuildCurves(out float min, out float max, out float average)
+        private IEnumerable<float[]> BuildCurves(out float min, out float max, out float average, out float now)
         {
             // Skip if there is no data.
             if (Data == null || Data.Length == 0)
             {
-                min = max = average = 0;
+                min = max = average = now = 0;
                 return null;
             }
 
             // Initialize values to impossible values to override them.
             min = float.PositiveInfinity;
             max = float.NegativeInfinity;
+            now = 0;
 
             // And start the average at zero, of course.
             average = 0;
@@ -516,6 +521,8 @@ namespace Engine.Graphics
 
                         average += value;
                         ++count;
+
+                        now = value;
                     }
                 }
 

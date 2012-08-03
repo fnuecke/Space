@@ -299,7 +299,17 @@ namespace Engine.FarMath
         /// <summary>
         /// Changes the position of the <see cref="FarRectangle"/>.
         /// </summary>
-        /// <param name="amount">The values to adjust the position of the <see cref="FarRectangle"/> by.</param>
+        /// <param name="amount">The value to adjust the position of the <see cref="FarRectangle"/> by.</param>
+        public void Offset(FarPosition amount)
+        {
+            X += amount.X;
+            Y += amount.Y;
+        }
+
+        /// <summary>
+        /// Changes the position of the <see cref="FarRectangle"/>.
+        /// </summary>
+        /// <param name="amount">The value to adjust the position of the <see cref="FarRectangle"/> by.</param>
         public void Offset(Vector2 amount)
         {
             X += amount.X;

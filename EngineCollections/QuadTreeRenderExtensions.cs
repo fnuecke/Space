@@ -20,23 +20,35 @@ namespace Engine.Collections
         /// operation.</param>
         public static void Draw<T>(this QuadTree<T> quadTree, AbstractShape shape, FarPosition translation)
         {
+            var screenBounds = new FarRectangle(-5000, -5000, 10000, 10000);
             foreach (var node in quadTree.GetNodeEnumerable())
             {
-                var nodeBounds = node.Item1;
-                var center = nodeBounds.Center;
-                var transformedCenter = (Vector2)(center + translation);
-                shape.SetCenter(transformedCenter.X, transformedCenter.Y);
-                shape.SetSize((int)nodeBounds.Width - 1, (int)nodeBounds.Height - 1);
-                shape.Draw();
+                FarRectangle bounds = node.Item1;
+                bounds.Offset(translation);
+                var center = (Vector2)bounds.Center;
 
+                if (screenBounds.Intersects(bounds) &&
+                    !bounds.Contains(screenBounds))
+                {
+                    shape.SetCenter(center.X, center.Y);
+                    shape.SetSize((int)bounds.Width - 1, (int)bounds.Height - 1);
+                    shape.Draw();
+                }
+
+                // Check entries.
                 foreach (var entry in node.Item2)
                 {
-                    var bounds = quadTree[entry];
-                    center = bounds.Center;
-                    transformedCenter = (Vector2)(center + translation);
-                    shape.SetCenter(transformedCenter.X, transformedCenter.Y);
-                    shape.SetSize((int)bounds.Width, (int)bounds.Height);
-                    shape.Draw();
+                    bounds = quadTree[entry];
+                    bounds.Offset(translation);
+                    center = (Vector2)bounds.Center;
+
+                    if (screenBounds.Intersects(bounds) &&
+                        !bounds.Contains(screenBounds))
+                    {
+                        shape.SetCenter(center.X, center.Y);
+                        shape.SetSize((int)bounds.Width, (int)bounds.Height);
+                        shape.Draw();
+                    }
                 }
             }
         }

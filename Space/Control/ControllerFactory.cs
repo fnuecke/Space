@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem;
+﻿using System.Diagnostics;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Systems;
@@ -225,6 +226,26 @@ namespace Space.Control
                     new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
                     new CameraCenteredParticleEffectSystem(game.Content, graphicsDevice),
                     new RadarRenderSystem(game.Content, spriteBatch, session)
+                });
+
+            // Add some systems for debug overlays.
+            AddDebugSystems(manager, game, session);
+        }
+
+        /// <summary>
+        /// Adds systems that are purely for debugging purposes (display additional
+        /// information).
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="game">The game.</param>
+        /// <param name="session">The session.</param>
+        [Conditional("DEBUG")]
+        private static void AddDebugSystems(IManager manager, Game game, IClientSession session)
+        {
+            manager.AddSystems(
+                new AbstractSystem[]
+                {
+                    new DebugCollisionBoundsRenderer(game.Content, game.GraphicsDevice)
                 });
         }
     }

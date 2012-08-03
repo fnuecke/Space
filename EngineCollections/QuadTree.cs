@@ -5,8 +5,8 @@ using System.Diagnostics;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Engine.FarMath.FarPosition;
-using TRectangle = Engine.FarMath.FarRectangle;
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace Engine.Collections
 {
@@ -44,7 +44,7 @@ namespace Engine.Collections
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class QuadTree<T> : IIndex<T>
+    public sealed class QuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
         #region Constants
 
@@ -88,6 +88,11 @@ namespace Engine.Collections
         private readonly int _minNodeBounds;
 
         /// <summary>
+        /// Whether to use movement predicting approximate bounds to avoid tree updates.
+        /// </summary>
+        private readonly bool _approximateBounds;
+
+        /// <summary>
         /// The current bounds of the tree. This is a dynamic value, adjusted
         /// based on elements added and removed to the tree (it shrinks, too).
         /// </summary>
@@ -117,11 +122,13 @@ namespace Engine.Collections
         /// <param name="minNodeBounds">The minimum bounds size of a node, i.e.
         /// nodes of this size or smaller won't be split regardless of the
         /// number of entries in them. See class remarks.</param>
+        /// <param name="approximateBounds">Whether to use approximate bounds,
+        /// anticipating object movement, or not.</param>
         /// <exception cref="T:System.ArgumentException">
         /// One or both of the specified parameters are invalid (must be larger
         /// than zero).
-        /// </exception>
-        public QuadTree(int maxEntriesPerNode, int minNodeBounds)
+        ///   </exception>
+        public QuadTree(int maxEntriesPerNode, int minNodeBounds, bool approximateBounds)
         {
             if (maxEntriesPerNode < 1)
             {
@@ -133,6 +140,7 @@ namespace Engine.Collections
             }
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
+            _approximateBounds = approximateBounds;
 
             Clear();
         }
@@ -156,8 +164,11 @@ namespace Engine.Collections
                 throw new ArgumentException("Item is already in the index.", "item");
             }
 
-            // Extend bounds.
-            bounds.Inflate(BoundExtension, BoundExtension);
+            if (_approximateBounds)
+            {
+                // Extend bounds.
+                bounds.Inflate(BoundExtension, BoundExtension);
+            }
 
             // Create the entry to add.
             var entry = new Entry {Bounds = bounds, Value = item};
@@ -204,25 +215,28 @@ namespace Engine.Collections
                 return true;
             }
 
-            // Estimate movement by bounds delta to predict position and
-            // extend the bounds accordingly, to avoid tree updates.
-            delta.X *= MovingBoundMultiplier;
-            delta.Y *= MovingBoundMultiplier;
-            var absDeltaX = delta.X < 0 ? -delta.X : delta.X;
-            var absDeltaY = delta.Y < 0 ? -delta.Y : delta.Y;
-            newBounds.Width += absDeltaX;
-            if (delta.X < 0)
+            if (_approximateBounds)
             {
-                newBounds.X += delta.X;
-            }
-            newBounds.Height += absDeltaY;
-            if (delta.Y < 0)
-            {
-                newBounds.Y += delta.Y;
-            }
+                // Estimate movement by bounds delta to predict position and
+                // extend the bounds accordingly, to avoid tree updates.
+                delta.X *= MovingBoundMultiplier;
+                delta.Y *= MovingBoundMultiplier;
+                var absDeltaX = delta.X < 0 ? -delta.X : delta.X;
+                var absDeltaY = delta.Y < 0 ? -delta.Y : delta.Y;
+                newBounds.Width += (int)absDeltaX;
+                if (delta.X < 0)
+                {
+                    newBounds.X += (int)delta.X;
+                }
+                newBounds.Height += (int)absDeltaY;
+                if (delta.Y < 0)
+                {
+                    newBounds.Y += (int)delta.Y;
+                }
 
-            // Extend bounds.
-            newBounds.Inflate(BoundExtension, BoundExtension);
+                // Extend bounds.
+                newBounds.Inflate(BoundExtension, BoundExtension);
+            }
 
             // Update tree.
             UpdateBounds(ref newBounds, entry);
@@ -1381,8 +1395,8 @@ namespace Engine.Collections
                     closest.Y = bottom;
                 }
             }
-            var distanceX = (float)(closest.X - center.X);
-            var distanceY = (float)(closest.Y - center.Y);
+            var distanceX = closest.X - center.X;
+            var distanceY = closest.Y - center.Y;
             var radiusSquared = radius * radius;
             if ((distanceX * distanceX + distanceY * distanceY) > radiusSquared)
             {

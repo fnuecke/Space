@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Engine.Collections;
+using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
@@ -14,7 +15,7 @@ namespace Tests.JohnMcDonald
     /// A QuadTree Object that provides fast and efficient storage of objects in a world space.
     /// </summary>
     /// <typeparam name="T">Any object implementing IQuadStorable.</typeparam>
-    public class JMDQuadTree<T> : ICollection<T>, IIndex<T>
+    public class JMDQuadTree<T> : ICollection<T>, IIndex<T, TRectangle, TPoint>
     {
         internal sealed class Wrapper
         {
@@ -251,7 +252,7 @@ namespace Tests.JohnMcDonald
         /// <param name="delta"> </param>
         /// <param name="item">The item for which to update the bounds.</param>
         /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
-        public bool Update(TRectangle newBounds, TPoint delta, T item)
+        public bool Update(TRectangle newBounds, Vector2 delta, T item)
         {
             // Check if we have that item.
             if (!Contains(item))

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
@@ -27,7 +28,7 @@ namespace Engine.Collections
         /// rectangle at the point's position, which will then be
         /// inserted, instead.
         /// </remarks>
-        public static void Add<T>(this IIndex<T> index, TPoint point, T item)
+        public static void Add<T>(this IIndex<T, TRectangle, TPoint> index, TPoint point, T item)
         {
             // Convert to rectangle, then add that.
             TRectangle bounds;
@@ -35,33 +36,6 @@ namespace Engine.Collections
             bounds.Y = point.Y;
             bounds.Width = bounds.Height = 0;
             index.Add(bounds, item);
-        }
-
-        /// <summary>
-        /// Update an entry by changing its position. If the item is not
-        /// stored in the index, this will return <code>false</code>.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="index">The index to update.</param>
-        /// <param name="newBounds">The new bounds of the item.</param>
-        /// <param name="delta">The amount by which the object moved.</param>
-        /// <param name="item">The item for which to update the bounds.</param>
-        /// <returns>
-        ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
-        /// </returns>
-        /// <remarks>
-        /// This will lead to the point being converted to an empty rectangle
-        /// at the point's position, which will then be used, instead.
-        /// </remarks>
-        public static bool Update<T>(this IIndex<T> index, TRectangle newBounds, Microsoft.Xna.Framework.Vector2 delta, T item)
-        {
-            // Convert to integer point type.
-            TPoint d;
-            d.X = (int)delta.X;
-            d.Y = (int)delta.Y;
-
-            // Perform actual update.
-            return index.Update(newBounds, d, item);
         }
 
         /// <summary>
@@ -79,14 +53,14 @@ namespace Engine.Collections
         /// This will lead to the point being converted to an empty rectangle
         /// at the point's position, which will then be used, instead.
         /// </remarks>
-        public static bool Update<T>(this IIndex<T> index, TPoint newPoint, T item)
+        public static bool Update<T>(this IIndex<T, TRectangle, TPoint> index, TPoint newPoint, T item)
         {
             // Convert to rectangle, then update with that.
             TRectangle bounds;
             bounds.X = newPoint.X;
             bounds.Y = newPoint.Y;
             bounds.Width = bounds.Height = 0;
-            return index.Update(bounds, TPoint.Zero, item);
+            return index.Update(bounds, Vector2.Zero, item);
         }
 
         /// <summary>
@@ -106,7 +80,7 @@ namespace Engine.Collections
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public static void Find<T>(this IIndex<T> index, Microsoft.Xna.Framework.Vector2 point, float range, ref ICollection<T> list)
+        public static void Find<T>(this IIndex<T, TRectangle, TPoint> index, Vector2 point, float range, ref ICollection<T> list)
         {
             // Convert to integer point type.
             TPoint p;

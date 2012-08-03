@@ -227,19 +227,11 @@ namespace Space.ComponentSystem.Systems
                         // Non-fixed camera, update our offset based on the game pad
                         // or mouse position, relative to the ship.
                         var targetOffset = GetInputInducedOffset();
-                        if (targetOffset.X > 2000f)
-                        {
-                            targetOffset.X = 0;
-                        }
                         var avatarPosition = ((Transform)Manager.GetComponent(avatar.Value, Engine.ComponentSystem.Common.Components.Transform.TypeId)).Translation;
-                        var oldoffset = _currentOffset;
+
                         // The interpolate to our new offset, slowly to make the
                         // effect less brain-melting.
-                        _currentOffset = FarPosition.Lerp(_currentOffset, targetOffset, 0.05f);
-                        if ((float)_currentOffset.X > 2000f)
-                        {
-                            _currentOffset.X = 0;
-                        }
+                        _currentOffset = FarPosition.SmoothStep(_currentOffset, targetOffset, 0.15f);
 
                         // The camera *position* is then the avatar position, plus
                         // the offset, correcting for the viewport center which was
@@ -248,7 +240,7 @@ namespace Space.ComponentSystem.Systems
                         _cameraPosition = avatarPosition + _currentOffset;
 
                         // Interpolate new zoom moving slowly in or out.
-                        _currentZoom = MathHelper.Lerp(_currentZoom, _targetZoom, 0.05f);
+                        _currentZoom = MathHelper.SmoothStep(_currentZoom, _targetZoom, 0.15f);
 
                         // Update the transformation.
                         UpdateTransformation();

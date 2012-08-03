@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
@@ -27,7 +28,7 @@ namespace Engine.Collections
     /// </summary>
     /// <typeparam name="T">The type of the values stored in this tree.</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class BagBasedQuadTree<T> : IIndex<T>
+    public sealed class BagBasedQuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
         #region Properties
 
@@ -143,7 +144,7 @@ namespace Engine.Collections
         /// <returns>
         ///   <code>true</code> if the update was successful.
         /// </returns>
-        public bool Update(TRectangle newBounds, TPoint delta, T item)
+        public bool Update(TRectangle newBounds, Vector2 delta, T item)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(item))

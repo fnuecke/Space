@@ -30,9 +30,9 @@
         /// <summary>
         /// Pack two integer values into one ulong value.
         /// </summary>
-        /// <param name="x">The first integer value.</param>
-        /// <param name="y">The second integer value.</param>
-        /// <returns>The long resulting from packing two values.</returns>
+        /// <param name="x">The first value.</param>
+        /// <param name="y">The second value.</param>
+        /// <returns>The value resulting from packing two values.</returns>
         public static ulong Pack(int x, int y)
         {
             return ((ulong)x << 32) | (uint)y;
@@ -42,13 +42,37 @@
         /// Unpacks a ulong value into two integer values (previously packed
         /// using the Pack() method).
         /// </summary>
-        /// <param name="xy">The ulong value containing the two integer values.</param>
-        /// <param name="x">The unpacked first integer value.</param>
-        /// <param name="y">The unpacked second integer value.</param>
+        /// <param name="xy">The value containing the two values.</param>
+        /// <param name="x">The unpacked first value.</param>
+        /// <param name="y">The unpacked second value.</param>
         public static void Unpack(ulong xy, out int x, out int y)
         {
             x = (int)(xy >> 32);
             y = (int)(xy & 0xFFFFFFFF);
+        }
+
+        /// <summary>
+        /// Pack two short values into one uint value.
+        /// </summary>
+        /// <param name="x">The first value.</param>
+        /// <param name="y">The second value.</param>
+        /// <returns>The value resulting from packing two values.</returns>
+        public static uint Pack(short x, short y)
+        {
+            return ((uint)x << 16) | (ushort)y;
+        }
+
+        /// <summary>
+        /// Unpacks a uint value into two short values (previously packed
+        /// using the Pack() method).
+        /// </summary>
+        /// <param name="xy">The value containing the two values.</param>
+        /// <param name="x">The unpacked first value.</param>
+        /// <param name="y">The unpacked second value.</param>
+        public static void Unpack(uint xy, out short x, out short y)
+        {
+            x = (short)(xy >> 16);
+            y = (short)(xy & 0xFFFF);
         }
     }
 }

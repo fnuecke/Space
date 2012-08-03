@@ -94,6 +94,7 @@
   <ItemGroup>
     <Compile Include="Bag.cs" />
     <Compile Include="BagBasedQuadTree.cs" />
+    <Compile Include="SpatialHashedQuadTreeRenderExtensions.cs" />
     <Compile Include="IIndex.cs" />
     <Compile Include="IndexPointExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="RTree.cs" />
     <Compile Include="SparseArray.cs" />
     <Compile Include="SpatialHash.cs" />
+    <Compile Include="SpatialHashedQuadTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">

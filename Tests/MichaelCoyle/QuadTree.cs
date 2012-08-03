@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Engine.Collections;
+using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
@@ -19,7 +20,7 @@ namespace Tests.MichaelCoyle
     /// that is just big enough to hold it. Each quad has a bucket that 
     /// contain multiple items.
     /// </summary>
-    public class MCQuadTree<T> : IIndex<T>
+    public class MCQuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
         public sealed class Wrapper : IHasRect
         {
@@ -84,7 +85,7 @@ namespace Tests.MichaelCoyle
         /// <param name="delta"> </param>
         /// <param name="item">The item for which to update the bounds.</param>
         /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
-        public bool Update(TRectangle newBounds, TPoint delta, T item)
+        public bool Update(TRectangle newBounds, Vector2 delta, T item)
         {
             throw new NotSupportedException();
         }

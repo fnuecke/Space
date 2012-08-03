@@ -116,6 +116,7 @@
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionDamageSystem.cs" />
     <Compile Include="Systems\DeathSystem.cs" />
+    <Compile Include="Systems\DebugCollisionBoundsRenderer.cs" />
     <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />

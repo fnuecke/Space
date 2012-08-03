@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
+using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
@@ -18,7 +19,7 @@ namespace Tests.Microsoft
     /// The object does not need to implement any special interface because the Rect Bounds
     /// of those objects is handled as a separate argument to Insert. 
     ///  
-    public class MSQuadTree<T> : IIndex<T>
+    public class MSQuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
         private TRectangle _bounds; // overall bounds we are indexing.
 
@@ -71,7 +72,7 @@ namespace Tests.Microsoft
         /// <param name="delta"> </param>
         /// <param name="item">The item for which to update the bounds.</param>
         /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
-        public bool Update(TRectangle newBounds, TPoint delta, T item)
+        public bool Update(TRectangle newBounds, Vector2 delta, T item)
         {
             throw new NotSupportedException();
         }

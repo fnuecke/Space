@@ -122,7 +122,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The actual indexes we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
-        private IIndex<int>[] _trees = new IIndex<int>[sizeof(ulong) * 8];
+        private IIndex<int, FarRectangle, FarPosition>[] _trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
 
         #endregion
 
@@ -209,7 +209,7 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
                 {
-                    _trees[index] = new QuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
+                    _trees[index] = new SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
                 }
                 groups = groups >> 1;
                 ++index;
@@ -223,7 +223,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <param name="groups">The groups to get the indexes for.</param>
         /// <returns>A list of the specified indexes.</returns>
-        private IEnumerable<IIndex<int>> TreesForGroups(ulong groups)
+        private IEnumerable<IIndex<int, FarRectangle, FarPosition>> TreesForGroups(ulong groups)
         {
             byte index = 0;
             while (groups > 0)
@@ -443,7 +443,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
                 if (_trees[i] == null)
                 {
-                    _trees[i] = new QuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
+                    _trees[i] = new SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
                 }
                 for (var j = 0; j < count; ++j)
                 {
@@ -490,7 +490,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             var copy = (IndexSystem)base.NewInstance();
 
-            copy._trees = new IIndex<int>[sizeof(ulong) * 8];
+            copy._trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
 
             return copy;
         }
@@ -532,7 +532,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
                 if (copy._trees[i] == null)
                 {
-                    copy._trees[i] = new QuadTree<int>(copy._maxEntriesPerNode, copy._minNodeBounds);
+                    copy._trees[i] = new SpatialHashedQuadTree<int>(copy._maxEntriesPerNode, copy._minNodeBounds);
                 }
                 foreach (var entry in _trees[i])
                 {
@@ -573,10 +573,10 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                var quadTree = tree as QuadTree<int>;
-                if (quadTree != null)
+                var index = tree as SpatialHashedQuadTree<int>;
+                if (index != null)
                 {
-                    quadTree.Draw(shape, translation);
+                    index.Draw(shape, translation);
                 }
             }
         }

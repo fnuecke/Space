@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
@@ -19,7 +20,7 @@ namespace Engine.Collections
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class SpatialHash<T> : IIndex<T>
+    public sealed class SpatialHash<T> : IIndex<T, TRectangle, TPoint>
     {
         #region Properties
 
@@ -102,7 +103,7 @@ namespace Engine.Collections
         /// <param name="delta"> </param>
         /// <param name="item">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(TRectangle newBounds, TPoint delta, T item)
+        public bool Update(TRectangle newBounds, Vector2 delta, T item)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(item))

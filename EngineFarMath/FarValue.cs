@@ -21,6 +21,13 @@ namespace Engine.FarMath
         #region Constants
 
         /// <summary>
+        /// Size of a single segment. 2^16 allows us to cover the area we can
+        /// describe with an int32. Adjust as necessary for the context this
+        /// is used in.
+        /// </summary>
+        public const float SegmentSize = 65536f;
+
+        /// <summary>
         /// Represents the origin, equivalent to a floating point zero.
         /// </summary>
         public static FarValue Zero
@@ -29,16 +36,18 @@ namespace Engine.FarMath
         }
 
         /// <summary>
-        /// Size of a single segment. 2^16 allows us to cover the area we can
-        /// describe with an int32. Adjust as necessary for the context this
-        /// is used in.
-        /// </summary>
-        private const float SegmentSize = 65536f;
-
-        /// <summary>
         /// Keep as private field to avoid manipulation.
         /// </summary>
         private static readonly FarValue ConstZero = new FarValue(0);
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Returns the segment of this <see cref="FarValue"/>.
+        /// </summary>
+        public short Segment { get { return _segment; } }
 
         #endregion
 
@@ -101,7 +110,7 @@ namespace Engine.FarMath
             {
                 // Round the result of the division to the next lowest value, to
                 // make sure we get into the next lower segment...
-                _segment = (short)(_segment + System.Math.Floor(_offset / SegmentSize));
+                _segment += (short)System.Math.Floor(_offset / SegmentSize);
                 // ... compensate this by adding one segment size to the remaining
                 // offset, to make sure it's positive afterwards.
                 _offset = SegmentSize + _offset % SegmentSize;
@@ -585,6 +594,7 @@ namespace Engine.FarMath
             FarValue result;
             result._segment = (short)(value / SegmentSize);
             result._offset = value % SegmentSize;
+            result.Normalize();
             return result;
         }
 
@@ -796,7 +806,8 @@ namespace Engine.FarMath
         public override string ToString()
         {
             //return string.Format("{{Segment:{0} Offet:{1}}}", _segment, _offset.ToString(CultureInfo.InvariantCulture));
-            return string.Format("{0}{1:#.0####}", _segment * SegmentSize + (int)_offset, (_offset - (int)_offset));
+            //return string.Format("{0}{1:#.0####}", _segment * SegmentSize + (int)_offset, (_offset - (int)_offset));
+            return ((float)this).ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         #endregion

@@ -9,6 +9,9 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 
+using TPoint = Engine.FarMath.FarPosition;
+using TRectangle = Engine.FarMath.FarRectangle;
+
 namespace Tests
 {
     internal static class CollectionsPerformanceTest
@@ -70,7 +73,7 @@ namespace Tests
             Console.WriteLine("Number of objects is {0}.", NumberOfObjects);
             Console.WriteLine("Number of operations is {0}.", Operations);
 
-            var points = new List<Tuple<int, FarPosition>>();
+            var points = new List<Tuple<int, TPoint>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
                 points.Add(Tuple.Create(i, random.NextFarPosition(Area)));
@@ -81,17 +84,17 @@ namespace Tests
                 MinimumNodeSize >> 1, MinimumNodeSize, MinimumNodeSize << 1,
                 MinimumNodeSize << 2, MinimumNodeSize << 3);
 
-            var smallRectangles = new List<Tuple<int, FarRectangle>>();
+            var smallRectangles = new List<Tuple<int, TRectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
                 smallRectangles.Add(Tuple.Create(i, random.NextFarRectangle(Area, MinimumNodeSize >> 2, MinimumNodeSize >> 1)));
             }
-            var mediumRectangles = new List<Tuple<int, FarRectangle>>();
+            var mediumRectangles = new List<Tuple<int, TRectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
                 mediumRectangles.Add(Tuple.Create(i, random.NextFarRectangle(Area, MinimumNodeSize, MinimumNodeSize << 1)));
             }
-            var largeRectangles = new List<Tuple<int, FarRectangle>>();
+            var largeRectangles = new List<Tuple<int, TRectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
                 largeRectangles.Add(Tuple.Create(i, random.NextFarRectangle(Area, MinimumNodeSize << 2, MinimumNodeSize << 3)));
@@ -126,7 +129,7 @@ namespace Tests
             foreach (var maxEntriesPerNode in QuadTreeMaxNodeEntries)
             {
                 Console.WriteLine("Running QuadTree test with maximum entries per node = {0}.", maxEntriesPerNode);
-                var tree = new QuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+                var tree = new SpatialHashedQuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
                 Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
             }
 
@@ -172,11 +175,11 @@ namespace Tests
 
         private delegate void BuildLargeUpdates<T>(IList<Tuple<int, T>> list, IList<Tuple<int, T>> data, IUniformRandom random, int i);
 
-        private delegate void AddEntries<T>(IIndex<int> index, IList<Tuple<int, T>> data);
+        private delegate void AddEntries<T>(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, T>> data);
 
-        private delegate void DoUpdate<T>(IIndex<int> index, Tuple<int, T> update);
+        private delegate void DoUpdate<T>(IIndex<int, TRectangle, TPoint> index, Tuple<int, T> update);
 
-        private static void Test(IIndex<int> index, IList<Tuple<int, FarPosition>> points,
+        private static void Test(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, TPoint>> points,
             IList<Tuple<int, FarRectangle>> smallRectangles,
             IList<Tuple<int, FarRectangle>> mediumRectangles,
             IList<Tuple<int, FarRectangle>> largeRectangles)
@@ -209,7 +212,7 @@ namespace Tests
             }
         }
 
-        private static void RunPoints(IIndex<int> index, IList<Tuple<int, FarPosition>> points)
+        private static void RunPoints(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, TPoint>> points)
         {
             Run(index,
                 points,
@@ -226,7 +229,7 @@ namespace Tests
                 );
         }
 
-        private static void RunRectangles(IIndex<int> index, IList<Tuple<int, FarRectangle>> rectangles)
+        private static void RunRectangles(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, FarRectangle>> rectangles)
         {
             Run(index,
                 rectangles,
@@ -254,7 +257,7 @@ namespace Tests
                 );
         }
 
-        private static void Run<T>(IIndex<int> index, IList<Tuple<int, T>> data,
+        private static void Run<T>(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, T>> data,
             BuildSmallUpdates<T> makeSmallUpdate,
             BuildLargeUpdates<T> makeLargeUpdate,
             AddEntries<T> addEntries,

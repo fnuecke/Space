@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Systems
         /// Reused for iterating components when updating, to avoid
         /// modifications to the list of components breaking the update.
         /// </summary>
-        private ICollection<int> _drawablesInView = new HashSet<int>();
+        private ICollection<int> _drawablesInView = new List<int>();
 
         #endregion
 
@@ -93,7 +93,8 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Set/get loop invariants.
-            var transform = camera.Transform;
+            var translation = camera.Transform.Translation;
+            _planet.Transform = camera.Transform.Matrix;
             _planet.Time = frame;
             
             // Iterate over the shorter list.
@@ -106,7 +107,7 @@ namespace Space.ComponentSystem.Systems
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        RenderPlanet(component, ref transform);
+                        RenderPlanet(component, ref translation);
                     }
                 }
             }
@@ -117,7 +118,7 @@ namespace Space.ComponentSystem.Systems
                     // Skip disabled or invisible entities.
                     if (component.Enabled && _drawablesInView.Contains(component.Entity))
                     {
-                        RenderPlanet(component, ref transform);
+                        RenderPlanet(component, ref translation);
                     }
                 }
             }
@@ -125,12 +126,12 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
         }
 
-        private void RenderPlanet(PlanetRenderer component, ref FarTransform transform)
+        private void RenderPlanet(PlanetRenderer component, ref FarPosition translation)
         {
             // The position and orientation we're rendering at and in.
-            var positionAndRotation = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
-            var position = positionAndRotation.Translation;
-            var rotation = positionAndRotation.Rotation;
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            var position = transform.Translation;
+            var rotation = transform.Rotation;
 
             // Get position relative to our sun, to rotate atmosphere and shadow.
             var toSun = Vector2.Zero;
@@ -148,8 +149,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Apply transformation.
-            _planet.Center = (Vector2)(position + transform.Translation);
-            _planet.SetTransform(transform.Matrix);
+            _planet.Center = (Vector2)(position + translation);
 
             // Set remaining parameters for draw.
             _planet.Rotation = rotation;

@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
-// Adjust these as necessary, they just have to share a compatible
-// interface with the XNA types.
-using TPoint = Engine.FarMath.FarPosition;
-using TRectangle = Engine.FarMath.FarRectangle;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Collections
 {
@@ -13,12 +9,14 @@ namespace Engine.Collections
     /// search.
     /// </summary>
     /// <typeparam name="T">The type of the values stored in the index.</typeparam>
-    public interface IIndex<T> : IEnumerable<Tuple<TRectangle, T>>
+    /// <typeparam name="TRectangle">The type of the rectangles used.</typeparam>
+    /// <typeparam name="TPoint">The type of the points used.</typeparam>
+    public interface IIndex<T, TRectangle, TPoint> : IEnumerable<Tuple<TRectangle, T>>
     {
         #region Properties
 
         /// <summary>
-        /// The number of values stored in this tree.
+        /// The number of values stored in this index.
         /// </summary>
         int Count { get; }
 
@@ -46,7 +44,7 @@ namespace Engine.Collections
         /// <returns>
         ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
         /// </returns>
-        bool Update(TRectangle newBounds, TPoint delta, T item);
+        bool Update(TRectangle newBounds, Vector2 delta, T item);
 
         /// <summary>
         /// Remove the specified item from the index. If the item is not
