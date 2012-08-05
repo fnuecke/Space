@@ -50,7 +50,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             // Get index and allocate neighbor result list.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
-            ICollection<int> neighbors = new List<int>();
+            ISet<int> neighbors = new HashSet<int>();
 
             // Get the component's bounds and look for nearby elements.
             var bounds = component.ComputeBounds();

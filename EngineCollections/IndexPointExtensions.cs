@@ -80,7 +80,7 @@ namespace Engine.Collections
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public static void Find<T>(this IIndex<T, TRectangle, TPoint> index, Vector2 point, float range, ref ICollection<T> list)
+        public static void Find<T>(this IIndex<T, TRectangle, TPoint> index, Vector2 point, float range, ref ISet<T> list)
         {
             // Convert to integer point type.
             TPoint p;

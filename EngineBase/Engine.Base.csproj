@@ -130,17 +130,7 @@
     <Compile Include="IO\SlidingStream.cs" />
     <Compile Include="Util\Ziggurat.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\EngineContent\Engine.Content.contentproj">
-      <Project>{79AD66DC-9105-4998-9DF9-F53EF5C99A87}</Project>
-      <Name>Engine.Content %28data%29</Name>
-      <XnaReferenceType>Content</XnaReferenceType>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Collections\" />
-    <Folder Include="Physics\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

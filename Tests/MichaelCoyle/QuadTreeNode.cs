@@ -97,7 +97,7 @@ namespace Tests.MichaelCoyle
         /// <param name="queryArea"></param>
         /// <param name="list"> </param>
         /// <returns></returns>
-        public void Query(ref TRectangle queryArea, ref ICollection<T> list)
+        public void Query(ref TRectangle queryArea, ICollection<T> list)
         {
             // this quad contains items that are not entirely contained by
             // it's four sub-quads. Iterate through the items in this quad 
@@ -118,7 +118,7 @@ namespace Tests.MichaelCoyle
                 // and skip the remaining nodes (break this loop)
                 if (node.Bounds.Contains(queryArea))
                 {
-                    node.Query(ref queryArea, ref list);
+                    node.Query(ref queryArea, list);
                     break;
                 }
 
@@ -138,7 +138,7 @@ namespace Tests.MichaelCoyle
                 // quads
                 if (node.Bounds.Intersects(queryArea))
                 {
-                    node.Query(ref queryArea, ref list);
+                    node.Query(ref queryArea, list);
                 }
             }
         }

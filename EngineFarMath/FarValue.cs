@@ -25,7 +25,7 @@ namespace Engine.FarMath
         /// describe with an int32. Adjust as necessary for the context this
         /// is used in.
         /// </summary>
-        public const float SegmentSize = 65536f;
+        public const int SegmentSize = (1 << 16);
 
         /// <summary>
         /// Represents the origin, equivalent to a floating point zero.
@@ -47,7 +47,7 @@ namespace Engine.FarMath
         /// <summary>
         /// Returns the segment of this <see cref="FarValue"/>.
         /// </summary>
-        public short Segment { get { return _segment; } }
+        public int Segment { get { return _segment; } }
 
         #endregion
 
@@ -56,7 +56,7 @@ namespace Engine.FarMath
         /// <summary>
         /// The segment of this value.
         /// </summary>
-        private short _segment;
+        private int _segment;
 
         /// <summary>
         /// The offset inside the current segment.
@@ -83,9 +83,8 @@ namespace Engine.FarMath
         /// </summary>
         /// <param name="value">The initial value.</param>
         public FarValue(int value)
-            : this()
         {
-            _segment = (short)(value / SegmentSize);
+            _segment = value / SegmentSize;
             _offset = value % SegmentSize;
         }
 
@@ -103,17 +102,21 @@ namespace Engine.FarMath
         {
             if (_offset >= SegmentSize)
             {
-                _segment += (short)(_offset / SegmentSize);
+                _segment += (int)(_offset / SegmentSize);
                 _offset = _offset % SegmentSize;
             }
             else if (_offset < 0f)
             {
                 // Round the result of the division to the next lowest value, to
                 // make sure we get into the next lower segment...
-                _segment += (short)System.Math.Floor(_offset / SegmentSize);
+                _segment += (int)System.Math.Floor(_offset / SegmentSize);
                 // ... compensate this by adding one segment size to the remaining
                 // offset, to make sure it's positive afterwards.
-                _offset = SegmentSize + _offset % SegmentSize;
+                _offset = _offset % SegmentSize;
+                if (_offset < 0)
+                {
+                    _offset += SegmentSize;
+                }
             }
         }
 
@@ -285,7 +288,7 @@ namespace Engine.FarMath
         public static FarValue operator -(FarValue value)
         {
             FarValue result;
-            result._segment = (short)-value._segment;
+            result._segment = -value._segment;
             result._offset = -value._offset;
             result.Normalize();
             return result;
@@ -351,7 +354,7 @@ namespace Engine.FarMath
         public static FarValue operator +(FarValue value1, int value2)
         {
             var result = value1;
-            result._segment += (short)(value2 / SegmentSize);
+            result._segment += value2 / SegmentSize;
             result._offset += value2 % SegmentSize;
             return result;
         }
@@ -367,7 +370,7 @@ namespace Engine.FarMath
         public static FarValue operator +(int value1, FarValue value2)
         {
             var result = value2;
-            result._segment += (short)(value1 / SegmentSize);
+            result._segment += value1 / SegmentSize;
             result._offset += value1 % SegmentSize;
             return result;
         }
@@ -424,7 +427,7 @@ namespace Engine.FarMath
         public static FarValue operator -(FarValue value1, int value2)
         {
             var result = value1;
-            result._segment -= (short)(value2 / SegmentSize);
+            result._segment -= value2 / SegmentSize;
             result._offset -= value2 % SegmentSize;
             result.Normalize();
             return result;
@@ -440,7 +443,7 @@ namespace Engine.FarMath
         {
             FarValue result;
             var segment = value1._segment * value2;
-            result._segment = (short)segment;
+            result._segment = (int)segment;
             result._offset = value1._offset * value2 + (segment - result._segment) * SegmentSize;
             result.Normalize();
             return result;
@@ -455,7 +458,7 @@ namespace Engine.FarMath
         public static FarValue operator *(FarValue value1, int value2)
         {
             FarValue result;
-            result._segment = (short)(value1._segment * value2);
+            result._segment = value1._segment * value2;
             result._offset = value1._offset * value2;
             result.Normalize();
             return result;
@@ -473,10 +476,31 @@ namespace Engine.FarMath
         {
             FarValue result;
             var segment = value1._segment / value2;
-            result._segment = (short)segment;
+            result._segment = (int)segment;
             result._offset = value1._offset / value2 + (segment - result._segment) * SegmentSize;
             result.Normalize();
             return result;
+        }
+
+        /// <summary>
+        /// Performs the modulo operation on the specified <see cref="FarValue"/> as the
+        /// dividend and the specified <see cref="int"/> as the divisor.
+        /// </summary>
+        /// <param name="value1">The dividend.</param>
+        /// <param name="value2">The divisor.</param>
+        /// <returns>The remainder.</returns>
+        public static FarValue operator %(FarValue value1, int value2)
+        {
+            // Make sure all our values are positive, but remember the sign of the input value.
+            var sign = value1 < 0 ? -1 : 1;
+            value1 = value1 < 0 ? -value1 : value1;
+            value2 = value2 < 0 ? -value2 : value2;
+
+            FarValue result;
+            result._segment = 0;
+            result._offset = ((value1._offset % value2) + (((value1._segment % value2) * (SegmentSize % value2)) % value2)) % value2;
+            result.Normalize();
+            return result * sign;
         }
 
         /// <summary>
@@ -625,7 +649,7 @@ namespace Engine.FarMath
         public static implicit operator FarValue(int value)
         {
             FarValue result;
-            result._segment = (short)(value / SegmentSize);
+            result._segment = value / SegmentSize;
             result._offset = value % SegmentSize;
             result.Normalize();
             return result;
@@ -701,7 +725,7 @@ namespace Engine.FarMath
         /// </returns>
         public static explicit operator int(FarValue value)
         {
-            return value._segment * (int)SegmentSize + (int)value._offset;
+            return (int)(value._segment * SegmentSize + value._offset);
         }
 
         /// <summary>
@@ -731,8 +755,8 @@ namespace Engine.FarMath
         /// </remarks>
         public static explicit operator double(FarValue value)
         {
-            // Cast segment to double for best possible precision.
-            return (double)value._segment * SegmentSize + value._offset;
+            // Cast offset to double for best possible precision.
+            return value._segment * SegmentSize + (double)value._offset;
         }
 
         #endregion
@@ -758,7 +782,7 @@ namespace Engine.FarMath
         /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
-            _segment = packet.ReadInt16();
+            _segment = packet.ReadInt32();
             _offset = packet.ReadSingle();
         }
 
@@ -838,9 +862,19 @@ namespace Engine.FarMath
         /// </returns>
         public override string ToString()
         {
-            //return string.Format("{{Segment:{0} Offet:{1}}}", _segment, _offset.ToString(CultureInfo.InvariantCulture));
-            //return string.Format("{0}{1:#.0####}", _segment * SegmentSize + (int)_offset, (_offset - (int)_offset));
             return ((float)this).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <param name="detailed">if set to <c>true</c> returnes a detailed representation.</param>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public string ToString(bool detailed)
+        {
+            return detailed ? string.Format("{{Segment:{0} Offet:{1}}}", _segment, _offset.ToString(System.Globalization.CultureInfo.InvariantCulture)) : ToString();
         }
 
         #endregion

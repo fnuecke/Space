@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
-    <ProjectGuid>{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}</ProjectGuid>
+    <ProjectGuid>{C2CBBDBE-3868-4FB6-800F-6F8E1824EECD}</ProjectGuid>
     <ProjectTypeGuids>{96E2B04D-8817-42c6-938A-82C39BA4D311};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -10,8 +10,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <OutputPath>bin\$(Platform)\$(Configuration)</OutputPath>
-    <ContentRootDirectory>data</ContentRootDirectory>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <ContentRootDirectory>data/Textures</ContentRootDirectory>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -24,72 +23,2648 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>SpaceContent</RootNamespace>
+    <RootNamespace>SpaceContentTextures</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.EffectImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.FBXImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.TextureImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.XImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.AudioImporters, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.VideoImporters, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Nuclex.Fonts.Content.TrueTypeImporter">
-      <HintPath>..\Libraries\Nuclex.Fonts.Content.TrueTypeImporter.dll</HintPath>
-    </Reference>
-    <Reference Include="ProjectMercury.ContentPipeline">
-      <HintPath>..\Libraries\ProjectMercury.ContentPipeline.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
-      <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
-      <Name>Engine.ComponentSystem.RPG</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
-      <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
-      <Name>Space.ComponentSystem</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
-      <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
-      <Name>Engine.Serialization.Writers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SpaceContentPipeline\Space.ContentPipeline.csproj">
-      <Project>{B3108CDB-E8AD-4435-ACB4-8A6797EF5A3B}</Project>
-      <Name>Space.ContentPipeline</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SpaceWriters\Space.Serialization.csproj">
-      <Project>{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}</Project>
-      <Name>Space.Serialization</Name>
-    </ProjectReference>
+    <Compile Include="Effects\Beam.png">
+      <Name>Beam</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Ships.xml">
-      <Name>Ships</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-      <SubType>Designer</SubType>
+    <Compile Include="Effects\BeamBlurred.png">
+      <Name>BeamBlurred</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Cloud001.png">
+      <Name>Cloud001</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Cloud002.png">
+      <Name>Cloud002</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Cloud003.png">
+      <Name>Cloud003</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Cloud004.png">
+      <Name>Cloud004</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Flame.png">
+      <Name>Flame</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\FlowerBurst.png">
+      <Name>FlowerBurst</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Laser.png">
+      <Name>Laser</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\LensFlare.png">
+      <Name>LensFlare</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\MultiDot.png">
+      <Name>MultiDot</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Particle001.png">
+      <Name>Particle001</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Particle002.png">
+      <Name>Particle002</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Particle003.png">
+      <Name>Particle003</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Particle004.png">
+      <Name>Particle004</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Particle005.png">
+      <Name>Particle005</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Particle006.png">
+      <Name>Particle006</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Particle007.png">
+      <Name>Particle007</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Ring001.png">
+      <Name>Ring001</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Ring002.png">
+      <Name>Ring002</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\SoftClumpy.png">
+      <Name>SoftClumpy</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\SoftSmokey.png">
+      <Name>SoftSmokey</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Spikey001.png">
+      <Name>Spikey001</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Spikey002.png">
+      <Name>Spikey002</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Splash.png">
+      <Name>Splash</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Spray001.png">
+      <Name>Spray001</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Star.png">
+      <Name>Star</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Water001.png">
+      <Name>Water001</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Water002.png">
+      <Name>Water002</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Effects\Weeds.png">
+      <Name>Weeds</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="spaceshipB.png">
+      <Name>spaceshipB</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Planets\rock_01.jpg">
+      <Name>rock_01</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Planets\rock_02.jpg">
+      <Name>rock_02</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Planets\rock_07.jpg">
+      <Name>rock_07</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\bottom.png">
+      <Name>bottom</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\bottom_left.png">
+      <Name>bottom_left</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\bottom_right.png">
+      <Name>bottom_right</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\distance.png">
+      <Name>distance</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\Icons\radar_moon.png">
+      <Name>radar_moon</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\Icons\radar_planet.png">
+      <Name>radar_planet</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\Icons\radar_sun.png">
+      <Name>radar_sun</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\left.png">
+      <Name>left</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\right.png">
+      <Name>right</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\target.png">
+      <Name>target</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\top.png">
+      <Name>top</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\top_left.png">
+      <Name>top_left</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Radar\top_right.png">
+      <Name>top_right</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Space\dark_matter.png">
+      <Name>dark_matter</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Space\debris_large.png">
+      <Name>debris_large</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Space\debris_small.png">
+      <Name>debris_small</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Space\stars.png">
+      <Name>stars</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\bomb_HE.png">
+      <Name>bomb_HE</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\bomblet0.png">
+      <Name>bomblet0</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\bomblet1.png">
+      <Name>bomblet1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\bomblet2.png">
+      <Name>bomblet2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\bomblet3.png">
+      <Name>bomblet3</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\flechette_med.png">
+      <Name>flechette_med</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\flechette_sml.png">
+      <Name>flechette_sml</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_annihilator.png">
+      <Name>missile_annihilator</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_gorgon_dem.png">
+      <Name>missile_gorgon_dem</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_harpoon.png">
+      <Name>missile_harpoon</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_hydra_mdem.png">
+      <Name>missile_hydra_mdem</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_hydra_mdem_warhead.png">
+      <Name>missile_hydra_mdem_warhead</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_LRM.png">
+      <Name>missile_LRM</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_MIRV.png">
+      <Name>missile_MIRV</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_MIRV_empty.png">
+      <Name>missile_MIRV_empty</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_MIRV_warhead.png">
+      <Name>missile_MIRV_warhead</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_sabot.png">
+      <Name>missile_sabot</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_sabot_empty.png">
+      <Name>missile_sabot_empty</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_sabot_warhead.png">
+      <Name>missile_sabot_warhead</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_SRM.png">
+      <Name>missile_SRM</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_torpedo.png">
+      <Name>missile_torpedo</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_torpedo_compact.png">
+      <Name>missile_torpedo_compact</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_vlrm.png">
+      <Name>missile_vlrm</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_vlrm_stage1.png">
+      <Name>missile_vlrm_stage1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_vlrm_stage2.png">
+      <Name>missile_vlrm_stage2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_vlrm_stage2+1.png">
+      <Name>missile_vlrm_stage2+1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\missile_vlrm_stage3.png">
+      <Name>missile_vlrm_stage3</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\phase_charge_base.png">
+      <Name>phase_charge_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\phase_charge_glow.png">
+      <Name>phase_charge_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_gauss_cannon.png">
+      <Name>shell_gauss_cannon</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_hellbore.png">
+      <Name>shell_hellbore</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_hephag.png">
+      <Name>shell_hephag</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_large.png">
+      <Name>shell_large</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_large_blue.png">
+      <Name>shell_large_blue</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_large_green.png">
+      <Name>shell_large_green</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_large_yellow.png">
+      <Name>shell_large_yellow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_medium.png">
+      <Name>shell_medium</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_medium_green.png">
+      <Name>shell_medium_green</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_medium_red.png">
+      <Name>shell_medium_red</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_round_large.png">
+      <Name>shell_round_large</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_round_large2.png">
+      <Name>shell_round_large2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_round_lrg.png">
+      <Name>shell_round_lrg</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_round_sml.png">
+      <Name>shell_round_sml</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_small.png">
+      <Name>shell_small</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_small_green.png">
+      <Name>shell_small_green</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\shell_small_yellow.png">
+      <Name>shell_small_yellow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\torpedo_guided.png">
+      <Name>torpedo_guided</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Projectiles\torpedo_guided2.png">
+      <Name>torpedo_guided2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\apogee_cx.png">
+      <Name>apogee_cx</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\astral_cv.png">
+      <Name>astral_cv</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\atlas_af.png">
+      <Name>atlas_af</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\aurora_ca.png">
+      <Name>aurora_ca</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\brawler.png">
+      <Name>brawler</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\broadsword_hftr.png">
+      <Name>broadsword_hftr</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\buffalo_af.png">
+      <Name>buffalo_af</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\buffalo_dd.png">
+      <Name>buffalo_dd</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\claw.png">
+      <Name>claw</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\com_relay.png">
+      <Name>com_relay</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\condor_dd.png">
+      <Name>condor_dd</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\conquest_bc.png">
+      <Name>conquest_bc</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\construction_rig.png">
+      <Name>construction_rig</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\dagger_trp.png">
+      <Name>dagger_trp</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\dominator.png">
+      <Name>dominator</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\eagle_ca.png">
+      <Name>eagle_ca</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\enforcer_dd.png">
+      <Name>enforcer_dd</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\falcon_cl.png">
+      <Name>falcon_cl</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\fighter_assault_midline.png">
+      <Name>fighter_assault_midline</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\fighter_heavy_escort.png">
+      <Name>fighter_heavy_escort</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\fighter_heavy_escort_mk2.png">
+      <Name>fighter_heavy_escort_mk2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\fighter_heavy_escort_strike.png">
+      <Name>fighter_heavy_escort_strike</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\fighter_heavy_midline.png">
+      <Name>fighter_heavy_midline</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\frigate_phase_assault.png">
+      <Name>frigate_phase_assault</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\frigate_phase_assault_glow.png">
+      <Name>frigate_phase_assault_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\frigate_phase_strike.png">
+      <Name>frigate_phase_strike</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\frigate_phase_strike_glow.png">
+      <Name>frigate_phase_strike_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\gemini.png">
+      <Name>gemini</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\hammerhead_dd.png">
+      <Name>hammerhead_dd</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\hound_ff.png">
+      <Name>hound_ff</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\hyperion_ff.png">
+      <Name>hyperion_ff</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\lasher_ff.png">
+      <Name>lasher_ff</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\longbow_intg.png">
+      <Name>longbow_intg</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\medusa.png">
+      <Name>medusa</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\mining_drone.png">
+      <Name>mining_drone</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\munitions_d1.png">
+      <Name>munitions_d1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\munitions_drone.png">
+      <Name>munitions_drone</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\munitions_f1.png">
+      <Name>munitions_f1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\munitions_load.png">
+      <Name>munitions_load</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\nav_buoy.png">
+      <Name>nav_buoy</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\omen_ff.png">
+      <Name>omen_ff</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\onslaught_bb.png">
+      <Name>onslaught_bb</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\ox.png">
+      <Name>ox</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\piranha_bmb.png">
+      <Name>piranha_bmb</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\repair_drone.png">
+      <Name>repair_drone</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\sensor_array.png">
+      <Name>sensor_array</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\sensor_array_base.png">
+      <Name>sensor_array_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\sensor_array_dish.png">
+      <Name>sensor_array_dish</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\sentinel_apbmb.png">
+      <Name>sentinel_apbmb</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\shuttle.png">
+      <Name>shuttle</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\shuttle_ff.png">
+      <Name>shuttle_ff</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\shuttle_modern.png">
+      <Name>shuttle_modern</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\sunder_ca.png">
+      <Name>sunder_ca</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\talon_ftr.png">
+      <Name>talon_ftr</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\tarsus.png">
+      <Name>tarsus</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\tempest.png">
+      <Name>tempest</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\thunder.png">
+      <Name>thunder</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\trident.png">
+      <Name>trident</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\valkyrie_ap.png">
+      <Name>valkyrie_ap</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\venture.png">
+      <Name>venture</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\vigilance.png">
+      <Name>vigilance</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\wasp_ftr.png">
+      <Name>wasp_ftr</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\wolf_ff.png">
+      <Name>wolf_ff</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\wolf_ff_old.png">
+      <Name>wolf_ff_old</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Ships\xyphos.png">
+      <Name>xyphos</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\am_blaster_hardpoint_base.png">
+      <Name>am_blaster_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\am_blaster_hardpoint_glow.png">
+      <Name>am_blaster_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\am_blaster_turret_base.png">
+      <Name>am_blaster_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\am_blaster_turret_glow.png">
+      <Name>am_blaster_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\annihilator_rocket_launcher_hardpoint_base.png">
+      <Name>annihilator_rocket_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\annihilator_rocket_launcher_turret_base.png">
+      <Name>annihilator_rocket_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\arbalest_hardpoint_base.png">
+      <Name>arbalest_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\arbalest_hardpoint_recoil.png">
+      <Name>arbalest_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\arbalest_hardpoint_under.png">
+      <Name>arbalest_hardpoint_under</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\arbalest_turret_base.png">
+      <Name>arbalest_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\arbalest_turret_recoil.png">
+      <Name>arbalest_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\arbalest_turret_under.png">
+      <Name>arbalest_turret_under</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\assault_chaingun_hardpoint_base.png">
+      <Name>assault_chaingun_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\assault_chaingun_hardpoint_recoil.png">
+      <Name>assault_chaingun_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\assault_chaingun_turret_base.png">
+      <Name>assault_chaingun_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\assault_chaingun_turret_recoil.png">
+      <Name>assault_chaingun_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\autopulse_laser_hardpoint_base.png">
+      <Name>autopulse_laser_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\autopulse_laser_hardpoint_glow.png">
+      <Name>autopulse_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\autopulse_laser_turret_base.png">
+      <Name>autopulse_laser_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\autopulse_laser_turret_glow.png">
+      <Name>autopulse_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\bomb_bay_hardpoint_base.png">
+      <Name>bomb_bay_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\bomb_bay_turret_base.png">
+      <Name>bomb_bay_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpd_hardpoint_base.png">
+      <Name>burstpd_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpd_hardpoint_glow.png">
+      <Name>burstpd_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpd_turret_base.png">
+      <Name>burstpd_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpd_turret_glow.png">
+      <Name>burstpd_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpdheavy_hardpoint_base.png">
+      <Name>burstpdheavy_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpdheavy_hardpoint_glow.png">
+      <Name>burstpdheavy_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpdheavy_turret_base.png">
+      <Name>burstpdheavy_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\burstpdheavy_turret_glow.png">
+      <Name>burstpdheavy_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\cyclone_reaper_launcher_hardpoint_base.png">
+      <Name>cyclone_reaper_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\cyclone_reaper_launcher_turret_base.png">
+      <Name>cyclone_reaper_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\double_flak_cannon_hardpoint_base.png">
+      <Name>double_flak_cannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\double_flak_cannon_hardpoint_recoil.png">
+      <Name>double_flak_cannon_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\double_flak_cannon_turret_base.png">
+      <Name>double_flak_cannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\double_flak_cannon_turret_recoil.png">
+      <Name>double_flak_cannon_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flak_cannon_hardpoint_base.png">
+      <Name>flak_cannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flak_cannon_hardpoint_recoil.png">
+      <Name>flak_cannon_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flak_cannon_turret_base.png">
+      <Name>flak_cannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flak_cannon_turret_recoil.png">
+      <Name>flak_cannon_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_hardpoint_base.png">
+      <Name>flechette_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_hardpoint_recoil.png">
+      <Name>flechette_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_heavy_hardpoint_base.png">
+      <Name>flechette_heavy_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_heavy_hardpoint_recoil.png">
+      <Name>flechette_heavy_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_heavy_turret_base.png">
+      <Name>flechette_heavy_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_heavy_turret_recoil.png">
+      <Name>flechette_heavy_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_storm_hardpoint_base.png">
+      <Name>flechette_storm_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_storm_hardpoint_recoil.png">
+      <Name>flechette_storm_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_storm_turret_base.png">
+      <Name>flechette_storm_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_storm_turret_recoil.png">
+      <Name>flechette_storm_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_turret_base.png">
+      <Name>flechette_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\flechette_turret_recoil.png">
+      <Name>flechette_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\gauss_cannon_hardpoint_base.png">
+      <Name>gauss_cannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\gauss_cannon_hardpoint_glow.png">
+      <Name>gauss_cannon_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\gauss_cannon_turret_base.png">
+      <Name>gauss_cannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\gauss_cannon_turret_glow.png">
+      <Name>gauss_cannon_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\graviton_beam_hardpoint_base.png">
+      <Name>graviton_beam_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\graviton_beam_hardpoint_glow.png">
+      <Name>graviton_beam_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\graviton_beam_turret_base.png">
+      <Name>graviton_beam_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\graviton_beam_turret_glow.png">
+      <Name>graviton_beam_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\guardian_hardpoint_base.png">
+      <Name>guardian_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\guardian_hardpoint_glow.png">
+      <Name>guardian_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\guardian_turret_base.png">
+      <Name>guardian_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\guardian_turret_glow.png">
+      <Name>guardian_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_autocannon_hardpoint_base.png">
+      <Name>heavy_autocannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_autocannon_hardpoint_recoil.png">
+      <Name>heavy_autocannon_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_autocannon_turret_base.png">
+      <Name>heavy_autocannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_autocannon_turret_recoil.png">
+      <Name>heavy_autocannon_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_machinegun_hardpoint_base.png">
+      <Name>heavy_machinegun_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_machinegun_hardpoint_recoil.png">
+      <Name>heavy_machinegun_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_machinegun_turret_base.png">
+      <Name>heavy_machinegun_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\heavy_machinegun_turret_recoil.png">
+      <Name>heavy_machinegun_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hellbore_cannon_hardpoint_base.png">
+      <Name>hellbore_cannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hellbore_cannon_hardpoint_recoil.png">
+      <Name>hellbore_cannon_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hellbore_cannon_turret_base.png">
+      <Name>hellbore_cannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hellbore_cannon_turret_recoil.png">
+      <Name>hellbore_cannon_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hephaestus_hardpoint_base.png">
+      <Name>hephaestus_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hephaestus_hardpoint_recoil.png">
+      <Name>hephaestus_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hephaestus_turret_base.png">
+      <Name>hephaestus_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hephaestus_turret_recoil.png">
+      <Name>hephaestus_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\high_intensity_laser_hardpoint.png">
+      <Name>high_intensity_laser_hardpoint</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\high_intensity_laser_hardpoint_glow.png">
+      <Name>high_intensity_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\high_intensity_laser_turret.png">
+      <Name>high_intensity_laser_turret</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\high_intensity_laser_turret_glow.png">
+      <Name>high_intensity_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hil_hardpoint_base.png">
+      <Name>hil_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hil_hardpoint_glow.png">
+      <Name>hil_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hil_turret_base.png">
+      <Name>hil_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hil_turret_glow.png">
+      <Name>hil_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hurricane_mirv_launcher_hardpoint_base.png">
+      <Name>hurricane_mirv_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hurricane_mirv_launcher_turret_base.png">
+      <Name>hurricane_mirv_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hypervelocity_driver_hardpoint_base.png">
+      <Name>hypervelocity_driver_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hypervelocity_driver_hardpoint_recoil.png">
+      <Name>hypervelocity_driver_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hypervelocity_driver_turret_base.png">
+      <Name>hypervelocity_driver_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\hypervelocity_driver_turret_recoil.png">
+      <Name>hypervelocity_driver_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\ion_cannon_hardpoint_base.png">
+      <Name>ion_cannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\ion_cannon_hardpoint_glow.png">
+      <Name>ion_cannon_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\ion_cannon_turret_base.png">
+      <Name>ion_cannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\ion_cannon_turret_glow.png">
+      <Name>ion_cannon_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\launcher_annihilator_hardpoint_base.png">
+      <Name>launcher_annihilator_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\launcher_annihilator_turret_base.png">
+      <Name>launcher_annihilator_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_assault_gun_hardpoint_base.png">
+      <Name>light_assault_gun_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_assault_gun_hardpoint_recoil.png">
+      <Name>light_assault_gun_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_assault_gun_turret_base.png">
+      <Name>light_assault_gun_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_assault_gun_turret_recoil.png">
+      <Name>light_assault_gun_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_autocannon_hardpoint.png">
+      <Name>light_autocannon_hardpoint</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_autocannon_hardpoint_base.png">
+      <Name>light_autocannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_autocannon_hardpoint_recoil.png">
+      <Name>light_autocannon_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_autocannon_turret.png">
+      <Name>light_autocannon_turret</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_autocannon_turret_base.png">
+      <Name>light_autocannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_autocannon_turret_recoil.png">
+      <Name>light_autocannon_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_dual_autocannon_hardpoint_base.png">
+      <Name>light_dual_autocannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_dual_autocannon_hardpoint_recoil.png">
+      <Name>light_dual_autocannon_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_dual_autocannon_turret_base.png">
+      <Name>light_dual_autocannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_dual_autocannon_turret_recoil.png">
+      <Name>light_dual_autocannon_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_machinegun_hardpoint_base.png">
+      <Name>light_machinegun_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_machinegun_hardpoint_recoil.png">
+      <Name>light_machinegun_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_machinegun_turret_base.png">
+      <Name>light_machinegun_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_machinegun_turret_recoil.png">
+      <Name>light_machinegun_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_mortar_hardpoint_base.png">
+      <Name>light_mortar_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_mortar_hardpoint_recoil.png">
+      <Name>light_mortar_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_mortar_turret_base.png">
+      <Name>light_mortar_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_mortar_turret_recoil.png">
+      <Name>light_mortar_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_pulse_laser_hardpoint_base.png">
+      <Name>light_pulse_laser_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_pulse_laser_hardpoint_glow.png">
+      <Name>light_pulse_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_pulse_laser_turret_base.png">
+      <Name>light_pulse_laser_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_pulse_laser_turret_glow.png">
+      <Name>light_pulse_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_reaper_launcher_hardpoint_base.png">
+      <Name>light_reaper_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\light_reaper_launcher_turret_base.png">
+      <Name>light_reaper_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\lr_pd_laser_hardpoint_base.png">
+      <Name>lr_pd_laser_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\lr_pd_laser_hardpoint_glow.png">
+      <Name>lr_pd_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\lr_pd_laser_turret_base.png">
+      <Name>lr_pd_laser_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\lr_pd_laser_turret_glow.png">
+      <Name>lr_pd_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_dual_hardpoint_base.png">
+      <Name>mg_light_dual_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_dual_hardpoint_recoil.png">
+      <Name>mg_light_dual_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_dual_turret_base.png">
+      <Name>mg_light_dual_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_dual_turret_recoil.png">
+      <Name>mg_light_dual_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_hardpoint_base.png">
+      <Name>mg_light_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_hardpoint_recoil.png">
+      <Name>mg_light_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_turret_base.png">
+      <Name>mg_light_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mg_light_turret_recoil.png">
+      <Name>mg_light_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mining_laser_hardpoint_base.png">
+      <Name>mining_laser_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mining_laser_hardpoint_glow.png">
+      <Name>mining_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mining_laser_turret_base.png">
+      <Name>mining_laser_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mining_laser_turret_glow.png">
+      <Name>mining_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_1x_hardpoint_base.png">
+      <Name>missile_rack_1x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_1x_turret_base.png">
+      <Name>missile_rack_1x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_m_2x_hardpoint_base.png">
+      <Name>missile_rack_m_2x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_m_2x_turret_base.png">
+      <Name>missile_rack_m_2x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_m_3x_hardpoint_base.png">
+      <Name>missile_rack_m_3x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_m_3x_turret_base.png">
+      <Name>missile_rack_m_3x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_m_2x_hardpoint_base.png">
+      <Name>missile_rack_open_m_2x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_m_2x_turret_base.png">
+      <Name>missile_rack_open_m_2x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_m_3x_hardpoint_base.png">
+      <Name>missile_rack_open_m_3x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_m_3x_turret_base.png">
+      <Name>missile_rack_open_m_3x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_m_4x_hardpoint_base.png">
+      <Name>missile_rack_open_m_4x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_m_4x_turret_base.png">
+      <Name>missile_rack_open_m_4x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_s_1x_hardpoint_base.png">
+      <Name>missile_rack_open_s_1x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_s_1x_turret_base.png">
+      <Name>missile_rack_open_s_1x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_s_2x_hardpoint_base.png">
+      <Name>missile_rack_open_s_2x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_s_2x_turret_base.png">
+      <Name>missile_rack_open_s_2x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_s_4x_hardpoint_base.png">
+      <Name>missile_rack_open_s_4x_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\missile_rack_open_s_4x_turret_base.png">
+      <Name>missile_rack_open_s_4x_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mjolnir_hardpoint_base.png">
+      <Name>mjolnir_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mjolnir_hardpoint_recoil.png">
+      <Name>mjolnir_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mjolnir_hardpoint_under.png">
+      <Name>mjolnir_hardpoint_under</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mjolnir_turret_base.png">
+      <Name>mjolnir_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mjolnir_turret_recoil.png">
+      <Name>mjolnir_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\mjolnir_turret_under.png">
+      <Name>mjolnir_turret_under</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pd_laser_hardpoint_base.png">
+      <Name>pd_laser_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pd_laser_hardpoint_glow.png">
+      <Name>pd_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pd_laser_turret_base.png">
+      <Name>pd_laser_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pd_laser_turret_glow.png">
+      <Name>pd_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\phase_beam_hardpoint.png">
+      <Name>phase_beam_hardpoint</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\phase_beam_hardpoint_glow.png">
+      <Name>phase_beam_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\phase_beam_turret.png">
+      <Name>phase_beam_turret</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\phase_beam_turret_glow.png">
+      <Name>phase_beam_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\phase_charge_launcher_hardpoint_base.png">
+      <Name>phase_charge_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\phase_charge_launcher_turret_base.png">
+      <Name>phase_charge_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pilum_lrm_launcher_hardpoint_base.png">
+      <Name>pilum_lrm_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pilum_lrm_launcher_turret_base.png">
+      <Name>pilum_lrm_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\plasma_cannon_hardpoint_base.png">
+      <Name>plasma_cannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\plasma_cannon_hardpoint_glow.png">
+      <Name>plasma_cannon_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\plasma_cannon_turret_base.png">
+      <Name>plasma_cannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\plasma_cannon_turret_glow.png">
+      <Name>plasma_cannon_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pulse_laser_hardpoint_base.png">
+      <Name>pulse_laser_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pulse_laser_hardpoint_glow.png">
+      <Name>pulse_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pulse_laser_turret_base.png">
+      <Name>pulse_laser_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\pulse_laser_turret_glow.png">
+      <Name>pulse_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\railgun_hardpoint_base.png">
+      <Name>railgun_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\railgun_hardpoint_glow.png">
+      <Name>railgun_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\railgun_turret_base.png">
+      <Name>railgun_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\railgun_turret_glow.png">
+      <Name>railgun_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\swarmer_srm_launcher_hardpoint_base.png">
+      <Name>swarmer_srm_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\swarmer_srm_launcher_turret_base.png">
+      <Name>swarmer_srm_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\tactical_laser_hardpoint.png">
+      <Name>tactical_laser_hardpoint</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\tactical_laser_hardpoint_glow.png">
+      <Name>tactical_laser_hardpoint_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\tactical_laser_turret.png">
+      <Name>tactical_laser_turret</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\tactical_laser_turret_glow.png">
+      <Name>tactical_laser_turret_glow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\tactical_laser_turret2.png">
+      <Name>tactical_laser_turret2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\typhoon_reaper_launcher_hardpoint_base.png">
+      <Name>typhoon_reaper_launcher_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\typhoon_reaper_launcher_turret_base.png">
+      <Name>typhoon_reaper_launcher_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\vulcan_cannon_hardpoint.png">
+      <Name>vulcan_cannon_hardpoint</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\vulcan_cannon_hardpoint_base.png">
+      <Name>vulcan_cannon_hardpoint_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\vulcan_cannon_hardpoint_recoil.png">
+      <Name>vulcan_cannon_hardpoint_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\vulcan_cannon_turret.png">
+      <Name>vulcan_cannon_turret</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\vulcan_cannon_turret_base.png">
+      <Name>vulcan_cannon_turret_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Stolen\Weapons\vulcan_cannon_turret_recoil.png">
+      <Name>vulcan_cannon_turret_recoil</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Suns\sun_00.png">
+      <Name>sun_00</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Suns\sun_00_gradient.png">
+      <Name>sun_00_gradient</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Suns\sun_00_turbulence1.png">
+      <Name>sun_00_turbulence1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Suns\sun_00_turbulence2.png">
+      <Name>sun_00_turbulence2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ship.png">
+      <Name>ship</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -114,2079 +2689,8 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\ship.png">
-      <Name>ship</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\ConsoleFont.spritefont">
-      <Name>ConsoleFont</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-      <SubType>Designer</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Audio\SpaceAudio.xap">
-      <Name>SpaceAudio</Name>
-      <Importer>XactImporter</Importer>
-      <Processor>XactProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Space\debris_large.png">
-      <Name>debris_large</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Space\debris_small.png">
-      <Name>debris_small</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Space\stars.png">
-      <Name>stars</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Space\dark_matter.png">
-      <Name>dark_matter</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Effects\Beam.png">
-      <Name>Beam</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\BeamBlurred.png">
-      <Name>BeamBlurred</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Cloud001.png">
-      <Name>Cloud001</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Cloud002.png">
-      <Name>Cloud002</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Cloud003.png">
-      <Name>Cloud003</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Cloud004.png">
-      <Name>Cloud004</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Flame.png">
-      <Name>Flame</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\FlowerBurst.png">
-      <Name>FlowerBurst</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Laser.png">
-      <Name>Laser</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\LensFlare.png">
-      <Name>LensFlare</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\MultiDot.png">
-      <Name>MultiDot</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Particle001.png">
-      <Name>Particle001</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Particle002.png">
-      <Name>Particle002</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Particle003.png">
-      <Name>Particle003</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Particle004.png">
-      <Name>Particle004</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Particle005.png">
-      <Name>Particle005</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Particle006.png">
-      <Name>Particle006</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Particle007.png">
-      <Name>Particle007</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Ring001.png">
-      <Name>Ring001</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Ring002.png">
-      <Name>Ring002</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\SoftClumpy.png">
-      <Name>SoftClumpy</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\SoftSmokey.png">
-      <Name>SoftSmokey</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Spikey001.png">
-      <Name>Spikey001</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Spikey002.png">
-      <Name>Spikey002</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Splash.png">
-      <Name>Splash</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Spray001.png">
-      <Name>Spray001</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Star.png">
-      <Name>Star</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Water001.png">
-      <Name>Water001</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Water002.png">
-      <Name>Water002</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Effects\Weeds.png">
-      <Name>Weeds</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Effects\BasicExplosion.xml">
-      <Name>BasicExplosion</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Effects\thruster.xml">
-      <Name>thruster</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Shaders\Planet.fx">
-      <Name>Planet</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Shaders\BloomCombine.fx">
-      <Name>BloomCombine</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-    <Compile Include="Shaders\BloomExtract.fx">
-      <Name>BloomExtract</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-    <Compile Include="Shaders\GaussianBlur.fx">
-      <Name>GaussianBlur</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Stolen\Projectiles\bomblet0.png">
-      <Name>bomblet0</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\bomblet1.png">
-      <Name>bomblet1</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\bomblet2.png">
-      <Name>bomblet2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\bomblet3.png">
-      <Name>bomblet3</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\bomb_HE.png">
-      <Name>bomb_HE</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\flechette_med.png">
-      <Name>flechette_med</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\flechette_sml.png">
-      <Name>flechette_sml</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_annihilator.png">
-      <Name>missile_annihilator</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_gorgon_dem.png">
-      <Name>missile_gorgon_dem</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_harpoon.png">
-      <Name>missile_harpoon</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_hydra_mdem.png">
-      <Name>missile_hydra_mdem</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_hydra_mdem_warhead.png">
-      <Name>missile_hydra_mdem_warhead</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_LRM.png">
-      <Name>missile_LRM</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_MIRV.png">
-      <Name>missile_MIRV</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_MIRV_empty.png">
-      <Name>missile_MIRV_empty</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_MIRV_warhead.png">
-      <Name>missile_MIRV_warhead</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_sabot.png">
-      <Name>missile_sabot</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_sabot_empty.png">
-      <Name>missile_sabot_empty</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_sabot_warhead.png">
-      <Name>missile_sabot_warhead</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_SRM.png">
-      <Name>missile_SRM</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_torpedo.png">
-      <Name>missile_torpedo</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_torpedo_compact.png">
-      <Name>missile_torpedo_compact</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_vlrm.png">
-      <Name>missile_vlrm</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_vlrm_stage1.png">
-      <Name>missile_vlrm_stage1</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_vlrm_stage2+1.png">
-      <Name>missile_vlrm_stage2+1</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_vlrm_stage2.png">
-      <Name>missile_vlrm_stage2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\missile_vlrm_stage3.png">
-      <Name>missile_vlrm_stage3</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\phase_charge_base.png">
-      <Name>phase_charge_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\phase_charge_glow.png">
-      <Name>phase_charge_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_gauss_cannon.png">
-      <Name>shell_gauss_cannon</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_hellbore.png">
-      <Name>shell_hellbore</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_hephag.png">
-      <Name>shell_hephag</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_large.png">
-      <Name>shell_large</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_large_blue.png">
-      <Name>shell_large_blue</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_large_green.png">
-      <Name>shell_large_green</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_large_yellow.png">
-      <Name>shell_large_yellow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_medium.png">
-      <Name>shell_medium</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_medium_green.png">
-      <Name>shell_medium_green</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_medium_red.png">
-      <Name>shell_medium_red</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_round_large.png">
-      <Name>shell_round_large</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_round_large2.png">
-      <Name>shell_round_large2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_round_lrg.png">
-      <Name>shell_round_lrg</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_round_sml.png">
-      <Name>shell_round_sml</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_small.png">
-      <Name>shell_small</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_small_green.png">
-      <Name>shell_small_green</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\shell_small_yellow.png">
-      <Name>shell_small_yellow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\torpedo_guided.png">
-      <Name>torpedo_guided</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Projectiles\torpedo_guided2.png">
-      <Name>torpedo_guided2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\apogee_cx.png">
-      <Name>apogee_cx</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\astral_cv.png">
-      <Name>astral_cv</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\atlas_af.png">
-      <Name>atlas_af</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\aurora_ca.png">
-      <Name>aurora_ca</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\brawler.png">
-      <Name>brawler</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\broadsword_hftr.png">
-      <Name>broadsword_hftr</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\buffalo_af.png">
-      <Name>buffalo_af</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\buffalo_dd.png">
-      <Name>buffalo_dd</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\claw.png">
-      <Name>claw</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\com_relay.png">
-      <Name>com_relay</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\condor_dd.png">
-      <Name>condor_dd</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\conquest_bc.png">
-      <Name>conquest_bc</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\construction_rig.png">
-      <Name>construction_rig</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\dagger_trp.png">
-      <Name>dagger_trp</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\dominator.png">
-      <Name>dominator</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\eagle_ca.png">
-      <Name>eagle_ca</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\enforcer_dd.png">
-      <Name>enforcer_dd</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\falcon_cl.png">
-      <Name>falcon_cl</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\fighter_assault_midline.png">
-      <Name>fighter_assault_midline</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\fighter_heavy_escort.png">
-      <Name>fighter_heavy_escort</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\fighter_heavy_escort_mk2.png">
-      <Name>fighter_heavy_escort_mk2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\fighter_heavy_escort_strike.png">
-      <Name>fighter_heavy_escort_strike</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\fighter_heavy_midline.png">
-      <Name>fighter_heavy_midline</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\frigate_phase_assault.png">
-      <Name>frigate_phase_assault</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\frigate_phase_assault_glow.png">
-      <Name>frigate_phase_assault_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\frigate_phase_strike.png">
-      <Name>frigate_phase_strike</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\frigate_phase_strike_glow.png">
-      <Name>frigate_phase_strike_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\gemini.png">
-      <Name>gemini</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\hammerhead_dd.png">
-      <Name>hammerhead_dd</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\hound_ff.png">
-      <Name>hound_ff</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\hyperion_ff.png">
-      <Name>hyperion_ff</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\lasher_ff.png">
-      <Name>lasher_ff</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\longbow_intg.png">
-      <Name>longbow_intg</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\medusa.png">
-      <Name>medusa</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\mining_drone.png">
-      <Name>mining_drone</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\munitions_d1.png">
-      <Name>munitions_d1</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\munitions_drone.png">
-      <Name>munitions_drone</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\munitions_f1.png">
-      <Name>munitions_f1</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\munitions_load.png">
-      <Name>munitions_load</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\nav_buoy.png">
-      <Name>nav_buoy</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\omen_ff.png">
-      <Name>omen_ff</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\onslaught_bb.png">
-      <Name>onslaught_bb</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\ox.png">
-      <Name>ox</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\piranha_bmb.png">
-      <Name>piranha_bmb</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\repair_drone.png">
-      <Name>repair_drone</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\sensor_array.png">
-      <Name>sensor_array</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\sensor_array_base.png">
-      <Name>sensor_array_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\sensor_array_dish.png">
-      <Name>sensor_array_dish</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\sentinel_apbmb.png">
-      <Name>sentinel_apbmb</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\shuttle.png">
-      <Name>shuttle</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\shuttle_ff.png">
-      <Name>shuttle_ff</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\shuttle_modern.png">
-      <Name>shuttle_modern</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\sunder_ca.png">
-      <Name>sunder_ca</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\talon_ftr.png">
-      <Name>talon_ftr</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\tarsus.png">
-      <Name>tarsus</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\tempest.png">
-      <Name>tempest</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\thunder.png">
-      <Name>thunder</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\trident.png">
-      <Name>trident</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\valkyrie_ap.png">
-      <Name>valkyrie_ap</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\venture.png">
-      <Name>venture</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\vigilance.png">
-      <Name>vigilance</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\wasp_ftr.png">
-      <Name>wasp_ftr</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\wolf_ff.png">
-      <Name>wolf_ff</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\wolf_ff_old.png">
-      <Name>wolf_ff_old</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Ships\xyphos.png">
-      <Name>xyphos</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\am_blaster_hardpoint_base.png">
-      <Name>am_blaster_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\am_blaster_hardpoint_glow.png">
-      <Name>am_blaster_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\am_blaster_turret_base.png">
-      <Name>am_blaster_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\am_blaster_turret_glow.png">
-      <Name>am_blaster_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\annihilator_rocket_launcher_hardpoint_base.png">
-      <Name>annihilator_rocket_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\annihilator_rocket_launcher_turret_base.png">
-      <Name>annihilator_rocket_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\arbalest_hardpoint_base.png">
-      <Name>arbalest_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\arbalest_hardpoint_recoil.png">
-      <Name>arbalest_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\arbalest_hardpoint_under.png">
-      <Name>arbalest_hardpoint_under</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\arbalest_turret_base.png">
-      <Name>arbalest_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\arbalest_turret_recoil.png">
-      <Name>arbalest_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\arbalest_turret_under.png">
-      <Name>arbalest_turret_under</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\assault_chaingun_hardpoint_base.png">
-      <Name>assault_chaingun_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\assault_chaingun_hardpoint_recoil.png">
-      <Name>assault_chaingun_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\assault_chaingun_turret_base.png">
-      <Name>assault_chaingun_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\assault_chaingun_turret_recoil.png">
-      <Name>assault_chaingun_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\autopulse_laser_hardpoint_base.png">
-      <Name>autopulse_laser_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\autopulse_laser_hardpoint_glow.png">
-      <Name>autopulse_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\autopulse_laser_turret_base.png">
-      <Name>autopulse_laser_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\autopulse_laser_turret_glow.png">
-      <Name>autopulse_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\bomb_bay_hardpoint_base.png">
-      <Name>bomb_bay_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\bomb_bay_turret_base.png">
-      <Name>bomb_bay_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpdheavy_hardpoint_base.png">
-      <Name>burstpdheavy_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpdheavy_hardpoint_glow.png">
-      <Name>burstpdheavy_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpdheavy_turret_base.png">
-      <Name>burstpdheavy_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpdheavy_turret_glow.png">
-      <Name>burstpdheavy_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpd_hardpoint_base.png">
-      <Name>burstpd_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpd_hardpoint_glow.png">
-      <Name>burstpd_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpd_turret_base.png">
-      <Name>burstpd_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\burstpd_turret_glow.png">
-      <Name>burstpd_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\cyclone_reaper_launcher_hardpoint_base.png">
-      <Name>cyclone_reaper_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\cyclone_reaper_launcher_turret_base.png">
-      <Name>cyclone_reaper_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\double_flak_cannon_hardpoint_base.png">
-      <Name>double_flak_cannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\double_flak_cannon_hardpoint_recoil.png">
-      <Name>double_flak_cannon_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\double_flak_cannon_turret_base.png">
-      <Name>double_flak_cannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\double_flak_cannon_turret_recoil.png">
-      <Name>double_flak_cannon_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flak_cannon_hardpoint_base.png">
-      <Name>flak_cannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flak_cannon_hardpoint_recoil.png">
-      <Name>flak_cannon_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flak_cannon_turret_base.png">
-      <Name>flak_cannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flak_cannon_turret_recoil.png">
-      <Name>flak_cannon_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_hardpoint_base.png">
-      <Name>flechette_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_hardpoint_recoil.png">
-      <Name>flechette_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_heavy_hardpoint_base.png">
-      <Name>flechette_heavy_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_heavy_hardpoint_recoil.png">
-      <Name>flechette_heavy_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_heavy_turret_base.png">
-      <Name>flechette_heavy_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_heavy_turret_recoil.png">
-      <Name>flechette_heavy_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_storm_hardpoint_base.png">
-      <Name>flechette_storm_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_storm_hardpoint_recoil.png">
-      <Name>flechette_storm_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_storm_turret_base.png">
-      <Name>flechette_storm_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_storm_turret_recoil.png">
-      <Name>flechette_storm_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_turret_base.png">
-      <Name>flechette_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\flechette_turret_recoil.png">
-      <Name>flechette_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\gauss_cannon_hardpoint_base.png">
-      <Name>gauss_cannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\gauss_cannon_hardpoint_glow.png">
-      <Name>gauss_cannon_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\gauss_cannon_turret_base.png">
-      <Name>gauss_cannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\gauss_cannon_turret_glow.png">
-      <Name>gauss_cannon_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\graviton_beam_hardpoint_base.png">
-      <Name>graviton_beam_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\graviton_beam_hardpoint_glow.png">
-      <Name>graviton_beam_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\graviton_beam_turret_base.png">
-      <Name>graviton_beam_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\graviton_beam_turret_glow.png">
-      <Name>graviton_beam_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\guardian_hardpoint_base.png">
-      <Name>guardian_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\guardian_hardpoint_glow.png">
-      <Name>guardian_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\guardian_turret_base.png">
-      <Name>guardian_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\guardian_turret_glow.png">
-      <Name>guardian_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_autocannon_hardpoint_base.png">
-      <Name>heavy_autocannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_autocannon_hardpoint_recoil.png">
-      <Name>heavy_autocannon_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_autocannon_turret_base.png">
-      <Name>heavy_autocannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_autocannon_turret_recoil.png">
-      <Name>heavy_autocannon_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_machinegun_hardpoint_base.png">
-      <Name>heavy_machinegun_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_machinegun_hardpoint_recoil.png">
-      <Name>heavy_machinegun_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_machinegun_turret_base.png">
-      <Name>heavy_machinegun_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\heavy_machinegun_turret_recoil.png">
-      <Name>heavy_machinegun_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hellbore_cannon_hardpoint_base.png">
-      <Name>hellbore_cannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hellbore_cannon_hardpoint_recoil.png">
-      <Name>hellbore_cannon_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hellbore_cannon_turret_base.png">
-      <Name>hellbore_cannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hellbore_cannon_turret_recoil.png">
-      <Name>hellbore_cannon_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hephaestus_hardpoint_base.png">
-      <Name>hephaestus_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hephaestus_hardpoint_recoil.png">
-      <Name>hephaestus_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hephaestus_turret_base.png">
-      <Name>hephaestus_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hephaestus_turret_recoil.png">
-      <Name>hephaestus_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\high_intensity_laser_hardpoint.png">
-      <Name>high_intensity_laser_hardpoint</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\high_intensity_laser_hardpoint_glow.png">
-      <Name>high_intensity_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\high_intensity_laser_turret.png">
-      <Name>high_intensity_laser_turret</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\high_intensity_laser_turret_glow.png">
-      <Name>high_intensity_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hil_hardpoint_base.png">
-      <Name>hil_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hil_hardpoint_glow.png">
-      <Name>hil_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hil_turret_base.png">
-      <Name>hil_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hil_turret_glow.png">
-      <Name>hil_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hurricane_mirv_launcher_hardpoint_base.png">
-      <Name>hurricane_mirv_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hurricane_mirv_launcher_turret_base.png">
-      <Name>hurricane_mirv_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hypervelocity_driver_hardpoint_base.png">
-      <Name>hypervelocity_driver_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hypervelocity_driver_hardpoint_recoil.png">
-      <Name>hypervelocity_driver_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hypervelocity_driver_turret_base.png">
-      <Name>hypervelocity_driver_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\hypervelocity_driver_turret_recoil.png">
-      <Name>hypervelocity_driver_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\ion_cannon_hardpoint_base.png">
-      <Name>ion_cannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\ion_cannon_hardpoint_glow.png">
-      <Name>ion_cannon_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\ion_cannon_turret_base.png">
-      <Name>ion_cannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\ion_cannon_turret_glow.png">
-      <Name>ion_cannon_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\launcher_annihilator_hardpoint_base.png">
-      <Name>launcher_annihilator_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\launcher_annihilator_turret_base.png">
-      <Name>launcher_annihilator_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_assault_gun_hardpoint_base.png">
-      <Name>light_assault_gun_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_assault_gun_hardpoint_recoil.png">
-      <Name>light_assault_gun_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_assault_gun_turret_base.png">
-      <Name>light_assault_gun_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_assault_gun_turret_recoil.png">
-      <Name>light_assault_gun_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_autocannon_hardpoint.png">
-      <Name>light_autocannon_hardpoint</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_autocannon_hardpoint_base.png">
-      <Name>light_autocannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_autocannon_hardpoint_recoil.png">
-      <Name>light_autocannon_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_autocannon_turret.png">
-      <Name>light_autocannon_turret</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_autocannon_turret_base.png">
-      <Name>light_autocannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_autocannon_turret_recoil.png">
-      <Name>light_autocannon_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_dual_autocannon_hardpoint_base.png">
-      <Name>light_dual_autocannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_dual_autocannon_hardpoint_recoil.png">
-      <Name>light_dual_autocannon_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_dual_autocannon_turret_base.png">
-      <Name>light_dual_autocannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_dual_autocannon_turret_recoil.png">
-      <Name>light_dual_autocannon_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_machinegun_hardpoint_base.png">
-      <Name>light_machinegun_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_machinegun_hardpoint_recoil.png">
-      <Name>light_machinegun_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_machinegun_turret_base.png">
-      <Name>light_machinegun_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_machinegun_turret_recoil.png">
-      <Name>light_machinegun_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_mortar_hardpoint_base.png">
-      <Name>light_mortar_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_mortar_hardpoint_recoil.png">
-      <Name>light_mortar_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_mortar_turret_base.png">
-      <Name>light_mortar_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_mortar_turret_recoil.png">
-      <Name>light_mortar_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_pulse_laser_hardpoint_base.png">
-      <Name>light_pulse_laser_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_pulse_laser_hardpoint_glow.png">
-      <Name>light_pulse_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_pulse_laser_turret_base.png">
-      <Name>light_pulse_laser_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_pulse_laser_turret_glow.png">
-      <Name>light_pulse_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_reaper_launcher_hardpoint_base.png">
-      <Name>light_reaper_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\light_reaper_launcher_turret_base.png">
-      <Name>light_reaper_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\lr_pd_laser_hardpoint_base.png">
-      <Name>lr_pd_laser_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\lr_pd_laser_hardpoint_glow.png">
-      <Name>lr_pd_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\lr_pd_laser_turret_base.png">
-      <Name>lr_pd_laser_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\lr_pd_laser_turret_glow.png">
-      <Name>lr_pd_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_dual_hardpoint_base.png">
-      <Name>mg_light_dual_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_dual_hardpoint_recoil.png">
-      <Name>mg_light_dual_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_dual_turret_base.png">
-      <Name>mg_light_dual_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_dual_turret_recoil.png">
-      <Name>mg_light_dual_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_hardpoint_base.png">
-      <Name>mg_light_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_hardpoint_recoil.png">
-      <Name>mg_light_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_turret_base.png">
-      <Name>mg_light_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mg_light_turret_recoil.png">
-      <Name>mg_light_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mining_laser_hardpoint_base.png">
-      <Name>mining_laser_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mining_laser_hardpoint_glow.png">
-      <Name>mining_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mining_laser_turret_base.png">
-      <Name>mining_laser_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mining_laser_turret_glow.png">
-      <Name>mining_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_1x_hardpoint_base.png">
-      <Name>missile_rack_1x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_1x_turret_base.png">
-      <Name>missile_rack_1x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_m_2x_hardpoint_base.png">
-      <Name>missile_rack_m_2x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_m_2x_turret_base.png">
-      <Name>missile_rack_m_2x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_m_3x_hardpoint_base.png">
-      <Name>missile_rack_m_3x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_m_3x_turret_base.png">
-      <Name>missile_rack_m_3x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_m_2x_hardpoint_base.png">
-      <Name>missile_rack_open_m_2x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_m_2x_turret_base.png">
-      <Name>missile_rack_open_m_2x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_m_3x_hardpoint_base.png">
-      <Name>missile_rack_open_m_3x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_m_3x_turret_base.png">
-      <Name>missile_rack_open_m_3x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_m_4x_hardpoint_base.png">
-      <Name>missile_rack_open_m_4x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_m_4x_turret_base.png">
-      <Name>missile_rack_open_m_4x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_s_1x_hardpoint_base.png">
-      <Name>missile_rack_open_s_1x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_s_1x_turret_base.png">
-      <Name>missile_rack_open_s_1x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_s_2x_hardpoint_base.png">
-      <Name>missile_rack_open_s_2x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_s_2x_turret_base.png">
-      <Name>missile_rack_open_s_2x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_s_4x_hardpoint_base.png">
-      <Name>missile_rack_open_s_4x_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\missile_rack_open_s_4x_turret_base.png">
-      <Name>missile_rack_open_s_4x_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mjolnir_hardpoint_base.png">
-      <Name>mjolnir_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mjolnir_hardpoint_recoil.png">
-      <Name>mjolnir_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mjolnir_hardpoint_under.png">
-      <Name>mjolnir_hardpoint_under</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mjolnir_turret_base.png">
-      <Name>mjolnir_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mjolnir_turret_recoil.png">
-      <Name>mjolnir_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\mjolnir_turret_under.png">
-      <Name>mjolnir_turret_under</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pd_laser_hardpoint_base.png">
-      <Name>pd_laser_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pd_laser_hardpoint_glow.png">
-      <Name>pd_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pd_laser_turret_base.png">
-      <Name>pd_laser_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pd_laser_turret_glow.png">
-      <Name>pd_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\phase_beam_hardpoint.png">
-      <Name>phase_beam_hardpoint</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\phase_beam_hardpoint_glow.png">
-      <Name>phase_beam_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\phase_beam_turret.png">
-      <Name>phase_beam_turret</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\phase_beam_turret_glow.png">
-      <Name>phase_beam_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\phase_charge_launcher_hardpoint_base.png">
-      <Name>phase_charge_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\phase_charge_launcher_turret_base.png">
-      <Name>phase_charge_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pilum_lrm_launcher_hardpoint_base.png">
-      <Name>pilum_lrm_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pilum_lrm_launcher_turret_base.png">
-      <Name>pilum_lrm_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\plasma_cannon_hardpoint_base.png">
-      <Name>plasma_cannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\plasma_cannon_hardpoint_glow.png">
-      <Name>plasma_cannon_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\plasma_cannon_turret_base.png">
-      <Name>plasma_cannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\plasma_cannon_turret_glow.png">
-      <Name>plasma_cannon_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pulse_laser_hardpoint_base.png">
-      <Name>pulse_laser_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pulse_laser_hardpoint_glow.png">
-      <Name>pulse_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pulse_laser_turret_base.png">
-      <Name>pulse_laser_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\pulse_laser_turret_glow.png">
-      <Name>pulse_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\railgun_hardpoint_base.png">
-      <Name>railgun_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\railgun_hardpoint_glow.png">
-      <Name>railgun_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\railgun_turret_base.png">
-      <Name>railgun_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\railgun_turret_glow.png">
-      <Name>railgun_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\swarmer_srm_launcher_hardpoint_base.png">
-      <Name>swarmer_srm_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\swarmer_srm_launcher_turret_base.png">
-      <Name>swarmer_srm_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\tactical_laser_hardpoint.png">
-      <Name>tactical_laser_hardpoint</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\tactical_laser_hardpoint_glow.png">
-      <Name>tactical_laser_hardpoint_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\tactical_laser_turret.png">
-      <Name>tactical_laser_turret</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\tactical_laser_turret2.png">
-      <Name>tactical_laser_turret2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\tactical_laser_turret_glow.png">
-      <Name>tactical_laser_turret_glow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\typhoon_reaper_launcher_hardpoint_base.png">
-      <Name>typhoon_reaper_launcher_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\typhoon_reaper_launcher_turret_base.png">
-      <Name>typhoon_reaper_launcher_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\vulcan_cannon_hardpoint.png">
-      <Name>vulcan_cannon_hardpoint</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\vulcan_cannon_hardpoint_base.png">
-      <Name>vulcan_cannon_hardpoint_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\vulcan_cannon_hardpoint_recoil.png">
-      <Name>vulcan_cannon_hardpoint_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\vulcan_cannon_turret.png">
-      <Name>vulcan_cannon_turret</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\vulcan_cannon_turret_base.png">
-      <Name>vulcan_cannon_turret_base</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Stolen\Weapons\vulcan_cannon_turret_recoil.png">
-      <Name>vulcan_cannon_turret_recoil</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Shaders\Space.fx">
-      <Name>Space</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Shaders\Sun.fx">
-      <Name>Sun</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Suns\sun_00.png">
-      <Name>sun_00</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Suns\sun_00_turbulence1.png">
-      <Name>sun_00_turbulence1</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Suns\sun_00_turbulence2.png">
-      <Name>sun_00_turbulence2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Suns\sun_00_gradient.png">
-      <Name>sun_00_gradient</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Shaders\SunBlur.fx">
-      <Name>SunBlur</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Shaders\SunBlend.fx">
-      <Name>SunBlend</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\visitor.spritefont">
-      <Name>visitor</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>NuclexSpriteFontDescriptionProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Radar\bottom_right.png">
-      <Name>bottom_right</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\distance.png">
-      <Name>distance</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\left.png">
-      <Name>left</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\right.png">
-      <Name>right</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\target.png">
-      <Name>target</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\top.png">
-      <Name>top</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\top_left.png">
-      <Name>top_left</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\top_right.png">
-      <Name>top_right</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Radar\bottom.png">
-      <Name>bottom</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\bottom_left.png">
-      <Name>bottom_left</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Radar\Icons\radar_moon.png">
-      <Name>radar_moon</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\Icons\radar_planet.png">
-      <Name>radar_planet</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Radar\Icons\radar_sun.png">
-      <Name>radar_sun</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\Planets\rock_01.jpg">
-      <Name>rock_01</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Planets\rock_02.jpg">
-      <Name>rock_02</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Textures\Planets\rock_07.jpg">
-      <Name>rock_07</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Thrusters.xml">
-      <Name>Thrusters</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Armor.xml">
-      <Name>Armor</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Reactors.xml">
-      <Name>Reactors</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Sensors.xml">
-      <Name>Sensors</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Shields.xml">
-      <Name>Shields</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Weapons.xml">
-      <Name>Weapons</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Items.xml">
-      <Name>Items</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-      <SubType>Designer</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Textures\spaceshipB.png">
-      <Name>spaceshipB</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Planets.xml">
-      <Name>Planets</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\Suns.xml">
-      <Name>Suns</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\SunSystems.xml">
-      <Name>SunSystems</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-      <SubType>Designer</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Misc\ScriptInit.py">
-      <Name>ScriptInit</Name>
-      <Importer>PlainTextImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
-  <!--  To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

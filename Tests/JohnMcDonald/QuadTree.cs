@@ -86,7 +86,7 @@ namespace Tests.JohnMcDonald
         /// </summary>
         /// <param name="rect">The rectangle to find objects in.</param>
         /// <param name="results">A reference to a list that will be populated with the results.</param>
-        public void GetObjects(TRectangle rect, ref ICollection<T> results)
+        public void GetObjects(TRectangle rect, ICollection<T> results)
         {
             _quadTreeRoot.GetObjects(rect, ref results);
         }
@@ -284,10 +284,9 @@ namespace Tests.JohnMcDonald
         /// </remarks>
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
-        public void Find(TPoint point, float range, ref ICollection<T> list)
+        ///   from the query point to be returned.</param>
+        /// <param name="results"> </param>
+        public void Find(TPoint point, float range, ref ISet<T> results)
         {
             throw new NotSupportedException();
         }
@@ -298,11 +297,10 @@ namespace Tests.JohnMcDonald
         /// query rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
-        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
+        /// <param name="results"> </param>
+        public void Find(ref TRectangle rectangle, ref ISet<T> results)
         {
-            GetObjects(rectangle, ref list);
+            GetObjects(rectangle, results);
         }
 
         #endregion

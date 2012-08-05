@@ -24,7 +24,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Reused for iterating components when updating, to avoid
         /// modifications to the list of components breaking the update.
         /// </summary>
-        private ICollection<int> _drawablesInView = new HashSet<int>();
+        private ISet<int> _drawablesInView = new HashSet<int>();
 
         #endregion
 

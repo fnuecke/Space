@@ -26,7 +26,7 @@ namespace Space.ComponentSystem.Systems
         /// Reused for iterating components when updating, to avoid
         /// modifications to the list of components breaking the update.
         /// </summary>
-        private ICollection<int> _collidablesInView = new List<int>();
+        private ISet<int> _collidablesInView = new HashSet<int>();
 
         #endregion
 

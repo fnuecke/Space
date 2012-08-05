@@ -124,7 +124,7 @@ from Space.Data import *
 
         #region Single allocation
 
-        private static readonly List<int> ReusableItemList = new List<int>();
+        private static ISet<int> _reusableItemList = new HashSet<int>();
 
         #endregion
 
@@ -340,17 +340,16 @@ from Space.Data import *
 
             // We may be called from a multi threaded environment (TSS), so
             // lock this shared list.
-            lock (ReusableItemList)
+            lock (_reusableItemList)
             {
-                ICollection<int> neighbors = ReusableItemList;
-                index.Find(transform.Translation, 100, ref neighbors, Item.IndexGroupMask);
-                foreach (var item in neighbors)
+                index.Find(transform.Translation, 100, ref _reusableItemList, Item.IndexGroupMask);
+                foreach (var item in _reusableItemList)
                 {
                     // Pick the item up.
                     // TODO: check if the item belongs to the player.
                     inventory.Add(item);
                 }
-                ReusableItemList.Clear();
+                _reusableItemList.Clear();
             }
         }
 

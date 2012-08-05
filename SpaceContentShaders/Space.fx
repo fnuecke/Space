@@ -102,13 +102,13 @@ technique Background
     pass DarkMatter
     {
         AlphaBlendEnable = True;
-		DestBlend = InvSrcAlpha;
+        DestBlend = InvSrcAlpha;
         PixelShader = compile ps_2_0 DarkMatterShader();
     }
     pass DebrisSmall
     {
         BlendOp = Add;
-		DestBlend = One;
+        DestBlend = One;
         PixelShader = compile ps_2_0 DebrisSmallShader();
     }
     pass DebrisLarge

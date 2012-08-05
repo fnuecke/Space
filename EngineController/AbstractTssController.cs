@@ -64,7 +64,7 @@ namespace Engine.Controller
         /// <summary>
         /// The number of milliseconds a single update should take.
         /// </summary>
-        protected const double TargetElapsedMilliseconds = 1000.0 / 60.0;
+        protected const double TargetElapsedMilliseconds = 1000.0 / 30.0;
 
         /// <summary>
         /// The interval in ticks after which to send a hash check to the clients.

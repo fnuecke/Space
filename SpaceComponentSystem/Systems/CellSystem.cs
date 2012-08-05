@@ -109,7 +109,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused for querying entities contained in a dying cell.
         /// </summary>
-        private HashSet<int> _reusableEntityList = new HashSet<int>();
+        private ISet<int> _reusableEntityList = new HashSet<int>();
 
         #endregion
 
@@ -216,9 +216,8 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Y = xy.Item2 * CellSize;
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
-                ICollection<int> neighbors = _reusableEntityList;
-                ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref cellBounds, ref neighbors, CellDeathAutoRemoveIndexGroupMask);
-                foreach (var neighbor in neighbors)
+                ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref cellBounds, ref _reusableEntityList, CellDeathAutoRemoveIndexGroupMask);
+                foreach (var neighbor in _reusableEntityList)
                 {
                     Manager.RemoveEntity(neighbor);
                 }

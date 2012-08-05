@@ -168,7 +168,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(FarPosition query, float range, ref ICollection<int> list, ulong groups)
+        public void Find(FarPosition query, float range, ref ISet<int> list, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
@@ -184,7 +184,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(ref FarRectangle query, ref ICollection<int> list, ulong groups)
+        public void Find(ref FarRectangle query, ref ISet<int> list, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {

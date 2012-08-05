@@ -51,7 +51,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
-            ICollection<int> neighbors = new List<int>();
+            ISet<int> neighbors = new HashSet<int>();
             index.Find(position, AggroRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {

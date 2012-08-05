@@ -326,15 +326,14 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
+        ///   from the query point to be returned.</param>
+        /// <param name="results"> </param>
         /// <remarks>
         /// This checks for intersections of the query circle and the bounds of
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(TPoint point, float range, ref ICollection<T> list)
+        public void Find(TPoint point, float range, ref ISet<T> results)
         {
             // Skip if the tree is empty.
             if (Count > 0)
@@ -349,7 +348,7 @@ namespace Engine.Collections
 
                 // Recurse through the tree, starting at the root node, to find
                 // nodes intersecting with the range query.
-                Accumulate(_root, ref _bounds, ref bounds, ref point, range, ref list);
+                Accumulate(_root, ref _bounds, ref bounds, ref point, range, ref results);
             }
         }
 
@@ -359,16 +358,15 @@ namespace Engine.Collections
         /// query rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
-        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
+        /// <param name="results"> </param>
+        public void Find(ref TRectangle rectangle, ref ISet<T> results)
         {
             // Skip if the tree is empty.
             if (Count > 0)
             {
                 // Recurse through the tree, starting at the root node, to find
                 // nodes intersecting with the area query.
-                Accumulate(_root, ref _bounds, ref rectangle, ref list);
+                Accumulate(_root, ref _bounds, ref rectangle, ref results);
             }
         }
 
@@ -1195,7 +1193,7 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref TPoint point, float range, ref ICollection<T> list)
+        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref TPoint point, float range, ref ISet<T> list)
         {
             // Check how to proceed.
             switch (ComputeIntersection(ref rectangle, ref nodeBounds))
@@ -1265,7 +1263,7 @@ namespace Engine.Collections
         /// <param name="nodeBounds">The bounds of the current node.</param>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref ICollection<T> list)
+        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref ISet<T> list)
         {
             // Check how to proceed.
             switch (ComputeIntersection(ref rectangle, ref nodeBounds))
@@ -1639,7 +1637,7 @@ namespace Engine.Collections
             /// Adds all entries stored in this node to the specified list.
             /// </summary>
             /// <param name="list">The list.</param>
-            public void AddOwnEntries(ref ICollection<T> list)
+            public void AddOwnEntries(ref ISet<T> list)
             {
                 // Rebuild entry cache if necessary.
                 if (LocalCache == null)
@@ -1662,7 +1660,7 @@ namespace Engine.Collections
             /// <param name="point">The center of the circle.</param>
             /// <param name="range">The radius of the circle.</param>
             /// <param name="list">The list.</param>
-            public void AddOwnEntries(ref TPoint point, float range, ref ICollection<T> list)
+            public void AddOwnEntries(ref TPoint point, float range, ref ISet<T> list)
             {
                 // Rebuild entry cache if necessary.
                 if (LocalCache == null)
@@ -1688,7 +1686,7 @@ namespace Engine.Collections
             /// </summary>
             /// <param name="rectangle">The rectangle.</param>
             /// <param name="list">The list.</param>
-            public void AddOwnEntries(ref TRectangle rectangle, ref ICollection<T> list)
+            public void AddOwnEntries(ref TRectangle rectangle, ref ISet<T> list)
             {
                 // Rebuild entry cache if necessary.
                 if (LocalCache == null)
@@ -1712,7 +1710,7 @@ namespace Engine.Collections
             /// Adds all child entries to the specified list.
             /// </summary>
             /// <param name="list">The list.</param>
-            public void AddChildEntries(ref ICollection<T> list)
+            public void AddChildEntries(ref ISet<T> list)
             {
                 // Rebuild entry cache if necessary.
                 if (ChildCache == null)

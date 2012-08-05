@@ -61,7 +61,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var closestStation = 0;
             var distanceSquared = float.MaxValue;
 
-            ICollection<int> neighbors = new List<int>();
+            ISet<int> neighbors = new HashSet<int>();
             index.Find(position, ScanRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {

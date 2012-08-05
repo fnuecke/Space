@@ -66,7 +66,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Reused for iterating components. As its only used by the drawing
         /// instance we don't need to clone it, so it can be readonly.
         /// </summary>
-        private readonly List<int> _reusableNeighborList = new List<int>();
+        private ISet<int> _reusableNeighborList = new HashSet<int>();
 
         /// <summary>
         /// Used to swap between this dict and the one assigned to _playingSounds
@@ -111,9 +111,8 @@ namespace Engine.ComponentSystem.Common.Systems
             // in the current list of sounds playing will be stopped, as they are
             // out of range. The ones in range will be removed from that list and
             // added to our reusable list.
-            ICollection<int> neighbors = _reusableNeighborList;
-            index.Find(position, MaxSoundDistance, ref neighbors, IndexGroupMask);
-            foreach (var neighbor in neighbors)
+            index.Find(position, MaxSoundDistance, ref _reusableNeighborList, IndexGroupMask);
+            foreach (var neighbor in _reusableNeighborList)
             {
                 // Get the sound component of the neighbor.
                 var sound = ((Sound)Manager.GetComponent(neighbor, Sound.TypeId));

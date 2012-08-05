@@ -208,15 +208,14 @@
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
       <Name>Space.ComponentSystem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceContent\Space.Content.contentproj">
-      <Name>Space.Content %28data%29</Name>
+    <ProjectReference Include="..\SpaceContentGeneral\Space.Content.General.contentproj">
+      <Project>{F8EA9F9E-D37A-4CFC-820B-24590D739243}</Project>
+      <Name>Space.Content.General %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
-      <Project>{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceGuiContent\Space.Gui.Content.contentproj">
-      <Project>{4248B6C3-D2EE-496F-9C4B-0B923962449B}</Project>
-      <Name>Space.Gui.Content %28data%29</Name>
-      <XnaReferenceType>Content</XnaReferenceType>
+    <ProjectReference Include="..\SpaceContent\Space.Content.csproj">
+      <Project>{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}</Project>
+      <Name>Space.Content</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

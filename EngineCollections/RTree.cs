@@ -228,14 +228,14 @@ namespace Engine.Collections
         /// </summary>
         public TRectangle this[T item] { get { return _pointDict[item].Boundingbox; } }
 
-        public void Find(TPoint point, float range, ref ICollection<T> list)
+        public void Find(FarPosition point, float range, ref ISet<T> results)
         {
-            Accumulate(root, ref point, range, list);
+            Accumulate(root, ref point, range, results);
         }
 
-        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
+        public void Find(ref FarRectangle rectangle, ref ISet<T> results)
         {
-            Accumulate(root, ref rectangle, list);
+            Accumulate(root, ref rectangle, results);
         }
 
         #endregion

@@ -98,7 +98,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private readonly List<int> _reusableNeighborList = new List<int>();
+        private ISet<int> _reusableNeighborList = new HashSet<int>();
 
         #endregion
 
@@ -197,12 +197,11 @@ namespace Space.ComponentSystem.Systems
             var radius = (float)Math.Sqrt(a * a + b * b);
 
             // Loop through all our neighbors.
-            ICollection<int> neighbors = _reusableNeighborList;
-            index.Find(position, radarRange, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, radarRange, ref _reusableNeighborList, DetectableSystem.IndexGroupMask);
 
             // Begin drawing.
             _spriteBatch.Begin();
-            foreach (var neighbor in neighbors)
+            foreach (var neighbor in _reusableNeighborList)
             {
                 // Get the components we need.
                 var neighborTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));

@@ -70,7 +70,7 @@ namespace Space.ComponentSystem.Systems
 
             // Then check all our neighbors. Use new list each time because we're running
             // in parallel, so we can't really keep one on a global level.
-            ICollection<int> neighbors = new List<int>();
+            ISet<int> neighbors = new HashSet<int>();
             index.Find(myTransform.Translation, MaxGravitationDistance, ref neighbors, IndexGroupMask);
             foreach (var neighbor in neighbors)
             {

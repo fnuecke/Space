@@ -1,18 +1,36 @@
-﻿namespace Engine.Util
+﻿using System.Diagnostics;
+
+namespace Engine.Util
 {
     /// <summary>
     /// Some utility methods for bitwise operations.
     /// </summary>
     public static class BitwiseMagic
     {
+
+        /// <summary>
+        /// Checks if a number is a power of two.
+        /// </summary>
+        /// <param name="x">The value to check.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is a power of two; <c>false</c> otherwise.
+        /// </returns>
+        /// <remarks>
+        /// Source: <see Href="http://www.exploringbinary.com/ten-ways-to-check-if-an-integer-is-a-power-of-two-in-c/"/>.
+        /// </remarks>
+        public static bool IsPowerOfTwo(uint x)
+        {
+            return (x != 0) && ((x & (~x + 1)) == x);
+        }
+
         /// <summary>
         /// Gets the next higher power of two for a given number
         /// </summary>
         /// <remarks>
         /// If a power of two is given, the next higher one will be returned,
         /// not the given one. When zero is given, zero is returned.
+        /// Source: <see cref="http://jeffreystedfast.blogspot.com/2008/06/calculating-nearest-power-of-2.html"/>
         /// </remarks>
-        /// <see cref="http://jeffreystedfast.blogspot.com/2008/06/calculating-nearest-power-of-2.html"/>
         /// <param name="i">The number to get the next higher power of two
         /// for.</param>
         /// <returns>The next higher power of two.</returns>
@@ -73,6 +91,20 @@
         {
             x = (short)(xy >> 16);
             y = (short)(xy & 0xFFFF);
+        }
+
+        /// <summary>
+        /// Perform a modulus operation on a value, where the dividend is
+        /// a power of two. Note that C# handles modulo pretty well, so
+        /// in most cases that'll be faster than using this function.
+        /// </summary>
+        /// <param name="n">The dividend.</param>
+        /// <param name="m">The divisor. This <em>must be a power of two!</em></param>
+        /// <returns>The remainder.</returns>
+        public static int Mod(int n, int m)
+        {
+            Debug.Assert(IsPowerOfTwo((uint)m));
+            return n & (m - 1);
         }
     }
 }

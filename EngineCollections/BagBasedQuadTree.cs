@@ -231,17 +231,16 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        public void Find(TPoint point, float range, ref ICollection<T> list)
+        ///   from the query point to be returned.</param>
+        /// <param name="results"> </param>
+        public void Find(TPoint point, float range, ref ISet<T> results)
         {
             // Skip if the tree is empty.
             if (Count > 0)
             {
                 // Recurse through the tree, starting at the containing node, to find
                 // nodes intersecting with the range query.
-                Accumulate(_root, ref _bounds, ref point, range, ref list);
+                Accumulate(_root, ref _bounds, ref point, range, ref results);
             }
         }
 
@@ -250,16 +249,15 @@ namespace Engine.Collections
         /// in the tree that are in contained the specified rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
+        /// <param name="results"> </param>
+        public void Find(ref TRectangle rectangle, ref ISet<T> results)
         {
             // Skip if the tree is empty.
             if (Count > 0)
             {
                 // Recurse through the tree, starting at the containing node, to find
                 // nodes intersecting with the range query.
-                Accumulate(_root, ref _bounds, ref rectangle, ref list);
+                Accumulate(_root, ref _bounds, ref rectangle, ref results);
             }
         }
 
@@ -722,7 +720,7 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TPoint point, float range, ref ICollection<T> list)
+        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TPoint point, float range, ref ISet<T> list)
         {
             // Check how to proceed.
             switch (ComputeIntersection(ref point, range, ref nodeBounds))
@@ -787,7 +785,7 @@ namespace Engine.Collections
         /// <param name="nodeBounds">The bounds of the current node.</param>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref ICollection<T> list)
+        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref ISet<T> list)
         {
             // Check how to proceed.
             switch (ComputeIntersection(ref rectangle, ref nodeBounds))
@@ -1028,7 +1026,7 @@ namespace Engine.Collections
 
             #region Entry Accumulator
 
-            public void AddOwnEntries(ref ICollection<T> list)
+            public void AddOwnEntries(ref ISet<T> list)
             {
                 // Add all entries to the collection.
                 foreach (var entry in Entries)
@@ -1037,7 +1035,7 @@ namespace Engine.Collections
                 }
             }
 
-            public void AddOwnEntries(ref TPoint point, float range, ref ICollection<T> list)
+            public void AddOwnEntries(ref TPoint point, float range, ref ISet<T> list)
             {
                 // Add all entries to the collection.
                 foreach (var entry in Entries)
@@ -1049,7 +1047,7 @@ namespace Engine.Collections
                 }
             }
 
-            public void AddOwnEntries(ref TRectangle rectangle, ref ICollection<T> list)
+            public void AddOwnEntries(ref TRectangle rectangle, ref ISet<T> list)
             {
                 // Add all entries to the collection.
                 foreach (var entry in Entries)
@@ -1061,7 +1059,7 @@ namespace Engine.Collections
                 }
             }
 
-            public void AddChildEntries(ref ICollection<T> list)
+            public void AddChildEntries(ref ISet<T> list)
             {
                 // Add all entries to the collection.
                 if (Children[0] != null)

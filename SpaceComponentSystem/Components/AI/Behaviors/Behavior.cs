@@ -309,7 +309,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
             // Look for evil neighbors, in particular suns and the like.
             var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
-            ICollection<int> neighbors = new List<int>();
+            ISet<int> neighbors = new HashSet<int>();
             index.Find(position, MaxEscapeCheckDistance, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {

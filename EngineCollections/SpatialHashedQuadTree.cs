@@ -63,7 +63,7 @@ namespace Engine.Collections
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
-        private readonly Dictionary<uint, QuadTree<T>> _entries = new Dictionary<uint, QuadTree<T>>();
+        private readonly Dictionary<ulong, QuadTree<T>> _entries = new Dictionary<ulong, QuadTree<T>>();
 
         /// <summary>
         /// Maps entries back to their bounds, for removal.
@@ -176,11 +176,11 @@ namespace Engine.Collections
             newBounds.Inflate(BoundExtension, BoundExtension);
 
             // Figure out what changed (the delta in cells).
-            var oldCells = new HashSet<Tuple<uint, TPoint>>(ComputeCells(oldBounds));
-            var newCells = new HashSet<Tuple<uint, TPoint>>(ComputeCells(newBounds));
+            var oldCells = new HashSet<Tuple<ulong, TPoint>>(ComputeCells(oldBounds));
+            var newCells = new HashSet<Tuple<ulong, TPoint>>(ComputeCells(newBounds));
 
             // Get all cells that the entry no longer is in.
-            var removedCells = new HashSet<Tuple<uint, TPoint>>(oldCells);
+            var removedCells = new HashSet<Tuple<ulong, TPoint>>(oldCells);
             removedCells.ExceptWith(newCells);
             foreach (var cell in removedCells)
             {
@@ -195,7 +195,7 @@ namespace Engine.Collections
             }
 
             // Get all the cells the entry now is in.
-            var addedCells = new HashSet<Tuple<uint, TPoint>>(newCells);
+            var addedCells = new HashSet<Tuple<ulong, TPoint>>(newCells);
             addedCells.ExceptWith(oldCells);
             foreach (var cell in addedCells)
             {
@@ -304,15 +304,14 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
+        ///   from the query point to be returned.</param>
+        /// <param name="results"> </param>
         /// <remarks>
         /// This checks for intersections of the query circle and the bounds of
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(FarPosition point, float range, ref ICollection<T> list)
+        public void Find(FarPosition point, float range, ref ISet<T> results)
         {
             // Compute the area bounds for that query to get the involved trees.
             var bounds = new TRectangle
@@ -323,8 +322,6 @@ namespace Engine.Collections
                 Height = range + range
             };
 
-            // Do the query, but into a temporary set, to avoid duplicates.
-            ICollection<T> result = new HashSet<T>();
             foreach (var cell in ComputeCells(bounds))
             {
                 // Only if the cell exists.
@@ -334,14 +331,8 @@ namespace Engine.Collections
                     var relativePoint = (Vector2)(point + cell.Item2);
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativePoint, range, ref result);
+                    _entries[cell.Item1].Find(relativePoint, range, ref results);
                 }
-            }
-
-            // Copy results over to actual result list.
-            foreach (var hit in result)
-            {
-                list.Add(hit);
             }
         }
 
@@ -351,9 +342,8 @@ namespace Engine.Collections
         /// query rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
-        public void Find(ref FarRectangle rectangle, ref ICollection<T> list)
+        /// <param name="results"> </param>
+        public void Find(ref FarRectangle rectangle, ref ISet<T> results)
         {
             foreach (var cell in ComputeCells(rectangle))
             {
@@ -365,7 +355,7 @@ namespace Engine.Collections
 
                     // And do the query.
                     var relativeBounds = (Rectangle)relativeFarBounds;
-                    _entries[cell.Item1].Find(ref relativeBounds, ref list);
+                    _entries[cell.Item1].Find(ref relativeBounds, ref results);
                 }
             }
         }
@@ -379,7 +369,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The rectangle.</param>
         /// <returns>The cells the rectangle intersects with.</returns>
-        private static IEnumerable<Tuple<uint, TPoint>> ComputeCells(TRectangle rectangle)
+        private static IEnumerable<Tuple<ulong, TPoint>> ComputeCells(TRectangle rectangle)
         {
             var left = rectangle.X.Segment;
             var right = rectangle.Right.Segment;
@@ -389,10 +379,10 @@ namespace Engine.Collections
             TPoint center;
             for (var x = left; x <= right; x++)
             {
-                center.X = -x * (int)FarValue.SegmentSize;
+                center.X = -x * FarValue.SegmentSize;
                 for (var y = top; y <= bottom; y++)
                 {
-                    center.Y = y * (int)FarValue.SegmentSize;
+                    center.Y = y * FarValue.SegmentSize;
                     yield return Tuple.Create(BitwiseMagic.Pack(x, y), center);
                 }
             }
@@ -444,12 +434,12 @@ namespace Engine.Collections
         {
             foreach (var entry in _entries)
             {
-                short segmentX, segmentY;
+                int segmentX, segmentY;
                 BitwiseMagic.Unpack(entry.Key, out segmentX, out segmentY);
 
                 FarPosition center;
-                center.X = segmentX * (int)FarValue.SegmentSize;
-                center.Y = segmentY * (int)FarValue.SegmentSize;
+                center.X = segmentX * FarValue.SegmentSize;
+                center.Y = segmentY * FarValue.SegmentSize;
                 yield return Tuple.Create(center, entry.Value);
             }
         }

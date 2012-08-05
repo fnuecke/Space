@@ -136,10 +136,9 @@ namespace Tests.MichaelCoyle
         /// </remarks>
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
-        public void Find(TPoint point, float range, ref ICollection<T> list)
+        ///   from the query point to be returned.</param>
+        /// <param name="results"> </param>
+        public void Find(TPoint point, float range, ref ISet<T> results)
         {
             throw new NotSupportedException();
         }
@@ -150,11 +149,10 @@ namespace Tests.MichaelCoyle
         /// query rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The list to put the results into. It is guaranteed
-        /// that there will be no duplicate entries.</param>
-        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
+        /// <param name="results"> </param>
+        public void Find(ref TRectangle rectangle, ref ISet<T> results)
         {
-            _root.Query(ref rectangle, ref list);
+            _root.Query(ref rectangle, results);
         }
 
         #endregion
