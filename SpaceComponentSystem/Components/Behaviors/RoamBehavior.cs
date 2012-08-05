@@ -2,7 +2,7 @@
 using Engine.Random;
 using Engine.Serialization;
 
-namespace Space.ComponentSystem.Components.AI.Behaviors
+namespace Space.ComponentSystem.Components.Behaviors
 {
     /// <summary>
     /// Makes AI ships roam a specified area.

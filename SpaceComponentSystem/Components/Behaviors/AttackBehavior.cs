@@ -5,7 +5,7 @@ using Engine.Random;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
-namespace Space.ComponentSystem.Components.AI.Behaviors
+namespace Space.ComponentSystem.Components.Behaviors
 {
     /// <summary>
     /// AIs in this state try to destroy a target entity 

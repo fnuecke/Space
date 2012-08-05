@@ -5,7 +5,7 @@ using Engine.Random;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 
-namespace Space.ComponentSystem.Components.AI.Behaviors
+namespace Space.ComponentSystem.Components.Behaviors
 {
     /// <summary>
     /// Moves to the nearest friendly station, then docks.

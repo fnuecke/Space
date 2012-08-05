@@ -3,7 +3,7 @@ using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
-using Space.ComponentSystem.Components.AI.Behaviors;
+using Space.ComponentSystem.Components.Behaviors;
 
 namespace Space.ComponentSystem.Components
 {

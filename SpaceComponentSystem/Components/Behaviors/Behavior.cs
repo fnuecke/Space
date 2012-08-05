@@ -10,7 +10,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 
-namespace Space.ComponentSystem.Components.AI.Behaviors
+namespace Space.ComponentSystem.Components.Behaviors
 {
     /// <summary>
     /// Base class for AI ship behaviors. This implements rudimentary

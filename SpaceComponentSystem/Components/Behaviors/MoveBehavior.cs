@@ -4,7 +4,7 @@ using Engine.Random;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
-namespace Space.ComponentSystem.Components.AI.Behaviors
+namespace Space.ComponentSystem.Components.Behaviors
 {
     /// <summary>
     /// Makes an AI move to a specified location without letting itself be

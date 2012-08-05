@@ -4,7 +4,7 @@ using Engine.ComponentSystem.Common.Systems;
 using Engine.Random;
 using Space.ComponentSystem.Systems;
 
-namespace Space.ComponentSystem.Components.AI.Behaviors
+namespace Space.ComponentSystem.Components.Behaviors
 {
     /// <summary>
     /// Patrols to a specified point, attacks enemies that get close, falls
