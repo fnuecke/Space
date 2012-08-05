@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Engine.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
@@ -34,6 +35,22 @@ namespace Engine.ComponentSystem.Components
         /// The type id unique to the entity/component system in the current program.
         /// </summary>
         public abstract int GetTypeId();
+
+        /// <summary>
+        /// Gets the component type id for the calling currently-being-initialized
+        /// component type class. This will create a new ID if necessary.
+        /// </summary>
+        /// <returns>The type id for that component.</returns>
+        /// <remarks>
+        /// Utility method for subclasses, this just redirects to the same method in
+        /// the component system manager. Uses execution stack to determine calling
+        /// type.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected static int CreateTypeId()
+        {
+            return ComponentSystem.Manager.GetComponentTypeId(new StackFrame(1, false).GetMethod().DeclaringType);
+        }
 
         #endregion
 

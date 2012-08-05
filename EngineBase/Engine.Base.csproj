@@ -72,9 +72,6 @@
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xml">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
       <Private>False</Private>
@@ -82,55 +79,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Diagnostics\FlattenHierarchyProxy.cs" />
-    <Compile Include="Graphics\AbstractEllipse.cs" />
-    <Compile Include="Graphics\AbstractShape.cs" />
-    <Compile Include="Graphics\FilledEllipse.cs" />
-    <Compile Include="Graphics\Ellipse.cs" />
-    <Compile Include="Graphics\FilledRectangle.cs" />
-    <Compile Include="Graphics\GradientRectangle.cs" />
-    <Compile Include="Graphics\Graph.cs" />
-    <Compile Include="Graphics\Rectangle.cs" />
-    <Compile Include="IO\CompressedPacketStream.cs" />
-    <Compile Include="IO\EncryptedPacketStream.cs" />
-    <Compile Include="IO\IPacketStream.cs" />
-    <Compile Include="Math\RectangleF.cs" />
-    <Compile Include="Network\AbstractProtocol.cs" />
-    <Compile Include="Serialization\PacketXnaExtensions.cs" />
-    <Compile Include="Util\BitwiseMagic.cs" />
     <Compile Include="Util\CoordinateIds.cs" />
-    <Compile Include="Util\ICopyable.cs" />
-    <Compile Include="Util\IdManager.cs" />
-    <Compile Include="Util\IGaussianRandom.cs" />
-    <Compile Include="Util\Interval.cs" />
-    <Compile Include="Util\IUniformRandom.cs" />
     <Compile Include="Util\LocalizedContentManager.cs" />
-    <Compile Include="IO\PacketStream.cs" />
-    <Compile Include="Network\UdpProtocol.cs" />
-    <Compile Include="Network\EventArgs.cs" />
-    <Compile Include="Network\IProtocolInfo.cs" />
-    <Compile Include="Network\ProtocolInfo.cs" />
-    <Compile Include="Serialization\IPacketizable.cs" />
-    <Compile Include="Serialization\PacketException.cs" />
-    <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\Angle.cs" />
     <Compile Include="Util\GameConsoleTarget.cs" />
-    <Compile Include="Util\Hasher.cs" />
-    <Compile Include="Util\IHashable.cs" />
-    <Compile Include="Util\ISampling.cs" />
-    <Compile Include="Util\MersenneTwister.cs" />
-    <Compile Include="Util\Sampling.cs" />
-    <Compile Include="Util\Compression.cs" />
     <Compile Include="Util\Direction.cs" />
     <Compile Include="Util\GameConsole.cs" />
     <Compile Include="Util\IGameConsole.cs" />
     <Compile Include="Util\LineWrittenEventArgs.cs" />
-    <Compile Include="Util\SerializableDictionary.cs" />
-    <Compile Include="Util\SimpleCrypto.cs" />
-    <Compile Include="IO\SlidingStream.cs" />
-    <Compile Include="Util\Ziggurat.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

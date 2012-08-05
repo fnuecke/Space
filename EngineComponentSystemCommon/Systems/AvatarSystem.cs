@@ -14,7 +14,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// The unique type ID for this object, by which it is referred to in the manager.
         /// </summary>
-        public static readonly int TypeId = ComponentSystem.Manager.GetSystemTypeId(typeof(AvatarSystem));
+        public static readonly int TypeId = CreateTypeId();
 
         #endregion
 

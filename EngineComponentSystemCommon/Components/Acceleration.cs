@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components
@@ -20,7 +21,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <summary>
         /// The unique type ID for this object, by which it is referred to in the manager.
         /// </summary>
-        public static readonly int TypeId = ComponentSystem.Manager.GetComponentTypeId(typeof(Acceleration));
+        public static readonly int TypeId = CreateTypeId();
 
         /// <summary>
         /// The type id unique to the entity/component system in the current program.

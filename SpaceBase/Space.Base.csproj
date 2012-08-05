@@ -111,10 +111,6 @@
     <Compile Include="Util\Settings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
-      <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
-      <Name>Engine.Base</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
       <Name>Engine.ComponentSystem.RPG</Name>
@@ -122,6 +118,18 @@
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
+      <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
+      <Name>Engine.Graphics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
+      <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
+      <Name>Engine.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
+      <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
+      <Name>Engine.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

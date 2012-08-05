@@ -43,9 +43,6 @@
     <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
@@ -70,9 +67,17 @@
     <Compile Include="SessionEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
-      <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
-      <Name>Engine.Base</Name>
+    <ProjectReference Include="..\EngineIO\Engine.IO.csproj">
+      <Project>{6AF3014F-82CF-4702-A7D2-DB4193BC2729}</Project>
+      <Name>Engine.IO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineNetwork\Engine.Network.csproj">
+      <Project>{E63CE462-AF44-442A-9FF5-42ACD4041235}</Project>
+      <Name>Engine.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
+      <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
+      <Name>Engine.Serialization</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

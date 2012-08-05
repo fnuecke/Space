@@ -18,7 +18,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// The unique type ID for this object, by which it is referred to in the manager.
         /// </summary>
-        public static readonly int TypeId = ComponentSystem.Manager.GetComponentTypeId(typeof(Usable<TResponse>));
+        public static readonly int TypeId = CreateTypeId();
 
         /// <summary>
         /// The type id unique to the entity/component system in the current program.

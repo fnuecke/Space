@@ -9,10 +9,15 @@ namespace Space.ComponentSystem.Systems
     /// Defines a render system which always translates the view to be
     /// centered to the camera.
     /// </summary>
-    public sealed class CameraCenteredTextureRenderSystem : CullingTextureRenderSystem
+    public sealed class CameraCenteredTextureRenderSystem : TextureRenderSystem
     {
         #region Constructor
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CameraCenteredTextureRenderSystem"/> class.
+        /// </summary>
+        /// <param name="content">The content manager.</param>
+        /// <param name="spriteBatch">The sprite batch.</param>
         public CameraCenteredTextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
             : base(content, spriteBatch)
         {
@@ -23,21 +28,21 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Returns the <em>transformation</em> for offsetting and scaling rendered content.
-        /// </summary>
-        /// <returns>The transformation.</returns>
-        protected override FarTransform GetTransform()
-        {
-            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).Transform;
-        }
-
-        /// <summary>
         /// Returns the current bounds of the viewport, i.e. the rectangle of
         /// the world to actually render.
         /// </summary>
         protected override FarRectangle ComputeViewport()
         {
             return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).ComputeVisibleBounds(SpriteBatch.GraphicsDevice.Viewport);
+        }
+
+        /// <summary>
+        /// Returns the <em>transformation</em> for offsetting and scaling rendered content.
+        /// </summary>
+        /// <returns>The transformation.</returns>
+        protected override FarTransform GetTransform()
+        {
+            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).Transform;
         }
 
         #endregion

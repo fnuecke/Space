@@ -1,5 +1,4 @@
-﻿using Engine.Math;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 
 namespace Engine.FarMath
 {

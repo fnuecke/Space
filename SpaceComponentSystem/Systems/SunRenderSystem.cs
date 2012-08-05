@@ -67,7 +67,7 @@ namespace Space.ComponentSystem.Systems
 
             // Get all renderable entities in the viewport.
             var view = camera.ComputeVisibleBounds(_sun.GraphicsDevice.Viewport);
-            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
+            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, TextureRenderSystem.IndexGroupMask);
 
             // Skip there rest if nothing is visible.
             if (_drawablesInView.Count == 0)

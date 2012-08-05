@@ -43,9 +43,6 @@
     <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
@@ -76,6 +73,14 @@
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
+      <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
+      <Name>Engine.Serialization</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
       <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>
       <Name>Engine.Session</Name>
@@ -84,9 +89,9 @@
       <Project>{96E70AC4-C288-478C-866E-5C7280067642}</Project>
       <Name>Engine.Simulation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
-      <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
-      <Name>Engine.Base</Name>
+    <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
+      <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
+      <Name>Engine.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

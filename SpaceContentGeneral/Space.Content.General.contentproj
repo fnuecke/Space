@@ -18,6 +18,7 @@
   <ItemGroup>
     <Compile Include="Misc\ScriptInit.py">
       <Name>ScriptInit</Name>
+      <Importer>PlainTextImporter</Importer>
     </Compile>
   </ItemGroup>
   <ItemGroup>

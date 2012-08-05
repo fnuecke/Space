@@ -109,7 +109,7 @@ namespace Engine.FarMath
             {
                 // Round the result of the division to the next lowest value, to
                 // make sure we get into the next lower segment...
-                _segment += (int)System.Math.Floor(_offset / SegmentSize);
+                _segment += (int)Math.Floor(_offset / SegmentSize);
                 // ... compensate this by adding one segment size to the remaining
                 // offset, to make sure it's positive afterwards.
                 _offset = _offset % SegmentSize;

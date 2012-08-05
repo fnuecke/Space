@@ -140,7 +140,7 @@ namespace Space.ComponentSystem.Factories
 
             manager.AddComponent<Index>(entity).Initialize(
                 CollisionSystem.IndexGroupMask |
-                CullingTextureRenderSystem.IndexGroupMask,
+                TextureRenderSystem.IndexGroupMask,
                 (int)(CollisionRadius + CollisionRadius));
             var collisionGroup = (weapon.Damage >= 0)
                                       ? faction.ToCollisionGroup()

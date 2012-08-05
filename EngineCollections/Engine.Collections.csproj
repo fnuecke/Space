@@ -46,30 +46,6 @@
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Video, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Avatar, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Net, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Storage, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
@@ -83,17 +59,11 @@
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Net">
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bag.cs" />
     <Compile Include="BagBasedQuadTree.cs" />
+    <Compile Include="SerializableDictionary.cs" />
     <Compile Include="SpatialHashedQuadTreeRenderExtensions.cs" />
     <Compile Include="IIndex.cs" />
     <Compile Include="IndexPointExtensions.cs" />
@@ -106,13 +76,21 @@
     <Compile Include="SpatialHashedQuadTree.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
-      <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
-      <Name>Engine.Base</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
       <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
       <Name>Engine.FarMath</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
+      <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
+      <Name>Engine.Graphics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
+      <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
+      <Name>Engine.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
+      <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
+      <Name>Engine.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

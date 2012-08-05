@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.Systems
         /// Reused for iterating components when updating, to avoid
         /// modifications to the list of components breaking the update.
         /// </summary>
-        protected List<TComponent> UpdatingComponents = new List<TComponent>();
+        private List<TComponent> _updatingComponents = new List<TComponent>();
 
         #endregion
 
@@ -29,16 +29,16 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public override void Update(long frame)
         {
-            UpdatingComponents.AddRange(Components);
-            for (int i = 0, j = UpdatingComponents.Count; i < j; ++i)
+            _updatingComponents.AddRange(Components);
+            for (int i = 0, j = _updatingComponents.Count; i < j; ++i)
             {
-                var component = UpdatingComponents[i];
+                var component = _updatingComponents[i];
                 if (component.Enabled)
                 {
                     UpdateComponent(frame, component);
                 }
             }
-            UpdatingComponents.Clear();
+            _updatingComponents.Clear();
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Engine.ComponentSystem.Systems
         {
             var copy = (AbstractUpdatingComponentSystem<TComponent>)base.NewInstance();
 
-            copy.UpdatingComponents = new List<TComponent>();
+            copy._updatingComponents = new List<TComponent>();
 
             return copy;
         }

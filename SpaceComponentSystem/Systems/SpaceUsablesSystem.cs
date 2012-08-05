@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The unique type ID for this system, by which it is referred to in the manager.
         /// </summary>
-        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(SpaceUsablesSystem));
+        public static readonly int TypeId = CreateTypeId();
 
         #endregion
 

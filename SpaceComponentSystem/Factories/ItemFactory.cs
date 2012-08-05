@@ -85,7 +85,7 @@ namespace Space.ComponentSystem.Factories
             renderer.Enabled = false;
             manager.AddComponent<Index>(entity).Initialize(
                 Item.IndexGroupMask |
-                CullingTextureRenderSystem.IndexGroupMask);
+                TextureRenderSystem.IndexGroupMask);
             manager.AddComponent<ItemInfo>(entity);
 
             return entity;

@@ -1,5 +1,6 @@
 ﻿using Engine.Serialization;
 using Engine.Simulation.Commands;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 namespace Space.Simulation.Commands

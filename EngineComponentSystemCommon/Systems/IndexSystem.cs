@@ -7,6 +7,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Graphics;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -25,7 +26,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// The unique type ID for this system, by which it is referred to in the manager.
         /// </summary>
-        public static readonly int TypeId = ComponentSystem.Manager.GetSystemTypeId(typeof(IndexSystem));
+        public static readonly int TypeId = CreateTypeId();
 
         #endregion
 
@@ -569,7 +570,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="shape">Shape to use for drawing.</param>
         /// <param name="translation">Translation to apply when drawing.</param>
         [Conditional("DEBUG")]
-        public void DrawIndex(ulong groups, Graphics.AbstractShape shape, FarPosition translation)
+        public void DrawIndex(ulong groups, AbstractShape shape, FarPosition translation)
         {
             foreach (var tree in TreesForGroups(groups))
             {

@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components
@@ -23,7 +24,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <summary>
         /// The unique type ID for this object, by which it is referred to in the manager.
         /// </summary>
-        public new static readonly int TypeId = ComponentSystem.Manager.GetComponentTypeId(typeof(CollidableBox));
+        public new static readonly int TypeId = CreateTypeId();
 
         /// <summary>
         /// The type id unique to the entity/component system in the current program.

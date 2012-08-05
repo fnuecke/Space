@@ -9,6 +9,8 @@ namespace Engine.ComponentSystem.Common.Systems
     /// </summary>
     public sealed class AccelerationSystem : AbstractParallelComponentSystem<Acceleration>
     {
+        #region Logic
+        
         /// <summary>
         /// Updates the component by applying its acceleration to its velocity.
         /// The acceleration is then reset to zero, to allow an accumulative
@@ -27,5 +29,7 @@ namespace Engine.ComponentSystem.Common.Systems
             component.Value.X = 0;
             component.Value.Y = 0;
         }
+        
+        #endregion
     }
 }

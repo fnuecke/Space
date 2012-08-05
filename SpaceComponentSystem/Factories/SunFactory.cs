@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Factories
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 SoundSystem.IndexGroupMask | // Can make noise.
                 CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CullingTextureRenderSystem.IndexGroupMask,
+                TextureRenderSystem.IndexGroupMask,
                 (int)(radius + radius));
 
             return entity;

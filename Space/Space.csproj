@@ -184,9 +184,29 @@
       <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
       <Name>Engine.FarMath</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
+      <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
+      <Name>Engine.Graphics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineNetwork\Engine.Network.csproj">
+      <Project>{E63CE462-AF44-442A-9FF5-42ACD4041235}</Project>
+      <Name>Engine.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineRandom\Engine.Random.csproj">
+      <Project>{ABEE1E15-1CDA-4BD1-B37B-3500D27A8A7E}</Project>
+      <Name>Engine.Random</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
       <Project>{4FCEA399-7964-435D-BBD9-50DAAF2D3973}</Project>
       <Name>Engine.Serialization.Readers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
+      <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
+      <Name>Engine.Serialization</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
       <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>
@@ -199,6 +219,14 @@
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
+      <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
+      <Name>Engine.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
+      <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
+      <Name>Engine.XnaExtensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
       <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>

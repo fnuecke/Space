@@ -1,5 +1,4 @@
-﻿using Engine.Math;
-using Engine.Util;
+﻿using Engine.Util;
 
 namespace Engine.FarMath
 {
