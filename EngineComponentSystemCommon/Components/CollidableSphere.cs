@@ -3,7 +3,6 @@ using Engine.ComponentSystem.Common.Components.Intersection;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Serialization;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components

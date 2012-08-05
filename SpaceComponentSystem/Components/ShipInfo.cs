@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Serialization;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components

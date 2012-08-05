@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Engine.Diagnostics;
 using Engine.Serialization;
-using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {

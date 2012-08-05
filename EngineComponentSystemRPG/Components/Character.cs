@@ -4,7 +4,6 @@ using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
-using Engine.Util;
 
 namespace Engine.ComponentSystem.RPG.Components
 {
