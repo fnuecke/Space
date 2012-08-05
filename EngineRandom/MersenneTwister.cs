@@ -39,8 +39,9 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using Engine.Serialization;
+using Engine.Util;
 
-namespace Engine.Util
+namespace Engine.Random
 {
     /// <summary>
     /// Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).

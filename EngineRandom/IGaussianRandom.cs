@@ -1,4 +1,4 @@
-﻿namespace Engine.Util
+﻿namespace Engine.Random
 {
     /// <summary>
     /// Interface for pseudo random number generators producing normally

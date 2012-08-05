@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Engine.Util
+namespace Engine.Random
 {
     /// <summary>
     /// Implementation of a ziggurat sampler for producing gaussian

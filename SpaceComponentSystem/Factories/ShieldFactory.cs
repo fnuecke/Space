@@ -1,5 +1,5 @@
 ﻿using Engine.ComponentSystem;
-using Engine.Util;
+using Engine.Random;
 
 namespace Space.ComponentSystem.Factories
 {

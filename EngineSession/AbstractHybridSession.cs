@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using Engine.Network;
 using Engine.Serialization;
-using Engine.Util;
 
 namespace Engine.Session
 {

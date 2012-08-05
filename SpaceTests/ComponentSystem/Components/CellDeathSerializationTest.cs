@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.Tests.Base.Serialization;
-using Space.ComponentSystem.Components.Logic;
+using Space.ComponentSystem.Components;
 
 namespace SpaceTests.ComponentSystem.Components
 {

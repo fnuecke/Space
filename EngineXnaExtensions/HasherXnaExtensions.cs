@@ -1,4 +1,4 @@
-﻿using Engine.Util;
+﻿using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Engine.XnaExtensions

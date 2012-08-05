@@ -1,6 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 
-namespace Space.ComponentSystem.Components.Logic
+namespace Space.ComponentSystem.Components
 {
     /// <summary>
     /// This component does nothing, it just marks an entity for removal on

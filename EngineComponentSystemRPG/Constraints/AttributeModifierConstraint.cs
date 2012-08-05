@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
-using Engine.Util;
+using Engine.Math;
+using Engine.Random;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.RPG.Constraints

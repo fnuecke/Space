@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Engine.Util
+namespace Engine.Math
 {
     /// <summary>
     /// Represents an interval of the specified type.

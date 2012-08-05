@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
+using Engine.Random;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;

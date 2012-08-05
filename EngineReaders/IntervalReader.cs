@@ -1,5 +1,5 @@
 ﻿using System;
-using Engine.Util;
+using Engine.Math;
 using Microsoft.Xna.Framework.Content;
 
 namespace Engine.Serialization

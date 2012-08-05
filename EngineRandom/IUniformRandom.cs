@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Engine.Util
+namespace Engine.Random
 {
     /// <summary>
     /// Interface for classes producing pseudo random numbers that follow a

@@ -1,7 +1,7 @@
 ﻿using Engine.ComponentSystem.Common.Components;
 using Engine.FarMath;
+using Engine.Random;
 using Engine.Serialization;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors

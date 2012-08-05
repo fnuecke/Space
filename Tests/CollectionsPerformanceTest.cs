@@ -5,7 +5,7 @@ using System.Diagnostics;
 using Engine.Collections;
 using Engine.FarMath;
 using Engine.Math;
-using Engine.Util;
+using Engine.Random;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 

@@ -1,4 +1,4 @@
-﻿namespace Engine.Util
+﻿namespace Engine.Serialization
 {
     /// <summary>
     /// Interface for objects of which a hash should be computable.

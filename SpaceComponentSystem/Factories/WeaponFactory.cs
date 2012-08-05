@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem;
-using Engine.Util;
+using Engine.Math;
+using Engine.Random;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 

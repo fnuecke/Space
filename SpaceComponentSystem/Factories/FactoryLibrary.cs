@@ -2,7 +2,7 @@
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.FarMath;
-using Engine.Util;
+using Engine.Random;
 using Microsoft.Xna.Framework.Content;
 using Space.Data;
 

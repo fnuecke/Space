@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
+using Engine.Random;
 using Engine.Serialization;
-using Engine.Util;
 using Space.ComponentSystem.Components.AI.Behaviors;
 
 namespace Space.ComponentSystem.Components

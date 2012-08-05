@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.Util;
+using Engine.Math;
 
 namespace Engine.Network
 {

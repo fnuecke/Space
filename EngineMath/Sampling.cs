@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Engine.Util
+namespace Engine.Math
 {
     /// <summary>
     /// Base class for samplings, performing general tasks.

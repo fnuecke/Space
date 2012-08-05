@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Engine.Util
+namespace Engine.Serialization
 {
     /// <summary>
     /// Implements the modified FNV hash as seen here:

@@ -1,4 +1,4 @@
-﻿namespace Engine.Util
+﻿namespace Engine.Math
 {
     /// <summary>
     /// Interface for samplings, providing a read-only representation.

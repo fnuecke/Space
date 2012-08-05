@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Components.Logic;
 using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems

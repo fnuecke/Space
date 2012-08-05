@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.Serialization;
 using Engine.Util;
 using NUnit.Framework;
 

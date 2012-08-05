@@ -5,6 +5,7 @@ using Awesomium.ScreenManagement;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Graphics;
+using Engine.Math;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;

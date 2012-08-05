@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
-using Engine.Util;
+using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Systems
 {
