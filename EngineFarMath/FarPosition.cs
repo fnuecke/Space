@@ -387,6 +387,38 @@ namespace Engine.FarMath
         }
 
         /// <summary>
+        /// Multiplies the specified <see cref="FarPosition"/> with the specified <see cref="float"/>.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The result of the multiplication.
+        /// </returns>
+        public static FarPosition operator *(FarPosition value1, float value2)
+        {
+            var result = value1;
+            result.X *= value2;
+            result.Y *= value2;
+            return result;
+        }
+
+        /// <summary>
+        /// Divides the specified <see cref="FarPosition"/> by the specified <see cref="float"/>.
+        /// </summary>
+        /// <param name="value1">The dividend.</param>
+        /// <param name="value2">The divisor.</param>
+        /// <returns>
+        /// The result of the division.
+        /// </returns>
+        public static FarPosition operator /(FarPosition value1, float value2)
+        {
+            var result = value1;
+            result.X /= value2;
+            result.Y /= value2;
+            return result;
+        }
+
+        /// <summary>
         /// Returns whether the two specified <see cref="FarPosition"/>s are equal.
         /// </summary>
         /// <param name="value1">The first value.</param>

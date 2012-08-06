@@ -5,6 +5,9 @@ using System.Reflection;
 
 namespace Engine.Diagnostics
 {
+    /// <summary>
+    /// Utility proxy for easier viewing of deep hierarchy objects in debugger.
+    /// </summary>
     public sealed class FlattenHierarchyProxy
     {
         /// <summary>
