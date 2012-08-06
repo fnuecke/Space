@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Systems
     /// re-generated procedurally whenever a cell gets re-activated.
     /// </para>
     /// </summary>
-    public sealed class UniverseSystem : AbstractSystem
+    public sealed class UniverseSystem : AbstractSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -70,7 +70,12 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void Receive<T>(ref T message)
+        /// <summary>
+        /// Receives the specified message.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(ref T message) where T : struct
         {
             if (message is CellStateChanged)
             {

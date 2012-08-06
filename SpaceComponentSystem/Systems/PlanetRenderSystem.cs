@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -15,8 +16,18 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Renders planets.
     /// </summary>
-    public sealed class PlanetRenderSystem : AbstractUpdatingComponentSystem<PlanetRenderer>
+    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>, IDrawingSystem
     {
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -55,6 +66,8 @@ namespace Space.ComponentSystem.Systems
             {
                 _planet = new Planet(content, graphics);
             }
+
+            IsEnabled = true;
         }
 
         #endregion
@@ -62,23 +75,10 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Load surface texture if necessary.
-        /// </summary>
-        /// <param name="frame">The frame.</param>
-        /// <param name="component">The component.</param>
-        protected override void UpdateComponent(long frame, PlanetRenderer component)
-        {
-            if (component.Texture == null)
-            {
-                component.Texture = _content.Load<Texture2D>(component.TextureName);
-            }
-        }
-
-        /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(long frame)
+        public void Draw(long frame)
         {
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
@@ -126,8 +126,19 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
         }
 
+        /// <summary>
+        /// Renders a single planet.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        /// <param name="translation">The translation.</param>
         private void RenderPlanet(PlanetRenderer component, ref FarPosition translation)
         {
+            // Load the texture if we don't have it yet.
+            if (component.Texture == null)
+            {
+                component.Texture = _content.Load<Texture2D>(component.TextureName);
+            }
+
             // The position and orientation we're rendering at and in.
             var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
             var position = transform.Translation;
@@ -197,22 +208,23 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override AbstractSystem NewInstance()
         {
-            var copy = (PlanetRenderSystem)base.NewInstance();
+            throw new NotSupportedException();
+        }
 
-            copy._drawablesInView = new HashSet<int>();
-
-            return copy;
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
         }
 
         #endregion

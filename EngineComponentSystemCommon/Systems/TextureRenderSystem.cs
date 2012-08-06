@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -13,7 +14,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// Basic implementation of a render system. Subclasses may override the
     /// GetTranslation() method to implement camera positioning.
     /// </summary>
-    public abstract class TextureRenderSystem : AbstractUpdatingComponentSystem<TextureRenderer>
+    public abstract class TextureRenderSystem : AbstractComponentSystem<TextureRenderer>, IDrawingSystem
     {
         #region Constants
 
@@ -24,17 +25,30 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #endregion
 
-        #region Fields
+        #region Properties
 
         /// <summary>
-        /// The content manager used to load textures.
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
         /// </summary>
-        private readonly ContentManager _content;
+        /// <value>
+        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEnabled { get; set; }
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// The sprite batch to render textures into.
         /// </summary>
         protected readonly SpriteBatch SpriteBatch;
+
+        /// <summary>
+        /// The content manager used to load textures.
+        /// </summary>
+        private readonly ContentManager _content;
 
         #endregion
 
@@ -59,6 +73,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             _content = content;
             SpriteBatch = spriteBatch;
+            IsEnabled = true;
         }
 
         #endregion
@@ -66,23 +81,10 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Logic
 
         /// <summary>
-        /// Loads texture, if it's not set.
-        /// </summary>
-        /// <param name="frame">The frame.</param>
-        /// <param name="component">The component.</param>
-        protected override void UpdateComponent(long frame, TextureRenderer component)
-        {
-            if (component.Texture == null)
-            {
-                component.Texture = _content.Load<Texture2D>(component.TextureName);
-            }
-        }
-
-        /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(long frame)
+        public void Draw(long frame)
         {
             // Get all renderable entities in the viewport.
             var view = ComputeViewport();
@@ -104,7 +106,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        DrawComponent(frame, component);
+                        DrawComponent(component);
                     }
                 }
             }
@@ -115,7 +117,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     // Skip disabled or invisible entities.
                     if (component.Enabled && _drawablesInView.Contains(component.Entity))
                     {
-                        DrawComponent(frame, component);
+                        DrawComponent(component);
                     }
                 }
             }
@@ -127,10 +129,15 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// Draws the component.
         /// </summary>
-        /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void DrawComponent(long frame, TextureRenderer component)
+        private void DrawComponent(TextureRenderer component)
         {
+            // Load the texture if it isn't already.
+            if (component.Texture == null)
+            {
+                component.Texture = _content.Load<Texture2D>(component.TextureName);
+            }
+
             // Draw the texture based on its position.
             var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
 
@@ -186,22 +193,23 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override AbstractSystem NewInstance()
         {
-            var copy = (TextureRenderSystem)base.NewInstance();
+            throw new NotSupportedException();
+        }
 
-            copy._drawablesInView = new HashSet<int>();
-
-            return copy;
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
         }
 
         #endregion

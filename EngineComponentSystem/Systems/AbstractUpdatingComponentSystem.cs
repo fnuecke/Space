@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.Systems
     /// of components.
     /// </summary>
     /// <typeparam name="TComponent">The type of component handled in this system.</typeparam>
-    public abstract class AbstractUpdatingComponentSystem<TComponent> : AbstractComponentSystem<TComponent>
+    public abstract class AbstractUpdatingComponentSystem<TComponent> : AbstractComponentSystem<TComponent>, IUpdatingSystem
         where TComponent : Component
     {
         #region Single-Allocation
@@ -27,7 +27,7 @@ namespace Engine.ComponentSystem.Systems
         /// Loops over all components and calls <c>UpdateComponent()</c>.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(long frame)
+        public virtual void Update(long frame)
         {
             _updatingComponents.AddRange(Components);
             for (int i = 0, j = _updatingComponents.Count; i < j; ++i)
@@ -42,36 +42,11 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Loops over all components and calls <c>DrawComponent()</c>.
-        /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(long frame)
-        {
-            for (int i = 0, j = Components.Count; i < j; ++i)
-            {
-                var component = Components[i];
-                if (component.Enabled)
-                {
-                    DrawComponent(frame, component);
-                }
-            }
-        }
-
-        /// <summary>
         /// Applies the system's logic to the specified component.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         /// <param name="component">The component to update.</param>
         protected virtual void UpdateComponent(long frame, TComponent component)
-        {
-        }
-
-        /// <summary>
-        /// Applies the system's rendering to the specified component.
-        /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="component">The component to draw.</param>
-        protected virtual void DrawComponent(long frame, TComponent component)
         {
         }
 

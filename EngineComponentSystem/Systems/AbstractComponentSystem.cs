@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Systems
@@ -24,94 +22,72 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Messaging
+        #region Manager Events
 
         /// <summary>
-        /// Checks for added and removed components, and stores / forgets them
-        /// if they are of the type handled in this system.
-        /// </summary>
-        /// <param name="message">The sent message.</param>
-        public override void Receive<T>(ref T message)
-        {
-            if (message is ComponentAdded)
-            {
-                var component = ((ComponentAdded)(ValueType)message).Component;
-
-                Debug.Assert(component.Entity > 0, "component.Entity > 0");
-                Debug.Assert(component.Id > 0, "component.Id > 0");
-
-                // Check if the component is of the right type.
-                if (component is TComponent)
-                {
-                    var typedComponent = (TComponent)component;
-                    Debug.Assert(!Components.Contains(typedComponent));
-
-                    // Keep components in order, to stay deterministic.
-                    Components.Insert(~Components.BinarySearch(typedComponent, Component.Comparer), typedComponent);
-
-                    // Tell subclasses.
-                    OnComponentAdded(typedComponent);
-                }
-            }
-            else if (message is ComponentRemoved)
-            {
-                var component = ((ComponentRemoved)(ValueType)message).Component;
-
-                Debug.Assert(component.Entity > 0, "component.Entity > 0");
-                Debug.Assert(component.Id > 0, "component.Id > 0");
-
-                // Check if the component is of the right type.
-                if (component is TComponent)
-                {
-                    var typedComponent = (TComponent)component;
-
-                    var index = Components.BinarySearch(typedComponent, Component.Comparer);
-                    Debug.Assert(index >= 0);
-                    Components.RemoveAt(index);
-                    OnComponentRemoved(typedComponent);
-                }
-            }
-            else if (message is Depacketized)
-            {
-                // Done depacketizing. Instead of sending all components in
-                // the game state, we just rebuild the list afterwards, which
-                // saves us a lot of bandwidth.
-                Components.Clear();
-                foreach (var component in Manager.Components)
-                {
-                    if (component is TComponent)
-                    {
-                        var typedComponent = (TComponent)component;
-                        Debug.Assert(!Components.Contains(typedComponent));
-
-                        // Components are in order (we are iterating in order).
-                        Components.Add(typedComponent);
-
-                        // Do *NOT* tell our subclasses, as this is semantically
-                        // different to a new component being added.
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region Overridable
-
-        /// <summary>
-        /// Perform actions for newly added components.
+        /// Called by the manager when a new component was added.
         /// </summary>
         /// <param name="component">The component that was added.</param>
-        protected virtual void OnComponentAdded(TComponent component)
+        public override void OnComponentAdded(Component component)
         {
+            Debug.Assert(component.Entity > 0, "component.Entity > 0");
+            Debug.Assert(component.Id > 0, "component.Id > 0");
+
+            // Check if the component is of the right type.
+            if (component is TComponent)
+            {
+                var typedComponent = (TComponent)component;
+
+                // Keep components in order, to stay deterministic.
+                var index = Components.BinarySearch(typedComponent, Component.Comparer);
+                Debug.Assert(index < 0);
+                Components.Insert(~index, typedComponent);
+            }
         }
 
         /// <summary>
-        /// Perform actions for removed components.
+        /// Called by the manager when a new component was removed.
         /// </summary>
         /// <param name="component">The component that was removed.</param>
-        protected virtual void OnComponentRemoved(TComponent component)
+        public override void OnComponentRemoved(Component component)
         {
+            Debug.Assert(component.Entity > 0, "component.Entity > 0");
+            Debug.Assert(component.Id > 0, "component.Id > 0");
+
+            // Check if the component is of the right type.
+            if (component is TComponent)
+            {
+                var typedComponent = (TComponent)component;
+
+                // Take advantage of the fact that the list is sorted.
+                var index = Components.BinarySearch(typedComponent, Component.Comparer);
+                Debug.Assert(index >= 0);
+                Components.RemoveAt(index);
+            }
+        }
+
+        /// <summary>
+        /// Called by the manager when the complete environment has been
+        /// depacketized.
+        /// </summary>
+        public override void OnDepacketized()
+        {
+            // Done depacketizing. Instead of sending all components in
+            // the game state, we just rebuild the list afterwards, which
+            // saves us a lot of bandwidth when sending it via network.
+            Components.Clear();
+            foreach (var component in Manager.Components)
+            {
+                if (component is TComponent)
+                {
+                    var typedComponent = (TComponent)component;
+
+                    // Components are in order (we are iterating in order), so
+                    // just add it at the end.
+                    Debug.Assert(Components.BinarySearch(typedComponent, Component.Comparer) < 0);
+                    Components.Add(typedComponent);
+                }
+            }
         }
 
         #endregion

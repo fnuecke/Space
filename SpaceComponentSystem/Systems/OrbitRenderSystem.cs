@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -11,7 +12,7 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class OrbitRenderSystem : AbstractSystem
+    public sealed class OrbitRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Constants
 
@@ -35,6 +36,16 @@ namespace Space.ComponentSystem.Systems
         /// Color to paint the dead zone around gravitational attractors in.
         /// </summary>
         private static readonly Color DeadZoneColor = Color.DarkRed * 0.2f;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
 
         #endregion
 
@@ -87,6 +98,8 @@ namespace Space.ComponentSystem.Systems
 
             _orbitEllipse = new Ellipse(content, spriteBatch.GraphicsDevice) { Thickness = OrbitThickness };
             _deadZoneEllipse = new FilledEllipse(content, spriteBatch.GraphicsDevice) { Gradient = DeadZoneDiffuseWidth, Color = DeadZoneColor };
+
+            IsEnabled = true;
         }
 
         #endregion
@@ -97,7 +110,7 @@ namespace Space.ComponentSystem.Systems
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public override void Draw(long frame)
+        public void Draw(long frame)
         {
             // Get local player's avatar.
             var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
@@ -141,7 +154,7 @@ namespace Space.ComponentSystem.Systems
             var radarRangeSquared = radarRange * radarRange;
 
             // Get the radius of the minimal bounding sphere of our viewport.
-            var radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
+            var radius = (float)Math.Sqrt(center.X * center.X + center.Y * center.Y);
 
             // Increase radius accordingly, to include stuff possibly further away.
             radius /= zoom;
@@ -174,7 +187,7 @@ namespace Space.ComponentSystem.Systems
                 // Then apply a exponential fall-off, and make it cap a little
                 // early to get the 100% alpha when nearby, not only when
                 // exactly on top of the object ;)
-                ld = System.Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
+                ld = Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
 
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
@@ -189,7 +202,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.
-                    var ellipseFocusDistance = (float)System.Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
+                    var ellipseFocusDistance = (float)Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
                     Vector2 ellipseCenter;
                     ellipseCenter.X = ellipseFocusDistance;
                     ellipseCenter.Y = 0;
@@ -208,7 +221,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Near clipping, i.e. don't render if we're inside the
                     // ellipse, but not seeing its border.
-                    float nearClipDistance = System.Math.Max(0, ellipse.MinorRadius - radius);
+                    float nearClipDistance = Math.Max(0, ellipse.MinorRadius - radius);
                     nearClipDistance *= nearClipDistance;
 
                     // Check if we're cutting (potentially seeing) the orbit
@@ -251,7 +264,7 @@ namespace Space.ComponentSystem.Systems
                 // output.
                 var maxAcceleration = info.MaxAcceleration;
                 var neighborMass = neighborGravitation.Mass;
-                var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborMass / maxAcceleration);
+                var pointOfNoReturn = (float)Math.Sqrt(mass * neighborMass / maxAcceleration);
                 _deadZoneEllipse.Center = (Vector2)(neighborTransform.Translation - position) + center;
                 // Add the complete diffuse width, not just the half (which
                 // would be the exact point), because it's unlikely someone
@@ -268,6 +281,30 @@ namespace Space.ComponentSystem.Systems
 
             // Clear the list for the next run.
             _reusableNeighborList.Clear();
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override AbstractSystem NewInstance()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
         }
 
         #endregion

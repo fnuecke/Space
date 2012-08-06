@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Messages;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 
@@ -12,36 +11,37 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// </summary>
     public sealed class InventorySystem : AbstractComponentSystem<Inventory>
     {
+        #region Logic
+        
         /// <summary>
         /// Check for removed entities to remove them from inventories.
         /// </summary>
-        public override void Receive<T>(ref T message)
+        /// <param name="component">The removed component.</param>
+        public override void OnComponentRemoved(Component component)
         {
-            base.Receive(ref message);
+            base.OnComponentRemoved(component);
 
-            if (message is ComponentRemoved)
+            if (component is Item)
             {
-                // If a component was removed from the game and it was an item
-                // remove it from all known inventories.
-                var removed = (ComponentRemoved)(ValueType)message;
-                if (removed.Component is Item)
+                // An item was removed, remove it from all inventories.
+                foreach (var inventory in Components)
                 {
-                    foreach (var component in Components)
-                    {
-                        component.Remove(removed.Component.Entity);
-                    }
+                    inventory.Remove(inventory.Entity);
                 }
-                else if (removed.Component is Inventory)
+            }
+            else if (component is Inventory)
+            {
+                // An inventory was removed, remove all items in it.
+                foreach (var item in (Inventory)component)
                 {
-                    foreach (var item in (Inventory)removed.Component)
+                    if (item.HasValue)
                     {
-                        if (item.HasValue)
-                        {
-                            Manager.RemoveEntity(item.Value);
-                        }
+                        Manager.RemoveEntity(item.Value);
                     }
                 }
             }
         }
+
+        #endregion
     }
 }

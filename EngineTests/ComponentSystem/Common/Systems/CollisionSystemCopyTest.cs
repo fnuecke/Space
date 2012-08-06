@@ -16,7 +16,7 @@ namespace Engine.Tests.ComponentSystem.Common.Systems
         {
             return new[]
                    {
-                       new CollisionSystem(16)
+                       new CollisionSystem()
                    };
         }
     }

@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// This system handles rendering whatever the local player's radar picks up.
     /// </summary>
-    public sealed class RadarRenderSystem : AbstractSystem
+    public sealed class RadarRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Types
 
@@ -61,6 +61,16 @@ namespace Space.ComponentSystem.Systems
         /// center of the radar icons.
         /// </summary>
         private const int DistanceOffset = 5;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
 
         #endregion
 
@@ -125,6 +135,8 @@ namespace Space.ComponentSystem.Systems
             _radarDirection[(int)RadarDirection.BottomRight] = content.Load<Texture2D>("Textures/Radar/bottom_right");
             _radarDistance = content.Load<Texture2D>("Textures/Radar/distance");
             _distanceFont = content.Load<SpriteFont>("Fonts/visitor");
+
+            IsEnabled = true;
         }
 
         #endregion
@@ -135,7 +147,7 @@ namespace Space.ComponentSystem.Systems
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public override void Draw(long frame)
+        public void Draw(long frame)
         {
             // Get local player's avatar.
             var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
@@ -421,9 +433,25 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
-        // We do not need to handle copying, because even though the reusable
-        // neighbor list will be shared among multiple simulations, Draw() is
-        // only ever called on one simulation at a time.
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override AbstractSystem NewInstance()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
+        }
 
         #endregion
     }

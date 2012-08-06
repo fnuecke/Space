@@ -13,7 +13,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// to the full viewport. It supports fading between different sets of
     /// textures.
     /// </summary>
-    public abstract class BackgroundRenderSystem : AbstractSystem
+    public abstract class BackgroundRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -21,6 +21,16 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The unique type ID for this object, by which it is referred to in the manager.
         /// </summary>
         public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
 
         #endregion
 
@@ -54,20 +64,22 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="spriteBatch">The sprite batch.</param>
-        public BackgroundRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        protected BackgroundRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _content = content;
             _spriteBatch = spriteBatch;
             _shader = content.Load<Effect>("Shaders/Background");
+
+            IsEnabled = true;
         }
 
         #region Logic
 
         /// <summary>
-        /// Used to load textures for backgrounds and update alphas for fading.
+        /// Draws the current background.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(long frame)
+        /// <param name="frame">The frame that should be rendered.</param>
+        public void Draw(long frame)
         {
             // Update all our backgrounds.
             for (var i = _backgrounds.Count - 1; i >= 0; i--)
@@ -107,14 +119,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     break;
                 }
             }
-        }
 
-        /// <summary>
-        /// Draws the current background.
-        /// </summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        public override void Draw(long frame)
-        {
             // Get the transformation to use.
             var transform = GetTransform();
 
@@ -169,7 +174,9 @@ namespace Engine.ComponentSystem.Common.Systems
                 TextureNames = textureNames,
                 Levels = levels,
                 Textures = new Texture2D[textureNames.Length],
-                TransitionSpeed = time / 30.0f
+                TransitionSpeed = time / 30.0f,
+                // Make the first background immediately fully opaque.
+                Alpha = _backgrounds.Count == 0 ? 1f : 0f
             });
         }
 
@@ -177,7 +184,25 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Copying
 
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override AbstractSystem NewInstance()
+        {
+            throw new NotSupportedException();
+        }
 
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
+        }
 
         #endregion
 

@@ -9,6 +9,11 @@ namespace Engine.ComponentSystem.Common.Systems
     /// </summary>
     public sealed class ExpirationSystem : AbstractUpdatingComponentSystem<Expiration>
     {
+        /// <summary>
+        /// Updates the component by decrementing its time to live.
+        /// </summary>
+        /// <param name="frame">The current frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Expiration component)
         {
             if (component.TimeToLive > 0)

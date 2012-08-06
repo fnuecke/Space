@@ -9,17 +9,22 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// Handles keeping modified character attributes up-to-date.
     /// </summary>
     /// <typeparam name="TAttribute">Possible attribute values.</typeparam>
-    public sealed class CharacterSystem<TAttribute> : AbstractComponentSystem<Character<TAttribute>>
+    public sealed class CharacterSystem<TAttribute> : AbstractSystem, IMessagingSystem
         where TAttribute : struct
     {
+        #region Logic
+        
         /// <summary>
-        /// Handles adds to trigger recomputation of modified attribute
-        /// values.
+        /// Called by the manager when a new component was added.
         /// </summary>
         /// <param name="component">The component that was added.</param>
-        protected override void OnComponentAdded(Character<TAttribute> component)
+        public override void OnComponentAdded(ComponentSystem.Components.Component component)
         {
-            component.RecomputeAttributes();
+            // Check if the component is of the right type.
+            if (component is Character<TAttribute>)
+            {
+                ((Character<TAttribute>)component).RecomputeAttributes();
+            }
         }
 
         /// <summary>
@@ -28,10 +33,8 @@ namespace Engine.ComponentSystem.RPG.Systems
         /// </summary>
         /// <typeparam name="T">The type of the messages.</typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
-            base.Receive(ref message);
-            
             if (message is ItemEquipped)
             {
                 // Recompute if an item with attribute modifiers was added.
@@ -59,5 +62,7 @@ namespace Engine.ComponentSystem.RPG.Systems
                 }
             }
         }
+
+        #endregion
     }
 }

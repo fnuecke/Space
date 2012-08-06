@@ -10,15 +10,6 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CameraCenteredParticleEffectSystem : ParticleEffectSystem
     {
-        #region Type ID
-
-        /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
-        /// </summary>
-        public static readonly int TypeId = CreateTypeId();
-
-        #endregion
-
         #region Constructor
 
         /// <summary>

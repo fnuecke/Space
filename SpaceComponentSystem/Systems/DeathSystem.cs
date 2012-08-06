@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Space.ComponentSystem.Components;
@@ -12,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     /// Handles the death of entities due to leaving the valid area or being
     /// killed an not respawning.
     /// </summary>
-    public sealed class DeathSystem : AbstractSystem
+    public sealed class DeathSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -29,7 +30,7 @@ namespace Space.ComponentSystem.Systems
         /// List of entities to kill when we update. This is accumulated from
         /// translation events, to allow thread safe removal in one go.
         /// </summary>
-        private HashSet<int> _entitiesToKill = new HashSet<int>();
+        private HashSet<int> _entitiesToRemove = new HashSet<int>();
 
         #endregion
 
@@ -39,25 +40,25 @@ namespace Space.ComponentSystem.Systems
         /// Removes entities that died this frame from the manager.
         /// </summary>
         /// <param name="frame">The current simulation frame.</param>
-        public override void Update(long frame)
+        public void Update(long frame)
         {
             // Remove dead entities (getting out of bounds).
-            foreach (var entity in _entitiesToKill)
+            foreach (var entity in _entitiesToRemove)
             {
                 Manager.RemoveEntity(entity);
             }
-            _entitiesToKill.Clear();
+            _entitiesToRemove.Clear();
         }
 
         /// <summary>
         /// Kill of an entity, marking it for removal.
         /// </summary>
         /// <param name="entity">The entity to kill.</param>
-        public void Kill(int entity)
+        public void MarkForRemoval(int entity)
         {
-            lock (_entitiesToKill)
+            lock (_entitiesToRemove)
             {
-                _entitiesToKill.Add(entity);
+                _entitiesToRemove.Add(entity);
             }
         }
 
@@ -66,21 +67,19 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
-            base.Receive(ref message);
-
             if (message is EntityDied)
             {
                 var entity = ((EntityDied)(ValueType)message).Entity;
 
                 // Play explosion effect at point of death.
-                var particleSystem = (CameraCenteredParticleEffectSystem)Manager.GetSystem(CameraCenteredParticleEffectSystem.TypeId);
+                var particleSystem = (CameraCenteredParticleEffectSystem)Manager.GetSystem(ParticleEffectSystem.TypeId);
                 if (particleSystem != null)
                 {
                     particleSystem.Play("Effects/BasicExplosion", entity);
                 }
-                var soundSystem = (CameraCenteredSoundSystem)Manager.GetSystem(CameraCenteredSoundSystem.TypeId);
+                var soundSystem = (CameraCenteredSoundSystem)Manager.GetSystem(SoundSystem.TypeId);
                 if (soundSystem != null)
                 {
                     soundSystem.Play("Explosion", entity);
@@ -92,9 +91,9 @@ namespace Space.ComponentSystem.Systems
                 {
                     // Entity does not respawn, remove it. This can be triggered from
                     // a parallel system (e.g. collisions), so we remember to remove it.
-                    lock (_entitiesToKill)
+                    lock (_entitiesToRemove)
                     {
-                        _entitiesToKill.Add(entity);
+                        _entitiesToRemove.Add(entity);
                     }
                 }
             }
@@ -141,7 +140,7 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (DeathSystem)base.NewInstance();
 
-            copy._entitiesToKill = new HashSet<int>();
+            copy._entitiesToRemove = new HashSet<int>();
 
             return copy;
         }

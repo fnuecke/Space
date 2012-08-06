@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Keeps the ship information facade up-to-date.
     /// </summary>
-    public sealed class ShipInfoSystem : AbstractSystem
+    public sealed class ShipInfoSystem : AbstractSystem, IMessagingSystem
     {
         #region Logic
 
@@ -20,7 +20,7 @@ namespace Space.ComponentSystem.Systems
         /// change.
         /// </summary>
         /// <param name="message">The message to handle.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
             if (message is CharacterStatsInvalidated)
             {

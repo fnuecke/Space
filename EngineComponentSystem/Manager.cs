@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -83,6 +83,21 @@ namespace Engine.ComponentSystem
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
 
         /// <summary>
+        /// List of all updating systems registered with this manager.
+        /// </summary>
+        private readonly List<IUpdatingSystem> _updatingSystems = new List<IUpdatingSystem>();
+
+        /// <summary>
+        /// List of all messaging systems registered with this manager.
+        /// </summary>
+        private readonly List<IMessagingSystem> _messagingSystems = new List<IMessagingSystem>();
+
+        /// <summary>
+        /// List of all drawing systems registered with this manager.
+        /// </summary>
+        private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
+
+        /// <summary>
         /// Lookup table for quick access to systems by their type id.
         /// </summary>
         private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
@@ -107,9 +122,9 @@ namespace Engine.ComponentSystem
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
-            for (int i = 0, j = _systems.Count; i < j; ++i)
+            for (int i = 0, j = _updatingSystems.Count; i < j; ++i)
             {
-                _systems[i].Update(frame);
+                _updatingSystems[i].Update(frame);
             }
 
             // Make released component instances from the last update available
@@ -124,9 +139,12 @@ namespace Engine.ComponentSystem
         /// <param name="frame">The frame to render.</param>
         public void Draw(long frame)
         {
-            for (int i = 0, j = _systems.Count; i < j; ++i)
+            for (int i = 0, j = _drawingSystems.Count; i < j; ++i)
             {
-                _systems[i].Draw(frame);
+                if (_drawingSystems[i].IsEnabled)
+                {
+                    _drawingSystems[i].Draw(frame);
+                }
             }
         }
 
@@ -143,8 +161,11 @@ namespace Engine.ComponentSystem
         /// </returns>
         public IManager AddSystem(AbstractSystem system)
         {
-            // Make sure we have a valid system.
-            Debug.Assert(system != null);
+            // We do not allow systems to be both logic and presentation related.
+            if ((system is IUpdatingSystem || system is IMessagingSystem) && system is IDrawingSystem)
+            {
+                throw new ArgumentException("Systems must be either logic related (IUpdatingSystem, IMessagingSystem) or presentation related (IDrawingSystem), but never both.");
+            }
 
             // Get type ID for that system.
             var systemTypeId = GetSystemTypeId(system.GetType());
@@ -154,7 +175,27 @@ namespace Engine.ComponentSystem
 
             // Register the system
             _systemsByTypeId[systemTypeId] = system;
+
+            // Add to general list, for serialization and hashing.
             _systems.Add(system);
+
+            // Add to updating list, for update iteration.
+            if (system is IUpdatingSystem)
+            {
+                _updatingSystems.Add((IUpdatingSystem)system);
+            }
+            // Add to messaging list, for iteration for message distribution.
+            if (system is IMessagingSystem)
+            {
+                _messagingSystems.Add((IMessagingSystem)system);
+            }
+            // Add to drawing list, for draw iteration.
+            if (system is IDrawingSystem)
+            {
+                _drawingSystems.Add((IDrawingSystem)system);
+            }
+
+            // Set the manager so that the system knows it belongs to us.
             system.Manager = this;
 
             return this;
@@ -178,6 +219,10 @@ namespace Engine.ComponentSystem
         /// <param name="system">The system to copy.</param>
         public void CopySystem(AbstractSystem system)
         {
+            // Make sure we have a valid system.
+            Debug.Assert(system != null);
+            Debug.Assert(!(system is IDrawingSystem), "Cannot copy presentation systems.");
+
             var systemTypeId = GetSystemTypeId(system.GetType());
             if (_systemsByTypeId[systemTypeId] == null)
             {
@@ -185,6 +230,14 @@ namespace Engine.ComponentSystem
                 systemCopy.Manager = this;
                 _systemsByTypeId[systemTypeId] = systemCopy;
                 _systems.Add(systemCopy);
+                if (systemCopy is IUpdatingSystem)
+                {
+                    _updatingSystems.Add((IUpdatingSystem)systemCopy);
+                }
+                if (systemCopy is IMessagingSystem)
+                {
+                    _messagingSystems.Add((IMessagingSystem)systemCopy);
+                }
             }
             system.CopyInto(_systemsByTypeId[systemTypeId]);
         }
@@ -213,6 +266,8 @@ namespace Engine.ComponentSystem
             // Unregister the system.
             _systemsByTypeId[systemTypeId] = null;
             _systems.Remove(system);
+            _updatingSystems.Remove(system as IUpdatingSystem);
+            _drawingSystems.Remove(system as IDrawingSystem);
             system.Manager = null;
 
             return true;
@@ -269,10 +324,11 @@ namespace Engine.ComponentSystem
             _entityIds.ReleaseId(entity);
             ReleaseEntity(instance);
 
-            // Send a message to all interested systems.
-            EntityRemoved message;
-            message.Entity = entity;
-            SendMessage(ref message);
+            // Send a message to all systems.
+            foreach (var system in _systems)
+            {
+                system.OnEntityRemoved(entity);
+            }
         }
 
         /// <summary>
@@ -311,10 +367,11 @@ namespace Engine.ComponentSystem
             // Add to entity index.
             _entities[entity].Add(component);
 
-            // Send a message to all interested systems.
-            ComponentAdded message;
-            message.Component = component;
-            SendMessage(ref message);
+            // Send a message to all systems.
+            foreach (var system in _systems)
+            {
+                system.OnComponentAdded(component);
+            }
 
             // Return the created component.
             return component;
@@ -335,10 +392,11 @@ namespace Engine.ComponentSystem
             _components[component.Id] = null;
             _componentIds.ReleaseId(component.Id);
 
-            // Send a message to all interested systems.
-            ComponentRemoved message;
-            message.Component = component;
-            SendMessage(ref message);
+            // Send a message to all systems.
+            foreach (var system in _systems)
+            {
+                system.OnComponentRemoved(component);
+            }
 
             // This will reset the component, so do that after sending the
             // event, to allow listeners to do something sensible with the
@@ -410,9 +468,9 @@ namespace Engine.ComponentSystem
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(ref T message) where T : struct
         {
-            for (int i = 0, j = _systems.Count; i < j; ++i)
+            for (int i = 0, j = _messagingSystems.Count; i < j; ++i)
             {
-                _systems[i].Receive(ref message);
+                _messagingSystems[i].Receive(ref message);
             }
         }
 
@@ -521,8 +579,10 @@ namespace Engine.ComponentSystem
             }
 
             // All done, send message to allow post-processing.
-            Depacketized message;
-            SendMessage(ref message);
+            foreach (var system in _systems)
+            {
+                system.OnDepacketized();
+            }
         }
 
         /// <summary>
@@ -591,10 +651,11 @@ namespace Engine.ComponentSystem
                 // Add to entity index.
                 _entities[entity].Add(component);
 
-                // Send a message to all interested systems.
-                ComponentAdded message;
-                message.Component = component;
-                SendMessage(ref message);
+                // Send a message to all systems.
+                foreach (var system in _systems)
+                {
+                    system.OnComponentAdded(component);
+                }
             }
             return entity;
         }

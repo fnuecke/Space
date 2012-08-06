@@ -1,11 +1,15 @@
-﻿using Engine.ComponentSystem.Systems;
+﻿using System;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class ShipRenderSystem : AbstractUpdatingComponentSystem<ShipInfo>
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class ShipRenderSystem : AbstractComponentSystem<ShipInfo>
     {
         #region Fields
 
@@ -33,22 +37,28 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
+        #endregion
+
+        #region Copying
+
         /// <summary>
-        /// Loads textures, if it's not set.
+        /// Not supported by presentation types.
         /// </summary>
-        /// <param name="frame">The frame.</param>
-        /// <param name="component">The component.</param>
-        protected override void UpdateComponent(long frame, ShipInfo component)
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override AbstractSystem NewInstance()
         {
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// Draws the component.
+        /// Not supported by presentation types.
         /// </summary>
-        /// <param name="frame">The frame.</param>
-        /// <param name="component">The component.</param>
-        protected override void DrawComponent(long frame, ShipInfo component)
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
         {
+            throw new NotSupportedException();
         }
 
         #endregion

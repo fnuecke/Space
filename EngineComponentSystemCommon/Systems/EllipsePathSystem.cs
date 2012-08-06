@@ -11,6 +11,11 @@ namespace Engine.ComponentSystem.Common.Systems
     {
         #region Logic
 
+        /// <summary>
+        /// Updates the component by adjusting it's position for the specified frame.
+        /// </summary>
+        /// <param name="frame">The current frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, EllipsePath component)
         {
             // Get the center, the position of the entity we're rotating around.

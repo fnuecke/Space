@@ -68,7 +68,6 @@
     <Compile Include="ComponentSystem\Common\Systems\ExpirationSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\FrictionSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\IndexSystemCopyTest.cs" />
-    <Compile Include="ComponentSystem\Common\Systems\SoundSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\SpinSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\ManagerTest.cs" />
     <Compile Include="FarMath\FarValueTests.cs" />

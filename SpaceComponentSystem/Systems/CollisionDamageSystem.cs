@@ -9,7 +9,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Handles applying damage when two entities collide.
     /// </summary>
-    public sealed class CollisionDamageSystem : AbstractParallelComponentSystem<CollisionDamage>
+    public sealed class CollisionDamageSystem : AbstractParallelComponentSystem<CollisionDamage>, IMessagingSystem
     {
         #region Logic
 
@@ -39,10 +39,8 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
-            base.Receive(ref message);
-
             if (message is Collision)
             {
                 // We only explicitly handle the first entity here, because we'll get the
@@ -71,7 +69,7 @@ namespace Space.ComponentSystem.Systems
                     if (secondDamage.Cooldown == 0)
                     {
                         // Yes, kill it.
-                        ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).Kill(secondEntity);
+                        ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(secondEntity);
                     }
                     else
                     {

@@ -10,9 +10,16 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Recomputes mass of a player ship based on its character stats.
     /// </summary>
-    public sealed class PlayerMassSystem : AbstractSystem
+    public sealed class PlayerMassSystem : AbstractSystem, IMessagingSystem
     {
-        public override void Receive<T>(ref T message)
+        #region Logic
+        
+        /// <summary>
+        /// Receives the specified message and handles it if it invalidates character stats.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(ref T message) where T : struct
         {
             if (message is CharacterStatsInvalidated)
             {
@@ -25,5 +32,7 @@ namespace Space.ComponentSystem.Systems
                 gravitation.Mass = Math.Max(1, character.GetValue(AttributeType.Mass));
             }
         }
+
+        #endregion
     }
 }

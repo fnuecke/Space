@@ -776,9 +776,18 @@ namespace Engine.Simulation
                     throw new InvalidOperationException("Cannot add systems after simulation has started.");
                 }
 
-                foreach (var state in _tss._simulations)
+                if (system is IDrawingSystem)
                 {
-                    state.Manager.CopySystem(system);
+                    // Only insert in leading simulation.
+                    _tss.LeadingSimulation.Manager.AddSystem(system);
+                }
+                else
+                {
+                    // Insert in all simulations.
+                    foreach (var state in _tss._simulations)
+                    {
+                        state.Manager.CopySystem(system);
+                    }
                 }
 
                 return this;

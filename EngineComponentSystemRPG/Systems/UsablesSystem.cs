@@ -7,9 +7,11 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// Allows triggering usable items.
     /// </summary>
     /// <typeparam name="TAction">Possible actions taken upon activation.</typeparam>
-    public abstract class UsablesSystem<TAction> : AbstractComponentSystem<Usable<TAction>>
+    public abstract class UsablesSystem<TAction> : AbstractSystem
         where TAction : struct
     {
+        #region Methods
+        
         /// <summary>
         /// Activates the specified usable.
         /// </summary>
@@ -28,5 +30,7 @@ namespace Engine.ComponentSystem.RPG.Systems
         /// <param name="action">The action to perform.</param>
         /// <param name="entity">The item that triggered the action.</param>
         protected abstract void Activate(TAction action, int entity);
+
+        #endregion
     }
 }

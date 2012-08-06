@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Session;
 using Microsoft.Xna.Framework;
@@ -13,17 +14,8 @@ namespace Space.ComponentSystem.Systems
     /// Defines a sound system which uses the local player's avatar to
     /// determine the listener position.
     /// </summary>
-    public sealed class CameraCenteredSoundSystem : SoundSystem
+    public sealed class CameraCenteredSoundSystem : SoundSystem, IMessagingSystem
     {
-        #region Type ID
-
-        /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
-        /// </summary>
-        public static readonly int TypeId = CreateTypeId();
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -35,6 +27,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Constructor
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CameraCenteredSoundSystem"/> class.
+        /// </summary>
+        /// <param name="soundbank">The soundbank.</param>
+        /// <param name="session">The session.</param>
         public CameraCenteredSoundSystem(SoundBank soundbank, IClientSession session)
             : base(soundbank)
         {
@@ -50,15 +47,13 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
             if (message is WeaponFired)
             {
                 var weaponMessage = (WeaponFired)(ValueType)message;
                 Play(weaponMessage.Weapon.Sound, weaponMessage.ShipEntity);
             }
-
-            base.Receive(ref message);
         }
 
         /// <summary>

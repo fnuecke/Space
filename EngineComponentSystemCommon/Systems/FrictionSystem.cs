@@ -9,6 +9,11 @@ namespace Engine.ComponentSystem.Common.Systems
     /// </summary>
     public sealed class FrictionSystem : AbstractParallelComponentSystem<Friction>
     {
+        /// <summary>
+        /// Updates the component's entity by adjusting it's velocity.
+        /// </summary>
+        /// <param name="frame">The current frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Friction component)
         {
             // Apply friction only if set to a positive value.

@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages item drops by reacting to death events.
     /// </summary>
-    public sealed class DropSystem : AbstractComponentSystem<Drops>
+    public sealed class DropSystem : AbstractComponentSystem<Drops>, IMessagingSystem
     {
         #region Fields
 
@@ -106,10 +106,8 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
-            base.Receive(ref message);
-
             if (message is EntityDied)
             {
                 var entity = ((EntityDied)(ValueType)message).Entity;

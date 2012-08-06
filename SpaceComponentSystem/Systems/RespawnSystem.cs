@@ -10,8 +10,10 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// This system tracks entities that respawn (players, normally).
     /// </summary>
-    public sealed class RespawnSystem : AbstractParallelComponentSystem<Respawn>
+    public sealed class RespawnSystem : AbstractParallelComponentSystem<Respawn>, IMessagingSystem
     {
+        #region Logic
+        
         /// <summary>
         /// Checks for entities to respawn.
         /// </summary>
@@ -19,12 +21,11 @@ namespace Space.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Respawn component)
         {
+            // Skip if already alive or not yet ready to revive.
             if (component.TimeToRespawn <= 0 || --component.TimeToRespawn != 0)
             {
                 return;
             }
-
-            // Respawn.
 
             // Try to position.
             var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
@@ -66,10 +67,8 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
-            base.Receive(ref message);
-
             if (message is EntityDied)
             {
                 var entity = ((EntityDied)(ValueType)message).Entity;
@@ -97,5 +96,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
         }
+
+        #endregion
     }
 }

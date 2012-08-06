@@ -9,6 +9,13 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// </summary>
     public sealed class StatusEffectSystem : AbstractUpdatingComponentSystem<StatusEffect>
     {
+        #region Logic
+        
+        /// <summary>
+        /// Updates the component by updating the remaining time to live.
+        /// </summary>
+        /// <param name="frame">The current frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, StatusEffect component)
         {
             if (component.Remaining > 0)
@@ -22,5 +29,7 @@ namespace Engine.ComponentSystem.RPG.Systems
                 Manager.RemoveComponent(component);
             }
         }
+
+        #endregion
     }
 }

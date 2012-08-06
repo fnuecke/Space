@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     /// Tracks camera position, either based on player's position and input
     /// state, or via a set position.
     /// </summary>
-    public sealed class CameraSystem : AbstractSystem
+    public sealed class CameraSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -47,6 +47,12 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
 
         /// <summary>
         /// The current camera position.
@@ -95,12 +101,6 @@ namespace Space.ComponentSystem.Systems
         private readonly IClientSession _session;
 
         /// <summary>
-        /// The last frame we updated our camera offset (interpolated). We need
-        /// this to avoid sped-up interpolation due to rollbacks.
-        /// </summary>
-        private long _lastFrame;
-
-        /// <summary>
         /// Previous offset to the ship, use to slowly interpolate, giving a
         /// more organic feel.
         /// </summary>
@@ -137,10 +137,16 @@ namespace Space.ComponentSystem.Systems
 
         #region Constructor
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CameraSystem"/> class.
+        /// </summary>
+        /// <param name="game">The game.</param>
+        /// <param name="session">The session.</param>
         public CameraSystem(Game game, IClientSession session)
         {
             _game = game;
             _session = session;
+            IsEnabled = true;
         }
 
         #endregion
@@ -213,44 +219,41 @@ namespace Space.ComponentSystem.Systems
         /// especially stuff outside the simulation, to avoid "lagging".
         /// </summary>
         /// <param name="frame">The frame the update applies to.</param>
-        public override void Update(long frame)
+        public void Draw(long frame)
         {
-            // Only update the offset if we didn't roll-back.
-            if (frame > _lastFrame)
+            // Don't update if our position is fixed or we're not in a game.
+            if (_customCameraPosition.HasValue || _session.ConnectionState != ClientState.Connected)
             {
-                if (!_customCameraPosition.HasValue &&
-                    _session.ConnectionState == ClientState.Connected)
-                {
-                    var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-                    if (avatar.HasValue)
-                    {
-                        // Non-fixed camera, update our offset based on the game pad
-                        // or mouse position, relative to the ship.
-                        var targetOffset = GetInputInducedOffset();
-                        var avatarPosition = ((Transform)Manager.GetComponent(avatar.Value, Engine.ComponentSystem.Common.Components.Transform.TypeId)).Translation;
-
-                        // The interpolate to our new offset, slowly to make the
-                        // effect less brain-melting.
-                        _currentOffset = FarPosition.SmoothStep(_currentOffset, (FarPosition)targetOffset, 0.15f);
-
-                        // The camera *position* is then the avatar position, plus
-                        // the offset, correcting for the viewport center which was
-                        // subtracted to make the mouse position's origin centered
-                        // to the screen.
-                        _cameraPosition = avatarPosition + _currentOffset;
-
-                        // Interpolate new zoom moving slowly in or out.
-                        _currentZoom = MathHelper.SmoothStep(_currentZoom, _targetZoom, 0.15f);
-
-                        // Update the transformation.
-                        UpdateTransformation();
-                    }
-                }
-
-                _lastFrame = frame;
+                return;
             }
 
-            base.Update(frame);
+            // Don't update if we don't have an avatar representing the local player.
+            var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
+            if (!avatar.HasValue)
+            {
+                return;
+            }
+
+            // Non-fixed camera, update our offset based on the game pad
+            // or mouse position, relative to the ship.
+            var targetOffset = GetInputInducedOffset();
+            var avatarPosition = ((Transform)Manager.GetComponent(avatar.Value, Engine.ComponentSystem.Common.Components.Transform.TypeId)).Translation;
+
+            // The interpolate to our new offset, slowly to make the
+            // effect less brain-melting.
+            _currentOffset = FarPosition.SmoothStep(_currentOffset, (FarPosition)targetOffset, 0.15f);
+
+            // The camera *position* is then the avatar position, plus
+            // the offset, correcting for the viewport center which was
+            // subtracted to make the mouse position's origin centered
+            // to the screen.
+            _cameraPosition = avatarPosition + _currentOffset;
+
+            // Interpolate new zoom moving slowly in or out.
+            _currentZoom = MathHelper.SmoothStep(_currentZoom, _targetZoom, 0.15f);
+
+            // Update the transformation.
+            UpdateTransformation();
         }
 
         /// <summary>
@@ -328,52 +331,23 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Creates a shallow copy of the object.
+        /// Not supported by presentation types.
         /// </summary>
-        /// <returns>The copy.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override AbstractSystem NewInstance()
         {
-            var copy = (CameraSystem)base.NewInstance();
-
-            copy._lastFrame = 0;
-            copy._currentOffset = FarPosition.Zero;
-            copy._cameraPosition = FarPosition.Zero;
-            copy._customCameraPosition = null;
-            copy._targetZoom = MaximumZoom;
-            copy._currentZoom = MaximumZoom;
-            copy._transform = FarTransform.Identity;
-
-            return copy;
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
-        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override void CopyInto(AbstractSystem into)
         {
-            base.CopyInto(into);
-
-            var copy = (CameraSystem)into;
-
-            copy._lastFrame = _lastFrame;
-            copy._currentOffset = _currentOffset;
-            copy._cameraPosition = _cameraPosition;
-            copy._customCameraPosition = _customCameraPosition;
-            // Do NOT copy zoom, as it's set locally, and we never want to
-            // overwrite the leading one. Otherwise the zoom would change
-            // on rollbacks, which is very irritating.
-            //copy._targetZoom = _targetZoom;
-            //copy._currentZoom = _currentZoom;
-            copy._transform = _transform;
+            throw new NotSupportedException();
         }
 
         #endregion

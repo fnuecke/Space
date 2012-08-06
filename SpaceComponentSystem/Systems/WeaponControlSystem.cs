@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Handles firing of equipped weapons.
     /// </summary>
-    public sealed class WeaponControlSystem : AbstractParallelComponentSystem<WeaponControl>
+    public sealed class WeaponControlSystem : AbstractParallelComponentSystem<WeaponControl>, IMessagingSystem
     {
         #region Fields
 
@@ -136,14 +136,27 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
+        /// Called when a component is removed.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        public override void OnComponentRemoved(Component component)
+        {
+            base.OnComponentRemoved(component);
+
+            if (component is Item)
+            {
+                // An item was removed, clear its cooldowns.
+                _cooldowns.Remove(component.Entity);
+            }
+        }
+
+        /// <summary>
         /// Handles item equipment to track cooldowns.
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
-            base.Receive(ref message);
-
             if (message is ItemEquipped)
             {
                 var added = (ItemEquipped)(ValueType)message;
@@ -160,15 +173,6 @@ namespace Space.ComponentSystem.Systems
                 {
                     // Weapon was unequipped, stop tracking.
                     _cooldowns.Remove(removed.Item);
-                }
-            }
-            else if (message is ComponentRemoved)
-            {
-                // Item removed from simulation.
-                var removed = (ComponentRemoved)(ValueType)message;
-                if (removed.Component is Item)
-                {
-                    _cooldowns.Remove(removed.Component.Entity);
                 }
             }
         }

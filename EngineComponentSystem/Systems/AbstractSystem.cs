@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Engine.ComponentSystem.Components;
 using Engine.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
@@ -41,34 +42,37 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Logic
+        #region Manager Events
 
         /// <summary>
-        /// Default implementation does nothing.
+        /// Called by the manager when an entity was removed.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public virtual void Update(long frame)
+        /// <param name="entity">The entity that was removed.</param>
+        public virtual void OnEntityRemoved(int entity)
         {
         }
 
         /// <summary>
-        /// Default implementation does nothing.
+        /// Called by the manager when a new component was added.
         /// </summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        public virtual void Draw(long frame)
+        /// <param name="component">The component that was added.</param>
+        public virtual void OnComponentAdded(Component component)
         {
         }
 
-        #endregion
-
-        #region Messaging
+        /// <summary>
+        /// Called by the manager when a component was removed.
+        /// </summary>
+        /// <param name="component">The component that was removed.</param>
+        public virtual void OnComponentRemoved(Component component)
+        {
+        }
 
         /// <summary>
-        /// Handle a message of the specified type.
+        /// Called by the manager when the complete environment has been
+        /// depacketized.
         /// </summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public virtual void Receive<T>(ref T message) where T : struct
+        public virtual void OnDepacketized()
         {
         }
 
@@ -134,15 +138,16 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Creates a deep copy of the system. The passed system must be of the
         /// same type.
-        /// 
         /// <para>
         /// This clones any contained data types to return an instance that
         /// represents a complete copy of the one passed in.
         /// </para>
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
-        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
+        /// <param name="into">The instance to copy into.</param>
+        /// <remarks>
+        /// The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.
+        /// </remarks>
         public virtual void CopyInto(AbstractSystem into)
         {
             Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));

@@ -3,6 +3,9 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
+    /// <summary>
+    /// Implements usable item logic.
+    /// </summary>
     public sealed class SpaceUsablesSystem : UsablesSystem<UsableResponse>
     {
         #region Type ID
@@ -14,8 +17,17 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Logic
+
+        /// <summary>
+        /// Provides implementations of logic for "usables", e.g. healing items.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="entity">The entity.</param>
         protected override void Activate(UsableResponse action, int entity)
         {
         }
+
+        #endregion
     }
 }

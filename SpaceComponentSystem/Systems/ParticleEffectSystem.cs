@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -16,8 +17,27 @@ namespace Space.ComponentSystem.Systems
     /// Controls the particle components in a game, passing them some
     /// information about how to render themselves.
     /// </summary>
-    public class ParticleEffectSystem : AbstractUpdatingComponentSystem<ParticleEffects>
+    public abstract class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>, IDrawingSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -36,14 +56,6 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private readonly Dictionary<string, ParticleEffect> _effects = new Dictionary<string, ParticleEffect>();
 
-        /// <summary>
-        /// Whether this is the sound system thats doing the actual "rendering"
-        /// for the simulation the component system belongs to, i.e. whether
-        /// Draw is called for this instance. Only that system may actually
-        /// play sounds.
-        /// </summary>
-        private bool _isDrawingInstance;
-
         #endregion
 
         #region Constructor
@@ -53,11 +65,13 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics.</param>
-        public ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics)
+        protected ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics)
         {
             _content = content;
             _renderer = new SpriteBatchRenderer {GraphicsDeviceService = graphics};
             _renderer.LoadContent(content);
+
+            IsEnabled = true;
         }
 
         #endregion
@@ -65,17 +79,18 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Updates all particle effects.
+        /// Flags our system as the presenting instance and renders all effects.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(long frame)
+        /// <param name="frame">The frame that should be rendered.</param>
+        public void Draw(long frame)
         {
-            base.Update(frame);
-
-            // Only update in the main instance, otherwise effects play too fast.
-            if (!_isDrawingInstance)
+            foreach (var component in Components)
             {
-                return;
+                foreach (var effect in component.Effects)
+                {
+                    var offset = effect.Item2;
+                    Play(effect.Item1, component.Entity, ref offset);
+                }
             }
 
             // Update all known effects.
@@ -83,17 +98,6 @@ namespace Space.ComponentSystem.Systems
             {
                 effect.Update(1 / 60.0f);
             }
-        }
-
-        /// <summary>
-        /// Flags our system as the presenting instance and renders all effects.
-        /// </summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        public override void Draw(long frame)
-        {
-            base.Draw(frame);
-
-            _isDrawingInstance = true;
 
             // Render all known effects.
             var transform = GetTransform();
@@ -101,20 +105,6 @@ namespace Space.ComponentSystem.Systems
             {
                 // TODO adjust for far transform
                 //_renderer.RenderEffect(effect, ref transform);
-            }
-        }
-
-        /// <summary>
-        /// Emits particles for enabled particle effects.
-        /// </summary>
-        /// <param name="frame"></param>
-        /// <param name="component"></param>
-        protected override void UpdateComponent(long frame, ParticleEffects component)
-        {
-            foreach (var effect in component.Effects)
-            {
-                var offset = effect.Item2;
-                Play(effect.Item1, component.Entity, ref offset);
             }
         }
 
@@ -143,13 +133,6 @@ namespace Space.ComponentSystem.Systems
         /// <param name="scale">The scale.</param>
         public void Play(string effectName, ref FarPosition position, ref Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
         {
-            // Do not play sounds if this isn't the main sound system thats
-            // used for the presentation.
-            if (!_isDrawingInstance)
-            {
-                return;
-            }
-
             var transform = GetTransform();
             Vector2 translation;
             FarPosition.Transform(ref position, ref transform, out translation);
@@ -261,45 +244,23 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override AbstractSystem NewInstance()
         {
-            var copy = (ParticleEffectSystem)base.NewInstance();
-
-            // Mark as secondary system.
-            copy._isDrawingInstance = false;
-
-            return copy;
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
-        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override void CopyInto(AbstractSystem into)
         {
-            base.CopyInto(into);
-
-            var copy = (ParticleEffectSystem)into;
-
-            // Mark as secondary system.
-            copy._isDrawingInstance = false;
+            throw new NotSupportedException();
         }
 
         #endregion

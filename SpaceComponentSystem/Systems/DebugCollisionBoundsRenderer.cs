@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -9,8 +10,21 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class DebugCollisionBoundsRenderer : AbstractComponentSystem<Collidable>
+    /// <summary>
+    /// This system is used to draw boxes representing the collision bounds of entities.
+    /// </summary>
+    public sealed class DebugCollisionBoundsRenderer : AbstractComponentSystem<Collidable>, IDrawingSystem
     {
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -30,15 +44,31 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DebugCollisionBoundsRenderer"/> class.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="graphics">The graphics.</param>
         public DebugCollisionBoundsRenderer(ContentManager content, GraphicsDevice graphics)
         {
             if (_shape == null)
             {
                 _shape = new FilledRectangle(content, graphics);
             }
+            IsEnabled = true;
         }
 
-        public override void Draw(long frame)
+        #endregion
+
+        #region Logic
+        
+        /// <summary>
+        /// Draws all collidable bounds in the viewport.
+        /// </summary>
+        /// <param name="frame">The frame that should be rendered.</param>
+        public void Draw(long frame)
         {
             var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
 
@@ -74,5 +104,31 @@ namespace Space.ComponentSystem.Systems
 
             _collidablesInView.Clear();
         }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override AbstractSystem NewInstance()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
+        }
+
+        #endregion
     }
 }

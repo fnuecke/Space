@@ -5,6 +5,7 @@ using System.Threading;
 using Engine.Collections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
@@ -18,7 +19,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// queries. It uses a grid structure for indexing, and will return lists
     /// of entities in cells near a query point.
     /// </summary>
-    public sealed class IndexSystem : AbstractComponentSystem<Index>
+    public sealed class IndexSystem : AbstractComponentSystem<Index>, IUpdatingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -147,13 +148,123 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Logic
 
         /// <summary>
+        /// Adds entities that got an index component to all their indexes.
+        /// </summary>
+        /// <param name="component">The component that was added.</param>
+        public override void OnComponentAdded(Component component)
+        {
+            base.OnComponentAdded(component);
+
+            if (component is Index)
+            {
+                AddEntity(component.Entity, ((Index)component).IndexGroupsMask);
+            }
+        }
+
+        /// <summary>
+        /// Remove entities that had their index component removed from all
+        /// indexes.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        public override void OnComponentRemoved(Component component)
+        {
+            base.OnComponentRemoved(component);
+
+            if (component is Index)
+            {
+                // Remove from any indexes the entity was part of.
+                foreach (var tree in TreesForGroups(((Index)component).IndexGroupsMask))
+                {
+                    tree.Remove(component.Entity);
+                }
+            }
+        }
+
+        /// <summary>
         /// Updates the index based on translations that happened this frame.
         /// </summary>
         /// <param name="frame">The current simulation frame.</param>
-        public override void Update(long frame)
+        public void Update(long frame)
         {
             // Reset query count until next run.
             _numQueriesSinceLastUpdate = 0;
+        }
+
+        /// <summary>
+        /// Handles position changes of indexed components.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(ref T message) where T : struct
+        {
+            if (message is IndexGroupsChanged)
+            {
+                var changedMessage = (IndexGroupsChanged)(ValueType)message;
+
+                // Do we have new groups?
+                if (changedMessage.AddedIndexGroups != 0)
+                {
+                    AddEntity(changedMessage.Entity, changedMessage.AddedIndexGroups);
+                }
+
+                // Do we have deprecated groups?
+                if (changedMessage.RemovedIndexGroups != 0)
+                {
+                    // Remove from each old group.
+                    foreach (var tree in TreesForGroups(changedMessage.RemovedIndexGroups))
+                    {
+                        tree.Remove(changedMessage.Entity);
+                    }
+                }
+            }
+            else if (message is IndexBoundsChanged)
+            {
+                var changedMessage = (IndexBoundsChanged)(ValueType)message;
+
+                // Check if the entity is indexable.
+                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
+                if (index == null)
+                {
+                    return;
+                }
+
+                var bounds = changedMessage.Bounds;
+                var transform = ((Transform)Manager.GetComponent(changedMessage.Entity, Transform.TypeId));
+                if (transform != null)
+                {
+                    bounds.X = (int)transform.Translation.X - bounds.Width / 2;
+                    bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
+                }
+
+                // Update all indexes the entity is part of.
+                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
+                {
+                    tree.Update(bounds, Vector2.Zero, changedMessage.Entity);
+                }
+            }
+            else if (message is TranslationChanged)
+            {
+                var changedMessage = (TranslationChanged)(ValueType)message;
+
+                // Check if the entity is indexable.
+                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
+                if (index == null)
+                {
+                    return;
+                }
+
+                var bounds = index.Bounds;
+                bounds.X = (int)changedMessage.CurrentPosition.X - bounds.Width / 2;
+                bounds.Y = (int)changedMessage.CurrentPosition.Y - bounds.Height / 2;
+
+                var velocity = ((Velocity)Manager.GetComponent(changedMessage.Entity, Velocity.TypeId));
+                var delta = velocity != null ? velocity.Value : Vector2.Zero;
+
+                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
+                {
+                    tree.Update(bounds, delta, changedMessage.Entity);
+                }
+            }
         }
 
         #endregion
@@ -266,116 +377,6 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 // Add to each group.
                 tree.Add(bounds, entity);
-            }
-        }
-
-        #endregion
-
-        #region Component removal handling
-
-        /// <summary>
-        /// Adds entities that got an index component to all their indexes.
-        /// </summary>
-        /// <param name="component">The component that was added.</param>
-        protected override void OnComponentAdded(Index component)
-        {
-            AddEntity(component.Entity, component.IndexGroupsMask);
-        }
-
-        /// <summary>
-        /// Remove entities that had their index component removed from all
-        /// indexes.
-        /// </summary>
-        /// <param name="component">The component.</param>
-        protected override void OnComponentRemoved(Index component)
-        {
-            // Remove from any indexes the entity was part of.
-            foreach (var tree in TreesForGroups(component.IndexGroupsMask))
-            {
-                tree.Remove(component.Entity);
-            }
-        }
-
-        #endregion
-
-        #region Messaging
-
-        /// <summary>
-        /// Handles position changes of indexed components.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
-        {
-            base.Receive(ref message);
-
-            if (message is IndexGroupsChanged)
-            {
-                var changedMessage = (IndexGroupsChanged)(ValueType)message;
-
-                // Do we have new groups?
-                if (changedMessage.AddedIndexGroups != 0)
-                {
-                    AddEntity(changedMessage.Entity, changedMessage.AddedIndexGroups);
-                }
-
-                // Do we have deprecated groups?
-                if (changedMessage.RemovedIndexGroups != 0)
-                {
-                    // Remove from each old group.
-                    foreach (var tree in TreesForGroups(changedMessage.RemovedIndexGroups))
-                    {
-                        tree.Remove(changedMessage.Entity);
-                    }
-                }
-            }
-            else if (message is IndexBoundsChanged)
-            {
-                var changedMessage = (IndexBoundsChanged)(ValueType)message;
-                
-                // Check if the entity is indexable.
-                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
-                if (index == null)
-                {
-                    return;
-                }
-
-                var bounds = changedMessage.Bounds;
-                var transform = ((Transform)Manager.GetComponent(changedMessage.Entity, Transform.TypeId));
-                if (transform != null)
-                {
-                    bounds.X = (int)transform.Translation.X - bounds.Width / 2;
-                    bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
-                }
-
-                // Update all indexes the entity is part of.
-                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
-                {
-                    tree.Update(bounds, Vector2.Zero, changedMessage.Entity);
-                }
-            }
-            else if (message is TranslationChanged)
-            {
-                var changedMessage = (TranslationChanged)(ValueType)message;
-
-                // Check if the entity is indexable.
-                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
-                if (index == null)
-                {
-                    return;
-                }
-
-                var bounds = index.Bounds;
-                bounds.X = (int)changedMessage.CurrentPosition.X - bounds.Width / 2;
-                bounds.Y = (int)changedMessage.CurrentPosition.Y - bounds.Height / 2;
-
-                var velocity = ((Velocity)Manager.GetComponent(changedMessage.Entity, Velocity.TypeId));
-                var delta = velocity != null ? velocity.Value : Vector2.Zero;
-                
-                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
-                {
-                    tree.Update(bounds, delta, changedMessage.Entity);
-                }
             }
         }
 

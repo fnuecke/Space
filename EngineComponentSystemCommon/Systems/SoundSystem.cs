@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
@@ -12,8 +13,17 @@ namespace Engine.ComponentSystem.Common.Systems
     /// System that manages sound components, querying them for cue names to play
     /// in a single update.
     /// </summary>
-    public class SoundSystem : AbstractSystem
+    public abstract class SoundSystem : AbstractSystem, IDrawingSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
         #region Constants
 
         /// <summary>
@@ -25,6 +35,16 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The maximum distance from which sounds can be heard.
         /// </summary>
         private const float MaxSoundDistance = 5000;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
 
         #endregion
 
@@ -44,14 +64,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The sound emitter to use for emitted sound positioning.
         /// </summary>
         private readonly AudioEmitter _emitter = new AudioEmitter();
-
-        /// <summary>
-        /// Whether this is the sound system thats doing the actual "rendering"
-        /// for the simulation the component system belongs to, i.e. whether
-        /// Draw is called for this instance. Only that system may actually
-        /// play sounds.
-        /// </summary>
-        private bool _isDrawingInstance;
 
         /// <summary>
         /// All Currently playing sounds mapped to the entry id
@@ -78,9 +90,14 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Constructor
 
-        public SoundSystem(SoundBank soundBank)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SoundSystem"/> class.
+        /// </summary>
+        /// <param name="soundBank">The sound bank.</param>
+        protected SoundSystem(SoundBank soundBank)
         {
             _soundBank = soundBank;
+            IsEnabled = _soundBank != null;
         }
 
         #endregion
@@ -91,13 +108,8 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Check for sound in range and play.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(long frame)
+        public void Draw(long frame)
         {
-            if (!_isDrawingInstance)
-            {
-                return;
-            }
-
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
             Debug.Assert(index != null);
 
@@ -188,15 +200,6 @@ namespace Engine.ComponentSystem.Common.Systems
             _playingSounds = tmp;
         }
 
-        /// <summary>
-        /// Flags our system as the presenting instance.
-        /// </summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        public sealed override void Draw(long frame)
-        {
-            _isDrawingInstance = true;
-        }
-
         #endregion
 
         #region Playback
@@ -212,7 +215,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
-            if (!_isDrawingInstance || _soundBank == null)
+            if (_soundBank == null)
             {
                 return null;
             }
@@ -342,45 +345,23 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override AbstractSystem NewInstance()
         {
-            var copy = (SoundSystem)base.NewInstance();
-
-            // Mark as secondary system.
-            copy._isDrawingInstance = false;
-
-            return copy;
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
-        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override void CopyInto(AbstractSystem into)
         {
-            base.CopyInto(into);
-
-            var copy = (SoundSystem)into;
-
-            // Mark as secondary system.
-            copy._isDrawingInstance = false;
+            throw new NotSupportedException();
         }
 
         #endregion

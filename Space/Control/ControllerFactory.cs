@@ -101,7 +101,6 @@ namespace Space.Control
                     // receiving messages, if at all).
                     new AvatarSystem(),
                     new ShipInfoSystem(),
-                    new DetectableSystem(game.Content),
 
                     // These may be manipulated/triggered via player commands.
                     new CharacterSystem<AttributeType>(),
@@ -138,7 +137,7 @@ namespace Space.Control
                     new IndexSystem(16, 64),
 
                     // Check for collisions after positions have been updated.
-                    new CollisionSystem(4),
+                    new CollisionSystem(),
                     // Collision damage is mainly reactive to collisions, but let's keep
                     // it here for context. Note that it also has it's own update, in
                     // which it updates damager cooldowns.
@@ -218,6 +217,9 @@ namespace Space.Control
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, session),
                     
+                    // Load textures for detectables before trying to render radar.
+                    new DetectableSystem(game.Content),
+
                     // Mind the order: orbits below planets below suns below normal
                     // objects below particle effects below radar.
                     new OrbitRenderSystem(game.Content, spriteBatch, session),

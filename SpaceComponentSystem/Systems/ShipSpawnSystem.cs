@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
@@ -14,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages spawning dynamic objects for cells, such as random ships.
     /// </summary>
-    public sealed class ShipSpawnSystem : AbstractUpdatingComponentSystem<ShipSpawner>
+    public sealed class ShipSpawnSystem : AbstractUpdatingComponentSystem<ShipSpawner>, IMessagingSystem
     {
         #region Fields
 
@@ -28,6 +27,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
+        /// <summary>
+        /// Updates the component by checking if it's time to spawn a new entity.
+        /// </summary>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, ShipSpawner component)
         {
             if (component.Cooldown > 0)
@@ -47,6 +51,12 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Creates an attacking ship.
+        /// </summary>
+        /// <param name="startPosition">The start position.</param>
+        /// <param name="targetEntity">The target entity.</param>
+        /// <param name="faction">The faction.</param>
         public void CreateAttackingShip(ref FarPosition startPosition, int targetEntity, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
@@ -54,6 +64,12 @@ namespace Space.ComponentSystem.Systems
             ai.Attack(targetEntity);
         }
 
+        /// <summary>
+        /// Creates an attacking ship.
+        /// </summary>
+        /// <param name="startPosition">The start position.</param>
+        /// <param name="targetPosition">The target position.</param>
+        /// <param name="faction">The faction.</param>
         public void CreateAttackingShip(ref FarPosition startPosition, ref FarPosition targetPosition, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
@@ -61,9 +77,19 @@ namespace Space.ComponentSystem.Systems
             ai.AttackMove(ref targetPosition);
         }
 
-        #endregion
+        /// <summary>
+        /// Called by the manager when an entity was removed.
+        /// </summary>
+        /// <param name="entity">The entity that was removed.</param>
+        public override void OnEntityRemoved(int entity)
+        {
+            base.OnEntityRemoved(entity);
 
-        #region Messaging
+            foreach (var shipSpawner in Components)
+            {
+                shipSpawner.Targets.Remove(entity);
+            }
+        }
 
         /// <summary>
         /// Checks for cells being activated and spawns some initial ships in
@@ -71,7 +97,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public override void Receive<T>(ref T message)
+        public void Receive<T>(ref T message) where T : struct
         {
             if (message is CellStateChanged)
             {
@@ -99,14 +125,6 @@ namespace Space.ComponentSystem.Systems
                         var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
                         ai.Roam(ref cellArea);
                     }
-                }
-            }
-            else if (message is EntityRemoved)
-            {
-                var entity = ((EntityRemoved)(ValueType)message).Entity;
-                foreach (var shipSpawner in Components)
-                {
-                    shipSpawner.Targets.Remove(entity);   
                 }
             }
         }

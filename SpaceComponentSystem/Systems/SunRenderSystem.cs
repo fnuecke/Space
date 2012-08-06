@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -15,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Renders suns.
     /// </summary>
-    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>
+    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>, IDrawingSystem
     {
         #region Fields
 
@@ -23,6 +24,16 @@ namespace Space.ComponentSystem.Systems
         /// The sun renderer we use.
         /// </summary>
         private static Sun _sun;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should perform
+        /// updates and react to events.
+        /// </summary>
+        public bool IsEnabled { get; set; }
 
         #endregion
 
@@ -51,6 +62,8 @@ namespace Space.ComponentSystem.Systems
                 _sun = new Sun(content, graphics);
                 _sun.LoadContent(spriteBatch, content);
             }
+
+            IsEnabled = true;
         }
 
         #endregion
@@ -61,7 +74,7 @@ namespace Space.ComponentSystem.Systems
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(long frame)
+        public void Draw(long frame)
         {
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
@@ -108,6 +121,11 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
         }
 
+        /// <summary>
+        /// Renders the specified sun.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        /// <param name="transform">The transform.</param>
         private void RenderSun(SunRenderer component, ref FarTransform transform)
         {
             // Get absolute position of sun.
@@ -144,22 +162,23 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        /// Not supported by presentation types.
         /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
         public override AbstractSystem NewInstance()
         {
-            var copy = (SunRenderSystem)base.NewInstance();
+            throw new NotSupportedException();
+        }
 
-            copy._drawablesInView = new HashSet<int>();
-
-            return copy;
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
         }
 
         #endregion

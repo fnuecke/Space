@@ -21,7 +21,7 @@ namespace Space.ComponentSystem.Systems
     /// neighbor search).
     /// </para>
     /// </summary>
-    public sealed class CellSystem : AbstractSystem
+    public sealed class CellSystem : AbstractSystem, IUpdatingSystem
     {
         #region Type ID
 
@@ -155,7 +155,7 @@ namespace Space.ComponentSystem.Systems
         /// and which are not. Sends messages if a cell's state changes.
         /// </summary>
         /// <param name="frame">The frame the update applies to.</param>
-        public override void Update(long frame)
+        public void Update(long frame)
         {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.

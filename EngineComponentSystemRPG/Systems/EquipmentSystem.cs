@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Messages;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 
@@ -12,33 +11,35 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// </summary>
     public sealed class EquipmentSystem : AbstractComponentSystem<Equipment>
     {
+        #region Logic
+        
         /// <summary>
         /// Check for removed entities to remove them from inventories.
         /// </summary>
-        public override void Receive<T>(ref T message)
+        /// <param name="component">The removed component.</param>
+        public override void OnComponentRemoved(Component component)
         {
-            base.Receive(ref message);
+            base.OnComponentRemoved(component);
 
-            if (message is ComponentRemoved)
+            if (component is Item)
             {
-                // If a component was removed from the game and it was an item
-                // remove it from all known inventories.
-                var removed = (ComponentRemoved)(ValueType)message;
-                if (removed.Component is Item)
+                // An item was removed, unequip it everywhere.
+                foreach (var equipment in Components)
                 {
-                    foreach (var component in Components)
-                    {
-                        component.TryUnequip(removed.Component.Entity);
-                    }
+                    equipment.TryUnequip(component.Entity);
                 }
-                else if (removed.Component is Equipment)
+            }
+            else if (component is Equipment)
+            {
+                // An equipment was removed, remove all items still
+                // held by it.
+                foreach (var item in ((Equipment)component).AllItems)
                 {
-                    foreach (var item in ((Equipment)removed.Component).AllItems)
-                    {
-                        Manager.RemoveEntity(item);
-                    }
+                    Manager.RemoveEntity(item);
                 }
             }
         }
+
+        #endregion
     }
 }

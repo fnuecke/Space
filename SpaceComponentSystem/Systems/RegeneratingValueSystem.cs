@@ -8,8 +8,10 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Triggers refilling regenerating values.
     /// </summary>
-    public sealed class RegeneratingValueSystem : AbstractParallelComponentSystem<AbstractRegeneratingValue>
+    public sealed class RegeneratingValueSystem : AbstractParallelComponentSystem<AbstractRegeneratingValue>, IMessagingSystem
     {
+        #region Logic
+        
         /// <summary>
         /// Updates the component's current value or timeout.
         /// </summary>
@@ -27,10 +29,13 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void Receive<T>(ref T message)
+        /// <summary>
+        /// Receives the specified message.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(ref T message) where T : struct
         {
-            base.Receive(ref message);
-
             if (message is CharacterStatsInvalidated)
             {
                 var entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
@@ -40,5 +45,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
         }
+
+        #endregion
     }
 }
