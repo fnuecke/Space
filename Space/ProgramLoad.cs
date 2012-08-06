@@ -119,10 +119,6 @@ namespace Space
 
             // Push the main menu.
             _screenManager.PushScreen("MainMenu/MainMenu");
-
-            // Create ingame graphics stuff.
-            // TODO make it so this is rendered inside the simulation (e.g. own render systems)
-            _background = new Background(this, _spriteBatch);
         }
 
         /// <summary>

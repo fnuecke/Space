@@ -382,7 +382,7 @@ namespace Engine.Collections
                 center.X = -x * FarValue.SegmentSize;
                 for (var y = top; y <= bottom; y++)
                 {
-                    center.Y = y * FarValue.SegmentSize;
+                    center.Y = -y * FarValue.SegmentSize;
                     yield return Tuple.Create(BitwiseMagic.Pack(x, y), center);
                 }
             }

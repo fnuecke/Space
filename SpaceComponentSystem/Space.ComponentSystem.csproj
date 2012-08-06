@@ -112,6 +112,8 @@
     <Compile Include="Factories\SunFactory.cs" />
     <Compile Include="Factories\SunSystemFactory.cs" />
     <Compile Include="Systems\AISystem.cs" />
+    <Compile Include="Systems\BiomeSystem.cs" />
+    <Compile Include="Systems\CameraCenteredBackgroundSystem.cs" />
     <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionDamageSystem.cs" />
@@ -150,7 +152,6 @@
     <Compile Include="Components\Weapon.cs" />
     <Compile Include="Messages\CellStateChanged.cs" />
     <Compile Include="Messages\EntityDied.cs" />
-    <Compile Include="Messages\WeaponFired.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CellSystem.cs" />
     <Compile Include="Systems\ParticleEffectSystem.cs" />

@@ -30,6 +30,8 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component that was added.</param>
         public override void OnComponentAdded(Component component)
         {
+            base.OnComponentAdded(component);
+
             Debug.Assert(component.Entity > 0, "component.Entity > 0");
             Debug.Assert(component.Id > 0, "component.Id > 0");
 
@@ -51,6 +53,8 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component that was removed.</param>
         public override void OnComponentRemoved(Component component)
         {
+            base.OnComponentRemoved(component);
+
             Debug.Assert(component.Entity > 0, "component.Entity > 0");
             Debug.Assert(component.Id > 0, "component.Id > 0");
 
@@ -72,9 +76,27 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         public override void OnDepacketized()
         {
-            // Done depacketizing. Instead of sending all components in
-            // the game state, we just rebuild the list afterwards, which
-            // saves us a lot of bandwidth when sending it via network.
+            base.OnDepacketized();
+
+            RebuildComponentList();
+        }
+
+        /// <summary>
+        /// Called by the manager when the complete environment has been
+        /// copied from another manager.
+        /// </summary>
+        public override void OnCopied()
+        {
+            base.OnCopied();
+
+            RebuildComponentList();
+        }
+
+        /// <summary>
+        /// Rebuilds the component list by fetching all components handled by us.
+        /// </summary>
+        private void RebuildComponentList()
+        {
             Components.Clear();
             foreach (var component in Manager.Components)
             {
@@ -138,22 +160,18 @@ namespace Engine.ComponentSystem.Systems
         /// represents a complete copy of the one passed in.
         /// </para>
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
+        /// <remarks>
+        /// This will <em>not</em> fill the copy with the same components as this
+        /// one has; this is done in the <see cref="OnCopied"/> callback, to allow
+        /// proper copying even for systems that may not be present in the manager
+        /// that was the source (in particular: presentation related systems).
+        /// </remarks>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (AbstractComponentSystem<TComponent>)into;
-
-            copy.Components.Clear();
-            foreach (var component in Components)
-            {
-                var componentCopy = copy.Manager.GetComponentById(component.Id);
-                Debug.Assert(componentCopy is TComponent);
-                copy.Components.Add((TComponent)componentCopy);
-            }
+            ((AbstractComponentSystem<TComponent>)into).Components.Clear();
         }
 
         #endregion

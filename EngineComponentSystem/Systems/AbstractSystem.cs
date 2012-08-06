@@ -76,6 +76,14 @@ namespace Engine.ComponentSystem.Systems
         {
         }
 
+        /// <summary>
+        /// Called by the manager when the complete environment has been
+        /// copied from another manager.
+        /// </summary>
+        public virtual void OnCopied()
+        {
+        }
+
         #endregion
 
         #region Serialization / Hashing

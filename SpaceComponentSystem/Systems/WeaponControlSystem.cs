@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
@@ -8,7 +9,6 @@ using Engine.Random;
 using Engine.Serialization;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
-using Space.ComponentSystem.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Systems
@@ -75,6 +75,11 @@ namespace Space.ComponentSystem.Systems
             _projectilesToCreate.Clear();
         }
 
+        /// <summary>
+        /// Updates the component.
+        /// </summary>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, WeaponControl component)
         {
             // Nothing to do if we're not shooting.
@@ -127,11 +132,12 @@ namespace Space.ComponentSystem.Systems
                     _projectilesToCreate.Add(Tuple.Create(projectile, component.Entity, weapon, faction.Value));
                 }
 
-                // Generate message.
-                WeaponFired message;
-                message.Weapon = weapon;
-                message.ShipEntity = component.Entity;
-                Manager.SendMessage(ref message);
+                // Play sound.
+                var soundSystem = (SoundSystem)Manager.GetSystem(SoundSystem.TypeId);
+                if (soundSystem != null)
+                {
+                    soundSystem.Play(weapon.Sound, component.Entity);
+                }
             }
         }
 

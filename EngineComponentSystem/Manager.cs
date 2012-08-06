@@ -171,10 +171,17 @@ namespace Engine.ComponentSystem
             var systemTypeId = GetSystemTypeId(system.GetType());
 
             // Don't allow adding the same system twice.
-            Debug.Assert(_systemsByTypeId[systemTypeId] == null, "Must not add the same system twice.");
+            if (_systemsByTypeId[systemTypeId] != null)
+            {
+                throw new ArgumentException("Must not add the same system twice.");
+            }
 
-            // Register the system
-            _systemsByTypeId[systemTypeId] = system;
+            // Register the system.
+            while (systemTypeId != 0)
+            {
+                _systemsByTypeId[systemTypeId] = system;
+                systemTypeId = SystemHierarchy[systemTypeId];
+            }
 
             // Add to general list, for serialization and hashing.
             _systems.Add(system);
@@ -220,24 +227,15 @@ namespace Engine.ComponentSystem
         public void CopySystem(AbstractSystem system)
         {
             // Make sure we have a valid system.
-            Debug.Assert(system != null);
-            Debug.Assert(!(system is IDrawingSystem), "Cannot copy presentation systems.");
+            if(system is IDrawingSystem)
+            {
+                throw new ArgumentException("Cannot copy presentation systems.", "system");
+            }
 
             var systemTypeId = GetSystemTypeId(system.GetType());
             if (_systemsByTypeId[systemTypeId] == null)
             {
-                var systemCopy = system.NewInstance();
-                systemCopy.Manager = this;
-                _systemsByTypeId[systemTypeId] = systemCopy;
-                _systems.Add(systemCopy);
-                if (systemCopy is IUpdatingSystem)
-                {
-                    _updatingSystems.Add((IUpdatingSystem)systemCopy);
-                }
-                if (systemCopy is IMessagingSystem)
-                {
-                    _messagingSystems.Add((IMessagingSystem)systemCopy);
-                }
+                AddSystem(system.NewInstance());
             }
             system.CopyInto(_systemsByTypeId[systemTypeId]);
         }
@@ -264,7 +262,11 @@ namespace Engine.ComponentSystem
             }
 
             // Unregister the system.
-            _systemsByTypeId[systemTypeId] = null;
+            while (systemTypeId != 0)
+            {
+                _systemsByTypeId[systemTypeId] = null;
+                systemTypeId = SystemHierarchy[systemTypeId];
+            }
             _systems.Remove(system);
             _updatingSystems.Remove(system as IUpdatingSystem);
             _drawingSystems.Remove(system as IDrawingSystem);
@@ -665,19 +667,14 @@ namespace Engine.ComponentSystem
         #region Copying
 
         /// <summary>
-        /// Creates a new copy of the same type as the object.
+        /// Not supported, to avoid issues with assumptions on how presentation
+        /// related systems should be handled. Manually create a new instance
+        /// instead and use <see cref="CopyInto"/> on it.
         /// </summary>
         /// <returns>The copy.</returns>
         public IManager NewInstance()
         {
-            var copy = new Manager();
-
-            foreach (var system in _systems)
-            {
-                copy.AddSystem(system.NewInstance());
-            }
-
-            return copy;
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -687,9 +684,13 @@ namespace Engine.ComponentSystem
         /// <returns>The copy.</returns>
         public void CopyInto(IManager into)
         {
-            Debug.Assert(into is Manager);
-            Debug.Assert(into != this);
+            // Validate input.
+            if (into == this)
+            {
+                throw new ArgumentException("Cannot copy a manager into itself.");
+            }
 
+            // Get the properly typed version.
             var copy = (Manager)into;
 
             // Copy id managers.
@@ -727,6 +728,12 @@ namespace Engine.ComponentSystem
             foreach (var item in _systems)
             {
                 copy.CopySystem(item);
+            }
+
+            // All done, send message to allow post-processing.
+            foreach (var system in copy._systems)
+            {
+                system.OnCopied();
             }
         }
 

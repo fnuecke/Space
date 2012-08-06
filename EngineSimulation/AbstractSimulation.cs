@@ -43,9 +43,12 @@ namespace Engine.Simulation
 
         #region Constructor
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AbstractSimulation"/> class.
+        /// </summary>
         protected AbstractSimulation()
         {
-            this.Manager = new Manager();
+            Manager = new Manager();
         }
 
         #endregion
@@ -96,7 +99,7 @@ namespace Engine.Simulation
 
         #endregion
 
-        #region Hashing / Cloning / Serialization
+        #region Serialization
 
         /// <summary>
         /// Write the object's state to the given packet.
@@ -150,6 +153,10 @@ namespace Engine.Simulation
             Manager.Hash(hasher);
         }
 
+        #endregion
+
+        #region Copying
+
         /// <summary>
         /// Creates a new copy of the object, that shares no mutable
         /// references with this instance.
@@ -160,7 +167,7 @@ namespace Engine.Simulation
             var copy = (AbstractSimulation)MemberwiseClone();
 
             copy.CurrentFrame = 0;
-            copy.Manager = Manager.NewInstance();
+            copy.Manager = new Manager();
             copy.Commands = new List<Command>();
 
             return copy;

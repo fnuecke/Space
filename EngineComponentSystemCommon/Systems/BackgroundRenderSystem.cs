@@ -47,11 +47,6 @@ namespace Engine.ComponentSystem.Common.Systems
         private readonly SpriteBatch _spriteBatch;
 
         /// <summary>
-        /// The shader we use for wrapping rendering of backgrounds.
-        /// </summary>
-        private readonly Effect _shader;
-
-        /// <summary>
         /// Our backgrounds, if there's more than one, those are pending for
         /// removal (waiting for current one to become 100% opaque).
         /// </summary>
@@ -68,7 +63,6 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             _content = content;
             _spriteBatch = spriteBatch;
-            _shader = content.Load<Effect>("Shaders/Background");
 
             IsEnabled = true;
         }
@@ -100,6 +94,12 @@ namespace Engine.ComponentSystem.Common.Systems
                     background.Textures[j] = _content.Load<Texture2D>(background.TextureNames[j]);
                 }
 
+                // Stop if we're already at full alpha.
+                if (background.Alpha >= 1.0f)
+                {
+                    break;
+                }
+
                 // Update alpha for transitioning.
                 background.Alpha += background.TransitionSpeed;
 
@@ -123,20 +123,41 @@ namespace Engine.ComponentSystem.Common.Systems
             // Get the transformation to use.
             var transform = GetTransform();
 
+            Vector3 scale;
+            Quaternion rotation;
+            Vector3 translation;
+            transform.Matrix.Decompose(out scale, out rotation, out translation);
+
+            var destRect = _spriteBatch.GraphicsDevice.Viewport.Bounds;
+            destRect.Inflate(1, 1);
+            var centeredSourceRect = new Rectangle(0, 0, (int)(destRect.Width / scale.X), (int)(destRect.Height / scale.Y));
+            centeredSourceRect.X = -centeredSourceRect.Width / 2;
+            centeredSourceRect.Y = -centeredSourceRect.Height / 2;
+
             // Draw all backgrounds, bottom up (oldest first).
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, _shader, transform.Matrix);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, DepthStencilState.None, RasterizerState.CullNone);
             for (var i = 0; i < _backgrounds.Count; i++)
             {
                 for (var j = 0; j < _backgrounds[i].Textures.Length; j++)
                 {
                     // Scale the translation with the texture's level.
-                    var position = transform.Translation * _backgrounds[i].Levels[j];
+                    var offset = transform.Translation * _backgrounds[i].Levels[j];
                     // Modulo it with the texture sizes for repetition, but keeping the
                     // values in a range where float precision is good.
-                    position.X %= _backgrounds[i].Textures[j].Width;
-                    position.X %= _backgrounds[i].Textures[j].Height;
+                    offset.X %= _backgrounds[i].Textures[j].Width;
+                    offset.Y %= _backgrounds[i].Textures[j].Height;
+                    var sourceRect = centeredSourceRect;
+                    var intOffset = new Point((int)offset.X, (int)offset.Y);
+                    sourceRect.Offset(-intOffset.X, -intOffset.Y);
                     // Render the texture.
-                    _spriteBatch.Draw(_backgrounds[i].Textures[j], (Vector2)position, Color.White * _backgrounds[i].Alpha);
+                    _spriteBatch.Draw(_backgrounds[i].Textures[j],
+                        destRect,
+                        sourceRect,
+                        _backgrounds[i].Colors[j] * _backgrounds[i].Alpha,
+                        0,
+                        new Vector2(-(float)(offset.X - intOffset.X), -(float)(offset.Y - intOffset.Y)),
+                        SpriteEffects.None,
+                        0);
                 }
             }
             _spriteBatch.End();
@@ -157,24 +178,26 @@ namespace Engine.ComponentSystem.Common.Systems
         /// over the specified amount of time.
         /// </summary>
         /// <param name="textureNames">The texture names of the backgrounds.</param>
+        /// <param name="colors"> </param>
         /// <param name="levels">The levels of the textures, for parallax rendering.</param>
         /// <param name="time">The time the transition takes, in seconds.</param>
         /// <remarks>
         /// The number of textures must equal the number of levels.
         /// </remarks>
-        public void FadeTo(string[] textureNames, float[] levels, float time = 0.0f)
+        public void FadeTo(string[] textureNames, Color[] colors, float[] levels, float time = 0.0f)
         {
-            if (textureNames.Length != levels.Length)
+            if (textureNames.Length != levels.Length || textureNames.Length != colors.Length)
             {
-                throw new ArgumentException("Number of textures must match number of levels.");
+                throw new ArgumentException("Number of textures must match number of levels and colors.");
             }
 
             _backgrounds.Add(new Background
             {
                 TextureNames = textureNames,
+                Colors = colors,
                 Levels = levels,
                 Textures = new Texture2D[textureNames.Length],
-                TransitionSpeed = time / 30.0f,
+                TransitionSpeed = 1f / (time * 60f),
                 // Make the first background immediately fully opaque.
                 Alpha = _backgrounds.Count == 0 ? 1f : 0f
             });
@@ -217,6 +240,11 @@ namespace Engine.ComponentSystem.Common.Systems
             /// The texture names of the backgrounds. Used for serialization.
             /// </summary>
             public string[] TextureNames;
+
+            /// <summary>
+            /// Base color tint and transparency for each layer.
+            /// </summary>
+            public Color[] Colors;
 
             /// <summary>
             /// The level for each texture, for parallax rendering.

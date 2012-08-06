@@ -111,7 +111,6 @@ namespace Space
         private SoundBank _soundBank;
 
         private InputHandler _input;
-        private Background _background;
 
         private GameServer _server;
         private GameClient _client;
@@ -288,13 +287,6 @@ namespace Space
             GraphicsDevice.SetRenderTarget(_scene);
             GraphicsDevice.Clear(Color.DarkSlateGray);
 
-            // Draw the overall space background.
-            if (_client != null)
-            {
-                _background.Scale = _client.GetCameraZoom();
-            }
-            _background.Draw();
-
             // Draw world elements if we're in a game.
             if (_client != null)
             {
@@ -349,8 +341,6 @@ namespace Space
             _client.UpdateOrder = 25;
             Components.Add(_client);
 
-            _background.Client = _client;
-
             if (ClientInitialized != null)
             {
                 ClientInitialized(this, new ClientInitializedEventArgs(_client));
@@ -383,8 +373,6 @@ namespace Space
                 Components.Remove(_client);
             }
             _client = null;
-
-            _background.Client = null;
         }
 
         /// <summary>
@@ -446,7 +434,7 @@ namespace Space
                     var manager = client.Controller.Simulation.Manager;
                     var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
                     var camera = (CameraSystem)manager.GetSystem(CameraSystem.TypeId);
-                    if (_indexGroupMask >= 0)
+                    if (_indexGroupMask > 0)
                     {
                         if (_indexRectangle == null)
                         {

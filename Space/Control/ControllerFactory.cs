@@ -217,6 +217,12 @@ namespace Space.Control
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, session),
                     
+                    // Biome system triggers background changes and stuff.
+                    new BiomeSystem(session),
+
+                    // Draw background behind everything else.
+                    new CameraCenteredBackgroundSystem(game.Content, spriteBatch),
+
                     // Load textures for detectables before trying to render radar.
                     new DetectableSystem(game.Content),
 

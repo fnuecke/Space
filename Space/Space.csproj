@@ -129,7 +129,6 @@
     <Compile Include="ProgramInit.cs" />
     <Compile Include="ProgramLoad.cs" />
     <Compile Include="ProgramMain.cs" />
-    <Compile Include="View\Background.cs" />
     <Compile Include="View\JSCallbacks.cs" />
     <Compile Include="Session\Profile.cs" />
     <Compile Include="Simulation\Commands\CommandSource.cs" />

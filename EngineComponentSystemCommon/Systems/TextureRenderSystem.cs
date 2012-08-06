@@ -96,6 +96,12 @@ namespace Engine.ComponentSystem.Common.Systems
                 return;
             }
 
+            // Get the transformation to use.
+            var cameraTransform = GetTransform();
+
+            // Begin rendering.
+            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
+
             // Iterate over the shorter list.
             if (_drawablesInView.Count < Components.Count)
             {
@@ -106,7 +112,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        DrawComponent(component);
+                        DrawComponent(component, cameraTransform.Translation);
                     }
                 }
             }
@@ -117,10 +123,13 @@ namespace Engine.ComponentSystem.Common.Systems
                     // Skip disabled or invisible entities.
                     if (component.Enabled && _drawablesInView.Contains(component.Entity))
                     {
-                        DrawComponent(component);
+                        DrawComponent(component, cameraTransform.Translation);
                     }
                 }
             }
+
+            // Done rendering.
+            SpriteBatch.End();
 
             // Clear for next iteration.
             _drawablesInView.Clear();
@@ -130,7 +139,8 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Draws the component.
         /// </summary>
         /// <param name="component">The component.</param>
-        private void DrawComponent(TextureRenderer component)
+        /// <param name="translation"> </param>
+        private void DrawComponent(TextureRenderer component, FarPosition translation)
         {
             // Load the texture if it isn't already.
             if (component.Texture == null)
@@ -154,14 +164,8 @@ namespace Engine.ComponentSystem.Common.Systems
             origin.X = component.Texture.Width / 2f;
             origin.Y = component.Texture.Height / 2f;
 
-            // Get the transformation to use.
-            var cameraTransform = GetTransform();
-
-            // Draw. Use transformation of the camera for sprites drawn, so no transformation
-            // for the sprite itself is needed.
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
-            SpriteBatch.Draw(component.Texture, ((Vector2)(transform.Translation + cameraTransform.Translation)) * layer, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
-            SpriteBatch.End();
+            // Draw.
+            SpriteBatch.Draw(component.Texture, ((Vector2)(transform.Translation + translation)) * layer, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>

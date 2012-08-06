@@ -64,7 +64,7 @@ namespace Engine.ComponentSystem
                     TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(component, Component.Comparer), component);
 
                     // Move on to parent type.
-                    typeId = GetParentComponentType(typeId);
+                    typeId = ComponentHierarchy[typeId];
                 }
             }
 
@@ -85,7 +85,7 @@ namespace Engine.ComponentSystem
                     TypeCache[typeId].RemoveAt(TypeCache[typeId].BinarySearch(component, Component.Comparer));
 
                     // Move on to parent type.
-                    typeId = GetParentComponentType(typeId);
+                    typeId = ComponentHierarchy[typeId];
                 }
             }
 
@@ -143,17 +143,19 @@ namespace Engine.ComponentSystem
                         // And check their parents, to see if this type appears
                         // in the hierarchy.
                         var componentTypeId = Components[i].GetTypeId();
-                        while ((componentTypeId = GetParentComponentType(componentTypeId)) != 0)
+                        while (componentTypeId != 0)
                         {
                             if (componentTypeId == typeId)
                             {
                                 // Found this type as a parent, add the component.
-                                TypeCache[typeId].Insert(
-                                    ~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
+                                TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
 
                                 // No need to go further up the hierarchy.
                                 break;
                             }
+
+                            // Continue further up the hierarchy.
+                            componentTypeId = ComponentHierarchy[componentTypeId];
                         }
                     }
                 }

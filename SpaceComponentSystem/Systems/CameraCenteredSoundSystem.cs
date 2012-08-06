@@ -1,12 +1,9 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -14,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     /// Defines a sound system which uses the local player's avatar to
     /// determine the listener position.
     /// </summary>
-    public sealed class CameraCenteredSoundSystem : SoundSystem, IMessagingSystem
+    public sealed class CameraCenteredSoundSystem : SoundSystem
     {
         #region Fields
 
@@ -41,20 +38,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>
-        /// Reacts to messages to fire sounds.
-        /// </summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
-        {
-            if (message is WeaponFired)
-            {
-                var weaponMessage = (WeaponFired)(ValueType)message;
-                Play(weaponMessage.Weapon.Sound, weaponMessage.ShipEntity);
-            }
-        }
 
         /// <summary>
         /// Returns the position of the local player's avatar.
