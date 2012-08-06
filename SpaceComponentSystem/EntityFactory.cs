@@ -11,6 +11,7 @@ using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.ComponentSystem.Util;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem
 {
@@ -37,8 +38,8 @@ namespace Space.ComponentSystem
             // Mark it as the player's avatar.
             manager.AddComponent<Avatar>(entity).Initialize(playerNumber);
 
-            // Make it respawn.
-            manager.AddComponent<Respawn>(entity).Initialize(300, new HashSet<Type> {
+            // Make it respawn (after 5 seconds).
+            manager.AddComponent<Respawn>(entity).Initialize((int)(5 * Settings.TicksPerSecond), new HashSet<Type> {
                 // Make ship uncontrollable.
                 typeof(ShipControl),
                 typeof(WeaponControl),

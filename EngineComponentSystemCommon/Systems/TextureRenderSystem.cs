@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -49,6 +50,30 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The content manager used to load textures.
         /// </summary>
         private readonly ContentManager _content;
+        
+        /// <summary>
+        /// Positions of entities from the last render cycle. We use these to
+        /// interpolate to the current ones.
+        /// </summary>
+        private Dictionary<int, FarPosition> _positions = new Dictionary<int, FarPosition>();
+
+        /// <summary>
+        /// New list of positions. We swap between the two after each update,
+        /// to disard positions for entities not rendered to the screen.
+        /// </summary>
+        private Dictionary<int, FarPosition> _newPositions = new Dictionary<int, FarPosition>();
+
+        /// <summary>
+        /// Rotations of entities from the last render cycle. We use these to
+        /// interpolate to the current ones.
+        /// </summary>
+        private Dictionary<int, float> _rotations = new Dictionary<int, float>(); 
+
+        /// <summary>
+        /// New list of rotations. We swap between the two after each update,
+        /// to discard roations for entities not rendered to the screen.
+        /// </summary>
+        private Dictionary<int, float> _newRotations = new Dictionary<int, float>();
 
         #endregion
 
@@ -133,6 +158,18 @@ namespace Engine.ComponentSystem.Common.Systems
 
             // Clear for next iteration.
             _drawablesInView.Clear();
+
+            // Swap position lists.
+            var oldPositions = _positions;
+            oldPositions.Clear();
+            _positions = _newPositions;
+            _newPositions = oldPositions;
+
+            // Swap rotation lists.
+            var oldRotations = _rotations;
+            oldRotations.Clear();
+            _rotations = _newRotations;
+            _newRotations = oldRotations;
         }
 
         /// <summary>
@@ -149,7 +186,47 @@ namespace Engine.ComponentSystem.Common.Systems
             }
 
             // Draw the texture based on its position.
-            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            var transform = (Transform)Manager.GetComponent(component.Entity, Transform.TypeId);
+            var targetPosition = transform.Translation;
+            var targetRotation = transform.Rotation;
+
+            // Interpolate the position.
+            FarPosition position;
+            if (_positions.ContainsKey(component.Entity))
+            {
+                // Predict future translation to interpolate towards that.
+                var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
+                if (velocity != null)
+                {
+                    targetPosition += velocity.Value * 0.5f;
+                }
+                position = FarPosition.SmoothStep(_positions[component.Entity], targetPosition, 0.5f);
+            }
+            else
+            {
+                position = targetPosition;
+            }
+            _newPositions[component.Entity] = position;
+
+            // Interpolate the rotation.
+            float rotation;
+            if (_rotations.ContainsKey(component.Entity))
+            {
+                // Predict future rotation to interpolate towards that.
+                var spin = (Spin)Manager.GetComponent(component.Entity, Spin.TypeId);
+                if (spin != null)
+                {
+                    targetRotation += spin.Value * 0.5f;
+                }
+                // Always interpolate via the shorter way, to avoid jumps.
+                targetRotation = _rotations[component.Entity] + Angle.MinAngle(_rotations[component.Entity], targetRotation);
+                rotation = MathHelper.SmoothStep(_rotations[component.Entity], targetRotation, 0.5f);
+            }
+            else
+            {
+                rotation = targetRotation;
+            }
+            _newRotations[component.Entity] = rotation;
 
             // Get parallax layer.
             var parallax = (Parallax)Manager.GetComponent(component.Entity, Parallax.TypeId);
@@ -165,7 +242,22 @@ namespace Engine.ComponentSystem.Common.Systems
             origin.Y = component.Texture.Height / 2f;
 
             // Draw.
-            SpriteBatch.Draw(component.Texture, ((Vector2)(transform.Translation + translation)) * layer, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
+            SpriteBatch.Draw(component.Texture, ((Vector2)(position + translation)) * layer, null, component.Tint, rotation, origin, component.Scale, SpriteEffects.None, 0);
+        }
+
+        /// <summary>
+        /// Called by the manager when a new component was removed.
+        /// </summary>
+        /// <param name="component">The component that was removed.</param>
+        public override void OnComponentRemoved(ComponentSystem.Components.Component component)
+        {
+            base.OnComponentRemoved(component);
+
+            // Remove from positions list if it was a texture renderer.
+            if (component is TextureRenderer)
+            {
+                _positions.Remove(component.Entity);
+            }
         }
 
         /// <summary>

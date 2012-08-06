@@ -40,7 +40,7 @@
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>"$(MSBuildBinPath)\msbuild.exe" /m:$(NUMBER_OF_PROCESSORS) "$(SolutionDir)Content_All\Content_All.csproj"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(MSBuildBinPath)\msbuild.exe" /m:$(NUMBER_OF_PROCESSORS) "$(SolutionDir)SpaceContent\Space.Content.csproj"</NMakeBuildCommandLine>
     <NMakeOutput>Space.Content.BuildParallel.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>

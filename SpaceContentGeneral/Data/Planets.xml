@@ -7,7 +7,7 @@
       <SurfaceTint>FFAAB597</SurfaceTint>
       <AtmosphereTint>FF87CEFA</AtmosphereTint>
       <Radius>250 to 550</Radius>
-      <Mass>1500 to 2000</Mass>
+      <Mass>300000 to 400000</Mass>
       <RotationSpeed>1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>0.1</AngleOffset>

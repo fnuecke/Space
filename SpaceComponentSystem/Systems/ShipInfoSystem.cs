@@ -5,6 +5,7 @@ using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -34,7 +35,7 @@ namespace Space.ComponentSystem.Systems
                 shipInfo.Mass = character.GetValue(AttributeType.Mass);
 
                 // Recompute cached values.
-                shipInfo.MaxAcceleration = character.GetValue(AttributeType.AccelerationForce) / shipInfo.Mass;
+                shipInfo.MaxAcceleration = character.GetValue(AttributeType.AccelerationForce) / (shipInfo.Mass * Settings.TicksPerSecond);
                 shipInfo.MaxSpeed = float.PositiveInfinity;
 
                 // Maximum speed.

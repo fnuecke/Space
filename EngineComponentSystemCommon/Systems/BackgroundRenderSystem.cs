@@ -123,41 +123,54 @@ namespace Engine.ComponentSystem.Common.Systems
             // Get the transformation to use.
             var transform = GetTransform();
 
+            // Decompose the matrix, because we need the scale for our rectangles.
+            // Otherwise we cannot tile the texture properly.
             Vector3 scale;
             Quaternion rotation;
             Vector3 translation;
             transform.Matrix.Decompose(out scale, out rotation, out translation);
 
+            // Get the bounds to render to. We oversize this a little to allow using
+            // that margin for offsetting, thus making it possible to translate the
+            // background by fractions. This makes background movement more fluent,
+            // as it will not snap to full pixels, but interpolate properly.
             var destRect = _spriteBatch.GraphicsDevice.Viewport.Bounds;
             destRect.Inflate(1, 1);
-            var centeredSourceRect = new Rectangle(0, 0, (int)(destRect.Width / scale.X), (int)(destRect.Height / scale.Y));
+
+            // Get the "default" source rectangle. We scale it as necessary, and also
+            // offset it so that the scaling will be relative to the center.
+            var centeredSourceRect = new Rectangle(0, 0, (int)(destRect.Width / scale.X),
+                                                   (int)(destRect.Height / scale.Y));
             centeredSourceRect.X = -centeredSourceRect.Width / 2;
             centeredSourceRect.Y = -centeredSourceRect.Height / 2;
 
             // Draw all backgrounds, bottom up (oldest first).
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, DepthStencilState.None, RasterizerState.CullNone);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicWrap,
+                               DepthStencilState.None, RasterizerState.CullNone);
             for (var i = 0; i < _backgrounds.Count; i++)
             {
+                // Draw each texture for the background.
                 for (var j = 0; j < _backgrounds[i].Textures.Length; j++)
                 {
                     // Scale the translation with the texture's level.
                     var offset = transform.Translation * _backgrounds[i].Levels[j];
+
                     // Modulo it with the texture sizes for repetition, but keeping the
                     // values in a range where float precision is good.
                     offset.X %= _backgrounds[i].Textures[j].Width;
                     offset.Y %= _backgrounds[i].Textures[j].Height;
+
+                    // Compute our actual source rectangle and our fractional offset
+                    // which we use for smooth movement.
                     var sourceRect = centeredSourceRect;
                     var intOffset = new Point((int)offset.X, (int)offset.Y);
                     sourceRect.Offset(-intOffset.X, -intOffset.Y);
+                    var floatOffset = new Vector2(-(float)(offset.X - intOffset.X), -(float)(offset.Y - intOffset.Y));
+
                     // Render the texture.
-                    _spriteBatch.Draw(_backgrounds[i].Textures[j],
-                        destRect,
-                        sourceRect,
-                        _backgrounds[i].Colors[j] * _backgrounds[i].Alpha,
-                        0,
-                        new Vector2(-(float)(offset.X - intOffset.X), -(float)(offset.Y - intOffset.Y)),
-                        SpriteEffects.None,
-                        0);
+                    _spriteBatch.Draw(_backgrounds[i].Textures[j], destRect, sourceRect,
+                                      _backgrounds[i].Colors[j] * _backgrounds[i].Alpha, 0, floatOffset,
+                                      SpriteEffects.None, 0);
                 }
             }
             _spriteBatch.End();

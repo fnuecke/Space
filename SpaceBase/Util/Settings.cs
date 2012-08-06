@@ -23,6 +23,16 @@ namespace Space.Util
 
         #endregion
 
+        #region Constants
+
+        /// <summary>
+        /// This determines how fast the actual game logic is updated. It is measured in
+        /// ticks per second, i.e. how many update cycles to drive per second.
+        /// </summary>
+        public const float TicksPerSecond = 20f;
+
+        #endregion
+
         #region Display
 
         /// <summary>

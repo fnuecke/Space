@@ -6,6 +6,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -66,8 +67,8 @@ namespace Space.ComponentSystem.Systems
             if (accelerationDirection != Vector2.Zero && desiredAcceleration > 0)
             {
                 // Get the needed energy and thruster power.
-                var energyConsumption = character.GetValue(AttributeType.ThrusterEnergyConsumption) / 60f;
-                var accelerationForce = character.GetValue(AttributeType.AccelerationForce);
+                var energyConsumption = character.GetValue(AttributeType.ThrusterEnergyConsumption) / Settings.TicksPerSecond;
+                var accelerationForce = character.GetValue(AttributeType.AccelerationForce) / Settings.TicksPerSecond;
 
                 // Get the percentage of the overall thrusters' power we
                 // still need to fulfill our quota.
@@ -122,7 +123,7 @@ namespace Space.ComponentSystem.Systems
 
             // Compute rotation speed. Yes, this is actually the rotation acceleration,
             // but whatever...
-            var rotation = character.GetValue(AttributeType.RotationForce) / mass;
+            var rotation = character.GetValue(AttributeType.RotationForce) / (mass * Settings.TicksPerSecond);
 
             // Update rotation / spin.
             var currentDelta = Angle.MinAngle(transform.Rotation, component.TargetRotation);

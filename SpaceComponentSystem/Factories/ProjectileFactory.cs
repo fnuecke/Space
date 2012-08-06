@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Factories
 {
@@ -132,7 +133,7 @@ namespace Space.ComponentSystem.Factories
             }
             if (TimeToLive > 0)
             {
-                manager.AddComponent<Expiration>(entity).Initialize((int)(TimeToLive * 60));
+                manager.AddComponent<Expiration>(entity).Initialize((int)(TimeToLive * Settings.TicksPerSecond));
             }
             if (Math.Abs(weapon.Damage) > 0.001f)
             {
@@ -170,8 +171,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled rotation.</returns>
         private float SampleInitialRotation(IUniformRandom random)
         {
-            return MathHelper.ToRadians((random == null) ? InitialRotation.Low
-                : MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble()));
+            return MathHelper.ToRadians((random == null) ? InitialRotation.Low : MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble()));
         }
 
         /// <summary>
@@ -186,8 +186,7 @@ namespace Space.ComponentSystem.Factories
             var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
             Vector2.Transform(ref velocity, ref rotation, out velocity);
             velocity.Normalize();
-            velocity *= (random == null) ? InitialVelocity.Low
-                : MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());
+            velocity *= (random == null) ? InitialVelocity.Low : MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());
             return velocity;
         }
 
@@ -203,8 +202,7 @@ namespace Space.ComponentSystem.Factories
             Matrix rotation = Matrix.CreateRotationZ(baseRotation);
             Vector2.Transform(ref acceleration, ref rotation, out acceleration);
             acceleration.Normalize();
-            acceleration *= (random == null) ? AccelerationForce.Low
-                : MathHelper.Lerp(AccelerationForce.Low, AccelerationForce.High, (float)random.NextDouble());
+            acceleration *= (random == null) ? AccelerationForce.Low : MathHelper.Lerp(AccelerationForce.Low, AccelerationForce.High, (float)random.NextDouble());
             return acceleration;
         }
 
@@ -249,8 +247,8 @@ namespace Space.ComponentSystem.Factories
             CollisionRadius = packet.ReadSingle();
             CanBeShot = packet.ReadBoolean();
 
-            float low = packet.ReadSingle();
-            float high = packet.ReadSingle();
+            var low = packet.ReadSingle();
+            var high = packet.ReadSingle();
             InitialVelocity = new Interval<float>(low, high);
 
             low = packet.ReadSingle();

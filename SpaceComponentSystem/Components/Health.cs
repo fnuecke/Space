@@ -1,6 +1,7 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
 using Space.ComponentSystem.Messages;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Components
 {
@@ -62,7 +63,7 @@ namespace Space.ComponentSystem.Components
 
             // Rebuild base health and regeneration values.
             MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Health));
-            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.HealthRegeneration) / 60f);
+            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.HealthRegeneration) / Settings.TicksPerSecond);
 
             // Set new relative value.
             Value = relative * MaxValue;

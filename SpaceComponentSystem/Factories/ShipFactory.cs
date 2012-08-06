@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Factories
 {
@@ -131,7 +132,7 @@ namespace Space.ComponentSystem.Factories
             var entity = manager.AddEntity();
 
             manager.AddComponent<Transform>(entity).Initialize(position);
-            manager.AddComponent<Friction>(entity).Initialize(0.01f, 0.02f);
+            manager.AddComponent<Friction>(entity).Initialize(1f / Settings.TicksPerSecond, 1.5f / Settings.TicksPerSecond);
             manager.AddComponent<Acceleration>(entity);
             manager.AddComponent<Gravitation>(entity).Initialize();
             manager.AddComponent<Velocity>(entity);

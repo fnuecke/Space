@@ -9,6 +9,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
+using Space.Util;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -162,12 +163,12 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </summary>
         /// <param name="ai">The AI component.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
-        /// <param name="pollRate">The poll rate.</param>
-        protected Behavior(ArtificialIntelligence ai, IUniformRandom random, int pollRate)
+        /// <param name="pollRate">The poll rate in seconds.</param>
+        protected Behavior(ArtificialIntelligence ai, IUniformRandom random, float pollRate)
         {
             AI = ai;
             Random = random;
-            _pollRate = pollRate;
+            _pollRate = (int)(pollRate * Settings.TicksPerSecond);
         }
 
         /// <summary>

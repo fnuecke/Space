@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
+using Space.Util;
 
 namespace Space.ComponentSystem.Factories
 {
@@ -127,13 +128,13 @@ namespace Space.ComponentSystem.Factories
 
             // Get period. Figure out circumference using Ramanujan's approximation.
             var circumference = MathHelper.Pi * (3 * (a + b) - (float)Math.Sqrt((3 * a + b) * (a + 3 * b)));
-            var period = circumference / travelSpeed * 60;
+            var period = circumference / travelSpeed * Settings.TicksPerSecond;
 
             // Give it a position and rotation.
             manager.AddComponent<Transform>(entity).Initialize(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
 
             // Make it rotate.
-            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / 60);
+            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / Settings.TicksPerSecond);
 
             // Make it move around its parent.
             manager.AddComponent<EllipsePath>(entity).Initialize(center, a, b, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);

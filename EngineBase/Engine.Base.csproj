@@ -82,7 +82,6 @@
     <Compile Include="Util\CoordinateIds.cs" />
     <Compile Include="Util\LocalizedContentManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\Angle.cs" />
     <Compile Include="Util\GameConsoleTarget.cs" />
     <Compile Include="Util\Direction.cs" />
     <Compile Include="Util\GameConsole.cs" />

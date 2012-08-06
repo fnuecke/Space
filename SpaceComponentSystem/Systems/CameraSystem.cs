@@ -165,13 +165,13 @@ namespace Space.ComponentSystem.Systems
             var width = (int)(view.Width / zoom);
             var height = (int)(view.Height / zoom);
             // Return scaled viewport bounds, translated to camera position
-            // with a 1 pixel increase as safety against rounding errors.
+            // with a margin as safety against rounding errors and interpolation.
             return new FarRectangle
                    {
-                       X = (center.X - (width >> 1)) - 1,
-                       Y = (center.Y - (height >> 1)) - 1,
-                       Width = width + 2,
-                       Height = height + 2
+                       X = (center.X - (width >> 1)) - 100,
+                       Y = (center.Y - (height >> 1)) - 100,
+                       Width = width + 200,
+                       Height = height + 200
                    };
         }
 
@@ -247,7 +247,7 @@ namespace Space.ComponentSystem.Systems
             // the offset, correcting for the viewport center which was
             // subtracted to make the mouse position's origin centered
             // to the screen.
-            _cameraPosition = avatarPosition + _currentOffset;
+            _cameraPosition = FarPosition.SmoothStep(_cameraPosition, avatarPosition + _currentOffset, 0.5f);
 
             // Interpolate new zoom moving slowly in or out.
             _currentZoom = MathHelper.SmoothStep(_currentZoom, _targetZoom, 0.15f);

@@ -69,12 +69,14 @@ namespace Space.ComponentSystem.Factories
             /// <summary>
             /// The angle of generated planets' orbits.
             /// </summary>
-            [ContentSerializer(Optional = true)] public Interval<float> Angle = new Interval<float>(0, 360);
+            [ContentSerializer(Optional = true)]
+            public Interval<float> Angle = new Interval<float>(0, 360);
 
             /// <summary>
             /// Objects in this orbit system.
             /// </summary>
-            [ContentSerializer(FlattenContent = true, CollectionItemName = "Orbiter")] public Orbiter[] Orbiters;
+            [ContentSerializer(FlattenContent = true, CollectionItemName = "Orbiter")]
+            public Orbiter[] Orbiters;
 
             internal void SampleOrbiters(IManager manager, int center, IUniformRandom random)
             {
@@ -86,8 +88,7 @@ namespace Space.ComponentSystem.Factories
                 {
                     if (orbiter.ChanceToExist > random.NextDouble())
                     {
-                        var entity = FactoryLibrary.SamplePlanet(manager, orbiter.PlanetName, center, dominantAngle,
-                                                                 orbiter.SampleOrbitRadius(random), random);
+                        var entity = FactoryLibrary.SamplePlanet(manager, orbiter.PlanetName, center, dominantAngle, orbiter.SampleOrbitRadius(random), random);
 
                         // Recurse.
                         if (orbiter.Moons != null)
@@ -105,9 +106,7 @@ namespace Space.ComponentSystem.Factories
             /// <returns>The sampled angle.</returns>
             private float SampleAngle(IUniformRandom random)
             {
-                return MathHelper.ToRadians((random == null)
-                                                ? Angle.Low
-                                                : MathHelper.Lerp(Angle.Low, Angle.High, (float)random.NextDouble()));
+                return MathHelper.ToRadians((random == null) ? Angle.Low : MathHelper.Lerp(Angle.Low, Angle.High, (float)random.NextDouble()));
             }
         }
 
@@ -129,12 +128,14 @@ namespace Space.ComponentSystem.Factories
             /// <summary>
             /// The probability with which an actual instance is created in a system.
             /// </summary>
-            [ContentSerializer(Optional = true)] public float ChanceToExist = 1;
+            [ContentSerializer(Optional = true)]
+            public float ChanceToExist = 1;
 
             /// <summary>
             /// Child orbits, revolving around this object.
             /// </summary>
-            [ContentSerializer(Optional = true, SharedResource = true)] public Orbit Moons;
+            [ContentSerializer(Optional = true, SharedResource = true)]
+            public Orbit Moons;
 
             /// <summary>
             /// Samples the angle of this planet's orbit.
@@ -143,9 +144,7 @@ namespace Space.ComponentSystem.Factories
             /// <returns>The sampled angle.</returns>
             internal float SampleOrbitRadius(IUniformRandom random)
             {
-                return (random == null)
-                           ? OrbitRadius.Low
-                           : MathHelper.Lerp(OrbitRadius.Low, OrbitRadius.High, (float)random.NextDouble());
+                return (random == null) ? OrbitRadius.Low : MathHelper.Lerp(OrbitRadius.Low, OrbitRadius.High, (float)random.NextDouble());
             }
         }
 

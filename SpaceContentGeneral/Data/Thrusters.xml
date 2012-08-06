@@ -7,8 +7,8 @@
       <Name>StarterThruster</Name>
       <Icon>Textures/Icons/Buffs/stabilisator</Icon>
       <GuaranteedAttributes>
-        <Item>4 AccelerationForce</Item>
-        <Item>2 RotationForce</Item>
+        <Item>90 AccelerationForce</Item>
+        <Item>30 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
     </Item>
@@ -18,8 +18,8 @@
       <Icon>Textures/Icons/Buffs/stabilisator</Icon>
       <Quality>Poor</Quality>
       <GuaranteedAttributes>
-        <Item>4 AccelerationForce</Item>
-        <Item>2 RotationForce</Item>
+        <Item>90 AccelerationForce</Item>
+        <Item>30 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <AdditionalAttributes>
@@ -28,21 +28,22 @@
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
         <Item>10 to 15 Armor</Item>
-        <Item>1 to 5 AccelerationForce</Item>
-        <Item>1 to 3 RotationForce</Item>
+        <Item>10 to 15 AccelerationForce</Item>
+        <Item>5 to 15 RotationForce</Item>
         <Item>10 to 15 ShieldEfficiency</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
+    
     <Item>
       <Name>BasicThruster</Name>
       <Icon>Textures/Icons/Buffs/stabilisator</Icon>
       <Quality>Common</Quality>
       <GuaranteedAttributes>
-        <Item>4 AccelerationForce</Item>
-        <Item>2 RotationForce</Item>
+        <Item>110 AccelerationForce</Item>
+        <Item>40 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <AdditionalAttributes>
@@ -51,8 +52,8 @@
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
         <Item>10 to 15 Armor</Item>
-        <Item>1 to 5 AccelerationForce</Item>
-        <Item>1 to 3 RotationForce</Item>
+        <Item>10 to 18 AccelerationForce</Item>
+        <Item>8 to 15 RotationForce</Item>
         <Item>10 to 15 ShieldEfficiency</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
@@ -65,8 +66,8 @@
       <Icon>Textures/Icons/Buffs/stabilisator</Icon>
       <Quality>Uncommon</Quality>
       <GuaranteedAttributes>
-        <Item>4 AccelerationForce</Item>
-        <Item>2 RotationForce</Item>
+        <Item>120 AccelerationForce</Item>
+        <Item>20 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <AdditionalAttributes>
@@ -75,8 +76,8 @@
         <Item>1 to 2 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
         <Item>10 to 15 Armor</Item>
-        <Item>1 to 5 AccelerationForce</Item>
-        <Item>1 to 3 RotationForce</Item>
+        <Item>10 to 25 AccelerationForce</Item>
+        <Item>3 to 9 RotationForce</Item>
         <Item>10 to 15 ShieldEfficiency</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
@@ -89,8 +90,8 @@
       <Icon>Textures/Icons/Buffs/stabilisator</Icon>
       <Quality>Rare</Quality>
       <GuaranteedAttributes>
-        <Item>5 AccelerationForce</Item>
-        <Item>2 RotationForce</Item>
+        <Item>150 AccelerationForce</Item>
+        <Item>25 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <AdditionalAttributes>
@@ -99,8 +100,8 @@
         <Item>1 to 3 HealthRegeneration</Item>
         <Item>1 to 3 EnergyRegeneration</Item>
         <Item>10 to 15 Armor</Item>
-        <Item>1 to 5 AccelerationForce</Item>
-        <Item>1 to 3 RotationForce</Item>
+        <Item>10 to 35 AccelerationForce</Item>
+        <Item>5 to 15 RotationForce</Item>
         <Item>10 to 15 ShieldEfficiency</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
@@ -112,8 +113,8 @@
     <Item>
       <Name>L1_AI_Thruster</Name>
       <GuaranteedAttributes>
-        <Item>3.5 to 4 AccelerationForce</Item>
-        <Item>1.25 to 1.75 RotationForce</Item>
+        <Item>95 to 125 AccelerationForce</Item>
+        <Item>4.5 to 9 RotationForce</Item>
         <Item>2.25 to 2.75 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
     </Item>

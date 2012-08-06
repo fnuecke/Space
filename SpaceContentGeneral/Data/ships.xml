@@ -7,13 +7,13 @@
       <CollisionRadius>20</CollisionRadius>
 
       <Attributes>
-        <Item>25 Mass</Item>
+        <Item>10 Mass</Item>
         <Item>100 Health</Item>
         <Item>2.5 HealthRegeneration</Item>
         <Item>50 Energy</Item>
         <Item>0.5 EnergyRegeneration</Item>
-        <Item>0.5 AccelerationForce</Item>
-        <Item>0.25 RotationForce</Item>
+        <Item>100 AccelerationForce</Item>
+        <Item>20 RotationForce</Item>
       </Attributes>
 
       <SensorSlots>1</SensorSlots>
@@ -31,13 +31,13 @@
       <CollisionRadius>24</CollisionRadius>
       <ItemPool>Starter</ItemPool>
       <Attributes>
-        <Item>20 Mass</Item>
+        <Item>10 Mass</Item>
         <Item>20 to 40 Health</Item>
         <Item>1 to 1.5 HealthRegeneration</Item>
         <Item>50 to 75 Energy</Item>
         <Item>0.5 to 1 EnergyRegeneration</Item>
-        <Item>0.25 to 0.5 AccelerationForce</Item>
-        <Item>0.25 to 0.5 RotationForce</Item>
+        <Item>95 to 115 AccelerationForce</Item>
+        <Item>15 to 20 RotationForce</Item>
       </Attributes>
 
       <SensorSlots>0</SensorSlots>

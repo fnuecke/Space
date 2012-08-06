@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -264,7 +265,7 @@ namespace Space.ComponentSystem.Systems
                 // output.
                 var maxAcceleration = info.MaxAcceleration;
                 var neighborMass = neighborGravitation.Mass;
-                var pointOfNoReturn = (float)Math.Sqrt(mass * neighborMass / maxAcceleration);
+                var pointOfNoReturn = (float)Math.Sqrt(mass * neighborMass / (maxAcceleration * Settings.TicksPerSecond));
                 _deadZoneEllipse.Center = (Vector2)(neighborTransform.Translation - position) + center;
                 // Add the complete diffuse width, not just the half (which
                 // would be the exact point), because it's unlikely someone

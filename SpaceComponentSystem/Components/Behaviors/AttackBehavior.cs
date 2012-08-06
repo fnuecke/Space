@@ -51,7 +51,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <param name="ai">The ai component this behavior belongs to.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
         public AttackBehavior(ArtificialIntelligence ai, IUniformRandom random)
-            : base(ai, random, 10)
+            : base(ai, random, 0.25f)
         {
         }
 

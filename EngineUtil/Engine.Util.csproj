@@ -55,6 +55,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Angle.cs" />
     <Compile Include="BitwiseMagic.cs" />
     <Compile Include="Compression.cs" />
     <Compile Include="ICopyable.cs" />

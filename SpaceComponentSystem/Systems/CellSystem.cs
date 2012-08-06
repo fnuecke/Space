@@ -7,6 +7,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Messages;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -57,7 +58,7 @@ namespace Space.ComponentSystem.Systems
         /// and over again, if a player flies along a cell border or keeps
         /// flying back and forth over it. Unit is in game frames.
         /// </summary>
-        private const int CellDeathDelay = 312; // ~5 seconds
+        private const int CellDeathDelay =  (int)(5 * Settings.TicksPerSecond);
 
         #endregion
 

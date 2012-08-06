@@ -13,8 +13,8 @@
       <Projectiles>
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
-          <CollisionRadius>8</CollisionRadius>
-          <InitialVelocity>20</InitialVelocity>
+          <CollisionRadius>15</CollisionRadius>
+          <InitialVelocity>80</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
         </Item>
       </Projectiles>
@@ -47,7 +47,7 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
-          <InitialVelocity>20</InitialVelocity>
+          <InitialVelocity>70</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
         </Item>
       </Projectiles>
@@ -111,7 +111,7 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
-          <InitialVelocity>20</InitialVelocity>
+          <InitialVelocity>90</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
         </Item>
       </Projectiles>
@@ -143,7 +143,7 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
-          <InitialVelocity>20</InitialVelocity>
+          <InitialVelocity>110</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
         </Item>
       </Projectiles>
@@ -161,7 +161,7 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
-          <InitialVelocity>15</InitialVelocity>
+          <InitialVelocity>125</InitialVelocity>
           <InitialDirection>-15 to 15</InitialDirection>
         </Item>
       </Projectiles>

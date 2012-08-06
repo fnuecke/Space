@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <param name="ai">The ai component this behavior belongs to.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
         public MoveBehavior(ArtificialIntelligence ai, IUniformRandom random)
-            : base(ai, random, 180)
+            : base(ai, random, 1)
         {
         }
 

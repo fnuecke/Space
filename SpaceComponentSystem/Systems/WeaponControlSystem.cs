@@ -10,6 +10,7 @@ using Engine.Serialization;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -121,7 +122,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Set cooldown.
-                _cooldowns[weaponEntity.Value] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * 60f);
+                _cooldowns[weaponEntity.Value] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * Settings.TicksPerSecond);
 
                 // Consume our energy.
                 energy.SetValue(energy.Value - energyConsumption);

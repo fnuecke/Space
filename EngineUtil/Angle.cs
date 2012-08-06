@@ -12,16 +12,18 @@
         /// <param name="angle1">The first angle.</param>
         /// <param name="angle2">The second angle.</param>
         /// <returns>The minimal difference between the two.</returns>
-        public static double MinAngle(double angle1, double angle2)
+        public static float MinAngle(float angle1, float angle2)
         {
+            const float pi = 3.14159f;
+            const float twoPi = 6.28319f;
             var delta = angle2 - angle1;
-            if (delta > System.Math.PI)
+            if (delta > pi)
             {
-                delta -= System.Math.PI * 2;
+                delta -= twoPi;
             }
-            else if (delta < -System.Math.PI)
+            else if (delta < -pi)
             {
-                delta += System.Math.PI * 2;
+                delta += twoPi;
             }
             return delta;
         }

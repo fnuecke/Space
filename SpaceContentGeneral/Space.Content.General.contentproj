@@ -65,9 +65,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\ships.xml">
+    <Compile Include="Data\Ships.xml">
       <SubType>Designer</SubType>
-      <Name>ships</Name>
+      <Name>Ships</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>

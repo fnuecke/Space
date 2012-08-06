@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -123,7 +124,7 @@ namespace Space.ComponentSystem.Systems
                         // at high speeds.
                         delta.Normalize();
                         var gravitation = component.Mass * otherGravitation.Mass / nearDistanceSquared;
-                        var directedGravitation = delta * gravitation;
+                        var directedGravitation = delta * gravitation / Settings.TicksPerSecond;
 
                         Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
 
@@ -137,7 +138,7 @@ namespace Space.ComponentSystem.Systems
                     // Adjust acceleration.
                     delta.Normalize();
                     var gravitation = component.Mass * otherGravitation.Mass / distanceSquared;
-                    var directedGravitation = delta * gravitation;
+                    var directedGravitation = delta * gravitation / Settings.TicksPerSecond;
 
                     Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
 
