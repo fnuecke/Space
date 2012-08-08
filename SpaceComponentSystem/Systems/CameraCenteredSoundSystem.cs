@@ -28,9 +28,10 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="CameraCenteredSoundSystem"/> class.
         /// </summary>
         /// <param name="soundbank">The soundbank.</param>
+        /// <param name="maxAudibleDistance">The maximum distance at which sound is heard.</param>
         /// <param name="session">The session.</param>
-        public CameraCenteredSoundSystem(SoundBank soundbank, IClientSession session)
-            : base(soundbank)
+        public CameraCenteredSoundSystem(SoundBank soundbank, float maxAudibleDistance, IClientSession session)
+            : base(soundbank, maxAudibleDistance)
         {
             _session = session;
         }

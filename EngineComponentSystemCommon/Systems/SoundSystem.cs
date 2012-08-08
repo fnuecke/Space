@@ -31,11 +31,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
-        /// <summary>
-        /// The maximum distance from which sounds can be heard.
-        /// </summary>
-        private const float MaxSoundDistance = 5000;
-
         #endregion
 
         #region Properties
@@ -54,6 +49,16 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The sound bank we use to get actual sounds for our cue names.
         /// </summary>
         private readonly SoundBank _soundBank;
+
+        /// <summary>
+        /// The squared maximum range ate which sound can be heard.
+        /// </summary>
+        private readonly float _maxAudibleDistance;
+
+        /// <summary>
+        /// The squared maximum range ate which sound can be heard.
+        /// </summary>
+        private readonly float _maxAudibleDistanceSquared;
 
         /// <summary>
         /// The sound listener to use for relative position.
@@ -94,9 +99,12 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Initializes a new instance of the <see cref="SoundSystem"/> class.
         /// </summary>
         /// <param name="soundBank">The sound bank.</param>
-        protected SoundSystem(SoundBank soundBank)
+        /// <param name="maxAudibleDistance">The maximum distance at which sound is heard.</param>
+        protected SoundSystem(SoundBank soundBank, float maxAudibleDistance)
         {
             _soundBank = soundBank;
+            _maxAudibleDistance = maxAudibleDistance;
+            _maxAudibleDistanceSquared = maxAudibleDistance * maxAudibleDistance;
             IsEnabled = _soundBank != null;
         }
 
@@ -114,20 +122,19 @@ namespace Engine.ComponentSystem.Common.Systems
             Debug.Assert(index != null);
 
             // Update listener information.
-            var position = GetListenerPosition();
-            _listener.Position = ToV3(ref position);
-            var velocity = GetListenerVelocity();
-            _listener.Velocity = ToV3(ref velocity);
+            var listenerPosition = GetListenerPosition();
+            var listenerVelocity = GetListenerVelocity();
+            _listener.Velocity = ToV3(ref listenerVelocity);
 
             // Iterate all sounds in range of the listener. All sounds remaining
             // in the current list of sounds playing will be stopped, as they are
             // out of range. The ones in range will be removed from that list and
             // added to our reusable list.
-            index.Find(position, MaxSoundDistance, ref _reusableNeighborList, IndexGroupMask);
+            index.Find(listenerPosition, _maxAudibleDistance, ref _reusableNeighborList, IndexGroupMask);
             foreach (var neighbor in _reusableNeighborList)
             {
                 // Get the sound component of the neighbor.
-                var sound = ((Sound)Manager.GetComponent(neighbor, Sound.TypeId));
+                var sound = (Sound)Manager.GetComponent(neighbor, Sound.TypeId);
 
                 // Skip this neighbor if its sound is not enabled.
                 if (!sound.Enabled)
@@ -137,8 +144,9 @@ namespace Engine.ComponentSystem.Common.Systems
 
                 // Get sound position and velocity.
                 var emitterPosition = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+
                 // The velocity is optional, so we must check if it exists.
-                var neighborVelocity = ((Velocity)Manager.GetComponent(neighbor, Velocity.TypeId));
+                var neighborVelocity = (Velocity)Manager.GetComponent(neighbor, Velocity.TypeId);
                 var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
 
                 // Check whether to update or start playing.
@@ -153,8 +161,13 @@ namespace Engine.ComponentSystem.Common.Systems
                         // Do not stop it.
                         _playingSounds.Remove(neighbor);
 
+                        // We make the emitter position relative to the listener, which is
+                        // equivalent to having the listener at the actual origin at all
+                        // times, so we don't have to to update its position.
+                        var relativeEmitterPosition = (Vector2)(emitterPosition - listenerPosition);
+
                         // Get position and velocity of emitter.
-                        _emitter.Position = ToV3(ref emitterPosition);
+                        _emitter.Position = ToV3(ref relativeEmitterPosition);
                         _emitter.Velocity = ToV3(ref emitterVelocity);
 
                         // Apply new surround effect.
@@ -213,8 +226,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="velocity">The velocity of the sound's emitter.</param>
         public Cue Play(string soundCue, ref FarPosition position, ref Vector2 velocity)
         {
-            // Do not play sounds if this isn't the main sound system thats
-            // used for the presentation.
+            // Only if we have a sound bank.
             if (_soundBank == null)
             {
                 return null;
@@ -225,21 +237,28 @@ namespace Engine.ComponentSystem.Common.Systems
             // using that old position would be just as wrong, so this
             // wrong is simpler ;)
             var listenerPosition = GetListenerPosition();
-            var listenerVelocity = GetListenerVelocity();
+
+            // Transform all sounds so as to be relative to the origin. This way
+            // listener is implicitly always at the center, so we don't have to
+            // adjust its position.
+            var relativePosition = (Vector2)(position - listenerPosition);
 
             // Skip if too far away.
-            if (((Vector2)(position - listenerPosition)).Length() > 5000.0f)
+            if (relativePosition.LengthSquared() > _maxAudibleDistanceSquared)
             {
                 return null;
             }
 
+            // We're in range, so get the listener velocity, too.
+            var listenerVelocity = GetListenerVelocity();
+
+            // Lock for sound playback.
             lock (this)
             {
-                _listener.Position = ToV3(ref listenerPosition);
                 _listener.Velocity = ToV3(ref listenerVelocity);
 
                 // Get position and velocity of emitter.
-                _emitter.Position = ToV3(ref position);
+                _emitter.Position = ToV3(ref relativePosition);
                 _emitter.Velocity = ToV3(ref velocity);
 
                 // Let there be sound!
@@ -322,21 +341,6 @@ namespace Engine.ComponentSystem.Common.Systems
             result.X = v2.X;
             result.Y = 0;
             result.Z = v2.Y;
-            return result;
-        }
-
-        /// <summary>
-        /// Converts a far position to a XACT compatible 3D vector.
-        /// </summary>
-        /// <param name="v2">The position to convert.</param>
-        /// <returns>The converted vector.</returns>
-        private static Vector3 ToV3(ref FarPosition v2)
-        {
-            // TODO this will get inaccurate, but maybe we don't have to bother because for sound no one will notice?
-            Vector3 result;
-            result.X = (float)v2.X;
-            result.Y = 0;
-            result.Z = (float)v2.Y;
             return result;
         }
 

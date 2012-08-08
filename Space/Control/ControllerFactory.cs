@@ -207,6 +207,7 @@ namespace Space.Control
         /// <param name="controller">The controller.</param>
         private static void AddSpaceClientSystems<TSession>(IManager manager, Game game, IClientSession session, ISimulationController<TSession> controller) where TSession : ISession
         {
+            var audioEngine = (AudioEngine)game.Services.GetService(typeof(AudioEngine));
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
             var graphicsDevice = ((Program)game).GraphicsDeviceManager;
@@ -219,7 +220,7 @@ namespace Space.Control
                     new CameraSystem(game, session, speed),
 
                     // Handle sound.
-                    new CameraCenteredSoundSystem(soundBank, session),
+                    new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance"), session),
                     
                     // Biome system triggers background changes and stuff.
                     new BiomeSystem(session),

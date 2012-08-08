@@ -95,6 +95,7 @@ namespace Space
                 _audioEngine.Update();
 
                 // Make the sound and wave bank available as a service.
+                Services.AddService(typeof(AudioEngine), _audioEngine);
                 Services.AddService(typeof(SoundBank), _soundBank);
                 Services.AddService(typeof(WaveBank), _waveBank);
             }

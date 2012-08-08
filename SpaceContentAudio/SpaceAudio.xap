@@ -238,7 +238,7 @@ Global Settings
         Value = 0.000000;
         Initial Value = 0.000000;
         Min = 0.000000;
-        Max = 2500.000000;
+        Max = 5000.000000;
     }
 
     Variable
@@ -260,17 +260,18 @@ Global Settings
 
     Variable
     {
-        Name = Distance Ambi;
+        Name = MaxAudibleDistance;
+        Comment = The maximum distance at which sound playback will be triggered.;
         Public = 1;
-        Global = 0;
+        Global = 1;
         Internal = 0;
         External = 0;
         Monitored = 1;
         Reserved = 0;
         Read Only = 0;
         Time = 0;
-        Value = 0.000000;
-        Initial Value = 0.000000;
+        Value = 5000.000000;
+        Initial Value = 5000.000000;
         Min = 0.000000;
         Max = 5000.000000;
     }
@@ -281,7 +282,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::343a9c44-e56e-44cd-9d1c-c150af3698ca;
+            Name = Sound::a612efb6-1d8a-4143-84d0-e3ab6c997261;
             Property = 0;
             Sound = 1;
             Line Color = 4284282674;
@@ -301,7 +302,7 @@ Global Settings
 
             RPC Point
             {
-                X = 2500.000000;
+                X = 4000.000000;
                 Y = -9600.000000;
                 Curve = 0;
             }
@@ -314,7 +315,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::debec763-eb8d-48e6-b4f5-d779b941f843;
+            Name = Sound::f72e1546-8e72-494c-b086-d8b685d99446;
             Property = 0;
             Sound = 1;
             Line Color = 4278255360;
@@ -322,21 +323,21 @@ Global Settings
 
             Variable Entry
             {
-                Name = Distance Ambi;
+                Name = Distance;
             }
 
             RPC Point
             {
                 X = 0.000000;
                 Y = 0.000000;
-                Curve = 0;
+                Curve = 2;
             }
 
             RPC Point
             {
-                X = 2500.000000;
-                Y = -4800.000000;
-                Curve = 0;
+                X = 4000.000000;
+                Y = -3200.000000;
+                Curve = 1;
             }
 
             RPC Point
@@ -354,7 +355,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::fa2e2ea7-5a4a-44e7-81b8-75af28f3db5b;
+            Name = Sound::3d87ad0c-0c80-49f7-8253-245aa58e9a16;
             Property = 0;
             Sound = 1;
             Line Color = 4278255360;
@@ -369,12 +370,19 @@ Global Settings
             {
                 X = 0.000000;
                 Y = 0.000000;
+                Curve = 2;
+            }
+
+            RPC Point
+            {
+                X = 1000.000000;
+                Y = -1200.000000;
                 Curve = 1;
             }
 
             RPC Point
             {
-                X = 2500.000000;
+                X = 4000.000000;
                 Y = -9600.000000;
                 Curve = 0;
             }
@@ -387,7 +395,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::66dfe5da-9094-4c6b-8422-2ab9872c7856;
+            Name = Sound::08d091f5-0b63-4908-ae4e-45e593a66952;
             Property = 1;
             Sound = 1;
             Line Color = 4278190335;
@@ -1100,6 +1108,8 @@ Sound Bank
     Windows File = Win\Sound Bank.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 0;
+    Header Last Modified High = 0;
+    Header Last Modified Low = 0;
 
     Sound
     {
