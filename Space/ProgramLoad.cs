@@ -144,6 +144,15 @@ namespace Space
                                Data = new[] {_updateHistory}
                            };
 
+            _drawGraph = new Graph(Content, GraphicsDevice)
+            {
+                Smoothing = 30,
+                FixedMaximum = 30,
+                Unit = "ms",
+                Title = "Render time",
+                Data = new[] { _drawHistory }
+            };
+
             _memoryGraph = new Graph(Content, GraphicsDevice)
                            {
                                Smoothing = 10,
@@ -191,6 +200,7 @@ namespace Space
                                   {
                                       _fpsGraph,
                                       _updateGraph,
+                                      _drawGraph,
                                       _memoryGraph,
                                       _componentGraph,
                                       _indexQueryGraph,

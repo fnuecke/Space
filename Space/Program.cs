@@ -121,6 +121,9 @@ namespace Space
         private readonly FloatSampling _updateHistory = new FloatSampling(600);
         private Graph _updateGraph;
 
+        private readonly FloatSampling _drawHistory = new FloatSampling(600);
+        private Graph _drawGraph;
+
         private readonly FloatSampling _memoryHistory = new FloatSampling(600);
         private Graph _memoryGraph;
 
@@ -231,10 +234,6 @@ namespace Space
             // Update the rest of the game.
             base.Update(gameTime);
 
-            // Grab actual graph data.
-            watch.Stop();
-            _updateHistory.Put(watch.ElapsedMilliseconds);
-
             // Get ingame stats, if a game is running.
             IManager manager = null;
             if (_server != null)
@@ -274,6 +273,10 @@ namespace Space
                 }
             }
             _pendingComponents.Clear();
+
+            // Grab actual graph data.
+            watch.Stop();
+            _updateHistory.Put(watch.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -282,6 +285,10 @@ namespace Space
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            // For graph data.
+            var watch = new Stopwatch();
+            watch.Start();
+
             // Set our custom render target to render everything into an
             // off-screen texture, first.
             GraphicsDevice.SetRenderTarget(_scene);
@@ -317,12 +324,17 @@ namespace Space
             {
                 _fpsGraph.Draw();
                 _updateGraph.Draw();
+                _drawGraph.Draw();
                 _memoryGraph.Draw();
                 _componentGraph.Draw();
                 _indexQueryGraph.Draw();
                 _gameSpeedGraph.Draw();
                 _gameLoadGraph.Draw();
             }
+
+            // Grab actual graph data.
+            watch.Stop();
+            _drawHistory.Put(watch.ElapsedMilliseconds);
         }
 
         #endregion

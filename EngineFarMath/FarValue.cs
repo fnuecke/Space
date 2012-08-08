@@ -190,8 +190,16 @@ namespace Engine.FarMath
         /// <returns>The clamped value.</returns>
         public static FarValue Clamp(FarValue value, FarValue min, FarValue max)
         {
-            // Inlined: return Min(max, Max(min, value1));
-            return value > max ? max : value < min ? min : value;
+            if (min > max)
+            {
+                // Inlined: return Min(max, Max(min, value1));
+                return value < max ? max : value > min ? min : value;
+            }
+            else
+            {
+                // Inlined: return Min(max, Max(min, value1));
+                return value > max ? max : value < min ? min : value;
+            }
         }
 
         /// <summary>
@@ -203,8 +211,16 @@ namespace Engine.FarMath
         /// <param name="result">The clamped value.</param>
         public static void Clamp(ref FarValue value, ref FarValue min, ref FarValue max, out FarValue result)
         {
-            // Inlined: result = Min(max, Max(min, value));
-            result = value > max ? max : value < min ? min : value;
+            if (min > max)
+            {
+                // Inlined: result = Min(max, Max(min, value));
+                result = value < max ? max : value > min ? min : value;
+            }
+            else
+            {
+                // Inlined: result = Min(max, Max(min, value));
+                result = value > max ? max : value < min ? min : value;
+            }
         }
 
         /// <summary>

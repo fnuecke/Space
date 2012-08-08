@@ -166,7 +166,7 @@ namespace Space.ComponentSystem.Systems
                             {
                                 // Get the id, only mark the station if we have
                                 // info on it and it's an enemy cell.
-                                var id = CoordinateIds.Combine(nx, ny);
+                                var id = BitwiseMagic.Pack(nx, ny);
                                 if (cellSystem.IsCellActive(id) &&
                                     _cellInfo.ContainsKey(id) &&
                                     (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[info.Id].Faction)))

@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Common.Systems;
+﻿using System;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,8 +19,9 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="spriteBatch">The sprite batch.</param>
-        public CameraCenteredTextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
-            : base(content, spriteBatch)
+        /// <param name="speed">A function getting the speed of the simulation.</param>
+        public CameraCenteredTextureRenderSystem(ContentManager content, SpriteBatch spriteBatch, Func<float> speed)
+            : base(content, spriteBatch, speed)
         {
         }
 

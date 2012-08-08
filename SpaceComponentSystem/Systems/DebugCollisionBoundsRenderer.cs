@@ -57,7 +57,6 @@ namespace Space.ComponentSystem.Systems
             {
                 _shape = new FilledRectangle(content, graphics);
             }
-            IsEnabled = true;
         }
 
         #endregion
@@ -90,7 +89,7 @@ namespace Space.ComponentSystem.Systems
             {
                 var component = ((Collidable)Manager.GetComponent(entity, Collidable.TypeId));
 
-                _shape.Color = (component.Enabled ? Color.Blue : Color.Gray) * 0.25f;
+                _shape.Color = (component.Enabled ? component.CollisionState : Color.Gray) * 0.25f;
 
                 var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
                 var bounds = component.ComputeBounds();

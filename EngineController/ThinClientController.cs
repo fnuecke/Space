@@ -33,13 +33,18 @@ namespace Engine.Controller
         /// <summary>
         /// The real update load, being that of the server.
         /// </summary>
-        public override double CurrentLoad { get { return _server.CurrentLoad; } }
+        public override float CurrentLoad { get { return _server.CurrentLoad; } }
 
+        /// <summary>
+        /// The target game speed we try to run at, if possible.
+        /// </summary>
+        public float TargetSpeed { get { return _server.TargetSpeed; } set { _server.TargetSpeed = value; } }
+        
         /// <summary>
         /// The current actual game speed, based on possible slow-downs due
         /// to the server or other clients.
         /// </summary>
-        public double ActualSpeed { get { return _server.ActualSpeed; } }
+        public float ActualSpeed { get { return _server.ActualSpeed; } }
 
         #endregion
 

@@ -18,7 +18,7 @@ namespace Engine.Controller
         /// The current 'load', i.e. how much of the available time is actually
         /// needed to perform an update.
         /// </summary>
-        double CurrentLoad { get; }
+        float CurrentLoad { get; }
 
         /// <summary>
         /// Called when the controller needs to be updated.

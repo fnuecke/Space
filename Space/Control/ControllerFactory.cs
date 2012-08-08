@@ -52,7 +52,7 @@ namespace Space.Control
 
             // Needed by some systems. Add all systems we need in our game as a client.
             AddSpaceServerSystems(controller.Simulation.Manager, game);
-            AddSpaceClientSystems(controller.Simulation.Manager, game, controller.Session);
+            AddSpaceClientSystems(controller.Simulation.Manager, game, controller.Session, controller);
 
             // Done.
             return controller;
@@ -76,7 +76,7 @@ namespace Space.Control
             {
                 // Needed by some systems. Add all systems we need in
                 // *addition* to the ones the server already has.
-                AddSpaceClientSystems(server.Simulation.Manager, game, controller.Session);
+                AddSpaceClientSystems(server.Simulation.Manager, game, controller.Session, server);
             }
 
             // Done.
@@ -199,10 +199,12 @@ namespace Space.Control
         /// <summary>
         /// Adds systems only used by the client.
         /// </summary>
+        /// <typeparam name="TSession">The type of the session.</typeparam>
         /// <param name="manager">The manager.</param>
         /// <param name="game">The game.</param>
         /// <param name="session">The session.</param>
-        private static void AddSpaceClientSystems(IManager manager, Game game, IClientSession session)
+        /// <param name="controller">The controller.</param>
+        private static void AddSpaceClientSystems<TSession>(IManager manager, Game game, IClientSession session, ISimulationController<TSession> controller) where TSession : ISession
         {
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
@@ -212,7 +214,7 @@ namespace Space.Control
                 new AbstractSystem[]
                 {
                     // Update camera first.
-                    new CameraSystem(game, session),
+                    new CameraSystem(game, session, () => controller.ActualSpeed),
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, session),
@@ -231,13 +233,13 @@ namespace Space.Control
                     new OrbitRenderSystem(game.Content, spriteBatch, session),
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
                     new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
-                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
+                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch, () => controller.ActualSpeed),
                     new CameraCenteredParticleEffectSystem(game.Content, graphicsDevice),
                     new RadarRenderSystem(game.Content, spriteBatch, session)
                 });
 
             // Add some systems for debug overlays.
-            AddDebugSystems(manager, game, session);
+            AddDebugSystems(manager, game);
         }
 
         /// <summary>
@@ -246,14 +248,16 @@ namespace Space.Control
         /// </summary>
         /// <param name="manager">The manager.</param>
         /// <param name="game">The game.</param>
-        /// <param name="session">The session.</param>
         [Conditional("DEBUG")]
-        private static void AddDebugSystems(IManager manager, Game game, IClientSession session)
+        private static void AddDebugSystems(IManager manager, Game game)
         {
+            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
+
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    new DebugCollisionBoundsRenderer(game.Content, game.GraphicsDevice)
+                    new DebugCollisionBoundsRenderer(game.Content, game.GraphicsDevice),
+                    new DebugEntityIdRenderer(game.Content, spriteBatch)
                 });
         }
     }

@@ -179,6 +179,35 @@ namespace Engine.FarMath
         #region Logic
 
         /// <summary>
+        /// Determines whether this <see cref="FarRectangle"/> contains the specified <see cref="FarPosition"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="FarPosition"/> to evaluate.</param>
+        /// <returns>
+        ///   <c>true</c> if the rectangle contains the specified value; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Contains(FarPosition value)
+        {
+            return X <= value.X &&
+                   value.X < (X + Width) &&
+                   Y <= value.Y &&
+                   value.Y < (Y + Height);
+        }
+
+        /// <summary>
+        /// Determines whether this <see cref="FarRectangle"/> contains the specified <see cref="FarPosition"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="FarPosition"/> to evaluate.</param>
+        /// <param name="result">On exit, is true if this <see cref="FarRectangle"/> entirely contains the specified
+        /// <see cref="FarPosition"/>, or false if not.</param>
+        public void Contains(ref FarPosition value, out bool result)
+        {
+            result = X <= value.X &&
+                     value.X < (X + Width) &&
+                     Y <= value.Y &&
+                     value.Y < (Y + Height);
+        }
+
+        /// <summary>
         /// Determines whether this <see cref="FarRectangle"/> entirely contains a specified <see cref="FarRectangle"/>.
         /// </summary>
         /// <param name="value">The <see cref="FarRectangle"/> to evaluate.</param>
@@ -194,18 +223,17 @@ namespace Engine.FarMath
         }
 
         /// <summary>
-        /// Determines whether this <see cref="FarRectangle"/> contains a specified Vector2.
+        /// Determines whether this <see cref="FarRectangle"/> entirely contains a specified <see cref="FarRectangle"/>.
         /// </summary>
-        /// <param name="value">The Vector2 to evaluate.</param>
-        /// <returns>
-        ///   <c>true</c> if the rectangle contains the specified value; otherwise, <c>false</c>.
-        /// </returns>
-        public bool Contains(Vector2 value)
+        /// <param name="value">The <see cref="FarRectangle"/> to evaluate.</param>
+        /// <param name="result">On exit, is true if this <see cref="FarRectangle"/> entirely contains the specified
+        /// <see cref="FarRectangle"/>, or false if not.</param>
+        public void Contains(ref FarRectangle value, out bool result)
         {
-            return X <= value.X &&
-                   value.X < (X + Width) &&
-                   Y <= value.Y &&
-                   value.Y < (Y + Height);
+            result = X <= value.X &&
+                     (value.X + value.Width) <= (X + Width) &&
+                     Y <= value.Y &&
+                     (value.Y + value.Height) <= (Y + Height);
         }
 
         /// <summary>
@@ -226,17 +254,18 @@ namespace Engine.FarMath
         }
 
         /// <summary>
-        /// Determines whether this <see cref="FarRectangle"/> entirely contains a specified <see cref="FarRectangle"/>.
+        /// Determines whether this <see cref="FarRectangle"/> contains a specified Vector2.
         /// </summary>
-        /// <param name="value">The <see cref="FarRectangle"/> to evaluate.</param>
-        /// <param name="result">On exit, is true if this <see cref="FarRectangle"/> entirely contains the specified
-        /// <see cref="FarRectangle"/>, or false if not.</param>
-        public void Contains(ref FarRectangle value, out bool result)
+        /// <param name="value">The Vector2 to evaluate.</param>
+        /// <returns>
+        ///   <c>true</c> if the rectangle contains the specified value; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Contains(Vector2 value)
         {
-            result = X <= value.X &&
-                     (value.X + value.Width) <= (X + Width) &&
-                     Y <= value.Y &&
-                     (value.Y + value.Height) <= (Y + Height);
+            return X <= value.X &&
+                   value.X < (X + Width) &&
+                   Y <= value.Y &&
+                   value.Y < (Y + Height);
         }
 
         /// <summary>

@@ -61,7 +61,7 @@ namespace Space.ComponentSystem.Systems
         { 
             get
             {
-                return _customCameraPosition ?? _cameraPosition;
+                return _customCameraPosition ?? (_cameraPosition + _currentOffset);
             } 
             set 
             {
@@ -99,6 +99,11 @@ namespace Space.ComponentSystem.Systems
         /// The session this system belongs to, for fetching the local player.
         /// </summary>
         private readonly IClientSession _session;
+
+        /// <summary>
+        /// Gets the current speed of the simulation.
+        /// </summary>
+        private readonly Func<float> _speed;
 
         /// <summary>
         /// Previous offset to the ship, use to slowly interpolate, giving a
@@ -142,10 +147,12 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="game">The game.</param>
         /// <param name="session">The session.</param>
-        public CameraSystem(Game game, IClientSession session)
+        /// <param name="speed">A function getting the speed of the simulation.</param>
+        public CameraSystem(Game game, IClientSession session, Func<float> speed)
         {
             _game = game;
             _session = session;
+            _speed = speed;
             IsEnabled = true;
         }
 
@@ -246,9 +253,16 @@ namespace Space.ComponentSystem.Systems
             // The camera *position* is then the avatar position, plus
             // the offset, correcting for the viewport center which was
             // subtracted to make the mouse position's origin centered
-            // to the screen.
-            _cameraPosition = FarPosition.SmoothStep(_cameraPosition, avatarPosition + _currentOffset, 0.5f);
+            // to the screen. We interpolate it based on the current
+            // position and velocity of the player.
+            var velocity = (Velocity)Manager.GetComponent(avatar.Value, Velocity.TypeId);
 
+            // Determine current update speed. 20/60: simulation fps / render fps
+            var speed = _speed() * (20f / 60f);
+
+            // Clamp interpolated value to an interval around the actual target position.
+            _cameraPosition = FarPosition.Clamp(_cameraPosition + velocity.Value * speed, avatarPosition - velocity.Value * 0.25f, avatarPosition + velocity.Value * 0.75f);
+            
             // Interpolate new zoom moving slowly in or out.
             _currentZoom = MathHelper.SmoothStep(_currentZoom, _targetZoom, 0.15f);
 

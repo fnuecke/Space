@@ -50,7 +50,12 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The content manager used to load textures.
         /// </summary>
         private readonly ContentManager _content;
-        
+
+        /// <summary>
+        /// Gets the current speed of the simulation.
+        /// </summary>
+        private readonly Func<float> _speed;
+
         /// <summary>
         /// Positions of entities from the last render cycle. We use these to
         /// interpolate to the current ones.
@@ -94,10 +99,12 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="spriteBatch">The sprite batch.</param>
-        protected TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        /// <param name="speed">A function getting the speed of the simulation.</param>
+        protected TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch, Func<float> speed)
         {
             _content = content;
             SpriteBatch = spriteBatch;
+            _speed = speed;
             IsEnabled = true;
         }
 
@@ -185,46 +192,51 @@ namespace Engine.ComponentSystem.Common.Systems
                 component.Texture = _content.Load<Texture2D>(component.TextureName);
             }
 
+            // Determine current update speed. 20/60: simulation fps / render fps
+            var speed = _speed() * (20f / 60f);
+
             // Draw the texture based on its position.
             var transform = (Transform)Manager.GetComponent(component.Entity, Transform.TypeId);
             var targetPosition = transform.Translation;
             var targetRotation = transform.Rotation;
 
             // Interpolate the position.
-            FarPosition position;
+            var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
+            var position = targetPosition;
             if (_positions.ContainsKey(component.Entity))
             {
                 // Predict future translation to interpolate towards that.
-                var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
-                if (velocity != null)
+                if (velocity != null && velocity.Value != Vector2.Zero)
                 {
-                    targetPosition += velocity.Value * 0.5f;
+                    // Clamp interpolated value to an interval around the actual target position.
+                    position = FarPosition.Clamp(_positions[component.Entity] + velocity.Value * speed, targetPosition - velocity.Value * 0.25f, targetPosition + velocity.Value * 0.75f);
                 }
-                position = FarPosition.SmoothStep(_positions[component.Entity], targetPosition, 0.5f);
             }
-            else
+            else if (velocity != null)
             {
-                position = targetPosition;
+                position -= velocity.Value * 0.25f;
             }
             _newPositions[component.Entity] = position;
 
             // Interpolate the rotation.
-            float rotation;
+            var rotation = targetRotation;
             if (_rotations.ContainsKey(component.Entity))
             {
                 // Predict future rotation to interpolate towards that.
                 var spin = (Spin)Manager.GetComponent(component.Entity, Spin.TypeId);
-                if (spin != null)
+                if (spin != null && spin.Value != 0f)
                 {
-                    targetRotation += spin.Value * 0.5f;
+                    // Always interpolate via the shorter way, to avoid jumps.
+                    targetRotation = _rotations[component.Entity] + Angle.MinAngle(_rotations[component.Entity], targetRotation);
+                    if (spin.Value > 0f)
+                    {
+                        rotation = MathHelper.Clamp(_rotations[component.Entity] + spin.Value * speed, targetRotation - spin.Value * 0.25f, targetRotation + spin.Value * 0.75f);
+                    }
+                    else
+                    {
+                        rotation = MathHelper.Clamp(_rotations[component.Entity] + spin.Value * speed, targetRotation + spin.Value * 0.25f, targetRotation - spin.Value * 0.75f);
+                    }
                 }
-                // Always interpolate via the shorter way, to avoid jumps.
-                targetRotation = _rotations[component.Entity] + Angle.MinAngle(_rotations[component.Entity], targetRotation);
-                rotation = MathHelper.SmoothStep(_rotations[component.Entity], targetRotation, 0.5f);
-            }
-            else
-            {
-                rotation = targetRotation;
             }
             _newRotations[component.Entity] = rotation;
 

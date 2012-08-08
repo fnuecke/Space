@@ -76,7 +76,7 @@ namespace Engine.Controller
         /// buffer, allowing server/clients to react to slow downs before the
         /// game becomes unresponsive.
         /// </summary>
-        private const double LoadBufferFactor = 1.8;
+        private const float LoadBufferFactor = 1.75f;
 
         #endregion
 
@@ -91,19 +91,24 @@ namespace Engine.Controller
         /// The current 'load', i.e. how much of the available time is actually
         /// needed to perform an update.
         /// </summary>
-        public override double CurrentLoad { get { return _updateLoad.Mean(); } }
+        public override float CurrentLoad { get { return (float)_updateLoad.Mean(); } }
+
+        /// <summary>
+        /// The target game speed we try to run at, if possible.
+        /// </summary>
+        public float TargetSpeed { get; set; }
 
         /// <summary>
         /// The current actual game speed, based on possible slow-downs due
         /// to the server or other clients.
         /// </summary>
-        public double ActualSpeed { get { return AdjustedSpeed; } }
+        public float ActualSpeed { get { return AdjustedSpeed; } }
 
         /// <summary>
         /// Adjusted load value to allow reacting to slow downs of server or
         /// clients before the game becomes unresponsive.
         /// </summary>
-        protected double SafeLoad { get { return CurrentLoad * LoadBufferFactor; } }
+        protected float SafeLoad { get { return CurrentLoad * LoadBufferFactor; } }
 
         #endregion
 
@@ -120,7 +125,7 @@ namespace Engine.Controller
         /// The adjusted speed we're currently running at, based on how well
         /// other clients (and the server) currently fare.
         /// </summary>
-        protected double AdjustedSpeed = 1.0;
+        protected float AdjustedSpeed;
 
         /// <summary>
         /// Wrapper to restrict interaction with TSS.
@@ -163,6 +168,7 @@ namespace Engine.Controller
         {
             Tss = new TSS(delays);
             _simulation = new TssSimulationWrapper(this);
+            TargetSpeed = AdjustedSpeed = 1.0f;
         }
 
         #endregion
@@ -173,8 +179,7 @@ namespace Engine.Controller
         /// Update the simulation. This determines how many steps to perform,
         /// based on the elapsed time.
         /// </summary>
-        /// <param name="targetSpeed">The target speed.</param>
-        protected void UpdateSimulation(double targetSpeed = 1.0)
+        protected void UpdateSimulation()
         {
             // We can run at least one frame, so do the update(s).
             var begin = DateTime.Now;
@@ -193,7 +198,7 @@ namespace Engine.Controller
             // Compensate for dynamic time step.
             var elapsed = (DateTime.Now - _lastUpdate).TotalMilliseconds + _lastUpdateRemainder;
             _lastUpdate = DateTime.Now;
-            var targetFrequency = TargetElapsedMilliseconds / targetSpeed;
+            var targetFrequency = TargetElapsedMilliseconds / AdjustedSpeed;
             if (elapsed < targetFrequency)
             {
                 // If we can't actually run to the next frame, at least update

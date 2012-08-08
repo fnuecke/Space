@@ -45,6 +45,13 @@ namespace Engine.ComponentSystem.Common.Components
         /// </summary>
         public FarPosition PreviousPosition;
 
+        /// <summary>
+        /// This field flags whether the component is currently (in this update cycle)
+        /// colliding with another one. It is set each update by the collision system.
+        /// It is used purely for debug rendering.
+        /// </summary>
+        public Color CollisionState;
+
         #endregion
 
         #region Initialization

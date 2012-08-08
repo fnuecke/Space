@@ -109,7 +109,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Check our new cell after the position change.
                 var position = changedMessage.CurrentPosition;
-                var cellId = CoordinateIds.Combine(
+                var cellId = BitwiseMagic.Pack(
                     (int)position.X >> CellSystem.CellSizeShiftAmount,
                     (int)position.Y >> CellSystem.CellSizeShiftAmount);
 

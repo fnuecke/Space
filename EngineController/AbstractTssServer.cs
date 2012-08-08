@@ -98,7 +98,7 @@ namespace Engine.Controller
         public override void Update()
         {
             // Drive game logic.
-            UpdateSimulation(AdjustedSpeed);
+            UpdateSimulation();
 
             // The server might have been the slowing factor, so try updating
             // the game speed. This is relatively cheap, so we can just do this
@@ -153,12 +153,12 @@ namespace Engine.Controller
             // Dump actual game state.
             foreach (var system in Tss.TrailingSimulation.Manager.Systems)
             {
-                sb.Append(system.ToString());
+                sb.Append(system);
                 sb.AppendLine();
             }
             foreach (var component in Tss.TrailingSimulation.Manager.Components)
             {
-                sb.Append(component.ToString());
+                sb.Append(component);
                 sb.AppendLine();
             }
 
@@ -214,11 +214,11 @@ namespace Engine.Controller
             // Adjust speed to the worst load.
             if (worstLoad > 1f)
             {
-                AdjustedSpeed = 1f / worstLoad;
+                AdjustedSpeed = TargetSpeed / worstLoad;
             }
             else
             {
-                AdjustedSpeed = 1;
+                AdjustedSpeed = TargetSpeed;
             }
         }
 
@@ -329,7 +329,7 @@ namespace Engine.Controller
                             // the round trip time.
                             .Write(Tss.CurrentFrame)
                             // The current speed the game should run at.
-                            .Write((float)AdjustedSpeed);
+                            .Write(AdjustedSpeed);
                         Session.SendTo(args.Player, packet);
                     }
                     break;

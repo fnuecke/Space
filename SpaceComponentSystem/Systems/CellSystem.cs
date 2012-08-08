@@ -134,7 +134,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The id of the cell containing that coordinate pair.</returns>
         public static ulong GetCellIdFromCoordinates(int x, int y)
         {
-            return CoordinateIds.Combine(x >> CellSizeShiftAmount, y >> CellSizeShiftAmount);
+            return BitwiseMagic.Pack(x >> CellSizeShiftAmount, y >> CellSizeShiftAmount);
         }
 
         /// <summary>
@@ -179,10 +179,8 @@ namespace Space.ComponentSystem.Systems
                 if (!_pendingCells.Remove(cellId))
                 {
                     // Notify if cell wasn't alive already.
-                    var xy = CoordinateIds.Split(cellId);
                     changedMessage.Id = cellId;
-                    changedMessage.X = xy.Item1;
-                    changedMessage.Y = xy.Item2;
+                    BitwiseMagic.Unpack(cellId, out changedMessage.X, out changedMessage.Y);
                     changedMessage.State = true;
                     Manager.SendMessage(ref changedMessage);
                 }
@@ -202,19 +200,21 @@ namespace Space.ComponentSystem.Systems
                 // Timed out, kill it for good.
                 _pendingCells.Remove(cellId);
 
+                int x, y;
+                BitwiseMagic.Unpack(cellId, out x, out y);
+
                 // Notify.
-                var xy = CoordinateIds.Split(cellId);
                 changedMessage.Id = cellId;
-                changedMessage.X = xy.Item1;
-                changedMessage.Y = xy.Item2;
+                changedMessage.X = x;
+                changedMessage.Y = y;
                 changedMessage.State = false;
                 Manager.SendMessage(ref changedMessage);
 
                 // Kill any remaining entities in the area covered by the
                 // cell that just died.
                 FarRectangle cellBounds;
-                cellBounds.X = xy.Item1 * CellSize;
-                cellBounds.Y = xy.Item2 * CellSize;
+                cellBounds.X = x * CellSize;
+                cellBounds.Y = y * CellSize;
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
                 ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref cellBounds, ref _reusableEntityList, CellDeathAutoRemoveIndexGroupMask);
@@ -259,7 +259,7 @@ namespace Space.ComponentSystem.Systems
             {
                 for (var nx = x - 1; nx <= x + 1; nx++)
                 {
-                    cells.Add(CoordinateIds.Combine(nx, ny));
+                    cells.Add(BitwiseMagic.Pack(nx, ny));
                 }
             }
         }

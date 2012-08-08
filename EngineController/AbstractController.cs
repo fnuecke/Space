@@ -29,7 +29,7 @@ namespace Engine.Controller
         /// The current 'load', i.e. how much of the available time is actually
         /// needed to perform an update.
         /// </summary>
-        public abstract double CurrentLoad { get; }
+        public abstract float CurrentLoad { get; }
 
         #endregion
 

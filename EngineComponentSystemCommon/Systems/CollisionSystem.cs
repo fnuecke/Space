@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
 {
@@ -33,6 +35,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Collidable component)
         {
+            // Reset flag.
+            SetCollisionState(component, Color.Green);
+
             // Get index and allocate neighbor result list.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> neighbors = new HashSet<int>();
@@ -42,6 +47,8 @@ namespace Engine.ComponentSystem.Common.Systems
             var translation = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
             bounds.X = (int)translation.X - bounds.Width / 2;
             bounds.Y = (int)translation.Y - bounds.Height / 2;
+            // TODO this is a hacky workaround to get entities that are travelling at high speeds to properly check for collisions with stuff they passed through
+            bounds.Inflate(50, 50);
             index.Find(ref bounds, ref neighbors, IndexGroupMask);
 
             // If there are no neighbors, skip the rest.
@@ -59,11 +66,20 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 var otherComponent = (Collidable)Manager.GetComponent(neighbor, Collidable.TypeId);
 
+                // Skip self.
+                if (otherComponent.Id == component.Id)
+                {
+                    continue;
+                }
+
                 // Skip disabled components.
                 if (!otherComponent.Enabled)
                 {
                     continue;
                 }
+
+                // Flag it as having neighbors.
+                SetCollisionState(component, Color.Blue);
 
                 // Only test if its from a different collision group.
                 if ((component.CollisionGroups & otherComponent.CollisionGroups) != 0)
@@ -71,16 +87,31 @@ namespace Engine.ComponentSystem.Common.Systems
                     continue;
                 }
 
+                // Flag it as having collidable neighbors.
+                SetCollisionState(component, Color.Yellow);
+
                 // Test for collision.
                 if (!component.Intersects(otherComponent))
                 {
                     continue;
                 }
 
+                // Flag it as intersecting.
+                SetCollisionState(component, Color.DarkRed);
+
                 // If there is one, let both parties know.
                 message.SecondEntity = otherComponent.Entity;
                 Manager.SendMessage(ref message);
             }
+        }
+
+        /// <summary>
+        /// Only make the effort to set this when in debug mode.
+        /// </summary>
+        [Conditional("DEBUG")]
+        private static void SetCollisionState(Collidable component, Color color)
+        {
+            component.CollisionState = color;
         }
 
         /// <summary>

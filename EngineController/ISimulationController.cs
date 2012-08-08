@@ -15,9 +15,14 @@ namespace Engine.Controller
         ISimulation Simulation { get; }
 
         /// <summary>
+        /// The target game speed we try to run at, if possible.
+        /// </summary>
+        float TargetSpeed { get; set; }
+
+        /// <summary>
         /// The current actual game speed, based on possible slow-downs due
         /// to the server or other clients.
         /// </summary>
-        double ActualSpeed { get; }
+        float ActualSpeed { get; }
     }
 }

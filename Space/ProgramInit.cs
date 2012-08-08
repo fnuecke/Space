@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
@@ -186,10 +187,44 @@ namespace Space
                 "Enables rendering of the index with the given index.",
                 "d_renderindex <index> - render the cells of the specified index.");
 
+            _console.AddCommand("d_speed",
+                args =>
+                {
+                    _server.Controller.TargetSpeed = float.Parse(args[1]);
+                },
+                "Sets the target gamespeed.",
+                "d_speed <x> - set the target game speed to the specified value.");
+
+            _console.AddCommand("r_collbounds",
+                args => SetDebugRenderSystemEnabled<DebugCollisionBoundsRenderer>(args[1]),
+                "Sets whether to render collision bounds of objects.",
+                "r_collbounds 1|0 - set whether to render collision bounds.");
+
+            _console.AddCommand("r_entityid",
+                args => SetDebugRenderSystemEnabled<DebugEntityIdRenderer>(args[1]),
+                "Sets whether to render entitiy ids at entity position.",
+                "r_entityid 1|0 - set whether to render entity ids.");
+
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
             // the game has crashed.
             _console.LineWritten += (sender, e) => Console.WriteLine(((LineWrittenEventArgs)e).Message);
+        }
+
+        private void SetDebugRenderSystemEnabled<T>(string value) where T : AbstractSystem, IDrawingSystem
+        {
+            switch (value)
+            {
+                case "1":
+                case "on":
+                case "true":
+                case "yes":
+                    _client.GetSystem<T>().IsEnabled = true;
+                    break;
+                default:
+                    _client.GetSystem<T>().IsEnabled = false;
+                    break;
+            }
         }
     }
 }

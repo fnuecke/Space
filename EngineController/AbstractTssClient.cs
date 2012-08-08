@@ -122,7 +122,7 @@ namespace Engine.Controller
             }
 
             // Drive game logic.
-            UpdateSimulation(AdjustedSpeed);
+            UpdateSimulation();
 
             // We might have disconnected due to a desync.
             if (Session.ConnectionState != ClientState.Connected)
@@ -184,12 +184,12 @@ namespace Engine.Controller
             // Dump actual game state.
             foreach (var system in Tss.TrailingSimulation.Manager.Systems)
             {
-                sb.Append(system.ToString());
+                sb.Append(system);
                 sb.AppendLine();
             }
             foreach (var component in Tss.TrailingSimulation.Manager.Components)
             {
-                sb.Append(component.ToString());
+                sb.Append(component);
                 sb.AppendLine();
             }
 
@@ -248,7 +248,7 @@ namespace Engine.Controller
                 packet
                     .Write((byte)TssControllerMessage.Synchronize)
                     .Write(Tss.CurrentFrame)
-                    .Write((float)SafeLoad);
+                    .Write(SafeLoad);
                 Session.Send(packet);
             }
         }
