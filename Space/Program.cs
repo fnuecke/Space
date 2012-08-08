@@ -318,6 +318,10 @@ namespace Space
             _spriteBatch.Draw(_scene, GraphicsDevice.PresentationParameters.Bounds, Color.White);
             _spriteBatch.End();
 
+            // Grab actual graph data.
+            _watch.Stop();
+            _drawHistory.Put(_watch.ElapsedMilliseconds);
+
             // Draw graphs after everything else, to avoid filters on the
             // other screen data to affect us.
             if (GraphsVisible)
@@ -331,10 +335,6 @@ namespace Space
                 _gameSpeedGraph.Draw();
                 _gameLoadGraph.Draw();
             }
-
-            // Grab actual graph data.
-            _watch.Stop();
-            _drawHistory.Put(_watch.ElapsedMilliseconds);
         }
 
         #endregion

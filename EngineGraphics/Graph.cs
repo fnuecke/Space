@@ -227,9 +227,9 @@ namespace Engine.Graphics
         private readonly StringBuilder _formatter = new StringBuilder(32);
 
         /// <summary>
-        /// Time to wait before next actual repaint.
+        /// Whether to actually repaint next draw call.
         /// </summary>
-        private int _repaintDelay;
+        private bool _wantToRender;
 
         #endregion
 
@@ -293,7 +293,7 @@ namespace Engine.Graphics
                     _graphImageData = new Color[graphBounds.Width * graphBounds.Height];
                 }
 
-                if (_repaintDelay <= 0)
+                if (_wantToRender)
                 {
                     switch (Type)
                     {
@@ -303,12 +303,8 @@ namespace Engine.Graphics
                         case GraphType.StackedArea:
                             break;
                     }
-                    _repaintDelay = 3;
                 }
-                else
-                {
-                    --_repaintDelay;
-                }
+                _wantToRender = !_wantToRender;
 
                 Vector2 position;
                 position.X = graphBounds.X;
