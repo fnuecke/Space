@@ -98,6 +98,12 @@ input[type=""text""], input[type=""password""], textarea {
         /// </summary>
         private readonly Stack<WebView> _screens = new Stack<WebView>();
 
+        /// <summary>
+        /// We skip every second draw call with copying the texture, because 30 fps
+        /// should be enough for a GUI.
+        /// </summary>
+        private bool _wantToRender;
+
         #endregion
 
         #region Constructor
@@ -250,8 +256,13 @@ input[type=""text""], input[type=""password""], textarea {
             var screen = _screens.Peek();
             if (screen.Surface != null)
             {
-                var surface = (BitmapSurface)screen.Surface;
-                _backBuffer.RenderTexture2D(surface.Buffer);
+                if (_wantToRender)
+                {
+                    var surface = (BitmapSurface)screen.Surface;
+                    _backBuffer.RenderTexture2D(surface.Buffer);
+                }
+                _wantToRender = !_wantToRender;
+
                 _spriteBatch.Begin();
                 _spriteBatch.Draw(_backBuffer, Vector2.Zero, Color.White);
                 _spriteBatch.End();   

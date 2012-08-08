@@ -115,6 +115,8 @@ namespace Space
         private GameServer _server;
         private GameClient _client;
 
+        private readonly Stopwatch _watch = new Stopwatch();
+
         private readonly FloatSampling _fpsHistory = new FloatSampling(600);
         private Graph _fpsGraph;
 
@@ -228,8 +230,7 @@ namespace Space
         protected override void Update(GameTime gameTime)
         {
             // For graph data.
-            var watch = new Stopwatch();
-            watch.Start();
+            _watch.Restart();
 
             // Update the rest of the game.
             base.Update(gameTime);
@@ -239,14 +240,14 @@ namespace Space
             if (_server != null)
             {
                 manager = _server.Controller.Simulation.Manager;
-                _gameSpeedHistory.Put((float)_server.Controller.ActualSpeed);
-                _gameLoadHistory.Put((float)_server.Controller.CurrentLoad);
+                _gameSpeedHistory.Put(_server.Controller.ActualSpeed);
+                _gameLoadHistory.Put(_server.Controller.CurrentLoad);
             }
             else if (_client != null && _client.Controller.Session.ConnectionState == ClientState.Connected)
             {
                 manager = _client.Controller.Simulation.Manager;
-                _gameSpeedHistory.Put((float)_client.Controller.ActualSpeed);
-                _gameLoadHistory.Put((float)_client.Controller.CurrentLoad);
+                _gameSpeedHistory.Put(_client.Controller.ActualSpeed);
+                _gameLoadHistory.Put(_client.Controller.CurrentLoad);
             }
             if (manager != null)
             {
@@ -275,8 +276,8 @@ namespace Space
             _pendingComponents.Clear();
 
             // Grab actual graph data.
-            watch.Stop();
-            _updateHistory.Put(watch.ElapsedMilliseconds);
+            _watch.Stop();
+            _updateHistory.Put(_watch.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -286,8 +287,7 @@ namespace Space
         protected override void Draw(GameTime gameTime)
         {
             // For graph data.
-            var watch = new Stopwatch();
-            watch.Start();
+            _watch.Restart();
 
             // Set our custom render target to render everything into an
             // off-screen texture, first.
@@ -333,8 +333,8 @@ namespace Space
             }
 
             // Grab actual graph data.
-            watch.Stop();
-            _drawHistory.Put(watch.ElapsedMilliseconds);
+            _watch.Stop();
+            _drawHistory.Put(_watch.ElapsedMilliseconds);
         }
 
         #endregion

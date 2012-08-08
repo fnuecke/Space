@@ -123,48 +123,46 @@ namespace Engine.ComponentSystem.Common.Systems
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
 
             // Skip there rest if nothing is visible.
-            if (_drawablesInView.Count == 0)
+            if (_drawablesInView.Count > 0)
             {
-                return;
-            }
+                // Get the transformation to use.
+                var cameraTransform = GetTransform();
 
-            // Get the transformation to use.
-            var cameraTransform = GetTransform();
+                // Begin rendering.
+                SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
 
-            // Begin rendering.
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
-
-            // Iterate over the shorter list.
-            if (_drawablesInView.Count < Components.Count)
-            {
-                foreach (var entity in _drawablesInView)
+                // Iterate over the shorter list.
+                if (_drawablesInView.Count < Components.Count)
                 {
-                    var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
-
-                    // Skip invalid or disabled entities.
-                    if (component != null && component.Enabled)
+                    foreach (var entity in _drawablesInView)
                     {
-                        DrawComponent(component, cameraTransform.Translation);
+                        var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
+
+                        // Skip invalid or disabled entities.
+                        if (component != null && component.Enabled)
+                        {
+                            DrawComponent(component, cameraTransform.Translation);
+                        }
                     }
                 }
-            }
-            else
-            {
-                foreach (var component in Components)
+                else
                 {
-                    // Skip disabled or invisible entities.
-                    if (component.Enabled && _drawablesInView.Contains(component.Entity))
+                    foreach (var component in Components)
                     {
-                        DrawComponent(component, cameraTransform.Translation);
+                        // Skip disabled or invisible entities.
+                        if (component.Enabled && _drawablesInView.Contains(component.Entity))
+                        {
+                            DrawComponent(component, cameraTransform.Translation);
+                        }
                     }
                 }
+
+                // Done rendering.
+                SpriteBatch.End();
+
+                // Clear for next iteration.
+                _drawablesInView.Clear();
             }
-
-            // Done rendering.
-            SpriteBatch.End();
-
-            // Clear for next iteration.
-            _drawablesInView.Clear();
 
             // Swap position lists.
             var oldPositions = _positions;

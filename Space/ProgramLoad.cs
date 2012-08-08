@@ -127,22 +127,22 @@ namespace Space
         private void LoadGraphs()
         {
             _fpsGraph = new Graph(Content, GraphicsDevice)
-                        {
-                            FixedMaximum = 70,
-                            Smoothing = 30,
-                            Unit = "Hz",
-                            Title = "FPS",
-                            Data = new[] {_fpsHistory}
-                        };
+            {
+                FixedMaximum = 70,
+                Smoothing = 30,
+                Unit = "Hz",
+                Title = "FPS",
+                Data = _fpsHistory
+            };
 
             _updateGraph = new Graph(Content, GraphicsDevice)
-                           {
-                               Smoothing = 30,
-                               FixedMaximum = 30,
-                               Unit = "ms",
-                               Title = "Update time",
-                               Data = new[] {_updateHistory}
-                           };
+            {
+                Smoothing = 30,
+                FixedMaximum = 30,
+                Unit = "ms",
+                Title = "Update time",
+                Data = _updateHistory
+            };
 
             _drawGraph = new Graph(Content, GraphicsDevice)
             {
@@ -150,45 +150,45 @@ namespace Space
                 FixedMaximum = 30,
                 Unit = "ms",
                 Title = "Render time",
-                Data = new[] { _drawHistory }
+                Data = _drawHistory
             };
 
             _memoryGraph = new Graph(Content, GraphicsDevice)
-                           {
-                               Smoothing = 10,
-                               Unit = "B",
-                               Title = "RAM",
-                               UnitPrefix = Graph.UnitPrefixes.IEC,
-                               Data = new[] {_memoryHistory}
-                           };
+            {
+                Smoothing = 10,
+                Unit = "B",
+                Title = "RAM",
+                UnitPrefix = Graph.UnitPrefixes.IEC,
+                Data = _memoryHistory
+            };
 
             _componentGraph = new Graph(Content, GraphicsDevice)
-                              {
-                                  Title = "Components",
-                                  Smoothing = 10,
-                                  Data = new[] {_componentsHistory}
-                              };
+            {
+                Title = "Components",
+                Smoothing = 10,
+                Data = _componentsHistory
+            };
 
             _indexQueryGraph = new Graph(Content, GraphicsDevice)
-                               {
-                                   Title = "Index queries",
-                                   Smoothing = 10,
-                                   Data = new[] {_indexQueryHistory}
-                               };
+            {
+                Title = "Index queries",
+                Smoothing = 10,
+                Data = _indexQueryHistory
+            };
 
             _gameSpeedGraph = new Graph(Content, GraphicsDevice)
-                              {
-                                  Title = "Game speed",
-                                  Smoothing = 10,
-                                  Data = new[] {_gameSpeedHistory}
-                              };
+            {
+                Title = "Game speed",
+                Smoothing = 10,
+                Data = _gameSpeedHistory
+            };
 
             _gameLoadGraph = new Graph(Content, GraphicsDevice)
-                             {
-                                 Title = "Game load",
-                                 Smoothing = 10,
-                                 Data = new[] {_gameLoadHistory}
-                             };
+            {
+                Title = "Game load",
+                Smoothing = 10,
+                Data = _gameLoadHistory
+            };
 
             // Distribute them over the screen.
             Microsoft.Xna.Framework.Rectangle bounds;
@@ -197,16 +197,16 @@ namespace Space
             bounds.Width = 250;
             bounds.Height = 150;
             foreach (var graph in new[]
-                                  {
-                                      _fpsGraph,
-                                      _updateGraph,
-                                      _drawGraph,
-                                      _memoryGraph,
-                                      _componentGraph,
-                                      _indexQueryGraph,
-                                      _gameSpeedGraph,
-                                      _gameLoadGraph
-                                  })
+            {
+                _fpsGraph,
+                _updateGraph,
+                _drawGraph,
+                _memoryGraph,
+                _componentGraph,
+                _indexQueryGraph,
+                _gameSpeedGraph,
+                _gameLoadGraph
+            })
             {
                 if (bounds.X + bounds.Width >= GraphicsDevice.Viewport.Width)
                 {

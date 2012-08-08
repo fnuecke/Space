@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Text;
 using Engine.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -98,6 +97,11 @@ namespace Engine.Graphics
         /// </summary>
         private static readonly string[] IECPrefixes = new[] {"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"};
 
+        /// <summary>
+        /// For garbage free string formatting.
+        /// </summary>
+        private static readonly char[] Digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
         #endregion
 
         #region Properties
@@ -120,7 +124,15 @@ namespace Engine.Graphics
         /// data points. This will also mean the actually rendered data points
         /// will be <c>n - 1</c> less than actually available.
         /// </summary>
-        public int Smoothing { get; set; }
+        public int Smoothing
+        {
+            get { return _smoothing; }
+            set
+            {
+                _movingAverage = new FloatSampling(value + 1);
+                _smoothing = value;
+            }
+        }
 
         /// <summary>
         /// The unit prefix to use when shortening values for display. Defaults
@@ -145,11 +157,9 @@ namespace Engine.Graphics
         public float? FixedMaximum { get; set; }
 
         /// <summary>
-        /// The data provider we iterate to render the graph. Each enumerable
-        /// represents an individual data set. The data sets should each be of
-        /// equal length, and must be of the same unit.
+        /// The data provider we iterate to render the graph.
         /// </summary>
-        public IEnumerable<float>[] Data { get; set; }
+        public IEnumerable<float> Data { set { _enumerator = value.GetEnumerator(); } }
 
         #endregion
 
@@ -186,20 +196,40 @@ namespace Engine.Graphics
         private Color[] _graphImageData;
 
         /// <summary>
+        /// The reused enumerator.
+        /// </summary>
+        private IEnumerator<float> _enumerator;
+
+        /// <summary>
         /// Use a maximum from recent time to interpolate from to avoid
         /// sudden scale jumps.
         /// </summary>
         private float _recentMax = 1;
 
         /// <summary>
-        /// Reused list for data accumulation to avoid garbage.
+        /// The smoothing to use (how many values to average over).
         /// </summary>
-        private readonly List<float> _points;
+        private int _smoothing;
+
+        /// <summary>
+        /// The sampler to use to generate the moving average.
+        /// </summary>
+        private FloatSampling _movingAverage = new FloatSampling(1);
 
         /// <summary>
         /// Reused data accumulator to avoid garbage.
         /// </summary>
-        private float[][] _buildCurves;
+        private readonly List<float> _points;
+
+        /// <summary>
+        /// String builder used to format texts to be displayed.
+        /// </summary>
+        private readonly StringBuilder _formatter = new StringBuilder(32);
+
+        /// <summary>
+        /// Time to wait before next actual repaint.
+        /// </summary>
+        private int _repaintDelay;
 
         #endregion
 
@@ -244,19 +274,49 @@ namespace Engine.Graphics
             DrawBackground();
 
             float min, max, average, now;
-            var anchors = BuildCurves(out min, out max, out average, out now);
+            BuildCurves(out min, out max, out average, out now);
 
-            if (anchors != null)
+            if (_points.Count > 0)
             {
-                switch (Type)
+                var graphBounds = ComputeGraphBounds();
+                if (_graphCanvas == null ||
+                    _graphCanvas.Width != graphBounds.Width ||
+                    _graphCanvas.Height != graphBounds.Height)
                 {
-                    case GraphType.Line:
-                        DrawLines(anchors, min, max, average);
-                        break;
-                    case GraphType.StackedArea:
-                        DrawStackedAreas(anchors);
-                        break;
+                    if (_graphCanvas != null)
+                    {
+                        _graphCanvas.Dispose();
+                    }
+                    _graphCanvas = new Texture2D(_spriteBatch.GraphicsDevice,
+                                                 graphBounds.Width,
+                                                 graphBounds.Height);
+                    _graphImageData = new Color[graphBounds.Width * graphBounds.Height];
                 }
+
+                if (_repaintDelay <= 0)
+                {
+                    switch (Type)
+                    {
+                        case GraphType.Line:
+                            DrawLines(min, max, average);
+                            break;
+                        case GraphType.StackedArea:
+                            break;
+                    }
+                    _repaintDelay = 3;
+                }
+                else
+                {
+                    --_repaintDelay;
+                }
+
+                Vector2 position;
+                position.X = graphBounds.X;
+                position.Y = graphBounds.Y;
+
+                _spriteBatch.Begin();
+                _spriteBatch.Draw(_graphCanvas, position, Color.White);
+                _spriteBatch.End();
             }
 
             DrawCaptions(min, max, average, now);
@@ -276,6 +336,8 @@ namespace Engine.Graphics
 
             // Draw inner outline for actual graphs.
             var graphBounds = ComputeGraphBounds();
+            graphBounds.Height += Padding * 2;
+            graphBounds.Y -= Padding;
             _outlines.SetSize(graphBounds.Width, graphBounds.Height);
             _outlines.SetCenter(graphBounds.Center.X, graphBounds.Center.Y);
             _outlines.Draw();
@@ -292,22 +354,28 @@ namespace Engine.Graphics
         {
             _spriteBatch.Begin();
 
+            Vector2 position;
+            position.X = Bounds.X + Padding;
+            position.Y = Bounds.Y + Padding;
+
             if (!string.IsNullOrWhiteSpace(Title))
             {
-                _spriteBatch.DrawString(_font, Title, new Vector2(Bounds.X + Padding, Bounds.Y + Padding), Color.White);
+                _spriteBatch.DrawString(_font, Title, position, Color.White);
             }
 
-            var maxText = "max: " + Format(max);
-            var minText = "min: " + Format(min);
+            position.X = Bounds.X + Padding;
+            position.Y = Bounds.Bottom - Padding - VerticalCaptionSize * 2;
+            _spriteBatch.DrawString(_font, Format("max: ", max), position, Color.White);
+            position.X = Bounds.X + Padding;
+            position.Y = Bounds.Bottom - Padding - VerticalCaptionSize;
+            _spriteBatch.DrawString(_font, Format("min: ", min), position, Color.White);
 
-            var avgText = "avg: " + Format(average);
-            var nowText = "now: " + Format(now);
-
-            _spriteBatch.DrawString(_font, maxText, new Vector2(Bounds.X + Padding, Bounds.Bottom - Padding - VerticalCaptionSize * 2), Color.White);
-            _spriteBatch.DrawString(_font, minText, new Vector2(Bounds.X + Padding, Bounds.Bottom - Padding - VerticalCaptionSize), Color.White);
-
-            _spriteBatch.DrawString(_font, avgText, new Vector2(Bounds.X + Padding + Bounds.Width / 2, Bounds.Bottom - Padding - VerticalCaptionSize * 2), Color.White);
-            _spriteBatch.DrawString(_font, nowText, new Vector2(Bounds.X + Padding + Bounds.Width / 2, Bounds.Bottom - Padding - VerticalCaptionSize), Color.White);
+            position.X = Bounds.X + Padding + Bounds.Width / 2;
+            position.Y = Bounds.Bottom - Padding - VerticalCaptionSize * 2;
+            _spriteBatch.DrawString(_font, Format("avg: ", average), position, Color.White);
+            position.X = Bounds.X + Padding + Bounds.Width / 2;
+            position.Y = Bounds.Bottom - Padding - VerticalCaptionSize;
+            _spriteBatch.DrawString(_font, Format("now: ", now), position, Color.White);
 
             _spriteBatch.End();
         }
@@ -315,102 +383,62 @@ namespace Engine.Graphics
         /// <summary>
         /// Draws lines for each data set.
         /// </summary>
-        /// <param name="anchors">The anchors to draw the lines through.</param>
         /// <param name="min">The min value.</param>
         /// <param name="max">The max value.</param>
         /// <param name="average">The average value.</param>
-        private void DrawLines(IEnumerable<float[]> anchors, float min, float max, float average)
+        private void DrawLines(float min, float max, float average)
         {
-            var graphBounds = ComputeGraphBounds();
-            graphBounds.Height -= Padding * 2;
-            graphBounds.Y += Padding;
-            if (_graphCanvas == null ||
-                _graphCanvas.Width != graphBounds.Width ||
-                _graphCanvas.Height != graphBounds.Height)
+            var w = (_points.Count - 1) / (float)_graphCanvas.Width;
+            var lastY = 0f;
+            for (var x = 0; x < _graphCanvas.Width; x++)
             {
-                if (_graphCanvas != null)
+                var bucket = x * w;
+                var a = (int)System.Math.Floor(bucket);
+                var b = (int)System.Math.Ceiling(bucket);
+                float targetY;
+                if (a == b)
                 {
-                    _graphCanvas.Dispose();
+                    targetY = _points[a];
                 }
-                _graphCanvas = new Texture2D(_spriteBatch.GraphicsDevice,
-                                             graphBounds.Width,
-                                             graphBounds.Height);
-                _graphImageData = new Color[graphBounds.Width * graphBounds.Height];
-            }
-
-            Vector2 position;
-            position.X = graphBounds.X;
-            position.Y = graphBounds.Y;
-
-            _spriteBatch.Begin();
-
-            foreach (var data in anchors)
-            {
-                if (data.Length <= Smoothing)
+                else
                 {
-                    continue;
+                    var wa = 1 - System.Math.Abs(a - bucket);
+                    var wb = 1 - System.Math.Abs(b - bucket);
+                    var da = _points[System.Math.Max(0, a)];
+                    var db = _points[System.Math.Min(_points.Count - 1, b)];
+                    targetY = da * wa + db * wb;
                 }
-                var w = (data.Length - 1) / (float)_graphCanvas.Width;
-                var lastY = 0f;
-                for (var x = 0; x < _graphCanvas.Width; x++)
+                targetY = _graphCanvas.Height - 2 - targetY * (_graphCanvas.Height - 2);
+                var minY = System.Math.Max(0, _graphCanvas.Height - min / _recentMax * _graphCanvas.Height);
+                var maxY = System.Math.Max(0, _graphCanvas.Height - max / _recentMax * _graphCanvas.Height);
+                var avgY = System.Math.Max(0, _graphCanvas.Height - average / _recentMax * _graphCanvas.Height);
+                for (var y = 0; y < _graphCanvas.Height; y++)
                 {
-                    var bucket = x * w;
-                    var a = (int)System.Math.Floor(bucket);
-                    var b = (int)System.Math.Ceiling(bucket);
-                    float targetY;
-                    if (a == b)
-                    {
-                        targetY = data[a];
-                    }
-                    else
-                    {
-                        var wa = 1 - System.Math.Abs(a - bucket);
-                        var wb = 1 - System.Math.Abs(b - bucket);
-                        var da = data[System.Math.Max(0, a)];
-                        var db = data[System.Math.Min(data.Length - 1, b)];
-                        targetY = da * wa + db * wb;
-                    }
-                    targetY = _graphCanvas.Height - 2 - targetY * (_graphCanvas.Height - 2);
-                    var minY = System.Math.Max(0, _graphCanvas.Height - min / _recentMax * _graphCanvas.Height);
-                    var maxY = System.Math.Max(0, _graphCanvas.Height - max / _recentMax * _graphCanvas.Height);
-                    var avgY = System.Math.Max(0, _graphCanvas.Height - average / _recentMax * _graphCanvas.Height);
-                    for (var y = 0; y < _graphCanvas.Height; y++)
-                    {
-                        // Draw line.
-                        var local = y - lastY;
-                        var alpha = System.Math.Max(0, System.Math.Min(1, System.Math.Max(0, 1.5f - System.Math.Abs(local - 0.5f))));
+                    // Draw line.
+                    var local = y - lastY;
+                    var alpha = System.Math.Max(0, System.Math.Min(1, System.Math.Max(0, 1.5f - System.Math.Abs(local - 0.5f))));
 
-                        // Draw min/max/average lines
-                        local = y - minY;
+                    // Draw min/max/average lines
+                    local = y - minY;
+                    alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
+                    if (!float.IsInfinity(max))
+                    {
+                        local = y - maxY;
                         alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
-                        if (!float.IsInfinity(max))
-                        {
-                            local = y - maxY;
-                            alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
-                        }
-                        if (!float.IsInfinity(average))
-                        {
-                            local = y - avgY;
-                            alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
-                        }
-                        
-                        // Set final color.
-                        _graphImageData[x + y * _graphCanvas.Width] = Color.White * alpha;
                     }
-                    lastY = targetY;
+                    if (!float.IsInfinity(average))
+                    {
+                        local = y - avgY;
+                        alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
+                    }
+                        
+                    // Set final color.
+                    _graphImageData[x + y * _graphCanvas.Width] = Color.White * alpha;
                 }
-
-                _graphCanvas.SetData(_graphImageData);
-                _spriteBatch.Draw(_graphCanvas, position, Color.White);
+                lastY = targetY;
             }
 
-            _spriteBatch.End();
-        }
-
-        private void DrawStackedAreas(IEnumerable<float[]> anchors)
-        {
-            // TODO...
-            throw new NotImplementedException();
+            _graphCanvas.SetData(_graphImageData);
         }
 
         #endregion
@@ -441,9 +469,9 @@ namespace Engine.Graphics
         {
             Microsoft.Xna.Framework.Rectangle r;
             r.X = Padding;
-            r.Y = Padding + (string.IsNullOrWhiteSpace(Title) ? 0 : VerticalCaptionSize + Padding);
+            r.Y = Padding * 2 + (string.IsNullOrWhiteSpace(Title) ? 0 : VerticalCaptionSize + Padding);
             r.Width = Bounds.Width - Padding * 2;
-            r.Height = Bounds.Height - r.Y - VerticalCaptionSize * 2 - Padding * 2;
+            r.Height = Bounds.Height - r.Y - VerticalCaptionSize * 2 - Padding * 4;
             r.X += Bounds.X;
             r.Y += Bounds.Y;
             return r;
@@ -458,83 +486,59 @@ namespace Engine.Graphics
         /// <param name="average">The average value.</param>
         /// <param name="now">The current value.</param>
         /// <returns></returns>
-        private IEnumerable<float[]> BuildCurves(out float min, out float max, out float average, out float now)
+        private void BuildCurves(out float min, out float max, out float average, out float now)
         {
+            // Clear previous results.
+            _points.Clear();
+
             // Skip if there is no data.
-            if (Data == null || Data.Length == 0)
+            if (_enumerator == null)
             {
                 min = max = average = now = 0;
-                return null;
+                return;
             }
 
             // Initialize values to impossible values to override them.
             min = float.PositiveInfinity;
             max = float.NegativeInfinity;
-            now = 0;
+            now = float.NaN;
 
             // And start the average at zero, of course.
             average = 0;
             var count = 0;
 
-            // Allocate data for actual data points.
-            if (_buildCurves == null || _buildCurves.Length != Data.Length)
+            // Start walking over our data source.
+            var processed = 0;
+
+            _enumerator.Reset();
+            while (_enumerator.MoveNext())
             {
-                _buildCurves = new float[Data.Length][];   
-            }
+                var data = _enumerator.Current;
 
-            // Iterate each data collection.
-            for (int i = 0, j = Data.Length; i < j; i++)
-            {
-                // Skip invalid data sources.
-                if (Data[i] == null)
+                // Build average based on smoothing parameter.
+                _movingAverage.Put(data);
+                var value = (float)_movingAverage.Mean();
+
+                if (++processed > Smoothing)
                 {
-                    if (_buildCurves[i] == null || _buildCurves[i].Length != 0)
+                    // Store value in our data point list.
+                    _points.Add(value);
+
+                    // Update our extrema.
+                    if (value < min)
                     {
-                        _buildCurves[i] = new float[0];
+                        min = value;
                     }
-                    continue;
-                }
-
-                // Otherwise start walking over our data source.
-                var movingAverage = new FloatSampling(Smoothing + 1);
-                var processed = 0;
-                foreach (var data in Data[i])
-                {
-                    // Build average based on smoothing parameter.
-                    movingAverage.Put(data);
-                    var value = (float)movingAverage.Mean();
-
-                    if (++processed > Smoothing)
+                    if (value > max)
                     {
-                        // Store value in our data point list.
-                        _points.Add(value);
-
-                        // Update our extrema.
-                        if (value < min)
-                        {
-                            min = value;
-                        }
-                        if (value > max)
-                        {
-                            max = value;
-                        }
-
-                        average += value;
-                        ++count;
-
-                        now = value;
+                        max = value;
                     }
-                }
 
-                // Convert list to array and store it.
-                if (_buildCurves[i] == null || _buildCurves[i].Length != _points.Count)
-                {
-                    _buildCurves[i] = new float[_points.Count];
-                }
-                _points.CopyTo(_buildCurves[i]);
+                    average += value;
+                    ++count;
 
-                // Clear list for next iteration.
-                _points.Clear();
+                    now = value;
+                }
             }
 
             // Adjust maximum.
@@ -554,51 +558,63 @@ namespace Engine.Graphics
                 }
             }
 
-            // Scale all curves to fit in the graphing area.
-            foreach (var data in _buildCurves)
+            // Scale curve to fit in the graphing area.
+            for (int i = 0, j = _points.Count; i < j; i++)
             {
-                for (int i = 0, j = data.Length; i < j; i++)
-                {
-                    data[i] /= _recentMax;
-                }
+                _points[i] /= _recentMax;
             }
 
             // Adjust average.
             average /= count;
-
-            // Return point list with actual coordinates for points to render.
-            return _buildCurves;
         }
 
         /// <summary>
         /// Formats a value based on the set unit settings for rendering.
         /// </summary>
+        /// <param name="caption">The caption to prepend the formatted value.</param>
         /// <param name="value">The value to format.</param>
-        /// <returns>The formatted string representing the value.</returns>
-        private string Format(float value)
+        /// <returns>
+        /// The formatted string representing the value.
+        /// </returns>
+        private StringBuilder Format(string caption, float value)
         {
+            // Reset our formatter.
+            _formatter.Clear();
+
+            // Add prefix.
+            _formatter.Append(caption);
+
             // Not much to do if it's infinity.
             if (float.IsInfinity(value) || float.IsNaN(value))
             {
-                return "N/A";
+                _formatter.Append("N/A");
+                return _formatter;
             }
-
+            
             // See how to process values.
             string[] prefixes;
             float divisor;
-            switch(UnitPrefix)
+            switch (UnitPrefix)
             {
                 case UnitPrefixes.SI:
+                {
                     prefixes = SIPrefixes;
                     divisor = 1000;
                     break;
+                }
                 case UnitPrefixes.IEC:
+                {
                     prefixes = IECPrefixes;
                     divisor = 1024;
                     break;
+                }
                 default:
+                {
                     // Return default formatted string without unit prefix.
-                    return string.Format(CultureInfo.InvariantCulture, "{0:0.00} {1}", value, Unit);
+                    AppendFloat(value);
+                    _formatter.Append(Unit);
+                    return _formatter;
+                }
             }
 
             // Divide until we don't have to any more, or don't know the
@@ -611,7 +627,44 @@ namespace Engine.Graphics
             }
 
             // Return formatted string.
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.00} {1}{2}", value, prefixes[prefix], Unit);
+            AppendFloat(value);
+            _formatter.Append(prefixes[prefix]);
+            _formatter.Append(Unit);
+            return _formatter;
+        }
+
+        private void AppendFloat(float value)
+        {
+            var preDecimal = (int)value;
+            var postDecimal = (int)((value - preDecimal) * 100);
+
+            if (preDecimal < 0)
+            {
+                _formatter.Append('-');
+            }
+            AppendInt(preDecimal);
+            _formatter.Append('.');
+            AppendInt(postDecimal);
+            _formatter.Append(' ');
+        }
+
+        private void AppendInt(int value)
+        {
+            var length = 1;
+            var tmp = value;
+            while (tmp > 10)
+            {
+                length++;
+                tmp /= 10;
+            }
+
+            var pos = _formatter.Length;
+            _formatter.Append('0', length);
+            for (var i = length - 1; i >= 0; --i)
+            {
+                _formatter[pos + i] = Digits[value % 10];
+                value /= 10;
+            }
         }
 
         #endregion

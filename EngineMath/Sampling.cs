@@ -140,10 +140,7 @@ namespace Engine.Math
         /// <filterpriority>1</filterpriority>
         public IEnumerator<T> GetEnumerator()
         {
-            for (int i = (_writeIndex - SampleCount + Samples.Length) % Samples.Length, j = 0; j < SampleCount; i = (i + 1) % Samples.Length, ++j)
-            {
-                yield return Samples[i];
-            }
+            return new SamplingEnumerator(this);
         }
 
         /// <summary>
@@ -156,6 +153,113 @@ namespace Engine.Math
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        /// <summary>
+        /// Enumerator implementation that supports resetting.
+        /// </summary>
+        private sealed class SamplingEnumerator : IEnumerator<T>
+        {
+            #region Properties
+
+            /// <summary>
+            /// Gets the element in the collection at the current position of the enumerator.
+            /// </summary>
+            /// <returns>
+            /// The element in the collection at the current position of the enumerator.
+            /// </returns>
+            public T Current { get; private set; }
+
+            /// <summary>
+            /// Gets the current element in the collection.
+            /// </summary>
+            /// <returns>
+            /// The current element in the collection.
+            /// </returns>
+            /// <exception cref="T:System.InvalidOperationException">The enumerator is positioned before the first element of the collection or after the last element.</exception><filterpriority>2</filterpriority>
+            object IEnumerator.Current
+            {
+                get { return Current; }
+            }
+
+            #endregion
+
+            #region Fields
+
+            /// <summary>
+            /// The sampling we enumerate.
+            /// </summary>
+            private AbstractSampling<T> _sampling;
+
+            /// <summary>
+            /// The current position of the enumerator (i.e. the bucket with the current value).
+            /// </summary>
+            private int _position;
+
+            /// <summary>
+            /// How many buckets we already iterated. The position wraps, so we have
+            /// to keep track of this manually (well, there are other ways but this is
+            /// clearer).
+            /// </summary>
+            private int _counter;
+
+            #endregion
+
+            #region Constructor
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="AbstractSampling&lt;T&gt;.SamplingEnumerator"/> class.
+            /// </summary>
+            /// <param name="sampling">The sampling.</param>
+            public SamplingEnumerator(AbstractSampling<T> sampling)
+            {
+                _sampling = sampling;
+                Reset();
+            }
+
+            /// <summary>
+            /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            /// </summary>
+            /// <filterpriority>2</filterpriority>
+            public void Dispose()
+            {
+                _sampling = null;
+            }
+
+            #endregion
+
+            #region Methods
+
+            /// <summary>
+            /// Advances the enumerator to the next element of the collection.
+            /// </summary>
+            /// <returns>
+            /// true if the enumerator was successfully advanced to the next element; false if the enumerator has passed the end of the collection.
+            /// </returns>
+            /// <exception cref="T:System.InvalidOperationException">The collection was modified after the enumerator was created. </exception><filterpriority>2</filterpriority>
+            public bool MoveNext()
+            {
+                _position = (_position + 1) % _sampling.Samples.Length;
+                ++_counter;
+                if (_counter < _sampling.SampleCount)
+                {
+                    Current = _sampling.Samples[_position];
+                    return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            /// Sets the enumerator to its initial position, which is before the first element in the collection.
+            /// </summary>
+            /// <exception cref="T:System.InvalidOperationException">The collection was modified after the enumerator was created. </exception><filterpriority>2</filterpriority>
+            public void Reset()
+            {
+                _position = (_sampling._writeIndex - _sampling.SampleCount + _sampling.Samples.Length) % _sampling.Samples.Length;
+                _counter = 0;
+            }
+
+            #endregion
         }
 
         #endregion

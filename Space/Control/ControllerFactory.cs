@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Systems;
@@ -209,12 +210,13 @@ namespace Space.Control
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
             var graphicsDevice = ((Program)game).GraphicsDeviceManager;
+            var speed = new Func<float>(() => controller.ActualSpeed);
 
             manager.AddSystems(
                 new AbstractSystem[]
                 {
                     // Update camera first.
-                    new CameraSystem(game, session, () => controller.ActualSpeed),
+                    new CameraSystem(game, session, speed),
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, session),
@@ -233,7 +235,7 @@ namespace Space.Control
                     new OrbitRenderSystem(game.Content, spriteBatch, session),
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
                     new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
-                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch, () => controller.ActualSpeed),
+                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch, speed),
                     new CameraCenteredParticleEffectSystem(game.Content, graphicsDevice),
                     new RadarRenderSystem(game.Content, spriteBatch, session)
                 });
