@@ -17,6 +17,15 @@ namespace Engine.ComponentSystem.Common.Systems
     /// </summary>
     public abstract class TextureRenderSystem : AbstractComponentSystem<TextureRenderer>, IDrawingSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
         #region Constants
 
         /// <summary>
@@ -281,6 +290,21 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <returns>The transformation.</returns>
         protected abstract FarTransform GetTransform();
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the interpolated position of an entity, if possible.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="position">The interpolated position.</param>
+        /// <returns></returns>
+        public bool GetInterpolatedPosition(int entity, out FarPosition position)
+        {
+            return _positions.TryGetValue(entity, out position);
+        }
 
         #endregion
 

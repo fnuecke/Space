@@ -24,7 +24,7 @@
             Processes the particles.
             </summary>
             <param name="elapsedSeconds">Elapsed time in whole and fractional seconds.</param>
-            <param name="particleArray">A pointer to the first particle in an array of particles.</param>
+            <param name="particle">The particle.</param>
             <param name="count">The number of particles which need to be processed.</param>
         </member>
         <member name="F:ProjectMercury.Modifiers.RadialGravityModifier.Position">
@@ -76,6 +76,11 @@
         <member name="M:ProjectMercury.Modifiers.ModifierCollection.RunProcessors(System.Single,ProjectMercury.Particle*,System.Int32)">
             <summary>
             Causes all Modifiers in the collection to process the particles.
+            </summary>
+        </member>
+        <member name="T:ProjectMercury.ParticleEffectManager">
+            <summary>
+            
             </summary>
         </member>
         <member name="M:ProjectMercury.ParticleEffectManager.#ctor(ProjectMercury.Renderers.Renderer)">
@@ -515,7 +520,7 @@
             Processes the particles.
             </summary>
             <param name="elapsedSeconds">Elapsed time in whole and fractional seconds.</param>
-            <param name="particleArray">A pointer to an array of particles.</param>
+            <param name="particle">The particle.</param>
             <param name="count">The number of particles which need to be processed.</param>
         </member>
         <member name="P:ProjectMercury.Modifiers.ColourInterpolatorModifier.InitialColour">
@@ -609,22 +614,22 @@
             Returns a deep copy of the ParticleEffect.
             </summary>
         </member>
-        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Engine.FarMath.FarPosition,System.Single,System.Single)">
             <summary>
             Triggers the ParticleEffect at the specified position.
             </summary>
         </member>
-        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Engine.FarMath.FarPosition,Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
             <summary>
             Triggers the ParticleEffect at the specified position.
             </summary>
         </member>
-        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Engine.FarMath.FarPosition@,System.Single,System.Single)">
             <summary>
             Triggers the ParticleEffect at the specified position.
             </summary>
         </member>
-        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Engine.FarMath.FarPosition@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Triggers the ParticleEffect at the specified position.
             </summary>
@@ -698,6 +703,21 @@
             The position of the trigger.
             </summary>
         </member>
+        <member name="F:ProjectMercury.Controllers.TimelineEvent.TriggerImpulse">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ProjectMercury.Controllers.TimelineEvent.TriggerRotation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ProjectMercury.Controllers.TimelineEvent.TriggerScale">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:ProjectMercury.Controllers.TimelineController">
             <summary>
             Defines a simple controller which triggers emitters based on a timeline.
@@ -708,21 +728,28 @@
             Defines the abstract base class for a controller.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Controllers.Controller.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+        <member name="M:ProjectMercury.Controllers.Controller.Trigger(Engine.FarMath.FarPosition@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Called by the particle effect when it is triggered.
             </summary>
             <param name="position">The desired position of the trigger.</param>
-            <remarks>This method should not be called directly, the ParticleEffect class
-            will defer control to this method when the controller is assigned.</remarks>
+            <param name="impulse">The impulse.</param>
+            <param name="rotation">The rotation.</param>
+            <param name="scale">The scale.</param>
+            <remarks>
+            This method should not be called directly, the ParticleEffect class
+            will defer control to this method when the controller is assigned.
+            </remarks>
         </member>
         <member name="M:ProjectMercury.Controllers.Controller.Update(System.Single)">
             <summary>
             Called by the particle effect when it is updated.
             </summary>
             <param name="deltaSeconds">Elapsed time in whole and fractional seconds.</param>
-            <remarks>This method should not be called directly, the ParticleEffect class
-            will defer control to this method when the controller is assigned.</remarks>
+            <remarks>
+            This method should not be called directly, the ParticleEffect class
+            will defer control to this method when the controller is assigned.
+            </remarks>
         </member>
         <member name="P:ProjectMercury.Controllers.Controller.ParticleEffect">
             <summary>
@@ -734,13 +761,18 @@
             Initializes a new instance of the <see cref="T:ProjectMercury.Controllers.TimelineController"/> class.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Controllers.TimelineController.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+        <member name="M:ProjectMercury.Controllers.TimelineController.Trigger(Engine.FarMath.FarPosition@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Called by the particle effect when it is triggered.
             </summary>
             <param name="position">The desired position of the trigger.</param>
-            <remarks>This method should not be called directly, the ParticleEffect class
-            will defer control to this method when the controller is assigned.</remarks>
+            <param name="impulse"></param>
+            <param name="rotation"></param>
+            <param name="scale"></param>
+            <remarks>
+            This method should not be called directly, the ParticleEffect class
+            will defer control to this method when the controller is assigned.
+            </remarks>
         </member>
         <member name="M:ProjectMercury.Controllers.TimelineController.Update(System.Single)">
             <summary>
@@ -1101,25 +1133,25 @@
             </summary>
             <param name="deltaSeconds">Elapsed frame time in whole and fractional seconds.</param>
         </member>
-        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Engine.FarMath.FarPosition@,System.Single,System.Single)">
             <summary>
              Triggers the Emitter at the specified position...
             </summary>
             <exception cref="T:System.InvalidOperationException">Thrown if the Emitter has not been initialised.</exception>
         </member>
-        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Engine.FarMath.FarPosition@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
              Triggers the Emitter at the specified position...
             </summary>
             <exception cref="T:System.InvalidOperationException">Thrown if the Emitter has not been initialised.</exception>
         </member>
-        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Engine.FarMath.FarPosition,Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
             <summary>
              Triggers the Emitter at the specified position...
             </summary>
             <exception cref="T:System.InvalidOperationException">Thrown if the Emitter has not been initialised.</exception>
         </member>
-        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Engine.FarMath.FarPosition,System.Single,System.Single)">
             <summary>
              Triggers the Emitter at the specified position...
             </summary>
@@ -1339,35 +1371,6 @@
             A <see cref="T:System.String"/> representation of the object.
             </returns>
         </member>
-        <member name="T:ProjectMercury.Modifiers.PlatformModifier">
-            <summary>
-            Defines a Modifier which freezes a particle when it comes into contact with a bounding box.
-            </summary>
-        </member>
-        <member name="M:ProjectMercury.Modifiers.PlatformModifier.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:ProjectMercury.Modifiers.PlatformModifier"/> class.
-            </summary>
-        </member>
-        <member name="M:ProjectMercury.Modifiers.PlatformModifier.DeepCopy">
-            <summary>
-            Returns a deep copy of the Modifier implementation.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ProjectMercury.Modifiers.PlatformModifier.Process(System.Single,ProjectMercury.Particle*,System.Int32)">
-            <summary>
-            Processes the particles.
-            </summary>
-            <param name="dt">Elapsed time in whole and fractional seconds.</param>
-            <param name="particleArray">A pointer to an array of particles.</param>
-            <param name="count">The number of particles which need to be processed.</param>
-        </member>
-        <member name="P:ProjectMercury.Modifiers.PlatformModifier.Platforms">
-            <summary>
-            The list of platforms.
-            </summary>
-        </member>
         <member name="T:ProjectMercury.Modifiers.ScaleOscillator">
             <summary>
             Defines a Modifier which adjusts the scale of Particles based on a sine wave.
@@ -1446,7 +1449,7 @@
             Renders the specified Emitter.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Renderers.Renderer.RenderEmitter(ProjectMercury.Emitters.Emitter,Microsoft.Xna.Framework.Matrix@)">
+        <member name="M:ProjectMercury.Renderers.Renderer.RenderEmitter(ProjectMercury.Emitters.Emitter,Engine.FarMath.FarTransform@)">
             <summary>
             Renders the specified Emitter, applying the specified transformation offset.
             </summary>
@@ -1456,7 +1459,7 @@
             Renders the specified ParticleEffect.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Renderers.Renderer.RenderEffect(ProjectMercury.ParticleEffect,Microsoft.Xna.Framework.Matrix@)">
+        <member name="M:ProjectMercury.Renderers.Renderer.RenderEffect(ProjectMercury.ParticleEffect,Engine.FarMath.FarTransform@)">
             <summary>
             Renders the specified ParticleEffect, applying the specified transformation offset.
             </summary>
@@ -1472,7 +1475,7 @@
             </summary>
             <exception cref="T:System.InvalidOperationException">Thrown if the GraphicsDeviceManager has not been set.</exception>
         </member>
-        <member name="M:ProjectMercury.Renderers.SpriteBatchRenderer.RenderEmitter(ProjectMercury.Emitters.Emitter,Microsoft.Xna.Framework.Matrix@)">
+        <member name="M:ProjectMercury.Renderers.SpriteBatchRenderer.RenderEmitter(ProjectMercury.Emitters.Emitter,Engine.FarMath.FarTransform@)">
             <summary>
             Renders the specified Emitter, applying the specified transformation offset.
             </summary>
@@ -1817,35 +1820,6 @@
             Gets or sets the final scale of Particles when they are retired.
             </summary>
             <value>The merge scale.</value>
-        </member>
-        <member name="T:ProjectMercury.Modifiers.BoundingRectModifier">
-            <summary>
-            Defines a modifier which maintains a bounding rectangle around an Emitter.
-            </summary>
-        </member>
-        <member name="M:ProjectMercury.Modifiers.BoundingRectModifier.DeepCopy">
-            <summary>
-            Returns a deep copy of the Modifier implementation.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ProjectMercury.Modifiers.BoundingRectModifier.Process(System.Single,ProjectMercury.Particle*,System.Int32)">
-            <summary>
-            Processes the particles.
-            </summary>
-            <param name="elapsedSeconds">Elapsed time in whole and fractional seconds.</param>
-            <param name="particle">A pointer to the first particle in an array of particles.</param>
-            <param name="count">The number of particles which need to be processed.</param>
-        </member>
-        <member name="P:ProjectMercury.Modifiers.BoundingRectModifier.BoundingRect">
-            <summary>
-            Gets a bounding rectangle which encompasses each of the particles of an emitter.
-            </summary>
-        </member>
-        <member name="P:ProjectMercury.Modifiers.BoundingRectModifier.Padding">
-            <summary>
-            Gets or sets a padding value to add to the bounding rectangle.
-            </summary>
         </member>
         <member name="T:ProjectMercury.Emitters.MaskEmitter">
             <summary>
@@ -2308,6 +2282,26 @@
             Gets or sets the final scale.
             </summary>
         </member>
+        <member name="T:ProjectMercury.Emitters.EmitterBlendMode">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ProjectMercury.Emitters.EmitterBlendMode.Alpha">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ProjectMercury.Emitters.EmitterBlendMode.Add">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:ProjectMercury.Emitters.EmitterBlendMode.None">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:ProjectMercury.Threading.Parallel">
              <summary>
              The class provides support for parallel computations, paralleling loop's iterations.
@@ -2496,16 +2490,21 @@
         </member>
         <member name="M:ProjectMercury.Controllers.TriggerQueueController.#ctor">
             <summary>
-            Initializes a new instance of the <see cref="!:QueueController"/> class.
+            Initializes a new instance of the <see cref="T:ProjectMercury.Controllers.TriggerQueueController"/> class.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Controllers.TriggerQueueController.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+        <member name="M:ProjectMercury.Controllers.TriggerQueueController.Trigger(Engine.FarMath.FarPosition@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Called by the particle effect when it is triggered.
             </summary>
             <param name="position">The desired position of the trigger.</param>
-            <remarks>This method should not be called directly, the ParticleEffect class
-            will defer control to this method when the controller is assigned.</remarks>
+            <param name="impulse"></param>
+            <param name="rotation"></param>
+            <param name="scale"></param>
+            <remarks>
+            This method should not be called directly, the ParticleEffect class
+            will defer control to this method when the controller is assigned.
+            </remarks>
         </member>
         <member name="M:ProjectMercury.Controllers.TriggerQueueController.Update(System.Single)">
             <summary>
@@ -2665,64 +2664,6 @@
             <param name="dt">Elapsed time in whole and fractional seconds.</param>
             <param name="particle">A pointer to an array of particles.</param>
             <param name="count">The number of particles which need to be processed.</param>
-        </member>
-        <member name="T:ProjectMercury.BoundingRect">
-            <summary>
-            Defines a a bounding rectangle (similar to an XNA BoundingBox but in two dimensions).
-            </summary>
-        </member>
-        <member name="F:ProjectMercury.BoundingRect.Min">
-            <summary>
-            Gets or sets the minimum point in the rectangle.
-            </summary>
-        </member>
-        <member name="F:ProjectMercury.BoundingRect.Max">
-            <summary>
-            Gets or sets the maximum point in the rectangle.
-            </summary>
-        </member>
-        <member name="M:ProjectMercury.BoundingRect.ToBoundingBox(System.Single,System.Single)">
-            <summary>
-            Gets a 3 dimensional bounding box for the rectangle.
-            </summary>
-            <param name="z">The minimum position of the rectangle on the z axis.</param>
-            <param name="depth">The required depth of the bounding box.</param>
-            <returns>A bounding box containing the bounding rect, with the specified Z axis position and depth.</returns>
-        </member>
-        <member name="P:ProjectMercury.BoundingRect.Top">
-            <summary>
-            Gets the top of the rectangle.
-            </summary>
-        </member>
-        <member name="P:ProjectMercury.BoundingRect.Left">
-            <summary>
-            Gets the left position of the rectangle.
-            </summary>
-        </member>
-        <member name="P:ProjectMercury.BoundingRect.Right">
-            <summary>
-            Gets the right position of the rectangle.
-            </summary>
-        </member>
-        <member name="P:ProjectMercury.BoundingRect.Bottom">
-            <summary>
-            Gets the bottom position of the rectangle.
-            </summary>
-        </member>
-        <member name="P:ProjectMercury.BoundingRect.Width">
-            <summary>
-            Gets the width of the rectangle.
-            </summary>
-        </member>
-        <member name="P:ProjectMercury.BoundingRect.Height">
-            <summary>
-            Gets the height of the rectangle.
-            </summary>
-        </member>
-        <member name="P:ProjectMercury.BoundingRect.Centre">
-            <summary>
-            Gets the centre point of the rectangle.
-            </summary>
         </member>
         <member name="T:ProjectMercury.AsyncUpdateManager">
             <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -84,6 +85,7 @@ namespace Space.ComponentSystem.Systems
             // Set/get loop invariants.
             var translation = camera.Transform.Translation;
             _shape.Transform = camera.Transform.Matrix;
+            var renderer = (TextureRenderSystem)Manager.GetSystem(TextureRenderSystem.TypeId);
 
             foreach (var entity in _collidablesInView)
             {
@@ -91,9 +93,10 @@ namespace Space.ComponentSystem.Systems
 
                 _shape.Color = (component.Enabled ? component.CollisionState : Color.Gray) * 0.25f;
 
-                var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+                FarPosition position;
+                renderer.GetInterpolatedPosition(entity, out position);
                 var bounds = component.ComputeBounds();
-                bounds.Offset(transform.Translation + translation - bounds.Center);
+                bounds.Offset(position + translation - bounds.Center);
                 var relativeBounds = (Microsoft.Xna.Framework.Rectangle)bounds;
 
                 _shape.SetCenter(relativeBounds.Center.X, relativeBounds.Center.Y);

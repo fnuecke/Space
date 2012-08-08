@@ -1,5 +1,7 @@
 ﻿using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -67,14 +69,20 @@ namespace Space.ComponentSystem.Systems
 
             // Get camera transform.
             var transform = camera.Transform;
+            var renderer = (TextureRenderSystem)Manager.GetSystem(TextureRenderSystem.TypeId);
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, transform.Matrix);
             foreach (var component in Components)
             {
                 if (view.Contains(component.Translation))
                 {
-                    var position = (Vector2)(component.Translation + transform.Translation);
-                    _spriteBatch.DrawString(_font, "ID: " + component.Entity, position, Color.White);
+                    FarPosition position;
+                    if (!renderer.GetInterpolatedPosition(component.Entity, out position))
+                    {
+                        position = component.Translation;
+                    }
+                    position += transform.Translation;
+                    _spriteBatch.DrawString(_font, "ID: " + component.Entity, (Vector2)position, Color.White);
                 }
             }
             _spriteBatch.End();

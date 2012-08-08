@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -10,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
 using ProjectMercury.Renderers;
 using Space.ComponentSystem.Components;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -103,8 +105,7 @@ namespace Space.ComponentSystem.Systems
             var transform = GetTransform();
             foreach (var effect in _effects.Values)
             {
-                // TODO adjust for far transform
-                //_renderer.RenderEffect(effect, ref transform);
+                _renderer.RenderEffect(effect, ref transform);
             }
         }
 
@@ -145,8 +146,7 @@ namespace Space.ComponentSystem.Systems
 
             // Let there be graphics!
             var effect = GetEffect(effectName);
-            // TODO adjust for far transform
-            //effect.Trigger(ref position, ref impulse, rotation, scale);
+            effect.Trigger(ref position, ref impulse, rotation, scale);
         }
 
         /// <summary>
@@ -162,6 +162,8 @@ namespace Space.ComponentSystem.Systems
         /// </remarks>
         public void Play(string effect, int entity, ref Vector2 offset, float scale = 1.0f)
         {
+            // Get the renderer to get an interpolated position for the effect generator.
+            var renderer = (TextureRenderSystem)Manager.GetSystem(TextureRenderSystem.TypeId);
             var transform = ((Transform)Manager.GetComponent(entity, Transform.TypeId));
             var position = FarPosition.Zero;
             var rotation = 0.0f;
@@ -169,6 +171,10 @@ namespace Space.ComponentSystem.Systems
             {
                 position = transform.Translation + offset;
                 rotation = transform.Rotation + MathHelper.Pi;
+            }
+            if (renderer != null)
+            {
+                renderer.GetInterpolatedPosition(entity, out position);
             }
             var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
             var impulse = Vector2.Zero;
@@ -178,8 +184,8 @@ namespace Space.ComponentSystem.Systems
 
                 // We need to simulate the first update in advance, otherwise the emitter
                 // position appears to "move" depending on object velocity.
-                position -= impulse;
-                impulse *= 59;
+                position -= impulse * (Settings.TicksPerSecond / 60f);
+                impulse *= Settings.TicksPerSecond;
             }
 
             Play(effect, ref position, ref impulse, rotation, scale);

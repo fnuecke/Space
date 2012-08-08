@@ -12,6 +12,10 @@ namespace Engine.Util
         /// </summary>
         public string Message { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LineWrittenEventArgs"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
         public LineWrittenEventArgs(string message)
         {
             this.Message = message;
