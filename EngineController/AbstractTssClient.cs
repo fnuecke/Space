@@ -132,7 +132,7 @@ namespace Engine.Controller
 
             // Send sync command every now and then, to keep game clock synchronized.
             // No need to sync for a server that runs in the same program, though.
-            if (!Tss.WaitingForSynchronization && (DateTime.Now - _lastSyncTime).TotalMilliseconds > SyncInterval)
+            if (!Tss.WaitingForSynchronization && (DateTime.UtcNow - _lastSyncTime).TotalMilliseconds > SyncInterval)
             {
                 PerformSync();
             }
@@ -242,7 +242,7 @@ namespace Engine.Controller
         /// </summary>
         private void PerformSync()
         {
-            _lastSyncTime = DateTime.Now;
+            _lastSyncTime = DateTime.UtcNow;
             using (var packet = new Packet())
             {
                 packet
@@ -418,14 +418,14 @@ namespace Engine.Controller
                         do
                         {
                             // Remember when we started, see below.
-                            var started = DateTime.Now;
+                            var started = DateTime.UtcNow;
 
                             // Do the actual update, run to where we want to be.
                             Tss.RunToFrame(Tss.CurrentFrame + delta);
 
                             // See how long we took for this update, and compute the number
                             // of updates we'd otherwise have made in that time.
-                            delta = (long)((DateTime.Now - started).TotalMilliseconds / TargetElapsedMilliseconds);
+                            delta = (long)((DateTime.UtcNow - started).TotalMilliseconds / TargetElapsedMilliseconds);
 
                             // Continue until we're close enough with the *actual* current
                             // frame to what we want to be at.

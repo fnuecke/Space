@@ -134,10 +134,10 @@ namespace Space.Control
             base.Update(gameTime);
 
             // Rescan input devices periodically, e.g. to accept newly connected gamepads.
-            if ((DateTime.Now - _lastInputDeviceScan).TotalSeconds > InputDeviceScanInterval)
+            if ((DateTime.UtcNow - _lastInputDeviceScan).TotalSeconds > InputDeviceScanInterval)
             {
                 AttachListeners();
-                _lastInputDeviceScan = DateTime.Now;
+                _lastInputDeviceScan = DateTime.UtcNow;
             }
 
             // Disregard the rest if we're not connected.
@@ -161,7 +161,7 @@ namespace Space.Control
                 if (gamepadAcceleration != _previousGamepadAcceleration)
                 {
                     _accelerationVector = gamepadAcceleration;
-                    _accelerationChanged = DateTime.Now;
+                    _accelerationChanged = DateTime.UtcNow;
                 }
                 _previousGamepadAcceleration = gamepadAcceleration;
 
@@ -170,7 +170,7 @@ namespace Space.Control
                 if (gamepadLook != _previousGamepadLook && gamepadLook != Vector2.Zero)
                 {
                     _targetRotation = (float)Math.Atan2(gamepadLook.Y, gamepadLook.X);
-                    _rotationChanged = DateTime.Now;
+                    _rotationChanged = DateTime.UtcNow;
                 }
                 _previousGamepadLook = gamepadLook;
             }
@@ -178,7 +178,7 @@ namespace Space.Control
             // See if we want to re-orientate the ship and whether the acceleration
             // changed. Only check every so often, as slight delays here will not be
             // as noticeable, due to the ship's slow turn/acceleration speed.
-            if ((DateTime.Now - _lastUpdate).TotalMilliseconds > AnalogPollInterval)
+            if ((DateTime.UtcNow - _lastUpdate).TotalMilliseconds > AnalogPollInterval)
             {
                 // Has the mouse moved since the last update?
                 if (_rotationChanged >= _lastUpdate)
@@ -192,7 +192,7 @@ namespace Space.Control
                     // Yes, push command.
                     _game.Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, _accelerationVector));
                 }
-                _lastUpdate = DateTime.Now;
+                _lastUpdate = DateTime.UtcNow;
             }
         }
 
@@ -363,7 +363,7 @@ namespace Space.Control
             var rx = x - _game.GraphicsDevice.Viewport.Width / 2f;
             var ry = y - _game.GraphicsDevice.Viewport.Height / 2f;
             _targetRotation = (float)Math.Atan2(ry, rx);
-            _rotationChanged = DateTime.Now;
+            _rotationChanged = DateTime.UtcNow;
         }
 
         #endregion
@@ -561,7 +561,7 @@ namespace Space.Control
             {
                 _accelerationDirection = (_accelerationDirection | direction);
                 _accelerationVector = DirectionConversion.DirectionToVector(_accelerationDirection);
-                _accelerationChanged = DateTime.Now;
+                _accelerationChanged = DateTime.UtcNow;
             }
         }
 
@@ -575,7 +575,7 @@ namespace Space.Control
             {
                 _accelerationDirection = (_accelerationDirection & ~direction);
                 _accelerationVector = DirectionConversion.DirectionToVector(_accelerationDirection);
-                _accelerationChanged = DateTime.Now;
+                _accelerationChanged = DateTime.UtcNow;
             }
         }
 

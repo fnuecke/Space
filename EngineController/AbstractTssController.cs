@@ -182,7 +182,7 @@ namespace Engine.Controller
         protected void UpdateSimulation()
         {
             // We can run at least one frame, so do the update(s).
-            var begin = DateTime.Now;
+            var begin = DateTime.UtcNow;
 
             // Incorporate frame skip.
             var frameSkipRemainderHalf = _frameskipRemainder * 0.5;
@@ -196,8 +196,8 @@ namespace Engine.Controller
             double timePassed = 0;
 
             // Compensate for dynamic time step.
-            var elapsed = (DateTime.Now - _lastUpdate).TotalMilliseconds + _lastUpdateRemainder;
-            _lastUpdate = DateTime.Now;
+            var elapsed = (DateTime.UtcNow - _lastUpdate).TotalMilliseconds + _lastUpdateRemainder;
+            _lastUpdate = DateTime.UtcNow;
             var targetFrequency = TargetElapsedMilliseconds / AdjustedSpeed;
             if (elapsed < targetFrequency)
             {
@@ -207,7 +207,7 @@ namespace Engine.Controller
                 Tss.RunToFrame(Tss.CurrentFrame);
 
                 // Track how much time we spent in this update.
-                timePassed = (DateTime.Now - begin).TotalMilliseconds;
+                timePassed = (DateTime.UtcNow - begin).TotalMilliseconds;
 
                 // Carry this to the next frame, for uncapped frame rates.
                 _lastUpdateRemainder = elapsed;
@@ -230,7 +230,7 @@ namespace Engine.Controller
                     remainingTime -= targetFrequency;
 
                     // Track how much time we spent in this update.
-                    timePassed = (DateTime.Now - begin).TotalMilliseconds;
+                    timePassed = (DateTime.UtcNow - begin).TotalMilliseconds;
                 }
 
                 // Keep a carry for the next update. But never try to catch up

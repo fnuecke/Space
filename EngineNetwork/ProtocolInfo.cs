@@ -77,7 +77,7 @@ namespace Engine.Network
         /// <summary>
         /// The time we last added something to the history.
         /// </summary>
-        private long _currentSecond = (long)(new TimeSpan(DateTime.Now.Ticks).TotalSeconds);
+        private long _currentSecond = (long)(new TimeSpan(DateTime.UtcNow.Ticks).TotalSeconds);
 
         private readonly IntSampling _inPacketSizes = new IntSampling(100);
         private readonly IntSampling _outPacketSizes = new IntSampling(100);
@@ -192,7 +192,7 @@ namespace Engine.Network
         /// </summary>
         private void UpdateLists()
         {
-            var nowSecond = (long)(new TimeSpan(DateTime.Now.Ticks).TotalSeconds);
+            var nowSecond = (long)(new TimeSpan(DateTime.UtcNow.Ticks).TotalSeconds);
             for (; _currentSecond < nowSecond; ++_currentSecond)
             {
                 var dictInc = _inTraffic.Last.Value;

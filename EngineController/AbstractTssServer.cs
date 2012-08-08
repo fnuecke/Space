@@ -369,7 +369,7 @@ namespace Engine.Controller
                     var serverDump = _gameStateDumps[frame];
 
                     // Get a (relatively) unique base name for the files.
-                    var dumpId = "desync_" + DateTime.Now.Ticks;
+                    var dumpId = "desync_" + DateTime.UtcNow.Ticks;
 
                     // Write the dumps.
                     try

@@ -55,7 +55,7 @@ namespace Space.Control
         /// <summary>
         /// The time we last saved our profile.
         /// </summary>
-        private DateTime _lastSave = DateTime.Now;
+        private DateTime _lastSave = DateTime.UtcNow;
 
         #endregion
 
@@ -254,7 +254,7 @@ namespace Space.Control
                 Settings.Instance.CurrentProfile.Capture(avatar.Entity, Controller.Simulation.Manager);
             }
             Settings.Instance.CurrentProfile.Save();
-            _lastSave = DateTime.Now;
+            _lastSave = DateTime.UtcNow;
         }
 
         #endregion
@@ -273,7 +273,7 @@ namespace Space.Control
             Controller.Update();
 
             // Save periodically.
-            if ((DateTime.Now - _lastSave).TotalSeconds > SaveInterval)
+            if ((DateTime.UtcNow - _lastSave).TotalSeconds > SaveInterval)
             {
                 Save();
             }

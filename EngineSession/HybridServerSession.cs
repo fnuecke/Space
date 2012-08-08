@@ -236,7 +236,7 @@ namespace Engine.Session
             // This is to kill off connections from other programs to this
             // port (that we obviously don't want to talk to), or unresponsive
             // clients.
-            if ((DateTime.Now - _pending[i].Established).TotalMilliseconds > LoginTimeout)
+            if ((DateTime.UtcNow - _pending[i].Established).TotalMilliseconds > LoginTimeout)
             {
                 // Client took to long to complete login, kill the connection.
                 _pending[i].Stream.Dispose();
@@ -680,7 +680,7 @@ namespace Engine.Session
             {
                 Client = client;
                 Stream = stream;
-                Established = DateTime.Now;
+                Established = DateTime.UtcNow;
             }
         }
     }
