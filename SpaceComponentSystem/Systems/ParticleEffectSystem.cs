@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Math;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -55,17 +56,12 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Gets the current speed of the simulation.
         /// </summary>
-        private readonly Func<float> _speed;
+        private readonly Func<float> _simulationFps;
 
         /// <summary>
-        /// The speed the simulation runs at.
+        /// Keep track of recent update speeds, to avoid outliers cause funny effects.
         /// </summary>
-        private readonly float _simulationFps;
-
-        /// <summary>
-        /// The relative speed of simulation to render updates per second.
-        /// </summary>
-        private readonly float _relativeFps;
+        private readonly FloatSampling _elapsedTime = new FloatSampling(60);
 
         /// <summary>
         /// Cached known particle effects.
@@ -81,17 +77,13 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics.</param>
-        /// <param name="speed">A function getting the speed of the simulation.</param>
-        /// <param name="renderFps">The frames per second we render.</param>
-        /// <param name="simulationFps">The frames per second the simulation is updated.</param>
-        protected ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics, Func<float> speed, float renderFps, float simulationFps)
+        /// <param name="simulationFps">A function getting the current simulation framerate.</param>
+        protected ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics, Func<float> simulationFps)
         {
             _content = content;
             _renderer = new SpriteBatchRenderer {GraphicsDeviceService = graphics};
             _renderer.LoadContent(content);
-            _speed = speed;
             _simulationFps = simulationFps;
-            _relativeFps = simulationFps / renderFps;
 
             IsEnabled = true;
         }
@@ -117,17 +109,20 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
-            // Update all known effects.
-            foreach (var effect in _effects.Values)
-            {
-                effect.Update(elapsedMilliseconds / 1000f);
-            }
-
             // Render all known effects.
             var transform = GetTransform();
             foreach (var effect in _effects.Values)
             {
                 _renderer.RenderEffect(effect, ref transform);
+            }
+
+            // Update all known effects. Do this *after* rendering, to
+            // avoid "shifting" (in relation to other world objects).
+            _elapsedTime.Put(elapsedMilliseconds / 1000f);
+            var delta = _elapsedTime.Median();
+            foreach (var effect in _effects.Values)
+            {
+                effect.Update(delta);
             }
         }
 
@@ -204,12 +199,8 @@ namespace Space.ComponentSystem.Systems
             {
                 impulse = velocity.Value;
 
-                var speed = _speed();
-
-                // We need to simulate the first update in advance, otherwise the emitter
-                // position appears to "move" depending on object velocity.
-                position -= impulse * speed * _relativeFps;
-                impulse *= speed * _simulationFps;
+                // Scale the impulse to "per second" speed.
+                impulse *= _simulationFps();
             }
 
             Play(effect, ref position, ref impulse, rotation, scale);

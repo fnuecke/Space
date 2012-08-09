@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -101,11 +100,6 @@ namespace Space.ComponentSystem.Systems
         private readonly IClientSession _session;
 
         /// <summary>
-        /// Gets the current speed of the simulation.
-        /// </summary>
-        private readonly Func<float> _speed;
-
-        /// <summary>
         /// Previous offset to the ship, use to slowly interpolate, giving a
         /// more organic feel.
         /// </summary>
@@ -147,12 +141,10 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="game">The game.</param>
         /// <param name="session">The session.</param>
-        /// <param name="speed">A function getting the speed of the simulation.</param>
-        public CameraSystem(Game game, IClientSession session, Func<float> speed)
+        public CameraSystem(Game game, IClientSession session)
         {
             _game = game;
             _session = session;
-            _speed = speed;
             IsEnabled = true;
         }
 
@@ -245,25 +237,13 @@ namespace Space.ComponentSystem.Systems
             // Non-fixed camera, update our offset based on the game pad
             // or mouse position, relative to the ship.
             var targetOffset = GetInputInducedOffset();
-            var avatarPosition = ((Transform)Manager.GetComponent(avatar.Value, Engine.ComponentSystem.Common.Components.Transform.TypeId)).Translation;
+            var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+            interpolation.GetInterpolatedPosition(avatar.Value, out _cameraPosition);
 
             // The interpolate to our new offset, slowly to make the
             // effect less brain-melting.
             _currentOffset = FarPosition.SmoothStep(_currentOffset, (FarPosition)targetOffset, 0.15f);
 
-            // The camera *position* is then the avatar position, plus
-            // the offset, correcting for the viewport center which was
-            // subtracted to make the mouse position's origin centered
-            // to the screen. We interpolate it based on the current
-            // position and velocity of the player.
-            var velocity = (Velocity)Manager.GetComponent(avatar.Value, Velocity.TypeId);
-
-            // Determine current update speed. 20/60: simulation fps / render fps
-            var speed = _speed() * (20f / 60f);
-
-            // Clamp interpolated value to an interval around the actual target position.
-            _cameraPosition = FarPosition.Clamp(_cameraPosition + velocity.Value * speed, avatarPosition - velocity.Value * 0.25f, avatarPosition + velocity.Value * 0.75f);
-            
             // Interpolate new zoom moving slowly in or out.
             _currentZoom = MathHelper.SmoothStep(_currentZoom, _targetZoom, 0.15f);
 

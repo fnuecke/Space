@@ -210,7 +210,7 @@ namespace Space.Control
             var audioEngine = (AudioEngine)game.Services.GetService(typeof(AudioEngine));
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-            var speed = new Func<float>(() => controller.ActualSpeed);
+            var simulationFps = new Func<float>(() => controller.ActualSpeed * Settings.TicksPerSecond);
 
             manager.AddSystems(
                 new AbstractSystem[]
@@ -218,11 +218,15 @@ namespace Space.Control
                     // Load textures for detectables before trying to render radar.
                     new DetectableSystem(game.Content),
 
-                    // Update camera first, as it determines what to render.
-                    new CameraSystem(game, session, speed),
+                    // Provides interpolation of objects in view space. This uses the camera
+                    // for the viewport, but the camera uses it for its own position (based
+                    // on the avatar position). It's not so bad if we use the viewport of the
+                    // previous frame, but it's noticable if the avatar is no longer at the
+                    // center, so we do it this way around.
+                    new CameraCenteredInterpolationSystem(game.GraphicsDevice, simulationFps),
 
-                    // Provides interpolation of objects in view space.
-                    new CameraCenteredInterpolationSystem(game.GraphicsDevice, speed, 60f, Settings.TicksPerSecond),
+                    // Update camera first, as it determines what to render.
+                    new CameraSystem(game, session),
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance"), session),
@@ -239,7 +243,7 @@ namespace Space.Control
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
                     new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
                     new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
-                    new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, speed, 60f, Settings.TicksPerSecond),
+                    new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
                     new RadarRenderSystem(game.Content, spriteBatch, session)
                 });
 

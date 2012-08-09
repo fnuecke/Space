@@ -18,11 +18,9 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics.</param>
-        /// <param name="speed">A function getting the speed of the simulation.</param>
-        /// <param name="renderFps">The frames per second we render.</param>
-        /// <param name="simulationFps">The frames per second the simulation is updated.</param>
-        public CameraCenteredParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics, Func<float> speed, float renderFps, float simulationFps)
-            : base(content, graphics, speed, renderFps, simulationFps)
+        /// <param name="simulationFps">A function getting the current simulation framerate.</param>
+        public CameraCenteredParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics, Func<float> simulationFps)
+            : base(content, graphics, simulationFps)
         {
         }
 

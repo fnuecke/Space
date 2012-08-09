@@ -26,11 +26,9 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="CameraCenteredTextureRenderSystem"/> class.
         /// </summary>
         /// <param name="graphics">The graphics device we render to (to get the viewport).</param>
-        /// <param name="speed">A function getting the speed of the simulation.</param>
-        /// <param name="renderFps">The frames per second we render.</param>
-        /// <param name="simulationFps">The frames per second the simulation is updated.</param>
-        public CameraCenteredInterpolationSystem(GraphicsDevice graphics, Func<float> speed, float renderFps, float simulationFps)
-            : base(speed, renderFps, simulationFps)
+        /// <param name="simulationFps">A function getting the current simulation frame rate.</param>
+        public CameraCenteredInterpolationSystem(GraphicsDevice graphics, Func<float> simulationFps)
+            : base(simulationFps)
         {
             _graphics = graphics;
         }

@@ -123,7 +123,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get info on the local player's ship.
-            var info = ((ShipInfo)Manager.GetComponent(avatar.Value, ShipInfo.TypeId));
+            var info = (ShipInfo)Manager.GetComponent(avatar.Value, ShipInfo.TypeId);
 
             // Get the index we use for looking up nearby objects.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);

@@ -53,12 +53,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// Gets the current speed of the simulation.
         /// </summary>
-        private readonly Func<float> _speed;
-
-        /// <summary>
-        /// The relative speed of simulation to render updates per second.
-        /// </summary>
-        private readonly float _relativeFps;
+        private readonly Func<float> _simulationFps;
 
         /// <summary>
         /// Positions of entities from the last render cycle. We use these to
@@ -101,13 +96,10 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="InterpolationSystem"/> class.
         /// </summary>
-        /// <param name="speed">A function getting the speed of the simulation.</param>
-        /// <param name="renderFps">The frames per second we render.</param>
-        /// <param name="simulationFps">The frames per second the simulation is updated.</param>
-        protected InterpolationSystem(Func<float> speed, float renderFps, float simulationFps)
+        /// <param name="simulationFps">A function getting the current simulation frame rate.</param>
+        protected InterpolationSystem(Func<float> simulationFps)
         {
-            _speed = speed;
-            _relativeFps = simulationFps / renderFps;
+            _simulationFps = simulationFps;
 
             IsEnabled = true;
         }
@@ -131,7 +123,7 @@ namespace Engine.ComponentSystem.Common.Systems
             if (_drawablesInView.Count > 0)
             {
                 // Determine current update speed.
-                var speed = _speed() * _relativeFps;
+                var delta = elapsedMilliseconds / (1000f / _simulationFps());
 
                 // Update position and rotation for each object in view.
                 foreach (var entity in _drawablesInView)
@@ -158,7 +150,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         if (velocity != null && velocity.Value != Vector2.Zero)
                         {
                             // Clamp interpolated value to an interval around the actual target position.
-                            position = FarPosition.Clamp(_positions[component.Entity] + velocity.Value * speed, targetPosition - velocity.Value * 0.25f, targetPosition + velocity.Value * 0.75f);
+                            position = FarPosition.Clamp(_positions[component.Entity] + velocity.Value * delta, targetPosition - velocity.Value * 0.25f, targetPosition + velocity.Value * 0.75f);
                         }
                     }
                     else if (velocity != null)
@@ -189,7 +181,7 @@ namespace Engine.ComponentSystem.Common.Systems
                             var to = targetRotation + spin.Value * 0.75f;
                             var low = System.Math.Min(from, to);
                             var high = System.Math.Max(from, to);
-                            rotation = MathHelper.Clamp(_rotations[component.Entity] + spin.Value * speed, low, high);
+                            rotation = MathHelper.Clamp(_rotations[component.Entity] + spin.Value * delta, low, high);
                         }
                     }
                     else if (spin != null)
