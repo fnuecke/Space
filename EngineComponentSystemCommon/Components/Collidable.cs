@@ -31,6 +31,36 @@ namespace Engine.ComponentSystem.Common.Components
 
         #endregion
 
+        #region States
+
+        /// <summary>
+        /// Possible states of the collidable.
+        /// </summary>
+        public enum CollisionState
+        {
+            /// <summary>
+            /// No other collidables nearby.
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// One or more collidables nearby, but cannot collide (same group).
+            /// </summary>
+            HasNeighbors,
+
+            /// <summary>
+            /// One ore more collidables nearby, can collide.
+            /// </summary>
+            HasCollidableNeighbors,
+
+            /// <summary>
+            /// Colliding with one or more other collidables.
+            /// </summary>
+            Collides
+        }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -48,9 +78,9 @@ namespace Engine.ComponentSystem.Common.Components
         /// <summary>
         /// This field flags whether the component is currently (in this update cycle)
         /// colliding with another one. It is set each update by the collision system.
-        /// It is used purely for debug rendering.
+        /// It is intended to be used for debug rendering.
         /// </summary>
-        public Color CollisionState;
+        public CollisionState State;
 
         #endregion
 

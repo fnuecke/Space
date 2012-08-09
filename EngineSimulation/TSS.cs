@@ -753,9 +753,10 @@ namespace Engine.Simulation
             /// Renders all registered systems.
             /// </summary>
             /// <param name="frame">The frame to render.</param>
-            public void Draw(long frame)
+            /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+            public void Draw(long frame, float elapsedMilliseconds)
             {
-                _tss.LeadingSimulation.Manager.Draw(frame);
+                _tss.LeadingSimulation.Manager.Draw(frame, elapsedMilliseconds);
             }
 
             #endregion

@@ -74,7 +74,8 @@ namespace Space.ComponentSystem.Systems
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 

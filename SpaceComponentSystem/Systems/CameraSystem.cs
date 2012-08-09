@@ -226,7 +226,8 @@ namespace Space.ComponentSystem.Systems
         /// especially stuff outside the simulation, to avoid "lagging".
         /// </summary>
         /// <param name="frame">The frame the update applies to.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             // Don't update if our position is fixed or we're not in a game.
             if (_customCameraPosition.HasValue || _session.ConnectionState != ClientState.Connected)

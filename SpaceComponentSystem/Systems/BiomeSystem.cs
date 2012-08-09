@@ -63,7 +63,8 @@ namespace Space.ComponentSystem.Systems
         /// background, ambience, etc. accordingly.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             // Skip if we're not connected to a game.
             if (_session.ConnectionState != ClientState.Connected)

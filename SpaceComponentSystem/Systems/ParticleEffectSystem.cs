@@ -11,7 +11,6 @@ using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
 using ProjectMercury.Renderers;
 using Space.ComponentSystem.Components;
-using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -54,6 +53,21 @@ namespace Space.ComponentSystem.Systems
         private readonly SpriteBatchRenderer _renderer;
 
         /// <summary>
+        /// Gets the current speed of the simulation.
+        /// </summary>
+        private readonly Func<float> _speed;
+
+        /// <summary>
+        /// The speed the simulation runs at.
+        /// </summary>
+        private readonly float _simulationFps;
+
+        /// <summary>
+        /// The relative speed of simulation to render updates per second.
+        /// </summary>
+        private readonly float _relativeFps;
+
+        /// <summary>
         /// Cached known particle effects.
         /// </summary>
         private readonly Dictionary<string, ParticleEffect> _effects = new Dictionary<string, ParticleEffect>();
@@ -67,11 +81,17 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics.</param>
-        protected ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics)
+        /// <param name="speed">A function getting the speed of the simulation.</param>
+        /// <param name="renderFps">The frames per second we render.</param>
+        /// <param name="simulationFps">The frames per second the simulation is updated.</param>
+        protected ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics, Func<float> speed, float renderFps, float simulationFps)
         {
             _content = content;
             _renderer = new SpriteBatchRenderer {GraphicsDeviceService = graphics};
             _renderer.LoadContent(content);
+            _speed = speed;
+            _simulationFps = simulationFps;
+            _relativeFps = simulationFps / renderFps;
 
             IsEnabled = true;
         }
@@ -84,8 +104,10 @@ namespace Space.ComponentSystem.Systems
         /// Flags our system as the presenting instance and renders all effects.
         /// </summary>
         /// <param name="frame">The frame that should be rendered.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
+            // Trigger all known permanent effects.
             foreach (var component in Components)
             {
                 foreach (var effect in component.Effects)
@@ -98,7 +120,7 @@ namespace Space.ComponentSystem.Systems
             // Update all known effects.
             foreach (var effect in _effects.Values)
             {
-                effect.Update(1 / 60.0f);
+                effect.Update(elapsedMilliseconds / 1000f);
             }
 
             // Render all known effects.
@@ -162,30 +184,32 @@ namespace Space.ComponentSystem.Systems
         /// </remarks>
         public void Play(string effect, int entity, ref Vector2 offset, float scale = 1.0f)
         {
-            // Get the renderer to get an interpolated position for the effect generator.
-            var renderer = (TextureRenderSystem)Manager.GetSystem(TextureRenderSystem.TypeId);
-            var transform = ((Transform)Manager.GetComponent(entity, Transform.TypeId));
-            var position = FarPosition.Zero;
-            var rotation = 0.0f;
-            if (transform != null)
-            {
-                position = transform.Translation + offset;
-                rotation = transform.Rotation + MathHelper.Pi;
-            }
-            if (renderer != null)
-            {
-                renderer.GetInterpolatedPosition(entity, out position);
-            }
-            var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
+            // Get the interpolation system to get an interpolated position for the effect generator.
+            var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+
+            // Get interpolated position and rotation.
+            FarPosition position;
+            interpolation.GetInterpolatedPosition(entity, out position);
+            float rotation;
+            interpolation.GetInterpolatedRotation(entity, out rotation);
+
+            // Apply the generator offset and rotate to fit into the particle system logic.
+            position += offset;
+            rotation += MathHelper.Pi;
+
+            // See if we have a velocity to adjust the impulse.
+            var velocity = (Velocity)Manager.GetComponent(entity, Velocity.TypeId);
             var impulse = Vector2.Zero;
             if (velocity != null)
             {
                 impulse = velocity.Value;
 
+                var speed = _speed();
+
                 // We need to simulate the first update in advance, otherwise the emitter
                 // position appears to "move" depending on object velocity.
-                position -= impulse * (Settings.TicksPerSecond / 60f);
-                impulse *= Settings.TicksPerSecond;
+                position -= impulse * speed * _relativeFps;
+                impulse *= speed * _simulationFps;
             }
 
             Play(effect, ref position, ref impulse, rotation, scale);

@@ -60,7 +60,8 @@ namespace Space.ComponentSystem.Systems
         /// Draws the system.
         /// </summary>
         /// <param name="frame">The frame that should be rendered.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
 
@@ -69,7 +70,7 @@ namespace Space.ComponentSystem.Systems
 
             // Get camera transform.
             var transform = camera.Transform;
-            var renderer = (TextureRenderSystem)Manager.GetSystem(TextureRenderSystem.TypeId);
+            var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
 
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, transform.Matrix);
             foreach (var component in Components)
@@ -77,10 +78,7 @@ namespace Space.ComponentSystem.Systems
                 if (view.Contains(component.Translation))
                 {
                     FarPosition position;
-                    if (!renderer.GetInterpolatedPosition(component.Entity, out position))
-                    {
-                        position = component.Translation;
-                    }
+                    interpolation.GetInterpolatedPosition(component.Entity, out position);
                     position += transform.Translation;
                     _spriteBatch.DrawString(_font, "ID: " + component.Entity, (Vector2)position, Color.White);
                 }

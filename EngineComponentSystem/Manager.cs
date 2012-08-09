@@ -137,13 +137,14 @@ namespace Engine.ComponentSystem
         /// Renders all registered systems.
         /// </summary>
         /// <param name="frame">The frame to render.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             for (int i = 0, j = _drawingSystems.Count; i < j; ++i)
             {
                 if (_drawingSystems[i].IsEnabled)
                 {
-                    _drawingSystems[i].Draw(frame);
+                    _drawingSystems[i].Draw(frame, elapsedMilliseconds);
                 }
             }
         }

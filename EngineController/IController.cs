@@ -28,6 +28,7 @@ namespace Engine.Controller
         /// <summary>
         /// Called when the controller needs to be rendered.
         /// </summary>
-        void Draw();
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        void Draw(float elapsedMilliseconds);
     }
 }

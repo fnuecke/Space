@@ -35,7 +35,7 @@ namespace Engine.Tests.ComponentSystem
             
             //system.Received().Update(Arg.Any<long>());
 
-            manager.Draw(0);
+            manager.Draw(0, 0);
 
             //system.Received().Draw(Arg.Any<long>());
         }

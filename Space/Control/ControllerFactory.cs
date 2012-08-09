@@ -46,7 +46,7 @@ namespace Space.Control
         /// </summary>
         /// <param name="game">The game to create the client for.</param>
         /// <returns>A new client.</returns>
-        public static IClientController<FrameCommand> CreateRemoteClient(Game game)
+        public static IClientController<FrameCommand> CreateRemoteClient(Program game)
         {
             // Create actual controller.
             var controller = new SimpleClientController<Profile>(SpaceCommandHandler.HandleCommand);
@@ -66,7 +66,7 @@ namespace Space.Control
         /// <param name="game">The game to create the client for.</param>
         /// <param name="server">The server to couple the client with.</param>
         /// <returns>A new client.</returns>
-        public static IClientController<FrameCommand> CreateLocalClient(Game game, ISimulationController<IServerSession> server)
+        public static IClientController<FrameCommand> CreateLocalClient(Program game, ISimulationController<IServerSession> server)
         {
             // Create actual controller.
             var controller = new ThinClientController<Profile>(server, Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile);
@@ -205,19 +205,24 @@ namespace Space.Control
         /// <param name="game">The game.</param>
         /// <param name="session">The session.</param>
         /// <param name="controller">The controller.</param>
-        private static void AddSpaceClientSystems<TSession>(IManager manager, Game game, IClientSession session, ISimulationController<TSession> controller) where TSession : ISession
+        private static void AddSpaceClientSystems<TSession>(IManager manager, Program game, IClientSession session, ISimulationController<TSession> controller) where TSession : ISession
         {
             var audioEngine = (AudioEngine)game.Services.GetService(typeof(AudioEngine));
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-            var graphicsDevice = ((Program)game).GraphicsDeviceManager;
             var speed = new Func<float>(() => controller.ActualSpeed);
 
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    // Update camera first.
+                    // Load textures for detectables before trying to render radar.
+                    new DetectableSystem(game.Content),
+
+                    // Update camera first, as it determines what to render.
                     new CameraSystem(game, session, speed),
+
+                    // Provides interpolation of objects in view space.
+                    new CameraCenteredInterpolationSystem(game.GraphicsDevice, speed, 60f, Settings.TicksPerSecond),
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance"), session),
@@ -228,16 +233,13 @@ namespace Space.Control
                     // Draw background behind everything else.
                     new CameraCenteredBackgroundSystem(game.Content, spriteBatch),
 
-                    // Load textures for detectables before trying to render radar.
-                    new DetectableSystem(game.Content),
-
                     // Mind the order: orbits below planets below suns below normal
                     // objects below particle effects below radar.
                     new OrbitRenderSystem(game.Content, spriteBatch, session),
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
                     new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
-                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch, speed),
-                    new CameraCenteredParticleEffectSystem(game.Content, graphicsDevice),
+                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
+                    new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, speed, 60f, Settings.TicksPerSecond),
                     new RadarRenderSystem(game.Content, spriteBatch, session)
                 });
 

@@ -63,7 +63,8 @@ namespace Space.ComponentSystem.Systems
         /// Loads textures for detectables.
         /// </summary>
         /// <param name="frame">The frame that should be rendered.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             foreach (var component in Components)
             {

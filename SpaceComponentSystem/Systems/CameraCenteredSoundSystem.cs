@@ -45,6 +45,8 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         protected override FarPosition GetListenerPosition()
         {
+            //var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
+            //camera.Transform.Translation;
             if (_session.ConnectionState == ClientState.Connected)
             {
                 var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);

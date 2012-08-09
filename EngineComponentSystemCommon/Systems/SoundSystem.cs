@@ -116,7 +116,8 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Check for sound in range and play.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
             Debug.Assert(index != null);

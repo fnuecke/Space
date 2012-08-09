@@ -297,7 +297,7 @@ namespace Space
             // Draw world elements if we're in a game.
             if (_client != null)
             {
-                _client.Controller.Draw();
+                _client.Controller.Draw((float)gameTime.ElapsedGameTime.TotalMilliseconds);
             }
 
             // Draw other stuff (GUI for example).

@@ -29,9 +29,14 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The renderer we use to render our bounds.
+        /// The renderer we use to render our bounds for box collidables.
         /// </summary>
-        private static AbstractShape _shape;
+        private static AbstractShape _boxShape;
+
+        /// <summary>
+        /// The renderer we use to render our bounds for spherical collidables.
+        /// </summary>
+        private static AbstractShape _sphereShape;
 
         #endregion
 
@@ -54,26 +59,31 @@ namespace Space.ComponentSystem.Systems
         /// <param name="graphics">The graphics.</param>
         public DebugCollisionBoundsRenderer(ContentManager content, GraphicsDevice graphics)
         {
-            if (_shape == null)
+            if (_boxShape == null)
             {
-                _shape = new FilledRectangle(content, graphics);
+                _boxShape = new FilledRectangle(content, graphics);
+            }
+            if (_sphereShape == null)
+            {
+                _sphereShape = new FilledEllipse(content, graphics);
             }
         }
 
         #endregion
 
         #region Logic
-        
+
         /// <summary>
         /// Draws all collidable bounds in the viewport.
         /// </summary>
         /// <param name="frame">The frame that should be rendered.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
-            var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
+            var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
             // Get all renderable entities in the viewport.
-            var view = camera.ComputeVisibleBounds(_shape.GraphicsDevice.Viewport);
+            var view = camera.ComputeVisibleBounds(_boxShape.GraphicsDevice.Viewport);
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _collidablesInView, CollisionSystem.IndexGroupMask);
 
             // Skip there rest if nothing is visible.
@@ -84,26 +94,71 @@ namespace Space.ComponentSystem.Systems
 
             // Set/get loop invariants.
             var translation = camera.Transform.Translation;
-            _shape.Transform = camera.Transform.Matrix;
-            var renderer = (TextureRenderSystem)Manager.GetSystem(TextureRenderSystem.TypeId);
+            var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+            _boxShape.Transform = camera.Transform.Matrix;
+            _sphereShape.Transform = camera.Transform.Matrix;
 
+            // Iterate over all visible collidables.
             foreach (var entity in _collidablesInView)
             {
-                var component = ((Collidable)Manager.GetComponent(entity, Collidable.TypeId));
+                var component = (Collidable)Manager.GetComponent(entity, Collidable.TypeId);
 
-                _shape.Color = (component.Enabled ? component.CollisionState : Color.Gray) * 0.25f;
+                // See what type of collidable we have.
+                AbstractShape shape;
+                if (component is CollidableBox)
+                {
+                    shape = _boxShape;
+                }
+                else if (component is CollidableSphere)
+                {
+                    shape = _sphereShape;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Trying to render unknown collidable type.");
+                }
 
+                // Set color based on collidable state.
+                if (component.Enabled)
+                {
+                    switch (component.State)
+                    {
+                        case Collidable.CollisionState.None:
+                            shape.Color = Color.Green;
+                            break;
+                        case Collidable.CollisionState.HasNeighbors:
+                            shape.Color = Color.Blue;
+                            break;
+                        case Collidable.CollisionState.HasCollidableNeighbors:
+                            shape.Color = Color.Yellow;
+                            break;
+                        case Collidable.CollisionState.Collides:
+                            shape.Color = Color.DarkRed;
+                            break;
+                    }
+                }
+                else
+                {
+                    shape.Color = Color.Gray;
+                }
+                shape.Color *= 0.25f;
+
+                // Get interpolated position.
                 FarPosition position;
-                renderer.GetInterpolatedPosition(entity, out position);
+                interpolation.GetInterpolatedPosition(entity, out position);
+
+                // Get the bounds, translate them and get a "normal" rectangle.
                 var bounds = component.ComputeBounds();
                 bounds.Offset(position + translation - bounds.Center);
                 var relativeBounds = (Microsoft.Xna.Framework.Rectangle)bounds;
-
-                _shape.SetCenter(relativeBounds.Center.X, relativeBounds.Center.Y);
-                _shape.SetSize(relativeBounds.Width, relativeBounds.Height);
-                _shape.Draw();
+                
+                // Set renderer parameters and draw.
+                shape.SetCenter(relativeBounds.Center.X, relativeBounds.Center.Y);
+                shape.SetSize(relativeBounds.Width, relativeBounds.Height);
+                shape.Draw();
             }
 
+            // Clear for next iteration.
             _collidablesInView.Clear();
         }
 

@@ -114,6 +114,7 @@
     <Compile Include="Systems\AISystem.cs" />
     <Compile Include="Systems\BiomeSystem.cs" />
     <Compile Include="Systems\CameraCenteredBackgroundSystem.cs" />
+    <Compile Include="Systems\CameraCenteredInterpolationSystem.cs" />
     <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionDamageSystem.cs" />

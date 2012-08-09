@@ -43,7 +43,8 @@ namespace Engine.ComponentSystem
         /// Renders all registered systems.
         /// </summary>
         /// <param name="frame">The frame to render.</param>
-        void Draw(long frame);
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        void Draw(long frame, float elapsedMilliseconds);
         
         #endregion
 

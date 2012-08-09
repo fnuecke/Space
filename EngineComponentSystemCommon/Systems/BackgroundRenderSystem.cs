@@ -73,7 +73,8 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Draws the current background.
         /// </summary>
         /// <param name="frame">The frame that should be rendered.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             // Update all our backgrounds.
             for (var i = _backgrounds.Count - 1; i >= 0; i--)

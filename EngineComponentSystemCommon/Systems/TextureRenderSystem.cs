@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -60,35 +59,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         private readonly ContentManager _content;
 
-        /// <summary>
-        /// Gets the current speed of the simulation.
-        /// </summary>
-        private readonly Func<float> _speed;
-
-        /// <summary>
-        /// Positions of entities from the last render cycle. We use these to
-        /// interpolate to the current ones.
-        /// </summary>
-        private Dictionary<int, FarPosition> _positions = new Dictionary<int, FarPosition>();
-
-        /// <summary>
-        /// New list of positions. We swap between the two after each update,
-        /// to disard positions for entities not rendered to the screen.
-        /// </summary>
-        private Dictionary<int, FarPosition> _newPositions = new Dictionary<int, FarPosition>();
-
-        /// <summary>
-        /// Rotations of entities from the last render cycle. We use these to
-        /// interpolate to the current ones.
-        /// </summary>
-        private Dictionary<int, float> _rotations = new Dictionary<int, float>(); 
-
-        /// <summary>
-        /// New list of rotations. We swap between the two after each update,
-        /// to discard roations for entities not rendered to the screen.
-        /// </summary>
-        private Dictionary<int, float> _newRotations = new Dictionary<int, float>();
-
         #endregion
 
         #region Single-Allocation
@@ -108,12 +78,10 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="spriteBatch">The sprite batch.</param>
-        /// <param name="speed">A function getting the speed of the simulation.</param>
-        protected TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch, Func<float> speed)
+        protected TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _content = content;
             SpriteBatch = spriteBatch;
-            _speed = speed;
             IsEnabled = true;
         }
 
@@ -125,7 +93,8 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public void Draw(long frame)
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             // Get all renderable entities in the viewport.
             var view = ComputeViewport();
@@ -134,35 +103,23 @@ namespace Engine.ComponentSystem.Common.Systems
             // Skip there rest if nothing is visible.
             if (_drawablesInView.Count > 0)
             {
+                // Get the interpolation system for interpolated positions.
+                var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+
                 // Get the transformation to use.
                 var cameraTransform = GetTransform();
 
                 // Begin rendering.
                 SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
 
-                // Iterate over the shorter list.
-                if (_drawablesInView.Count < Components.Count)
+                foreach (var entity in _drawablesInView)
                 {
-                    foreach (var entity in _drawablesInView)
-                    {
-                        var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
+                    var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
 
-                        // Skip invalid or disabled entities.
-                        if (component != null && component.Enabled)
-                        {
-                            DrawComponent(component, cameraTransform.Translation);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var component in Components)
+                    // Skip invalid or disabled entities.
+                    if (component != null && component.Enabled)
                     {
-                        // Skip disabled or invisible entities.
-                        if (component.Enabled && _drawablesInView.Contains(component.Entity))
-                        {
-                            DrawComponent(component, cameraTransform.Translation);
-                        }
+                        DrawComponent(component, cameraTransform.Translation, interpolation);
                     }
                 }
 
@@ -172,26 +129,15 @@ namespace Engine.ComponentSystem.Common.Systems
                 // Clear for next iteration.
                 _drawablesInView.Clear();
             }
-
-            // Swap position lists.
-            var oldPositions = _positions;
-            oldPositions.Clear();
-            _positions = _newPositions;
-            _newPositions = oldPositions;
-
-            // Swap rotation lists.
-            var oldRotations = _rotations;
-            oldRotations.Clear();
-            _rotations = _newRotations;
-            _newRotations = oldRotations;
         }
 
         /// <summary>
         /// Draws the component.
         /// </summary>
-        /// <param name="component">The component.</param>
-        /// <param name="translation"> </param>
-        private void DrawComponent(TextureRenderer component, FarPosition translation)
+        /// <param name="component">The component to draw.</param>
+        /// <param name="translation">The camera translation.</param>
+        /// <param name="interpolation">The interpolation system to get position and rotation from.</param>
+        private void DrawComponent(TextureRenderer component, FarPosition translation, InterpolationSystem interpolation)
         {
             // Load the texture if it isn't already.
             if (component.Texture == null)
@@ -199,53 +145,11 @@ namespace Engine.ComponentSystem.Common.Systems
                 component.Texture = _content.Load<Texture2D>(component.TextureName);
             }
 
-            // Determine current update speed. 20/60: simulation fps / render fps
-            var speed = _speed() * (20f / 60f);
-
-            // Draw the texture based on its position.
-            var transform = (Transform)Manager.GetComponent(component.Entity, Transform.TypeId);
-            var targetPosition = transform.Translation;
-            var targetRotation = transform.Rotation;
-
-            // Interpolate the position.
-            var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
-            var position = targetPosition;
-            if (_positions.ContainsKey(component.Entity))
-            {
-                // Predict future translation to interpolate towards that.
-                if (velocity != null && velocity.Value != Vector2.Zero)
-                {
-                    // Clamp interpolated value to an interval around the actual target position.
-                    position = FarPosition.Clamp(_positions[component.Entity] + velocity.Value * speed, targetPosition - velocity.Value * 0.25f, targetPosition + velocity.Value * 0.75f);
-                }
-            }
-            else if (velocity != null)
-            {
-                position -= velocity.Value * 0.25f;
-            }
-            _newPositions[component.Entity] = position;
-
-            // Interpolate the rotation.
-            var rotation = targetRotation;
-            if (_rotations.ContainsKey(component.Entity))
-            {
-                // Predict future rotation to interpolate towards that.
-                var spin = (Spin)Manager.GetComponent(component.Entity, Spin.TypeId);
-                if (spin != null && spin.Value != 0f)
-                {
-                    // Always interpolate via the shorter way, to avoid jumps.
-                    targetRotation = _rotations[component.Entity] + Angle.MinAngle(_rotations[component.Entity], targetRotation);
-                    if (spin.Value > 0f)
-                    {
-                        rotation = MathHelper.Clamp(_rotations[component.Entity] + spin.Value * speed, targetRotation - spin.Value * 0.25f, targetRotation + spin.Value * 0.75f);
-                    }
-                    else
-                    {
-                        rotation = MathHelper.Clamp(_rotations[component.Entity] + spin.Value * speed, targetRotation + spin.Value * 0.25f, targetRotation - spin.Value * 0.75f);
-                    }
-                }
-            }
-            _newRotations[component.Entity] = rotation;
+            // Get interpolated position.
+            FarPosition position;
+            interpolation.GetInterpolatedPosition(component.Entity, out position);
+            float rotation;
+            interpolation.GetInterpolatedRotation(component.Entity, out rotation);
 
             // Get parallax layer.
             var parallax = (Parallax)Manager.GetComponent(component.Entity, Parallax.TypeId);
@@ -265,21 +169,6 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>
-        /// Called by the manager when a new component was removed.
-        /// </summary>
-        /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(ComponentSystem.Components.Component component)
-        {
-            base.OnComponentRemoved(component);
-
-            // Remove from positions list if it was a texture renderer.
-            if (component is TextureRenderer)
-            {
-                _positions.Remove(component.Entity);
-            }
-        }
-
-        /// <summary>
         /// Returns the current bounds of the viewport, i.e. the rectangle of
         /// the world to actually render.
         /// </summary>
@@ -290,21 +179,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <returns>The transformation.</returns>
         protected abstract FarTransform GetTransform();
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the interpolated position of an entity, if possible.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="position">The interpolated position.</param>
-        /// <returns></returns>
-        public bool GetInterpolatedPosition(int entity, out FarPosition position)
-        {
-            return _positions.TryGetValue(entity, out position);
-        }
 
         #endregion
 

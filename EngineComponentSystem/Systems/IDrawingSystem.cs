@@ -17,6 +17,7 @@
         /// Draws the system.
         /// </summary>
         /// <param name="frame">The frame that should be rendered.</param>
-        void Draw(long frame);
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        void Draw(long frame, float elapsedMilliseconds);
     }
 }

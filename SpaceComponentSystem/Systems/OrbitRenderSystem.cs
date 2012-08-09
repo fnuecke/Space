@@ -111,7 +111,9 @@ namespace Space.ComponentSystem.Systems
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public void Draw(long frame)
+        /// <param name="frame">The frame that should be rendered.</param>
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             // Get local player's avatar.
             var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);

@@ -63,11 +63,12 @@ namespace Engine.Controller
         /// <summary>
         /// Draws the current state of the simulation.
         /// </summary>
-        public override void Draw()
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public override void Draw(float elapsedMilliseconds)
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.Manager.Draw(Simulation.CurrentFrame);
+                Simulation.Manager.Draw(Simulation.CurrentFrame, elapsedMilliseconds);
             }
         }
 

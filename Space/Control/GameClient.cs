@@ -66,20 +66,20 @@ namespace Space.Control
         /// </summary>
         /// <param name="game">The game to create the client for.</param>
         /// <param name="server">The server to join.</param>
-        public GameClient(Game game, GameServer server)
+        public GameClient(Program game, GameServer server)
             : base(game)
         {
-            Controller = ControllerFactory.CreateLocalClient(Game, server.Controller);
+            Controller = ControllerFactory.CreateLocalClient(game, server.Controller);
         }
 
         /// <summary>
         /// Creates a new remote client, which can connect to remote games.
         /// </summary>
         /// <param name="game">The game to create the client for.</param>
-        public GameClient(Game game)
+        public GameClient(Program game)
             : base(game)
         {
-            Controller = ControllerFactory.CreateRemoteClient(Game);
+            Controller = ControllerFactory.CreateRemoteClient(game);
         }
 
         /// <summary>

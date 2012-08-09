@@ -108,57 +108,90 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            var emitterTransform = ((Transform)manager.GetComponent(emitter, Transform.TypeId));
-            var emitterVelocity = ((Velocity)manager.GetComponent(emitter, Velocity.TypeId));
+            // Get position and velocity of the emitter, to set initial position
+            // and additional velocity.
+            var emitterTransform = (Transform)manager.GetComponent(emitter, Transform.TypeId);
+            var emitterVelocity = (Velocity)manager.GetComponent(emitter, Velocity.TypeId);
 
+            // Get initial rotation via emitter rotation plus sampled delta.
             var initialRotation = emitterTransform.Rotation + SampleInitialRotation(random);
 
+            // Set initial position.
             var transform = manager.AddComponent<Transform>(entity)
                 .Initialize(emitterTransform.Translation, initialRotation);
 
+            // Set initial velocity.
             var velocity = manager.AddComponent<Velocity>(entity)
                 .Initialize(SampleInitialDirectedVelocity(transform.Rotation, random));
+
+            // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)
             {
                 velocity.Value += emitterVelocity.Value;
             }
+
+            // Sample an acceleration for this projectile. If there is any, create the
+            // component for it, otherwise disregard.
             var accelerationForce = SampleAccelerationForce(initialRotation, random);
             if (accelerationForce != Vector2.Zero)
             {
                 manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
             }
+
+            // Apply friction to this projectile if so desired.
             if (Friction > 0)
             {
                 manager.AddComponent<Friction>(entity).Initialize(Friction);
             }
+
+            // If this projectile should vanish after some time, make it expire.
             if (TimeToLive > 0)
             {
                 manager.AddComponent<Expiration>(entity).Initialize((int)(TimeToLive * Settings.TicksPerSecond));
             }
+
+            // Figure out how much damage we should do, if any.
             if (Math.Abs(weapon.Damage) > 0.001f)
             {
                 manager.AddComponent<CollisionDamage>(entity).Initialize(weapon.Damage);
             }
 
+            // Register with indexes that need to be able to find us.
             manager.AddComponent<Index>(entity).Initialize(
-                CollisionSystem.IndexGroupMask |
-                TextureRenderSystem.IndexGroupMask,
+                CollisionSystem.IndexGroupMask | // Can collide.
+                TextureRenderSystem.IndexGroupMask | // Can be rendered.
+                InterpolationSystem.IndexGroupMask, // Rendering should be interpolated.
                 (int)(CollisionRadius + CollisionRadius));
+
+            // See what we can bump into.
             var collisionGroup = (weapon.Damage >= 0)
-                                      ? faction.ToCollisionGroup()
-                                      : faction.Inverse().ToCollisionGroup();
+                                     // We do damage, so we want to collide with enemies.
+                                     ? faction.ToCollisionGroup()
+                                     // We don't do damage, so we collide with friends (heal, e.g.).
+                                     : faction.Inverse().ToCollisionGroup();
+
+            // Normally projectiles won't test against each other, but some may be
+            // shot down, such as missiles. If that's the case, don't add us to the
+            // common projectile group.
             if (!CanBeShot)
             {
                 collisionGroup |= Factions.Projectiles.ToCollisionGroup();
             }
+
+            // Give the collision some info on how to handle us.
             manager.AddComponent<CollidableSphere>(entity).Initialize(CollisionRadius, collisionGroup);
+
+            // Make us visible!
             if (!string.IsNullOrWhiteSpace(Model))
             {
                 manager.AddComponent<TextureRenderer>(entity).Initialize(Model);
             }
+
+            // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(Effect))
             {
-                // TODO
+                // TODO effect offset as parameter
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, Vector2.Zero);
             }
 
             return entity;

@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
 {
@@ -36,7 +35,7 @@ namespace Engine.ComponentSystem.Common.Systems
         protected override void UpdateComponent(long frame, Collidable component)
         {
             // Reset flag.
-            SetCollisionState(component, Color.Green);
+            SetCollisionState(component, Collidable.CollisionState.None, true);
 
             // Get index and allocate neighbor result list.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
@@ -79,7 +78,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Flag it as having neighbors.
-                SetCollisionState(component, Color.Blue);
+                SetCollisionState(component, Collidable.CollisionState.HasNeighbors);
 
                 // Only test if its from a different collision group.
                 if ((component.CollisionGroups & otherComponent.CollisionGroups) != 0)
@@ -88,7 +87,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Flag it as having collidable neighbors.
-                SetCollisionState(component, Color.Yellow);
+                SetCollisionState(component, Collidable.CollisionState.HasCollidableNeighbors);
 
                 // Test for collision.
                 if (!component.Intersects(otherComponent))
@@ -97,7 +96,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Flag it as intersecting.
-                SetCollisionState(component, Color.DarkRed);
+                SetCollisionState(component, Collidable.CollisionState.Collides);
 
                 // If there is one, let both parties know.
                 message.SecondEntity = otherComponent.Entity;
@@ -108,10 +107,21 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// Only make the effort to set this when in debug mode.
         /// </summary>
+        /// <param name="component">The component.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="force">if set to <c>true</c> will always use the specified state,
+        /// otherwise will use the "higher" state.</param>
         [Conditional("DEBUG")]
-        private static void SetCollisionState(Collidable component, Color color)
+        private static void SetCollisionState(Collidable component, Collidable.CollisionState state, bool force = false)
         {
-            component.CollisionState = color;
+            if (force)
+            {
+                component.State = state;
+            }
+            else
+            {
+                component.State = (Collidable.CollisionState)System.Math.Max((int)component.State, (int)state);
+            }
         }
 
         /// <summary>
