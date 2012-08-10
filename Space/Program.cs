@@ -173,15 +173,15 @@ namespace Space
 
             // Set up display.
             GraphicsDeviceManager = new GraphicsDeviceManager(this)
-                                    {
-                                        PreferredBackBufferWidth = Settings.Instance.ScreenResolution.X,
-                                        PreferredBackBufferHeight = Settings.Instance.ScreenResolution.Y,
-                                        IsFullScreen = Settings.Instance.Fullscreen,
-                                        SynchronizeWithVerticalRetrace = true
-                                    };
+            {
+                PreferredBackBufferWidth = Settings.Instance.ScreenResolution.X,
+                PreferredBackBufferHeight = Settings.Instance.ScreenResolution.Y,
+                IsFullScreen = Settings.Instance.Fullscreen,
+                SynchronizeWithVerticalRetrace = true
+            };
 
             // Create our own, localized content manager.
-            Content = new LocalizedContentManager(Services) { RootDirectory = "data" };
+            Content = new LocalizedContentManager(Services) {RootDirectory = "data"};
         }
 
         protected override void Dispose(bool disposing)
@@ -257,7 +257,8 @@ namespace Space
             }
 
             // Update the audio engine if we have one (setting one up can cause
-            // issues on some systems, so we have to check).
+            // issues on some systems, so we have to check, because in case we
+            // failed it will be null).
             if (_audioEngine != null)
             {
                 _audioEngine.Update();

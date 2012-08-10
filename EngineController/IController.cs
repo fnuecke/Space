@@ -23,12 +23,13 @@ namespace Engine.Controller
         /// <summary>
         /// Called when the controller needs to be updated.
         /// </summary>
-        void Update();
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
+        void Update(float elapsedMilliseconds);
 
         /// <summary>
         /// Called when the controller needs to be rendered.
         /// </summary>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
         void Draw(float elapsedMilliseconds);
     }
 }

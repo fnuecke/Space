@@ -113,7 +113,8 @@ namespace Engine.Controller
         /// in the base class. Also part of synchronizing run speeds on
         /// server and client by sending sync requests in certain intervals.
         /// </summary>
-        public override void Update()
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
+        public override void Update(float elapsedMilliseconds)
         {
             // Skip updates if we're waiting for the game state or were disconnected.
             if (Tss.WaitingForSynchronization || Session.ConnectionState != ClientState.Connected)
@@ -122,7 +123,7 @@ namespace Engine.Controller
             }
 
             // Drive game logic.
-            UpdateSimulation();
+            UpdateSimulation(elapsedMilliseconds);
 
             // We might have disconnected due to a desync.
             if (Session.ConnectionState != ClientState.Connected)

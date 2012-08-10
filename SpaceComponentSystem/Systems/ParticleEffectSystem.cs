@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Math;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -57,11 +56,6 @@ namespace Space.ComponentSystem.Systems
         /// Gets the current speed of the simulation.
         /// </summary>
         private readonly Func<float> _simulationFps;
-
-        /// <summary>
-        /// Keep track of recent update speeds, to avoid outliers cause funny effects.
-        /// </summary>
-        private readonly FloatSampling _elapsedTime = new FloatSampling(60);
 
         /// <summary>
         /// Cached known particle effects.
@@ -118,8 +112,7 @@ namespace Space.ComponentSystem.Systems
 
             // Update all known effects. Do this *after* rendering, to
             // avoid "shifting" (in relation to other world objects).
-            _elapsedTime.Put(elapsedMilliseconds / 1000f);
-            var delta = _elapsedTime.Median();
+            var delta = elapsedMilliseconds / (1000 / _simulationFps()) / 20;
             foreach (var effect in _effects.Values)
             {
                 effect.Update(delta);
@@ -151,9 +144,12 @@ namespace Space.ComponentSystem.Systems
         /// <param name="scale">The scale.</param>
         public void Play(string effectName, ref FarPosition position, ref Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
         {
+            // Get position of the effect relative to view port.
             var transform = GetTransform();
             Vector2 translation;
             FarPosition.Transform(ref position, ref transform, out translation);
+
+            // Check if it's in bounds, i.e. whether we have to render it at all.
             var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
             bounds.Inflate((int)(256 * scale), (int)(256 * scale));
             if (!bounds.Contains((int)translation.X, (int)translation.Y))

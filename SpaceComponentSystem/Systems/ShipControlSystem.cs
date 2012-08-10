@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -127,10 +128,7 @@ namespace Space.ComponentSystem.Systems
 
             // Update rotation / spin.
             var currentDelta = Angle.MinAngle(transform.Rotation, component.TargetRotation);
-            var requiredSpin = (currentDelta > 0
-                        ? DirectionConversion.DirectionToScalar(Directions.Right)
-                        : DirectionConversion.DirectionToScalar(Directions.Left))
-                        * rotation;
+            var requiredSpin = (currentDelta > 0 ? Directions.Right.ToScalar() : Directions.Left.ToScalar()) * rotation;
 
             // If the target rotation changed and we're either not spinning,
             // or spinning the wrong way.

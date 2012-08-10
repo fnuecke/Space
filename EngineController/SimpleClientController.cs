@@ -50,20 +50,21 @@ namespace Engine.Controller
         /// in the base class. Also part of synchronizing run speeds on
         /// server and client by sending sync requests in certain intervals.
         /// </summary>
-        public override void Update()
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
+        public override void Update(float elapsedMilliseconds)
         {
             Session.Update();
 
             if (Session.ConnectionState == ClientState.Connected)
             {
-                base.Update();
+                base.Update(elapsedMilliseconds);
             }
         }
 
         /// <summary>
         /// Draws the current state of the simulation.
         /// </summary>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
         public override void Draw(float elapsedMilliseconds)
         {
             if (Session.ConnectionState == ClientState.Connected)

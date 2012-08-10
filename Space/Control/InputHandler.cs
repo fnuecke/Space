@@ -2,6 +2,7 @@
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
@@ -560,7 +561,7 @@ namespace Space.Control
             if ((_accelerationDirection & direction) == Directions.None)
             {
                 _accelerationDirection = (_accelerationDirection | direction);
-                _accelerationVector = DirectionConversion.DirectionToVector(_accelerationDirection);
+                _accelerationVector = _accelerationDirection.ToVector2();
                 _accelerationChanged = DateTime.UtcNow;
             }
         }
@@ -574,7 +575,7 @@ namespace Space.Control
             if ((_accelerationDirection & direction) != Directions.None)
             {
                 _accelerationDirection = (_accelerationDirection & ~direction);
-                _accelerationVector = DirectionConversion.DirectionToVector(_accelerationDirection);
+                _accelerationVector = _accelerationDirection.ToVector2();
                 _accelerationChanged = DateTime.UtcNow;
             }
         }

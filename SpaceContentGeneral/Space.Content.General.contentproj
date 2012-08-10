@@ -110,10 +110,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects\thruster.xml">
-      <Name>thruster</Name>
+    <Compile Include="Effects\Thruster.xml">
+      <Name>Thruster</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
+      <SubType>Designer</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

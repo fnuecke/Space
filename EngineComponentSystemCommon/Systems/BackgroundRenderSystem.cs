@@ -102,7 +102,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Update alpha for transitioning.
-                background.Alpha += background.TransitionSpeed;
+                background.Alpha += elapsedMilliseconds / background.TransitionMilliseconds;
 
                 // Stop if one background reaches 100%.
                 if (background.Alpha >= 1.0f)
@@ -207,11 +207,15 @@ namespace Engine.ComponentSystem.Common.Systems
 
             _backgrounds.Add(new Background
             {
+                // Store the parameters.
                 TextureNames = textureNames,
                 Colors = colors,
                 Levels = levels,
+                // Allocate array for the actual textures.
                 Textures = new Texture2D[textureNames.Length],
-                TransitionSpeed = 1f / (time * 60f),
+                // We store the transition speed in milliseconds because we get the
+                // elapsed time per render call in milliseconds.
+                TransitionMilliseconds = time * 1000,
                 // Make the first background immediately fully opaque.
                 Alpha = _backgrounds.Count == 0 ? 1f : 0f
             });
@@ -277,9 +281,9 @@ namespace Engine.ComponentSystem.Common.Systems
             public float Alpha;
 
             /// <summary>
-            /// The alpha to add per tick to the current texture to fade it in.
+            /// The time in milliseconds it should take to fade in the background.
             /// </summary>
-            public float TransitionSpeed;
+            public float TransitionMilliseconds;
         }
 
         #endregion

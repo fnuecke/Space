@@ -93,29 +93,15 @@ namespace Space.ComponentSystem.Systems
             var transform = camera.Transform;
             _sun.Time = frame;
 
-            // Iterate over the shorter list.
-            if (_drawablesInView.Count < Components.Count)
+            // Render everything in sight.
+            foreach (var entity in _drawablesInView)
             {
-                foreach (var entity in _drawablesInView)
-                {
-                    var component = ((SunRenderer)Manager.GetComponent(entity, SunRenderer.TypeId));
+                var component = (SunRenderer)Manager.GetComponent(entity, SunRenderer.TypeId);
 
-                    // Skip invalid or disabled entities.
-                    if (component != null && component.Enabled)
-                    {
-                        RenderSun(component, ref transform);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var component in Components)
+                // Skip invalid or disabled entities.
+                if (component != null && component.Enabled)
                 {
-                    // Skip disabled or invisible entities.
-                    if (component.Enabled && _drawablesInView.Contains(component.Entity))
-                    {
-                        RenderSun(component, ref transform);
-                    }
+                    RenderSun(component, ref transform);
                 }
             }
 

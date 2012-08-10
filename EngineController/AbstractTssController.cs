@@ -64,12 +64,12 @@ namespace Engine.Controller
         /// <summary>
         /// The number of milliseconds a single update should take.
         /// </summary>
-        protected const double TargetElapsedMilliseconds = 1000.0 / 20.0;
+        protected const float TargetElapsedMilliseconds = 1000f / 20f;
 
         /// <summary>
         /// The interval in ticks after which to send a hash check to the clients.
         /// </summary>
-        protected const int HashInterval = (int)(10000 / TargetElapsedMilliseconds); // ~10s
+        protected const int HashInterval = (int)(10000f / TargetElapsedMilliseconds); // ~10s
 
         /// <summary>
         /// The actual load is multiplied with this factor to provide a little
@@ -133,20 +133,20 @@ namespace Engine.Controller
         private readonly ISimulation _simulation;
 
         /// <summary>
-        /// The time we performed our last update.
+        /// Keeps track of time elapsed inside one update run.
         /// </summary>
-        private DateTime _lastUpdate;
+        private readonly Stopwatch _updateElapsed = new Stopwatch();
 
         /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
         /// elapsed time in the next frame update.
         /// </summary>
-        private double _lastUpdateRemainder;
+        private float _lastUpdateRemainder;
 
         /// <summary>
         /// Remaining time to be compensated for as requested via frame skipping.
         /// </summary>
-        private double _frameskipRemainder;
+        private float _frameskipRemainder;
 
         /// <summary>
         /// Used to sample how long it takes for us to perform our simulation
@@ -179,13 +179,14 @@ namespace Engine.Controller
         /// Update the simulation. This determines how many steps to perform,
         /// based on the elapsed time.
         /// </summary>
-        protected void UpdateSimulation()
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
+        protected void UpdateSimulation(float elapsedMilliseconds)
         {
             // We can run at least one frame, so do the update(s).
-            var begin = DateTime.UtcNow;
+            _updateElapsed.Restart();
 
             // Incorporate frame skip.
-            var frameSkipRemainderHalf = _frameskipRemainder * 0.5;
+            var frameSkipRemainderHalf = _frameskipRemainder * 0.5f;
             _lastUpdateRemainder += frameSkipRemainderHalf;
             _frameskipRemainder -= frameSkipRemainderHalf;
 
@@ -193,11 +194,10 @@ namespace Engine.Controller
             // one update should take (i.e. targetTime), to avoid the game
             // getting slower and slower (because updates take longer and
             // longer -> more and more to catch up).
-            double timePassed = 0;
+            float timePassed = 0;
 
             // Compensate for dynamic time step.
-            var elapsed = (DateTime.UtcNow - _lastUpdate).TotalMilliseconds + _lastUpdateRemainder;
-            _lastUpdate = DateTime.UtcNow;
+            var elapsed = elapsedMilliseconds + _lastUpdateRemainder;
             var targetFrequency = TargetElapsedMilliseconds / AdjustedSpeed;
             if (elapsed < targetFrequency)
             {
@@ -207,7 +207,7 @@ namespace Engine.Controller
                 Tss.RunToFrame(Tss.CurrentFrame);
 
                 // Track how much time we spent in this update.
-                timePassed = (DateTime.UtcNow - begin).TotalMilliseconds;
+                timePassed = (float)_updateElapsed.Elapsed.TotalMilliseconds;
 
                 // Carry this to the next frame, for uncapped frame rates.
                 _lastUpdateRemainder = elapsed;
@@ -230,7 +230,7 @@ namespace Engine.Controller
                     remainingTime -= targetFrequency;
 
                     // Track how much time we spent in this update.
-                    timePassed = (DateTime.UtcNow - begin).TotalMilliseconds;
+                    timePassed = (float)_updateElapsed.Elapsed.TotalMilliseconds;
                 }
 
                 // Keep a carry for the next update. But never try to catch up

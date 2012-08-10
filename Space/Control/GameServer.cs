@@ -67,12 +67,12 @@ namespace Space.Control
         /// <summary>
         /// Update the controller.
         /// </summary>
-        /// <param name="gameTime"></param>
+        /// <param name="gameTime">Time elapsed since the last call to Update</param>
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
             
-            Controller.Update();
+            Controller.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
         }
         
         #endregion

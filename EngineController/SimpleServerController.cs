@@ -51,11 +51,12 @@ namespace Engine.Controller
         /// <summary>
         /// Update session and self.
         /// </summary>
-        public override void Update()
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
+        public override void Update(float elapsedMilliseconds)
         {
             Session.Update();
             
-            base.Update();
+            base.Update(elapsedMilliseconds);
         }
 
         #endregion

@@ -264,13 +264,13 @@ namespace Space.Control
         /// <summary>
         /// Updates the controller.
         /// </summary>
-        /// <param name="gameTime"></param>
+        /// <param name="gameTime">Time elapsed since the last call to Update</param>
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
 
             // Update our local simulation.
-            Controller.Update();
+            Controller.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
 
             // Save periodically.
             if ((DateTime.UtcNow - _lastSave).TotalSeconds > SaveInterval)

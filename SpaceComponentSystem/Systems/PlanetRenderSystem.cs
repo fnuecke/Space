@@ -98,29 +98,15 @@ namespace Space.ComponentSystem.Systems
             _planet.Transform = camera.Transform.Matrix;
             _planet.Time = frame;
             
-            // Iterate over the shorter list.
-            if (_drawablesInView.Count < Components.Count)
+            // Draw everything in view.
+            foreach (var entity in _drawablesInView)
             {
-                foreach (var entity in _drawablesInView)
-                {
-                    var component = ((PlanetRenderer)Manager.GetComponent(entity, PlanetRenderer.TypeId));
+                var component = (PlanetRenderer)Manager.GetComponent(entity, PlanetRenderer.TypeId);
 
-                    // Skip invalid or disabled entities.
-                    if (component != null && component.Enabled)
-                    {
-                        RenderPlanet(component, ref translation);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var component in Components)
+                // Skip invalid or disabled entities.
+                if (component != null && component.Enabled)
                 {
-                    // Skip disabled or invisible entities.
-                    if (component.Enabled && _drawablesInView.Contains(component.Entity))
-                    {
-                        RenderPlanet(component, ref translation);
-                    }
+                    RenderPlanet(component, ref translation);
                 }
             }
 

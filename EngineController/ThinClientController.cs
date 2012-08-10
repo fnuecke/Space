@@ -108,7 +108,8 @@ namespace Engine.Controller
         /// Update the underlying session. Incoming stuff isn't used, but
         /// avoids clotting of the received message buffer.
         /// </summary>
-        public override void Update()
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
+        public override void Update(float elapsedMilliseconds)
         {
             Session.Update();
         }
@@ -116,7 +117,7 @@ namespace Engine.Controller
         /// <summary>
         /// Render the server game state.
         /// </summary>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
         public override void Draw(float elapsedMilliseconds)
         {
             if (Session.ConnectionState == ClientState.Connected)

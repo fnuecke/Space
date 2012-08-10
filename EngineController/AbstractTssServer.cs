@@ -95,10 +95,11 @@ namespace Engine.Controller
         /// Drives the game loop, right after driving the network protocol
         /// in the base class.
         /// </summary>
-        public override void Update()
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
+        public override void Update(float elapsedMilliseconds)
         {
             // Drive game logic.
-            UpdateSimulation();
+            UpdateSimulation(elapsedMilliseconds);
 
             // The server might have been the slowing factor, so try updating
             // the game speed. This is relatively cheap, so we can just do this
