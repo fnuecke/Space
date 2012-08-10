@@ -109,6 +109,11 @@ namespace Engine.Simulation
         /// </summary>
         private readonly Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
 
+        /// <summary>
+        /// A list that is re-used for marking entries for removal.
+        /// </summary>
+        private readonly List<long> _reusableDeprecationList = new List<long>();
+
         #endregion
 
         #region Constructor
@@ -634,31 +639,31 @@ namespace Engine.Simulation
         {
             // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
-            var deprecated = new List<long>();
             foreach (var key in _removes.Keys)
             {
                 if (key < TrailingFrame)
                 {
-                    deprecated.Add(key);
+                    _reusableDeprecationList.Add(key);
                 }
             }
-            foreach (var key in deprecated)
+            foreach (var key in _reusableDeprecationList)
             {
                 _removes.Remove(key);
             }
+            _reusableDeprecationList.Clear();
 
-            deprecated.Clear();
             foreach (var key in _commands.Keys)
             {
                 if (key < TrailingFrame)
                 {
-                    deprecated.Add(key);
+                    _reusableDeprecationList.Add(key);
                 }
             }
-            foreach (var key in deprecated)
+            foreach (var key in _reusableDeprecationList)
             {
                 _commands.Remove(key);
             }
+            _reusableDeprecationList.Clear();
         }
 
         #region Thread parameter wrapper

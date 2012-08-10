@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Engine.Math;
 using Microsoft.Xna.Framework;
@@ -222,14 +223,19 @@ namespace Engine.Graphics
         private readonly List<float> _points;
 
         /// <summary>
+        /// The most recent min, max, average and current value (from last update).
+        /// </summary>
+        private float _min, _max, _average, _now;
+
+        /// <summary>
         /// String builder used to format texts to be displayed.
         /// </summary>
         private readonly StringBuilder _formatter = new StringBuilder(32);
 
         /// <summary>
-        /// Whether to actually repaint next draw call.
+        /// Timer we use to render only every now and then.
         /// </summary>
-        private bool _wantToRender;
+        private readonly Stopwatch _renderTimer = new Stopwatch();
 
         #endregion
 
@@ -255,6 +261,8 @@ namespace Engine.Graphics
             Type = GraphType.Line;
             UnitPrefix = UnitPrefixes.SI;
             _points = new List<float>();
+
+            _renderTimer.Start();
         }
 
         #endregion
@@ -273,8 +281,13 @@ namespace Engine.Graphics
             }
             DrawBackground();
 
-            float min, max, average, now;
-            BuildCurves(out min, out max, out average, out now);
+            bool update = _renderTimer.ElapsedMilliseconds > 100;
+
+            if (update)
+            {
+                BuildCurves();
+                _renderTimer.Restart();
+            }
 
             if (_points.Count > 0)
             {
@@ -293,18 +306,17 @@ namespace Engine.Graphics
                     _graphImageData = new Color[graphBounds.Width * graphBounds.Height];
                 }
 
-                if (_wantToRender)
+                if (update)
                 {
                     switch (Type)
                     {
                         case GraphType.Line:
-                            DrawLines(min, max, average);
+                            DrawLines();
                             break;
                         case GraphType.StackedArea:
                             break;
                     }
                 }
-                _wantToRender = !_wantToRender;
 
                 Vector2 position;
                 position.X = graphBounds.X;
@@ -315,7 +327,7 @@ namespace Engine.Graphics
                 _spriteBatch.End();
             }
 
-            DrawCaptions(min, max, average, now);
+            DrawCaptions();
         }
 
         private void DrawBackground()
@@ -342,11 +354,7 @@ namespace Engine.Graphics
         /// <summary>
         /// Draws the captions for the graph.
         /// </summary>
-        /// <param name="min">The min value.</param>
-        /// <param name="max">The max value.</param>
-        /// <param name="average">The average value.</param>
-        /// <param name="now">The current value.</param>
-        private void DrawCaptions(float min, float max, float average, float now)
+        private void DrawCaptions()
         {
             _spriteBatch.Begin();
 
@@ -361,17 +369,17 @@ namespace Engine.Graphics
 
             position.X = Bounds.X + Padding;
             position.Y = Bounds.Bottom - Padding - VerticalCaptionSize * 2;
-            _spriteBatch.DrawString(_font, Format("max: ", max), position, Color.White);
+            _spriteBatch.DrawString(_font, Format("max: ", _max), position, Color.White);
             position.X = Bounds.X + Padding;
             position.Y = Bounds.Bottom - Padding - VerticalCaptionSize;
-            _spriteBatch.DrawString(_font, Format("min: ", min), position, Color.White);
+            _spriteBatch.DrawString(_font, Format("min: ", _min), position, Color.White);
 
             position.X = Bounds.X + Padding + Bounds.Width / 2;
             position.Y = Bounds.Bottom - Padding - VerticalCaptionSize * 2;
-            _spriteBatch.DrawString(_font, Format("avg: ", average), position, Color.White);
+            _spriteBatch.DrawString(_font, Format("avg: ", _average), position, Color.White);
             position.X = Bounds.X + Padding + Bounds.Width / 2;
             position.Y = Bounds.Bottom - Padding - VerticalCaptionSize;
-            _spriteBatch.DrawString(_font, Format("now: ", now), position, Color.White);
+            _spriteBatch.DrawString(_font, Format("now: ", _now), position, Color.White);
 
             _spriteBatch.End();
         }
@@ -379,10 +387,7 @@ namespace Engine.Graphics
         /// <summary>
         /// Draws lines for each data set.
         /// </summary>
-        /// <param name="min">The min value.</param>
-        /// <param name="max">The max value.</param>
-        /// <param name="average">The average value.</param>
-        private void DrawLines(float min, float max, float average)
+        private void DrawLines()
         {
             var w = (_points.Count - 1) / (float)_graphCanvas.Width;
             var lastY = 0f;
@@ -405,9 +410,9 @@ namespace Engine.Graphics
                     targetY = da * wa + db * wb;
                 }
                 targetY = _graphCanvas.Height - 2 - targetY * (_graphCanvas.Height - 2);
-                var minY = System.Math.Max(0, _graphCanvas.Height - min / _recentMax * _graphCanvas.Height);
-                var maxY = System.Math.Max(0, _graphCanvas.Height - max / _recentMax * _graphCanvas.Height);
-                var avgY = System.Math.Max(0, _graphCanvas.Height - average / _recentMax * _graphCanvas.Height);
+                var minY = System.Math.Max(0, _graphCanvas.Height - _min / _recentMax * _graphCanvas.Height);
+                var maxY = System.Math.Max(0, _graphCanvas.Height - _max / _recentMax * _graphCanvas.Height);
+                var avgY = System.Math.Max(0, _graphCanvas.Height - _average / _recentMax * _graphCanvas.Height);
                 for (var y = 0; y < _graphCanvas.Height; y++)
                 {
                     // Draw line.
@@ -417,12 +422,12 @@ namespace Engine.Graphics
                     // Draw min/max/average lines
                     local = y - minY;
                     alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
-                    if (!float.IsInfinity(max))
+                    if (!float.IsInfinity(_max))
                     {
                         local = y - maxY;
                         alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
                     }
-                    if (!float.IsInfinity(average))
+                    if (!float.IsInfinity(_average))
                     {
                         local = y - avgY;
                         alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
@@ -477,12 +482,8 @@ namespace Engine.Graphics
         /// Process data to build actual data points to draw the graph through,
         /// in relative values.
         /// </summary>
-        /// <param name="min">The min value.</param>
-        /// <param name="max">The max value.</param>
-        /// <param name="average">The average value.</param>
-        /// <param name="now">The current value.</param>
         /// <returns></returns>
-        private void BuildCurves(out float min, out float max, out float average, out float now)
+        private void BuildCurves()
         {
             // Clear previous results.
             _points.Clear();
@@ -490,17 +491,17 @@ namespace Engine.Graphics
             // Skip if there is no data.
             if (_enumerator == null)
             {
-                min = max = average = now = 0;
+                _min = _max = _average = _now = 0;
                 return;
             }
 
             // Initialize values to impossible values to override them.
-            min = float.PositiveInfinity;
-            max = float.NegativeInfinity;
-            now = float.NaN;
+            _min = float.PositiveInfinity;
+            _max = float.NegativeInfinity;
+            _now = float.NaN;
 
             // And start the average at zero, of course.
-            average = 0;
+            _average = 0;
             var count = 0;
 
             // Start walking over our data source.
@@ -521,19 +522,19 @@ namespace Engine.Graphics
                     _points.Add(value);
 
                     // Update our extrema.
-                    if (value < min)
+                    if (value < _min)
                     {
-                        min = value;
+                        _min = value;
                     }
-                    if (value > max)
+                    if (value > _max)
                     {
-                        max = value;
+                        _max = value;
                     }
 
-                    average += value;
+                    _average += value;
                     ++count;
 
-                    now = value;
+                    _now = value;
                 }
             }
 
@@ -542,15 +543,15 @@ namespace Engine.Graphics
             {
                 _recentMax = FixedMaximum.Value;
             }
-            else if (!float.IsInfinity(max))
+            else if (!float.IsInfinity(_max))
             {
-                if (max > _recentMax)
+                if (_max > _recentMax)
                 {
-                    _recentMax = MathHelper.Lerp(_recentMax, max, 0.1f);
+                    _recentMax = MathHelper.Lerp(_recentMax, _max, 0.1f);
                 }
                 else
                 {
-                    _recentMax = MathHelper.Lerp(_recentMax, max, 0.01f);
+                    _recentMax = MathHelper.Lerp(_recentMax, _max, 0.01f);
                 }
             }
 
@@ -561,7 +562,7 @@ namespace Engine.Graphics
             }
 
             // Adjust average.
-            average /= count;
+            _average /= count;
         }
 
         /// <summary>

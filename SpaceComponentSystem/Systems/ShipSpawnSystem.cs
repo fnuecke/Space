@@ -115,7 +115,7 @@ namespace Space.ComponentSystem.Systems
                     cellArea.Height = CellSystem.CellSize;
 
                     // Create some ships at random positions.
-                    for (var i = 0; i < 50; i++)
+                    for (var i = 0; i < 20; i++)
                     {
                         FarPosition spawnPoint;
                         spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
