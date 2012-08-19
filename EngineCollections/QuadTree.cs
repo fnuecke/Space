@@ -344,7 +344,7 @@ namespace Engine.Collections
                 TRectangle bounds;
                 bounds.X = (int)(point.X - range);
                 bounds.Y = (int)(point.Y - range);
-                bounds.Width = bounds.Height = (int)System.Math.Ceiling(range + range);
+                bounds.Width = bounds.Height = (int)Math.Ceiling(range + range);
 
                 // Recurse through the tree, starting at the root node, to find
                 // nodes intersecting with the range query.
@@ -1403,8 +1403,8 @@ namespace Engine.Collections
 
             // At least intersection, check furthest point to check if the
             // box is contained within the circle.
-            distanceX = System.Math.Max(System.Math.Abs((int)(center.X - bounds.X)), System.Math.Abs((int)(center.X - right)));
-            distanceY = System.Math.Max(System.Math.Abs((int)(center.Y - bounds.Y)), System.Math.Abs((int)(center.Y - bottom)));
+            distanceX = Math.Max(Math.Abs((int)(center.X - bounds.X)), Math.Abs((int)(center.X - right)));
+            distanceY = Math.Max(Math.Abs((int)(center.Y - bounds.Y)), Math.Abs((int)(center.Y - bottom)));
             var outside = (distanceX * distanceX + distanceY * distanceY) > radiusSquared;
             return outside ? IntersectionType.Intersects : IntersectionType.Contains;
         }

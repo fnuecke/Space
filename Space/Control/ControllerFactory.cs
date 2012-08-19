@@ -168,6 +168,9 @@ namespace Space.Control
                     // is removed, or the item from the owner if the item is removed).
                     new InventorySystem(),
                     new EquipmentSystem(),
+                    // The following systems will react to equipment changes, to adjust
+                    // how a ship is rendered.
+                    new ThrusterEffectSystem(),
 
                     // Check which cells are active after updating positions. This system
                     // may also remove entities if they are now out of bounds. But it'll

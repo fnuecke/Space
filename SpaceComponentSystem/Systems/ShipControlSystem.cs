@@ -101,8 +101,7 @@ namespace Space.ComponentSystem.Systems
                     var thrusterId = info.EquipmentItemAt<Thruster>(i);
                     if (thrusterId.HasValue)
                     {
-                        // TODO: get offset for that item slot and use it
-                        effects.TryAdd("Effects/thruster", Vector2.Zero);
+                        effects.SetEffectEnabled("Effects/thruster", true);
                     }
                 }
 
@@ -116,7 +115,7 @@ namespace Space.ComponentSystem.Systems
             else
             {
                 // Not accelerating. Disable thruster effects if we were accelerating before.
-                effects.Remove("Effects/thruster");
+                effects.SetEffectEnabled("Effects/thruster", false);
 
                 // Disable thruster sound for this ship.
                 sound.Enabled = false;

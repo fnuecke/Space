@@ -134,7 +134,6 @@ namespace Tests
             }
 
             // Test SpatialHash.
-            // -- Disabled because it's so bloody slow.
             {
                 //Console.WriteLine("Running SpatialHash test.");
                 //var tree = new SpatialHash<int>(MinimumNodeSize * 64);
@@ -152,18 +151,18 @@ namespace Tests
 
             // Test R-Tree.
             {
-                Console.WriteLine("Running R-Tree test.");
-                var tree = new RTree<int>();
-                try
-                {
-                    Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error!");
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                }
+                //Console.WriteLine("Running R-Tree test.");
+                //var tree = new RTree<int>();
+                //try
+                //{
+                //    Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
+                //}
+                //catch (Exception ex)
+                //{
+                //    Console.WriteLine("Error!");
+                //    Console.WriteLine(ex.Message);
+                //    Console.WriteLine(ex.StackTrace);
+                //}
             }
 
             // Wait for key press to close, to allow reading results.

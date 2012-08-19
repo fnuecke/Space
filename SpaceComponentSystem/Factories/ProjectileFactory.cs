@@ -33,6 +33,12 @@ namespace Space.ComponentSystem.Factories
         public string Effect = string.Empty;
 
         /// <summary>
+        /// Offset of the particle effect relative to its center.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public Vector2 EffectOffset = Vector2.Zero;
+
+        /// <summary>
         /// The collision radius of the projectile.
         /// </summary>
         public float CollisionRadius;
@@ -190,8 +196,7 @@ namespace Space.ComponentSystem.Factories
             // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(Effect))
             {
-                // TODO effect offset as parameter
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, Vector2.Zero);
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, EffectOffset, true);
             }
 
             return entity;

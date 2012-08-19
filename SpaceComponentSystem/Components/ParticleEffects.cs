@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
+using ProjectMercury;
 
 namespace Space.ComponentSystem.Components
 {
@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Components
         /// A lists of active effects with the effect name and the position
         /// to display the effect at.
         /// </summary>
-        public readonly List<Tuple<string, Vector2>> Effects = new List<Tuple<string, Vector2>>();
+        internal readonly List<PositionedEffect> Effects = new List<PositionedEffect>();
 
         #endregion
 
@@ -54,7 +54,15 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            Effects.AddRange(((ParticleEffects)other).Effects);
+            foreach (var effect in ((ParticleEffects)other).Effects)
+            {
+                Effects.Add(new PositionedEffect
+                {
+                    AssetName = effect.AssetName,
+                    Offset = effect.Offset,
+                    Enabled = effect.Enabled
+                });
+            }
 
             return this;
         }
@@ -80,16 +88,32 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="effect">The effect.</param>
         /// <param name="offset">The offset.</param>
-        public void TryAdd(string effect, Vector2 offset)
+        /// <param name="enabled">Whether the effect should be initially enabled.</param>
+        public void TryAdd(string effect, Vector2 offset, bool enabled = false)
         {
             foreach (var pfx in Effects)
             {
-                if (pfx.Item1.Equals(effect) && pfx.Item2 == offset)
+                if (pfx.AssetName.Equals(effect) && pfx.Offset == offset)
                 {
                     return;
                 }
             }
-            Effects.Add(Tuple.Create(effect, offset));
+            Effects.Add(new PositionedEffect
+            {
+                AssetName = effect,
+                Offset = offset,
+                Enabled = enabled
+            });
+        }
+
+        /// <summary>
+        /// Removes all occurrences of the specified effect at the specified offset.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="offset">The offset.</param>
+        public void Remove(string effect, Vector2 offset)
+        {
+            Effects.RemoveAll(x => x.AssetName.Equals(effect) && x.Offset == offset);
         }
 
         /// <summary>
@@ -98,7 +122,24 @@ namespace Space.ComponentSystem.Components
         /// <param name="effect">The effect.</param>
         public void Remove(string effect)
         {
-            Effects.RemoveAll(x => x.Item1.Equals(effect));
+            Effects.RemoveAll(x => x.AssetName.Equals(effect));
+        }
+
+        /// <summary>
+        /// Set whether the specified particle effect should be enabled (trigger)
+        /// or not.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="value">Whether to trigger or not.</param>
+        public void SetEffectEnabled(string effect, bool value)
+        {
+            foreach (var pfx in Effects)
+            {
+                if (pfx.AssetName.Equals(effect))
+                {
+                    pfx.Enabled = value;
+                }
+            }
         }
 
         #endregion
@@ -119,8 +160,9 @@ namespace Space.ComponentSystem.Components
             packet.Write(Effects.Count);
             foreach (var effect in Effects)
             {
-                packet.Write(effect.Item1);
-                packet.Write(effect.Item2);
+                packet.Write(effect.AssetName);
+                packet.Write(effect.Offset);
+                packet.Write(effect.Enabled);
             }
 
             return packet;
@@ -136,11 +178,17 @@ namespace Space.ComponentSystem.Components
 
             Effects.Clear();
             var numEffects = packet.ReadInt32();
-            for (int i = 0; i < numEffects; i++)
+            for (var i = 0; i < numEffects; i++)
             {
                 var name = packet.ReadString();
                 var offset = packet.ReadVector2();
-                Effects.Add(Tuple.Create(name, offset));
+                var enabled = packet.ReadBoolean();
+                Effects.Add(new PositionedEffect
+                {
+                    AssetName = name,
+                    Offset = offset,
+                    Enabled = enabled
+                });
             }
         }
 
@@ -166,6 +214,40 @@ namespace Space.ComponentSystem.Components
         public override string ToString()
         {
             return base.ToString() + ", EffectCount = " + Effects.Count;
+        }
+
+        #endregion
+
+        #region Types
+
+        /// <summary>
+        /// Utility structure to represent particle effects with the offset.
+        /// </summary>
+        internal sealed class PositionedEffect
+        {
+            /// <summary>
+            /// The asset name of the effect, for re-loading after serialization.
+            /// </summary>
+            public string AssetName;
+
+            /// <summary>
+            /// The actual particle effect structure.
+            /// </summary>
+            public ParticleEffect Effect;
+
+            /// <summary>
+            /// The offset relative to the owner's position.
+            /// </summary>
+            public Vector2 Offset;
+
+            /// <summary>
+            /// Whether this effect is enabled or not.
+            /// </summary>
+            /// <remarks>
+            /// Not using the Emitter.Enabled field because that would be ugly
+            /// and harder to serialize.
+            /// </remarks>
+            public bool Enabled;
         }
 
         #endregion

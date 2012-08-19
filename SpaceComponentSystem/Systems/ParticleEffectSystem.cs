@@ -93,28 +93,74 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            // Trigger all known permanent effects.
+            // Get global transform.
+            var transform = GetTransform();
+
+            // Get delta to keep update speed constant regardless of framerate.
+            var delta = elapsedMilliseconds / (1000 / _simulationFps()) / 20;
+
+            // Get the interpolation system to get an interpolated position for the effect generator.
+            var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+
+            // Handle particle effects attached to entities.
             foreach (var component in Components)
             {
+                // Handle each effect per component.
                 foreach (var effect in component.Effects)
                 {
-                    var offset = effect.Item2;
-                    Play(effect.Item1, component.Entity, ref offset);
+                    // Load / initialize particle effects if they aren't yet.
+                    if (effect.Effect == null)
+                    {
+                        effect.Effect = _content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
+                        effect.Effect.LoadContent(_content);
+                        effect.Effect.Initialise();
+                    }
+
+                    // Get info for triggering and rendering.
+                    FarPosition position;
+                    interpolation.GetInterpolatedPosition(component.Entity, out position);
+
+                    // Only do the remaining work if the effect is actually enabled.
+                    if (effect.Enabled)
+                    {
+                        // Check if it's in bounds, i.e. whether we have to render it at all.
+                        Vector2 translation;
+                        FarPosition.Transform(ref position, ref transform, out translation);
+                        var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
+                        bounds.Inflate(256, 256);
+                        if (bounds.Contains((int)translation.X, (int)translation.Y))
+                        {
+                            // Get rotation of the object.
+                            float rotation;
+                            interpolation.GetInterpolatedRotation(component.Entity, out rotation);
+
+                            // Move the offset according to rotation.
+                            var cosRadians = (float)Math.Cos(rotation);
+                            var sinRadians = (float)Math.Sin(rotation);
+
+                            FarPosition offset;
+                            offset.X = effect.Offset.X * cosRadians - effect.Offset.Y * sinRadians;
+                            offset.Y = effect.Offset.X * sinRadians + effect.Offset.Y * cosRadians;
+
+                            // Trigger. Adjust rotation to fit into the particle system logic.
+                            effect.Effect.Trigger(offset, rotation + MathHelper.Pi);
+                        }
+                    }
+
+                    // Render at owning entity's position.
+                    var localTransform = transform;
+                    localTransform.Translation += position;
+                    _renderer.RenderEffect(effect.Effect, ref localTransform);
+                    
+                    // Update after rendering.
+                    effect.Effect.Update(delta);
                 }
             }
 
-            // Render all known effects.
-            var transform = GetTransform();
+            // Render and update all known unbound effects (not attached to an entity).
             foreach (var effect in _effects.Values)
             {
                 _renderer.RenderEffect(effect, ref transform);
-            }
-
-            // Update all known effects. Do this *after* rendering, to
-            // avoid "shifting" (in relation to other world objects).
-            var delta = elapsedMilliseconds / (1000 / _simulationFps()) / 20;
-            foreach (var effect in _effects.Values)
-            {
                 effect.Update(delta);
             }
         }
@@ -137,12 +183,12 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Plays the specified effect.
         /// </summary>
-        /// <param name="effectName">The effect.</param>
+        /// <param name="effect">The effect.</param>
         /// <param name="position">The position.</param>
         /// <param name="impulse">The initial (additional) impulse of the particle.</param>
         /// <param name="rotation">The rotation.</param>
         /// <param name="scale">The scale.</param>
-        public void Play(string effectName, ref FarPosition position, ref Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
+        public void Play(ParticleEffect effect, ref FarPosition position, ref Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
         {
             // Get position of the effect relative to view port.
             var transform = GetTransform();
@@ -158,7 +204,6 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Let there be graphics!
-            var effect = GetEffect(effectName);
             effect.Trigger(ref position, ref impulse, rotation, scale);
         }
 
@@ -166,14 +211,14 @@ namespace Space.ComponentSystem.Systems
         /// Plays an effect with the specified name as if it were emitted by
         /// the specified entity, at an offset to the entity's center.
         /// </summary>
-        /// <param name="effect">The name of the effect to play.</param>
+        /// <param name="effect">The effect to trigger.</param>
         /// <param name="entity">The entity that emits the effect.</param>
         /// <param name="offset">The offset of the effect to the center of the entity.</param>
         /// <param name="scale">The scaling of the effect.</param>
         /// <remarks>
         /// The entity must have a <c>Transform</c> component.
         /// </remarks>
-        public void Play(string effect, int entity, ref Vector2 offset, float scale = 1.0f)
+        public void Play(ParticleEffect effect, int entity, ref Vector2 offset, float scale = 1.0f)
         {
             // Get the interpolation system to get an interpolated position for the effect generator.
             var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
@@ -215,7 +260,7 @@ namespace Space.ComponentSystem.Systems
         public void Play(string effect, int entity, float scale = 1.0f)
         {
             var offset = Vector2.Zero;
-            Play(effect, entity, ref offset, scale);
+            Play(GetEffect(effect), entity, ref offset, scale);
         }
 
         #endregion
