@@ -113,11 +113,6 @@ namespace Space.ComponentSystem.Factories
                 transform.SetTranslation(position);
                 transform.ApplyTranslation();
             }
-            var renderer = ((TextureRenderer)manager.GetComponent(item, TextureRenderer.TypeId));
-            if (renderer != null)
-            {
-                renderer.Enabled = true;
-            }
             return item;
         }
 

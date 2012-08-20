@@ -361,6 +361,13 @@ from Space.Data import *
                     // Pick the item up.
                     // TODO: check if the item belongs to the player.
                     inventory.Add(item);
+
+                    // Disable rendering, if available.
+                    var renderer = (TextureRenderer)manager.GetComponent(item, TextureRenderer.TypeId);
+                    if (renderer != null)
+                    {
+                        renderer.Enabled = false;
+                    }
                 }
                 _reusableItemList.Clear();
             }
@@ -405,6 +412,13 @@ from Space.Data import *
                             var transform = (Transform)manager.GetComponent(item, Transform.TypeId);
                             transform.SetTranslation(((Transform)manager.GetComponent(avatar.Value, Transform.TypeId)).Translation);
                             transform.ApplyTranslation();
+
+                            // Enable rendering, if available.
+                            var renderer = (TextureRenderer)manager.GetComponent(item, TextureRenderer.TypeId);
+                            if (renderer != null)
+                            {
+                                renderer.Enabled = true;
+                            }
                         }
                     }
                     break;

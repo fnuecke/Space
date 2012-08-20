@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Engine.XnaExtensions;
@@ -39,6 +40,7 @@ namespace Space.ComponentSystem.Components
 
             var otherSlot = (SpaceItemSlot)other;
             Size = otherSlot.Size;
+            Offset = otherSlot.Offset;
 
             return this;
         }
@@ -192,6 +194,21 @@ namespace Space.ComponentSystem.Components
 
             hasher.Put((byte)Size);
             hasher.Put(Offset);
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + "Size=" + Size + ", Offset=" + Offset.X.ToString(CultureInfo.InvariantCulture) + ":" + Offset.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

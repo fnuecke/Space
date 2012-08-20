@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
@@ -275,13 +274,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
                     // Found one, store it.
                     _items[i] = item;
-
-                    // Disable rendering, if available.
-                    var renderer = ((TextureRenderer)Manager.GetComponent(item, TextureRenderer.TypeId));
-                    if (renderer != null)
-                    {
-                        renderer.Enabled = false;
-                    }
                     return;
                 }
 
@@ -292,13 +284,6 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 // Just append.
                 _items.Add(item);
-
-                // Disable rendering, if available.
-                var renderer = ((TextureRenderer)Manager.GetComponent(item, TextureRenderer.TypeId));
-                if (renderer != null)
-                {
-                    renderer.Enabled = false;
-                }
             }
         }
 

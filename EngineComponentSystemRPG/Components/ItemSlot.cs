@@ -209,7 +209,7 @@ namespace Engine.ComponentSystem.RPG.Components
             var otherSlot = (ItemSlot)other;
             SlotTypeId = otherSlot.SlotTypeId;
             _item = otherSlot._item;
-            Parent = (ItemSlot)Manager.GetComponentById(otherSlot.Parent.Id);
+            _parent = otherSlot._parent;
 
             return this;
         }

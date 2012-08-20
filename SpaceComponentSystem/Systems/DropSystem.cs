@@ -89,7 +89,14 @@ namespace Space.ComponentSystem.Systems
                 if (item.Probability > random.NextDouble())
                 {
                     // Random roll succeeded, drop the item.
-                    FactoryLibrary.SampleItem(Manager, item.ItemName, position, random);
+                    var entity = FactoryLibrary.SampleItem(Manager, item.ItemName, position, random);
+
+                    // Make the item visible.
+                    var renderer = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
+                    if (renderer != null)
+                    {
+                        renderer.Enabled = true;
+                    }
 
                     // Did a drop, check if we're done.
                     dropCount++;

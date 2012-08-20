@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
@@ -69,8 +70,11 @@ namespace Space.ComponentSystem.Systems
             // Update components (in parallel) to see if someone's shooting.
             base.Update(frame);
 
-            // Create projectiles that were requested.
-            foreach (var projectile in _projectilesToCreate)
+            // Create projectiles that were requested. Sort projectiles by
+            // emitter id to get deterministic behavior even though we're
+            // multithreading. We use LINQ because that's stable. The normal
+            // Sort for arrays/collections isn't.
+            foreach (var projectile in _projectilesToCreate.OrderBy(x => x.Entity))
             {
                 projectile.Factory.SampleProjectile(Manager, projectile.Entity, projectile.Offset, projectile.Weapon, projectile.Faction, _random);
             }
@@ -333,16 +337,34 @@ namespace Space.ComponentSystem.Systems
 
         #region Types
 
+        /// <summary>
+        /// Storage for pending projectile generation.
+        /// </summary>
         private sealed class PendingProjectile
         {
+            /// <summary>
+            /// The projectile type to create (via its factory).
+            /// </summary>
             public ProjectileFactory Factory;
 
+            /// <summary>
+            /// The entity that emitted the projectile.
+            /// </summary>
             public int Entity;
 
+            /// <summary>
+            /// The offset of the projectile from its emitter.
+            /// </summary>
             public Vector2 Offset;
 
+            /// <summary>
+            /// The weapon that shot the projectile.
+            /// </summary>
             public Weapon Weapon;
 
+            /// <summary>
+            /// The faction the shooter belongs to.
+            /// </summary>
             public Factions Faction;
         }
 
