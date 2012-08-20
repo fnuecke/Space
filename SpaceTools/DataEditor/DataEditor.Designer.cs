@@ -1,6 +1,6 @@
 ﻿namespace Space.Tools.DataEditor
 {
-    partial class DataEditor
+    sealed partial class DataEditor
     {
         /// <summary>
         /// Required designer variable.
@@ -28,18 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataEditor));
             this.pgProperties = new System.Windows.Forms.PropertyGrid();
             this.tvData = new System.Windows.Forms.TreeView();
             this.gbData = new System.Windows.Forms.GroupBox();
             this.msMain = new System.Windows.Forms.MenuStrip();
             this.tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSave = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiLoad = new System.Windows.Forms.ToolStripMenuItem();
             this.separator0 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMain = new System.Windows.Forms.ToolStrip();
             this.tsbSave = new System.Windows.Forms.ToolStripButton();
             this.tsbLoad = new System.Windows.Forms.ToolStripButton();
-            this.tsmiSave = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiLoad = new System.Windows.Forms.ToolStripMenuItem();
             this.separator1 = new System.Windows.Forms.ToolStripSeparator();
             this.gbProperties = new System.Windows.Forms.GroupBox();
             this.gbInformation = new System.Windows.Forms.GroupBox();
@@ -74,6 +75,7 @@
             this.tvData.Name = "tvData";
             this.tvData.Size = new System.Drawing.Size(229, 464);
             this.tvData.TabIndex = 1;
+            this.tvData.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.FactorySelected);
             // 
             // gbData
             // 
@@ -106,18 +108,36 @@
             this.tsmiFile.Size = new System.Drawing.Size(37, 20);
             this.tsmiFile.Text = "&File";
             // 
-            // tsmiExit
+            // tsmiSave
             // 
-            this.tsmiExit.Name = "tsmiExit";
-            this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.tsmiExit.Size = new System.Drawing.Size(153, 22);
-            this.tsmiExit.Text = "E&xit";
-            this.tsmiExit.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            this.tsmiSave.Image = global::Space.Tools.Properties.Resources.saveHS;
+            this.tsmiSave.Name = "tsmiSave";
+            this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.tsmiSave.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSave.Text = "&Save";
+            this.tsmiSave.Click += new System.EventHandler(this.SaveClick);
+            // 
+            // tsmiLoad
+            // 
+            this.tsmiLoad.Image = global::Space.Tools.Properties.Resources.OpenFile;
+            this.tsmiLoad.Name = "tsmiLoad";
+            this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.tsmiLoad.Size = new System.Drawing.Size(143, 22);
+            this.tsmiLoad.Text = "L&oad";
+            this.tsmiLoad.Click += new System.EventHandler(this.LoadClick);
             // 
             // separator0
             // 
             this.separator0.Name = "separator0";
-            this.separator0.Size = new System.Drawing.Size(150, 6);
+            this.separator0.Size = new System.Drawing.Size(140, 6);
+            // 
+            // tsmiExit
+            // 
+            this.tsmiExit.Name = "tsmiExit";
+            this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
+            this.tsmiExit.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExit.Text = "E&xit";
+            this.tsmiExit.Click += new System.EventHandler(this.ExitClick);
             // 
             // tsMain
             // 
@@ -138,6 +158,7 @@
             this.tsbSave.Name = "tsbSave";
             this.tsbSave.Size = new System.Drawing.Size(23, 22);
             this.tsbSave.Text = "Save";
+            this.tsbSave.Click += new System.EventHandler(this.SaveClick);
             // 
             // tsbLoad
             // 
@@ -147,22 +168,7 @@
             this.tsbLoad.Name = "tsbLoad";
             this.tsbLoad.Size = new System.Drawing.Size(23, 22);
             this.tsbLoad.Text = "Reload";
-            // 
-            // tsmiSave
-            // 
-            this.tsmiSave.Image = global::Space.Tools.Properties.Resources.saveHS;
-            this.tsmiSave.Name = "tsmiSave";
-            this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.tsmiSave.Size = new System.Drawing.Size(153, 22);
-            this.tsmiSave.Text = "&Save";
-            // 
-            // tsmiLoad
-            // 
-            this.tsmiLoad.Image = global::Space.Tools.Properties.Resources.OpenFile;
-            this.tsmiLoad.Name = "tsmiLoad";
-            this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.tsmiLoad.Size = new System.Drawing.Size(153, 22);
-            this.tsmiLoad.Text = "Rel&oad";
+            this.tsbLoad.Click += new System.EventHandler(this.LoadClick);
             // 
             // separator1
             // 
@@ -235,9 +241,12 @@
             this.Controls.Add(this.scOuter);
             this.Controls.Add(this.tsMain);
             this.Controls.Add(this.msMain);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.msMain;
             this.Name = "DataEditor";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Data Editor";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataEditorClosing);
             this.gbData.ResumeLayout(false);
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();

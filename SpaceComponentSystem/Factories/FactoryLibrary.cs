@@ -19,7 +19,10 @@ namespace Space.ComponentSystem.Factories
         /// Mapping of names to factories.
         /// </summary>
         private static readonly Dictionary<string, IFactory> Factories = new Dictionary<string, IFactory>();
-
+        
+        /// <summary>
+        /// Whether the library is initialized (has loaded its assets).
+        /// </summary>
         private static bool _isInitialized;
 
         #endregion
@@ -30,26 +33,26 @@ namespace Space.ComponentSystem.Factories
         /// Initializes the library with the specified content manager.
         /// </summary>
         /// <param name="content">The content manager to use to load constraints.</param>
-        public static void Initialize(ContentManager content)
+        public static void LoadContent(ContentManager content)
         {
             if (_isInitialized)
             {
                 return;
             }
 
-            Initialize<ArmorFactory>("Data/Armor", content);
-            Initialize<FuselageFactory>("Data/Fuselage", content);
-            Initialize<ReactorFactory>("Data/Reactors", content);
-            Initialize<SensorFactory>("Data/Sensors", content);
-            Initialize<ShieldFactory>("Data/Shields", content);
-            Initialize<ShipFactory>("Data/Ships", content);
-            Initialize<ThrusterFactory>("Data/Thrusters", content);
-            Initialize<WeaponFactory>("Data/Weapons", content);
-            Initialize<WingFactory>("Data/Wings", content);
+            Load("Data/Armor", content);
+            Load("Data/Fuselage", content);
+            Load("Data/Reactors", content);
+            Load("Data/Sensors", content);
+            Load("Data/Shields", content);
+            Load("Data/Ships", content);
+            Load("Data/Thrusters", content);
+            Load("Data/Weapons", content);
+            Load("Data/Wings", content);
 
-            Initialize<PlanetFactory>("Data/Planets", content);
-            Initialize<SunFactory>("Data/Suns", content);
-            Initialize<SunSystemFactory>("Data/SunSystems", content);
+            Load("Data/Planets", content);
+            Load("Data/Suns", content);
+            Load("Data/SunSystems", content);
 
             _isInitialized = true;
         }
@@ -57,12 +60,11 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Helper for initializing a specific type.
         /// </summary>
-        private static void Initialize<TFactory>(string assetName, ContentManager content)
-            where TFactory : IFactory
+        private static void Load(string assetName, ContentManager content)
         {
-            foreach (var factory in content.Load<TFactory[]>(assetName))
+            foreach (var factory in content.Load<IFactory[]>(assetName))
             {
-                Factories[factory.Name] = factory;
+                Factories.Add(factory.Name, factory);
             }
         }
 

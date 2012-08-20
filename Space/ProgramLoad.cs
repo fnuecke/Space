@@ -36,7 +36,7 @@ namespace Space
             SpaceCommandHandler.InitializeScriptEnvironment(Content);
 
             // Load generator constraints.
-            FactoryLibrary.Initialize(Content);
+            FactoryLibrary.LoadContent(Content);
 
             // Create the profile implementation.
             Settings.Instance.CurrentProfile = new Profile();

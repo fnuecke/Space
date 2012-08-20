@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
@@ -30,6 +31,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// computed in the overall attribute value.
     /// </summary>
     /// <typeparam name="TAttribute">The enum of possible attributes.</typeparam>
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public sealed class AttributeModifier<TAttribute> : IPacketizable, IHashable, ICopyable<AttributeModifier<TAttribute>>
     {
         #region Fields
@@ -155,7 +157,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 case AttributeComputationType.Additive:
                     return Value + " " + Type;
                 case AttributeComputationType.Multiplicative:
-                    return (1 - Value) + "% " + Type;
+                    return Value * 100 + "% " + Type;
             }
             throw new InvalidOperationException("Unhandled attribute computation type.");
         }

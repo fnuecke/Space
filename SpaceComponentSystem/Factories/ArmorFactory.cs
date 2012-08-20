@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Armor>(entity).Initialize(Name, Icon, Quality, SlotSize);
+            manager.AddComponent<Armor>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize);
 
             return SampleAttributes(manager, entity, random);
         }

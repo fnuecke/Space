@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem;
+﻿using System.ComponentModel;
+using Engine.ComponentSystem;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -11,37 +12,76 @@ namespace Space.ComponentSystem.Factories
     /// </summary>
     public sealed class WeaponFactory : ItemFactory
     {
-        #region Fields
-
-        /// <summary>
-        /// The texture used to render this weapon when equipped on a ship.
-        /// </summary>
-        public string EquippedModel;
+        #region Properties
 
         /// <summary>
         /// The sound this weapon emits when firing.
         /// </summary>
-        public string Sound;
+        [Category("Media")]
+        [Description("The cue name of the sound to play when the weapon fires its projectiles.")]
+        public string Sound
+        {
+            get { return _sound; }
+            set { _sound = value; }
+        }
 
         /// <summary>
         /// The cooldown time to wait between shots, in seconds.
         /// </summary>
-        public Interval<float> Cooldown = Interval<float>.Zero;
+        [Category("Logic")]
+        [Description("The time to wait between firing shots from this weapon, in seconds.")]
+        public Interval<float> Cooldown
+        {
+            get { return _cooldown; }
+            set { _cooldown = value; }
+        }
 
         /// <summary>
         /// The energy this weapon consumes per shot.
         /// </summary>
-        public Interval<float> EnergyConsumption = Interval<float>.Zero;
+        [Category("Logic")]
+        [Description("The amount of energy this weapon needs to fire one round of projectiles.")]
+        public Interval<float> EnergyConsumption
+        {
+            get { return _energyConsumption; }
+            set { _energyConsumption = value; }
+        }
 
         /// <summary>
         /// The damage this weapon's projectiles inflict.
         /// </summary>
-        public Interval<float> Damage = Interval<float>.Zero;
+        [Category("Logic")]
+        [Description("The damage each single projectile fired from this weapon does when hitting an enemy.")]
+        public Interval<float> Damage
+        {
+            get { return _damage; }
+            set { _damage = value; }
+        }
 
         /// <summary>
         /// Possible projectiles this weapon fires.
         /// </summary>
-        public ProjectileFactory[] Projectiles;
+        [Category("Logic")]
+        [Description("The list of projectiles to emit each time this weapon is fired.")]
+        public ProjectileFactory[] Projectiles
+        {
+            get { return _projectiles; }
+            set { _projectiles = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _sound;
+
+        private Interval<float> _cooldown = Interval<float>.Zero;
+
+        private Interval<float> _energyConsumption = Interval<float>.Zero;
+
+        private Interval<float> _damage = Interval<float>.Zero;
+
+        private ProjectileFactory[] _projectiles;
 
         #endregion
 
@@ -59,7 +99,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Weapon>(entity).Initialize(Name, Icon, Quality, SlotSize, EquippedModel, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles);
+            manager.AddComponent<Weapon>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize, Model, _sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), _projectiles);
 
             return SampleAttributes(manager, entity, random);
         }
@@ -71,8 +111,8 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled cooldown.</returns>
         private float SampleCooldown(IUniformRandom random)
         {
-            return (random == null) ? Cooldown.Low
-                : MathHelper.Lerp(Cooldown.Low, Cooldown.High, (float)random.NextDouble());
+            return (random == null) ? _cooldown.Low
+                : MathHelper.Lerp(_cooldown.Low, _cooldown.High, (float)random.NextDouble());
         }
 
         /// <summary>
@@ -82,8 +122,8 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled energy consumption.</returns>
         private float SampleEnergyConsumption(IUniformRandom random)
         {
-            return (random == null) ? EnergyConsumption.Low
-                : MathHelper.Lerp(EnergyConsumption.Low, EnergyConsumption.High, (float)random.NextDouble());
+            return (random == null) ? _energyConsumption.Low
+                : MathHelper.Lerp(_energyConsumption.Low, _energyConsumption.High, (float)random.NextDouble());
         }
 
         /// <summary>
@@ -93,8 +133,8 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled damage.</returns>
         private float SampleDamage(IUniformRandom random)
         {
-            return (random == null) ? Damage.Low
-                : MathHelper.Lerp(Damage.Low, Damage.High, (float)random.NextDouble());
+            return (random == null) ? _damage.Low
+                : MathHelper.Lerp(_damage.Low, _damage.High, (float)random.NextDouble());
         }
 
         #endregion

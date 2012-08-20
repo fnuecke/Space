@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem;
+﻿using System.ComponentModel;
+using Engine.ComponentSystem;
 using Engine.Random;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -11,20 +12,42 @@ namespace Space.ComponentSystem.Factories
     /// </summary>
     public sealed class ThrusterFactory : ItemFactory
     {
-        #region Fields
+        #region Properties
 
         /// <summary>
         /// Asset name of the particle effect to trigger when this thruster is
         /// active (accelerating).
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string Effect;
+        [DefaultValue(null)]
+        [Category("Media")]
+        [Description("The asset name of the particle effect to use for this thruster when accelerating.")]
+        public string Effect
+        {
+            get { return _effect; }
+            set { _effect = value; }
+        }
 
         /// <summary>
         /// Offset for the thruster effect relative to the texture.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Vector2 EffectOffset = Vector2.Zero;
+        [DefaultValue(null)]
+        [Category("Media")]
+        [Description("The offset relative to the slot the item is equipped in at which to emit particle effects when accelerating.")]
+        public Vector2? EffectOffset
+        {
+            get { return _effectOffset; }
+            set { _effectOffset = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _effect;
+
+        private Vector2? _effectOffset;
 
         #endregion
 
@@ -42,7 +65,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Thruster>(entity).Initialize(Name, Icon, Quality, SlotSize, Effect, EffectOffset);
+            manager.AddComponent<Thruster>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize, _effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero);
 
             return SampleAttributes(manager, entity, random);
         }

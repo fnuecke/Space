@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework.Content.Pipeline;
 
-namespace Space.ContentPipeline
+namespace Space.Serialization
 {
     /// <summary>
     /// This class will be instantiated by the XNA Framework Content Pipeline

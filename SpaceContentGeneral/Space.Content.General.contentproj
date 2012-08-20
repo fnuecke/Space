@@ -145,10 +145,6 @@
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
       <Name>Space.ComponentSystem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceContentPipeline\Space.ContentPipeline.csproj">
-      <Project>{B3108CDB-E8AD-4435-ACB4-8A6797EF5A3B}</Project>
-      <Name>Space.ContentPipeline</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SpaceWriters\Space.Serialization.csproj">
       <Project>{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}</Project>
       <Name>Space.Serialization</Name>

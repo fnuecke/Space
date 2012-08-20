@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Engine.Math
 {
@@ -6,25 +7,52 @@ namespace Engine.Math
     /// Represents an interval of the specified type.
     /// </summary>
     /// <typeparam name="T">The interval type.</typeparam>
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public sealed class Interval<T> where T : IComparable<T>, IEquatable<T>
     {
+        #region Constants
+        
         /// <summary>
         /// Default 'zero' value for an interval.
         /// </summary>
         public static readonly Interval<T> Zero = new Interval<T>(default(T), default(T));
 
+        #endregion
+
+        #region Properties
+        
         /// <summary>
         /// The low endpoint of the interval.
         /// </summary>
-        public T Low { get; private set; }
+        [Description("The lower inclusive bound of the interval.")]
+        public T Low
+        {
+            get { return _low; }
+            set { SetTo(value, _high); }
+        }
 
         /// <summary>
         /// The high endpoint of the interval.
         /// </summary>
-        public T High { get; private set; }
+        [Description("The upper inclusive bound of the interval.")]
+        public T High
+        {
+            get { return _high; }
+            set { SetTo(_low, value); }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private T _low;
+
+        private T _high;
+
+        #endregion
 
         #region Constructor
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Interval&lt;T&gt;"/> struct.
         /// </summary>
@@ -44,6 +72,8 @@ namespace Engine.Math
 
         #endregion
 
+        #region Methods
+        
         /// <summary>
         /// Sets the interval endpoints to the specified values.
         /// </summary>
@@ -56,8 +86,25 @@ namespace Engine.Math
             {
                 throw new ArgumentException("Invalid interval, the lower endpoint must be less or equal to the higher endpoint.", "low");
             }
-            Low = low;
-            High = high;
+            _low = low;
+            _high = high;
         }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "[" + _low + ", " + _high + "]";
+        }
+
+        #endregion
     }
 }

@@ -5,7 +5,7 @@
          values (enforced by min an max being equal). -->
     <Item>
       <Name>StarterWeapon</Name>
-      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Sound>laser</Sound>
       <Cooldown>0.5</Cooldown>
       <EnergyConsumption>5</EnergyConsumption>
@@ -23,6 +23,7 @@
     <Item>
       <Name>PoorBasicWeapon</Name>
       <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Poor</Quality>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
@@ -37,7 +38,6 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
       <Sound>laser</Sound>
       <Cooldown>0.4 to 0.6</Cooldown>
       <EnergyConsumption>5 to 6</EnergyConsumption>
@@ -55,6 +55,7 @@
     <Item>
       <Name>BasicWeapon</Name>
       <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Common</Quality>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
@@ -69,7 +70,6 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
-      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
       <Sound>laser</Sound>
       <Cooldown>0.4 to 0.6</Cooldown>
       <EnergyConsumption>5 to 6</EnergyConsumption>
@@ -87,6 +87,7 @@
     <Item>
       <Name>UncommonBasicWeapon</Name>
       <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Uncommon</Quality>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
@@ -101,7 +102,6 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
-      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
       <Sound>laser</Sound>
       <Cooldown>0.4 to 0.6</Cooldown>
       <EnergyConsumption>5 to 6</EnergyConsumption>
@@ -119,6 +119,7 @@
     <Item>
       <Name>RareBasicWeapon</Name>
       <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Rare</Quality>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
@@ -133,7 +134,6 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
-      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
       <Sound>laser</Sound>
       <Cooldown>0.4 to 0.6</Cooldown>
       <EnergyConsumption>5 to 6</EnergyConsumption>
@@ -151,7 +151,7 @@
     <!-- NPC weapons -->
     <Item>
       <Name>L1_AI_Weapon</Name>
-      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Sound>laser</Sound>
       <Cooldown>0.5 to 0.75</Cooldown>
       <EnergyConsumption>5 to 7.5</EnergyConsumption>

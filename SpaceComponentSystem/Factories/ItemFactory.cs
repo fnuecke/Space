@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
@@ -18,57 +19,113 @@ namespace Space.ComponentSystem.Factories
     /// </summary>
     public abstract class ItemFactory : IFactory
     {
-        #region Fields
+        #region Properties
         
         /// <summary>
         /// Unique name for this item type.
         /// </summary>
-        public string Name { get; set; }
+        [DefaultValue("")]
+        [Category("General")]
+        [Description("The name of this item, by which it can be referenced.")]
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
         /// <summary>
         /// Asset name of the texture to use for this item type to render it in
         /// menus and the inventory.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string Icon = "Images/Icons/Buffs/default";
+        [DefaultValue("Images/Icons/Buffs/default")]
+        [Category("Media")]
+        [Description("The icon used to represent the item in the GUI, e.g. in the inventory.")]
+        public string Icon
+        {
+            get { return _icon; }
+            set { _icon = value; }
+        }
 
         /// <summary>
         /// The ingame texture to be displayed for items floating around in
         /// space.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string Model = "Textures/Items/default";
+        [DefaultValue("Textures/Items/default")]
+        [Category("Media")]
+        [Description("The texture used to represent the item in-game, e.g. when lying on the ground or equipped on a ship.")]
+        public string Model
+        {
+            get { return _model; }
+            set { _model = value; }
+        }
 
         /// <summary>
         /// The scaling to apply to the model texture.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float ModelScale = 1.0f;
+        [DefaultValue(1.0f)]
+        [Category("Media")]
+        [Description("The relative scale of the texture.")]
+        public float ModelScale
+        {
+            get { return _modelScale; }
+            set { _modelScale = value; }
+        }
 
         /// <summary>
         /// The quality of the item, to give a rough idea of the value.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public ItemQuality Quality = ItemQuality.Common;
+        [DefaultValue(ItemQuality.Common)]
+        [Category("Equipment")]
+        [Description("The items quality rating. This is purely to give the player a quick grasp of the potential value of an item and has no influence on game logic.")]
+        public ItemQuality Quality
+        {
+            get { return _quality; }
+            set { _quality = value; }
+        }
 
         /// <summary>
         /// The slot size of the item.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public ItemSlotSize SlotSize = ItemSlotSize.Small;
+        [DefaultValue(ItemSlotSize.Small)]
+        [Category("Equipment")]
+        [Description("The minimum size of the slot the item requires to be equpped in.")]
+        public ItemSlotSize RequiredSlotSize
+        {
+            get { return _requiredSlotSize; }
+            set { _requiredSlotSize = value; }
+        }
 
         /// <summary>
         /// Slots this item provides for other items to be equipped into.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public ItemSlotInfo[] Slots = new ItemSlotInfo[0];
+        [DefaultValue(null)]
+        [Category("Equipment")]
+        [Description("The slots this item provides, allowing other items to be equipped into this item, e.g. for socketing.")]
+        public ItemSlotInfo[] Slots
+        {
+            get { return _slots; }
+            set { _slots = value; }
+        }
 
         /// <summary>
         /// A list of attribute modifiers that are guaranteed to be applied to
         /// the generated item, just with random values.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public AttributeModifierConstraint<AttributeType>[] GuaranteedAttributes = new AttributeModifierConstraint<AttributeType>[0];
+        [DefaultValue(null)]
+        [Category("Stats")]
+        [Description("Attribute bonuses that a generated item of this type is guaranteed to provide when equipped.")]
+        public AttributeModifierConstraint<AttributeType>[] GuaranteedAttributes
+        {
+            get { return _guaranteedAttributes; }
+            set { _guaranteedAttributes = value; }
+        }
 
         /// <summary>
         /// A list of attribute modifiers from which a certain number is
@@ -76,14 +133,52 @@ namespace Space.ComponentSystem.Factories
         /// be sampled the actual values to be applied to the generated item.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public AttributeModifierConstraint<AttributeType>[] AdditionalAttributes = new AttributeModifierConstraint<AttributeType>[0];
+        [DefaultValue(null)]
+        [Category("Stats")]
+        [Description("Possible attribute bonuses items of this type might have. Additional attributes are sampled from this pool.")]
+        public AttributeModifierConstraint<AttributeType>[] AdditionalAttributes
+        {
+            get { return _additionalAttributes; }
+            set { _additionalAttributes = value; }
+        }
 
         /// <summary>
         /// The number of additional attribute modifiers to apply to a
         /// generated item.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<int> AdditionalAttributeCount = Interval<int>.Zero;
+        [DefaultValue(null)]
+        [Category("Stats")]
+        [Description("The number of additional attributes to sample for a generated item of this type.")]
+        public Interval<int> AdditionalAttributeCount
+        {
+            get { return _additionalAttributeCount; }
+            set { _additionalAttributeCount = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _name = "";
+
+        private string _icon = "Images/Icons/Buffs/default";
+
+        private string _model = "Textures/Items/default";
+
+        private float _modelScale = 1.0f;
+
+        private ItemQuality _quality = ItemQuality.Common;
+
+        private ItemSlotSize _requiredSlotSize = ItemSlotSize.Small;
+
+        private ItemSlotInfo[] _slots;
+
+        private AttributeModifierConstraint<AttributeType>[] _guaranteedAttributes;
+
+        private AttributeModifierConstraint<AttributeType>[] _additionalAttributes;
+
+        private Interval<int> _additionalAttributeCount;
 
         #endregion
 
@@ -103,7 +198,7 @@ namespace Space.ComponentSystem.Factories
 
             // Add position (when dropped) and renderer (when dropped or equipped).
             manager.AddComponent<Transform>(entity);
-            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(Model, ModelScale);
+            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _modelScale);
 
             // Do not render initially (only when dropped).
             renderer.Enabled = false;
@@ -117,10 +212,14 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<ItemInfo>(entity);
 
             // Add slot components.
-            for (var i = 0; i < Slots.Length; i++)
+            if (_slots != null)
             {
-                manager.AddComponent<SpaceItemSlot>(entity).
-                    Initialize(ItemSlotInfo.TypeMap[Slots[i].Type.ToLowerInvariant()], Slots[i].Size, Slots[i].Offset);
+                for (var i = 0; i < _slots.Length; i++)
+                {
+                    manager.AddComponent<SpaceItemSlot>(entity).
+                        Initialize(ItemSlotInfo.TypeMap[_slots[i].Type], _slots[i].Size,
+                                   _slots[i].Offset.HasValue ? _slots[i].Offset.Value : Vector2.Zero);
+                }
             }
 
             return entity;
@@ -136,15 +235,26 @@ namespace Space.ComponentSystem.Factories
         /// <return>The entity with the attributes applied.</return>
         protected int SampleAttributes(IManager manager, int item, IUniformRandom random)
         {
-            foreach (var attribute in GuaranteedAttributes)
+            if (_guaranteedAttributes != null)
             {
-                manager.AddComponent<Attribute<AttributeType>>(item).Initialize(attribute.SampleAttributeModifier(random));
+                foreach (var attribute in _guaranteedAttributes)
+                {
+                    manager.AddComponent<Attribute<AttributeType>>(item).Initialize(
+                        attribute.SampleAttributeModifier(random));
+                }
             }
-            var numAdditionalAttributes = (AdditionalAttributeCount.Low == AdditionalAttributeCount.High) ? AdditionalAttributeCount.Low
-                : random.NextInt32(AdditionalAttributeCount.Low, AdditionalAttributeCount.High);
-            for (var i = 0; i < numAdditionalAttributes; i++)
+            if (_additionalAttributes != null && _additionalAttributeCount != null)
             {
-                manager.AddComponent<Attribute<AttributeType>>(item).Initialize(AdditionalAttributes[random.NextInt32(AdditionalAttributes.Length)].SampleAttributeModifier(random));
+                var numAdditionalAttributes = (_additionalAttributeCount.Low == _additionalAttributeCount.High)
+                                                  ? _additionalAttributeCount.Low
+                                                  : random.NextInt32(_additionalAttributeCount.Low,
+                                                                     _additionalAttributeCount.High);
+                for (var i = 0; i < numAdditionalAttributes; i++)
+                {
+                    manager.AddComponent<Attribute<AttributeType>>(item).Initialize(
+                        _additionalAttributes[random.NextInt32(_additionalAttributes.Length)].SampleAttributeModifier(
+                            random));
+                }
             }
             return item;
         }
@@ -156,43 +266,107 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Utility class for serializing item slots.
         /// </summary>
+        [TypeConverter(typeof(ExpandableObjectConverter))]
         public sealed class ItemSlotInfo
         {
+            #region Constants
+
+            /// <summary>
+            /// Possible item types for slots. This is used for string representation
+            /// in the serialized state.
+            /// </summary>
+            public enum ItemType
+            {
+                None,
+                Armor,
+                Fuselage,
+                Reactor,
+                Sensor,
+                Shield,
+                Thruster,
+                Weapon,
+                Wing
+            }
+
             /// <summary>
             /// Maps names used in XML representation to type ids.
             /// </summary>
-            /// <remarks>
-            /// Use all lowercase here, as the XML input will be forced to
-            /// lowercase before the lookup.
-            /// </remarks>
-            public static readonly Dictionary<string, int> TypeMap = new Dictionary<string, int>
+            public static readonly Dictionary<ItemType, int> TypeMap = new Dictionary<ItemType, int>
             {
-                {"armor", Armor.TypeId},
-                {"fuselage", Fuselage.TypeId},
-                {"reactor", Reactor.TypeId},
-                {"sensor", Sensor.TypeId},
-                {"shield", Shield.TypeId},
-                {"thruster", Thruster.TypeId},
-                {"weapon", Weapon.TypeId},
-                {"wing", Wing.TypeId}
+                {ItemType.Armor, Armor.TypeId},
+                {ItemType.Fuselage, Fuselage.TypeId},
+                {ItemType.Reactor, Reactor.TypeId},
+                {ItemType.Sensor, Sensor.TypeId},
+                {ItemType.Shield, Shield.TypeId},
+                {ItemType.Thruster, Thruster.TypeId},
+                {ItemType.Weapon, Weapon.TypeId},
+                {ItemType.Wing, Wing.TypeId}
             };
+
+            #endregion
+
+            #region Properties
 
             /// <summary>
             /// The supported item type.
             /// </summary>
-            public string Type;
+            [Description("The type of item that can be equipped in this slot.")]
+            public ItemType Type
+            {
+                get { return _type; }
+                set { _type = value; }
+            }
 
             /// <summary>
             /// Size supported by this slot.
             /// </summary>
             [ContentSerializer(Optional = true)]
-            public ItemSlotSize Size = ItemSlotSize.Small;
+            [DefaultValue(ItemSlotSize.Small)]
+            [Description("The size of the item slot, i.e. the maximum item size this slot supports.")]
+            public ItemSlotSize Size
+            {
+                get { return _size; }
+                set { _size = value; }
+            }
 
             /// <summary>
             /// The offset of this items origin from its parent slot.
             /// </summary>
             [ContentSerializer(Optional = true)]
-            public Vector2 Offset = Vector2.Zero;
+            [DefaultValue(null)]
+            [Description("The offset of the slot relative to its parent.")]
+            public Vector2? Offset
+            {
+                get { return _offset; }
+                set { _offset = value; }
+            }
+
+            #endregion
+
+            #region Backing fields
+
+            private ItemType _type;
+
+            private ItemSlotSize _size = ItemSlotSize.Small;
+
+            private Vector2? _offset;
+
+            #endregion
+
+            #region ToString
+
+            /// <summary>
+            /// Returns a <see cref="System.String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="System.String"/> that represents this instance.
+            /// </returns>
+            public override string ToString()
+            {
+                return Size + " " + Type + (Offset == null ? "" : (" @ " + Offset));
+            }
+
+            #endregion
         }
 
         #endregion

@@ -35,6 +35,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PlainTextProcessor.cs" />
     <Compile Include="SpaceAttributeModifierConstraintSerializer.cs" />
     <Compile Include="SpaceAttributeModifierSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

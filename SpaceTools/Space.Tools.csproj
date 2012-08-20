@@ -11,7 +11,8 @@
     <RootNamespace>Space.Tools</RootNamespace>
     <AssemblyName>Space.Tools</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -34,10 +35,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataEditor\DataEditor.cs">
@@ -46,8 +49,16 @@
     <Compile Include="DataEditor\DataEditor.Designer.cs">
       <DependentUpon>DataEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="DataEditor\DataEditorLogic.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DataEditor\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="DataEditor\DataEditor.resx">
       <DependentUpon>DataEditor.cs</DependentUpon>
     </EmbeddedResource>
@@ -61,6 +72,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -70,10 +82,28 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="DataEditor\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\saveHS.png" />
     <None Include="Resources\OpenFile.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
+      <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
+      <Name>Engine.Serialization.Writers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
+      <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
+      <Name>Space.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceWriters\Space.Serialization.csproj">
+      <Project>{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}</Project>
+      <Name>Space.Serialization</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
