@@ -41,7 +41,7 @@ namespace Engine.ComponentSystem.RPG.Systems
                 var added = (ItemEquipped)(ValueType)message;
                 if (Manager.GetComponent(added.Item, Attribute<TAttribute>.TypeId) != null)
                 {
-                    var character = ((Character<TAttribute>)Manager.GetComponent(added.Entity, Character<TAttribute>.TypeId));
+                    var character = ((Character<TAttribute>)Manager.GetComponent(added.Slot.Root.Entity, Character<TAttribute>.TypeId));
                     if (character != null)
                     {
                         character.RecomputeAttributes();
@@ -54,7 +54,7 @@ namespace Engine.ComponentSystem.RPG.Systems
                 var removed = (ItemUnequipped)(ValueType)message;
                 if (Manager.GetComponent(removed.Item, Attribute<TAttribute>.TypeId) != null)
                 {
-                    var character = ((Character<TAttribute>)Manager.GetComponent(removed.Entity, Character<TAttribute>.TypeId));
+                    var character = ((Character<TAttribute>)Manager.GetComponent(removed.Slot.Root.Entity, Character<TAttribute>.TypeId));
                     if (character != null)
                     {
                         character.RecomputeAttributes();   

@@ -5,25 +5,25 @@ using Space.ComponentSystem.Components;
 namespace Space.ComponentSystem.Factories
 {
     /// <summary>
-    /// Constraints for generating reactors.
+    /// Factory for generating fuselage.
     /// </summary>
-    public sealed class ReactorFactory : ItemFactory
+    public sealed class FuselageFactory : ItemFactory
     {
         #region Sampling
 
         /// <summary>
-        /// Samples a new reactor based on these constraints.
+        /// Samples a new fuselage based on these constraints.
         /// </summary>
         /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>
-        /// The sampled reactor.
+        /// The sampled fuselage.
         /// </returns>
         public override int Sample(IManager manager, IUniformRandom random)
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Reactor>(entity).Initialize(Name, Icon, Quality, SlotSize);
+            manager.AddComponent<Fuselage>(entity).Initialize(Name, Icon, Quality, SlotSize);
 
             return SampleAttributes(manager, entity, random);
         }

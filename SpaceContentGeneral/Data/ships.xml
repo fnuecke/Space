@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
   <Asset Type="Space.ComponentSystem.Factories.ShipFactory[]">
+    <!-- Player ships -->
     <Item>
       <Name>Player</Name>
       <Texture>Textures/spaceshipB</Texture>
@@ -16,12 +17,33 @@
         <Item>20 RotationForce</Item>
       </Attributes>
 
-      <SensorSlots>1</SensorSlots>
-      <ArmorSlots>2</ArmorSlots>
-      <ReactorSlots>2</ReactorSlots>
-      <ShieldSlots>1</ShieldSlots>
-      <ThrusterSlots>2</ThrusterSlots>
-      <WeaponSlots>2</WeaponSlots>
+      <Items>
+        <Name>StarterFuselage</Name>
+        <Item>
+          <Name>StarterWing</Name>
+          <Item>
+            <Name>StarterWeapon</Name>
+          </Item>
+        </Item>
+        <Item>
+          <Name>StarterWing</Name>
+          <Item>
+            <Name>StarterWeapon</Name>
+          </Item>
+        </Item>
+        <Item>
+          <Name>StarterReactor</Name>
+        </Item>
+        <Item>
+          <Name>StarterArmor</Name>
+        </Item>
+        <Item>
+          <Name>StarterSensor</Name>
+        </Item>
+        <Item>
+          <Name>StarterThruster</Name>
+        </Item>
+      </Items>
     </Item>
 
     <!-- NPC ships -->
@@ -40,12 +62,33 @@
         <Item>15 to 20 RotationForce</Item>
       </Attributes>
 
-      <SensorSlots>0</SensorSlots>
-      <ArmorSlots>1</ArmorSlots>
-      <ReactorSlots>1</ReactorSlots>
-      <ShieldSlots>1</ShieldSlots>
-      <ThrusterSlots>1</ThrusterSlots>
-      <WeaponSlots>1</WeaponSlots>
+      <Items>
+        <Name>L1_AI_Fuselage</Name>
+        <Item>
+          <Name>L1_AI_Wing</Name>
+          <Item>
+            <Name>L1_AI_Weapon</Name>
+          </Item>
+        </Item>
+        <Item>
+          <Name>L1_AI_Wing</Name>
+          <Item>
+            <Name>L1_AI_Weapon</Name>
+          </Item>
+        </Item>
+        <Item>
+          <Name>L1_AI_Reactor</Name>
+        </Item>
+        <Item>
+          <Name>L1_AI_Armor</Name>
+        </Item>
+        <Item>
+          <Name>L1_AI_Thruster</Name>
+        </Item>
+        <Item>
+          <Name>L1_AI_Sensor</Name>
+        </Item>
+      </Items>
     </Item>
   </Asset>
 </XnaContent>

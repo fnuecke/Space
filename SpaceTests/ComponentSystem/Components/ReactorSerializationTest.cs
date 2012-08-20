@@ -18,7 +18,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Reactor(),
                        (Reactor)new Reactor().Initialize("asd", "zxc"),
-                       (Reactor)new Reactor().Initialize("asd", "zxc", ItemQuality.Poor)
+                       (Reactor)new Reactor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Medium)
                    };
         }
     }

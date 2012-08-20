@@ -9,6 +9,11 @@ namespace Space.Data
     public enum ItemQuality
     {
         /// <summary>
+        /// Invalid value.
+        /// </summary>
+        None,
+
+        /// <summary>
         /// Poor quality.
         /// </summary>
         Poor,

@@ -162,6 +162,16 @@
       <HintPath>..\Libraries\ProjectMercury.ContentPipeline.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Fuselage.xml">
+      <Name>Fuselage</Name>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Wings.xml">
+      <Name>Wings</Name>
+    </Compile>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

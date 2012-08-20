@@ -231,7 +231,7 @@ namespace Space.View
         private void HostGame(JSValue[] args)
         {
             _game.RestartServer();
-            //*
+            /*
             _game.RestartClient(true);
             /*/
             _game.RestartClient();

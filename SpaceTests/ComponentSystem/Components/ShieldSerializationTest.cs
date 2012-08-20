@@ -18,7 +18,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Shield(),
                        (Shield)new Shield().Initialize("asd", "zxc"),
-                       (Shield)new Shield().Initialize("asd", "zxc", ItemQuality.Poor)
+                       (Shield)new Shield().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Medium)
                    };
         }
     }

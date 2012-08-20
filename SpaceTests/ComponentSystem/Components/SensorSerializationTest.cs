@@ -18,7 +18,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Sensor(),
                        (Sensor)new Sensor().Initialize("asd", "zxc"),
-                       (Sensor)new Sensor().Initialize("asd", "zxc", ItemQuality.Poor)
+                       (Sensor)new Sensor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Large)
                    };
         }
     }

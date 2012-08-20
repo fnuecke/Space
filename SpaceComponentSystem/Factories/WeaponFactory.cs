@@ -50,7 +50,7 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new weapon based on these constraints.
         /// </summary>
-        /// <param name="manager"></param>
+        /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>
         /// The sampled weapon.
@@ -59,7 +59,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Weapon>(entity).Initialize(Name, Icon, Quality, EquippedModel, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles);
+            manager.AddComponent<Weapon>(entity).Initialize(Name, Icon, Quality, SlotSize, EquippedModel, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles);
 
             return SampleAttributes(manager, entity, random);
         }

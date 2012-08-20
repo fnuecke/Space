@@ -294,36 +294,36 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="index">The index of the item.</param>
         /// <returns>The item at that index.</returns>
-        public int? InventoryItemAt(int index)
+        public int InventoryItemAt(int index)
         {
             var inventory = (Inventory)Manager.GetComponent(Entity, Inventory.TypeId);
-            return inventory != null ? inventory[index] : null;
+            return inventory != null ? inventory[index] : 0;
         }
 
-        /// <summary>
-        /// Get the number of item slots for the specified item type.
-        /// </summary>
-        /// <typeparam name="TItem">The item type to check for.</typeparam>
-        /// <returns></returns>
-        public int EquipmentSlotCount<TItem>()
-            where TItem : Item
-        {
-            var equipment = (Equipment)Manager.GetComponent(Entity, Equipment.TypeId);
-            return equipment != null ? equipment.GetSlotCount<TItem>() : 0;
-        }
+        ///// <summary>
+        ///// Get the number of item slots for the specified item type.
+        ///// </summary>
+        ///// <typeparam name="TItem">The item type to check for.</typeparam>
+        ///// <returns></returns>
+        //public int EquipmentSlotCount<TItem>()
+        //    where TItem : Item
+        //{
+        //    var equipment = (ItemSlot)Manager.GetComponent(Entity, ItemSlot.TypeId);
+        //    return equipment != null ? equipment.GetSlotCount<TItem>() : 0;
+        //}
 
-        /// <summary>
-        /// Get the equipped item of the specified type in the specified slot.
-        /// </summary>
-        /// <typeparam name="TItem">The type of item to check.</typeparam>
-        /// <param name="index">The slot index from which to get the item.</param>
-        /// <returns>The item at that slot index.</returns>
-        public int? EquipmentItemAt<TItem>(int index)
-            where TItem : Item
-        {
-            var equipment = (Equipment)Manager.GetComponent(Entity, Equipment.TypeId);
-            return equipment != null ? equipment.GetItem<TItem>(index) : null;
-        }
+        ///// <summary>
+        ///// Get the equipped item of the specified type in the specified slot.
+        ///// </summary>
+        ///// <typeparam name="TItem">The type of item to check.</typeparam>
+        ///// <param name="index">The slot index from which to get the item.</param>
+        ///// <returns>The item at that slot index.</returns>
+        //public int? EquipmentItemAt<TItem>(int index)
+        //    where TItem : Item
+        //{
+        //    var equipment = (ItemSlot)Manager.GetComponent(Entity, ItemSlot.TypeId);
+        //    return equipment != null ? equipment.GetItem<TItem>(index) : null;
+        //}
 
         #endregion
 

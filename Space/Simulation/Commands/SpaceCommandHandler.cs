@@ -255,8 +255,8 @@ from Space.Data import *
             }
 
             // Get the player's inventory and equipment.
-            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
-            var equipment = ((Equipment)manager.GetComponent(avatar.Value, Equipment.TypeId));
+            var inventory = (Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId);
+            var equipment = (ItemSlot)manager.GetComponent(avatar.Value, ItemSlot.TypeId);
 
             // Make sure the inventory index is valid.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -269,29 +269,42 @@ from Space.Data import *
             var item = inventory[command.InventoryIndex];
 
             // Make sure there is an item there.
-            if (!item.HasValue)
+            if (item <= 0)
             {
                 Logger.Warn("Invalid equip command, not item at that inventory index.");
                 return;
             }
 
-            // Make sure the equipment index is valid.
-            var itemType = manager.GetComponent(item.Value, Item.TypeId).GetType();
-            if (command.Slot < 0 || command.Slot >= equipment.GetSlotCount(itemType))
+            // Validate the equipment slot.
+            ItemSlot slot;
+            if (!manager.HasComponent(command.Slot) ||
+                (slot = manager.GetComponentById(command.Slot) as ItemSlot) == null ||
+                slot.Root != equipment)
             {
-                Logger.Warn("Invalid equip command, equipment slot out of bounds.");
+                Logger.Warn("Invalid equip command, equipment slot is invalid.");
+                return;
+            }
+            
+            // Make sure the item type is correct.
+            var itemComponent = (Item)manager.GetComponent(item, Item.TypeId);
+            if (!slot.Validate(itemComponent))
+            {
+                Logger.Warn("Invalid equip command, item not valid for this equipment slot.");
                 return;
             }
 
-            // See if there's an item equipped there, currently.
-            var equipped = equipment.Unequip(itemType, command.Slot);
+            // Keep reference to old item, to add it back to the inventory.
+            var oldItem = slot.Item;
+
+            // Remove from inventory and equip new item.
             inventory.RemoveAt(command.InventoryIndex);
-            equipment.Equip(command.Slot, item.Value);
-            if (equipped.HasValue)
+            slot.Item = item;
+
+            // If we unequipped something in the process, add it to the index
+            // in the inventory where we got the equipped item from.
+            if (oldItem > 0)
             {
-                // We unequipped something in the process, add it to the index
-                // in the inventory where we got the equipped item from.
-                inventory.Insert(command.InventoryIndex, equipped.Value);
+                inventory.Insert(command.InventoryIndex, oldItem);
             }
         }
 
@@ -383,13 +396,13 @@ from Space.Data import *
                         var item = inventory[command.InventoryIndex];
 
                         // Do we really drop anything?
-                        if (item.HasValue)
+                        if (item > 0)
                         {
                             inventory.RemoveAt(command.InventoryIndex);
 
                             // Position the item to be at the position of the
                             // player that dropped it.
-                            var transform = ((Transform)manager.GetComponent(item.Value, Transform.TypeId));
+                            var transform = (Transform)manager.GetComponent(item, Transform.TypeId);
                             transform.SetTranslation(((Transform)manager.GetComponent(avatar.Value, Transform.TypeId)).Translation);
                             transform.ApplyTranslation();
                         }
@@ -428,7 +441,7 @@ from Space.Data import *
             }
 
             // Get the inventory of the player, containing the item to use.
-            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
+            var inventory = (Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId);
 
             // Validate inventory index.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -437,63 +450,70 @@ from Space.Data import *
                 return;
             }
 
-            var item = inventory[command.InventoryIndex];
+            // Get the item.
+            var id = inventory[command.InventoryIndex];
+            var usable = (Usable<UsableResponse>)manager.GetComponent(id, Usable<UsableResponse>.TypeId);
+            var item = (SpaceItem)manager.GetComponent(id, SpaceItem.TypeId);
 
             // Check if there really is an item there.
-            if (!item.HasValue)
+            if (id <= 0)
             {
+                Logger.Warn("Invalid use command, no item at specified index.");
                 return;
             }
 
-            // Is it a usable item, if so use it. Otherwise see if we can
-            // equip the item.
-            var usable = ((Usable<UsableResponse>)manager.GetComponent(item.Value, Usable<UsableResponse>.TypeId));
+            // Is it a usable item? If so use it. Otherwise see if we can equip the item.
             if (usable != null)
             {
                 // Usable item, use it.
                 ((SpaceUsablesSystem)manager.GetSystem(SpaceUsablesSystem.TypeId)).Use(usable);
             }
-            else
+            else if (item != null)
             {
-                // Not a usable item, see if we can equip it.
-                var itemType = ((SpaceItem)manager.GetComponent(item.Value, SpaceItem.TypeId));
-                if (itemType != null)
+                // If we have a free slot for that item type equip it there,
+                // otherwise swap with the first item.
+                var equipment = (ItemSlot)manager.GetComponent(avatar.Value, ItemSlot.TypeId);
+
+                // Find free slot that can take the item, or failing that, the first
+                // slot that can hold the item.
+                ItemSlot firstValid = null;
+                foreach (var slot in equipment.AllSlots)
                 {
-                    // If we have a free slot for that item type equip it there,
-                    // otherwise swap with the first item.
-                    var equipment = ((Equipment)manager.GetComponent(avatar.Value, Equipment.TypeId));
-
-                    // Number of slots for that type.
-                    var numSlots = equipment.GetSlotCount(itemType.GetType());
-                    
-                    // Make sure we can even equip this.
-                    if (numSlots < 1)
+                    // Can the item be equipped into this slot?
+                    if (slot.Validate(item))
                     {
-                        // Nope, we can't. Ignore the command.
-                        return;
-                    }
-                    
-                    // We can, so remove it from the inventory.
-                    inventory.RemoveAt(command.InventoryIndex);
-
-                    // Try to find a free slot.
-                    for (var i = 0; i < numSlots; i++)
-                    {
-                        if (equipment.GetItem(itemType.GetType(), i).HasValue)
+                        // Is the slot empty?
+                        if (slot.Item == 0)
                         {
-                            continue;
+                            // Found one, so remove it from the inventory.
+                            inventory.RemoveAt(command.InventoryIndex);
+
+                            // And equip it.
+                            slot.Item = id;
+
+                            // And we're done.
+                            return;
                         }
-
-                        // Free slot found, equip it there.
-                        equipment.Equip(i, item.Value);
-                        return;
+                        else if (firstValid == null)
+                        {
+                            // Already occupied, but remember the first valid one
+                            // to force swapping if necessary.
+                            firstValid = slot;
+                        }
                     }
+                }
 
-                    // No free slot found, swap with the first slot.
-                    var equipped = equipment.Unequip(itemType.GetType(), 0);
-                    Debug.Assert(equipped.HasValue);
-                    inventory.Insert(command.InventoryIndex, equipped.Value);
-                    equipment.Equip(0, item.Value);
+                // Got here, so we had no empty slot. See if we can swap.
+                if (firstValid != null)
+                {
+                    var oldItem = firstValid.Item;
+                    inventory.RemoveAt(command.InventoryIndex);
+                    inventory.Insert(command.InventoryIndex, oldItem);
+                    firstValid.Item = id;
+                }
+                else
+                {
+                    Logger.Warn("Invalid use command, there's slot in which that item can be equipped.");
                 }
             }
         }
@@ -543,7 +563,7 @@ from Space.Data import *
                 scope.SetVariable("avatar", avatar);
                 scope.SetVariable("character", manager.GetComponent(avatar.Value, Character<AttributeType>.TypeId));
                 scope.SetVariable("inventory", manager.GetComponent(avatar.Value, Inventory.TypeId));
-                scope.SetVariable("equipment", manager.GetComponent(avatar.Value, Equipment.TypeId));
+                scope.SetVariable("equipment", manager.GetComponent(avatar.Value, ItemSlot.TypeId));
 
                 // Try executing our script.
                 try

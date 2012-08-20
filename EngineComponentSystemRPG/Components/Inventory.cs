@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// <summary>
     ///   Represents a player's inventory, with a list of items in it.
     /// </summary>
-    public sealed class Inventory : Component, IList<int?>
+    public sealed class Inventory : Component, IList<int>
     {
         #region Type ID
 
@@ -82,15 +82,15 @@ namespace Engine.ComponentSystem.RPG.Components
                 if (_items.Count > value)
                 {
                     // Remove items that are out of bounds after fixing.
-                    for (int i = _items.Count - 1; i >= value; --i)
+                    for (var i = _items.Count - 1; i >= value; --i)
                     {
                         var itemUid = _items[i];
-                        if (itemUid.HasValue)
+                        if (itemUid > 0)
                         {
                             // This will, via messaging, also remove the item
                             // from the list, so the following capacity change
                             // is safe.
-                            Manager.RemoveEntity(itemUid.Value);
+                            Manager.RemoveEntity(itemUid);
                         }
                         // If the list was fixed length, remove manually.
                         if (_isFixed)
@@ -106,7 +106,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 // Fill up with empty slots.
                 while (_items.Capacity > _items.Count)
                 {
-                    _items.Add(null);
+                    _items.Add(0);
                 }
 
                 // Remember our type.
@@ -121,7 +121,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         ///   A list of items currently in this inventory.
         /// </summary>
-        private readonly List<int?> _items = new List<int?>();
+        private readonly List<int> _items = new List<int>();
 
         /// <summary>
         ///   Whether we have a fixed length list.
@@ -185,7 +185,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <exception cref="T:System.NotSupportedException">The property is set and the
         ///   <see cref="T:System.Collections.Generic.IList`1" />
         ///   is read-only.</exception>
-        public int? this[int index]
+        public int this[int index]
         {
             get
             {
@@ -208,16 +208,16 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   <see cref="T:System.Collections.Generic.ICollection`1" />
         ///   is read-only.</exception>
         /// <exception cref="T:System.InvalidOperationException">The fixed length inventory is already full.</exception>
-        public void Add(int? item)
+        public void Add(int item)
         {
             // Check if the given id is valid.
-            if (!item.HasValue)
+            if (item <= 0)
             {
                 throw new ArgumentNullException("item", "Item must not be null.");
             }
 
             // Check if its really an item.
-            var itemType = ((Item)Manager.GetComponent(item.Value, Item.TypeId));
+            var itemType = ((Item)Manager.GetComponent(item, Item.TypeId));
             if (itemType == null)
             {
                 throw new ArgumentException("Entity does not have an Item component.", "item");
@@ -225,19 +225,19 @@ namespace Engine.ComponentSystem.RPG.Components
 
             // If the item is stackable, see if we already have a stack we can
             // add it on top of.
-            var stackable = ((Stackable)Manager.GetComponent(item.Value, Stackable.TypeId));
+            var stackable = ((Stackable)Manager.GetComponent(item, Stackable.TypeId));
             if (stackable != null)
             {
                 for (var i = 0; i < _items.Count; i++)
                 {
                     var itemEntry = _items[i];
-                    if (!itemEntry.HasValue)
+                    if (itemEntry <= 0)
                     {
                         continue;
                     }
 
-                    var otherItemType = ((Item)Manager.GetComponent(itemEntry.Value, Item.TypeId));
-                    var otherStackable = ((Stackable)Manager.GetComponent(itemEntry.Value, Stackable.TypeId));
+                    var otherItemType = ((Item)Manager.GetComponent(itemEntry, Item.TypeId));
+                    var otherStackable = ((Stackable)Manager.GetComponent(itemEntry, Stackable.TypeId));
                     if (otherStackable != null &&
                         otherItemType.Name.Equals(itemType.Name) &&
                         otherStackable.Count < otherStackable.MaxCount)
@@ -252,7 +252,7 @@ namespace Engine.ComponentSystem.RPG.Components
                         if (stackable.Count == 0)
                         {
                             // Yes and the stack was used up, delete it.
-                            Manager.RemoveEntity(item.Value);
+                            Manager.RemoveEntity(item);
                             return;
                         } // ... else we continue in search of the next stack.
                     }
@@ -268,7 +268,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 // Find the first free slot.
                 for (var i = 0; i < _items.Count; ++i)
                 {
-                    if (_items[i].HasValue)
+                    if (_items[i] > 0)
                     {
                         continue;
                     }
@@ -277,7 +277,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     _items[i] = item;
 
                     // Disable rendering, if available.
-                    var renderer = ((TextureRenderer)Manager.GetComponent(item.Value, TextureRenderer.TypeId));
+                    var renderer = ((TextureRenderer)Manager.GetComponent(item, TextureRenderer.TypeId));
                     if (renderer != null)
                     {
                         renderer.Enabled = false;
@@ -294,7 +294,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 _items.Add(item);
 
                 // Disable rendering, if available.
-                var renderer = ((TextureRenderer)Manager.GetComponent(item.Value, TextureRenderer.TypeId));
+                var renderer = ((TextureRenderer)Manager.GetComponent(item, TextureRenderer.TypeId));
                 if (renderer != null)
                 {
                     renderer.Enabled = false;
@@ -318,7 +318,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="item"> The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1" /> . </param>
         /// <returns> true if <paramref name="item" /> is found in the <see cref="T:System.Collections.Generic.ICollection`1" /> ; otherwise, false. </returns>
-        public bool Contains(int? item)
+        public bool Contains(int item)
         {
             return _items.Contains(item);
         }
@@ -328,7 +328,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="array"> The array. </param>
         /// <param name="arrayIndex"> Index of the array. </param>
-        public void CopyTo(int?[] array, int arrayIndex)
+        public void CopyTo(int[] array, int arrayIndex)
         {
             _items.CopyTo(array, arrayIndex);
         }
@@ -338,7 +338,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="item"> The object to locate in the <see cref="T:System.Collections.Generic.IList`1" /> . </param>
         /// <returns> The index of <paramref name="item" /> if found in the list; otherwise, -1. </returns>
-        public int IndexOf(int? item)
+        public int IndexOf(int item)
         {
             return _items.IndexOf(item);
         }
@@ -357,7 +357,7 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   <see cref="T:System.Collections.Generic.IList`1" />
         ///   is read-only.</exception>
         /// <exception cref="System.NotSupportedException">If the inventory is of fixed length.</exception>
-        public void Insert(int index, int? item)
+        public void Insert(int index, int item)
         {
             if (_isFixed)
             {
@@ -379,10 +379,10 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <exception cref="T:System.NotSupportedException">The
         ///   <see cref="T:System.Collections.Generic.ICollection`1" />
         ///   is read-only.</exception>
-        public bool Remove(int? item)
+        public bool Remove(int item)
         {
             // Avoid null.
-            if (!item.HasValue)
+            if (item <= 0)
             {
                 throw new ArgumentNullException("item", "Item must not be null.");
             }
@@ -390,7 +390,7 @@ namespace Engine.ComponentSystem.RPG.Components
             if (_isFixed)
             {
                 // Find where the item sits, then null the entry.
-                int index = IndexOf(item);
+                var index = IndexOf(item);
                 if (index >= 0)
                 {
                     _items[index] = 0;
@@ -435,7 +435,7 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns> A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection. </returns>
-        public IEnumerator<int?> GetEnumerator()
+        public IEnumerator<int> GetEnumerator()
         {
             if (_isFixed)
             {
@@ -497,7 +497,7 @@ namespace Engine.ComponentSystem.RPG.Components
             var count = 0;
             for (var i = 0; i < _items.Count; i++)
             {
-                if (_items[i].HasValue)
+                if (_items[i] > 0)
                 {
                     ++count;
                 }
@@ -508,13 +508,13 @@ namespace Engine.ComponentSystem.RPG.Components
             for (var i = 0; i < _items.Count; i++)
             {
                 var itemEntry = _items[i];
-                if (!itemEntry.HasValue)
+                if (itemEntry <= 0)
                 {
                     continue;
                 }
 
                 packet.Write(i);
-                packet.Write(itemEntry.Value);
+                packet.Write(itemEntry);
             }
 
             packet.Write(_isFixed);
@@ -535,7 +535,7 @@ namespace Engine.ComponentSystem.RPG.Components
             _items.Capacity = capacity;
             for (var i = 0; i < capacity; i++)
             {
-                _items.Add(null);
+                _items.Add(0);
             }
 
             var numItems = packet.ReadInt32();

@@ -90,29 +90,26 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get components.
-            var character = ((Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId));
-            var equipment = ((Equipment)Manager.GetComponent(component.Entity, Equipment.TypeId));
-            var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
-            var faction = ((Faction)Manager.GetComponent(component.Entity, Faction.TypeId));
+            var character = (Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId);
+            var equipment = (ItemSlot)Manager.GetComponent(component.Entity, ItemSlot.TypeId);
+            var energy = (Energy)Manager.GetComponent(component.Entity, Energy.TypeId);
+            var faction = (Faction)Manager.GetComponent(component.Entity, Faction.TypeId);
 
             // Check all equipped weapon.
-            for (var i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
+            foreach (var itemId in equipment.AllItems)
             {
-                // Get the actual weapon item entity.
-                var weaponEntity = equipment.GetItem<Weapon>(i);
-                if (!weaponEntity.HasValue)
+                var weapon = (Weapon)Manager.GetComponent(itemId, Weapon.TypeId);
+                if (weapon == null)
                 {
+                    // Not a weapon, skip it.
                     continue;
                 }
 
                 // Test if this weapon is on cooldown.
-                if (_cooldowns[weaponEntity.Value] > 0)
+                if (_cooldowns[weapon.Entity] > 0)
                 {
                     continue;
                 }
-
-                // Get the weapon component.
-                var weapon = ((Weapon)Manager.GetComponent(weaponEntity.Value, Weapon.TypeId));
 
                 // Get the energy consumption, skip if we don't have enough.
                 var energyConsumption = character.GetValue(AttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
@@ -122,7 +119,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Set cooldown.
-                _cooldowns[weaponEntity.Value] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * Settings.TicksPerSecond);
+                _cooldowns[weapon.Entity] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * Settings.TicksPerSecond);
 
                 // Consume our energy.
                 energy.SetValue(energy.Value - energyConsumption);

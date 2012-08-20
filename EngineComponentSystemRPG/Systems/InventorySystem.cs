@@ -34,9 +34,9 @@ namespace Engine.ComponentSystem.RPG.Systems
                 // An inventory was removed, remove all items in it.
                 foreach (var item in (Inventory)component)
                 {
-                    if (item.HasValue)
+                    if (item > 0)
                     {
-                        Manager.RemoveEntity(item.Value);
+                        Manager.RemoveEntity(item);
                     }
                 }
             }

@@ -94,28 +94,20 @@ namespace Space.ComponentSystem.Systems
                 // Get modified acceleration, adjust by our mass.
                 accelerationForce /= mass;
 
-                // Adjust thruster PFX based on acceleration, if it just started.
-                var numThrusters = info.EquipmentSlotCount<Thruster>();
-                for (var i = 0; i < numThrusters; i++)
-                {
-                    var thrusterId = info.EquipmentItemAt<Thruster>(i);
-                    if (thrusterId.HasValue)
-                    {
-                        effects.SetEffectEnabled("Effects/thruster", true);
-                    }
-                }
-
-                // Enable thruster sound for this ship.
-                sound.Enabled = true;
-
                 // Apply our acceleration. Use the min to our desired
                 // acceleration so we don't exceed our target.
                 acceleration.Value += accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
+
+                // Adjust thruster PFX based on acceleration, if it just started.
+                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thrusters, true);
+
+                // Enable thruster sound for this ship.
+                sound.Enabled = true;
             }
             else
             {
                 // Not accelerating. Disable thruster effects if we were accelerating before.
-                effects.SetEffectEnabled("Effects/thruster", false);
+                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thrusters, false);
 
                 // Disable thruster sound for this ship.
                 sound.Enabled = false;

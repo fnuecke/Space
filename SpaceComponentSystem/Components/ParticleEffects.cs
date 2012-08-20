@@ -33,6 +33,21 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Types
+
+        /// <summary>
+        /// Groupings for effects, to be enabled together without the one toggling
+        /// the state having to know the actual effect names.
+        /// </summary>
+        public enum EffectGroup
+        {
+            None,
+
+            Thrusters
+        }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -88,8 +103,9 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="effect">The effect.</param>
         /// <param name="offset">The offset.</param>
+        /// <param name="group">The group.</param>
         /// <param name="enabled">Whether the effect should be initially enabled.</param>
-        public void TryAdd(string effect, Vector2 offset, bool enabled = false)
+        public void TryAdd(string effect, Vector2 offset, EffectGroup group = EffectGroup.None, bool enabled = false)
         {
             foreach (var pfx in Effects)
             {
@@ -102,6 +118,7 @@ namespace Space.ComponentSystem.Components
             {
                 AssetName = effect,
                 Offset = offset,
+                Group = group,
                 Enabled = enabled
             });
         }
@@ -111,9 +128,10 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="effect">The effect.</param>
         /// <param name="offset">The offset.</param>
-        public void Remove(string effect, Vector2 offset)
+        /// <param name="group">The group.</param>
+        public void Remove(string effect, Vector2 offset, EffectGroup group = EffectGroup.None)
         {
-            Effects.RemoveAll(x => x.AssetName.Equals(effect) && x.Offset == offset);
+            Effects.RemoveAll(x => x.AssetName.Equals(effect) && x.Group == group && x.Offset == offset);
         }
 
         /// <summary>
@@ -126,16 +144,16 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>
-        /// Set whether the specified particle effect should be enabled (trigger)
-        /// or not.
+        /// Set whether the specified particle effect group should be enabled
+        /// (trigger) or not.
         /// </summary>
-        /// <param name="effect">The effect.</param>
+        /// <param name="group">The effect group.</param>
         /// <param name="value">Whether to trigger or not.</param>
-        public void SetEffectEnabled(string effect, bool value)
+        public void SetGroupEnabled(EffectGroup group, bool value)
         {
             foreach (var pfx in Effects)
             {
-                if (pfx.AssetName.Equals(effect))
+                if (pfx.Group == group)
                 {
                     pfx.Enabled = value;
                 }
@@ -239,6 +257,11 @@ namespace Space.ComponentSystem.Components
             /// The offset relative to the owner's position.
             /// </summary>
             public Vector2 Offset;
+
+            /// <summary>
+            /// The effect group this effect belongs to.
+            /// </summary>
+            public EffectGroup Group;
 
             /// <summary>
             /// Whether this effect is enabled or not.

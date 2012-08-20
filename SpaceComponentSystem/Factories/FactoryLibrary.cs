@@ -20,31 +20,6 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         private static readonly Dictionary<string, IFactory> Factories = new Dictionary<string, IFactory>();
 
-        /// <summary>
-        /// Mapping of types to names to item factories.
-        /// </summary>
-        //private static readonly Dictionary<string, ItemFactory> ItemFactories = new Dictionary<string, ItemFactory>();
-
-        /// <summary>
-        /// Mapping of types to names to ship factories.
-        /// </summary>
-        //private static readonly Dictionary<string, ShipFactory> ShipFactories = new Dictionary<string, ShipFactory>();
-
-        /// <summary>
-        /// Mapping of types to names to planet factories.
-        /// </summary>
-        //private static readonly Dictionary<string, PlanetFactory> PlanetFactories = new Dictionary<string, PlanetFactory>();
-
-        /// <summary>
-        /// Mapping of types to names to sun factories.
-        /// </summary>
-        //private static readonly Dictionary<string, SunFactory> SunFactories = new Dictionary<string, SunFactory>();
-
-        /// <summary>
-        /// Mapping of types to names to sun factories.
-        /// </summary>
-        //private static readonly Dictionary<string, SunSystemFactory> SunSystemFactories = new Dictionary<string, SunSystemFactory>();
-
         private static bool _isInitialized;
 
         #endregion
@@ -63,12 +38,15 @@ namespace Space.ComponentSystem.Factories
             }
 
             Initialize<ArmorFactory>("Data/Armor", content);
+            Initialize<FuselageFactory>("Data/Fuselage", content);
             Initialize<ReactorFactory>("Data/Reactors", content);
             Initialize<SensorFactory>("Data/Sensors", content);
             Initialize<ShieldFactory>("Data/Shields", content);
+            Initialize<ShipFactory>("Data/Ships", content);
             Initialize<ThrusterFactory>("Data/Thrusters", content);
             Initialize<WeaponFactory>("Data/Weapons", content);
-            Initialize<ShipFactory>("Data/Ships", content);
+            Initialize<WingFactory>("Data/Wings", content);
+
             Initialize<PlanetFactory>("Data/Planets", content);
             Initialize<SunFactory>("Data/Suns", content);
             Initialize<SunSystemFactory>("Data/SunSystems", content);

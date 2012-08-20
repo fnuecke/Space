@@ -5,7 +5,7 @@ using Space.ComponentSystem.Components;
 namespace Space.ComponentSystem.Factories
 {
     /// <summary>
-    /// Constraints for generating armor.
+    /// Factory for generating armor.
     /// </summary>
     public sealed class ArmorFactory : ItemFactory
     {
@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new armor based on these constraints.
         /// </summary>
-        /// <param name="manager"></param>
+        /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>
         /// The sampled armor.
@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Armor>(entity).Initialize(Name, Icon, Quality);
+            manager.AddComponent<Armor>(entity).Initialize(Name, Icon, Quality, SlotSize);
 
             return SampleAttributes(manager, entity, random);
         }

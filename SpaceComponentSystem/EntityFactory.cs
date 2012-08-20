@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -80,23 +79,9 @@ namespace Space.ComponentSystem
             index.SetIndexGroupsMask(index.IndexGroupsMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
             manager.AddComponent<CellDeath>(entity);
 
-            var input = ((ShipControl)manager.GetComponent(entity, ShipControl.TypeId));
+            var input = (ShipControl)manager.GetComponent(entity, ShipControl.TypeId);
             input.Stabilizing = true;
             manager.AddComponent<ArtificialIntelligence>(entity).Initialize(random.NextUInt32());
-
-            var equipment = ((Equipment)manager.GetComponent(entity, Equipment.TypeId));
-
-            var item = FactoryLibrary.SampleItem(manager, "L1_AI_Thruster", random);
-            equipment.Equip(0, item);
-
-            item = FactoryLibrary.SampleItem(manager, "L1_AI_Reactor", random);
-            equipment.Equip(0, item);
-
-            item = FactoryLibrary.SampleItem(manager, "L1_AI_Armor", random);
-            equipment.Equip(0, item);
-
-            item = FactoryLibrary.SampleItem(manager, "L1_AI_Weapon", random);
-            equipment.Equip(0, item);
 
             return entity;
         }

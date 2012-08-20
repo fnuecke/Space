@@ -88,6 +88,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="name">The logical base name of the item.</param>
         /// <param name="iconName">The name of the icon used for the item.</param>
         /// <param name="quality">The item's quality level.</param>
+        /// <param name="slotSize">Size of the slot.</param>
         /// <param name="modelName">The texture used for rendering the weapon
         /// on the ship.</param>
         /// <param name="sound">The sound to play when the weapon is fired.</param>
@@ -96,12 +97,14 @@ namespace Space.ComponentSystem.Components
         /// shot</param>
         /// <param name="damage">The amount of damage a single projectile does.</param>
         /// <param name="projectiles">The info on projectiles being shot.</param>
+        /// <returns></returns>
         public Weapon Initialize(string name, string iconName, ItemQuality quality,
+            ItemSlotSize slotSize,
             string modelName, string sound,
             float cooldown, float energyConsumption,
             float damage, ProjectileFactory[] projectiles)
         {
-            Initialize(name, iconName, quality);
+            Initialize(name, iconName, quality, slotSize);
 
             ModelName = modelName;
             Sound = sound;

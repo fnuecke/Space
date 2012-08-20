@@ -196,7 +196,7 @@ namespace Space.ComponentSystem.Factories
             // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(Effect))
             {
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, EffectOffset, true);
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, EffectOffset, ParticleEffects.EffectGroup.None, true);
             }
 
             return entity;

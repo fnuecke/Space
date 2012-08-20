@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new sensor based on these constraints.
         /// </summary>
-        /// <param name="manager"></param>
+        /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>
         /// The sampled sensor.
@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Sensor>(entity).Initialize(Name, Icon, Quality);
+            manager.AddComponent<Sensor>(entity).Initialize(Name, Icon, Quality, SlotSize);
 
             return SampleAttributes(manager, entity, random);
         }

@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// the system, as well as removing items from the system in equipment slots
     /// when an equipment component is removed.
     /// </summary>
-    public sealed class EquipmentSystem : AbstractComponentSystem<Equipment>
+    public sealed class ItemSlotSystem : AbstractComponentSystem<ItemSlot>
     {
         #region Logic
         
@@ -24,16 +24,21 @@ namespace Engine.ComponentSystem.RPG.Systems
             if (component is Item)
             {
                 // An item was removed, unequip it everywhere.
-                foreach (var equipment in Components)
+                foreach (var slot in Components)
                 {
-                    equipment.TryUnequip(component.Entity);
+                    if (slot.Item == component.Entity)
+                    {
+                        slot.Item = 0;
+                    }
                 }
             }
-            else if (component is Equipment)
+            else if (component is ItemSlot)
             {
-                // An equipment was removed, remove all items still
-                // held by it.
-                foreach (var item in ((Equipment)component).AllItems)
+                // An equipment was removed, remove its item. This will
+                // also recursively remove the sub tree (as the removed
+                // item will remove its item slots, etc.)
+                var item = ((ItemSlot)component).Item;
+                if (item > 0)
                 {
                     Manager.RemoveEntity(item);
                 }

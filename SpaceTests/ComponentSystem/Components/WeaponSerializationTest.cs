@@ -21,8 +21,8 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Weapon(),
                        (Weapon)new Weapon().Initialize("name1", "icon1"),
-                       (Weapon)new Weapon().Initialize("name2", "icon2", ItemQuality.Common),
-                       new Weapon().Initialize("name3", "icon3", ItemQuality.Rare, "model", "sound", 1.5f, 2.5f, 3.5f, new[]
+                       (Weapon)new Weapon().Initialize("name2", "icon2", ItemQuality.Common, ItemSlotSize.Large),
+                       new Weapon().Initialize("name3", "icon3", ItemQuality.Rare, ItemSlotSize.Small, "model", "sound", 1.5f, 2.5f, 3.5f, new[]
                                                           {
                                                               new ProjectileFactory
                                                               {

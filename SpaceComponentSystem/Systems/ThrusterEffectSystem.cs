@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
@@ -32,7 +31,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Check if we can show effects.
-                var effects = (ParticleEffects)Manager.GetComponent(equipped.Entity, ParticleEffects.TypeId);
+                var effects = (ParticleEffects)Manager.GetComponent(equipped.Slot.Root.Entity, ParticleEffects.TypeId);
                 if (effects == null)
                 {
                     return;
@@ -40,7 +39,7 @@ namespace Space.ComponentSystem.Systems
 
                 // OK, add the effect.
                 // TODO: get offset for that item slot and use it
-                effects.TryAdd("Effects/thruster", Vector2.Zero);
+                effects.TryAdd(thruster.Effect, thruster.EffectOffset, ParticleEffects.EffectGroup.Thrusters);
             }
             else if (message is ItemUnequipped)
             {
@@ -54,7 +53,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Check if we can show effects.
-                var effects = (ParticleEffects)Manager.GetComponent(unequipped.Entity, ParticleEffects.TypeId);
+                var effects = (ParticleEffects)Manager.GetComponent(unequipped.Slot.Root.Entity, ParticleEffects.TypeId);
                 if (effects == null)
                 {
                     return;
@@ -62,7 +61,7 @@ namespace Space.ComponentSystem.Systems
 
                 // OK, remove the effect.
                 // TODO: get offset for that item slot and use it
-                effects.Remove("Effects/thruster", Vector2.Zero);
+                effects.Remove(thruster.Effect, thruster.EffectOffset, ParticleEffects.EffectGroup.Thrusters);
             }
         }
 

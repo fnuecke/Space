@@ -19,7 +19,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Thruster(),
                        (Thruster)new Thruster().Initialize("asd", "zxc"),
-                       (Thruster)new Thruster().Initialize("asd", "zxc", ItemQuality.Poor)
+                       (Thruster)new Thruster().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Large)
                    };
         }
     }

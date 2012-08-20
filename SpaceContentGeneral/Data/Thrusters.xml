@@ -11,6 +11,7 @@
         <Item>30 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
+      <Effect>Effects/Thruster</Effect>
     </Item>
 
     <Item>
@@ -35,6 +36,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <Effect>Effects/Thruster</Effect>
     </Item>
     
     <Item>
@@ -59,6 +61,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
+      <Effect>Effects/Thruster</Effect>
     </Item>
 
     <Item>
@@ -83,6 +86,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
+      <Effect>Effects/Thruster</Effect>
     </Item>
 
     <Item>
@@ -107,6 +111,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
+      <Effect>Effects/Thruster</Effect>
     </Item>
     
     <!-- NPC thrusters -->
@@ -117,6 +122,7 @@
         <Item>4.5 to 9 RotationForce</Item>
         <Item>2.25 to 2.75 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
+      <Effect>Effects/Thruster</Effect>
     </Item>
   </Asset>
 </XnaContent>

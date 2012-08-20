@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
@@ -49,39 +50,10 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         public AttributeModifierConstraint<AttributeType>[] Attributes;
 
-        #endregion
-
-        #region Equipment slots
-
         /// <summary>
-        /// The number of sensor slots available for this ship class.
+        /// Default equipment to generate for the ship.
         /// </summary>
-        public int SensorSlots;
-
-        /// <summary>
-        /// The number of armor slots available for this ship class.
-        /// </summary>
-        public int ArmorSlots;
-
-        /// <summary>
-        /// The number of reactor slots available for this ship class.
-        /// </summary>
-        public int ReactorSlots;
-
-        /// <summary>
-        /// The number of shield slots available for this ship class.
-        /// </summary>
-        public int ShieldSlots;
-
-        /// <summary>
-        /// The number of thruster slots available for this ship class.
-        /// </summary>
-        public int ThrusterSlots;
-
-        /// <summary>
-        /// The number of weapon slots available for this ship class.
-        /// </summary>
-        public int WeaponSlots;
+        public ItemInfo Items;
 
         #endregion
 
@@ -99,6 +71,14 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = CreateShip(manager, faction, position);
 
+            // Create initial equipment.
+            var equipment = (ItemSlot)manager.GetComponent(entity, ItemSlot.TypeId);
+            equipment.Item = FactoryLibrary.SampleItem(manager, Items.Name, position, random);
+            foreach (var item in Items.Children)
+            {
+                SampleItems(manager, position, random, equipment.Item, item);
+            }
+
             // Add our attributes.
             var character = ((Character<AttributeType>)manager.GetComponent(entity, Character<AttributeType>.TypeId));
             foreach (var attribute in Attributes)
@@ -110,7 +90,7 @@ namespace Space.ComponentSystem.Factories
                 }
                 character.SetBaseValue(modifier.Type, modifier.Value);
             }
-
+            
             // Fill up our values.
             var health = ((Health)manager.GetComponent(entity, Health.TypeId));
             var energy = ((Energy)manager.GetComponent(entity, Energy.TypeId));
@@ -118,6 +98,46 @@ namespace Space.ComponentSystem.Factories
             energy.Value = energy.MaxValue;
 
             return entity;
+        }
+
+        /// <summary>
+        /// Samples the items for the specified item info and children (recursively).
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="position">The position.</param>
+        /// <param name="random">The random.</param>
+        /// <param name="parent">The parent.</param>
+        /// <param name="itemInfo">The item info.</param>
+        private void SampleItems(IManager manager, FarPosition position, IUniformRandom random, int parent, ItemInfo itemInfo)
+        {
+            // Create the actual item.
+            var itemId = FactoryLibrary.SampleItem(manager, itemInfo.Name, position, random);
+            var item = (Item)manager.GetComponent(itemId, Item.TypeId);
+
+            // Then equip it in the parent.
+            foreach (var component in manager.GetComponents(parent, ItemSlot.TypeId))
+            {
+                var slot = (ItemSlot)component;
+                if (slot.Item == 0 && slot.Validate(item))
+                {
+                    // Found a suitable empty slot, equip here.
+                    slot.Item = itemId;
+
+                    // Recurse to generate children.
+                    foreach (var childInfo in itemInfo.Children)
+                    {
+                        SampleItems(manager, position, random, itemId, childInfo);
+                    }
+
+                    // Done.
+                    return;
+                }
+            }
+
+            // If we get here we couldn't find a slot to equip the item in.
+            manager.RemoveEntity(itemId);
+
+            Debug.Assert(false, "Parent item did not have a slot for the requested child item.");
         }
 
         /// <summary>
@@ -158,14 +178,8 @@ namespace Space.ComponentSystem.Factories
             // Controllers for maneuvering and shooting.
             manager.AddComponent<ShipInfo>(entity);
 
-            // Create equipment slots.
-            var equipment = manager.AddComponent<Equipment>(entity);
-            equipment.SetSlotCount<Sensor>(SensorSlots);
-            equipment.SetSlotCount<Armor>(ArmorSlots);
-            equipment.SetSlotCount<Reactor>(ReactorSlots);
-            equipment.SetSlotCount<Shield>(ShieldSlots);
-            equipment.SetSlotCount<Thruster>(ThrusterSlots);
-            equipment.SetSlotCount<Weapon>(WeaponSlots);
+            // Create equipment slot.
+            manager.AddComponent<SpaceItemSlot>(entity).Initialize(Fuselage.TypeId);
 
             // Give it an inventory as well.
             manager.AddComponent<Inventory>(entity).Initialize(10);
@@ -194,6 +208,27 @@ namespace Space.ComponentSystem.Factories
                 (int)(CollisionRadius + CollisionRadius));
 
             return entity;
+        }
+
+        #endregion
+
+        #region Types
+
+        /// <summary>
+        /// Utility class for serialized representation of items in slots.
+        /// </summary>
+        public sealed class ItemInfo
+        {
+            /// <summary>
+            /// The name of the item (template name).
+            /// </summary>
+            public string Name;
+
+            /// <summary>
+            /// Items to be generated and equipped into this item.
+            /// </summary>
+            [ContentSerializer(Optional = true, FlattenContent = true, CollectionItemName = "Item")]
+            public ItemInfo[] Children = new ItemInfo[0];
         }
 
         #endregion

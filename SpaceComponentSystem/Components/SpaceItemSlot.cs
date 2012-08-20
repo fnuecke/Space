@@ -6,38 +6,17 @@ using Space.Data;
 namespace Space.ComponentSystem.Components
 {
     /// <summary>
-    /// Base class for items of our space game.
+    /// Represents information about a single item slot.
     /// </summary>
-    public class SpaceItem : Item
+    public sealed class SpaceItemSlot : ItemSlot
     {
-        #region Type ID
-
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
-        public new static readonly int TypeId = CreateTypeId();
-
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
-        public override int GetTypeId()
-        {
-            return TypeId;
-        }
-
-        #endregion
-
         #region Fields
-
+        
         /// <summary>
-        /// The quality level of this item.
+        /// The size of the slot, i.e. the maximum item size that can be
+        /// fit into this slot.
         /// </summary>
-        public ItemQuality Quality;
-
-        /// <summary>
-        /// The item's minimal required slot size.
-        /// </summary>
-        public ItemSlotSize SlotSize;
+        public ItemSlotSize Size = ItemSlotSize.Small;
 
         #endregion
 
@@ -51,29 +30,24 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            var otherItem = (SpaceItem)other;
-            Quality = otherItem.Quality;
-            SlotSize = otherItem.SlotSize;
+            var otherSlot = (SpaceItemSlot)other;
+            Size = otherSlot.Size;
 
             return this;
         }
 
         /// <summary>
-        /// Creates a new item with the specified parameters.
+        /// Initializes the component to one primary equipment slot that allows
+        /// the specified type id.
         /// </summary>
-        /// <param name="name">The logical base name of the item.</param>
-        /// <param name="iconName">The name of the icon used for the item.</param>
-        /// <param name="quality">The quality level of the item.</param>
+        /// <param name="typeId">The type id.</param>
         /// <param name="slotSize">Size of the slot.</param>
-        /// <returns>
-        /// This instance.
-        /// </returns>
-        public SpaceItem Initialize(string name, string iconName, ItemQuality quality, ItemSlotSize slotSize)
+        /// <returns></returns>
+        public SpaceItemSlot Initialize(int typeId, ItemSlotSize slotSize)
         {
-            Initialize(name, iconName);
+            Initialize(typeId);
 
-            Quality = quality;
-            SlotSize = slotSize;
+            Size = slotSize;
 
             return this;
         }
@@ -86,8 +60,25 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
-            Quality = ItemQuality.Common;
-            SlotSize = ItemSlotSize.None;
+            Size = ItemSlotSize.Small;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Validates the specified item for this slot. It may only be
+        /// put into this slot if the method returns true.
+        /// </summary>
+        /// <param name="item">The item to validate.</param>
+        /// <returns>
+        ///   <c>true</c> if the item may be equipped in this slot; <c>false</c> otherwise.
+        /// </returns>
+        public override bool Validate(Item item)
+        {
+            return item is SpaceItem && base.Validate(item) &&
+                ((SpaceItem)item).SlotSize <= Size;
         }
 
         #endregion
@@ -98,14 +89,11 @@ namespace Space.ComponentSystem.Components
         /// Write the object's state to the given packet.
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write((byte)Quality)
-                .Write((byte)SlotSize);
+                .Write((byte)Size);
         }
 
         /// <summary>
@@ -116,8 +104,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Quality = (ItemQuality)packet.ReadByte();
-            SlotSize = (ItemSlotSize)packet.ReadByte();
+            Size = (ItemSlotSize)packet.ReadByte();
         }
 
         /// <summary>
@@ -129,8 +116,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put((byte)Quality);
-            hasher.Put((byte)SlotSize);
+            hasher.Put((byte)Size);
         }
 
         #endregion

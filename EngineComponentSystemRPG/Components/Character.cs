@@ -175,6 +175,12 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         public void RecomputeAttributes()
         {
+            // Ignore while disabled.
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Find all additive and multiplicative modifiers.
 
             // Use deterministic order.
@@ -188,7 +194,7 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             // Parse all items.
-            var equipment = ((Equipment)Manager.GetComponent(Entity, Equipment.TypeId));
+            var equipment = ((ItemSlot)Manager.GetComponent(Entity, ItemSlot.TypeId));
             if (equipment != null)
             {
                 foreach (var item in equipment.AllItems)

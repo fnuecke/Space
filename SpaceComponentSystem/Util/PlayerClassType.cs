@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Space.ComponentSystem.Components;
+﻿using System.Collections.Generic;
 using Space.Data;
 
 namespace Space.ComponentSystem.Util
@@ -18,21 +16,6 @@ namespace Space.ComponentSystem.Util
                 {PlayerClassType.Fighter, "Player"}
             };
 
-        private static readonly Dictionary<PlayerClassType, Dictionary<Type, string>> ItemLookup =
-            new Dictionary<PlayerClassType, Dictionary<Type, string>>
-            {
-                {
-                    PlayerClassType.Fighter, new Dictionary<Type, string>
-                                             {
-                                                 {typeof(Armor), "StarterArmor"},
-                                                 {typeof(Reactor), "StarterReactor"},
-                                                 {typeof(Sensor), "StarterSensor"},
-                                                 {typeof(Thruster), "StarterThruster"},
-                                                 {typeof(Weapon), "StarterWeapon"}
-                                             }
-                    }
-            };
-
         #endregion
 
         #region Methods
@@ -46,25 +29,6 @@ namespace Space.ComponentSystem.Util
         public static string GetShipFactoryName(this PlayerClassType playerClass)
         {
             return ShipLookup[playerClass];
-        }
-
-        /// <summary>
-        /// Gets the item constraints for the starter item for the specified
-        /// player class of the specified type.
-        /// </summary>
-        /// <typeparam name="T">The item type.</typeparam>
-        /// <param name="playerClass">The player class.</param>
-        /// <returns>The item constraints.</returns>
-        public static string GetStarterItemFactoryName<T>(this PlayerClassType playerClass)
-        {
-            if (ItemLookup[playerClass].ContainsKey(typeof(T)))
-            {
-                return ItemLookup[playerClass][typeof(T)];
-            }
-            else
-            {
-                return null;
-            }
         }
 
         #endregion

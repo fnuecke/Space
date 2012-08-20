@@ -10,8 +10,6 @@ using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Factories;
-using Space.ComponentSystem.Util;
 using Space.Data;
 using Space.Util;
 
@@ -35,7 +33,7 @@ namespace Space.Session
         /// fundamentally so that we can handle files differently. This is
         /// the version we write to new snapshots.
         /// </summary>
-        private const int Version = 0;
+        private const int Version = 1;
 
         /// <summary>
         /// Header for our save game files.
@@ -151,7 +149,7 @@ namespace Space.Session
 
             // Figure out the path, check if it's valid.
             Reset();
-            this.Name = name;
+            Name = name;
             var profilePath = GetFullProfilePath();
 
             if (!File.Exists(profilePath))
@@ -321,11 +319,11 @@ namespace Space.Session
             }
 
             // Get the elements we need to save.
-            var playerClass = ((PlayerClass)manager.GetComponent(avatar, ComponentSystem.Components.PlayerClass.TypeId));
-            var respawn = ((Respawn)manager.GetComponent(avatar, Respawn.TypeId));
-            var character = ((Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId));
-            var equipment = ((Equipment)manager.GetComponent(avatar, Equipment.TypeId));
-            var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
+            var playerClass = (PlayerClass)manager.GetComponent(avatar, ComponentSystem.Components.PlayerClass.TypeId);
+            var respawn = (Respawn)manager.GetComponent(avatar, Respawn.TypeId);
+            var character = (Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId);
+            var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
+            var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
 
             // Check if we have everything we need.
             if (playerClass == null ||
@@ -361,62 +359,30 @@ namespace Space.Session
             // the base class (as we don't need that).
             character.PacketizeLocal(_data);
 
-            // Store the equipment. We need to extract the actual items, not
-            // just the IDs, so loop through the equipped items.
-
-            var itemTypes = new[] {
-                typeof(Armor),
-                typeof(Reactor),
-                typeof(Sensor),
-                typeof(Shield),
-                typeof(Thruster),
-                typeof(Weapon)
-            };
+            // Store the equipment tree.
+            foreach (var slot in equipment.AllSlots)
+            {
+                _data.Write(slot.Item);
+                if (slot.Item > 0)
+                {
+                    _data.Write(slot.Entity);
+                    manager.PacketizeEntity(slot.Item, _data);
+                }
+            }
 
             // Track items and their slots.
             var itemSlots = new List<int>();
             var items = new List<int>();
-
-            _data.Write(itemTypes.Length);
-            foreach (var itemType in itemTypes)
-            {
-                // Number of slots for that item type.
-                var slotCount = equipment.GetSlotCount(itemType);
-
-                // Get the list of equipped items of that type.
-                for (var i = 0; i < slotCount; i++)
-                {
-                    var item = equipment.GetItem(itemType, i);
-                    if (item.HasValue)
-                    {
-                        itemSlots.Add(i);
-                        items.Add(item.Value);
-                    }
-                }
-
-                // Write the type, count and actual items.
-                _data.Write(itemType);
-                _data.Write(slotCount);
-                _data.Write(items.Count);
-                for (var i = 0; i < items.Count; i++)
-                {
-                    _data.Write(itemSlots[i]);
-                    manager.PacketizeEntity(items[i], _data);
-                }
-
-                itemSlots.Clear();
-                items.Clear();
-            }
 
             // And finally, the inventory. Same as with the inventory, we have
             // to serialize the actual items in it.
             for (var i = 0; i < inventory.Capacity; i++)
             {
                 var item = inventory[i];
-                if (item.HasValue)
+                if (item > 0)
                 {
                     itemSlots.Add(i);
-                    items.Add(item.Value);
+                    items.Add(item);
                 }
             }
 
@@ -449,7 +415,7 @@ namespace Space.Session
             if (_data == null)
             {
                 // No data yet, meaning the profile isn't initialized, yet.
-                return Initialize(playerNumber, manager);
+                return EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new FarPosition(50000, 50000));
             }
 
             // OK, start from scratch.
@@ -460,7 +426,7 @@ namespace Space.Session
             {
                 switch (_data.ReadInt32())
                 {
-                    case 0:
+                    case 1:
                         return Restore0(playerNumber, manager);
 
                     default:
@@ -500,60 +466,84 @@ namespace Space.Session
                 avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
 
                 // Get the elements we need to save.
-                var character = ((Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId));
-                var equipment = ((Equipment)manager.GetComponent(avatar, Equipment.TypeId));
-                var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
+                var character = (Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId);
+                var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
+                var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
+
+                // Clean out equipment.
+                if (equipment.Item > 0)
+                {
+                    manager.RemoveEntity(equipment.Item);
+                }
+
+                // Clear inventory.
+                for (var i = inventory.Capacity - 1; i >= 0; --i)
+                {
+                    var item = inventory[i];
+                    if (item > 0)
+                    {
+                        manager.RemoveEntity(item);
+                    }
+                }
 
                 // Restore character. Use special packetizer implementation only
                 // adjusting the actual character data, not the base data.
                 character.DepacketizeLocal(_data);
 
-                // Restore equipment.
-                var numItemTypes = _data.ReadInt32();
-                for (var i = 0; i < numItemTypes; i++)
-                {
-                    var itemType = _data.ReadType();
-                    var slotCount = _data.ReadInt32();
+                // Disable recomputation while fixing equipped item ids.
+                character.Enabled = false;
 
-                    // Reset equipment, remove entities that were previously
-                    // equipped from the game (can't think of an occasion where
-                    // this would happen, now, because this should only be done
-                    // on game start, but just be on the safe side).
-                    for (var j = 0; j < equipment.GetSlotCount(itemType); j++)
+                // Restore equipment.
+                var itemIdMapping = new Dictionary<int, int>();
+                var slotsRemaining = 1;
+                while (slotsRemaining-- > 0)
+                {
+                    var oldItemId = _data.ReadInt32();
+                    if (oldItemId <= 0)
                     {
-                        var item = equipment.Unequip(itemType, j);
-                        if (item.HasValue)
+                        continue;
+                    }
+
+                    // Got an item in this slot, restore it.
+                    var parentItemId = _data.ReadInt32();
+                    var newItemId = manager.DepacketizeEntity(_data);
+
+                    // If we have no mappings yet, this was the old equipment node.
+                    if (itemIdMapping.Count == 0)
+                    {
+                        itemIdMapping.Add(parentItemId, equipment.Entity);
+                        equipment.Item = newItemId;
+                    }
+                    else
+                    {
+                        // Inner node. Adjust slot in parent pointing to old id.
+                        foreach (var component in manager.GetComponents(itemIdMapping[parentItemId], ItemSlot.TypeId))
                         {
-                            manager.RemoveEntity(item.Value);
+                            var slot = (ItemSlot)component;
+                            if (slot.Item == oldItemId)
+                            {
+                                // This is the one.
+                                slot.SetItemUnchecked(newItemId);
+                                break;
+                            }
                         }
                     }
 
-                    // Set restored slot count.
-                    equipment.SetSlotCount(itemType, slotCount);
-
-                    // Read items and equip them.
-                    var numItemsOfType = _data.ReadInt32();
-                    for (var j = 0; j < numItemsOfType; j++)
+                    // Queue reads for all child slots.
+                    foreach (var component in manager.GetComponents(newItemId, ItemSlot.TypeId))
                     {
-                        var slot = _data.ReadInt32();
-                        var item = manager.DepacketizeEntity(_data);
-                        items.Add(item);
-                        equipment.Equip(slot, item);
+                        ++slotsRemaining;
                     }
+
+                    // Add mapping for this entry.
+                    itemIdMapping.Add(oldItemId, newItemId);
                 }
 
-                // Restore inventory, clear it first. As with the equipment, remove
-                // any old items, if there were any.
-                for (var i = inventory.Capacity - 1; i >= 0; --i)
-                {
-                    var item = inventory[i];
-                    if (item.HasValue)
-                    {
-                        manager.RemoveEntity(item.Value);
-                    }
-                }
+                // Reenable character stat updating and trigger recomputation.
+                character.Enabled = true;
+                character.RecomputeAttributes();
 
-                // Then read back the stored items.
+                // Restore inventory, read back the stored items.
                 var numInventoryItems = _data.ReadInt32();
                 for (var i = 0; i < numInventoryItems; i++)
                 {
@@ -615,51 +605,6 @@ namespace Space.Session
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Initializes this profile to a new ship.
-        /// </summary>
-        /// <param name="playerNumber">The player number.</param>
-        /// <param name="manager">The manager.</param>
-        private int Initialize(int playerNumber, IManager manager)
-        {
-            // Store the character's base values. This is a little roundabout,
-            // but this way it'll always be up-to-date.
-            var ship = EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new FarPosition(50000, 50000));
-            var equipment = ((Equipment)manager.GetComponent(ship, Equipment.TypeId));
-
-            // Basic starter outfit for that class.
-            InitializeEquipment<Armor>(equipment, manager);
-            InitializeEquipment<Reactor>(equipment, manager);
-            InitializeEquipment<Sensor>(equipment, manager);
-            InitializeEquipment<Shield>(equipment, manager);
-            InitializeEquipment<Thruster>(equipment, manager);
-            InitializeEquipment<Weapon>(equipment, manager);
-
-            return ship;
-        }
-
-        /// <summary>
-        /// Utility method for initializing an equipment type.
-        /// </summary>
-        /// <typeparam name="T">The item type to initialize.</typeparam>
-        /// <param name="equipment">The equipment.</param>
-        /// <param name="manager">The manager.</param>
-        private void InitializeEquipment<T>(Equipment equipment, IManager manager) where T : Item
-        {
-            // Check if we can equip this item.
-            if (equipment.GetSlotCount<T>() < 1)
-            {
-                return;
-            }
-            // Get the item name.
-            var itemName = PlayerClass.GetStarterItemFactoryName<T>();
-            if (itemName != null)
-            {
-                // Got one, create and equip it in slot one.
-                equipment.Equip(0, FactoryLibrary.SampleItem(manager, itemName, null));
-            }
         }
 
         /// <summary>

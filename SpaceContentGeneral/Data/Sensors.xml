@@ -30,6 +30,7 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
+    
     <Item>
       <Name>BasicSensor</Name>
       <Quality>Common</Quality>
@@ -93,5 +94,12 @@
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
     </Item>
     
+    <!-- NPC sensors -->
+    <Item>
+      <Name>L1_AI_Sensor</Name>
+      <GuaranteedAttributes>
+        <Item>2000 SensorRange</Item>
+      </GuaranteedAttributes>
+    </Item>
   </Asset>
 </XnaContent>

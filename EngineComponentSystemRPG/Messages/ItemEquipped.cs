@@ -1,15 +1,12 @@
-﻿namespace Engine.ComponentSystem.RPG.Messages
+﻿using Engine.ComponentSystem.RPG.Components;
+
+namespace Engine.ComponentSystem.RPG.Messages
 {
     /// <summary>
     /// Sent by the <c>Equipment</c> component when an item is equipped.
     /// </summary>
     public struct ItemEquipped
     {
-        /// <summary>
-        /// The entity for which the item was equipped.
-        /// </summary>
-        public int Entity;
-
         /// <summary>
         /// The item that was equipped.
         /// </summary>
@@ -18,6 +15,6 @@
         /// <summary>
         /// The slot to which the item was added.
         /// </summary>
-        public int Slot;
+        public ItemSlot Slot;
     }
 }

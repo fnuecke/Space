@@ -75,10 +75,11 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="name">The logical base name of the item.</param>
         /// <param name="iconName">The name of the icon used for the item.</param>
+        /// <returns></returns>
         public Item Initialize(string name, string iconName)
         {
-            this.Name = name;
-            this.IconName = iconName;
+            Name = name;
+            IconName = iconName;
 
             return this;
         }
@@ -125,6 +126,11 @@ namespace Engine.ComponentSystem.RPG.Components
             IconName = packet.ReadString();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);

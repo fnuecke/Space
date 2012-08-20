@@ -18,7 +18,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Armor(),
                        (Armor)new Armor().Initialize("asd", "zxc"),
-                       (Armor)new Armor().Initialize("asd", "zxc", ItemQuality.Poor)
+                       (Armor)new Armor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Huge)
                    };
         }
     }

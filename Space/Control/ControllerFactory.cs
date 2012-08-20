@@ -167,7 +167,7 @@ namespace Space.Control
                     // so they're here for context (i.e. they remove items if the owner
                     // is removed, or the item from the owner if the item is removed).
                     new InventorySystem(),
-                    new EquipmentSystem(),
+                    new ItemSlotSystem(),
                     // The following systems will react to equipment changes, to adjust
                     // how a ship is rendered.
                     new ThrusterEffectSystem(),
