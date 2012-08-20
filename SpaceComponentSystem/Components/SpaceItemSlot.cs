@@ -1,6 +1,8 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
+using Engine.XnaExtensions;
+using Microsoft.Xna.Framework;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -17,6 +19,11 @@ namespace Space.ComponentSystem.Components
         /// fit into this slot.
         /// </summary>
         public ItemSlotSize Size = ItemSlotSize.Small;
+
+        /// <summary>
+        /// The offset of this item slots origin relative to its parent.
+        /// </summary>
+        public Vector2 Offset = Vector2.Zero;
 
         #endregion
 
@@ -42,12 +49,14 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="typeId">The type id.</param>
         /// <param name="slotSize">Size of the slot.</param>
+        /// <param name="offset">The offset.</param>
         /// <returns></returns>
-        public SpaceItemSlot Initialize(int typeId, ItemSlotSize slotSize)
+        public SpaceItemSlot Initialize(int typeId, ItemSlotSize slotSize, Vector2 offset)
         {
             Initialize(typeId);
 
             Size = slotSize;
+            Offset = offset;
 
             return this;
         }
@@ -61,6 +70,7 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Size = ItemSlotSize.Small;
+            Offset = Vector2.Zero;
         }
 
         #endregion
@@ -81,6 +91,68 @@ namespace Space.ComponentSystem.Components
                 ((SpaceItem)item).SlotSize <= Size;
         }
 
+        /// <summary>
+        /// This utility method computes the overall offset of this and
+        /// all parent slots. It will also automatically mirror offsets
+        /// along the y-axis if the first offset along the y-axis is negative.
+        /// This makes it easy to have symmetric wings, for example.
+        /// </summary>
+        /// <param name="offset">The base offset (relative to the slot).</param>
+        /// <returns>The global offset, relative to the equipment origin.</returns>
+        public Vector2 AccumulateOffset(Vector2 offset)
+        {
+            // Walk up the tree and accumulate offsets.
+            var slot = this;
+
+            // Keep track of the first (or, walking up: last) node that
+            // has an actual offset along the x-axis.
+            var potentialRootOffset = Vector2.Zero;
+            do
+            {
+                // If there's an offset, mark it as the new top-level node.
+                if (slot.Offset.Y != 0f)
+                {
+                    // Dump old top level offset into accumulator.
+                    offset += potentialRootOffset;
+                    // And set new top level offset.
+                    potentialRootOffset = slot.Offset;
+                }
+                else
+                {
+                    // Nothing special (just offset along the y-axis).
+                    offset += slot.Offset;
+                }
+            } while ((slot = (SpaceItemSlot)slot.Parent) != null);
+
+            // Check if our top-level node is negative along the x-axis.
+            if (potentialRootOffset.Y >= 0)
+            {
+                // Nope, just add.
+                offset.Y = potentialRootOffset.Y + offset.Y;
+            }
+            else
+            {
+                // Yes, mirror child offsets.
+                offset.Y = potentialRootOffset.Y - offset.Y;
+            }
+            // Add x-offset normally.
+            offset.X = potentialRootOffset.X + offset.X;
+
+            return offset;
+        }
+        
+        /// <summary>
+        /// This utility method computes the overall offset of this and
+        /// all parent slots. It will also automatically mirror offsets
+        /// along the x-axis if the first offset along the x-axis is negative.
+        /// This makes it easy to have symmetric wings, for example.
+        /// </summary>
+        /// <returns>The global offset, relative to the equipment origin.</returns>
+        public Vector2 AccumulateOffset()
+        {
+            return AccumulateOffset(Vector2.Zero);
+        }
+
         #endregion
 
         #region Serialization
@@ -93,7 +165,8 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write((byte)Size);
+                .Write((byte)Size)
+                .Write(Offset);
         }
 
         /// <summary>
@@ -105,6 +178,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Size = (ItemSlotSize)packet.ReadByte();
+            Offset = packet.ReadVector2();
         }
 
         /// <summary>
@@ -117,6 +191,7 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put((byte)Size);
+            hasher.Put(Offset);
         }
 
         #endregion

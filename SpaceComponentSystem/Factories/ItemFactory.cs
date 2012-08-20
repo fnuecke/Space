@@ -6,6 +6,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Math;
 using Engine.Random;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -119,7 +120,7 @@ namespace Space.ComponentSystem.Factories
             for (var i = 0; i < Slots.Length; i++)
             {
                 manager.AddComponent<SpaceItemSlot>(entity).
-                    Initialize(ItemSlotInfo.TypeMap[Slots[i].Type.ToLowerInvariant()], Slots[i].Size);
+                    Initialize(ItemSlotInfo.TypeMap[Slots[i].Type.ToLowerInvariant()], Slots[i].Size, Slots[i].Offset);
             }
 
             return entity;
@@ -186,6 +187,12 @@ namespace Space.ComponentSystem.Factories
             /// </summary>
             [ContentSerializer(Optional = true)]
             public ItemSlotSize Size = ItemSlotSize.Small;
+
+            /// <summary>
+            /// The offset of this items origin from its parent slot.
+            /// </summary>
+            [ContentSerializer(Optional = true)]
+            public Vector2 Offset = Vector2.Zero;
         }
 
         #endregion

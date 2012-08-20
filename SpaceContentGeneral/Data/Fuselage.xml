@@ -8,10 +8,12 @@
         <Item>
           <Type>Wing</Type>
           <Size>Small</Size>
+          <Offset>0 10</Offset>
         </Item>
         <Item>
           <Type>Wing</Type>
           <Size>Small</Size>
+          <Offset>0 -10</Offset>
         </Item>
         <Item>
           <Type>Armor</Type>
@@ -32,6 +34,7 @@
         <Item>
           <Type>Thruster</Type>
           <Size>Small</Size>
+          <Offset>-35 0</Offset>
         </Item>
         <Item>
           <Type>Sensor</Type>

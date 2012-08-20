@@ -8,6 +8,7 @@
         <Item>
           <Type>Weapon</Type>
           <Size>Small</Size>
+          <Offset>15 40</Offset>
         </Item>
       </Slots>
     </Item>

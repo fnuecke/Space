@@ -2,6 +2,7 @@
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Engine.Serialization;
@@ -104,13 +105,14 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         /// <param name="manager">The manager.</param>
         /// <param name="emitter">The emitter that the projectile comes from.</param>
+        /// <param name="offset">The offset.</param>
         /// <param name="weapon">The weapon.</param>
         /// <param name="faction">The faction the projectile belongs to.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>
         /// A new projectile.
         /// </returns>
-        public int SampleProjectile(IManager manager, int emitter, Weapon weapon, Factions faction, IUniformRandom random)
+        public int SampleProjectile(IManager manager, int emitter, Vector2 offset, Weapon weapon, Factions faction, IUniformRandom random)
         {
             var entity = manager.AddEntity();
 
@@ -122,9 +124,17 @@ namespace Space.ComponentSystem.Factories
             // Get initial rotation via emitter rotation plus sampled delta.
             var initialRotation = emitterTransform.Rotation + SampleInitialRotation(random);
 
+            // Rotate the offset.
+            var cosRadians = (float)Math.Cos(initialRotation);
+            var sinRadians = (float)Math.Sin(initialRotation);
+
+            FarPosition rotatedOffset;
+            rotatedOffset.X = offset.X * cosRadians - offset.Y * sinRadians;
+            rotatedOffset.Y = offset.X * sinRadians + offset.Y * cosRadians;
+
             // Set initial position.
             var transform = manager.AddComponent<Transform>(entity)
-                .Initialize(emitterTransform.Translation, initialRotation);
+                .Initialize(emitterTransform.Translation + rotatedOffset, initialRotation);
 
             // Set initial velocity.
             var velocity = manager.AddComponent<Velocity>(entity)

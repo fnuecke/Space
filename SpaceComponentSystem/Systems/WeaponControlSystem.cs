@@ -7,6 +7,7 @@ using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Random;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.Data;
@@ -36,7 +37,7 @@ namespace Space.ComponentSystem.Systems
         /// the creation has do be done synchronously because the manager is
         /// not thread safe.
         /// </summary>
-        private List<Tuple<ProjectileFactory, int, Weapon, Factions>> _projectilesToCreate = new List<Tuple<ProjectileFactory, int, Weapon, Factions>>(16);
+        private List<PendingProjectile> _projectilesToCreate = new List<PendingProjectile>(16);
 
         #endregion
 
@@ -71,7 +72,7 @@ namespace Space.ComponentSystem.Systems
             // Create projectiles that were requested.
             foreach (var projectile in _projectilesToCreate)
             {
-                projectile.Item1.SampleProjectile(Manager, projectile.Item2, projectile.Item3, projectile.Item4, _random);
+                projectile.Factory.SampleProjectile(Manager, projectile.Entity, projectile.Offset, projectile.Weapon, projectile.Faction, _random);
             }
             _projectilesToCreate.Clear();
         }
@@ -96,12 +97,18 @@ namespace Space.ComponentSystem.Systems
             var faction = (Faction)Manager.GetComponent(component.Entity, Faction.TypeId);
 
             // Check all equipped weapon.
-            foreach (var itemId in equipment.AllItems)
+            foreach (var slot in equipment.AllSlots)
             {
-                var weapon = (Weapon)Manager.GetComponent(itemId, Weapon.TypeId);
+                // Skip empty slots.
+                if (slot.Item <= 0)
+                {
+                    continue;
+                }
+
+                // Skip if it's not a weapon.
+                var weapon = (Weapon)Manager.GetComponent(slot.Item, Weapon.TypeId);
                 if (weapon == null)
                 {
-                    // Not a weapon, skip it.
                     continue;
                 }
 
@@ -124,10 +131,20 @@ namespace Space.ComponentSystem.Systems
                 // Consume our energy.
                 energy.SetValue(energy.Value - energyConsumption);
 
+                // Compute spawn offset.
+                var offset = ((SpaceItemSlot)slot).AccumulateOffset();
+
                 // Generate projectiles.
                 foreach (var projectile in weapon.Projectiles)
                 {
-                    _projectilesToCreate.Add(Tuple.Create(projectile, component.Entity, weapon, faction.Value));
+                    _projectilesToCreate.Add(new PendingProjectile
+                    {
+                        Factory = projectile,
+                        Entity = component.Entity,
+                        Offset = offset,
+                        Weapon = weapon,
+                        Faction = faction.Value
+                    });
                 }
 
                 // Play sound.
@@ -264,7 +281,7 @@ namespace Space.ComponentSystem.Systems
 
             copy._cooldowns = new Dictionary<int, int>();
             copy._random = new MersenneTwister(0);
-            copy._projectilesToCreate = new List<Tuple<ProjectileFactory, int, Weapon, Factions>>(16);
+            copy._projectilesToCreate = new List<PendingProjectile>(16);
             copy._reusableEntities = new List<int>();
 
             return copy;
@@ -310,6 +327,23 @@ namespace Space.ComponentSystem.Systems
         public override string ToString()
         {
             return base.ToString() + ", Cooldowns=[" + string.Join(", ", _cooldowns) + "], Random=" + _random;
+        }
+
+        #endregion
+
+        #region Types
+
+        private sealed class PendingProjectile
+        {
+            public ProjectileFactory Factory;
+
+            public int Entity;
+
+            public Vector2 Offset;
+
+            public Weapon Weapon;
+
+            public Factions Faction;
         }
 
         #endregion

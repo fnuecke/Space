@@ -38,8 +38,8 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // OK, add the effect.
-                // TODO: get offset for that item slot and use it
-                effects.TryAdd(thruster.Effect, thruster.EffectOffset, ParticleEffects.EffectGroup.Thrusters);
+                var slot = (SpaceItemSlot)equipped.Slot;
+                effects.TryAdd(thruster.Effect, thruster.EffectOffset + slot.AccumulateOffset(), ParticleEffects.EffectGroup.Thrusters);
             }
             else if (message is ItemUnequipped)
             {
@@ -60,8 +60,8 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // OK, remove the effect.
-                // TODO: get offset for that item slot and use it
-                effects.Remove(thruster.Effect, thruster.EffectOffset, ParticleEffects.EffectGroup.Thrusters);
+                var slot = (SpaceItemSlot)unequipped.Slot;
+                effects.Remove(thruster.Effect, thruster.EffectOffset + slot.AccumulateOffset(), ParticleEffects.EffectGroup.Thrusters);
             }
         }
 
