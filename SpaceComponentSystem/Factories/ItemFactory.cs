@@ -150,7 +150,7 @@ namespace Space.ComponentSystem.Factories
         [DefaultValue(null)]
         [Category("Stats")]
         [Description("The number of additional attributes to sample for a generated item of this type.")]
-        public Interval<int> AdditionalAttributeCount
+        public IntInterval AdditionalAttributeCount
         {
             get { return _additionalAttributeCount; }
             set { _additionalAttributeCount = value; }
@@ -178,7 +178,7 @@ namespace Space.ComponentSystem.Factories
 
         private AttributeModifierConstraint<AttributeType>[] _additionalAttributes;
 
-        private Interval<int> _additionalAttributeCount;
+        private IntInterval _additionalAttributeCount;
 
         #endregion
 

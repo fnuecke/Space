@@ -44,37 +44,37 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// The radius of generated planets.
         /// </summary>
-        public Interval<float> Radius;
+        public FloatInterval Radius;
 
         /// <summary>
         /// The mass of generated planets.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> Mass = Interval<float>.Zero;
+        public FloatInterval Mass = FloatInterval.Zero;
 
         /// <summary>
         /// The rotation speed of generated planets.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> RotationSpeed = Interval<float>.Zero;
+        public FloatInterval RotationSpeed = FloatInterval.Zero;
 
         /// <summary>
         /// The eccentricity of generated planets' orbits. A value of
         /// 0 means it's a circle, 1 means it's totally flat (a line).
         /// </summary>
-        public Interval<float> Eccentricity;
+        public FloatInterval Eccentricity;
 
         /// <summary>
         /// The offset from the base orbiting angle of the sun system.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> AngleOffset = Interval<float>.Zero;
+        public FloatInterval AngleOffset = FloatInterval.Zero;
 
         /// <summary>
         /// The travel speed of generated planets' orbits. This will be used
         /// to determine the period, based on the orbiting radius.
         /// </summary>
-        public Interval<float> TravelSpeed;
+        public FloatInterval TravelSpeed;
 
         #endregion
 

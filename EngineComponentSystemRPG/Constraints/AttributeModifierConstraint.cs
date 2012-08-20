@@ -31,7 +31,7 @@ namespace Engine.ComponentSystem.RPG.Constraints
         /// <summary>
         /// The value range of the attribute.
         /// </summary>
-        public Interval<float> Value
+        public FloatInterval Value
         {
             get { return _value; }
             set { _value = value; }
@@ -64,7 +64,7 @@ namespace Engine.ComponentSystem.RPG.Constraints
 
         private TAttribute _type;
 
-        private Interval<float> _value;
+        private FloatInterval _value;
 
         private AttributeComputationType _computationType;
 

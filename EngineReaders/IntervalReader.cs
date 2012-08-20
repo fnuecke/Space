@@ -9,10 +9,10 @@ namespace Engine.Serialization
     {
         protected override Interval<T> Read(ContentReader input, Interval<T> existingInstance)
         {
-            existingInstance = existingInstance ?? new Interval<T>();
+            existingInstance = existingInstance ?? NewInstance();
 
-            T low = Read(input);
-            T high = Read(input);
+            var low = Read(input);
+            var high = Read(input);
 
             existingInstance.SetTo(low, high);
 
@@ -20,6 +20,8 @@ namespace Engine.Serialization
         }
 
         protected abstract T Read(ContentReader input);
+
+        protected abstract Interval<T> NewInstance();
     }
 
     public sealed class DoubleIntervalReader : AbstractIntervalReader<double>
@@ -27,6 +29,11 @@ namespace Engine.Serialization
         protected override double Read(ContentReader input)
         {
             return input.ReadDouble();
+        }
+
+        protected override Interval<double> NewInstance()
+        {
+            return new DoubleInterval();
         }
     }
 
@@ -36,6 +43,11 @@ namespace Engine.Serialization
         {
             return input.ReadSingle();
         }
+
+        protected override Interval<float> NewInstance()
+        {
+            return new FloatInterval();
+        }
     }
 
     public sealed class Int32IntervalReader : AbstractIntervalReader<int>
@@ -43,6 +55,11 @@ namespace Engine.Serialization
         protected override int Read(ContentReader input)
         {
             return input.ReadInt32();
+        }
+
+        protected override Interval<int> NewInstance()
+        {
+            return new IntInterval();
         }
     }
 }

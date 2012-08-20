@@ -26,17 +26,17 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Radius for generated suns.
         /// </summary>
-        public Interval<float> Radius;
+        public FloatInterval Radius;
 
         /// <summary>
         /// Offset from cell center for generated suns.
         /// </summary>
-        public Interval<float> OffsetRadius;
+        public FloatInterval OffsetRadius;
 
         /// <summary>
         /// Mass of generated suns.
         /// </summary>
-        public Interval<float> Mass;
+        public FloatInterval Mass;
 
         #endregion
 

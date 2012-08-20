@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
@@ -17,32 +18,52 @@ namespace Space.ComponentSystem.Factories
     /// <summary>
     /// Contains data about a single projectile fired by a weapon.
     /// </summary>
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public sealed class ProjectileFactory : IPacketizable, IHashable
     {
-        #region Fields
+        #region Properties
 
         /// <summary>
         /// The texture to use to render the projectile type.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string Model = string.Empty;
+        [DefaultValue(null)]
+        public string Model
+        {
+            get { return _model; }
+            set { _model = value; }
+        }
 
         /// <summary>
         /// Name of the particle effect to use for this projectile type.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string Effect = string.Empty;
+        [DefaultValue(null)]
+        public string Effect
+        {
+            get { return _effect; }
+            set { _effect = value; }
+        }
 
         /// <summary>
         /// Offset of the particle effect relative to its center.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Vector2 EffectOffset = Vector2.Zero;
+        [DefaultValue(null)]
+        public Vector2? EffectOffset
+        {
+            get { return _effectOffset; }
+            set { _effectOffset = value; }
+        }
 
         /// <summary>
         /// The collision radius of the projectile.
         /// </summary>
-        public float CollisionRadius;
+        public float CollisionRadius
+        {
+            get { return _collisionRadius; }
+            set { _collisionRadius = value; }
+        }
 
         /// <summary>
         /// Whether this projectile type can be hit by other projectiles (e.g.
@@ -50,7 +71,12 @@ namespace Space.ComponentSystem.Factories
         /// interact).
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public bool CanBeShot;
+        [DefaultValue(false)]
+        public bool CanBeShot
+        {
+            get { return _canBeShot; }
+            set { _canBeShot = value; }
+        }
 
         /// <summary>
         /// The range allowed for initial velocity of the projectile. This is
@@ -59,14 +85,24 @@ namespace Space.ComponentSystem.Factories
         /// rotation).
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> InitialVelocity = Interval<float>.Zero;
+        [DefaultValue(null)]
+        public FloatInterval InitialVelocity
+        {
+            get { return _initialVelocity; }
+            set { _initialVelocity = value; }
+        }
 
         /// <summary>
         /// The allowed range for the angle to the emitter used as the
         /// direction of the initial velocity.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> InitialDirection = Interval<float>.Zero;
+        [DefaultValue(null)]
+        public FloatInterval InitialDirection
+        {
+            get { return _initialDirection; }
+            set { _initialDirection = value; }
+        }
 
         /// <summary>
         /// Allowed range for initial orientation of the projectile. As with
@@ -75,26 +111,72 @@ namespace Space.ComponentSystem.Factories
         /// right, i.e. its own rotation is zero.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> InitialRotation = Interval<float>.Zero;
+        [DefaultValue(0f)]
+        public FloatInterval InitialRotation
+        {
+            get { return _initialRotation; }
+            set { _initialRotation = value; }
+        }
 
         /// <summary>
         /// Allowed range for the acceleration force applied to this projectile.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> AccelerationForce = Interval<float>.Zero;
+        [DefaultValue(0f)]
+        public FloatInterval AccelerationForce
+        {
+            get { return _accelerationForce; }
+            set { _accelerationForce = value; }
+        }
 
         /// <summary>
         /// The friction used to slow the projectile down.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float Friction;
+        [DefaultValue(0f)]
+        public float Friction
+        {
+            get { return _friction; }
+            set { _friction = value; }
+        }
 
         /// <summary>
         /// The time this projectile will stay alive before disappearing,
         /// in seconds.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float TimeToLive = 5;
+        [DefaultValue(5f)]
+        public float TimeToLive
+        {
+            get { return _timeToLive; }
+            set { _timeToLive = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _model;
+
+        private string _effect;
+
+        private Vector2? _effectOffset;
+
+        private float _collisionRadius;
+
+        private bool _canBeShot;
+
+        private FloatInterval _initialVelocity;
+
+        private FloatInterval _initialDirection;
+
+        private FloatInterval _initialRotation;
+
+        private FloatInterval _accelerationForce;
+
+        private float _friction;
+
+        private float _timeToLive = 5f;
 
         #endregion
 
@@ -206,7 +288,7 @@ namespace Space.ComponentSystem.Factories
             // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(Effect))
             {
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, EffectOffset, ParticleEffects.EffectGroup.None, true);
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero, ParticleEffects.EffectGroup.None, true);
             }
 
             return entity;
@@ -272,14 +354,10 @@ namespace Space.ComponentSystem.Factories
                 .Write(Effect)
                 .Write(CollisionRadius)
                 .Write(CanBeShot)
-                .Write(InitialVelocity.Low)
-                .Write(InitialVelocity.High)
-                .Write(InitialDirection.Low)
-                .Write(InitialDirection.High)
-                .Write(InitialRotation.Low)
-                .Write(InitialRotation.High)
-                .Write(AccelerationForce.Low)
-                .Write(AccelerationForce.High)
+                .Write(InitialVelocity)
+                .Write(InitialDirection)
+                .Write(InitialRotation)
+                .Write(AccelerationForce)
                 .Write(Friction)
                 .Write(TimeToLive);
         }
@@ -295,21 +373,10 @@ namespace Space.ComponentSystem.Factories
             CollisionRadius = packet.ReadSingle();
             CanBeShot = packet.ReadBoolean();
 
-            var low = packet.ReadSingle();
-            var high = packet.ReadSingle();
-            InitialVelocity = new Interval<float>(low, high);
-
-            low = packet.ReadSingle();
-            high = packet.ReadSingle();
-            InitialDirection = new Interval<float>(low, high);
-
-            low = packet.ReadSingle();
-            high = packet.ReadSingle();
-            InitialRotation = new Interval<float>(low, high);
-
-            low = packet.ReadSingle();
-            high = packet.ReadSingle();
-            AccelerationForce = new Interval<float>(low, high);
+            InitialVelocity = packet.ReadPacketizable<FloatInterval>();
+            InitialDirection = packet.ReadPacketizable<FloatInterval>();
+            InitialRotation = packet.ReadPacketizable<FloatInterval>();
+            AccelerationForce = packet.ReadPacketizable<FloatInterval>();
 
             Friction = packet.ReadSingle();
             TimeToLive = packet.ReadSingle();
@@ -326,14 +393,10 @@ namespace Space.ComponentSystem.Factories
             hasher.Put(Effect);
             hasher.Put(CollisionRadius);
             hasher.Put(CanBeShot);
-            hasher.Put(InitialVelocity.Low);
-            hasher.Put(InitialVelocity.High);
-            hasher.Put(InitialDirection.Low);
-            hasher.Put(InitialDirection.High);
-            hasher.Put(InitialRotation.Low);
-            hasher.Put(InitialRotation.High);
-            hasher.Put(AccelerationForce.Low);
-            hasher.Put(AccelerationForce.High);
+            hasher.Put(InitialVelocity);
+            hasher.Put(InitialDirection);
+            hasher.Put(InitialRotation);
+            hasher.Put(AccelerationForce);
             hasher.Put(Friction);
             hasher.Put(TimeToLive);
         }

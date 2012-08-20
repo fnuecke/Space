@@ -106,7 +106,7 @@ namespace Engine.Serialization
                 }
 
                 // Set final value in our instance.
-                existingInstance.Value = new Interval<float>(minValue, maxValue);
+                existingInstance.Value = new FloatInterval(minValue, maxValue);
 
                 return existingInstance;
             }

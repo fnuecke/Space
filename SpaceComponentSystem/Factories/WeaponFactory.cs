@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [Category("Logic")]
         [Description("The time to wait between firing shots from this weapon, in seconds.")]
-        public Interval<float> Cooldown
+        public FloatInterval Cooldown
         {
             get { return _cooldown; }
             set { _cooldown = value; }
@@ -41,7 +41,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [Category("Logic")]
         [Description("The amount of energy this weapon needs to fire one round of projectiles.")]
-        public Interval<float> EnergyConsumption
+        public FloatInterval EnergyConsumption
         {
             get { return _energyConsumption; }
             set { _energyConsumption = value; }
@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [Category("Logic")]
         [Description("The damage each single projectile fired from this weapon does when hitting an enemy.")]
-        public Interval<float> Damage
+        public FloatInterval Damage
         {
             get { return _damage; }
             set { _damage = value; }
@@ -75,11 +75,11 @@ namespace Space.ComponentSystem.Factories
 
         private string _sound;
 
-        private Interval<float> _cooldown = Interval<float>.Zero;
+        private FloatInterval _cooldown = FloatInterval.Zero;
 
-        private Interval<float> _energyConsumption = Interval<float>.Zero;
+        private FloatInterval _energyConsumption = FloatInterval.Zero;
 
-        private Interval<float> _damage = Interval<float>.Zero;
+        private FloatInterval _damage = FloatInterval.Zero;
 
         private ProjectileFactory[] _projectiles;
 

@@ -70,7 +70,7 @@ namespace Space.ComponentSystem.Factories
             /// The angle of generated planets' orbits.
             /// </summary>
             [ContentSerializer(Optional = true)]
-            public Interval<float> Angle = new Interval<float>(0, 360);
+            public FloatInterval Angle = new FloatInterval(0, 360);
 
             /// <summary>
             /// Objects in this orbit system.
@@ -123,7 +123,7 @@ namespace Space.ComponentSystem.Factories
             /// <summary>
             /// The radius at which this object orbits.
             /// </summary>
-            public Interval<float> OrbitRadius;
+            public FloatInterval OrbitRadius;
 
             /// <summary>
             /// The probability with which an actual instance is created in a system.

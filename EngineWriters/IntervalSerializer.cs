@@ -48,7 +48,7 @@ namespace Engine.Serialization
             var match = IntervalPattern.Match(input.Xml.ReadContentAsString());
             if (match.Success)
             {
-                existingInstance = existingInstance ?? new Interval<T>();
+                existingInstance = existingInstance ?? NewInstance();
 
                 T low = Parse(match.Groups["low"].Value);
                 T high = match.Groups["high"].Success ? Parse(match.Groups["high"].Value) : low;
@@ -64,6 +64,8 @@ namespace Engine.Serialization
         }
 
         protected abstract T Parse(string value);
+
+        protected abstract Interval<T> NewInstance();
     }
 
     [ContentTypeSerializer]
@@ -72,6 +74,11 @@ namespace Engine.Serialization
         protected override double Parse(string value)
         {
             return double.Parse(value, CultureInfo.InvariantCulture);
+        }
+
+        protected override Interval<double> NewInstance()
+        {
+            return new DoubleInterval();
         }
     }
 
@@ -82,6 +89,11 @@ namespace Engine.Serialization
         {
             return float.Parse(value, CultureInfo.InvariantCulture);
         }
+
+        protected override Interval<float> NewInstance()
+        {
+            return new FloatInterval();
+        }
     }
 
     [ContentTypeSerializer]
@@ -90,6 +102,11 @@ namespace Engine.Serialization
         protected override int Parse(string value)
         {
             return int.Parse(value, CultureInfo.InvariantCulture);
+        }
+
+        protected override Interval<int> NewInstance()
+        {
+            return new IntInterval();
         }
     }
 }
