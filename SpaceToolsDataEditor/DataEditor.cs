@@ -55,6 +55,14 @@ namespace Space.Tools.DataEditor
                 if (settings.AutoLoad)
                 {
                     LoadFactories(_openDialog.InitialDirectory);
+                    if (!string.IsNullOrWhiteSpace(settings.LastSelectedFactory))
+                    {
+                        var result = tvData.Nodes.Find(settings.LastSelectedFactory, true);
+                        if (result.Length > 0)
+                        {
+                            tvData.SelectedNode = result[0];
+                        }
+                    }
                 }
             }
 
@@ -181,6 +189,11 @@ namespace Space.Tools.DataEditor
             settings.IssuesDescriptionWidth = lvIssues.Columns[1].Width;
             settings.IssuesFactoryWidth = lvIssues.Columns[2].Width;
             settings.IssuesPropertyWidth = lvIssues.Columns[3].Width;
+
+            if (tvData.SelectedNode != null)
+            {
+                settings.LastSelectedFactory = tvData.SelectedNode.Name;
+            }
 
             settings.Save();
         }

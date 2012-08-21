@@ -166,5 +166,17 @@ namespace Space.Tools.DataEditor {
                 this["IssuesDescriptionWidth"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastSelectedFactory {
+            get {
+                return ((string)(this["LastSelectedFactory"]));
+            }
+            set {
+                this["LastSelectedFactory"] = value;
+            }
+        }
     }
 }
