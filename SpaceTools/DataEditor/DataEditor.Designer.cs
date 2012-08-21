@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataEditor));
             this.pgProperties = new System.Windows.Forms.PropertyGrid();
             this.tvData = new System.Windows.Forms.TreeView();
@@ -49,6 +50,14 @@
             this.pbPreview = new System.Windows.Forms.PictureBox();
             this.scOuter = new System.Windows.Forms.SplitContainer();
             this.scInner = new System.Windows.Forms.SplitContainer();
+            this.scMain = new System.Windows.Forms.SplitContainer();
+            this.gbIssues = new System.Windows.Forms.GroupBox();
+            this.lvIssues = new System.Windows.Forms.ListView();
+            this.chIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chFactory = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chProperty = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chText = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ilIssueTypes = new System.Windows.Forms.ImageList(this.components);
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
             this.tsMain.SuspendLayout();
@@ -63,6 +72,11 @@
             this.scInner.Panel1.SuspendLayout();
             this.scInner.Panel2.SuspendLayout();
             this.scInner.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.scMain)).BeginInit();
+            this.scMain.Panel1.SuspendLayout();
+            this.scMain.Panel2.SuspendLayout();
+            this.scMain.SuspendLayout();
+            this.gbIssues.SuspendLayout();
             this.SuspendLayout();
             // 
             // pgProperties
@@ -70,7 +84,7 @@
             this.pgProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pgProperties.Location = new System.Drawing.Point(8, 21);
             this.pgProperties.Name = "pgProperties";
-            this.pgProperties.Size = new System.Drawing.Size(442, 261);
+            this.pgProperties.Size = new System.Drawing.Size(437, 151);
             this.pgProperties.TabIndex = 0;
             this.pgProperties.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.PropertiesPropertyValueChanged);
             this.pgProperties.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.PropertiesSelectedGridItemChanged);
@@ -83,7 +97,7 @@
             this.tvData.HotTracking = true;
             this.tvData.Location = new System.Drawing.Point(8, 21);
             this.tvData.Name = "tvData";
-            this.tvData.Size = new System.Drawing.Size(209, 444);
+            this.tvData.Size = new System.Drawing.Size(214, 261);
             this.tvData.TabIndex = 1;
             this.tvData.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.FactorySelected);
             // 
@@ -94,7 +108,7 @@
             this.gbData.Location = new System.Drawing.Point(5, 5);
             this.gbData.Name = "gbData";
             this.gbData.Padding = new System.Windows.Forms.Padding(8);
-            this.gbData.Size = new System.Drawing.Size(225, 473);
+            this.gbData.Size = new System.Drawing.Size(230, 290);
             this.gbData.TabIndex = 2;
             this.gbData.TabStop = false;
             this.gbData.Text = "Data";
@@ -208,7 +222,7 @@
             this.gbProperties.Location = new System.Drawing.Point(5, 5);
             this.gbProperties.Name = "gbProperties";
             this.gbProperties.Padding = new System.Windows.Forms.Padding(8);
-            this.gbProperties.Size = new System.Drawing.Size(458, 290);
+            this.gbProperties.Size = new System.Drawing.Size(453, 180);
             this.gbProperties.TabIndex = 5;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Properties";
@@ -217,10 +231,10 @@
             // 
             this.gbPreview.Controls.Add(this.pbPreview);
             this.gbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gbPreview.Location = new System.Drawing.Point(5, 5);
+            this.gbPreview.Location = new System.Drawing.Point(5, 0);
             this.gbPreview.Name = "gbPreview";
             this.gbPreview.Padding = new System.Windows.Forms.Padding(8);
-            this.gbPreview.Size = new System.Drawing.Size(458, 169);
+            this.gbPreview.Size = new System.Drawing.Size(453, 101);
             this.gbPreview.TabIndex = 6;
             this.gbPreview.TabStop = false;
             this.gbPreview.Text = "Preview";
@@ -233,7 +247,7 @@
             this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbPreview.Location = new System.Drawing.Point(8, 21);
             this.pbPreview.Name = "pbPreview";
-            this.pbPreview.Size = new System.Drawing.Size(442, 140);
+            this.pbPreview.Size = new System.Drawing.Size(437, 72);
             this.pbPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbPreview.TabIndex = 0;
             this.pbPreview.TabStop = false;
@@ -242,19 +256,21 @@
             // 
             this.scOuter.Dock = System.Windows.Forms.DockStyle.Fill;
             this.scOuter.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.scOuter.Location = new System.Drawing.Point(0, 49);
+            this.scOuter.Location = new System.Drawing.Point(0, 0);
             this.scOuter.Name = "scOuter";
             // 
             // scOuter.Panel1
             // 
             this.scOuter.Panel1.Controls.Add(this.gbData);
             this.scOuter.Panel1.Padding = new System.Windows.Forms.Padding(5);
+            this.scOuter.Panel1MinSize = 40;
             // 
             // scOuter.Panel2
             // 
             this.scOuter.Panel2.Controls.Add(this.scInner);
-            this.scOuter.Size = new System.Drawing.Size(707, 483);
-            this.scOuter.SplitterDistance = 235;
+            this.scOuter.Panel2MinSize = 40;
+            this.scOuter.Size = new System.Drawing.Size(707, 300);
+            this.scOuter.SplitterDistance = 240;
             this.scOuter.TabIndex = 7;
             // 
             // scInner
@@ -269,21 +285,109 @@
             // 
             this.scInner.Panel1.Controls.Add(this.gbProperties);
             this.scInner.Panel1.Padding = new System.Windows.Forms.Padding(5);
+            this.scInner.Panel1MinSize = 40;
             // 
             // scInner.Panel2
             // 
             this.scInner.Panel2.Controls.Add(this.gbPreview);
-            this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5);
-            this.scInner.Size = new System.Drawing.Size(468, 483);
-            this.scInner.SplitterDistance = 300;
+            this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
+            this.scInner.Panel2MinSize = 40;
+            this.scInner.Size = new System.Drawing.Size(463, 300);
+            this.scInner.SplitterDistance = 190;
             this.scInner.TabIndex = 0;
+            // 
+            // scMain
+            // 
+            this.scMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.scMain.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+            this.scMain.Location = new System.Drawing.Point(0, 49);
+            this.scMain.Name = "scMain";
+            this.scMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // scMain.Panel1
+            // 
+            this.scMain.Panel1.Controls.Add(this.scOuter);
+            this.scMain.Panel1MinSize = 40;
+            // 
+            // scMain.Panel2
+            // 
+            this.scMain.Panel2.Controls.Add(this.gbIssues);
+            this.scMain.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
+            this.scMain.Panel2MinSize = 40;
+            this.scMain.Size = new System.Drawing.Size(707, 483);
+            this.scMain.SplitterDistance = 300;
+            this.scMain.TabIndex = 8;
+            // 
+            // gbIssues
+            // 
+            this.gbIssues.Controls.Add(this.lvIssues);
+            this.gbIssues.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gbIssues.Location = new System.Drawing.Point(5, 0);
+            this.gbIssues.Name = "gbIssues";
+            this.gbIssues.Padding = new System.Windows.Forms.Padding(8);
+            this.gbIssues.Size = new System.Drawing.Size(697, 174);
+            this.gbIssues.TabIndex = 0;
+            this.gbIssues.TabStop = false;
+            this.gbIssues.Text = "Issues";
+            // 
+            // lvIssues
+            // 
+            this.lvIssues.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lvIssues.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.chIcon,
+            this.chText,
+            this.chFactory,
+            this.chProperty});
+            this.lvIssues.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvIssues.FullRowSelect = true;
+            this.lvIssues.GridLines = true;
+            this.lvIssues.HideSelection = false;
+            this.lvIssues.Location = new System.Drawing.Point(8, 21);
+            this.lvIssues.MultiSelect = false;
+            this.lvIssues.Name = "lvIssues";
+            this.lvIssues.Size = new System.Drawing.Size(681, 145);
+            this.lvIssues.SmallImageList = this.ilIssueTypes;
+            this.lvIssues.TabIndex = 0;
+            this.lvIssues.UseCompatibleStateImageBehavior = false;
+            this.lvIssues.View = System.Windows.Forms.View.Details;
+            this.lvIssues.DoubleClick += new System.EventHandler(this.IssuesDoubleClick);
+            // 
+            // chIcon
+            // 
+            this.chIcon.Text = "";
+            this.chIcon.Width = 22;
+            // 
+            // chFactory
+            // 
+            this.chFactory.Text = "Factory Name";
+            this.chFactory.Width = 133;
+            // 
+            // chProperty
+            // 
+            this.chProperty.Text = "Property Name";
+            this.chProperty.Width = 122;
+            // 
+            // chText
+            // 
+            this.chText.DisplayIndex = 1;
+            this.chText.Text = "Description";
+            this.chText.Width = 426;
+            // 
+            // ilIssueTypes
+            // 
+            this.ilIssueTypes.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("ilIssueTypes.ImageStream")));
+            this.ilIssueTypes.TransparentColor = System.Drawing.Color.Transparent;
+            this.ilIssueTypes.Images.SetKeyName(0, "109_AllAnnotations_Default_16x16_72.png");
+            this.ilIssueTypes.Images.SetKeyName(1, "109_AllAnnotations_Info_16x16_72.png");
+            this.ilIssueTypes.Images.SetKeyName(2, "109_AllAnnotations_Warning_16x16_72.png");
+            this.ilIssueTypes.Images.SetKeyName(3, "109_AllAnnotations_Error_16x16_72.png");
             // 
             // DataEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(707, 532);
-            this.Controls.Add(this.scOuter);
+            this.Controls.Add(this.scMain);
             this.Controls.Add(this.tsMain);
             this.Controls.Add(this.msMain);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -308,6 +412,11 @@
             this.scInner.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.scInner)).EndInit();
             this.scInner.ResumeLayout(false);
+            this.scMain.Panel1.ResumeLayout(false);
+            this.scMain.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.scMain)).EndInit();
+            this.scMain.ResumeLayout(false);
+            this.gbIssues.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -335,6 +444,14 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiSettings;
         private System.Windows.Forms.ToolStripSeparator separator2;
         private System.Windows.Forms.PictureBox pbPreview;
+        private System.Windows.Forms.SplitContainer scMain;
+        private System.Windows.Forms.GroupBox gbIssues;
+        private System.Windows.Forms.ListView lvIssues;
+        private System.Windows.Forms.ColumnHeader chIcon;
+        private System.Windows.Forms.ColumnHeader chFactory;
+        private System.Windows.Forms.ColumnHeader chProperty;
+        private System.Windows.Forms.ColumnHeader chText;
+        private System.Windows.Forms.ImageList ilIssueTypes;
     }
 }
 

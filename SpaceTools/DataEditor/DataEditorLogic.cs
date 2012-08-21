@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing.Design;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -42,6 +44,10 @@ namespace Space.Tools.DataEditor
             tvData.EndUpdate();
         }
 
+        /// <summary>
+        /// Loads all factories found at the specified path.
+        /// </summary>
+        /// <param name="path">The path.</param>
         private void LoadFactories(string path)
         {
             ClearFactories();
@@ -69,8 +75,14 @@ namespace Space.Tools.DataEditor
                     }
                 }
             }
+
+            ScanForIssues();
         }
 
+        /// <summary>
+        /// Adds a single factory to the list of known factories.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
         private void AddFactory(IFactory factory)
         {
             _factories.Add(factory.Name, factory);
@@ -79,6 +91,10 @@ namespace Space.Tools.DataEditor
             tvData.Nodes[type.Name].Nodes.Add(factory.Name, factory.Name);
         }
 
+        /// <summary>
+        /// Clears the lists with known factories as well as the list with
+        /// factories in the GUI.
+        /// </summary>
         private void ClearFactories()
         {
             tvData.BeginUpdate();
@@ -89,8 +105,20 @@ namespace Space.Tools.DataEditor
                 tvData.Nodes[type.Key.Name].Nodes.Clear();
             }
             tvData.EndUpdate();
+
+            // No factories means less issues!
+            ClearIssues();
+
+            // Rescan anyway, because some settings might be bad.
+            ScanForIssues();
         }
 
+        /// <summary>
+        /// Cleans the name of the factory type by stripping the 'Factory' postfix
+        /// if it exists.
+        /// </summary>
+        /// <param name="type">The type of the factory.</param>
+        /// <returns>The cleaned factory name.</returns>
         private static string CleanFactoryName(Type type)
         {
             var name = type.Name;
@@ -101,6 +129,11 @@ namespace Space.Tools.DataEditor
             return name;
         }
 
+        /// <summary>
+        /// Selects the factory in our property grid if it exists, else selects
+        /// nothing (clears property grid).
+        /// </summary>
+        /// <param name="name">The name of the factory.</param>
         private void SelectFactory(string name)
         {
             if (_factories.ContainsKey(name))
@@ -110,6 +143,52 @@ namespace Space.Tools.DataEditor
             else
             {
                 pgProperties.SelectedObject = null;
+            }
+        }
+
+        /// <summary>
+        /// Scans for issues.
+        /// </summary>
+        public void ScanForIssues()
+        {
+            // Clear old list.
+            ClearIssues();
+
+            // Check settings.
+            foreach (string project in DataEditorSettingsProxy.Default.ContentProjects)
+            {
+                if (!File.Exists(project))
+                {
+                    AddIssue("Path to content project is invalid: " + project);
+                }
+            }
+
+            // Check factories.
+            foreach (var factory in _factories.Values)
+            {
+                // Check image asset properties.
+                foreach (PropertyDescriptor property in TypeDescriptor
+                    .GetProperties(factory,
+                                   new Attribute[]
+                                   {
+                                       new EditorAttribute(
+                                       typeof(TextureAssetEditor),
+                                       typeof(UITypeEditor))
+                                   }))
+                {
+                    if (property.PropertyType != typeof(string))
+                    {
+                        AddIssue("Property marked as texture asset is not of type string.", factory.Name, property.Name);
+                    }
+                    else
+                    {
+                        var path = ((string)property.GetValue(factory)).Replace('/', '\\');
+                        if (!ContentProjectManager.HasTextureAsset(path))
+                        {
+                            AddIssue("Invalid texture asset name, no such texture asset.", factory.Name, property.Name, IssueType.Error);
+                        }
+                    }
+                }
             }
         }
     }

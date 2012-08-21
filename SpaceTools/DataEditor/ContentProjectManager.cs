@@ -150,5 +150,17 @@ namespace Space.Tools.DataEditor
             TextureAssets.TryGetValue(assetName, out result);
             return result;
         }
+
+        /// <summary>
+        /// Determines whether a texture asset with the specified name is known.
+        /// </summary>
+        /// <param name="assetName">Name of the asset.</param>
+        /// <returns>
+        ///   <c>true</c> if the texture asset is known; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasTextureAsset(string assetName)
+        {
+            return TextureAssets.ContainsKey(assetName);
+        }
     }
 }

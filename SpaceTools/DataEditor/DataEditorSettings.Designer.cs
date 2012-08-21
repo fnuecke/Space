@@ -94,5 +94,77 @@ namespace Space.Tools.DataEditor {
                 this["ContentRootDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int MainSplit {
+            get {
+                return ((int)(this["MainSplit"]));
+            }
+            set {
+                this["MainSplit"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int OuterSplit {
+            get {
+                return ((int)(this["OuterSplit"]));
+            }
+            set {
+                this["OuterSplit"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int InnerSplit {
+            get {
+                return ((int)(this["InnerSplit"]));
+            }
+            set {
+                this["InnerSplit"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int IssuesFactoryWidth {
+            get {
+                return ((int)(this["IssuesFactoryWidth"]));
+            }
+            set {
+                this["IssuesFactoryWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int IssuesPropertyWidth {
+            get {
+                return ((int)(this["IssuesPropertyWidth"]));
+            }
+            set {
+                this["IssuesPropertyWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int IssuesDescriptionWidth {
+            get {
+                return ((int)(this["IssuesDescriptionWidth"]));
+            }
+            set {
+                this["IssuesDescriptionWidth"] = value;
+            }
+        }
     }
 }
