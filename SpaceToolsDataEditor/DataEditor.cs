@@ -3,10 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Space.ComponentSystem.Factories;
+using Space.Data;
 
 namespace Space.Tools.DataEditor
 {
@@ -42,6 +45,7 @@ namespace Space.Tools.DataEditor
 
             lvIssues.ListViewItemSorter = new IssueComparer();
             pgProperties.PropertyValueChanged += (o, args) => pgProperties.Refresh();
+            pbPreview.Image = new Bitmap(1024, 1024);
 
             var settings = DataEditorSettings.Default;
 
@@ -160,6 +164,7 @@ namespace Space.Tools.DataEditor
         private void FactorySelected(object sender, TreeViewEventArgs e)
         {
             SelectFactory(e.Node.Name);
+            UpdatePreview();
         }
 
         private void DataEditorClosing(object sender, FormClosingEventArgs e)
@@ -199,63 +204,157 @@ namespace Space.Tools.DataEditor
         {
             // Clear preview.
             var oldBackground = pbPreview.BackgroundImage;
-            var oldImage = pbPreview.Image;
             pbPreview.BackgroundImage = null;
-            pbPreview.Image = null;
+            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+            {
+                g.Clear(System.Drawing.Color.Transparent);
+            }
             if (oldBackground != null)
             {
                 oldBackground.Dispose();
             }
-            if (oldImage != null)
-            {
-                oldImage.Dispose();
-            }
 
             // Stop if nothing is selected.
             if (pgProperties.SelectedObject == null ||
-                pgProperties.SelectedGridItem == null ||
-                pgProperties.SelectedGridItem.PropertyDescriptor == null)
+                pgProperties.SelectedGridItem == null)
             {
                 return;
             }
 
-            // Figure out what to show. If an image asset is selected we
-            // simply show that.
-            if (pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
+            // Figure out what to show. If an image asset is selected we simply show that.
+            if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
+                pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
                 ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
                     .EditorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
             {
-                // OK, render that image (or try to).
-                var fullPath = (string)pgProperties.SelectedGridItem.Value;
-                if (fullPath == null)
-                {
-                    return;
-                }
-
-                // Make all forward slashes backslashes for the following split.
-                fullPath = fullPath.Replace('/', '\\');
-
-                var filePath = ContentProjectManager.GetFileForTextureAsset(fullPath);
-                if (!string.IsNullOrWhiteSpace(filePath))
-                {
-                    // We got it. Set as the new image.
-                    try
-                    {
-                        pbPreview.BackgroundImage = Image.FromFile(filePath);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                    }
-                }
+                RenderTextureAssetPreview();
                 return;
             }
 
-            var objectType = pgProperties.SelectedObject.GetType();
-            if (objectType == typeof(ItemFactory))
-            {
+            // We're not rendering based on property grid item selection at this point, so
+            // we just try to render the selected object.
 
+            // Try rendering the selected object as an item.
+            RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
+
+            // Try rendering a ship.
+            RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
+        }
+
+        private void RenderTextureAssetPreview()
+        {
+            // OK, render that image (or try to).
+            var fullPath = (string)pgProperties.SelectedGridItem.Value;
+            if (fullPath == null)
+            {
+                return;
+            }
+
+            // Make all forward slashes backslashes for the following split.
+            fullPath = fullPath.Replace('/', '\\');
+
+            var filePath = ContentProjectManager.GetFileForTextureAsset(fullPath);
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                // We got it. Set as the new image.
+                try
+                {
+                    pbPreview.BackgroundImage = Image.FromFile(filePath);
+                }
+                catch (FileNotFoundException)
+                {
+                }
             }
         }
+
+        private void RenderItemPreview(ItemFactory factory)
+        {
+            if (factory == null)
+            {
+                return;
+            }
+
+            // Draw base image.
+            var modelFile = ContentProjectManager.GetFileForTextureAsset(factory.Model);
+            if (modelFile != null)
+            {
+                var bmp = new Bitmap(modelFile);
+                var size = factory.RequiredSlotSize.ToPixelSize();
+                var scale = size / (float)Math.Max(bmp.Width, bmp.Height);
+                var newWidth = (int)(bmp.Width * scale);
+                var newHeight = (int)(bmp.Height * scale);
+                if (newWidth != bmp.Width || newHeight != bmp.Height)
+                {
+                    // Need resizing.
+                    var newBmp = new Bitmap(newWidth, newHeight);
+                    using (var g = System.Drawing.Graphics.FromImage(newBmp))
+                    {
+                        g.SmoothingMode = SmoothingMode.HighQuality;
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        g.DrawImage(bmp, 0, 0, newWidth, newHeight);
+                    }
+                    // Kill old bmp, use new.
+                    bmp.Dispose();
+                    bmp = newBmp;
+                }
+                pbPreview.BackgroundImage = bmp;
+            }
+
+            // Draw slot mounting positions.
+            if (factory.Slots != null)
+            {
+                // Set up required stuff for alpha blended drawing.
+                var ia = new ImageAttributes();
+                ia.SetColorMatrix(new ColorMatrix { Matrix00 = 1f, Matrix11 = 1f, Matrix22 = 1f, Matrix44 = 1f, Matrix33 = 0.7f });
+
+                foreach (var slot in factory.Slots)
+                {
+                    Image mountpointImage;
+                    MountpointImages.TryGetValue(slot.Type, out mountpointImage);
+                    if (mountpointImage == null)
+                    {
+                        continue;
+                    }
+                    var size = slot.Size.ToPixelSize();
+                    var x = (pbPreview.Image.Width - size - 1) / 2f;
+                    var y = (pbPreview.Image.Height - size - 1) / 2f;
+                    if (slot.Offset.HasValue)
+                    {
+                        x += slot.Offset.Value.X;
+                        y += slot.Offset.Value.Y;
+                    }
+                    using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                    {
+                        g.SmoothingMode = SmoothingMode.HighQuality;
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        g.DrawImage(mountpointImage, new Rectangle((int)x, (int)y, size, size), 0, 0, mountpointImage.Width, mountpointImage.Height, GraphicsUnit.Pixel, ia);
+                    }
+                }
+            }
+        }
+
+        private void RenderShipPreview(ShipFactory factory)
+        {
+            if (factory == null)
+            {
+                return;
+            }
+
+        }
+
+        private static readonly Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image> MountpointImages = new Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image>
+        {
+            {ItemFactory.ItemSlotInfo.ItemType.Armor, Images.mountpoint_armor},
+            {ItemFactory.ItemSlotInfo.ItemType.Fuselage, Images.mountpoint_fuselage},
+            {ItemFactory.ItemSlotInfo.ItemType.Reactor, Images.mountpoint_reactor},
+            {ItemFactory.ItemSlotInfo.ItemType.Sensor, Images.mountpoint_sensor},
+            {ItemFactory.ItemSlotInfo.ItemType.Shield, Images.mountpoint_shield},
+            {ItemFactory.ItemSlotInfo.ItemType.Thruster, Images.mountpoint_thruster},
+            {ItemFactory.ItemSlotInfo.ItemType.Weapon, Images.mountpoint_weapon},
+            {ItemFactory.ItemSlotInfo.ItemType.Wing, Images.mountpoint_wing},
+        };
 
         private void IssuesDoubleClick(object sender, EventArgs e)
         {

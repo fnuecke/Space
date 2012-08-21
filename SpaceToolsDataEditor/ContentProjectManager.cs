@@ -147,7 +147,7 @@ namespace Space.Tools.DataEditor
         public static string GetFileForTextureAsset(string assetName)
         {
             string result;
-            TextureAssets.TryGetValue(assetName, out result);
+            TextureAssets.TryGetValue(assetName.Replace('/', '\\'), out result);
             return result;
         }
 
@@ -160,7 +160,7 @@ namespace Space.Tools.DataEditor
         /// </returns>
         public static bool HasTextureAsset(string assetName)
         {
-            return TextureAssets.ContainsKey(assetName);
+            return TextureAssets.ContainsKey(assetName.Replace('/', '\\'));
         }
     }
 }

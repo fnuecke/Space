@@ -50,6 +50,7 @@
     <Reference Include="Microsoft.WindowsAPICodePack.ShellExtensions">
       <HintPath>.\Microsoft.WindowsAPICodePack.ShellExtensions.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -84,6 +85,11 @@
     <Compile Include="ContentProjectEditor.cs" />
     <Compile Include="DataEditorSettingsProxy.cs" />
     <Compile Include="FactoryManager.cs" />
+    <Compile Include="Images.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Images.resx</DependentUpon>
+    </Compile>
     <Compile Include="ItemInfoDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,6 +116,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DataEditorSettingsDialog.resx">
       <DependentUpon>DataEditorSettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Images.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Images.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="ItemInfoDialog.resx">
       <DependentUpon>ItemInfoDialog.cs</DependentUpon>
@@ -163,6 +173,16 @@
       <Project>{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}</Project>
       <Name>Space.Serialization</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\mountpoint_armor.png" />
+    <Content Include="Resources\mountpoint_fuselage.png" />
+    <Content Include="Resources\mountpoint_reactor.png" />
+    <Content Include="Resources\mountpoint_sensor.png" />
+    <Content Include="Resources\mountpoint_shield.png" />
+    <Content Include="Resources\mountpoint_thruster.png" />
+    <Content Include="Resources\mountpoint_weapon.png" />
+    <Content Include="Resources\mountpoint_wing.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

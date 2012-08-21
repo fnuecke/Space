@@ -67,19 +67,6 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// The scaling to apply to the model texture.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        [DefaultValue(1.0f)]
-        [Category("Media")]
-        [Description("The relative scale of the texture.")]
-        public float ModelScale
-        {
-            get { return _modelScale; }
-            set { _modelScale = value; }
-        }
-
-        /// <summary>
         /// The quality of the item, to give a rough idea of the value.
         /// </summary>
         [ContentSerializer(Optional = true)]
@@ -171,8 +158,6 @@ namespace Space.ComponentSystem.Factories
 
         private string _model = "Textures/Items/default";
 
-        private float _modelScale = 1.0f;
-
         private ItemQuality _quality = ItemQuality.Common;
 
         private ItemSlotSize _requiredSlotSize = ItemSlotSize.Small;
@@ -203,7 +188,7 @@ namespace Space.ComponentSystem.Factories
 
             // Add position (when dropped) and renderer (when dropped or equipped).
             manager.AddComponent<Transform>(entity);
-            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _modelScale);
+            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model);
 
             // Do not render initially (only when dropped).
             renderer.Enabled = false;
