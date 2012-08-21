@@ -41,6 +41,7 @@ namespace Space.Tools.DataEditor
             InitializeLogic();
 
             lvIssues.ListViewItemSorter = new IssueComparer();
+            pgProperties.PropertyValueChanged += (o, args) => pgProperties.Refresh();
 
             var settings = DataEditorSettings.Default;
 

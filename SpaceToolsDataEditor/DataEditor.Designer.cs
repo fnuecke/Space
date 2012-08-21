@@ -132,7 +132,7 @@
             // 
             // tsmiSave
             // 
-            this.tsmiSave.Image = global::Space.Tools.Properties.Resources.saveHS;
+            this.tsmiSave.Image = global::Space.Tools.DataEditor.Properties.Resources.saveHS;
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
             this.tsmiSave.Size = new System.Drawing.Size(143, 22);
@@ -141,7 +141,7 @@
             // 
             // tsmiLoad
             // 
-            this.tsmiLoad.Image = global::Space.Tools.Properties.Resources.OpenFile;
+            this.tsmiLoad.Image = global::Space.Tools.DataEditor.Properties.Resources.OpenFile;
             this.tsmiLoad.Name = "tsmiLoad";
             this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
             this.tsmiLoad.Size = new System.Drawing.Size(143, 22);

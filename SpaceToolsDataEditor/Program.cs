@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Space.Tools
+namespace Space.Tools.DataEditor
 {
     static class Program
     {
@@ -13,7 +13,7 @@ namespace Space.Tools
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DataEditor.DataEditor());
+            Application.Run(new DataEditor());
         }
     }
 }

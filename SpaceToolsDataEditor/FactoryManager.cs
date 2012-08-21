@@ -129,6 +129,24 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Gets all item factories.
+        /// </summary>
+        /// <returns>All item factories.</returns>
+        public static IEnumerable<ItemFactory> GetAllItems()
+        {
+            foreach (var factoryByType in FactoriesByType)
+            {
+                if (typeof(ItemFactory).IsAssignableFrom(factoryByType.Key))
+                {
+                    foreach (var factory in factoryByType.Value)
+                    {
+                        yield return factory as ItemFactory;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the factory names of all items known of the specified type.
         /// </summary>
         /// <param name="type">The type.</param>

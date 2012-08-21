@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Tests", "SpaceTests\Space.Tests.csproj", "{E0588C47-23DC-4498-8A72-B4035787AAFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Tools", "SpaceTools\Space.Tools.csproj", "{2E360953-EA52-4E82-80DF-9565A3550A98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Tools.DataEditor", "SpaceToolsDataEditor\Space.Tools.DataEditor.csproj", "{2E360953-EA52-4E82-80DF-9565A3550A98}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarMath", "EngineFarMath\Engine.FarMath.csproj", "{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}"
 EndProject

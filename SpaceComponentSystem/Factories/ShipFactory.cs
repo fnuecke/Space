@@ -40,7 +40,7 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// The base texture to use for rendering the ship class.
         /// </summary>
-        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
             "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [DefaultValue("Textures/Ships/default")]
         [Category("Media")]
@@ -285,7 +285,7 @@ namespace Space.ComponentSystem.Factories
             /// <summary>
             /// The name of the item (template name).
             /// </summary>
-            [Editor("Space.Tools.DataEditor.ItemInfoEditor, Space.Tools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            [Editor("Space.Tools.DataEditor.ItemInfoEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
             [Description("The name of the item type to sample.")]
             public string Name

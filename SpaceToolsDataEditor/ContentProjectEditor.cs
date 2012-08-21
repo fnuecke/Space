@@ -76,7 +76,7 @@ namespace Space.Tools.DataEditor
                     _dialog.FileName = oldPath.Substring(oldPath.LastIndexOf('\\') + 1);
                 }
             }
-            return base.EditValue(context, provider, value);
+            return new ContentProjectPath {Path = (string)base.EditValue(context, provider, value)};
         }
     }
 
