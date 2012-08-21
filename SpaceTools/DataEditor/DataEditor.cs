@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -84,6 +86,16 @@ namespace Space.Tools.DataEditor
 
         private void PropertiesSelectedGridItemChanged(object sender, SelectedGridItemChangedEventArgs e)
         {
+            UpdatePreview();
+        }
+
+        private void PropertiesPropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            UpdatePreview();
+        }
+
+        private void UpdatePreview()
+        {
             // Clear preview.
             var oldBackground = pbPreview.BackgroundImage;
             var oldImage = pbPreview.Image;
@@ -100,18 +112,20 @@ namespace Space.Tools.DataEditor
 
             // Stop if nothing is selected.
             if (pgProperties.SelectedObject == null ||
-                e.NewSelection == null ||
-                e.NewSelection.PropertyDescriptor == null)
+                pgProperties.SelectedGridItem == null ||
+                pgProperties.SelectedGridItem.PropertyDescriptor == null)
             {
                 return;
             }
 
             // Figure out what to show. If an image asset is selected we
             // simply show that.
-            if (e.NewSelection.PropertyDescriptor.Attributes[typeof(ImageAssetAttribute)] != null)
+            if (pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
+                ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
+                    .EditorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
             {
                 // OK, render that image (or try to).
-                var fullPath = (string)e.NewSelection.Value;
+                var fullPath = (string)pgProperties.SelectedGridItem.Value;
                 if (fullPath == null)
                 {
                     return;
@@ -124,7 +138,13 @@ namespace Space.Tools.DataEditor
                 if (!string.IsNullOrWhiteSpace(filePath))
                 {
                     // We got it. Set as the new image.
-                    pbPreview.ImageLocation = filePath;
+                    try
+                    {
+                        pbPreview.BackgroundImage = Image.FromFile(filePath);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                    }
                 }
                 return;
             }
@@ -132,7 +152,7 @@ namespace Space.Tools.DataEditor
             var objectType = pgProperties.SelectedObject.GetType();
             if (objectType == typeof(ItemFactory))
             {
-                
+
             }
         }
     }

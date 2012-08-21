@@ -38,8 +38,9 @@ namespace Space.ComponentSystem.Factories
         /// menus and the inventory.
         /// </summary>
         [ContentSerializer(Optional = true)]
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [DefaultValue("Images/Icons/Buffs/default")]
-        [ImageAsset]
         [Category("Media")]
         [Description("The icon used to represent the item in the GUI, e.g. in the inventory.")]
         public string Icon
@@ -54,7 +55,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue("Textures/Items/default")]
-        [ImageAsset]
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [Category("Media")]
         [Description("The texture used to represent the item in-game, e.g. when lying on the ground or equipped on a ship.")]
         public string Model

@@ -83,6 +83,13 @@
     </Compile>
     <Compile Include="DataEditor\ContentProjectEditor.cs" />
     <Compile Include="DataEditor\DataEditorSettingsProxy.cs" />
+    <Compile Include="DataEditor\TextureAssetDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataEditor\TextureAssetDialog.Designer.cs">
+      <DependentUpon>TextureAssetDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DataEditor\TextureAssetEditor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DataEditor\DataEditorSettings.Designer.cs">
@@ -95,6 +102,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DataEditor\DataEditorSettingsDialog.resx">
       <DependentUpon>DataEditorSettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataEditor\TextureAssetDialog.resx">
+      <DependentUpon>TextureAssetDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

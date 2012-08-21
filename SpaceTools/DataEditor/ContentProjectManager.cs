@@ -26,6 +26,14 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Gets an enumerator over all known texture asset names.
+        /// </summary>
+        public static IEnumerable<string> TextureAssetNames
+        {
+            get { return TextureAssets.Keys; }
+        }
+
+        /// <summary>
         /// Reload all content projects defined in the settings.
         /// </summary>
         public static void Reload()
@@ -78,7 +86,7 @@ namespace Space.Tools.DataEditor
                     }
 
                     // Base path we prepend to asset file paths, being that to the project minus it's file name.
-                    var basePath = projectPath.LastIndexOf('\\') < 0 ? (projectPath + '\\') : projectPath.Substring(0, projectPath.LastIndexOf('\\') + 1);
+                    var basePath = projectPath.Contains('\\') ? projectPath.Substring(0, projectPath.LastIndexOf('\\') + 1) : (projectPath + '\\');
 
                     // Find all usable assets in the content project.
                     foreach (var texture in from asset in xml.Elements(ns + "ItemGroup").Elements(ns + "Compile")
@@ -96,7 +104,7 @@ namespace Space.Tools.DataEditor
                         var assetPath = include.Value.Replace('/', '\\');
 
                         // Extract the relative path, which we need to prepend to the asset name.
-                        var relativeAssetPath = assetPath.LastIndexOf('\\') < 0 ? (assetPath + '\\') : assetPath.Substring(0, assetPath.LastIndexOf('\\') + 1);
+                        var relativeAssetPath = assetPath.Contains('\\') ? assetPath.Substring(0, assetPath.LastIndexOf('\\') + 1) : "";
 
                         // Prepend it with the base path.
                         assetPath = basePath + assetPath;

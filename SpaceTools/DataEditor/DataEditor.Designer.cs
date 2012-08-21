@@ -46,14 +46,15 @@
             this.separator1 = new System.Windows.Forms.ToolStripSeparator();
             this.gbProperties = new System.Windows.Forms.GroupBox();
             this.gbPreview = new System.Windows.Forms.GroupBox();
+            this.pbPreview = new System.Windows.Forms.PictureBox();
             this.scOuter = new System.Windows.Forms.SplitContainer();
             this.scInner = new System.Windows.Forms.SplitContainer();
-            this.pbPreview = new System.Windows.Forms.PictureBox();
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
             this.tsMain.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.gbPreview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scOuter)).BeginInit();
             this.scOuter.Panel1.SuspendLayout();
             this.scOuter.Panel2.SuspendLayout();
@@ -62,7 +63,6 @@
             this.scInner.Panel1.SuspendLayout();
             this.scInner.Panel2.SuspendLayout();
             this.scInner.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).BeginInit();
             this.SuspendLayout();
             // 
             // pgProperties
@@ -72,12 +72,14 @@
             this.pgProperties.Name = "pgProperties";
             this.pgProperties.Size = new System.Drawing.Size(442, 261);
             this.pgProperties.TabIndex = 0;
+            this.pgProperties.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.PropertiesPropertyValueChanged);
             this.pgProperties.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.PropertiesSelectedGridItemChanged);
             // 
             // tvData
             // 
             this.tvData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tvData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tvData.HideSelection = false;
             this.tvData.HotTracking = true;
             this.tvData.Location = new System.Drawing.Point(8, 21);
             this.tvData.Name = "tvData";
@@ -124,7 +126,7 @@
             this.tsmiSave.Image = global::Space.Tools.Properties.Resources.saveHS;
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.tsmiSave.Size = new System.Drawing.Size(152, 22);
+            this.tsmiSave.Size = new System.Drawing.Size(143, 22);
             this.tsmiSave.Text = "&Save";
             this.tsmiSave.Click += new System.EventHandler(this.SaveClick);
             // 
@@ -133,33 +135,33 @@
             this.tsmiLoad.Image = global::Space.Tools.Properties.Resources.OpenFile;
             this.tsmiLoad.Name = "tsmiLoad";
             this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.tsmiLoad.Size = new System.Drawing.Size(152, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(143, 22);
             this.tsmiLoad.Text = "L&oad";
             this.tsmiLoad.Click += new System.EventHandler(this.LoadClick);
             // 
             // separator0
             // 
             this.separator0.Name = "separator0";
-            this.separator0.Size = new System.Drawing.Size(149, 6);
+            this.separator0.Size = new System.Drawing.Size(140, 6);
             // 
             // tsmiSettings
             // 
             this.tsmiSettings.Name = "tsmiSettings";
             this.tsmiSettings.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.tsmiSettings.Size = new System.Drawing.Size(152, 22);
+            this.tsmiSettings.Size = new System.Drawing.Size(143, 22);
             this.tsmiSettings.Text = "S&ettings";
             this.tsmiSettings.Click += new System.EventHandler(this.SettingsClick);
             // 
             // separator2
             // 
             this.separator2.Name = "separator2";
-            this.separator2.Size = new System.Drawing.Size(149, 6);
+            this.separator2.Size = new System.Drawing.Size(140, 6);
             // 
             // tsmiExit
             // 
             this.tsmiExit.Name = "tsmiExit";
             this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.tsmiExit.Size = new System.Drawing.Size(152, 22);
+            this.tsmiExit.Size = new System.Drawing.Size(143, 22);
             this.tsmiExit.Text = "E&xit";
             this.tsmiExit.Click += new System.EventHandler(this.ExitClick);
             // 
@@ -223,6 +225,19 @@
             this.gbPreview.TabStop = false;
             this.gbPreview.Text = "Preview";
             // 
+            // pbPreview
+            // 
+            this.pbPreview.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.pbPreview.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.pbPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pbPreview.Location = new System.Drawing.Point(8, 21);
+            this.pbPreview.Name = "pbPreview";
+            this.pbPreview.Size = new System.Drawing.Size(442, 140);
+            this.pbPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pbPreview.TabIndex = 0;
+            this.pbPreview.TabStop = false;
+            // 
             // scOuter
             // 
             this.scOuter.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -263,19 +278,6 @@
             this.scInner.SplitterDistance = 300;
             this.scInner.TabIndex = 0;
             // 
-            // pbPreview
-            // 
-            this.pbPreview.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.pbPreview.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.pbPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pbPreview.Location = new System.Drawing.Point(8, 21);
-            this.pbPreview.Name = "pbPreview";
-            this.pbPreview.Size = new System.Drawing.Size(442, 140);
-            this.pbPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            this.pbPreview.TabIndex = 0;
-            this.pbPreview.TabStop = false;
-            // 
             // DataEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -297,6 +299,7 @@
             this.tsMain.PerformLayout();
             this.gbProperties.ResumeLayout(false);
             this.gbPreview.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).EndInit();
             this.scOuter.Panel1.ResumeLayout(false);
             this.scOuter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.scOuter)).EndInit();
@@ -305,7 +308,6 @@
             this.scInner.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.scInner)).EndInit();
             this.scInner.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
