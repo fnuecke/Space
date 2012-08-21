@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -11,6 +12,18 @@ namespace Space.Tools.DataEditor
 {
     public sealed partial class DataEditor : Form
     {
+        /// <summary>
+        /// Possible issue types.
+        /// </summary>
+        public enum IssueType
+        {
+            None,
+            Success,
+            Information,
+            Warning,
+            Error
+        }
+
         private readonly CommonOpenFileDialog _openDialog = new CommonOpenFileDialog
         {
             IsFolderPicker = true,
@@ -26,6 +39,8 @@ namespace Space.Tools.DataEditor
         {
             InitializeComponent();
             InitializeLogic();
+
+            lvIssues.ListViewItemSorter = new IssueComparer();
 
             var settings = DataEditorSettings.Default;
 
@@ -71,23 +86,47 @@ namespace Space.Tools.DataEditor
             new Serialization.SpaceAttributeModifierSerializer();
         }
 
-        public enum IssueType
+        /// <summary>
+        /// Adds a new issue to the issues list.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="factory">The factory, if any.</param>
+        /// <param name="property">The property, if any.</param>
+        /// <param name="type">The type.</param>
+        public void AddIssue(string message, string factory = "", string property = "", IssueType type = IssueType.Warning)
         {
-            None,
-            Success,
-            Information,
-            Warning,
-            Error
+            if ((int)type < 1)
+            {
+                type = IssueType.Success;
+            }
+            lvIssues.Items.Add(new ListViewItem(new[] { "", message, factory, property }, (int)type - 1));
         }
 
+        /// <summary>
+        /// Removes all issues from the issue list.
+        /// </summary>
         public void ClearIssues()
         {
             lvIssues.Items.Clear();
         }
 
-        public void AddIssue(string message, string factory = "", string property = "", IssueType type = IssueType.Warning)
+        /// <summary>
+        /// Removes all known issues for the factory with the specified name.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        private void RemoveIssuesForFactory(string factory)
         {
-            lvIssues.Items.Add(new ListViewItem(new[] { "", message, factory, property }, (int)type - 1));
+            lvIssues.BeginUpdate();
+
+            for (var i = lvIssues.Items.Count - 1; i >= 0; i--)
+            {
+                if (lvIssues.Items[i].SubItems[2].Text.Equals(factory))
+                {
+                    lvIssues.Items.RemoveAt(i);
+                }
+            }
+
+            lvIssues.EndUpdate();
         }
 
         private void ExitClick(object sender, EventArgs e)
@@ -265,7 +304,7 @@ namespace Space.Tools.DataEditor
             while (nodes.Count > 0)
             {
                 var node = nodes.Pop();
-                if (node.Label.Equals(name))
+                if (name.Equals(node.Label))
                 {
                     node.Select();
                     return true;
@@ -276,6 +315,48 @@ namespace Space.Tools.DataEditor
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Sorter for issue list.
+        /// </summary>
+        private sealed class IssueComparer : IComparer<ListViewItem>, IComparer
+        {
+            public int Compare(ListViewItem x, ListViewItem y)
+            {
+                var xMessage = x.SubItems[1].Text;
+                var xFactory = x.SubItems[2].Text;
+                var xProperty = x.SubItems[3].Text;
+
+                var yMessage = y.SubItems[1].Text;
+                var yFactory = y.SubItems[2].Text;
+                var yProperty = y.SubItems[3].Text;
+
+                if (!string.IsNullOrWhiteSpace(xFactory) && !string.IsNullOrWhiteSpace(yFactory) && !xFactory.Equals(yFactory))
+                {
+                    // Sort by factory.
+                    return string.CompareOrdinal(xFactory, yFactory);
+                }
+                else if (!string.IsNullOrWhiteSpace(xProperty) && !string.IsNullOrWhiteSpace(yProperty) && !xProperty.Equals(yProperty))
+                {
+                    // Sort by property.
+                    return string.CompareOrdinal(xProperty, yProperty);
+                }
+                else
+                {
+                    // Sort by message.
+                    return string.CompareOrdinal(xMessage, yMessage);   
+                }
+            }
+
+            public int Compare(object x, object y)
+            {
+                if (x is ListViewItem && y is ListViewItem)
+                {
+                    return Compare((ListViewItem)x, (ListViewItem)y);
+                }
+                throw new ArgumentException("Invalid item type.");
+            }
         }
     }
 }

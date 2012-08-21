@@ -42,6 +42,9 @@ namespace Space.Tools.DataEditor
                 tvData.Nodes.Add(type.Name, CleanFactoryName(type));
             }
             tvData.EndUpdate();
+
+            // Rescan for issues when a property changes.
+            pgProperties.PropertyValueChanged += (o, args) => ScanForIssues((IFactory)pgProperties.SelectedObject);
         }
 
         /// <summary>
@@ -166,30 +169,46 @@ namespace Space.Tools.DataEditor
             // Check factories.
             foreach (var factory in _factories.Values)
             {
-                // Check image asset properties.
-                foreach (PropertyDescriptor property in TypeDescriptor
-                    .GetProperties(factory,
-                                   new Attribute[]
+                ScanForIssues(factory);
+            }
+        }
+
+        /// <summary>
+        /// Scans for issues for a specific factory.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        private void ScanForIssues(IFactory factory)
+        {
+            // Remove issues involving this factory.
+            RemoveIssuesForFactory(factory.Name);
+
+            lvIssues.BeginUpdate();
+
+            // Check image asset properties.
+            foreach (PropertyDescriptor property in TypeDescriptor
+                .GetProperties(factory,
+                               new Attribute[]
                                    {
                                        new EditorAttribute(
                                        typeof(TextureAssetEditor),
                                        typeof(UITypeEditor))
                                    }))
+            {
+                if (property.PropertyType != typeof(string))
                 {
-                    if (property.PropertyType != typeof(string))
+                    AddIssue("Property marked as texture asset is not of type string.", factory.Name, property.Name);
+                }
+                else
+                {
+                    var path = ((string)property.GetValue(factory));
+                    if (!string.IsNullOrWhiteSpace(path) && !ContentProjectManager.HasTextureAsset(path.Replace('/', '\\')))
                     {
-                        AddIssue("Property marked as texture asset is not of type string.", factory.Name, property.Name);
-                    }
-                    else
-                    {
-                        var path = ((string)property.GetValue(factory));
-                        if (!string.IsNullOrWhiteSpace(path) && !ContentProjectManager.HasTextureAsset(path.Replace('/', '\\')))
-                        {
-                            AddIssue("Invalid texture asset name, no such texture asset.", factory.Name, property.Name, IssueType.Error);
-                        }
+                        AddIssue("Invalid texture asset name, no such texture asset.", factory.Name, property.Name, IssueType.Error);
                     }
                 }
             }
+
+            lvIssues.EndUpdate();
         }
     }
 }
