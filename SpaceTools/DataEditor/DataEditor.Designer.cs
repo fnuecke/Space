@@ -41,10 +41,6 @@
             this.tsmiSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.separator2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsMain = new System.Windows.Forms.ToolStrip();
-            this.tsbSave = new System.Windows.Forms.ToolStripButton();
-            this.tsbLoad = new System.Windows.Forms.ToolStripButton();
-            this.separator1 = new System.Windows.Forms.ToolStripSeparator();
             this.gbProperties = new System.Windows.Forms.GroupBox();
             this.gbPreview = new System.Windows.Forms.GroupBox();
             this.pbPreview = new System.Windows.Forms.PictureBox();
@@ -54,13 +50,12 @@
             this.gbIssues = new System.Windows.Forms.GroupBox();
             this.lvIssues = new System.Windows.Forms.ListView();
             this.chIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chText = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chFactory = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chProperty = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chText = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ilIssueTypes = new System.Windows.Forms.ImageList(this.components);
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
-            this.tsMain.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.gbPreview.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).BeginInit();
@@ -84,7 +79,7 @@
             this.pgProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pgProperties.Location = new System.Drawing.Point(8, 21);
             this.pgProperties.Name = "pgProperties";
-            this.pgProperties.Size = new System.Drawing.Size(437, 151);
+            this.pgProperties.Size = new System.Drawing.Size(437, 176);
             this.pgProperties.TabIndex = 0;
             this.pgProperties.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.PropertiesPropertyValueChanged);
             this.pgProperties.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.PropertiesSelectedGridItemChanged);
@@ -97,7 +92,7 @@
             this.tvData.HotTracking = true;
             this.tvData.Location = new System.Drawing.Point(8, 21);
             this.tvData.Name = "tvData";
-            this.tvData.Size = new System.Drawing.Size(214, 261);
+            this.tvData.Size = new System.Drawing.Size(214, 286);
             this.tvData.TabIndex = 1;
             this.tvData.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.FactorySelected);
             // 
@@ -108,7 +103,7 @@
             this.gbData.Location = new System.Drawing.Point(5, 5);
             this.gbData.Name = "gbData";
             this.gbData.Padding = new System.Windows.Forms.Padding(8);
-            this.gbData.Size = new System.Drawing.Size(230, 290);
+            this.gbData.Size = new System.Drawing.Size(230, 315);
             this.gbData.TabIndex = 2;
             this.gbData.TabStop = false;
             this.gbData.Text = "Data";
@@ -179,42 +174,6 @@
             this.tsmiExit.Text = "E&xit";
             this.tsmiExit.Click += new System.EventHandler(this.ExitClick);
             // 
-            // tsMain
-            // 
-            this.tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbSave,
-            this.tsbLoad,
-            this.separator1});
-            this.tsMain.Location = new System.Drawing.Point(0, 24);
-            this.tsMain.Name = "tsMain";
-            this.tsMain.Size = new System.Drawing.Size(707, 25);
-            this.tsMain.TabIndex = 4;
-            // 
-            // tsbSave
-            // 
-            this.tsbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbSave.Image = global::Space.Tools.Properties.Resources.saveHS;
-            this.tsbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbSave.Name = "tsbSave";
-            this.tsbSave.Size = new System.Drawing.Size(23, 22);
-            this.tsbSave.Text = "Save";
-            this.tsbSave.Click += new System.EventHandler(this.SaveClick);
-            // 
-            // tsbLoad
-            // 
-            this.tsbLoad.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbLoad.Image = global::Space.Tools.Properties.Resources.OpenFile;
-            this.tsbLoad.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbLoad.Name = "tsbLoad";
-            this.tsbLoad.Size = new System.Drawing.Size(23, 22);
-            this.tsbLoad.Text = "Reload";
-            this.tsbLoad.Click += new System.EventHandler(this.LoadClick);
-            // 
-            // separator1
-            // 
-            this.separator1.Name = "separator1";
-            this.separator1.Size = new System.Drawing.Size(6, 25);
-            // 
             // gbProperties
             // 
             this.gbProperties.Controls.Add(this.pgProperties);
@@ -222,7 +181,7 @@
             this.gbProperties.Location = new System.Drawing.Point(5, 5);
             this.gbProperties.Name = "gbProperties";
             this.gbProperties.Padding = new System.Windows.Forms.Padding(8);
-            this.gbProperties.Size = new System.Drawing.Size(453, 180);
+            this.gbProperties.Size = new System.Drawing.Size(453, 205);
             this.gbProperties.TabIndex = 5;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Properties";
@@ -269,7 +228,7 @@
             // 
             this.scOuter.Panel2.Controls.Add(this.scInner);
             this.scOuter.Panel2MinSize = 40;
-            this.scOuter.Size = new System.Drawing.Size(707, 300);
+            this.scOuter.Size = new System.Drawing.Size(707, 325);
             this.scOuter.SplitterDistance = 240;
             this.scOuter.TabIndex = 7;
             // 
@@ -292,15 +251,15 @@
             this.scInner.Panel2.Controls.Add(this.gbPreview);
             this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
             this.scInner.Panel2MinSize = 40;
-            this.scInner.Size = new System.Drawing.Size(463, 300);
-            this.scInner.SplitterDistance = 190;
+            this.scInner.Size = new System.Drawing.Size(463, 325);
+            this.scInner.SplitterDistance = 215;
             this.scInner.TabIndex = 0;
             // 
             // scMain
             // 
             this.scMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.scMain.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
-            this.scMain.Location = new System.Drawing.Point(0, 49);
+            this.scMain.Location = new System.Drawing.Point(0, 24);
             this.scMain.Name = "scMain";
             this.scMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -314,8 +273,8 @@
             this.scMain.Panel2.Controls.Add(this.gbIssues);
             this.scMain.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
             this.scMain.Panel2MinSize = 40;
-            this.scMain.Size = new System.Drawing.Size(707, 483);
-            this.scMain.SplitterDistance = 300;
+            this.scMain.Size = new System.Drawing.Size(707, 508);
+            this.scMain.SplitterDistance = 325;
             this.scMain.TabIndex = 8;
             // 
             // gbIssues
@@ -357,6 +316,11 @@
             this.chIcon.Text = "";
             this.chIcon.Width = 22;
             // 
+            // chText
+            // 
+            this.chText.Text = "Description";
+            this.chText.Width = 426;
+            // 
             // chFactory
             // 
             this.chFactory.Text = "Factory Name";
@@ -366,12 +330,6 @@
             // 
             this.chProperty.Text = "Property Name";
             this.chProperty.Width = 122;
-            // 
-            // chText
-            // 
-            this.chText.DisplayIndex = 1;
-            this.chText.Text = "Description";
-            this.chText.Width = 426;
             // 
             // ilIssueTypes
             // 
@@ -388,7 +346,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(707, 532);
             this.Controls.Add(this.scMain);
-            this.Controls.Add(this.tsMain);
             this.Controls.Add(this.msMain);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.msMain;
@@ -399,8 +356,6 @@
             this.gbData.ResumeLayout(false);
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();
-            this.tsMain.ResumeLayout(false);
-            this.tsMain.PerformLayout();
             this.gbProperties.ResumeLayout(false);
             this.gbPreview.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbPreview)).EndInit();
@@ -433,10 +388,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiSave;
         private System.Windows.Forms.ToolStripMenuItem tsmiLoad;
         private System.Windows.Forms.ToolStripSeparator separator0;
-        private System.Windows.Forms.ToolStrip tsMain;
-        private System.Windows.Forms.ToolStripButton tsbSave;
-        private System.Windows.Forms.ToolStripButton tsbLoad;
-        private System.Windows.Forms.ToolStripSeparator separator1;
         private System.Windows.Forms.GroupBox gbProperties;
         private System.Windows.Forms.GroupBox gbPreview;
         private System.Windows.Forms.SplitContainer scOuter;

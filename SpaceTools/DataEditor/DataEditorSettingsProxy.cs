@@ -20,6 +20,8 @@ namespace Space.Tools.DataEditor
         /// <summary>
         /// Auto loading of last opened factories.
         /// </summary>
+        [DefaultValue(true)]
+        [Category("Behavior")]
         [Description("Determines whether the last opened folder should be opened again upon the next start of the application.")]
         public bool AutoLoad
         {
@@ -30,6 +32,8 @@ namespace Space.Tools.DataEditor
         /// <summary>
         /// Content root directory as set in game content manager.
         /// </summary>
+        [DefaultValue("data")]
+        [Category("Content")]
         [Description("The content root directory as set in the content manager used in the game.")]
         public string ContentRootDirectory
         {
@@ -40,6 +44,7 @@ namespace Space.Tools.DataEditor
         /// <summary>
         /// Referenced content projects.
         /// </summary>
+        [Category("Content")]
         [Description("A list of folders in which to look for image assets.")]
         public ContentProjectPath[] ContentProjects
         {
