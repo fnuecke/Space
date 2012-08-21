@@ -110,6 +110,7 @@
     <Compile Include="Factories\FactoryLibrary.cs" />
     <Compile Include="Factories\FuselageFactory.cs" />
     <Compile Include="Factories\IFactory.cs" />
+    <Compile Include="Factories\ImageAssetAttribute.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
     <Compile Include="Factories\PlanetFactory.cs" />

@@ -13,11 +13,11 @@ namespace Space.Tools.DataEditor {
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "10.0.0.0")]
-    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
+    internal sealed partial class DataEditorSettings : global::System.Configuration.ApplicationSettingsBase {
         
-        private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
+        private static DataEditorSettings defaultInstance = ((DataEditorSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new DataEditorSettings())));
         
-        public static Settings Default {
+        public static DataEditorSettings Default {
             get {
                 return defaultInstance;
             }
@@ -56,6 +56,42 @@ namespace Space.Tools.DataEditor {
             }
             set {
                 this["WindowBounds"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ContentProjects {
+            get {
+                return ((string)(this["ContentProjects"]));
+            }
+            set {
+                this["ContentProjects"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastOpenedImageAsset {
+            get {
+                return ((string)(this["LastOpenedImageAsset"]));
+            }
+            set {
+                this["LastOpenedImageAsset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("data")]
+        public string ContentRootDirectory {
+            get {
+                return ((string)(this["ContentRootDirectory"]));
+            }
+            set {
+                this["ContentRootDirectory"] = value;
             }
         }
     }

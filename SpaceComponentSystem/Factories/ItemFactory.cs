@@ -39,6 +39,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue("Images/Icons/Buffs/default")]
+        [ImageAsset]
         [Category("Media")]
         [Description("The icon used to represent the item in the GUI, e.g. in the inventory.")]
         public string Icon
@@ -53,6 +54,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue("Textures/Items/default")]
+        [ImageAsset]
         [Category("Media")]
         [Description("The texture used to represent the item in-game, e.g. when lying on the ground or equipped on a ship.")]
         public string Model

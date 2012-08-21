@@ -376,17 +376,41 @@ namespace Engine.Math
                 if (value is DoubleInterval)
                 {
                     var i = (DoubleInterval)value;
-                    return i.Low.ToString(CultureInfo.InvariantCulture) + " to " + i.High.ToString(CultureInfo.InvariantCulture);
+                    if (i.Low == i.High)
+                    {
+                        return i.Low.ToString(CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
+                               i.High.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
                 else if (value is FloatInterval)
                 {
                     var i = (FloatInterval)value;
-                    return i.Low.ToString(CultureInfo.InvariantCulture) + " to " + i.High.ToString(CultureInfo.InvariantCulture);
+                    if (i.Low == i.High)
+                    {
+                        return i.Low.ToString(CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
+                               i.High.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
                 else if (value is IntInterval)
                 {
                     var i = (IntInterval)value;
-                    return i.Low.ToString(CultureInfo.InvariantCulture) + " to " + i.High.ToString(CultureInfo.InvariantCulture);
+                    if (i.Low == i.High)
+                    {
+                        return i.Low.ToString(CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
+                               i.High.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
             }
             return base.ConvertTo(context, culture, value, destinationType);

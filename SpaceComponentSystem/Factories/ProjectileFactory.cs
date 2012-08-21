@@ -28,6 +28,9 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
+        [ImageAsset]
+        [Category("Media")]
+        [Description("The asset name of the texture to use to render this projectile.")]
         public string Model
         {
             get { return _model; }
@@ -39,6 +42,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
+        [Category("Media")]
+        [Description("The asset name of the particle effect to use to render this projectile.")]
         public string Effect
         {
             get { return _effect; }
@@ -50,6 +55,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
+        [Category("Media")]
+        [Description("The offset relative to a projectile's position to emit the particle effects at.")]
         public Vector2? EffectOffset
         {
             get { return _effectOffset; }
@@ -59,6 +66,8 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// The collision radius of the projectile.
         /// </summary>
+        [Category("Logic")]
+        [Description("The radius of the circle that is used for collision checks.")]
         public float CollisionRadius
         {
             get { return _collisionRadius; }
@@ -72,6 +81,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(false)]
+        [Category("Logic")]
+        [Description("Whether this projectile can collide with other projectiles, e.g. for missiles.")]
         public bool CanBeShot
         {
             get { return _canBeShot; }
@@ -86,6 +97,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
+        [Category("Logic")]
+        [Description("The initial velocity of the projectile, relative to its emitter.")]
         public FloatInterval InitialVelocity
         {
             get { return _initialVelocity; }
@@ -98,6 +111,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
+        [Category("Logic")]
+        [Description("The direction of the intial velocity, relative to the projectile's emitter.")]
         public FloatInterval InitialDirection
         {
             get { return _initialDirection; }
@@ -112,6 +127,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(0f)]
+        [Category("Logic")]
+        [Description("The initial rotation of the projectile, relative to its emitter, e.g. for directed acceleration.")]
         public FloatInterval InitialRotation
         {
             get { return _initialRotation; }
@@ -123,6 +140,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(0f)]
+        [Category("Logic")]
+        [Description("The acceleration of the projectile, e.g. for missiles.")]
         public FloatInterval AccelerationForce
         {
             get { return _accelerationForce; }
@@ -134,6 +153,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(0f)]
+        [Category("Logic")]
+        [Description("The friction to apply to the projectile, e.g. for missiles.")]
         public float Friction
         {
             get { return _friction; }
@@ -146,6 +167,8 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(5f)]
+        [Category("Logic")]
+        [Description("The time after which an instance of this projectile type is removed from the simulation, even if it didn't hit anything, in seconds.")]
         public float TimeToLive
         {
             get { return _timeToLive; }
