@@ -83,6 +83,14 @@
     </Compile>
     <Compile Include="DataEditor\ContentProjectEditor.cs" />
     <Compile Include="DataEditor\DataEditorSettingsProxy.cs" />
+    <Compile Include="DataEditor\FactoryManager.cs" />
+    <Compile Include="DataEditor\ItemInfoDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataEditor\ItemInfoDialog.Designer.cs">
+      <DependentUpon>ItemInfoDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DataEditor\ItemInfoEditor.cs" />
     <Compile Include="DataEditor\TextureAssetDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,6 +110,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DataEditor\DataEditorSettingsDialog.resx">
       <DependentUpon>DataEditorSettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataEditor\ItemInfoDialog.resx">
+      <DependentUpon>ItemInfoDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DataEditor\TextureAssetDialog.resx">
       <DependentUpon>TextureAssetDialog.cs</DependentUpon>
@@ -139,6 +150,10 @@
     <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
       <Name>Engine.Serialization.Writers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
+      <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
+      <Name>Space.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>

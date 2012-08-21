@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
@@ -374,5 +375,49 @@ namespace Space.ComponentSystem.Factories
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Converter methods for item type enum.
+    /// </summary>
+    public static class ItemTypeExtensions
+    {
+        private static readonly Dictionary<ItemFactory.ItemSlotInfo.ItemType, Type> TypeMapping = new Dictionary<ItemFactory.ItemSlotInfo.ItemType, Type>
+                {
+                    {ItemFactory.ItemSlotInfo.ItemType.Armor, typeof(ArmorFactory)},
+                    {ItemFactory.ItemSlotInfo.ItemType.Fuselage, typeof(FuselageFactory)},
+                    {ItemFactory.ItemSlotInfo.ItemType.Reactor, typeof(ReactorFactory)},
+                    {ItemFactory.ItemSlotInfo.ItemType.Sensor, typeof(SensorFactory)},
+                    {ItemFactory.ItemSlotInfo.ItemType.Shield, typeof(ShieldFactory)},
+                    {ItemFactory.ItemSlotInfo.ItemType.Thruster, typeof(ThrusterFactory)},
+                    {ItemFactory.ItemSlotInfo.ItemType.Weapon, typeof(WeaponFactory)},
+                    {ItemFactory.ItemSlotInfo.ItemType.Wing, typeof(WingFactory)}
+                };
+
+        private static readonly Dictionary<Type, ItemFactory.ItemSlotInfo.ItemType> EnumMapping = new Dictionary<Type, ItemFactory.ItemSlotInfo.ItemType>
+                {
+                    {typeof(ArmorFactory), ItemFactory.ItemSlotInfo.ItemType.Armor},
+                    {typeof(FuselageFactory), ItemFactory.ItemSlotInfo.ItemType.Fuselage},
+                    {typeof(ReactorFactory), ItemFactory.ItemSlotInfo.ItemType.Reactor},
+                    {typeof(SensorFactory), ItemFactory.ItemSlotInfo.ItemType.Sensor},
+                    {typeof(ShieldFactory), ItemFactory.ItemSlotInfo.ItemType.Shield},
+                    {typeof(ThrusterFactory), ItemFactory.ItemSlotInfo.ItemType.Thruster},
+                    {typeof(WeaponFactory), ItemFactory.ItemSlotInfo.ItemType.Weapon},
+                    {typeof(WingFactory), ItemFactory.ItemSlotInfo.ItemType.Wing}
+                };
+
+        public static Type ToFactoryType(this ItemFactory.ItemSlotInfo.ItemType type)
+        {
+            Type result;
+            TypeMapping.TryGetValue(type, out result);
+            return result;
+        }
+
+        public static ItemFactory.ItemSlotInfo.ItemType ToItemType(this Type type)
+        {
+            ItemFactory.ItemSlotInfo.ItemType result;
+            EnumMapping.TryGetValue(type, out result);
+            return result;
+        }
     }
 }

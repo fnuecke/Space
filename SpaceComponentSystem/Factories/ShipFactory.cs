@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
@@ -27,33 +28,92 @@ namespace Space.ComponentSystem.Factories
         /// The name of the ship class, which serves as a unique type
         /// identifier.
         /// </summary>
-        public string Name { get; set; }
+        [DefaultValue("")]
+        [Category("General")]
+        [Description("The name of this ship, by which it can be referenced.")]
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
         /// <summary>
         /// The base texture to use for rendering the ship class.
         /// </summary>
-        public string Texture;
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [DefaultValue("Textures/Ships/default")]
+        [Category("Media")]
+        [Description("The base image to represent the ship, without any equipment.")]
+        public string Texture
+        {
+            get { return _texture; }
+            set { _texture = value; }
+        }
 
         /// <summary>
         /// The base collision radius of the ship class.
         /// </summary>
-        public float CollisionRadius;
+        [Category("Logic")]
+        [Description("The radius of the circle that is used for collision checks.")]
+        public float CollisionRadius
+        {
+            get { return _collisionRadius; }
+            set { _collisionRadius = value; }
+        }
 
         /// <summary>
         /// The Item Pool which is used if the Entity is destroyed
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string ItemPool;
+        [DefaultValue(null)]
+        [Category("Logic")]
+        [Description("The name of the item pool from which items are sampled upon destruction of the ship.")]
+        public string ItemPool
+        {
+            get { return _itemPool; }
+            set { _itemPool = value; }
+        }
 
         /// <summary>
         /// List of basic stats for this ship class.
         /// </summary>
-        public AttributeModifierConstraint<AttributeType>[] Attributes;
+        [DefaultValue(null)]
+        [Category("Stats")]
+        [Description("Attribute bonuses provided by this ship.")]
+        public AttributeModifierConstraint<AttributeType>[] Attributes
+        {
+            get { return _attributes; }
+            set { _attributes = value; }
+        }
 
         /// <summary>
         /// Default equipment to generate for the ship.
         /// </summary>
-        public ItemInfo Items;
+        [DefaultValue(null)]
+        [Category("Equipment")]
+        [Description("A hierarchical representation of the default equipment to populate the ship with.")]
+        public ItemInfo Items
+        {
+            get { return _items; }
+            set { _items = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _name = "";
+
+        private string _texture = "Textures/Ships/default";
+
+        private float _collisionRadius;
+
+        private string _itemPool;
+
+        private AttributeModifierConstraint<AttributeType>[] _attributes;
+
+        private ItemInfo _items;
 
         #endregion
 
@@ -73,15 +133,15 @@ namespace Space.ComponentSystem.Factories
 
             // Create initial equipment.
             var equipment = (ItemSlot)manager.GetComponent(entity, ItemSlot.TypeId);
-            equipment.Item = FactoryLibrary.SampleItem(manager, Items.Name, position, random);
-            foreach (var item in Items.Children)
+            equipment.Item = FactoryLibrary.SampleItem(manager, _items.Name, position, random);
+            foreach (var item in _items.Slots)
             {
                 SampleItems(manager, position, random, equipment.Item, item);
             }
 
             // Add our attributes.
             var character = ((Character<AttributeType>)manager.GetComponent(entity, Character<AttributeType>.TypeId));
-            foreach (var attribute in Attributes)
+            foreach (var attribute in _attributes)
             {
                 var modifier = attribute.SampleAttributeModifier(random);
                 if (modifier.ComputationType == AttributeComputationType.Multiplicative)
@@ -124,7 +184,7 @@ namespace Space.ComponentSystem.Factories
                     slot.Item = itemId;
 
                     // Recurse to generate children.
-                    foreach (var childInfo in itemInfo.Children)
+                    foreach (var childInfo in itemInfo.Slots)
                     {
                         SampleItems(manager, position, random, itemId, childInfo);
                     }
@@ -161,12 +221,12 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<WeaponControl>(entity);
             manager.AddComponent<Energy>(entity);
             manager.AddComponent<Health>(entity).Initialize(120);
-            manager.AddComponent<TextureRenderer>(entity).Initialize(Texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
+            manager.AddComponent<TextureRenderer>(entity).Initialize(_texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
             manager.AddComponent<ParticleEffects>(entity);
 
             // Collision component, to allow colliding with other entities.
             manager.AddComponent<CollidableSphere>(entity)
-                .Initialize(CollisionRadius, faction.ToCollisionGroup());
+                .Initialize(_collisionRadius, faction.ToCollisionGroup());
 
             // Faction component, which allows checking which group the ship
             // belongs to.
@@ -188,9 +248,9 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Character<AttributeType>>(entity);
 
             // Do we drop stuff?
-            if (ItemPool != null)
+            if (_itemPool != null)
             {
-                manager.AddComponent<Drops>(entity).Initialize(ItemPool);
+                manager.AddComponent<Drops>(entity).Initialize(_itemPool);
             }
 
             // The the sound component for the thruster sound.
@@ -205,7 +265,7 @@ namespace Space.ComponentSystem.Factories
                 SoundSystem.IndexGroupMask | // Can make noise.
                 TextureRenderSystem.IndexGroupMask | // Can be rendered.
                 InterpolationSystem.IndexGroupMask, // Rendering should be interpolated.
-                (int)(CollisionRadius + CollisionRadius));
+                (int)(_collisionRadius + _collisionRadius));
 
             return entity;
         }
@@ -217,18 +277,58 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Utility class for serialized representation of items in slots.
         /// </summary>
+        [TypeConverter(typeof(ExpandableObjectConverter))]
         public sealed class ItemInfo
         {
+            #region Properties
+            
             /// <summary>
             /// The name of the item (template name).
             /// </summary>
-            public string Name;
+            [Editor("Space.Tools.DataEditor.ItemInfoEditor, Space.Tools, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+            [Description("The name of the item type to sample.")]
+            public string Name
+            {
+                get { return _name; }
+                set { _name = value; }
+            }
 
             /// <summary>
             /// Items to be generated and equipped into this item.
             /// </summary>
             [ContentSerializer(Optional = true, FlattenContent = true, CollectionItemName = "Item")]
-            public ItemInfo[] Children = new ItemInfo[0];
+            [Description("Items to generate into the slots available in the sampled item.")]
+            public ItemInfo[] Slots
+            {
+                get { return _slots; }
+                set { _slots = value; }
+            }
+
+            #endregion
+
+            #region Backing fields
+
+            private string _name;
+
+            private ItemInfo[] _slots = new ItemInfo[0];
+
+            #endregion
+
+            #region ToString
+            
+            /// <summary>
+            /// Returns a <see cref="System.String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="System.String"/> that represents this instance.
+            /// </returns>
+            public override string ToString()
+            {
+                return Name + (Slots.Length > 0 ? (" (" + Slots.Length + ")") : "");
+            }
+
+            #endregion
         }
 
         #endregion

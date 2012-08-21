@@ -64,7 +64,7 @@ namespace Engine.ComponentSystem.RPG.Constraints
 
         private TAttribute _type;
 
-        private FloatInterval _value;
+        private FloatInterval _value = new FloatInterval(0, 0);
 
         private AttributeComputationType _computationType;
 

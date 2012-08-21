@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Design;
 using System.IO;
-using System.Linq;
-using System.Xml;
-using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
+using System.Windows.Forms;
 using Space.ComponentSystem.Factories;
 
 namespace Space.Tools.DataEditor
@@ -14,30 +11,14 @@ namespace Space.Tools.DataEditor
     public sealed partial class DataEditor
     {
         /// <summary>
-        /// The flat list of all factories, referenced via their name.
-        /// </summary>
-        private readonly Dictionary<string, IFactory> _factories = new Dictionary<string, IFactory>();
-
-        /// <summary>
-        /// Lists of all factories, categorized by their type.
-        /// </summary>
-        private readonly Dictionary<Type, List<IFactory>> _factoriesByType = new Dictionary<Type, List<IFactory>>();
-
-        /// <summary>
         /// Initializes the factory type dictionary (creates list for each known factory type).
         /// </summary>
         private void InitializeLogic()
         {
             tvData.Sorted = true;
             tvData.BeginUpdate();
-            foreach (var type in AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(typeof(IFactory).IsAssignableFrom)
-                .Where(p => p.IsClass && !p.IsAbstract))
+            foreach (var type in FactoryManager.GetFactoryTypes())
             {
-                // Add list for this type.
-                _factoriesByType.Add(type, new List<IFactory>());
-
                 // Create node in tree.
                 tvData.Nodes.Add(type.Name, CleanFactoryName(type));
             }
@@ -45,75 +26,20 @@ namespace Space.Tools.DataEditor
 
             // Rescan for issues when a property changes.
             pgProperties.PropertyValueChanged += (o, args) => ScanForIssues((IFactory)pgProperties.SelectedObject);
-        }
 
-        /// <summary>
-        /// Loads all factories found at the specified path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        private void LoadFactories(string path)
-        {
-            ClearFactories();
-            foreach (var file in Directory.GetFiles(path, "*.xml", SearchOption.AllDirectories))
+            FactoryManager.FactoryAdded += factory => tvData.Nodes[factory.GetType().Name].Nodes.Add(factory.Name, factory.Name);
+            FactoryManager.FactoriesCleared += () =>
             {
-                using (var reader = new XmlTextReader(file))
+                tvData.BeginUpdate();
+                foreach (TreeNode node in tvData.Nodes)
                 {
-                    tvData.BeginUpdate();
-                    try
-                    {
-                        var factories = IntermediateSerializer.Deserialize<IFactory[]>(reader, null);
-                        foreach (var factory in factories)
-                        {
-                            AddFactory(factory);
-                        }
-                    }
-                    catch (InvalidContentException ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                        Console.WriteLine(ex.StackTrace);
-                    }
-                    finally
-                    {
-                        tvData.EndUpdate();
-                    }
+                    node.Nodes.Clear();
                 }
-            }
+                tvData.EndUpdate();
 
-            ScanForIssues();
-        }
-
-        /// <summary>
-        /// Adds a single factory to the list of known factories.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        private void AddFactory(IFactory factory)
-        {
-            _factories.Add(factory.Name, factory);
-            var type = factory.GetType();
-            _factoriesByType[type].Add(factory);
-            tvData.Nodes[type.Name].Nodes.Add(factory.Name, factory.Name);
-        }
-
-        /// <summary>
-        /// Clears the lists with known factories as well as the list with
-        /// factories in the GUI.
-        /// </summary>
-        private void ClearFactories()
-        {
-            tvData.BeginUpdate();
-            _factories.Clear();
-            foreach (var type in _factoriesByType)
-            {
-                type.Value.Clear();
-                tvData.Nodes[type.Key.Name].Nodes.Clear();
-            }
-            tvData.EndUpdate();
-
-            // No factories means less issues!
-            ClearIssues();
-
-            // Rescan anyway, because some settings might be bad.
-            ScanForIssues();
+                // No factories means less issues! Rescan anyway, because some settings might be bad.
+                ScanForIssues();
+            };
         }
 
         /// <summary>
@@ -124,12 +50,20 @@ namespace Space.Tools.DataEditor
         /// <returns>The cleaned factory name.</returns>
         private static string CleanFactoryName(Type type)
         {
-            var name = type.Name;
-            if (name.EndsWith("Factory", StringComparison.InvariantCulture))
-            {
-                name = name.Substring(0, name.Length - "Factory".Length);
-            }
-            return name;
+            return type.Name.EndsWith("Factory", StringComparison.InvariantCulture) ? type.Name.Substring(0, type.Name.Length - "Factory".Length) : type.Name;
+        }
+
+        /// <summary>
+        /// Loads all factories found at the specified path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        private void LoadFactories(string path)
+        {
+            tvData.BeginUpdate();
+            FactoryManager.Load(path);
+            tvData.EndUpdate();
+
+            ScanForIssues();
         }
 
         /// <summary>
@@ -139,9 +73,10 @@ namespace Space.Tools.DataEditor
         /// <param name="name">The name of the factory.</param>
         private void SelectFactory(string name)
         {
-            if (_factories.ContainsKey(name))
+            var factory = FactoryManager.GetFactory(name);
+            if (factory != null)
             {
-                pgProperties.SelectedObject = _factories[name];
+                pgProperties.SelectedObject = factory;
             }
             else
             {
@@ -167,7 +102,7 @@ namespace Space.Tools.DataEditor
             }
 
             // Check factories.
-            foreach (var factory in _factories.Values)
+            foreach (var factory in FactoryManager.GetFactories())
             {
                 ScanForIssues(factory);
             }
@@ -204,6 +139,103 @@ namespace Space.Tools.DataEditor
                     if (!string.IsNullOrWhiteSpace(path) && !ContentProjectManager.HasTextureAsset(path.Replace('/', '\\')))
                     {
                         AddIssue("Invalid texture asset name, no such texture asset.", factory.Name, property.Name, IssueType.Error);
+                    }
+                }
+            }
+
+            // Check ship loadouts for validity (used slots vs. available slots, item name).
+            if (factory is ShipFactory)
+            {
+                var root = ((ShipFactory)factory).Items;
+                if (root != null)
+                {
+                    // We only check if the root item is a fuselage here, other checks will
+                    // we done in the loop below.
+                    var rootItem = FactoryManager.GetFactory(root.Name) as ItemFactory;
+                    if (rootItem != null && !(rootItem is FuselageFactory))
+                    {
+                        AddIssue("Root item must always be a fuselage.", factory.Name, "Items", IssueType.Error);
+                    }
+                }
+                var items = new Stack<ShipFactory.ItemInfo>();
+                items.Push(root);
+                outer: while (items.Count > 0)
+                {
+                    var item = items.Pop();
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
+                    // Check item name.
+                    if (string.IsNullOrWhiteSpace(item.Name))
+                    {
+                        // Empty, make sure there are no child items.
+                        if (item.Slots.Length > 0)
+                        {
+                            AddIssue("Items equipped in a null item, will be ignored when generating the ship.", factory.Name, "Items");
+                        }
+                        continue;
+                    }
+
+                    // We have an item name, make sure it's a proper item.
+                    var itemFactory = FactoryManager.GetFactory(item.Name) as ItemFactory;
+                    if (itemFactory == null)
+                    {
+                        AddIssue("Invalid item name or type: " + item.Name, factory.Name, "Items", IssueType.Error);
+                        continue;
+                    }
+
+                    // Check used vs. available slots.
+                    var availableSlots = new List<ItemFactory.ItemSlotInfo>();
+                    if (itemFactory.Slots != null)
+                    {
+                        availableSlots.AddRange(itemFactory.Slots);
+                    }
+                    foreach (var slot in item.Slots)
+                    {
+                        // Skip empty ones.
+                        if (string.IsNullOrWhiteSpace(slot.Name))
+                        {
+                            AddIssue("Empty item declaration, will be skipped when generating the ship.", factory.Name, "Items", IssueType.Information);
+                            goto outer;
+                        }
+
+                        // Get the item of that type.
+                        var slotItemFactory = FactoryManager.GetFactory(slot.Name) as ItemFactory;
+                        if (slotItemFactory == null)
+                        {
+                            AddIssue("Invalid item name or type: " + slot.Name, factory.Name, "Items", IssueType.Error);
+                            goto outer;
+                        }
+
+                        // OK, try to consume a slot (the smallest one possible).
+                        var type = slotItemFactory.GetType().ToItemType();
+                        var size = slotItemFactory.RequiredSlotSize;
+                        ItemFactory.ItemSlotInfo bestSlot = null;
+                        foreach (var availableSlot in availableSlots)
+                        {
+                            if (availableSlot.Type != type || availableSlot.Size < size)
+                            {
+                                continue;
+                            }
+                            if (bestSlot == null || availableSlot.Size < bestSlot.Size)
+                            {
+                                bestSlot = availableSlot;
+                            }
+                        }
+                        if (bestSlot == null)
+                        {
+                            AddIssue("Equipped item cannot be fit into any slot: " + slotItemFactory.Name + "(parent: " + itemFactory.Name + ")", factory.Name, "Items", IssueType.Error);
+                            goto outer;
+                        }
+                        availableSlots.Remove(bestSlot);
+                    }
+
+                    // All well on this level, check children.
+                    foreach (var slot in item.Slots)
+                    {
+                        items.Push(slot);
                     }
                 }
             }

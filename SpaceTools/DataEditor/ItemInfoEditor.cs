@@ -5,11 +5,11 @@ using System.Windows.Forms.Design;
 namespace Space.Tools.DataEditor
 {
     /// <summary>
-    /// Editor for texture assets, opening a form that show known textures.
+    /// Item info editor that opens a dialog with known items, valid for the edited slot.
     /// </summary>
-    public sealed class TextureAssetEditor : UITypeEditor
+    public sealed class ItemInfoEditor : UITypeEditor
     {
-        private readonly TextureAssetDialog _dialog = new TextureAssetDialog();
+        private readonly ItemInfoDialog _dialog = new ItemInfoDialog();
 
         public override UITypeEditorEditStyle GetEditStyle(System.ComponentModel.ITypeDescriptorContext context)
         {
@@ -19,12 +19,12 @@ namespace Space.Tools.DataEditor
         public override object EditValue(System.ComponentModel.ITypeDescriptorContext context, System.IServiceProvider provider, object value)
         {
             var svc = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
-            if (value is string && svc != null)
+            if ((value is string || value == null) && svc != null)
             {
-                _dialog.SelectedAsset = (string)value;
+                _dialog.SelectedItemName = (string)value ?? string.Empty;
                 if (svc.ShowDialog(_dialog) == DialogResult.OK)
                 {
-                    return _dialog.SelectedAsset;
+                    return _dialog.SelectedItemName;
                 }
             }
             return base.EditValue(context, provider, value);

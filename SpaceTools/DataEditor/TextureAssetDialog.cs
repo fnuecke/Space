@@ -13,22 +13,43 @@ namespace Space.Tools.DataEditor
         /// <summary>
         /// Gets or sets the selected asset.
         /// </summary>
-        /// <value>
-        /// The selected asset.
-        /// </value>
-        public string SelectedAsset
-        {
-            get { return _selectedAsset; }
-            set
-            {
-                _selectedAsset = value;
+        public string SelectedAsset { get; set; }
 
-                tvTextures.SelectedNode = null;
-                if (string.IsNullOrWhiteSpace(value))
+        public TextureAssetDialog()
+        {
+            InitializeComponent();
+        }
+
+        private void TextureAssetDialogLoad(object sender, EventArgs e)
+        {
+            tvTextures.BeginUpdate();
+            tvTextures.Nodes.Clear();
+            foreach (var assetName in ContentProjectManager.TextureAssetNames)
+            {
+                // Generate the path through the tree we need to take, to
+                // insert this asset name as its own node.
+                var hierarchy = assetName.Split(new[] { tvTextures.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+                var nodes = tvTextures.Nodes;
+                for (var i = 0; i < hierarchy.Length; i++)
                 {
-                    return;
+                    // Create entry for this hierarchy level is necessary.
+                    if (!nodes.ContainsKey(hierarchy[i]))
+                    {
+                        nodes.Add(hierarchy[i], hierarchy[i]);
+                    }
+                    // Continue with this node's child nodes as the next insertion point.
+                    nodes = nodes[hierarchy[i]].Nodes;
                 }
-                var hierarchy = value.Replace('/', '\\').Split(new[] {tvTextures.PathSeparator}, StringSplitOptions.RemoveEmptyEntries);
+            }
+            tvTextures.EndUpdate();
+
+            // Try re-selecting. We do this in an extra iteration to select as far down the
+            // tree as possible.
+            tvTextures.SelectedNode = null;
+            if (!string.IsNullOrWhiteSpace(SelectedAsset))
+            {
+                var hierarchy = SelectedAsset.Replace('/', '\\').
+                    Split(new[] {tvTextures.PathSeparator}, StringSplitOptions.RemoveEmptyEntries);
                 var nodes = tvTextures.Nodes;
                 for (var i = 0; i < hierarchy.Length; i++)
                 {
@@ -43,41 +64,11 @@ namespace Space.Tools.DataEditor
             }
         }
 
-        private string _selectedAsset;
-
-        public TextureAssetDialog()
-        {
-            InitializeComponent();
-        }
-
-        private void TextureAssetDialogLoad(object sender, EventArgs e)
-        {
-            tvTextures.BeginUpdate();
-            tvTextures.Nodes.Clear();
-            foreach (var assetName in ContentProjectManager.TextureAssetNames)
-            {
-                var hierarchy = assetName.Split(new[] {tvTextures.PathSeparator}, StringSplitOptions.RemoveEmptyEntries);
-                var nodes = tvTextures.Nodes;
-                for (var i = 0; i < hierarchy.Length; i++)
-                {
-                    if (!nodes.ContainsKey(hierarchy[i]))
-                    {
-                        nodes.Add(hierarchy[i], hierarchy[i]);
-                    }
-                    nodes = nodes[hierarchy[i]].Nodes;
-                }
-            }
-            tvTextures.EndUpdate();
-
-            // Try re-selecting.
-            SelectedAsset = _selectedAsset;
-        }
-
         private void TexturesAfterSelect(object sender, TreeViewEventArgs e)
         {
             // Disable OK button until we have a valid image.
             btnOK.Enabled = false;
-            _selectedAsset = null;
+            SelectedAsset = null;
 
             // Clear preview.
             var oldImage = pbPreview.Image;
@@ -105,7 +96,7 @@ namespace Space.Tools.DataEditor
             {
                 pbPreview.Image = Image.FromFile(assetPath);
                 btnOK.Enabled = true;
-                _selectedAsset = e.Node.FullPath;
+                SelectedAsset = e.Node.FullPath;
             }
             catch (FileNotFoundException)
             {
