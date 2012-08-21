@@ -18,6 +18,7 @@ namespace Space.ComponentSystem.Factories
     /// <summary>
     /// Base class for item constraints.
     /// </summary>
+    [DefaultProperty("Name")]
     public abstract class ItemFactory : IFactory
     {
         #region Properties

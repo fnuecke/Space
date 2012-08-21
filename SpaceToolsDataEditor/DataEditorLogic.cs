@@ -73,14 +73,11 @@ namespace Space.Tools.DataEditor
         /// <param name="name">The name of the factory.</param>
         private void SelectFactory(string name)
         {
+            pgProperties.SelectedObject = null;
             var factory = FactoryManager.GetFactory(name);
             if (factory != null)
             {
                 pgProperties.SelectedObject = factory;
-            }
-            else
-            {
-                pgProperties.SelectedObject = null;
             }
         }
 

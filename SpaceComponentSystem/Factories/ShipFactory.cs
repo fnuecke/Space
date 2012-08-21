@@ -20,6 +20,7 @@ namespace Space.ComponentSystem.Factories
     /// <summary>
     /// Basic descriptor for a single ship class.
     /// </summary>
+    [DefaultProperty("Name")]
     public sealed class ShipFactory : IFactory
     {
         #region General

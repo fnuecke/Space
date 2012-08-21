@@ -106,7 +106,7 @@ namespace Space.Tools.DataEditor
         public static IFactory GetFactory(string name)
         {
             IFactory result;
-            Factories.TryGetValue(name, out result);
+            Factories.TryGetValue(name ?? string.Empty, out result);
             return result;
         }
 

@@ -41,19 +41,22 @@
         /// Returns the actual pixel size at which an object in that slot should be rendered.
         /// </summary>
         /// <param name="size">The slot size.</param>
-        /// <returns>The pixel size of the slot.</returns>
-        public static int ToPixelSize(this ItemSlotSize size)
+        /// <param name="pixelSize">The original size to scale.</param>
+        /// <returns>
+        /// The pixel size of the slot.
+        /// </returns>
+        public static float Scale(this ItemSlotSize size, float pixelSize)
         {
             switch (size)
             {
                 case ItemSlotSize.Small:
-                    return 16;
+                    return pixelSize;
                 case ItemSlotSize.Medium:
-                    return 24;
+                    return pixelSize * 1.5f;
                 case ItemSlotSize.Large:
-                    return 32;
+                    return pixelSize * 2f;
                 default:
-                    return 48;
+                    return pixelSize * 3f;
             }
         }
     }

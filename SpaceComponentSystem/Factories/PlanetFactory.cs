@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
@@ -15,6 +16,7 @@ namespace Space.ComponentSystem.Factories
     /// <summary>
     /// Generates planetes based on set constraints.
     /// </summary>
+    [DefaultProperty("Name")]
     public sealed class PlanetFactory : IFactory
     {
         #region General

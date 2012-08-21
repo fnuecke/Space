@@ -8,6 +8,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Factories;
 using Space.Data;
 
@@ -45,7 +46,7 @@ namespace Space.Tools.DataEditor
 
             lvIssues.ListViewItemSorter = new IssueComparer();
             pgProperties.PropertyValueChanged += (o, args) => pgProperties.Refresh();
-            pbPreview.Image = new Bitmap(1024, 1024);
+            pbPreview.Image = new Bitmap(1024, 1024, PixelFormat.Format32bppArgb);
 
             var settings = DataEditorSettings.Default;
 
@@ -215,43 +216,40 @@ namespace Space.Tools.DataEditor
 
         private void UpdatePreview()
         {
-            // Clear preview.
-            var oldBackground = pbPreview.BackgroundImage;
-            pbPreview.BackgroundImage = null;
+            // Clear image.
             using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
             {
-                g.Clear(System.Drawing.Color.Transparent);
-            }
-            if (oldBackground != null)
-            {
-                oldBackground.Dispose();
+                g.CompositingMode = CompositingMode.SourceCopy;
+                g.FillRectangle(Brushes.Transparent, 0, 0, pbPreview.Image.Width, pbPreview.Image.Height);
             }
 
             // Stop if nothing is selected.
-            if (pgProperties.SelectedObject == null ||
-                pgProperties.SelectedGridItem == null)
+            if (pgProperties.SelectedObject != null &&
+                pgProperties.SelectedGridItem != null)
             {
-                return;
+                // Figure out what to show. If an image asset is selected we simply show that.
+                if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
+                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
+                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
+                        .EditorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
+                {
+                    RenderTextureAssetPreview();
+                }
+                else
+                {
+                    // We're not rendering based on property grid item selection at this point, so
+                    // we just try to render the selected object.
+
+                    // Try rendering the selected object as an item.
+                    RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
+
+                    // Try rendering a ship.
+                    RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
+                }
             }
 
-            // Figure out what to show. If an image asset is selected we simply show that.
-            if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
-                pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
-                ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
-                    .EditorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
-            {
-                RenderTextureAssetPreview();
-                return;
-            }
-
-            // We're not rendering based on property grid item selection at this point, so
-            // we just try to render the selected object.
-
-            // Try rendering the selected object as an item.
-            RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
-
-            // Try rendering a ship.
-            RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
+            // Update the picture box.
+            pbPreview.Invalidate();
         }
 
         private void RenderTextureAssetPreview()
@@ -272,7 +270,13 @@ namespace Space.Tools.DataEditor
                 // We got it. Set as the new image.
                 try
                 {
-                    pbPreview.BackgroundImage = Image.FromFile(filePath);
+                    using (var img = Image.FromFile(filePath))
+                    {
+                        using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                        {
+                            g.DrawImage(img, (pbPreview.Image.Width - img.Width) / 2f, (pbPreview.Image.Height - img.Height) / 2f, img.Width, img.Height);
+                        }
+                    }
                 }
                 catch (FileNotFoundException)
                 {
@@ -291,27 +295,18 @@ namespace Space.Tools.DataEditor
             var modelFile = ContentProjectManager.GetFileForTextureAsset(factory.Model);
             if (modelFile != null)
             {
-                var bmp = new Bitmap(modelFile);
-                var size = factory.RequiredSlotSize.ToPixelSize();
-                var scale = size / (float)Math.Max(bmp.Width, bmp.Height);
-                var newWidth = (int)(bmp.Width * scale);
-                var newHeight = (int)(bmp.Height * scale);
-                if (newWidth != bmp.Width || newHeight != bmp.Height)
+                using (var bmp = new Bitmap(modelFile))
                 {
-                    // Need resizing.
-                    var newBmp = new Bitmap(newWidth, newHeight);
-                    using (var g = System.Drawing.Graphics.FromImage(newBmp))
+                    var newWidth = factory.RequiredSlotSize.Scale(bmp.Width);
+                    var newHeight = factory.RequiredSlotSize.Scale(bmp.Height);
+                    using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
                     {
                         g.SmoothingMode = SmoothingMode.HighQuality;
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                         g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                        g.DrawImage(bmp, 0, 0, newWidth, newHeight);
+                        g.DrawImage(bmp, (pbPreview.Image.Width - newWidth) / 2f, (pbPreview.Image.Height - newHeight) / 2f, newWidth, newHeight);
                     }
-                    // Kill old bmp, use new.
-                    bmp.Dispose();
-                    bmp = newBmp;
                 }
-                pbPreview.BackgroundImage = bmp;
             }
 
             // Draw slot mounting positions.
@@ -329,7 +324,7 @@ namespace Space.Tools.DataEditor
                     {
                         continue;
                     }
-                    var size = slot.Size.ToPixelSize();
+                    var size = slot.Size.Scale(16);
                     var x = (pbPreview.Image.Width - size - 1) / 2f;
                     var y = (pbPreview.Image.Height - size - 1) / 2f;
                     if (slot.Offset.HasValue)
@@ -342,7 +337,7 @@ namespace Space.Tools.DataEditor
                         g.SmoothingMode = SmoothingMode.HighQuality;
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                         g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                        g.DrawImage(mountpointImage, new Rectangle((int)x, (int)y, size, size), 0, 0, mountpointImage.Width, mountpointImage.Height, GraphicsUnit.Pixel, ia);
+                        g.DrawImage(mountpointImage, new System.Drawing.Rectangle((int)x, (int)y, (int)size, (int)size), 0, 0, mountpointImage.Width, mountpointImage.Height, GraphicsUnit.Pixel, ia);
                     }
                 }
             }
@@ -355,6 +350,123 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
+            // Draw base image.
+            var modelFile = ContentProjectManager.GetFileForTextureAsset(factory.Texture);
+            if (modelFile != null)
+            {
+                using (var bmp = new Bitmap(modelFile))
+                {
+                    using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                    {
+                        g.SmoothingMode = SmoothingMode.HighQuality;
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        g.DrawImage(bmp, (pbPreview.Image.Width - bmp.Width) / 2f, (pbPreview.Image.Height - bmp.Height) / 2f, bmp.Width, bmp.Height);
+                    }
+                }
+            }
+
+            // Draw equipped items.
+            var items = new Stack<Tuple<ShipFactory.ItemInfo, List<ItemFactory.ItemSlotInfo>, Vector2, float>>();
+            if (factory.Items != null)
+            {
+                items.Push(Tuple.Create(factory.Items,
+                                        new List<ItemFactory.ItemSlotInfo>
+                                        {
+                                            new ItemFactory.ItemSlotInfo
+                                            {
+                                                Size = ItemSlotSize.Small,
+                                                Type = ItemFactory.ItemSlotInfo.ItemType.Fuselage
+                                            }
+                                        }, Vector2.Zero, 0f));
+            }
+            while (items.Count > 0)
+            {
+                var info = items.Pop();
+                var itemInfo = info.Item1;
+                var slots = info.Item2;
+                var offset = info.Item3;
+                var multiplier = info.Item4;
+
+                // Get info on item.
+                var itemFactory = FactoryManager.GetFactory(itemInfo.Name) as ItemFactory;
+                if (itemFactory == null)
+                {
+                    continue;
+                }
+
+                // Find smallest slot we fit into.
+                ItemFactory.ItemSlotInfo bestSlot = null;
+                foreach (var slot in slots)
+                {
+                    if (slot.Type == itemFactory.GetType().ToItemType() &&
+                        slot.Size >= itemFactory.RequiredSlotSize)
+                    {
+                        if (bestSlot == null || slot.Size < bestSlot.Size)
+                        {
+                            bestSlot = slot;
+                        }
+                    }
+                }
+                // Could not find a slot.
+                if (bestSlot == null)
+                {
+                    continue;
+                }
+
+                // Consume the slot.
+                slots.Remove(bestSlot);
+
+                // Render.
+                if (bestSlot.Offset.HasValue)
+                {
+                    if (multiplier == 0f && bestSlot.Offset.Value.Y != 0f)
+                    {
+                        multiplier = Math.Sign(bestSlot.Offset.Value.Y);
+                        offset += bestSlot.Offset.Value;
+                    }
+                    else
+                    {
+                        offset.X += bestSlot.Offset.Value.X;
+                        offset.Y += bestSlot.Offset.Value.Y * multiplier;
+                    }
+                }
+
+                var modelPath = ContentProjectManager.GetFileForTextureAsset(itemFactory.Model);
+                if (modelPath != null)
+                {
+                    try
+                    {
+                        using (var img = Image.FromFile(modelPath))
+                        {
+                            var width = bestSlot.Size.Scale(img.Width);
+                            var height = bestSlot.Size.Scale(img.Height);
+                            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                            {
+                                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                                g.SmoothingMode = SmoothingMode.HighQuality;
+                                g.DrawImage(img, (pbPreview.Image.Width - width) / 2f + offset.X,
+                                            (pbPreview.Image.Height - height) / 2f + offset.Y, width, height);
+                            }
+                        }
+                    }
+                    catch(FileNotFoundException)
+                    {
+                    }
+                }
+
+                // Queue child items (if we have potential slots for them).
+                if (itemInfo.Slots != null && itemFactory.Slots != null && itemFactory.Slots.Length > 0)
+                {
+                    // Use same list for all children to make sure we consume from the same list.
+                    var availableSlots = new List<ItemFactory.ItemSlotInfo>(itemFactory.Slots);
+                    foreach (var slot in itemInfo.Slots)
+                    {
+                        items.Push(Tuple.Create(slot, availableSlots, offset, multiplier));
+                    }
+                }
+            }
         }
 
         private static readonly Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image> MountpointImages = new Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image>

@@ -201,7 +201,7 @@
             // pbPreview
             // 
             this.pbPreview.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.pbPreview.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.pbPreview.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.pbPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbPreview.Location = new System.Drawing.Point(8, 21);

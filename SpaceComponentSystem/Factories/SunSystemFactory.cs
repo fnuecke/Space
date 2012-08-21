@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem;
+﻿using System.ComponentModel;
+using Engine.ComponentSystem;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
@@ -12,6 +13,7 @@ namespace Space.ComponentSystem.Factories
     /// <summary>
     /// Generates sun systems based on specific constraints.
     /// </summary>
+    [DefaultProperty("Name")]
     public sealed class SunSystemFactory : IFactory
     {
         #region General

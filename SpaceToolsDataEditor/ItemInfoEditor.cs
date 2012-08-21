@@ -42,7 +42,7 @@ namespace Space.Tools.DataEditor
                 if (giContext.Parent.Parent.Parent.Value is ShipFactory)
                 {
                     // Top level item, only allow fuselage.
-                    _dialog.AvailableSlots = new[] { new ItemFactory.ItemSlotInfo{Size = ItemSlotSize.Huge, Type = ItemFactory.ItemSlotInfo.ItemType.Fuselage} };
+                    _dialog.AvailableSlots = new[] { new ItemFactory.ItemSlotInfo{Size = ItemSlotSize.Small, Type = ItemFactory.ItemSlotInfo.ItemType.Fuselage} };
                 }
                 else
                 {
