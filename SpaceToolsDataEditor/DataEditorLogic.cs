@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Design;
 using System.IO;
+using System.Windows;
 using System.Windows.Forms;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
@@ -17,31 +18,106 @@ namespace Space.Tools.DataEditor
         private void InitializeLogic()
         {
             tvData.Sorted = true;
+
+            // Rescan for issues when a property changes.
+            pgProperties.PropertyValueChanged += HandlePropertyValueChanged;
+
+            FactoryManager.FactoryAdded += HandleFactoryAdded;
+            FactoryManager.FactoriesCleared += HandleFactoriesCleared;
+            FactoryManager.FactoryNameChanged += (oldName, newName) =>
+            {
+                var oldNode = tvData.Nodes.Find(oldName, true);
+                if (oldNode.Length > 0)
+                {
+                    oldNode[0].Parent.Nodes.Add(newName, newName);
+                    oldNode[0].Remove();
+                }
+            };
+        }
+
+        private void HandleFactoryAdded(IFactory factory)
+        {
+            var insertionNode = tvData.Nodes.Find(factory.GetType().Name, true);
+            if (insertionNode.Length > 0)
+            {
+                insertionNode[0].Nodes.Add(factory.Name, factory.Name);
+            }
+        }
+
+        private void HandleFactoriesCleared()
+        {
             tvData.BeginUpdate();
+            tvData.Nodes.Clear();
+            // Create base type nodes in tree.
             foreach (var type in FactoryManager.GetFactoryTypes())
             {
-                // Create node in tree.
-                tvData.Nodes.Add(type.Name, CleanFactoryName(type));
+                if (type.BaseType != null && type.BaseType != typeof(object))
+                {
+                    if (!tvData.Nodes.ContainsKey(type.BaseType.Name))
+                    {
+                        tvData.Nodes.Add(type.BaseType.Name, CleanFactoryName(type.BaseType));
+                    }
+                    tvData.Nodes[type.BaseType.Name].Nodes.Add(type.Name, CleanFactoryName(type));
+                }
+                else
+                {
+                    tvData.Nodes.Add(type.Name, CleanFactoryName(type));
+                }
             }
             tvData.EndUpdate();
 
-            // Rescan for issues when a property changes.
-            pgProperties.PropertyValueChanged += (o, args) => ScanForIssues((IFactory)pgProperties.SelectedObject);
+            // No factories means less issues! Rescan anyway, because some settings might be bad.
+            ScanForIssues();
+        }
 
-            FactoryManager.FactoryAdded +=
-                factory => tvData.Nodes[factory.GetType().Name].Nodes.Add(factory.Name, factory.Name);
-            FactoryManager.FactoriesCleared += () =>
+        private void HandlePropertyValueChanged(object o, PropertyValueChangedEventArgs args)
+        {
+            if (pgProperties.SelectedObject is IFactory)
             {
-                tvData.BeginUpdate();
-                foreach (TreeNode node in tvData.Nodes)
+                var factory = (IFactory)pgProperties.SelectedObject;
+                // See if what we changed is the name of the factory.
+                if (Equals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(factory)["Name"]))
                 {
-                    node.Nodes.Clear();
-                }
-                tvData.EndUpdate();
+                    // Yes, get old and ned value.
+                    var oldName = args.OldValue as string;
+                    var newName = args.ChangedItem.Value as string;
+                    // Adjust factory manager layout, this will throw as necessary.
+                    tvData.BeginUpdate();
+                    try
+                    {
+                        FactoryManager.Rename(oldName, newName);
+                        tvData.EndUpdate();
 
-                // No factories means less issues! Rescan anyway, because some settings might be bad.
-                ScanForIssues();
-            };
+                        SelectFactory(newName);
+                        SelectProperty("Name");
+
+                        // Do a full scan as this factory may have been referenced somewhere.
+                        ScanForIssues();
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        tvData.EndUpdate();
+
+                        // Failed renaming, revert to old name.
+                        factory.Name = oldName;
+
+                        // Tell the user why.
+                        System.Windows.MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    // Rescan for issues related to this property.
+                    if (args.ChangedItem.PropertyDescriptor == null || args.ChangedItem.PropertyDescriptor.Attributes[typeof(TriggersFullValidationAttribute)] != null)
+                    {
+                        ScanForIssues();
+                    }
+                    else
+                    {
+                        ScanForIssues(factory);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -78,10 +154,16 @@ namespace Space.Tools.DataEditor
         private void SelectFactory(string name)
         {
             pgProperties.SelectedObject = null;
+            //tvData.SelectedNode = null;
             var factory = FactoryManager.GetFactory(name);
             if (factory != null)
             {
                 pgProperties.SelectedObject = factory;
+                var node = tvData.Nodes.Find(name, true);
+                if (node.Length > 0)
+                {
+                    tvData.SelectedNode = node[0];
+                }
             }
         }
 

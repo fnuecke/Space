@@ -117,24 +117,24 @@ namespace Space.Tools.DataEditor
                         var assetName = rootPath + relativeAssetPath + texture.Elements(ns + "Name").First().Value;
 
                         // Store the asset in our lookup table.
-                        TextureAssets.Add(assetName, assetPath);
+                        TextureAssets.Add(assetName.Trim(), assetPath.Trim());
                     }
                 }
                 catch (FileNotFoundException ex)
                 {
-                    MessageBox.Show(@"Error loading content project " + projectPath + @":\n" + ex, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (SecurityException ex)
                 {
-                    MessageBox.Show(@"Error loading content project " + projectPath + @":\n" + ex, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (XmlException ex)
                 {
-                    MessageBox.Show(@"Error loading content project " + projectPath + @":\n" + ex, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (InvalidOperationException ex)
                 {
-                    MessageBox.Show(@"Error loading content project " + projectPath + @":\n" + ex, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error); 
+                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); 
                 }
             }
         }

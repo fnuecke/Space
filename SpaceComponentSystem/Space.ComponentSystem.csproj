@@ -115,6 +115,7 @@
     <Compile Include="Factories\PlanetFactory.cs" />
     <Compile Include="Factories\SunFactory.cs" />
     <Compile Include="Factories\SunSystemFactory.cs" />
+    <Compile Include="Factories\TriggersFullValidationAttribute.cs" />
     <Compile Include="Factories\WingFactory.cs" />
     <Compile Include="Systems\AISystem.cs" />
     <Compile Include="Systems\BiomeSystem.cs" />

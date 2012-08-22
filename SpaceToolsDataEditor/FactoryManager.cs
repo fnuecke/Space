@@ -16,9 +16,13 @@ namespace Space.Tools.DataEditor
     {
         public delegate void FactoryAddedDelegate(IFactory factory);
 
+        public delegate void FactoryNameChangedDelegate(string oldName, string newName);
+
         public delegate void FactoriesClearedDelegate();
 
         public static event FactoryAddedDelegate FactoryAdded;
+
+        public static event FactoryNameChangedDelegate FactoryNameChanged;
 
         public static event FactoriesClearedDelegate FactoriesCleared;
 
@@ -223,6 +227,51 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Determines whether a factory with the specified name exists.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>
+        ///   <c>true</c> if the factory exists; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasFactory(string name)
+        {
+            return Factories.ContainsKey(name);
+        }
+
+        /// <summary>
+        /// Renames the factory with the specified name.
+        /// </summary>
+        /// <param name="oldName">The name of the factory to rename.</param>
+        /// <param name="newName">The new name.</param>
+        public static void Rename(string oldName, string newName)
+        {
+            // Require a name.
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                throw new ArgumentException("Name must not be empty.");
+            }
+
+            // Skip if nothing changes.
+            if (newName.Equals(oldName))
+            {
+                return;
+            }
+
+            // Make sure the name isn't yet taken.
+            if (HasFactory(newName))
+            {
+                // Already taken.
+                throw new ArgumentException("Factory name already taken, please choose another one.");
+            }
+
+            var factory = Factories[oldName];
+            Factories.Remove(oldName);
+            Factories.Add(newName, factory);
+
+            OnFactoryNameChanged(oldName, newName);
+        }
+
+        /// <summary>
         /// Gets the factory with the specified name.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -296,6 +345,14 @@ namespace Space.Tools.DataEditor
             if (FactoryAdded != null)
             {
                 FactoryAdded(factory);
+            }
+        }
+
+        private static void OnFactoryNameChanged(string oldName, string newName)
+        {
+            if (FactoryNameChanged != null)
+            {
+                FactoryNameChanged(oldName, newName);
             }
         }
 

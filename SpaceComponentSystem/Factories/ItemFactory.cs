@@ -83,6 +83,7 @@ namespace Space.ComponentSystem.Factories
         /// The slot size of the item.
         /// </summary>
         [ContentSerializer(Optional = true)]
+        [TriggersFullValidation]
         [DefaultValue(ItemSlotSize.Small)]
         [Category("Equipment")]
         [Description("The minimum size of the slot the item requires to be equpped in.")]
@@ -96,6 +97,7 @@ namespace Space.ComponentSystem.Factories
         /// Slots this item provides for other items to be equipped into.
         /// </summary>
         [ContentSerializer(Optional = true)]
+        [TriggersFullValidation]
         [DefaultValue(null)]
         [Category("Equipment")]
         [Description("The slots this item provides, allowing other items to be equipped into this item, e.g. for socketing.")]

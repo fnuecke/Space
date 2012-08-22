@@ -8,6 +8,6 @@
         /// <summary>
         /// The unique name of the object type.
         /// </summary>
-        string Name { get; }
+        string Name { get; set; }
     }
 }
