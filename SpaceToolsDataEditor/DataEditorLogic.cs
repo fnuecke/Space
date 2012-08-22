@@ -354,7 +354,7 @@ namespace Space.Tools.DataEditor
                     if (bestSlot == null)
                     {
                         AddIssue(
-                            "Equipped item cannot be fit into any slot: " + slotItemFactory.Name + "(parent: " +
+                            "Equipped item cannot be fit into any slot: " + slotItemFactory.Name + " (parent: " +
                             itemFactory.Name + ")", factory.Name, "Items", IssueType.Error);
                         goto outer;
                     }

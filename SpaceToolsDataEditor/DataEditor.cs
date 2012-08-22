@@ -48,7 +48,14 @@ namespace Space.Tools.DataEditor
             InitializeLogic();
 
             lvIssues.ListViewItemSorter = new IssueComparer();
-            pgProperties.PropertyValueChanged += (o, args) => pgProperties.Refresh();
+            pgProperties.PropertyValueChanged += (o, args) =>
+            {
+                pgProperties.Refresh();
+                SavingEnabled = true;
+            };
+            FactoryManager.FactoryAdded += factory => SavingEnabled = true;
+            FactoryManager.FactoryRemoved += factory => SavingEnabled = true;
+            FactoryManager.FactoryNameChanged += (a,b) => SavingEnabled = true;
             pbPreview.Image = new Bitmap(1024, 1024, PixelFormat.Format32bppArgb);
 
             tvData.KeyDown += (sender, args) =>
@@ -76,6 +83,7 @@ namespace Space.Tools.DataEditor
                             tvData.SelectedNode = result[0];
                         }
                     }
+                    SavingEnabled = false;
                 }
             }
 
@@ -110,6 +118,34 @@ namespace Space.Tools.DataEditor
             // IntermediateSerializer won't recognize these otherwise... -.-
             new Serialization.SpaceAttributeModifierConstraintSerializer();
             new Serialization.SpaceAttributeModifierSerializer();
+        }
+
+        private void DataEditorLoad(object sender, EventArgs e)
+        {
+            if (DataEditorSettings.Default.FirstStart)
+            {
+                DataEditorSettings.Default.FirstStart = false;
+                DataEditorSettings.Default.Save();
+
+                if (System.Windows.MessageBox.Show("It appears you are starting the program for the first time.\n" +
+                                                   "Do you wish to configure your data directories now?\n" +
+                                                   "(You can also do so later in the settings)", "First start",
+                                                   MessageBoxButton.YesNo, MessageBoxImage.Question,
+                                                   MessageBoxResult.Yes) == MessageBoxResult.Yes)
+                {
+                    _settingsDialog.ShowDialog(this);
+                }
+            }
+        }
+
+        public bool SavingEnabled
+        {
+            get { return tsmiSave.Enabled; }
+            set
+            {
+                Text = "Space - Data Editor" + (value ? " (*)" : "");
+                tsmiSave.Enabled = value;
+            }
         }
 
         /// <summary>
@@ -173,6 +209,7 @@ namespace Space.Tools.DataEditor
         private void SaveClick(object sender, EventArgs e)
         {
             FactoryManager.Save();
+            SavingEnabled = false;
         }
 
         private void LoadClick(object sender, EventArgs e)
@@ -190,6 +227,8 @@ namespace Space.Tools.DataEditor
             DataEditorSettings.Default.Save();
 
             LoadFactories(_openDialog.FileName);
+
+            SavingEnabled = false;
         }
 
         private void FactorySelected(object sender, TreeViewEventArgs e)
@@ -209,6 +248,19 @@ namespace Space.Tools.DataEditor
 
         private void DataEditorClosing(object sender, FormClosingEventArgs e)
         {
+            if (SavingEnabled)
+            {
+                switch (System.Windows.MessageBox.Show("You have unsaved changes, do you want to save them now?", "Question", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel))
+                {
+                    case MessageBoxResult.Yes:
+                        SaveClick(null, null);
+                        break;
+                    case MessageBoxResult.Cancel:
+                        e.Cancel = true;
+                        return;
+                }
+            }
+
             var settings = DataEditorSettings.Default;
 
             // Save layout.
