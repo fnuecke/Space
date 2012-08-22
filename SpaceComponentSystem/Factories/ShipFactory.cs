@@ -29,7 +29,6 @@ namespace Space.ComponentSystem.Factories
         /// The name of the ship class, which serves as a unique type
         /// identifier.
         /// </summary>
-        [DefaultValue("")]
         [Category("General")]
         [Description("The name of this ship, by which it can be referenced.")]
         public string Name
@@ -43,7 +42,6 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
             "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-        [DefaultValue("Textures/Ships/default")]
         [Category("Media")]
         [Description("The base image to represent the ship, without any equipment.")]
         public string Texture
@@ -79,7 +77,6 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// List of basic stats for this ship class.
         /// </summary>
-        [DefaultValue(null)]
         [Category("Stats")]
         [Description("Attribute bonuses provided by this ship.")]
         public AttributeModifierConstraint<AttributeType>[] Attributes
@@ -91,7 +88,6 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Default equipment to generate for the ship.
         /// </summary>
-        [DefaultValue(null)]
         [Category("Equipment")]
         [Description("A hierarchical representation of the default equipment to populate the ship with.")]
         public ItemInfo Items

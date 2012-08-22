@@ -182,6 +182,7 @@ namespace Space.Tools.DataEditor
                 using (var writer = new XmlTextWriter(group.Key, Encoding.UTF8))
                 {
                     writer.Formatting = Formatting.Indented;
+                    writer.WriteStartDocument();
                     try
                     {
                         IntermediateSerializer.Serialize(writer, output, null);

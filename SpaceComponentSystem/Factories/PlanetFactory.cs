@@ -19,64 +19,153 @@ namespace Space.ComponentSystem.Factories
     [DefaultProperty("Name")]
     public sealed class PlanetFactory : IFactory
     {
-        #region General
+        #region Properties
 
         /// <summary>
         /// The unique name of the object type.
         /// </summary>
-        public string Name { get; set; }
+        [Category("General")]
+        [Description("The name of this planet, by which it can be referenced, e.g. in sun systems.")]
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
         /// <summary>
         /// Texture to use for generated planets.
         /// </summary>
-        public string Texture;
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [DefaultValue("Textures/Ships/default")]
+        [Category("Media")]
+        [Description("The base image to represent the ship, without any equipment.")]
+        public string Texture
+        {
+            get { return _texture; }
+            set { _texture = value; }
+        }
 
         /// <summary>
         /// The color tint for generated planets' surface.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Color SurfaceTint = Color.White;
+        [DefaultValue(0xFFFFFFFF)]
+        [Category("Media")]
+        [Description("The color tint to apply to the surface texture.")]
+        public Color SurfaceTint
+        {
+            get { return _surfaceTint; }
+            set { _surfaceTint = value; }
+        }
 
         /// <summary>
         /// The atmospheric color tint for generated planets.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Color AtmosphereTint = Color.Transparent;
+        [DefaultValue(0x00000000)]
+        [Category("Media")]
+        [Description("The color tint to apply to the atmosphere.")]
+        public Color AtmosphereTint
+        {
+            get { return _atmosphereTint; }
+            set { _atmosphereTint = value; }
+        }
 
         /// <summary>
         /// The radius of generated planets.
         /// </summary>
-        public FloatInterval Radius;
+        [Category("Media")]
+        [Description("The radius of the planet.")]
+        public FloatInterval Radius
+        {
+            get { return _radius; }
+            set { _radius = value; }
+        }
 
         /// <summary>
         /// The mass of generated planets.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public FloatInterval Mass = FloatInterval.Zero;
+        [Category("Logic")]
+        [Description("The mass of the planet, which determines how strong it's gravitational pull is.")]
+        public FloatInterval Mass
+        {
+            get { return _mass; }
+            set { _mass = value; }
+        }
 
         /// <summary>
         /// The rotation speed of generated planets.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public FloatInterval RotationSpeed = FloatInterval.Zero;
+        [Category("Media")]
+        [Description("The speed with which the planet revolves around its own axis.")]
+        public FloatInterval RotationSpeed
+        {
+            get { return _rotationSpeed; }
+            set { _rotationSpeed = value; }
+        }
 
         /// <summary>
         /// The eccentricity of generated planets' orbits. A value of
         /// 0 means it's a circle, 1 means it's totally flat (a line).
         /// </summary>
-        public FloatInterval Eccentricity;
+        [Category("Orbit")]
+        [Description("The eccentricity of the planet's orbit ellipse. A value of 1 leads to a circle, a value of 0 to a line.")]
+        public FloatInterval Eccentricity
+        {
+            get { return _eccentricity; }
+            set { _eccentricity = value; }
+        }
 
         /// <summary>
         /// The offset from the base orbiting angle of the sun system.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public FloatInterval AngleOffset = FloatInterval.Zero;
+        [Category("Orbit")]
+        [Description("The offset from the general orbit axis of all orbits around the focus, in degrees.")]
+        public FloatInterval AngleOffset
+        {
+            get { return _angleOffset; }
+            set { _angleOffset = value; }
+        }
 
         /// <summary>
         /// The travel speed of generated planets' orbits. This will be used
         /// to determine the period, based on the orbiting radius.
         /// </summary>
-        public FloatInterval TravelSpeed;
+        [Category("Orbit")]
+        [Description("The speed at which the planet will travel along its orbit ellipse, in pixels per second.")]
+        public FloatInterval TravelSpeed
+        {
+            get { return _travelSpeed; }
+            set { _travelSpeed = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _name = "";
+
+        private string _texture = "Textures/Planets/default";
+
+        private Color _surfaceTint = Color.White;
+
+        private Color _atmosphereTint = Color.Transparent;
+
+        private FloatInterval _radius;
+
+        private FloatInterval _mass;
+
+        private FloatInterval _rotationSpeed;
+
+        private FloatInterval _eccentricity;
+
+        private FloatInterval _angleOffset;
+
+        private FloatInterval _travelSpeed;
 
         #endregion
 
@@ -151,7 +240,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
 
             // Make it visible.
-            manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, planetRadius, AtmosphereTint, surfaceRotation);
+            manager.AddComponent<PlanetRenderer>(entity).Initialize(_texture, _surfaceTint, planetRadius, _atmosphereTint, surfaceRotation);
 
             // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");
@@ -174,8 +263,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled radius.</returns>
         private float SampleRadius(IUniformRandom random)
         {
-            return (random == null) ? Radius.Low
-                : MathHelper.Lerp(Radius.Low, Radius.High, (float)random.NextDouble());
+            if (_radius != null)
+            {
+                return (random == null) ? _radius.Low
+                    : MathHelper.Lerp(_radius.Low, _radius.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         /// <summary>
@@ -185,8 +281,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled rotation speed.</returns>
         private float SampleRotationSpeed(IUniformRandom random)
         {
-            return (random == null) ? RotationSpeed.Low
-                : MathHelper.Lerp(RotationSpeed.Low, RotationSpeed.High, (float)random.NextDouble());
+            if (_rotationSpeed != null)
+            {
+                return (random == null) ? _rotationSpeed.Low
+                    : MathHelper.Lerp(_rotationSpeed.Low, _rotationSpeed.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         /// <summary>
@@ -196,8 +299,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled major radius.</returns>
         private float SampleEccentricity(IUniformRandom random)
         {
-            return (random == null) ? Eccentricity.Low
-                : MathHelper.Lerp(Eccentricity.Low, Eccentricity.High, (float)random.NextDouble());
+            if (_eccentricity != null)
+            {
+                return (random == null) ? _eccentricity.Low
+                    : MathHelper.Lerp(_eccentricity.Low, _eccentricity.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         /// <summary>
@@ -207,8 +317,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled travel speed.</returns>
         private float SampleTravelSpeed(IUniformRandom random)
         {
-            return (random == null) ? TravelSpeed.Low
-                : MathHelper.Lerp(TravelSpeed.Low, TravelSpeed.High, (float)random.NextDouble());
+            if (_travelSpeed != null)
+            {
+                return (random == null) ? _travelSpeed.Low
+                    : MathHelper.Lerp(_travelSpeed.Low, _travelSpeed.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         /// <summary>
@@ -218,8 +335,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled angle offset.</returns>
         private float SampleAngleOffset(IUniformRandom random)
         {
-            return (random == null) ? AngleOffset.Low
-                : MathHelper.Lerp(AngleOffset.Low, AngleOffset.High, (float)random.NextDouble());
+            if (_angleOffset != null)
+            {
+                return MathHelper.ToRadians((random == null) ? _angleOffset.Low
+                    : MathHelper.Lerp(_angleOffset.Low, _angleOffset.High, (float)random.NextDouble()));
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         /// <summary>
@@ -229,8 +353,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled mass.</returns>
         private float SampleMass(IUniformRandom random)
         {
-            return (random == null) ? Mass.Low
-                : MathHelper.Lerp(Mass.Low, Mass.High, (float)random.NextDouble());
+            if (_mass != null)
+            {
+                return (random == null) ? _mass.Low
+                    : MathHelper.Lerp(_mass.Low, _mass.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         #endregion

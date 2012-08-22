@@ -10,7 +10,7 @@
       <Mass>300000 to 400000</Mass>
       <RotationSpeed>1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>0.1</AngleOffset>
+      <AngleOffset>30</AngleOffset>
       <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
     <Item>
@@ -19,7 +19,7 @@
       <Radius>30 to 40</Radius>
       <RotationSpeed>0.1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>0.1</AngleOffset>
+      <AngleOffset>30</AngleOffset>
       <TravelSpeed>12 to 16</TravelSpeed>
     </Item>
     <Item>
@@ -28,7 +28,7 @@
       <Radius>40 to 60</Radius>
       <RotationSpeed>0.2</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>0.1</AngleOffset>
+      <AngleOffset>30</AngleOffset>
       <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
     <Item>
@@ -37,7 +37,7 @@
       <Radius>60 to 80</Radius>
       <RotationSpeed>0.3</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>0.1</AngleOffset>
+      <AngleOffset>30</AngleOffset>
       <TravelSpeed>6 to 8</TravelSpeed>
     </Item>
     <Item>
@@ -46,7 +46,7 @@
       <Radius>80 to 100</Radius>
       <RotationSpeed>0.4</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>0.1</AngleOffset>
+      <AngleOffset>30</AngleOffset>
       <TravelSpeed>4 to 6</TravelSpeed>
     </Item>
   </Asset>

@@ -26,7 +26,6 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Unique name for this item type.
         /// </summary>
-        [DefaultValue("")]
         [Category("General")]
         [Description("The name of this item, by which it can be referenced.")]
         public string Name
