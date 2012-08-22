@@ -7,6 +7,7 @@ using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Design;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Util;
@@ -49,6 +50,9 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// The color tint for generated planets' surface.
         /// </summary>
+        [Editor("Space.Tools.DataEditor.XnaColorEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [TypeConverter(typeof(ColorConverter))]
         [ContentSerializer(Optional = true)]
         [DefaultValue(0xFFFFFFFF)]
         [Category("Media")]
@@ -62,6 +66,9 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// The atmospheric color tint for generated planets.
         /// </summary>
+        [Editor("Space.Tools.DataEditor.XnaColorEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [TypeConverter(typeof(ColorConverter))]
         [ContentSerializer(Optional = true)]
         [DefaultValue(0x00000000)]
         [Category("Media")]
