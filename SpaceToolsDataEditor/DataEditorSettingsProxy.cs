@@ -54,7 +54,7 @@ namespace Space.Tools.DataEditor
                 {
                     return new ContentProjectPath[0];
                 }
-                var rawPaths = rawValue.Replace('/', '\\').Split(new[] { '\n' });
+                var rawPaths = rawValue.Replace('\\', '/').Split(new[] { '\n' });
                 var paths = new ContentProjectPath[rawPaths.Length];
                 for (var i = 0; i < rawPaths.Length; i++)
                 {

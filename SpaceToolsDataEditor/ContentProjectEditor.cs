@@ -49,10 +49,10 @@ namespace Space.Tools.DataEditor
             _dialog.ValidateNames = true;
             _dialog.CheckFileExists = true;
 
-            if (!string.IsNullOrWhiteSpace(_lastPath) && _lastPath.Contains("\\"))
+            if (!string.IsNullOrWhiteSpace(_lastPath) && _lastPath.Contains("/"))
             {
-                _dialog.InitialDirectory = _lastPath.Substring(0, _lastPath.LastIndexOf('\\'));
-                _dialog.FileName = _lastPath.Substring(_lastPath.LastIndexOf('\\') + 1);
+                _dialog.InitialDirectory = _lastPath.Substring(0, _lastPath.LastIndexOf('/'));
+                _dialog.FileName = _lastPath.Substring(_lastPath.LastIndexOf('/') + 1);
             }
             else if (string.IsNullOrWhiteSpace(DataEditorSettings.Default.LastOpenedFolder))
             {
@@ -70,10 +70,10 @@ namespace Space.Tools.DataEditor
             if (!string.IsNullOrWhiteSpace(oldPath))
             {
                 _lastPath = oldPath;
-                if (_dialog != null && oldPath.Contains("\\"))
+                if (_dialog != null && oldPath.Contains("/"))
                 {
-                    _dialog.InitialDirectory = oldPath.Substring(0, oldPath.LastIndexOf('\\'));
-                    _dialog.FileName = oldPath.Substring(oldPath.LastIndexOf('\\') + 1);
+                    _dialog.InitialDirectory = oldPath.Substring(0, oldPath.LastIndexOf('/'));
+                    _dialog.FileName = oldPath.Substring(oldPath.LastIndexOf('/') + 1);
                 }
             }
             return new ContentProjectPath {Path = (string)base.EditValue(context, provider, value)};

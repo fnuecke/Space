@@ -133,7 +133,7 @@ namespace Space.Tools.DataEditor
                 else
                 {
                     var path = ((string)property.GetValue(factory));
-                    if (!string.IsNullOrWhiteSpace(path) && !ContentProjectManager.HasTextureAsset(path.Replace('/', '\\')))
+                    if (!string.IsNullOrWhiteSpace(path) && !ContentProjectManager.HasTextureAsset(path.Replace('\\', '/')))
                     {
                         AddIssue("Invalid texture asset name, no such texture asset.", factory.Name, property.Name, IssueType.Error);
                     }

@@ -262,7 +262,7 @@ namespace Space.Tools.DataEditor
             }
 
             // Make all forward slashes backslashes for the following split.
-            fullPath = fullPath.Replace('/', '\\');
+            fullPath = fullPath.Replace('\\', '/');
 
             var filePath = ContentProjectManager.GetFileForTextureAsset(fullPath);
             if (!string.IsNullOrWhiteSpace(filePath))

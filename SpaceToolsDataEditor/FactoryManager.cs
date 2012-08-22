@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing.Design;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -68,6 +70,16 @@ namespace Space.Tools.DataEditor
                         {
                             foreach (var factory in factories)
                             {
+                                // Adjust paths.
+                                foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(factory, new Attribute[]{new EditorAttribute(typeof(TextureAssetEditor),typeof(UITypeEditor))}))
+                                {
+                                    var value = property.GetValue(factory) as string;
+                                    if (!string.IsNullOrWhiteSpace(value))
+                                    {
+                                        property.SetValue(factory, value.Replace('\\', '/'));
+                                    }
+                                }
+
                                 Add(factory);
                                 FactoryFilenames.Add(factory, file);
                             }
@@ -98,8 +110,8 @@ namespace Space.Tools.DataEditor
             }
             else
             {
-                baseFolder = FactoryFilenames.Values.First().Replace('/', '\\');
-                baseFolder = baseFolder.Substring(0, baseFolder.LastIndexOf('\\') + 1);
+                baseFolder = FactoryFilenames.Values.First().Replace('\\', '/');
+                baseFolder = baseFolder.Substring(0, baseFolder.LastIndexOf('/') + 1);
             }
 
             // Group factories by filename.
@@ -143,11 +155,36 @@ namespace Space.Tools.DataEditor
             // Serialize each collection.
             foreach (var group in groups)
             {
+                // Skip empty groups.
+                if (group.Value.Count == 0)
+                {
+                    continue;
+                }
+
+                // See if they're all the same.
+                object output;
+                if (group.Value.All(x => x.GetType() == group.Value[0].GetType()))
+                {
+                    // Yes. Create specific array.
+                    var array = Array.CreateInstance(group.Value[0].GetType(), group.Value.Count);
+                    for (var i = 0; i < group.Value.Count; i++)
+                    {
+                        array.SetValue(group.Value[i], i);
+                    }
+                    output = array;
+                }
+                else
+                {
+                    // Nope.
+                    output = group.Value.ToArray();
+                }
+
                 using (var writer = new XmlTextWriter(group.Key, Encoding.UTF8))
                 {
+                    writer.Formatting = Formatting.Indented;
                     try
                     {
-                        IntermediateSerializer.Serialize(writer, group.Value.ToArray(), null);
+                        IntermediateSerializer.Serialize(writer, output, null);
                     }
                     catch (InvalidContentException ex)
                     {

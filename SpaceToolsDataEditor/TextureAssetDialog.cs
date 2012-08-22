@@ -48,7 +48,7 @@ namespace Space.Tools.DataEditor
             tvTextures.SelectedNode = null;
             if (!string.IsNullOrWhiteSpace(SelectedAsset))
             {
-                var hierarchy = SelectedAsset.Replace('/', '\\').
+                var hierarchy = SelectedAsset.Replace('\\', '/').
                     Split(new[] {tvTextures.PathSeparator}, StringSplitOptions.RemoveEmptyEntries);
                 var nodes = tvTextures.Nodes;
                 for (var i = 0; i < hierarchy.Length; i++)

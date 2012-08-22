@@ -43,7 +43,7 @@ namespace Space.Tools.DataEditor
 
             // Get "final" content root, as used after compilation. We strip this from content
             // project's individual root paths.
-            var contentRoot = DataEditorSettings.Default.ContentRootDirectory.Replace('/', '\\');
+            var contentRoot = DataEditorSettings.Default.ContentRootDirectory.Replace('\\', '/');
 
             // Loop all set content projects.
             foreach (string projectPath in DataEditorSettingsProxy.Default.ContentProjects)
@@ -69,24 +69,24 @@ namespace Space.Tools.DataEditor
                     {
                         continue;
                     }
-                    var rootPath = xml.Elements(ns + "PropertyGroup").Elements(ns + "ContentRootDirectory").First().Value.Replace('/', '\\');
+                    var rootPath = xml.Elements(ns + "PropertyGroup").Elements(ns + "ContentRootDirectory").First().Value.Replace('\\', '/');
 
                     // Strip global root.
                     if (rootPath.StartsWith(contentRoot))
                     {
                         rootPath = rootPath.Substring(contentRoot.Length);
-                        if (rootPath.Length > 0 && rootPath[0] == '\\')
+                        if (rootPath.Length > 0 && rootPath[0] == '/')
                         {
                             rootPath = rootPath.Substring(1);
                         }
                         if (rootPath.Length > 0)
                         {
-                            rootPath += '\\';
+                            rootPath += '/';
                         }
                     }
 
                     // Base path we prepend to asset file paths, being that to the project minus it's file name.
-                    var basePath = projectPath.Contains('\\') ? projectPath.Substring(0, projectPath.LastIndexOf('\\') + 1) : (projectPath + '\\');
+                    var basePath = projectPath.Contains('/') ? projectPath.Substring(0, projectPath.LastIndexOf('/') + 1) : (projectPath + '/');
 
                     // Find all usable assets in the content project.
                     foreach (var texture in from asset in xml.Elements(ns + "ItemGroup").Elements(ns + "Compile")
@@ -101,10 +101,10 @@ namespace Space.Tools.DataEditor
                         {
                             return;
                         }
-                        var assetPath = include.Value.Replace('/', '\\');
+                        var assetPath = include.Value.Replace('\\', '/');
 
                         // Extract the relative path, which we need to prepend to the asset name.
-                        var relativeAssetPath = assetPath.Contains('\\') ? assetPath.Substring(0, assetPath.LastIndexOf('\\') + 1) : "";
+                        var relativeAssetPath = assetPath.Contains('/') ? assetPath.Substring(0, assetPath.LastIndexOf('/') + 1) : "";
 
                         // Prepend it with the base path.
                         assetPath = basePath + assetPath;
@@ -147,7 +147,7 @@ namespace Space.Tools.DataEditor
         public static string GetFileForTextureAsset(string assetName)
         {
             string result;
-            TextureAssets.TryGetValue(assetName.Replace('/', '\\'), out result);
+            TextureAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
             return result;
         }
 
@@ -160,7 +160,7 @@ namespace Space.Tools.DataEditor
         /// </returns>
         public static bool HasTextureAsset(string assetName)
         {
-            return TextureAssets.ContainsKey(assetName.Replace('/', '\\'));
+            return TextureAssets.ContainsKey(assetName.Replace('\\', '/'));
         }
     }
 }
