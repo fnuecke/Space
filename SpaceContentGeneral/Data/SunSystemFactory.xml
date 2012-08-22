@@ -1,69 +1,69 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.SunSystemFactory[]">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories" xmlns:SunSystemFactoryTypes="Space.ComponentSystem.Factories.SunSystemFactoryTypes">
+  <Asset Type="Factories:SunSystemFactory[]">
     <Item>
       <Name>home_system</Name>
       <Sun>sun_1</Sun>
     </Item>
-    
     <Item>
       <Name>sunsystem_1</Name>
       <Sun>sun_1</Sun>
       <Planets>
+        <Angle>0 to 360</Angle>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>6000 to 7000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
+          <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>12000 to 13000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
+          <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>19000 to 20000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
-      </Orbiter>
+          <Moons>#Resource1</Moons>
+        </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>26000 to 27000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
+          <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>33000 to 34000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
+          <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>40000 to 41000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
+          <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>47000 to 48000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
+          <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>54000 to 55000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
-          <Moons>#NormalMoons_4</Moons>
+          <Moons>#Resource1</Moons>
         </Orbiter>
       </Planets>
     </Item>
   </Asset>
-  
   <Resources>
-    <Resource ID="#NormalMoons_4" Type="Space.ComponentSystem.Factories.SunSystemFactoryTypes.Orbit">
+    <Resource ID="#Resource1" Type="SunSystemFactoryTypes:Orbit">
+      <Angle>0 to 360</Angle>
       <Orbiter>
         <Name>moon_tiny</Name>
         <OrbitRadius>900 to 1000</OrbitRadius>

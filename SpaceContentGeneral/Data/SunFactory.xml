@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.SunFactory[]">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:SunFactory[]">
     <Item>
       <Name>sun_1</Name>
       <Radius>512 to 1024</Radius>

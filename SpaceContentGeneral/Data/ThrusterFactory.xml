@@ -1,11 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.ThrusterFactory[]">
-    <!-- The type of thruster each player starts with, which has fixed
-         values (enforced by min an max being equal). -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:ThrusterFactory[]">
     <Item>
       <Name>StarterThruster</Name>
-      <Icon>Textures/Icons/Buffs/stabilisator</Icon>
+      <Icon>Images/Icons/Buffs/stabilisator</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>90 AccelerationForce</Item>
         <Item>30 RotationForce</Item>
@@ -13,11 +14,12 @@
       </GuaranteedAttributes>
       <Effect>Effects/Thruster</Effect>
     </Item>
-
     <Item>
       <Name>PoorBasicThruster</Name>
-      <Icon>Textures/Icons/Buffs/stabilisator</Icon>
+      <Icon>Images/Icons/Buffs/stabilisator</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Poor</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>90 AccelerationForce</Item>
         <Item>30 RotationForce</Item>
@@ -38,11 +40,12 @@
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
       <Effect>Effects/Thruster</Effect>
     </Item>
-    
     <Item>
       <Name>BasicThruster</Name>
-      <Icon>Textures/Icons/Buffs/stabilisator</Icon>
+      <Icon>Images/Icons/Buffs/stabilisator</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>110 AccelerationForce</Item>
         <Item>40 RotationForce</Item>
@@ -63,11 +66,12 @@
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
       <Effect>Effects/Thruster</Effect>
     </Item>
-
     <Item>
       <Name>UncommonBasicThruster</Name>
-      <Icon>Textures/Icons/Buffs/stabilisator</Icon>
+      <Icon>Images/Icons/Buffs/stabilisator</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Uncommon</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>120 AccelerationForce</Item>
         <Item>20 RotationForce</Item>
@@ -88,11 +92,12 @@
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
       <Effect>Effects/Thruster</Effect>
     </Item>
-
     <Item>
       <Name>RareBasicThruster</Name>
-      <Icon>Textures/Icons/Buffs/stabilisator</Icon>
+      <Icon>Images/Icons/Buffs/stabilisator</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Rare</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>150 AccelerationForce</Item>
         <Item>25 RotationForce</Item>
@@ -113,10 +118,12 @@
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
       <Effect>Effects/Thruster</Effect>
     </Item>
-    
-    <!-- NPC thrusters -->
     <Item>
       <Name>L1_AI_Thruster</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>95 to 125 AccelerationForce</Item>
         <Item>4.5 to 9 RotationForce</Item>

@@ -1,18 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.SensorFactory[]">
-    <!-- The type of sensor each player starts with, which has fixed
-         values (enforced by min an max being equal). -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:SensorFactory[]">
     <Item>
       <Name>StarterSensor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
     </Item>
-
     <Item>
       <Name>PoorBasicSensor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Poor</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -30,10 +34,12 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
-    
     <Item>
       <Name>BasicSensor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -51,10 +57,12 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
     </Item>
-
     <Item>
       <Name>UncommonBasicSensor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Uncommon</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -72,10 +80,12 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
     </Item>
-
     <Item>
       <Name>RareBasicSensor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Rare</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -93,10 +103,12 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
     </Item>
-    
-    <!-- NPC sensors -->
     <Item>
       <Name>L1_AI_Sensor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>2000 SensorRange</Item>
       </GuaranteedAttributes>

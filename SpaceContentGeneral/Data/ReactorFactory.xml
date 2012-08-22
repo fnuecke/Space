@@ -1,19 +1,23 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.ReactorFactory[]">
-    <!-- The type of reactor each player starts with, which has fixed
-         values (enforced by min an max being equal). -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:ReactorFactory[]">
     <Item>
       <Name>StarterReactor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>50 Energy</Item>
         <Item>2.5 EnergyRegeneration</Item>
       </GuaranteedAttributes>
     </Item>
-
     <Item>
       <Name>PoorBasicReactor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Poor</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>80 Energy</Item>
         <Item>3 EnergyRegeneration</Item>
@@ -34,7 +38,10 @@
     </Item>
     <Item>
       <Name>BasicReactor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>80 Energy</Item>
         <Item>3 EnergyRegeneration</Item>
@@ -53,10 +60,12 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
     </Item>
-    
     <Item>
       <Name>UncommonBasicReactor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Uncommon</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>50 Energy</Item>
         <Item>2.5 EnergyRegeneration</Item>
@@ -75,10 +84,12 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
     </Item>
-
     <Item>
       <Name>RareBasicReactor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
       <Quality>Rare</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>50 Energy</Item>
         <Item>2.5 EnergyRegeneration</Item>
@@ -97,10 +108,12 @@
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
     </Item>
-    
-    <!-- NPC reactors -->
     <Item>
       <Name>L1_AI_Reactor</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
         <Item>50 to 75 Energy</Item>
         <Item>2 to 3 EnergyRegeneration</Item>

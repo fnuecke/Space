@@ -1,11 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.WeaponFactory[]">
-    <!-- The type of weapon each player starts with, which has fixed
-         values (enforced by min an max being equal). -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:WeaponFactory[]">
     <Item>
       <Name>StarterWeapon</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <Sound>laser</Sound>
       <Cooldown>0.5</Cooldown>
       <EnergyConsumption>5</EnergyConsumption>
@@ -14,17 +15,20 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>15</CollisionRadius>
+          <CanBeShot>false</CanBeShot>
           <InitialVelocity>80</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
+          <Friction>0</Friction>
+          <TimeToLive>5</TimeToLive>
         </Item>
       </Projectiles>
     </Item>
-
     <Item>
       <Name>PoorBasicWeapon</Name>
-      <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Poor</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -46,17 +50,20 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
+          <CanBeShot>false</CanBeShot>
           <InitialVelocity>70</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
+          <Friction>0</Friction>
+          <TimeToLive>5</TimeToLive>
         </Item>
       </Projectiles>
     </Item>
-    
     <Item>
       <Name>BasicWeapon</Name>
-      <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -78,17 +85,20 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
+          <CanBeShot>false</CanBeShot>
           <InitialVelocity>20</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
+          <Friction>0</Friction>
+          <TimeToLive>5</TimeToLive>
         </Item>
       </Projectiles>
     </Item>
-
     <Item>
       <Name>UncommonBasicWeapon</Name>
-      <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Uncommon</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -110,17 +120,20 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
+          <CanBeShot>false</CanBeShot>
           <InitialVelocity>90</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
+          <Friction>0</Friction>
+          <TimeToLive>5</TimeToLive>
         </Item>
       </Projectiles>
     </Item>
-
     <Item>
       <Name>RareBasicWeapon</Name>
-      <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->
+      <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Quality>Rare</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -142,16 +155,20 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
+          <CanBeShot>false</CanBeShot>
           <InitialVelocity>110</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
+          <Friction>0</Friction>
+          <TimeToLive>5</TimeToLive>
         </Item>
       </Projectiles>
     </Item>
-
-    <!-- NPC weapons -->
     <Item>
       <Name>L1_AI_Weapon</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <Sound>laser</Sound>
       <Cooldown>0.5 to 0.75</Cooldown>
       <EnergyConsumption>5 to 7.5</EnergyConsumption>
@@ -160,10 +177,13 @@
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
+          <CanBeShot>false</CanBeShot>
           <InitialVelocity>125</InitialVelocity>
           <InitialDirection>-15 to 15</InitialDirection>
+          <Friction>0</Friction>
+          <TimeToLive>5</TimeToLive>
         </Item>
       </Projectiles>
-  </Item>
+    </Item>
   </Asset>
 </XnaContent>

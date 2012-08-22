@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.PlanetFactory[]">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:PlanetFactory[]">
     <Item>
       <Name>planet_1</Name>
       <Texture>Textures/Planets/rock_07</Texture>
@@ -16,6 +16,8 @@
     <Item>
       <Name>moon_tiny</Name>
       <Texture>Textures/Planets/rock_02</Texture>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>30 to 40</Radius>
       <RotationSpeed>0.1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
@@ -25,6 +27,8 @@
     <Item>
       <Name>moon_small</Name>
       <Texture>Textures/Planets/rock_02</Texture>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>40 to 60</Radius>
       <RotationSpeed>0.2</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
@@ -34,6 +38,8 @@
     <Item>
       <Name>moon_medium</Name>
       <Texture>Textures/Planets/rock_02</Texture>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>60 to 80</Radius>
       <RotationSpeed>0.3</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
@@ -43,6 +49,8 @@
     <Item>
       <Name>moon_large</Name>
       <Texture>Textures/Planets/rock_02</Texture>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>80 to 100</Radius>
       <RotationSpeed>0.4</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>

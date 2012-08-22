@@ -1,9 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.WingFactory[]">
-    <!-- Player items -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:WingFactory[]">
     <Item>
       <Name>StarterWing</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>
         <Item>
           <Type>Weapon</Type>
@@ -12,10 +15,12 @@
         </Item>
       </Slots>
     </Item>
-
-    <!-- NPC items -->
     <Item>
       <Name>L1_AI_Wing</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>
         <Item>
           <Type>Weapon</Type>

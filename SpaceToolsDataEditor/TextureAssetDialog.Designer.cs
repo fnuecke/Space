@@ -75,6 +75,7 @@
             this.tvTextures.HotTracking = true;
             this.tvTextures.Location = new System.Drawing.Point(8, 21);
             this.tvTextures.Name = "tvTextures";
+            this.tvTextures.PathSeparator = "/";
             this.tvTextures.Size = new System.Drawing.Size(174, 350);
             this.tvTextures.TabIndex = 2;
             this.tvTextures.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TexturesAfterSelect);

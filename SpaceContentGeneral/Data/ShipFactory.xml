@@ -1,12 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.ShipFactory[]">
-    <!-- Player ships -->
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:ShipFactory[]">
     <Item>
       <Name>Player</Name>
       <Texture>Textures/spaceshipB</Texture>
       <CollisionRadius>20</CollisionRadius>
-
       <Attributes>
         <Item>10 Mass</Item>
         <Item>100 Health</Item>
@@ -16,7 +14,6 @@
         <Item>100 AccelerationForce</Item>
         <Item>20 RotationForce</Item>
       </Attributes>
-
       <Items>
         <Name>StarterFuselage</Name>
         <Item>
@@ -45,8 +42,6 @@
         </Item>
       </Items>
     </Item>
-
-    <!-- NPC ships -->
     <Item>
       <Name>L1_AI_Ship</Name>
       <Texture>Textures/Stolen/Ships/broadsword_hftr</Texture>
@@ -61,7 +56,6 @@
         <Item>95 to 115 AccelerationForce</Item>
         <Item>15 to 20 RotationForce</Item>
       </Attributes>
-
       <Items>
         <Name>L1_AI_Fuselage</Name>
         <Item>

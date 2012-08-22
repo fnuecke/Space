@@ -274,7 +274,7 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            if (tvData.Focused)
+            if (tvData.Focused || sender == miDelete)
             {
                 if (pgProperties.SelectedObject is IFactory)
                 {
