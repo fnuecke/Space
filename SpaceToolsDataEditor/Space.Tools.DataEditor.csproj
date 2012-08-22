@@ -69,6 +69,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddFactoryDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddFactoryDialog.Designer.cs">
+      <DependentUpon>AddFactoryDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ContentProjectManager.cs" />
     <Compile Include="DataEditor.cs">
       <SubType>Form</SubType>
@@ -115,6 +121,9 @@
       <DependentUpon>DataEditorSettings.settings</DependentUpon>
     </Compile>
     <Compile Include="XnaColorEditor.cs" />
+    <EmbeddedResource Include="AddFactoryDialog.resx">
+      <DependentUpon>AddFactoryDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DataEditor.resx">
       <DependentUpon>DataEditor.cs</DependentUpon>
     </EmbeddedResource>
@@ -191,6 +200,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\075b_UpFolder_16x16_72.png" />
+    <None Include="Resources\327_Options_16x16_72.png" />
+    <None Include="Resources\077_AddFile_16x16_72.png" />
+    <None Include="Resources\305_Close_16x16_72.png" />
+    <None Include="Resources\1385_Disable_16x16_72.png" />
+    <None Include="Resources\DeleteHS.png" />
     <Content Include="Resources\mountpoint_armor.png" />
     <Content Include="Resources\mountpoint_fuselage.png" />
     <Content Include="Resources\mountpoint_reactor.png" />

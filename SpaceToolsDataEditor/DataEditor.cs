@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Windows;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Microsoft.Xna.Framework;
@@ -33,11 +34,13 @@ namespace Space.Tools.DataEditor
             IsFolderPicker = true,
             EnsurePathExists = true,
             EnsureValidNames = true,
-            InitialDirectory = Application.StartupPath,
+            InitialDirectory = System.Windows.Forms.Application.StartupPath,
             Title = "Select folder with factory XMLs"
         };
 
         private readonly DataEditorSettingsDialog _settingsDialog = new DataEditorSettingsDialog();
+
+        private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
 
         public DataEditor()
         {
@@ -47,6 +50,15 @@ namespace Space.Tools.DataEditor
             lvIssues.ListViewItemSorter = new IssueComparer();
             pgProperties.PropertyValueChanged += (o, args) => pgProperties.Refresh();
             pbPreview.Image = new Bitmap(1024, 1024, PixelFormat.Format32bppArgb);
+
+            tvData.KeyDown += (sender, args) =>
+            {
+                if (args.KeyCode == Keys.Delete && args.Shift)
+                {
+                    args.Handled = true;
+                    RemoveClick(sender, args);
+                }
+            };
 
             var settings = DataEditorSettings.Default;
 
@@ -155,7 +167,7 @@ namespace Space.Tools.DataEditor
 
         private void ExitClick(object sender, EventArgs e)
         {
-            Application.Exit();
+            System.Windows.Forms.Application.Exit();
         }
 
         private void SaveClick(object sender, EventArgs e)
@@ -182,7 +194,16 @@ namespace Space.Tools.DataEditor
 
         private void FactorySelected(object sender, TreeViewEventArgs e)
         {
-            SelectFactory(e.Node.Name);
+            if (SelectFactory(e.Node.Name))
+            {
+                tsmiRemove.Enabled = true;
+                miDelete.Enabled = true;
+            }
+            else
+            {
+                tsmiRemove.Enabled = false;
+                miDelete.Enabled = false;
+            }
             UpdatePreview();
         }
 
@@ -212,6 +233,61 @@ namespace Space.Tools.DataEditor
         private void SettingsClick(object sender, EventArgs e)
         {
             _settingsDialog.ShowDialog(this);
+        }
+
+        private void AddFactoryClick(object sender, EventArgs e)
+        {
+            if (_factoryDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                var type = _factoryDialog.FactoryType;
+                var name = _factoryDialog.FactoryName;
+
+                try
+                {
+                    // Create a new instance of this factory type.
+                    var instance = Activator.CreateInstance(type) as IFactory;
+                    if (instance == null)
+                    {
+                        // This should not happen. Ever.
+                        throw new ArgumentException("Resulting object was not a factory.");
+                    }
+                    instance.Name = name;
+
+                    // Register it.
+                    FactoryManager.Add(instance);
+
+                    // And select it.
+                    SelectFactory(name);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("Failed creating new factory instance:\n" + ex, "Error",
+                                                   MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void RemoveClick(object sender, EventArgs e)
+        {
+            if (pgProperties.SelectedObject == null)
+            {
+                return;
+            }
+
+            if (tvData.Focused)
+            {
+                if (pgProperties.SelectedObject is IFactory)
+                {
+                    var factory = (IFactory)pgProperties.SelectedObject;
+                    if (ModifierKeys == Keys.Shift ||
+                        System.Windows.MessageBox.Show("Are you sure you wish to delete '" + factory.Name + "'?",
+                                                       "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question,
+                                                       MessageBoxResult.No) == MessageBoxResult.Yes)
+                    {
+                        FactoryManager.Remove(factory);
+                    }
+                }
+            }
         }
 
         private void PropertiesSelectedGridItemChanged(object sender, SelectedGridItemChangedEventArgs e)

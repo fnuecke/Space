@@ -22,6 +22,8 @@ namespace Space.Tools.DataEditor
 
         public static event FactoryAddedDelegate FactoryAdded;
 
+        public static event FactoryAddedDelegate FactoryRemoved;
+
         public static event FactoryNameChangedDelegate FactoryNameChanged;
 
         public static event FactoriesClearedDelegate FactoriesCleared;
@@ -239,6 +241,24 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Removes the specified factory.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        public static void Remove(IFactory factory)
+        {
+            if (factory == null || string.IsNullOrWhiteSpace(factory.Name) || !Factories.ContainsKey(factory.Name))
+            {
+                return;
+            }
+
+            Factories.Remove(factory.Name);
+            FactoriesByType[factory.GetType()].Remove(factory);
+            FactoryFilenames.Remove(factory);
+
+            OnFactoryRemoved(factory);
+        }
+
+        /// <summary>
         /// Renames the factory with the specified name.
         /// </summary>
         /// <param name="oldName">The name of the factory to rename.</param>
@@ -345,6 +365,14 @@ namespace Space.Tools.DataEditor
             if (FactoryAdded != null)
             {
                 FactoryAdded(factory);
+            }
+        }
+
+        private static void OnFactoryRemoved(IFactory factory)
+        {
+            if (FactoryRemoved != null)
+            {
+                FactoryRemoved(factory);
             }
         }
 

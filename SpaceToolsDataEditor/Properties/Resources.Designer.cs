@@ -60,6 +60,48 @@ namespace Space.Tools.DataEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap _075b_UpFolder_16x16_72 {
+            get {
+                object obj = ResourceManager.GetObject("075b_UpFolder_16x16_72", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap _077_AddFile_16x16_72 {
+            get {
+                object obj = ResourceManager.GetObject("077_AddFile_16x16_72", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap _1385_Disable_16x16_72 {
+            get {
+                object obj = ResourceManager.GetObject("1385_Disable_16x16_72", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap _305_Close_16x16_72 {
+            get {
+                object obj = ResourceManager.GetObject("305_Close_16x16_72", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap _327_Options_16x16_72 {
+            get {
+                object obj = ResourceManager.GetObject("327_Options_16x16_72", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap DeleteHS {
+            get {
+                object obj = ResourceManager.GetObject("DeleteHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap OpenFile {
             get {
                 object obj = ResourceManager.GetObject("OpenFile", resourceCulture);

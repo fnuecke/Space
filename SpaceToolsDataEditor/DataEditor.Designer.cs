@@ -32,6 +32,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataEditor));
             this.pgProperties = new System.Windows.Forms.PropertyGrid();
             this.tvData = new System.Windows.Forms.TreeView();
+            this.cmsFactories = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiAddFactory = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.gbData = new System.Windows.Forms.GroupBox();
             this.msMain = new System.Windows.Forms.MenuStrip();
             this.tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,6 +57,10 @@
             this.chFactory = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chProperty = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ilIssueTypes = new System.Windows.Forms.ImageList(this.components);
+            this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.miNewFactory = new System.Windows.Forms.ToolStripMenuItem();
+            this.miDelete = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmsFactories.SuspendLayout();
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
             this.gbProperties.SuspendLayout();
@@ -79,7 +86,7 @@
             this.pgProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pgProperties.Location = new System.Drawing.Point(8, 21);
             this.pgProperties.Name = "pgProperties";
-            this.pgProperties.Size = new System.Drawing.Size(437, 176);
+            this.pgProperties.Size = new System.Drawing.Size(437, 133);
             this.pgProperties.TabIndex = 0;
             this.pgProperties.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.PropertiesPropertyValueChanged);
             this.pgProperties.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.PropertiesSelectedGridItemChanged);
@@ -87,6 +94,7 @@
             // tvData
             // 
             this.tvData.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tvData.ContextMenuStrip = this.cmsFactories;
             this.tvData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tvData.HideSelection = false;
             this.tvData.HotTracking = true;
@@ -95,6 +103,31 @@
             this.tvData.Size = new System.Drawing.Size(214, 286);
             this.tvData.TabIndex = 1;
             this.tvData.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.FactorySelected);
+            // 
+            // cmsFactories
+            // 
+            this.cmsFactories.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiAddFactory,
+            this.tsmiRemove});
+            this.cmsFactories.Name = "cmsFactories";
+            this.cmsFactories.Size = new System.Drawing.Size(141, 48);
+            // 
+            // tsmiAddFactory
+            // 
+            this.tsmiAddFactory.Image = global::Space.Tools.DataEditor.Properties.Resources._077_AddFile_16x16_72;
+            this.tsmiAddFactory.Name = "tsmiAddFactory";
+            this.tsmiAddFactory.Size = new System.Drawing.Size(140, 22);
+            this.tsmiAddFactory.Text = "New &Factory";
+            this.tsmiAddFactory.Click += new System.EventHandler(this.AddFactoryClick);
+            // 
+            // tsmiRemove
+            // 
+            this.tsmiRemove.Enabled = false;
+            this.tsmiRemove.Image = global::Space.Tools.DataEditor.Properties.Resources.DeleteHS;
+            this.tsmiRemove.Name = "tsmiRemove";
+            this.tsmiRemove.Size = new System.Drawing.Size(140, 22);
+            this.tsmiRemove.Text = "&Delete";
+            this.tsmiRemove.Click += new System.EventHandler(this.RemoveClick);
             // 
             // gbData
             // 
@@ -111,7 +144,8 @@
             // msMain
             // 
             this.msMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiFile});
+            this.tsmiFile,
+            this.tsmiEdit});
             this.msMain.Location = new System.Drawing.Point(0, 0);
             this.msMain.Name = "msMain";
             this.msMain.Size = new System.Drawing.Size(707, 24);
@@ -141,7 +175,7 @@
             // 
             // tsmiLoad
             // 
-            this.tsmiLoad.Image = global::Space.Tools.DataEditor.Properties.Resources.OpenFile;
+            this.tsmiLoad.Image = global::Space.Tools.DataEditor.Properties.Resources._075b_UpFolder_16x16_72;
             this.tsmiLoad.Name = "tsmiLoad";
             this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
             this.tsmiLoad.Size = new System.Drawing.Size(143, 22);
@@ -155,6 +189,7 @@
             // 
             // tsmiSettings
             // 
+            this.tsmiSettings.Image = global::Space.Tools.DataEditor.Properties.Resources._327_Options_16x16_72;
             this.tsmiSettings.Name = "tsmiSettings";
             this.tsmiSettings.ShortcutKeys = System.Windows.Forms.Keys.F10;
             this.tsmiSettings.Size = new System.Drawing.Size(143, 22);
@@ -181,7 +216,7 @@
             this.gbProperties.Location = new System.Drawing.Point(5, 5);
             this.gbProperties.Name = "gbProperties";
             this.gbProperties.Padding = new System.Windows.Forms.Padding(8);
-            this.gbProperties.Size = new System.Drawing.Size(453, 205);
+            this.gbProperties.Size = new System.Drawing.Size(453, 162);
             this.gbProperties.TabIndex = 5;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Properties";
@@ -193,7 +228,7 @@
             this.gbPreview.Location = new System.Drawing.Point(5, 0);
             this.gbPreview.Name = "gbPreview";
             this.gbPreview.Padding = new System.Windows.Forms.Padding(8);
-            this.gbPreview.Size = new System.Drawing.Size(453, 101);
+            this.gbPreview.Size = new System.Drawing.Size(453, 144);
             this.gbPreview.TabIndex = 6;
             this.gbPreview.TabStop = false;
             this.gbPreview.Text = "Preview";
@@ -206,7 +241,7 @@
             this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbPreview.Location = new System.Drawing.Point(8, 21);
             this.pbPreview.Name = "pbPreview";
-            this.pbPreview.Size = new System.Drawing.Size(437, 72);
+            this.pbPreview.Size = new System.Drawing.Size(437, 115);
             this.pbPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbPreview.TabIndex = 0;
             this.pbPreview.TabStop = false;
@@ -252,7 +287,7 @@
             this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
             this.scInner.Panel2MinSize = 40;
             this.scInner.Size = new System.Drawing.Size(463, 325);
-            this.scInner.SplitterDistance = 215;
+            this.scInner.SplitterDistance = 172;
             this.scInner.TabIndex = 0;
             // 
             // scMain
@@ -340,6 +375,34 @@
             this.ilIssueTypes.Images.SetKeyName(2, "109_AllAnnotations_Warning_16x16_72.png");
             this.ilIssueTypes.Images.SetKeyName(3, "109_AllAnnotations_Error_16x16_72.png");
             // 
+            // tsmiEdit
+            // 
+            this.tsmiEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miNewFactory,
+            this.miDelete});
+            this.tsmiEdit.Name = "tsmiEdit";
+            this.tsmiEdit.Size = new System.Drawing.Size(39, 20);
+            this.tsmiEdit.Text = "&Edit";
+            // 
+            // miNewFactory
+            // 
+            this.miNewFactory.Image = global::Space.Tools.DataEditor.Properties.Resources._077_AddFile_16x16_72;
+            this.miNewFactory.Name = "miNewFactory";
+            this.miNewFactory.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
+            this.miNewFactory.Size = new System.Drawing.Size(183, 22);
+            this.miNewFactory.Text = "New &Factory";
+            this.miNewFactory.Click += new System.EventHandler(this.AddFactoryClick);
+            // 
+            // miDelete
+            // 
+            this.miDelete.Enabled = false;
+            this.miDelete.Image = global::Space.Tools.DataEditor.Properties.Resources.DeleteHS;
+            this.miDelete.Name = "miDelete";
+            this.miDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.miDelete.Size = new System.Drawing.Size(183, 22);
+            this.miDelete.Text = "&Delete";
+            this.miDelete.Click += new System.EventHandler(this.RemoveClick);
+            // 
             // DataEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -353,6 +416,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Data Editor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DataEditorClosing);
+            this.cmsFactories.ResumeLayout(false);
             this.gbData.ResumeLayout(false);
             this.msMain.ResumeLayout(false);
             this.msMain.PerformLayout();
@@ -403,6 +467,12 @@
         private System.Windows.Forms.ColumnHeader chProperty;
         private System.Windows.Forms.ColumnHeader chText;
         private System.Windows.Forms.ImageList ilIssueTypes;
+        private System.Windows.Forms.ContextMenuStrip cmsFactories;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAddFactory;
+        private System.Windows.Forms.ToolStripMenuItem tsmiRemove;
+        private System.Windows.Forms.ToolStripMenuItem tsmiEdit;
+        private System.Windows.Forms.ToolStripMenuItem miNewFactory;
+        private System.Windows.Forms.ToolStripMenuItem miDelete;
     }
 }
 

@@ -110,7 +110,7 @@ namespace Space.ComponentSystem.Factories
 
         private AttributeModifierConstraint<AttributeType>[] _attributes;
 
-        private ItemInfo _items;
+        private ItemInfo _items = new ItemInfo();
 
         #endregion
 

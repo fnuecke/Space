@@ -23,16 +23,9 @@ namespace Space.Tools.DataEditor
             pgProperties.PropertyValueChanged += HandlePropertyValueChanged;
 
             FactoryManager.FactoryAdded += HandleFactoryAdded;
+            FactoryManager.FactoryRemoved += HandleFactoryRemoved;
             FactoryManager.FactoriesCleared += HandleFactoriesCleared;
-            FactoryManager.FactoryNameChanged += (oldName, newName) =>
-            {
-                var oldNode = tvData.Nodes.Find(oldName, true);
-                if (oldNode.Length > 0)
-                {
-                    oldNode[0].Parent.Nodes.Add(newName, newName);
-                    oldNode[0].Remove();
-                }
-            };
+            FactoryManager.FactoryNameChanged += HandleFactoryNameChanged;
         }
 
         private void HandleFactoryAdded(IFactory factory)
@@ -42,6 +35,21 @@ namespace Space.Tools.DataEditor
             {
                 insertionNode[0].Nodes.Add(factory.Name, factory.Name);
             }
+
+            // Validate that factory.
+            ScanForIssues(factory);
+        }
+
+        private void HandleFactoryRemoved(IFactory factory)
+        {
+            var node = tvData.Nodes.Find(factory.Name, true);
+            if (node.Length > 0)
+            {
+                node[0].Remove();
+            }
+
+            // See if this causes us any trouble.
+            ScanForIssues();
         }
 
         private void HandleFactoriesCleared()
@@ -70,13 +78,23 @@ namespace Space.Tools.DataEditor
             ScanForIssues();
         }
 
+        private void HandleFactoryNameChanged(string oldName, string newName)
+        {
+            var oldNode = tvData.Nodes.Find(oldName, true);
+            if (oldNode.Length > 0)
+            {
+                oldNode[0].Parent.Nodes.Add(newName, newName);
+                oldNode[0].Remove();
+            }
+        }
+
         private void HandlePropertyValueChanged(object o, PropertyValueChangedEventArgs args)
         {
             if (pgProperties.SelectedObject is IFactory)
             {
                 var factory = (IFactory)pgProperties.SelectedObject;
                 // See if what we changed is the name of the factory.
-                if (Equals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(factory)["Name"]))
+                if (ReferenceEquals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(factory)["Name"]))
                 {
                     // Yes, get old and ned value.
                     var oldName = args.OldValue as string;
@@ -151,7 +169,7 @@ namespace Space.Tools.DataEditor
         /// nothing (clears property grid).
         /// </summary>
         /// <param name="name">The name of the factory.</param>
-        private void SelectFactory(string name)
+        private bool SelectFactory(string name)
         {
             pgProperties.SelectedObject = null;
             //tvData.SelectedNode = null;
@@ -164,7 +182,9 @@ namespace Space.Tools.DataEditor
                 {
                     tvData.SelectedNode = node[0];
                 }
+                return true;
             }
+            return false;
         }
 
         /// <summary>
