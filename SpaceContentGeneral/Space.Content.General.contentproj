@@ -22,82 +22,82 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Armor.xml">
-      <Name>Armor</Name>
+    <Compile Include="Data\ArmorFactory.xml">
+      <Name>ArmorFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Items.xml">
+    <Compile Include="Data\ItemPool.xml">
       <SubType>Designer</SubType>
-      <Name>Items</Name>
+      <Name>ItemPool</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Planets.xml">
-      <Name>Planets</Name>
+    <Compile Include="Data\PlanetFactory.xml">
+      <Name>PlanetFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Reactors.xml">
-      <Name>Reactors</Name>
+    <Compile Include="Data\ReactorFactory.xml">
+      <Name>ReactorFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Sensors.xml">
-      <Name>Sensors</Name>
+    <Compile Include="Data\SensorFactory.xml">
+      <Name>SensorFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Shields.xml">
-      <Name>Shields</Name>
+    <Compile Include="Data\ShieldFactory.xml">
+      <Name>ShieldFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Ships.xml">
+    <Compile Include="Data\ShipFactory.xml">
       <SubType>Designer</SubType>
-      <Name>Ships</Name>
+      <Name>ShipFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Suns.xml">
-      <Name>Suns</Name>
+    <Compile Include="Data\SunFactory.xml">
+      <Name>SunFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\SunSystems.xml">
+    <Compile Include="Data\SunSystemFactory.xml">
       <SubType>Designer</SubType>
-      <Name>SunSystems</Name>
+      <Name>SunSystemFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Thrusters.xml">
-      <Name>Thrusters</Name>
+    <Compile Include="Data\ThrusterFactory.xml">
+      <Name>ThrusterFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
       <SubType>Designer</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Weapons.xml">
-      <Name>Weapons</Name>
+    <Compile Include="Data\WeaponFactory.xml">
+      <Name>WeaponFactory</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
@@ -159,13 +159,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Fuselage.xml">
-      <Name>Fuselage</Name>
+    <Compile Include="Data\FuselageFactory.xml">
+      <Name>FuselageFactory</Name>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Wings.xml">
-      <Name>Wings</Name>
+    <Compile Include="Data\WingFactory.xml">
+      <Name>WingFactory</Name>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

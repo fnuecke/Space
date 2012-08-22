@@ -150,7 +150,7 @@ namespace Space.Tools.DataEditor
 
         private void SaveClick(object sender, EventArgs e)
         {
-
+            FactoryManager.Save();
         }
 
         private void LoadClick(object sender, EventArgs e)

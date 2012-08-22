@@ -35,7 +35,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="content">The content manager used to load drop tables.</param>
         public DropSystem(ContentManager content)
         {
-            foreach (var itemPool in content.Load<ItemPool[]>("Data/Items"))
+            foreach (var itemPool in content.Load<ItemPool[]>("Data/ItemPool"))
             {
                 _itemPools.Add(itemPool.Name, itemPool);
             }

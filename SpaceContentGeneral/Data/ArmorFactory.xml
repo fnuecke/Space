@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
   <Asset Type="Space.ComponentSystem.Factories.ArmorFactory[]">
     <!-- The type of armor each player starts with, which has fixed

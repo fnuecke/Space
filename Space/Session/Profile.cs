@@ -506,7 +506,18 @@ namespace Space.Session
 
                     // Got an item in this slot, restore it.
                     var parentItemId = _data.ReadInt32();
-                    var newItemId = manager.DepacketizeEntity(_data);
+                    int newItemId;
+                    try
+                    {
+                        newItemId = manager.DepacketizeEntity(_data);
+                    }
+                    catch (Exception)
+                    {
+                        // Failed loading, but don't abort because otherwise the whole system
+                        // will blow up -- we're in a pretty unstable situation here, because
+                        // the item slots point to non-existant entities!
+                        newItemId = 0;
+                    }
 
                     // If we have no mappings yet, this was the old equipment node.
                     if (itemIdMapping.Count == 0)
@@ -529,10 +540,13 @@ namespace Space.Session
                         }
                     }
 
-                    // Queue reads for all child slots.
-                    foreach (var component in manager.GetComponents(newItemId, ItemSlot.TypeId))
+                    // Queue reads for all child slots, unless this item failed loading.
+                    if (newItemId > 0)
                     {
-                        ++slotsRemaining;
+                        foreach (var component in manager.GetComponents(newItemId, ItemSlot.TypeId))
+                        {
+                            ++slotsRemaining;
+                        }
                     }
 
                     // Add mapping for this entry.

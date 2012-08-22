@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
@@ -28,6 +29,11 @@ namespace Space.Tools.DataEditor
         /// Lists of all factories, categorized by their type.
         /// </summary>
         private static readonly Dictionary<Type, List<IFactory>> FactoriesByType = new Dictionary<Type, List<IFactory>>();
+
+        /// <summary>
+        /// Mapping factories back to the files they came from, for saving.
+        /// </summary>
+        private static readonly Dictionary<IFactory, string> FactoryFilenames = new Dictionary<IFactory, string>();
 
         /// <summary>
         /// Initializes the <see cref="FactoryManager"/> class.
@@ -57,10 +63,14 @@ namespace Space.Tools.DataEditor
                 {
                     try
                     {
-                        var factories = IntermediateSerializer.Deserialize<IFactory[]>(reader, null);
-                        foreach (var factory in factories)
+                        var factories = IntermediateSerializer.Deserialize<object>(reader, null) as IFactory[];
+                        if (factories != null)
                         {
-                            Add(factory);
+                            foreach (var factory in factories)
+                            {
+                                Add(factory);
+                                FactoryFilenames.Add(factory, file);
+                            }
                         }
                     }
                     catch (InvalidContentException ex)
@@ -69,6 +79,82 @@ namespace Space.Tools.DataEditor
                         Console.WriteLine(ex.StackTrace);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Saves all known factories back to file.
+        /// </summary>
+        public static void Save()
+        {
+            // In case we need to create new files.
+            string baseFolder;
+
+            // Ask for destination folder if we didn't load before.
+            if (Factories.Count > 0 && FactoryFilenames.Count == 0)
+            {
+                // TODO
+                return;
+            }
+            else
+            {
+                baseFolder = FactoryFilenames.Values.First().Replace('/', '\\');
+                baseFolder = baseFolder.Substring(0, baseFolder.LastIndexOf('\\') + 1);
+            }
+
+            // Group factories by filename.
+            var groups = new Dictionary<string, List<IFactory>>();
+            foreach (var filename in FactoryFilenames.Values)
+            {
+                if (!groups.ContainsKey(filename))
+                {
+                    groups.Add(filename, new List<IFactory>());
+                }
+            }
+            foreach (var factory in Factories.Values)
+            {
+                if (FactoryFilenames.ContainsKey(factory))
+                {
+                    groups[FactoryFilenames[factory]].Add(factory);
+                }
+                else
+                {
+                    // Try to find existing group with factory of that type.
+                    var found = false;
+                    foreach (var factoryByType in FactoriesByType[factory.GetType()])
+                    {
+                        if (FactoryFilenames.ContainsKey(factoryByType))
+                        {
+                            groups[FactoryFilenames[factoryByType]].Add(factory);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        // No such factories yet, create new file.
+                        var fileName = baseFolder + factory.GetType().Name + ".xml";
+                        FactoryFilenames.Add(factory, fileName);
+                        groups.Add(fileName, new List<IFactory> {factory});
+                    }
+                }
+            }
+
+            // Serialize each collection.
+            foreach (var group in groups)
+            {
+                using (var writer = new XmlTextWriter(group.Key, Encoding.UTF8))
+                {
+                    try
+                    {
+                        IntermediateSerializer.Serialize(writer, group.Value.ToArray(), null);
+                    }
+                    catch (InvalidContentException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(ex.StackTrace);
+                    }
+                }   
             }
         }
 

@@ -643,24 +643,32 @@ namespace Engine.ComponentSystem
         public int DepacketizeEntity(Packet packet)
         {
             var entity = AddEntity();
-            var components = packet.ReadPacketizablesWithTypeInfo<Component>();
-            foreach (var component in components)
+            try
             {
-                component.Id = _componentIds.GetId();
-                component.Entity = entity;
-                component.Manager = this;
-                _components[component.Id] = component;
-
-                // Add to entity index.
-                _entities[entity].Add(component);
-
-                // Send a message to all systems.
-                foreach (var system in _systems)
+                var components = packet.ReadPacketizablesWithTypeInfo<Component>();
+                foreach (var component in components)
                 {
-                    system.OnComponentAdded(component);
+                    component.Id = _componentIds.GetId();
+                    component.Entity = entity;
+                    component.Manager = this;
+                    _components[component.Id] = component;
+
+                    // Add to entity index.
+                    _entities[entity].Add(component);
+
+                    // Send a message to all systems.
+                    foreach (var system in _systems)
+                    {
+                        system.OnComponentAdded(component);
+                    }
                 }
+                return entity;
             }
-            return entity;
+            catch (Exception)
+            {
+                RemoveEntity(entity);
+                throw;
+            }
         }
 
         #endregion

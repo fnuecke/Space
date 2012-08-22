@@ -40,19 +40,19 @@ namespace Space.ComponentSystem.Factories
                 return;
             }
 
-            Load("Data/Armor", content);
-            Load("Data/Fuselage", content);
-            Load("Data/Reactors", content);
-            Load("Data/Sensors", content);
-            Load("Data/Shields", content);
-            Load("Data/Ships", content);
-            Load("Data/Thrusters", content);
-            Load("Data/Weapons", content);
-            Load("Data/Wings", content);
+            Load("Data/ArmorFactory", content);
+            Load("Data/FuselageFactory", content);
+            Load("Data/ReactorFactory", content);
+            Load("Data/SensorFactory", content);
+            Load("Data/ShieldFactory", content);
+            Load("Data/ShipFactory", content);
+            Load("Data/ThrusterFactory", content);
+            Load("Data/WeaponFactory", content);
+            Load("Data/WingFactory", content);
 
-            Load("Data/Planets", content);
-            Load("Data/Suns", content);
-            Load("Data/SunSystems", content);
+            Load("Data/PlanetFactory", content);
+            Load("Data/SunFactory", content);
+            Load("Data/SunSystemFactory", content);
 
             _isInitialized = true;
         }

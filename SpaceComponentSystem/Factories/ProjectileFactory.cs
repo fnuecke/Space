@@ -261,15 +261,15 @@ namespace Space.ComponentSystem.Factories
             }
 
             // Apply friction to this projectile if so desired.
-            if (Friction > 0)
+            if (_friction > 0)
             {
-                manager.AddComponent<Friction>(entity).Initialize(Friction);
+                manager.AddComponent<Friction>(entity).Initialize(_friction);
             }
 
             // If this projectile should vanish after some time, make it expire.
-            if (TimeToLive > 0)
+            if (_timeToLive > 0)
             {
-                manager.AddComponent<Expiration>(entity).Initialize((int)(TimeToLive * Settings.TicksPerSecond));
+                manager.AddComponent<Expiration>(entity).Initialize((int)(_timeToLive * Settings.TicksPerSecond));
             }
 
             // Figure out how much damage we should do, if any.
@@ -283,7 +283,7 @@ namespace Space.ComponentSystem.Factories
                 CollisionSystem.IndexGroupMask | // Can collide.
                 TextureRenderSystem.IndexGroupMask | // Can be rendered.
                 InterpolationSystem.IndexGroupMask, // Rendering should be interpolated.
-                (int)(CollisionRadius + CollisionRadius));
+                (int)(_collisionRadius + _collisionRadius));
 
             // See what we can bump into.
             var collisionGroup = (weapon.Damage >= 0)
@@ -295,7 +295,7 @@ namespace Space.ComponentSystem.Factories
             // Normally projectiles won't test against each other, but some may be
             // shot down, such as missiles. If that's the case, don't add us to the
             // common projectile group.
-            if (!CanBeShot)
+            if (!_canBeShot)
             {
                 collisionGroup |= Factions.Projectiles.ToCollisionGroup();
             }
@@ -304,15 +304,15 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<CollidableSphere>(entity).Initialize(CollisionRadius, collisionGroup);
 
             // Make us visible!
-            if (!string.IsNullOrWhiteSpace(Model))
+            if (!string.IsNullOrWhiteSpace(_model))
             {
-                manager.AddComponent<TextureRenderer>(entity).Initialize(Model);
+                manager.AddComponent<TextureRenderer>(entity).Initialize(_model);
             }
 
             // And add some particle effects, if so desired.
-            if (!string.IsNullOrWhiteSpace(Effect))
+            if (!string.IsNullOrWhiteSpace(_effect))
             {
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(Effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero, ParticleEffects.EffectGroup.None, true);
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(_effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero, ParticleEffects.EffectGroup.None, true);
             }
 
             return entity;
@@ -325,7 +325,11 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled rotation.</returns>
         private float SampleInitialRotation(IUniformRandom random)
         {
-            return MathHelper.ToRadians((random == null) ? InitialRotation.Low : MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble()));
+            if (_initialRotation != null)
+            {
+                return MathHelper.ToRadians((random == null) ? _initialRotation.Low : MathHelper.Lerp(_initialRotation.Low, _initialRotation.High, (float)random.NextDouble()));
+            }
+            return 0f;
         }
 
         /// <summary>
@@ -337,10 +341,16 @@ namespace Space.ComponentSystem.Factories
         private Vector2 SampleInitialDirectedVelocity(float baseRotation, IUniformRandom random)
         {
             var velocity = Vector2.UnitX;
-            var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
-            Vector2.Transform(ref velocity, ref rotation, out velocity);
-            velocity.Normalize();
-            velocity *= (random == null) ? InitialVelocity.Low : MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());
+            if (_initialDirection != null)
+            {
+                var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(_initialDirection.Low, _initialDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
+                Vector2.Transform(ref velocity, ref rotation, out velocity);
+                velocity.Normalize();
+            }
+            if (_initialVelocity != null)
+            {
+                velocity *= (random == null) ? _initialVelocity.Low : MathHelper.Lerp(_initialVelocity.Low, _initialVelocity.High, (float)random.NextDouble());
+            }
             return velocity;
         }
 
@@ -352,11 +362,14 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled acceleration force.</returns>
         private Vector2 SampleAccelerationForce(float baseRotation, IUniformRandom random)
         {
-            Vector2 acceleration = Vector2.UnitX;
-            Matrix rotation = Matrix.CreateRotationZ(baseRotation);
+            var acceleration = Vector2.UnitX;
+            var rotation = Matrix.CreateRotationZ(baseRotation);
             Vector2.Transform(ref acceleration, ref rotation, out acceleration);
             acceleration.Normalize();
-            acceleration *= (random == null) ? AccelerationForce.Low : MathHelper.Lerp(AccelerationForce.Low, AccelerationForce.High, (float)random.NextDouble());
+            if (_accelerationForce != null)
+            {
+                acceleration *= (random == null) ? _accelerationForce.Low : MathHelper.Lerp(_accelerationForce.Low, _accelerationForce.High, (float)random.NextDouble());
+            }
             return acceleration;
         }
 
@@ -374,16 +387,16 @@ namespace Space.ComponentSystem.Factories
         public Packet Packetize(Packet packet)
         {
             return packet
-                .Write(Model)
-                .Write(Effect)
-                .Write(CollisionRadius)
-                .Write(CanBeShot)
-                .Write(InitialVelocity)
-                .Write(InitialDirection)
-                .Write(InitialRotation)
-                .Write(AccelerationForce)
-                .Write(Friction)
-                .Write(TimeToLive);
+                .Write(_model)
+                .Write(_effect)
+                .Write(_collisionRadius)
+                .Write(_canBeShot)
+                .Write(_initialVelocity)
+                .Write(_initialDirection)
+                .Write(_initialRotation)
+                .Write(_accelerationForce)
+                .Write(_friction)
+                .Write(_timeToLive);
         }
 
         /// <summary>
@@ -392,18 +405,18 @@ namespace Space.ComponentSystem.Factories
         /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
-            Model = packet.ReadString();
-            Effect = packet.ReadString();
-            CollisionRadius = packet.ReadSingle();
-            CanBeShot = packet.ReadBoolean();
+            _model = packet.ReadString();
+            _effect = packet.ReadString();
+            _collisionRadius = packet.ReadSingle();
+            _canBeShot = packet.ReadBoolean();
 
-            InitialVelocity = packet.ReadPacketizable<FloatInterval>();
-            InitialDirection = packet.ReadPacketizable<FloatInterval>();
-            InitialRotation = packet.ReadPacketizable<FloatInterval>();
-            AccelerationForce = packet.ReadPacketizable<FloatInterval>();
+            _initialVelocity = packet.ReadPacketizable<FloatInterval>();
+            _initialDirection = packet.ReadPacketizable<FloatInterval>();
+            _initialRotation = packet.ReadPacketizable<FloatInterval>();
+            _accelerationForce = packet.ReadPacketizable<FloatInterval>();
 
-            Friction = packet.ReadSingle();
-            TimeToLive = packet.ReadSingle();
+            _friction = packet.ReadSingle();
+            _timeToLive = packet.ReadSingle();
         }
 
         /// <summary>
@@ -413,16 +426,16 @@ namespace Space.ComponentSystem.Factories
         /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            hasher.Put(Model);
-            hasher.Put(Effect);
-            hasher.Put(CollisionRadius);
-            hasher.Put(CanBeShot);
-            hasher.Put(InitialVelocity);
-            hasher.Put(InitialDirection);
-            hasher.Put(InitialRotation);
-            hasher.Put(AccelerationForce);
-            hasher.Put(Friction);
-            hasher.Put(TimeToLive);
+            hasher.Put(_model);
+            hasher.Put(_effect);
+            hasher.Put(_collisionRadius);
+            hasher.Put(_canBeShot);
+            hasher.Put(_initialVelocity);
+            hasher.Put(_initialDirection);
+            hasher.Put(_initialRotation);
+            hasher.Put(_accelerationForce);
+            hasher.Put(_friction);
+            hasher.Put(_timeToLive);
         }
 
         #endregion
