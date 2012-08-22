@@ -11,49 +11,49 @@
       <Sun>sun_1</Sun>
       <Planets>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>6000 to 7000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
         </Orbiter>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>12000 to 13000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
         </Orbiter>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>19000 to 20000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
-        </Orbiter>
+      </Orbiter>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>26000 to 27000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
         </Orbiter>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>33000 to 34000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
         </Orbiter>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>40000 to 41000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
         </Orbiter>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>47000 to 48000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
         </Orbiter>
         <Orbiter>
-          <PlanetName>planet_1</PlanetName>
+          <Name>planet_1</Name>
           <OrbitRadius>54000 to 55000</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#NormalMoons_4</Moons>
@@ -65,22 +65,22 @@
   <Resources>
     <Resource ID="#NormalMoons_4" Type="Space.ComponentSystem.Factories.SunSystemFactoryTypes.Orbit">
       <Orbiter>
-        <PlanetName>moon_tiny</PlanetName>
+        <Name>moon_tiny</Name>
         <OrbitRadius>900 to 1000</OrbitRadius>
         <ChanceToExist>0.3</ChanceToExist>
       </Orbiter>
       <Orbiter>
-        <PlanetName>moon_small</PlanetName>
+        <Name>moon_small</Name>
         <OrbitRadius>1400 to 1500</OrbitRadius>
         <ChanceToExist>0.5</ChanceToExist>
       </Orbiter>
       <Orbiter>
-        <PlanetName>moon_large</PlanetName>
+        <Name>moon_large</Name>
         <OrbitRadius>1800 to 1900</OrbitRadius>
         <ChanceToExist>0.6</ChanceToExist>
       </Orbiter>
       <Orbiter>
-        <PlanetName>moon_medium</PlanetName>
+        <Name>moon_medium</Name>
         <OrbitRadius>2300 to 2400</OrbitRadius>
         <ChanceToExist>0.4</ChanceToExist>
       </Orbiter>

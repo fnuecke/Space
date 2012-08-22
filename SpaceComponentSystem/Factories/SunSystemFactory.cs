@@ -3,7 +3,6 @@ using Engine.ComponentSystem;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
@@ -16,23 +15,51 @@ namespace Space.ComponentSystem.Factories
     [DefaultProperty("Name")]
     public sealed class SunSystemFactory : IFactory
     {
-        #region General
+        #region Properties
 
         /// <summary>
         /// The unique name of the object type.
         /// </summary>
-        public string Name { get; set; }
+        [Category("General")]
+        [Description("The name of this sun system, by which it can be referenced.")]
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
         /// <summary>
         /// The type of sun to create in the center of this sun system/
         /// </summary>
-        public string Sun;
+        [Category("Structure")]
+        [Description("The name of the sun to use as the center of this sun system.")]
+        public string Sun
+        {
+            get { return _sun; }
+            set { _sun = value; }
+        }
 
         /// <summary>
         /// The planets to create.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Orbit Planets;
+        [Category("Structure")]
+        [Description("The hierarchical list of planets and moons in this sun system.")]
+        public Orbit Planets
+        {
+            get { return _planets; }
+            set { _planets = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _name = "";
+
+        private string _sun;
+
+        private Orbit _planets;
 
         #endregion
 
@@ -47,11 +74,11 @@ namespace Space.ComponentSystem.Factories
         /// <return>The entity with the attributes applied.</return>
         public void SampleSunSystem(IManager manager, FarPosition cellCenter, IUniformRandom random)
         {
-            var sun = FactoryLibrary.SampleSun(manager, Sun, cellCenter, random);
+            var sun = FactoryLibrary.SampleSun(manager, _sun, cellCenter, random);
 
-            if (Planets != null)
+            if (_planets != null)
             {
-                Planets.SampleOrbiters(manager, sun, random);
+                _planets.SampleOrbiters(manager, sun, random);
             }
         }
 
@@ -62,23 +89,37 @@ namespace Space.ComponentSystem.Factories
 
     namespace SunSystemFactoryTypes
     {
-
         /// <summary>
         /// Describes an orbit system with a dominant axis.
         /// </summary>
+        [TypeConverter(typeof(ExpandableObjectConverter))]
         public sealed class Orbit
         {
             /// <summary>
             /// The angle of generated planets' orbits.
             /// </summary>
             [ContentSerializer(Optional = true)]
-            public FloatInterval Angle = new FloatInterval(0, 360);
+            [Description("The primary angle of the orbits around this object.")]
+            public FloatInterval Angle
+            {
+                get { return _angle; }
+                set { _angle = value; }
+            }
 
             /// <summary>
             /// Objects in this orbit system.
             /// </summary>
             [ContentSerializer(FlattenContent = true, CollectionItemName = "Orbiter")]
-            public Orbiter[] Orbiters;
+            [Description("The list of objects orbiting this object.")]
+            public Orbiter[] Orbiters
+            {
+                get { return _orbiters; }
+                set { _orbiters = value; }
+            }
+
+            private FloatInterval _angle = new FloatInterval(0, 360);
+
+            private Orbiter[] _orbiters;
 
             internal void SampleOrbiters(IManager manager, int center, IUniformRandom random)
             {
@@ -86,11 +127,11 @@ namespace Space.ComponentSystem.Factories
                 var dominantAngle = SampleAngle(random);
 
                 // Create orbiters.
-                foreach (var orbiter in Orbiters)
+                foreach (var orbiter in _orbiters)
                 {
                     if (orbiter.ChanceToExist > random.NextDouble())
                     {
-                        var entity = FactoryLibrary.SamplePlanet(manager, orbiter.PlanetName, center, dominantAngle, orbiter.SampleOrbitRadius(random), random);
+                        var entity = FactoryLibrary.SamplePlanet(manager, orbiter.Name, center, dominantAngle, orbiter.SampleOrbitRadius(random), random);
 
                         // Recurse.
                         if (orbiter.Moons != null)
@@ -108,36 +149,74 @@ namespace Space.ComponentSystem.Factories
             /// <returns>The sampled angle.</returns>
             private float SampleAngle(IUniformRandom random)
             {
-                return MathHelper.ToRadians((random == null) ? Angle.Low : MathHelper.Lerp(Angle.Low, Angle.High, (float)random.NextDouble()));
+                return MathHelper.ToRadians((random == null) ? _angle.Low : MathHelper.Lerp(_angle.Low, _angle.High, (float)random.NextDouble()));
+            }
+
+            public override string ToString()
+            {
+                return "Orbit";
             }
         }
 
         /// <summary>
         /// Describes a single orbiting object.
         /// </summary>
+        [TypeConverter(typeof(ExpandableObjectConverter))]
         public sealed class Orbiter
         {
             /// <summary>
             /// The name of the planet type.
             /// </summary>
-            public string PlanetName;
+            [Category("General")]
+            [Description("The name of the planet or moon to be sampled.")]
+            public string Name
+            {
+                get { return _name; }
+                set { _name = value; }
+            }
 
             /// <summary>
             /// The radius at which this object orbits.
             /// </summary>
-            public FloatInterval OrbitRadius;
+            [Category("Orbit")]
+            [Description("The radius at which this object should orbit its center.")]
+            public FloatInterval OrbitRadius
+            {
+                get { return _orbitRadius; }
+                set { _orbitRadius = value; }
+            }
 
             /// <summary>
             /// The probability with which an actual instance is created in a system.
             /// </summary>
             [ContentSerializer(Optional = true)]
-            public float ChanceToExist = 1;
+            [Category("General")]
+            [Description("The probability that this object will be sampled when generating the sun system.")]
+            public float ChanceToExist
+            {
+                get { return _chanceToExist; }
+                set { _chanceToExist = value; }
+            }
 
             /// <summary>
             /// Child orbits, revolving around this object.
             /// </summary>
             [ContentSerializer(Optional = true, SharedResource = true)]
-            public Orbit Moons;
+            [Category("Orbit")]
+            [Description("The list of objects orbiting this object.")]
+            public Orbit Moons
+            {
+                get { return _moons; }
+                set { _moons = value; }
+            }
+
+            private string _name;
+
+            private FloatInterval _orbitRadius;
+
+            private float _chanceToExist = 1;
+
+            private Orbit _moons;
 
             /// <summary>
             /// Samples the angle of this planet's orbit.
@@ -146,7 +225,12 @@ namespace Space.ComponentSystem.Factories
             /// <returns>The sampled angle.</returns>
             internal float SampleOrbitRadius(IUniformRandom random)
             {
-                return (random == null) ? OrbitRadius.Low : MathHelper.Lerp(OrbitRadius.Low, OrbitRadius.High, (float)random.NextDouble());
+                return (random == null) ? _orbitRadius.Low : MathHelper.Lerp(_orbitRadius.Low, _orbitRadius.High, (float)random.NextDouble());
+            }
+
+            public override string ToString()
+            {
+                return Name + (Moons != null && Moons.Orbiters.Length > 0 ? (" (" + Moons.Orbiters.Length + " moons)") : "");
             }
         }
 

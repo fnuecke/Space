@@ -18,27 +18,63 @@ namespace Space.ComponentSystem.Factories
     [DefaultProperty("Name")]
     public sealed class SunFactory : IFactory
     {
-        #region General
+        #region Properties
 
         /// <summary>
         /// The unique name of the object type.
         /// </summary>
-        public string Name { get; set; }
+        [Category("General")]
+        [Description("The name of this sun, by which it can be referenced, e.g. in sun systems.")]
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
         /// <summary>
         /// Radius for generated suns.
         /// </summary>
-        public FloatInterval Radius;
+        [Category("Media")]
+        [Description("The radius of the sun.")]
+        public FloatInterval Radius
+        {
+            get { return _radius; }
+            set { _radius = value; }
+        }
 
         /// <summary>
         /// Offset from cell center for generated suns.
         /// </summary>
-        public FloatInterval OffsetRadius;
+        [Category("Media")]
+        [Description("The radius of the area around a cell's center in which the sun may be placed. The actual position is randomly determined, but is guaranteed to lie in this circle.")]
+        public FloatInterval OffsetRadius
+        {
+            get { return _offsetRadius; }
+            set { _offsetRadius = value; }
+        }
 
         /// <summary>
         /// Mass of generated suns.
         /// </summary>
-        public FloatInterval Mass;
+        [Category("Logic")]
+        [Description("The mass of the sun, which determines how strong it's gravitational pull is.")]
+        public FloatInterval Mass
+        {
+            get { return _mass; }
+            set { _mass = value; }
+        }
+
+        #endregion
+
+        #region Backing fields
+
+        private string _name = "";
+
+        private FloatInterval _radius;
+
+        private FloatInterval _offsetRadius;
+
+        private FloatInterval _mass;
 
         #endregion
 
@@ -118,8 +154,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled radius.</returns>
         private float SampleRadius(IUniformRandom random)
         {
-            return (random == null) ? Radius.Low
-                : MathHelper.Lerp(Radius.Low, Radius.High, (float)random.NextDouble());
+            if (_radius != null)
+            {
+                return (random == null) ? _radius.Low
+                    : MathHelper.Lerp(_radius.Low, _radius.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         /// <summary>
@@ -129,18 +172,18 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled offset.</returns>
         private Vector2 SampleOffset(IUniformRandom random)
         {
-            if (random == null)
-            {
-                return Vector2.Zero;
-            }
-            else
+            if (_offsetRadius != null && random != null)
             {
                 Vector2 offset;
                 offset.X = (float)(random.NextDouble() - 0.5);
                 offset.Y = (float)(random.NextDouble() - 0.5);
                 offset.Normalize();
-                offset *= MathHelper.Lerp(OffsetRadius.Low, OffsetRadius.High, (float)random.NextDouble());
+                offset *= MathHelper.Lerp(_offsetRadius.Low, _offsetRadius.High, (float)random.NextDouble());
                 return offset;
+            }
+            else
+            {
+                return Vector2.Zero;
             }
         }
 
@@ -151,8 +194,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled mass.</returns>
         private float SampleMass(IUniformRandom random)
         {
-            return (random == null) ? Mass.Low
-                : MathHelper.Lerp(Mass.Low, Mass.High, (float)random.NextDouble());
+            if (_mass != null)
+            {
+                return (random == null) ? _mass.Low
+                    : MathHelper.Lerp(_mass.Low, _mass.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         #endregion
