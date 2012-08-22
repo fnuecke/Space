@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Forms;
 using Space.ComponentSystem.Factories;
 
@@ -8,7 +9,7 @@ namespace Space.Tools.DataEditor
     /// <summary>
     /// Dialog to select items valid for a slot.
     /// </summary>
-    public partial class ItemInfoDialog : Form
+    public sealed partial class ItemInfoDialog : Form
     {
         /// <summary>
         /// The currently selected item name.
@@ -24,6 +25,19 @@ namespace Space.Tools.DataEditor
         public ItemInfoDialog()
         {
             InitializeComponent();
+
+            pgPreview.PropertyValueChanged += PropertyValueChanged;
+        }
+
+        private void PropertyValueChanged(object o, PropertyValueChangedEventArgs args)
+        {
+            Debug.Assert(args.ChangedItem.PropertyDescriptor != null);
+            var parent = args.ChangedItem.Parent;
+            while (parent.Value == null && parent.Parent != null)
+            {
+                parent = parent.Parent;
+            }
+            args.ChangedItem.PropertyDescriptor.SetValue(parent.Value, args.OldValue);
         }
 
         private void ItemInfoDialogLoad(object sender, EventArgs e)
@@ -100,6 +114,7 @@ namespace Space.Tools.DataEditor
             // Disable OK button until we have a valid image.
             btnOK.Enabled = false;
             SelectedItemName = null;
+            pgPreview.SelectedObject = null;
 
             // Do we have something new?
             if (e.Node == null)
@@ -108,7 +123,8 @@ namespace Space.Tools.DataEditor
             }
 
             // See if the item is valid.
-            if (FactoryManager.GetFactory(e.Node.Name) == null && !e.Node.Name.Equals(""))
+            var factory = FactoryManager.GetFactory(e.Node.Name) as ItemFactory;
+            if (factory == null && !e.Node.Name.Equals(""))
             {
                 return;
             }
@@ -116,6 +132,7 @@ namespace Space.Tools.DataEditor
             // OK, allow selecting it.
             btnOK.Enabled = true;
             SelectedItemName = e.Node.Name;
+            pgPreview.SelectedObject = factory;
         }
 
         private void OkClick(object sender, EventArgs e)

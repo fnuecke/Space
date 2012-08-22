@@ -107,13 +107,23 @@ namespace Space.Tools.DataEditor
         /// <param name="factory">The factory, if any.</param>
         /// <param name="property">The property, if any.</param>
         /// <param name="type">The type.</param>
-        public void AddIssue(string message, string factory = "", string property = "", IssueType type = IssueType.Warning)
+        public void AddIssue(string message, string factory = "", string property = "", IssueType type = IssueType.Success)
         {
             if ((int)type < 1)
             {
                 type = IssueType.Success;
             }
             lvIssues.Items.Add(new ListViewItem(new[] { "", message, factory, property }, (int)type - 1));
+        }
+
+        /// <summary>
+        /// Adds a new issue to the issues list.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="type">The type.</param>
+        public void AddIssue(string message, IssueType type = IssueType.Success)
+        {
+            AddIssue(message, "", "", type);
         }
 
         /// <summary>
