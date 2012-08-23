@@ -76,6 +76,7 @@
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ContentProjectManager.cs" />
+    <Compile Include="PlanetEditor.cs" />
     <Compile Include="DataEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +107,7 @@
       <DependentUpon>ItemInfoDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ItemInfoEditor.cs" />
+    <Compile Include="SunEditor.cs" />
     <Compile Include="TextureAssetDialog.cs">
       <SubType>Form</SubType>
     </Compile>

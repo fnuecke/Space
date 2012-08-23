@@ -31,6 +31,8 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// The type of sun to create in the center of this sun system/
         /// </summary>
+        [Editor("Space.Tools.DataEditor.SunEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [Category("Structure")]
         [Description("The name of the sun to use as the center of this sun system.")]
         public string Sun
@@ -167,6 +169,8 @@ namespace Space.ComponentSystem.Factories
             /// <summary>
             /// The name of the planet type.
             /// </summary>
+            [Editor("Space.Tools.DataEditor.PlanetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
             [Category("General")]
             [Description("The name of the planet or moon to be sampled.")]
             public string Name
