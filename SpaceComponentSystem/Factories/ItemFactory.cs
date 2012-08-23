@@ -35,6 +35,18 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
+        /// The name of the item (template name).
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [Editor("Space.Tools.DataEditor.ItemPoolEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [Description("The name of the item type to sample.")]
+        public string ItemPool
+        {
+            get { return _itemPool; }
+            set { _itemPool = value; }
+        }
+        /// <summary>
         /// Asset name of the texture to use for this item type to render it in
         /// menus and the inventory.
         /// </summary>
@@ -64,6 +76,32 @@ namespace Space.ComponentSystem.Factories
         {
             get { return _model; }
             set { _model = value; }
+        }
+
+        /// <summary>
+        /// The offset with which to render the items model texture relative to its mount point.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Media")]
+        [Description("The offset relative to the items mount point with which render it when equipped.")]
+        public Vector2? ModelOffset
+        {
+            get { return _modelOffset; }
+            set { _modelOffset = value; }
+        }
+
+        /// <summary>
+        /// Determines whether the model should be rendered below the parent, e.g. for wings and torpedo mounts.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(false)]
+        [Category("Media")]
+        [Description("Whether to render the item below its parent, e.g. for wings below fuselage and torpedo mounts below wings.")]
+        public bool ModelBelowParent
+        {
+            get { return _modelBelowParent; }
+            set { _modelBelowParent = value; }
         }
 
         /// <summary>
@@ -156,9 +194,15 @@ namespace Space.ComponentSystem.Factories
 
         private string _name = "";
 
+        private string _itemPool = "";
+
         private string _icon = "Images/Icons/Buffs/default";
 
         private string _model = "Textures/Items/default";
+
+        private Vector2? _modelOffset;
+
+        private bool _modelBelowParent;
 
         private ItemQuality _quality = ItemQuality.Common;
 

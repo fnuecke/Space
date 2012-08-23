@@ -5,6 +5,7 @@
       <Name>StarterWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Sound>laser</Sound>
@@ -27,6 +28,7 @@
       <Name>PoorBasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Poor</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
@@ -62,6 +64,7 @@
       <Name>BasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
@@ -97,6 +100,7 @@
       <Name>UncommonBasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Uncommon</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
@@ -132,6 +136,7 @@
       <Name>RareBasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Rare</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <AdditionalAttributes>
@@ -167,6 +172,7 @@
       <Name>L1_AI_Weapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Sound>laser</Sound>

@@ -171,7 +171,7 @@
             this.tsmiSave.Image = global::Space.Tools.DataEditor.Properties.Resources.saveHS;
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.tsmiSave.Size = new System.Drawing.Size(152, 22);
+            this.tsmiSave.Size = new System.Drawing.Size(143, 22);
             this.tsmiSave.Text = "&Save";
             this.tsmiSave.Click += new System.EventHandler(this.SaveClick);
             // 
@@ -180,34 +180,34 @@
             this.tsmiLoad.Image = global::Space.Tools.DataEditor.Properties.Resources._075b_UpFolder_16x16_72;
             this.tsmiLoad.Name = "tsmiLoad";
             this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.tsmiLoad.Size = new System.Drawing.Size(152, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(143, 22);
             this.tsmiLoad.Text = "L&oad";
             this.tsmiLoad.Click += new System.EventHandler(this.LoadClick);
             // 
             // separator0
             // 
             this.separator0.Name = "separator0";
-            this.separator0.Size = new System.Drawing.Size(149, 6);
+            this.separator0.Size = new System.Drawing.Size(140, 6);
             // 
             // tsmiSettings
             // 
             this.tsmiSettings.Image = global::Space.Tools.DataEditor.Properties.Resources._327_Options_16x16_72;
             this.tsmiSettings.Name = "tsmiSettings";
             this.tsmiSettings.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.tsmiSettings.Size = new System.Drawing.Size(152, 22);
+            this.tsmiSettings.Size = new System.Drawing.Size(143, 22);
             this.tsmiSettings.Text = "S&ettings";
             this.tsmiSettings.Click += new System.EventHandler(this.SettingsClick);
             // 
             // separator2
             // 
             this.separator2.Name = "separator2";
-            this.separator2.Size = new System.Drawing.Size(149, 6);
+            this.separator2.Size = new System.Drawing.Size(140, 6);
             // 
             // tsmiExit
             // 
             this.tsmiExit.Name = "tsmiExit";
             this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.tsmiExit.Size = new System.Drawing.Size(152, 22);
+            this.tsmiExit.Size = new System.Drawing.Size(143, 22);
             this.tsmiExit.Text = "E&xit";
             this.tsmiExit.Click += new System.EventHandler(this.ExitClick);
             // 
@@ -234,7 +234,7 @@
             this.miDelete.Enabled = false;
             this.miDelete.Image = global::Space.Tools.DataEditor.Properties.Resources.DeleteHS;
             this.miDelete.Name = "miDelete";
-            this.miDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.miDelete.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Delete)));
             this.miDelete.Size = new System.Drawing.Size(183, 22);
             this.miDelete.Text = "&Delete";
             this.miDelete.Click += new System.EventHandler(this.RemoveClick);

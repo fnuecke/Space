@@ -9,7 +9,7 @@ namespace Space.Tools.DataEditor
     /// <summary>
     /// Dialog to select items valid for a slot.
     /// </summary>
-    public sealed partial class ItemInfoDialog : Form
+    public partial class ItemInfoDialog : Form
     {
         /// <summary>
         /// The currently selected item name.

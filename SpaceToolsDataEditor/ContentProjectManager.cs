@@ -6,6 +6,8 @@ using System.Security;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
+using ProjectMercury;
 
 namespace Space.Tools.DataEditor
 {
@@ -16,6 +18,11 @@ namespace Space.Tools.DataEditor
         /// the mapping of the asset names to the files on the file system.
         /// </summary>
         private static readonly Dictionary<string, string> TextureAssets = new Dictionary<string, string>();
+
+        /// <summary>
+        /// All effect assets known from referenced content projects.
+        /// </summary>
+        private static readonly Dictionary<string, string> EffectAssets = new Dictionary<string, string>();
 
         /// <summary>
         /// Perform initial load when used.
@@ -40,6 +47,7 @@ namespace Space.Tools.DataEditor
         {
             // Forget what we knew.
             TextureAssets.Clear();
+            EffectAssets.Clear();
 
             // Get "final" content root, as used after compilation. We strip this from content
             // project's individual root paths.
@@ -119,6 +127,52 @@ namespace Space.Tools.DataEditor
                         // Store the asset in our lookup table.
                         TextureAssets.Add(assetName.Trim(), assetPath.Trim());
                     }
+
+                    // Find all usable effect assets in the content project.
+                    foreach (var texture in from asset in xml.Elements(ns + "ItemGroup").Elements(ns + "Compile")
+                                            where
+                                                asset.Elements(ns + "Importer").Any() && asset.Elements(ns + "Importer").First().Value.Equals("XmlImporter") &&
+                                                asset.Elements(ns + "Processor").Any() && asset.Elements(ns + "Processor").First().Value.Equals("PassThroughProcessor")
+                                            select asset)
+                    {
+                        // Get path to asset on disk.
+                        var include = texture.Attribute("Include");
+                        if (include == null)
+                        {
+                            return;
+                        }
+                        var assetPath = include.Value.Replace('\\', '/');
+
+                        // Extract the relative path, which we need to prepend to the asset name.
+                        var relativeAssetPath = assetPath.Contains('/') ? assetPath.Substring(0, assetPath.LastIndexOf('/') + 1) : "";
+
+                        // Prepend it with the base path.
+                        assetPath = basePath + assetPath;
+
+                        // Take a peek, to make sure it's an effect asset.
+                        try
+                        {
+                            using (var xmlReader = XmlReader.Create(assetPath))
+                            {
+                                IntermediateSerializer.Deserialize<ParticleEffect>(xmlReader, null);
+                            }
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+
+                        // Build our complete asset name.
+                        if (!texture.Elements(ns + "Name").Any())
+                        {
+                            continue;
+                        }
+                        var assetName = rootPath + relativeAssetPath + texture.Elements(ns + "Name").First().Value;
+
+                        // Store the asset in our lookup table.
+                        EffectAssets.Add(assetName.Trim(), assetPath.Trim());
+                    }
+
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -162,5 +216,18 @@ namespace Space.Tools.DataEditor
         {
             return TextureAssets.ContainsKey(assetName.Replace('\\', '/'));
         }
+
+        /// <summary>
+        /// Try to resolve an asset name to a path pointing to the assets file on disk.
+        /// </summary>
+        /// <param name="assetName">The asset to look up.</param>
+        /// <returns>The path to the asset's file.</returns>
+        public static string GetFileForEffectAsset(string assetName)
+        {
+            string result;
+            EffectAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
+            return result;
+        }
+
     }
 }

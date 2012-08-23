@@ -4,19 +4,20 @@
     <Item>
       <Name>StarterFuselage</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Items/default</Model>
+      <Model>Textures/Items/Fuselage/test_fuselage</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>
         <Item>
           <Type>Wing</Type>
           <Size>Small</Size>
-          <Offset>0 10</Offset>
+          <Offset>-12 35</Offset>
         </Item>
         <Item>
           <Type>Wing</Type>
           <Size>Small</Size>
-          <Offset>0 -10</Offset>
+          <Offset>-12 -35</Offset>
         </Item>
         <Item>
           <Type>Armor</Type>
@@ -29,19 +30,22 @@
         <Item>
           <Type>Reactor</Type>
           <Size>Small</Size>
+          <Offset>-35 22</Offset>
         </Item>
         <Item>
           <Type>Reactor</Type>
           <Size>Small</Size>
+          <Offset>-35 -22</Offset>
         </Item>
         <Item>
           <Type>Thruster</Type>
           <Size>Small</Size>
-          <Offset>-35 0</Offset>
+          <Offset>-42 0</Offset>
         </Item>
         <Item>
           <Type>Sensor</Type>
           <Size>Small</Size>
+          <Offset>-20 0</Offset>
         </Item>
       </Slots>
     </Item>
@@ -49,6 +53,7 @@
       <Name>L1_AI_Fuselage</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>

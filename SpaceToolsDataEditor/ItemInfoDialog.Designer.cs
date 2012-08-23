@@ -1,6 +1,6 @@
 ﻿namespace Space.Tools.DataEditor
 {
-    sealed partial class ItemInfoDialog
+    partial class ItemInfoDialog
     {
         /// <summary>
         /// Required designer variable.
