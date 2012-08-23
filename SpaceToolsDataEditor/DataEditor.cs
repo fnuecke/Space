@@ -118,6 +118,7 @@ namespace Space.Tools.DataEditor
             // IntermediateSerializer won't recognize these otherwise... -.-
             new Serialization.SpaceAttributeModifierConstraintSerializer();
             new Serialization.SpaceAttributeModifierSerializer();
+
         }
 
         private void DataEditorLoad(object sender, EventArgs e)

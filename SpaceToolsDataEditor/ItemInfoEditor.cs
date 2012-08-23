@@ -37,6 +37,7 @@ namespace Space.Tools.DataEditor
                     giContext.Parent.Parent.Parent == null ||
                     giContext.Parent.Parent.Parent.Value == null)
                 {
+                    MessageBox.Show("Cannot edit here.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return value;
                 }
                 if (giContext.Parent.Parent.Parent.Value is ShipFactory)
@@ -51,12 +52,14 @@ namespace Space.Tools.DataEditor
                     if (containingItem == null || string.IsNullOrWhiteSpace(containingItem.Name))
                     {
                         // Null parent, don't allow adding items.
+                        MessageBox.Show("Cannot add to empty items.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return value;
                     }
                     var containingFactory = FactoryManager.GetFactory(containingItem.Name) as ItemFactory;
                     if (containingFactory == null)
                     {
                         // Invalid parent, don't allow adding items.
+                        MessageBox.Show("Cannot determine valid items due to invalid parent entry.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return value;
                     }
                     // Figure out available slots.
@@ -68,6 +71,7 @@ namespace Space.Tools.DataEditor
                     else
                     {
                         // Item has no slots, don't allow adding items.
+                        MessageBox.Show("Cannot add any more items: no more free slots.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return value;
                     }
                     // Remove used ones.
@@ -115,6 +119,7 @@ namespace Space.Tools.DataEditor
                     // Skip if no slots remain.
                     if (availableSlots.Count == 0)
                     {
+                        MessageBox.Show("Cannot add any more items: no items known that would fit the remaining slots.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return value;
                     }
                     // Set remaining slots.
