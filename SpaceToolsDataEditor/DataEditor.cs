@@ -42,10 +42,18 @@ namespace Space.Tools.DataEditor
 
         private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
 
+        private readonly EffectPreviewControl _effectPreview = new EffectPreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
         public DataEditor()
         {
             InitializeComponent();
             InitializeLogic();
+
+            pbPreview.Parent.Controls.Add(_effectPreview);
 
             lvIssues.ListViewItemSorter = new IssueComparer();
             pgProperties.PropertyValueChanged += (o, args) =>
@@ -362,7 +370,10 @@ namespace Space.Tools.DataEditor
                 g.FillRectangle(Brushes.Transparent, 0, 0, pbPreview.Image.Width, pbPreview.Image.Height);
             }
 
-            // Stop if nothing is selected.
+            _effectPreview.Visible = false;
+            pbPreview.Visible = true;
+
+            // Skip if nothing is selected.
             if (pgProperties.SelectedObject != null &&
                 pgProperties.SelectedGridItem != null)
             {
@@ -373,6 +384,16 @@ namespace Space.Tools.DataEditor
                         .EditorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
                 {
                     RenderTextureAssetPreview();
+                }
+                else if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
+                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
+                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
+                        .EditorTypeName.Equals(typeof(EffectAssetEditor).AssemblyQualifiedName))
+                {
+                    _effectPreview.Visible = true;
+                    pbPreview.Visible = false;
+
+                    _effectPreview.Effect = "Effects/Thruster";
                 }
                 else
                 {
@@ -400,9 +421,6 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            // Make all forward slashes backslashes for the following split.
-            fullPath = fullPath.Replace('\\', '/');
-
             var filePath = ContentProjectManager.GetFileForTextureAsset(fullPath);
             if (!string.IsNullOrWhiteSpace(filePath))
             {
@@ -421,6 +439,18 @@ namespace Space.Tools.DataEditor
                 {
                 }
             }
+        }
+
+        private void RenderEffectAssetPreview()
+        {
+            // OK, render that effect (or try to).
+            var fullPath = (string)pgProperties.SelectedGridItem.Value;
+            if (fullPath == null)
+            {
+                return;
+            }
+
+            _effectPreview.Effect = fullPath;
         }
 
         private void RenderItemPreview(ItemFactory factory)

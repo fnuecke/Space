@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Drawing;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.Tools.DataEditor
 {
     sealed class TextureContentManager : ContentManager
     {
-        private TextureImporter _importer = new TextureImporter();
-
         private readonly Dictionary<string, Texture2D> _textures = new Dictionary<string, Texture2D>();
 
         public TextureContentManager(IServiceProvider serviceProvider) : base(serviceProvider)
@@ -23,6 +20,7 @@ namespace Space.Tools.DataEditor
             {
                 return default(T);
             }
+            var g = (IGraphicsDeviceService)ServiceProvider.GetService(typeof(IGraphicsDeviceService));
             if (_textures.ContainsKey(assetName))
             {
                 return (T)(object)_textures[assetName];
@@ -31,20 +29,20 @@ namespace Space.Tools.DataEditor
             {
                 var bmp = new Bitmap(img);
                 var data = new uint[bmp.Width * bmp.Height];
-                for (var i = 0; i != bmp.Width; ++i)
+                for (var y = 0; y != bmp.Height; ++y)
                 {
-                    for (var j = 0; j != bmp.Height; ++j)
+                    for (var x = 0; x != bmp.Width; ++x)
                     {
-                        var pixel = bmp.GetPixel(i, j);
-                        data[i + j * bmp.Width] =
+                        var pixel = bmp.GetPixel(y, x);
+                        data[y + x * bmp.Width] =
                             Microsoft.Xna.Framework.Color.FromNonPremultiplied(pixel.R, pixel.G, pixel.B, pixel.A).
                                 PackedValue;
                     }
                 }
-                var g = (IGraphicsDeviceService)ServiceProvider.GetService(typeof(IGraphicsDeviceService));
                 if (g != null)
                 {
                     var t = new Texture2D(g.GraphicsDevice, img.Width, img.Height);
+                    t.SetData(data);
                     _textures.Add(assetName, t);
                     return (T)(object)t;
                 }

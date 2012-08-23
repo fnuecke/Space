@@ -41,6 +41,14 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Gets an enumerator over all known effect asset names.
+        /// </summary>
+        public static IEnumerable<string> EffectAssetNames
+        {
+            get { return EffectAssets.Keys; }
+        }
+
+        /// <summary>
         /// Reload all content projects defined in the settings.
         /// </summary>
         public static void Reload()

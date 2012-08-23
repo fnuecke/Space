@@ -81,6 +81,13 @@
     <Compile Include="AddFactoryDialog.Designer.cs">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="EffectAssetDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EffectAssetDialog.Designer.cs">
+      <DependentUpon>EffectAssetDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EffectAssetEditor.cs" />
     <Compile Include="EffectPreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -140,6 +147,9 @@
     <Compile Include="XnaColorEditor.cs" />
     <EmbeddedResource Include="AddFactoryDialog.resx">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EffectAssetDialog.resx">
+      <DependentUpon>EffectAssetDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DataEditor.resx">
       <DependentUpon>DataEditor.cs</DependentUpon>

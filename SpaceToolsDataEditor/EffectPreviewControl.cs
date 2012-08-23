@@ -23,13 +23,31 @@ namespace Space.Tools.DataEditor
                 {
                     _timer.Enabled = false;
                 }
+                _lastTrigger = DateTime.MinValue;
                 LoadContent();
             }
         }
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
-            _effect.Trigger(FarPosition.Zero);
+            bool allowTrigger = (DateTime.UtcNow - _lastTrigger).TotalSeconds >= 1;
+            foreach (var emitter in _effect)
+            {
+                // Force a minimum wait for effects that may trigger multiple
+                // times per frame (one-shots used by different entities).
+                if (emitter.MinimumTriggerPeriod <= 0)
+                {
+                    if (allowTrigger)
+                    {
+                        _lastTrigger = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                emitter.Trigger(FarPosition.Zero);
+            }
             _effect.Update(_timer.Interval / 1000f);
             Refresh();
         }
@@ -46,6 +64,8 @@ namespace Space.Tools.DataEditor
 
         private SpriteBatch _batch;
 
+        private DateTime _lastTrigger;
+
         protected override void Initialize()
         {
             if (_renderer == null)
@@ -61,6 +81,7 @@ namespace Space.Tools.DataEditor
 
         private void LoadContent()
         {
+            _renderer.LoadContent(_content);
             if (string.IsNullOrWhiteSpace(_assetName))
             {
                 return;
@@ -87,7 +108,7 @@ namespace Space.Tools.DataEditor
                 {
                     _timer = new Timer
                     {
-                        Interval = 16
+                        Interval = 1000 / 30
                     };
                     _timer.Tick += TimerOnTick;
                 }
@@ -108,13 +129,12 @@ namespace Space.Tools.DataEditor
             {
                 _batch = new SpriteBatch(GraphicsDevice);
             }
+            GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
             FarTransform transform;
             transform.Matrix = Matrix.Identity;
             transform.Translation.X = Width / 2;
             transform.Translation.Y = Height / 2;
             _renderer.RenderEffect(_effect, ref transform);
-
-            _batch.Draw(_effect[0].ParticleTexture, Vector2.Zero, Color.White);
         }
     }
 }

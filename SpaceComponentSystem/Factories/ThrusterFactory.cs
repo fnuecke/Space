@@ -18,6 +18,8 @@ namespace Space.ComponentSystem.Factories
         /// Asset name of the particle effect to trigger when this thruster is
         /// active (accelerating).
         /// </summary>
+        [Editor("Space.Tools.DataEditor.EffectAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Media")]
