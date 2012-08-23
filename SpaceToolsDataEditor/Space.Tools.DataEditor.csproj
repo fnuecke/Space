@@ -106,6 +106,7 @@
       <DependentUpon>ItemInfoDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ItemInfoEditor.cs" />
+    <Compile Include="ItemPoolManager.cs" />
     <Compile Include="TextureAssetDialog.cs">
       <SubType>Form</SubType>
     </Compile>

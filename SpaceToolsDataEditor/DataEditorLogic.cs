@@ -26,6 +26,8 @@ namespace Space.Tools.DataEditor
             FactoryManager.FactoryRemoved += HandleFactoryRemoved;
             FactoryManager.FactoriesCleared += HandleFactoriesCleared;
             FactoryManager.FactoryNameChanged += HandleFactoryNameChanged;
+
+            ItemPoolManager.ItemPoolAdded += HandleItemPoolAdded;
         }
 
         private void HandleFactoryAdded(IFactory factory)
@@ -40,6 +42,17 @@ namespace Space.Tools.DataEditor
             ScanForIssues(factory);
         }
 
+        private void HandleItemPoolAdded(ItemPool pool)
+        {
+            var insertionNode = tvData.Nodes.Find("ItemPool", true);
+            if (insertionNode.Length > 0)
+            {
+                insertionNode[0].Nodes.Add(pool.Name, pool.Name);
+            }
+
+            // Validate that factory.
+            ScanForIssues(pool);
+        }
         private void HandleFactoryRemoved(IFactory factory)
         {
             var node = tvData.Nodes.Find(factory.Name, true);
@@ -72,6 +85,7 @@ namespace Space.Tools.DataEditor
                     tvData.Nodes.Add(type.Name, CleanFactoryName(type));
                 }
             }
+            tvData.Nodes.Add("ItemPool", "Item Pool");
             tvData.EndUpdate();
 
             // No factories means less issues! Rescan anyway, because some settings might be bad.
@@ -159,6 +173,7 @@ namespace Space.Tools.DataEditor
         {
             tvData.BeginUpdate();
             FactoryManager.Load(path);
+            ItemPoolManager.Load(path);
             tvData.EndUpdate();
 
             ScanForIssues();
@@ -186,7 +201,28 @@ namespace Space.Tools.DataEditor
             }
             return false;
         }
-
+        /// <summary>
+        /// Selects the factory in our property grid if it exists, else selects
+        /// nothing (clears property grid).
+        /// </summary>
+        /// <param name="name">The name of the factory.</param>
+        private bool SelectItemPool(string name)
+        {
+            pgProperties.SelectedObject = null;
+            //tvData.SelectedNode = null;
+            var factory = ItemPoolManager.GetItemPool(name);
+            if (factory != null)
+            {
+                pgProperties.SelectedObject = factory;
+                var node = tvData.Nodes.Find(name, true);
+                if (node.Length > 0)
+                {
+                    tvData.SelectedNode = node[0];
+                }
+                return true;
+            }
+            return false;
+        }
         /// <summary>
         /// Scans for issues.
         /// </summary>
@@ -209,8 +245,22 @@ namespace Space.Tools.DataEditor
             {
                 ScanForIssues(factory);
             }
+
+            //check itempools
+            foreach (var itemPool in ItemPoolManager.GetItemPool())
+            {
+                ScanForIssues(itemPool);
+            }
         }
 
+        /// <summary>
+        /// Scans for issues for a specific itempool.
+        /// </summary>
+        /// <param name="itemPool">The itempool.</param>
+        private void ScanForIssues(ItemPool itemPool)
+        {
+            
+        }
         /// <summary>
         /// Scans for issues for a specific factory.
         /// </summary>

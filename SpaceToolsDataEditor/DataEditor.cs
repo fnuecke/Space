@@ -233,7 +233,7 @@ namespace Space.Tools.DataEditor
 
         private void FactorySelected(object sender, TreeViewEventArgs e)
         {
-            if (SelectFactory(e.Node.Name))
+            if (SelectFactory(e.Node.Name)||SelectItemPool(e.Node.Name))
             {
                 tsmiRemove.Enabled = true;
                 miDelete.Enabled = true;
