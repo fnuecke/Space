@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using Microsoft.Xna.Framework.Content;
 
-namespace Engine.Util
+namespace Engine.XnaExtensions
 {
     /// <summary>
     /// Implements a localized content manager, that tries to load assets for

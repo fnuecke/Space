@@ -4,7 +4,9 @@
     <Item>
       <Name>StarterThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
-      <Model>Textures/Items/default</Model>
+      <Model>Textures/Items/Thruster/test_thruster</Model>
+      <ModelOffset>-21 0</ModelOffset>
+      <ModelBelowParent>true</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -13,11 +15,13 @@
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <Effect>Effects/Thruster</Effect>
+      <EffectOffset>-30 0</EffectOffset>
     </Item>
     <Item>
       <Name>PoorBasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Poor</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -44,6 +48,7 @@
       <Name>BasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -70,6 +75,7 @@
       <Name>UncommonBasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Uncommon</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -96,6 +102,7 @@
       <Name>RareBasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Rare</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -122,6 +129,7 @@
       <Name>L1_AI_Thruster</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>

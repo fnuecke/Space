@@ -8,6 +8,7 @@ using Engine.Graphics;
 using Engine.Math;
 using Engine.Session;
 using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;

@@ -2712,17 +2712,35 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Items\Armor\" />
-    <Folder Include="Items\Fuselage\" />
     <Folder Include="Items\Reactor\" />
     <Folder Include="Items\Sensor\" />
     <Folder Include="Items\Shield\" />
-    <Folder Include="Items\Thruster\" />
     <Folder Include="Items\Weapon\" />
-    <Folder Include="Items\Wing\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Planets\default.png">
       <Name>default</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Items\Fuselage\test_fuselage.png">
+      <Name>test_fuselage</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Items\Wing\test_wing.png">
+      <Name>test_wing</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Items\Thruster\test_thruster.png">
+      <Name>test_thruster</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

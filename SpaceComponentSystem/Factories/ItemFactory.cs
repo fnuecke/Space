@@ -67,6 +67,32 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
+        /// The offset with which to render the items model texture relative to its mount point.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Media")]
+        [Description("The offset relative to the items mount point with which render it when equipped.")]
+        public Vector2? ModelOffset
+        {
+            get { return _modelOffset; }
+            set { _modelOffset = value; }
+        }
+
+        /// <summary>
+        /// Determines whether the model should be rendered below the parent, e.g. for wings and torpedo mounts.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(false)]
+        [Category("Media")]
+        [Description("Whether to render the item below its parent, e.g. for wings below fuselage and torpedo mounts below wings.")]
+        public bool ModelBelowParent
+        {
+            get { return _modelBelowParent; }
+            set { _modelBelowParent = value; }
+        }
+
+        /// <summary>
         /// The quality of the item, to give a rough idea of the value.
         /// </summary>
         [ContentSerializer(Optional = true)]
@@ -159,6 +185,10 @@ namespace Space.ComponentSystem.Factories
         private string _icon = "Images/Icons/Buffs/default";
 
         private string _model = "Textures/Items/default";
+
+        private Vector2? _modelOffset;
+
+        private bool _modelBelowParent;
 
         private ItemQuality _quality = ItemQuality.Common;
 

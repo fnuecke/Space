@@ -5,6 +5,7 @@
       <Name>StarterReactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -16,6 +17,7 @@
       <Name>PoorBasicReactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Poor</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -40,6 +42,7 @@
       <Name>BasicReactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -64,6 +67,7 @@
       <Name>UncommonBasicReactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Uncommon</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -88,6 +92,7 @@
       <Name>RareBasicReactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Rare</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -112,6 +117,7 @@
       <Name>L1_AI_Reactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>

@@ -5,6 +5,7 @@
       <Name>StarterSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -15,6 +16,7 @@
       <Name>PoorBasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Poor</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -38,6 +40,7 @@
       <Name>BasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -61,6 +64,7 @@
       <Name>UncommonBasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Uncommon</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -84,6 +88,7 @@
       <Name>RareBasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Rare</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -107,6 +112,7 @@
       <Name>L1_AI_Sensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
