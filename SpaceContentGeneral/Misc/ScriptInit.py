@@ -12,3 +12,12 @@ def desync():
 	import random
 	translation = manager.GetComponent(avatar, Transform.TypeId).Translation
 	goto(translation.X + random.random(), translation.Y + random.random())
+
+def inv():
+	def dump(item):
+		print(manager.GetComponent(item, Item.TypeId).Name)
+		for slot in manager.GetComponents(item, ItemSlot.TypeId):
+			if slot.Item > 0:
+				dump(slot.Item)
+	if equipment.Item > 0:
+		dump(equipment.Item)

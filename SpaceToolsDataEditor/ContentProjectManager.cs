@@ -50,7 +50,7 @@ namespace Space.Tools.DataEditor
         /// </summary>
         public static IEnumerable<string> EffectAssetNames
         {
-            get { return ShaderAssets.Keys; }
+            get { return EffectAssets.Keys; }
         }
 
         /// <summary>

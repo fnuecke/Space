@@ -312,7 +312,7 @@ namespace Space.ComponentSystem.Factories
             // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(_effect))
             {
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(_effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero, ParticleEffects.EffectGroup.None, true);
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(0, _effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero, ParticleEffects.EffectGroup.None, true);
             }
 
             return entity;
