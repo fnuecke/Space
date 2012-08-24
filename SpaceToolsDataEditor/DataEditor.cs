@@ -426,6 +426,20 @@ namespace Space.Tools.DataEditor
                 {
                     RenderEffectAssetPreview();
                 }
+                else if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
+                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
+                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
+                        .EditorTypeName.Equals(typeof(PlanetEditor).AssemblyQualifiedName))
+                {
+                    RenderPlanetPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as PlanetFactory);
+                }
+                else if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
+                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
+                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
+                        .EditorTypeName.Equals(typeof(SunEditor).AssemblyQualifiedName))
+                {
+                    RenderSunPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as SunFactory);
+                }
                 else
                 {
                     // We're not rendering based on property grid item selection at this point, so
@@ -535,8 +549,8 @@ namespace Space.Tools.DataEditor
                     var y = (pbPreview.Image.Height - newHeight) / 2f;
                     if (factory.ModelOffset.HasValue)
                     {
-                        x += factory.ModelOffset.Value.X;
-                        y += factory.ModelOffset.Value.Y;
+                        x += factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.X);
+                        y += factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.Y);
                     }
                     using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
                     {
@@ -563,13 +577,13 @@ namespace Space.Tools.DataEditor
                     {
                         continue;
                     }
-                    var size = slot.Size.Scale(16);
+                    var size = slot.Size.Scale(32);
                     var x = (pbPreview.Image.Width - size - 1) / 2f;
                     var y = (pbPreview.Image.Height - size - 1) / 2f;
                     if (slot.Offset.HasValue)
                     {
-                        x += slot.Offset.Value.X;
-                        y += slot.Offset.Value.Y;
+                        x += factory.RequiredSlotSize.Scale(slot.Offset.Value.X);
+                        y += factory.RequiredSlotSize.Scale(slot.Offset.Value.Y);
                     }
                     using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
                     {
@@ -617,7 +631,7 @@ namespace Space.Tools.DataEditor
             // Draw equipped items.
             var renders = new List<RenderEntry>();
             // Tuples are: item info, slots the item can equipped in, offset to the parent slot, depth in equipment tree, render mirrored or not
-            var items = new Stack<Tuple<ShipFactory.ItemInfo, List<ItemFactory.ItemSlotInfo>, Vector2, int, bool?>>();
+            var items = new Stack<Tuple<ShipFactory.ItemInfo, List<ItemFactory.ItemSlotInfo>, Vector2, int, bool?, ItemSlotSize>>();
             const int maxdepth = 32;
             if (factory.Items != null)
             {
@@ -626,10 +640,10 @@ namespace Space.Tools.DataEditor
                                         {
                                             new ItemFactory.ItemSlotInfo
                                             {
-                                                Size = ItemSlotSize.Small,
+                                                Size = ItemSlotSize.Huge,
                                                 Type = ItemFactory.ItemSlotInfo.ItemType.Fuselage
                                             }
-                                        }, Vector2.Zero, 1, (bool?)null));
+                                        }, Vector2.Zero, 1, (bool?)null, ItemSlotSize.Small));
             }
             while (items.Count > 0)
             {
@@ -639,6 +653,7 @@ namespace Space.Tools.DataEditor
                 var offset = info.Item3;
                 var depth = info.Item4;
                 var mirrored = info.Item5;
+                var parentSize = info.Item6;
 
                 // Get info on item.
                 var itemFactory = FactoryManager.GetFactory(itemInfo.Name) as ItemFactory;
@@ -677,12 +692,13 @@ namespace Space.Tools.DataEditor
                 {
                     if (mirrored.HasValue)
                     {
-                        offset.X += bestSlot.Offset.Value.X;
-                        offset.Y += bestSlot.Offset.Value.Y * (mirrored.Value ? -1 : 1);
+                        offset.X += parentSize.Scale(bestSlot.Offset.Value.X);
+                        offset.Y += parentSize.Scale(bestSlot.Offset.Value.Y * (mirrored.Value ? -1 : 1));
                     }
                     else
                     {
-                        offset += bestSlot.Offset.Value;
+                        offset.X += parentSize.Scale(bestSlot.Offset.Value.X);
+                        offset.Y += parentSize.Scale(bestSlot.Offset.Value.Y);
                         if (bestSlot.Offset.Value.Y != 0f)
                         {
                             mirrored = bestSlot.Offset.Value.Y < 0;
@@ -694,12 +710,13 @@ namespace Space.Tools.DataEditor
                 {
                     if (mirrored.HasValue)
                     {
-                        renderOffset.X += itemFactory.ModelOffset.Value.X;
-                        renderOffset.Y += itemFactory.ModelOffset.Value.Y * (mirrored.Value ? -1 : 1);
+                        renderOffset.X += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.X);
+                        renderOffset.Y += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.Y * (mirrored.Value ? -1 : 1));
                     }
                     else
                     {
-                        renderOffset += itemFactory.ModelOffset.Value;
+                        renderOffset.X += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.X);
+                        renderOffset.Y += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.Y);
                     }
                 }
 
@@ -712,7 +729,7 @@ namespace Space.Tools.DataEditor
                         Offset = renderOffset,
                         Mirrored = mirrored.HasValue && mirrored.Value,
                         Depth = depth,
-                        Size = bestSlot.Size
+                        Size = itemFactory.RequiredSlotSize
                     });
                 }
 
@@ -723,7 +740,7 @@ namespace Space.Tools.DataEditor
                     var availableSlots = new List<ItemFactory.ItemSlotInfo>(itemFactory.Slots);
                     foreach (var slot in itemInfo.Slots)
                     {
-                        items.Push(Tuple.Create(slot, availableSlots, offset, depth, mirrored));
+                        items.Push(Tuple.Create(slot, availableSlots, offset, depth, mirrored, itemFactory.RequiredSlotSize));
                     }
                 }
             }

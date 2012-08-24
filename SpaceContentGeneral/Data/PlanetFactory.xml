@@ -5,7 +5,7 @@
       <Name>planet_1</Name>
       <Texture>Textures/Planets/rock_07</Texture>
       <SurfaceTint>FFAAB597</SurfaceTint>
-      <AtmosphereTint>FF87CEFA</AtmosphereTint>
+      <AtmosphereTint>8087CEFA</AtmosphereTint>
       <Radius>250 to 550</Radius>
       <Mass>300000 to 400000</Mass>
       <RotationSpeed>2</RotationSpeed>

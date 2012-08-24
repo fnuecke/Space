@@ -120,8 +120,6 @@ namespace Space.Graphics
         /// </summary>
         protected override void AdjustParameters()
         {
-            GraphicsDevice.BlendState = BlendState.AlphaBlend;
-
             Effect.Parameters["SurfaceTexture"].SetValue(_surface);
             Effect.Parameters["SurfaceTint"].SetValue(Color.ToVector4());
             Effect.Parameters["AtmosphereTint"].SetValue(_atmosphereTint.ToVector4());

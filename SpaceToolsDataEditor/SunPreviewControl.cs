@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Engine.Graphics;
 using Engine.Random;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -30,7 +31,7 @@ namespace Space.Tools.DataEditor
                 }
                 else if (_sun != null)
                 {
-                    _sun.SetSize(_factory.Radius.High * 2 * 0.95f);
+                    _sun.SetSize(_factory.Radius.Low * 2 * 0.95f);
                     LoadContent();
                 }
             }
@@ -41,6 +42,8 @@ namespace Space.Tools.DataEditor
         private SunFactory _factory;
 
         private Sun _sun;
+
+        private Ellipse _circle;
 
         private Timer _timer;
 
@@ -77,7 +80,6 @@ namespace Space.Tools.DataEditor
                 _batch = new SpriteBatch(GraphicsDevice);
                 RecreateRenderTarget();
             }
-            GraphicsDevice.DeviceReset += GraphicsDeviceOnDeviceReset;
             if (_sun == null)
             {
                 try
@@ -97,6 +99,22 @@ namespace Space.Tools.DataEditor
                     Console.WriteLine("Failed initializing sun: " + ex);
                 }
             }
+            if (_circle == null)
+            {
+                try
+                {
+                    _circle = new Ellipse(_content, GraphicsDevice)
+                    {
+                        Thickness = 2,
+                        Color = Color.SlateGray * 0.5f
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed initializing ellipse: " + ex);
+                }
+            }
+            GraphicsDevice.DeviceReset += GraphicsDeviceOnDeviceReset;
         }
 
         private void GraphicsDeviceOnDeviceReset(object sender, EventArgs eventArgs)
@@ -127,6 +145,10 @@ namespace Space.Tools.DataEditor
 
         private void LoadContent()
         {
+            if (_circle != null)
+            {
+                _circle.SetSize(_factory.Radius.High * 2);
+            }
             try
             {
                 _sun.LoadContent(_batch, _content);
@@ -163,6 +185,11 @@ namespace Space.Tools.DataEditor
             _batch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
             _batch.Draw(_target, GraphicsDevice.PresentationParameters.Bounds, Color.White);
             _batch.End();
+            if (_circle != null)
+            {
+                _circle.SetCenter(Width / 2f, Height / 2f);
+                _circle.Draw();
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Engine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Factories;
@@ -40,6 +41,8 @@ namespace Space.Tools.DataEditor
 
         private Planet _planet;
 
+        private Ellipse _circle;
+
         private Timer _timer;
 
         protected override void Initialize()
@@ -60,6 +63,21 @@ namespace Space.Tools.DataEditor
                 }
                 LoadContent();
             }
+            if (_circle == null)
+            {
+                try
+                {
+                    _circle = new Ellipse(_content, GraphicsDevice)
+                    {
+                        Thickness = 2,
+                        Color = Color.SlateGray * 0.5f
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed initializing ellipse: " + ex);
+                }
+            }
             GraphicsDevice.DeviceReset += GraphicsDeviceOnDeviceReset;
         }
 
@@ -75,7 +93,11 @@ namespace Space.Tools.DataEditor
                 _planet.SurfaceRotation = new Vector2(_factory.RotationSpeed.High, _factory.RotationSpeed.Low);
                 _planet.SurfaceTint = _factory.SurfaceTint;
                 _planet.AtmosphereTint = _factory.AtmosphereTint;
-                _planet.SetSize(_factory.Radius.High);
+                _planet.SetSize(_factory.Radius.Low * 2);
+                if (_circle != null)
+                {
+                    _circle.SetSize(_factory.Radius.High * 2);
+                }
                 try
                 {
                     _planet.SurfaceTexture = _content.Load<Texture2D>(_factory.Texture);
@@ -113,6 +135,11 @@ namespace Space.Tools.DataEditor
             }
             catch
             {
+            }
+            if (_circle != null)
+            {
+                _circle.SetCenter(Width / 2f, Height / 2f);
+                _circle.Draw();
             }
         }
     }

@@ -412,6 +412,7 @@
             this.ClientSize = new System.Drawing.Size(707, 532);
             this.Controls.Add(this.scMain);
             this.Controls.Add(this.msMain);
+            this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.msMain;
             this.MinimumSize = new System.Drawing.Size(640, 480);

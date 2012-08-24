@@ -15,8 +15,8 @@ const float relativeAtmosphereArea = 0.05;
 const float relativeOuterAtmosphere = 0.1;
 const float relativeInnerAtmosphere = 0.4;
 
-const float outerAtmosphereAlpha = 0.45;
-const float innerAtmosphereAlpha = 0.35;
+const float outerAtmosphereAlpha = 1;
+const float innerAtmosphereAlpha = 0.85;
 
 // ------------------------------------------------------------------------- //
 
@@ -163,27 +163,27 @@ float4 AtmosphereShaderFunction(VertexShaderData input) : COLOR0
 
     // Outside of unit circle, outer atmosphere.
     float atmosphere = rOuter / relativeOuterAtmosphere + 1;
-    float4 color = saturate(AtmosphereTint * outerAtmosphereAlpha * (1 - atmosphere * atmosphere));
+    float3 color = saturate(AtmosphereTint.rgb * (1 - atmosphere * atmosphere));
+
 
     if (rInner > 1)
     {
         // Self-shadowing based on light source position, use to erase
         // some of the atmosphere.
-        return color * saturate(rOffset);
+        return float4(color * saturate(rOffset) * AtmosphereTint.a * outerAtmosphereAlpha, 1);
     }
 
     // Inside the circle, get inner atmosphere.
     atmosphere = rOuter * relativeInnerAtmosphere + 1;
-    color = 1 - (1 - color) * saturate(1 - AtmosphereTint * innerAtmosphereAlpha * (1 - atmosphere * atmosphere));
+    color = 1 - (1 - color) * saturate(1 - AtmosphereTint.rgb * (1 - atmosphere * atmosphere));
     
     // Self-shadowing based on light source position.
-    color.rgb *= saturate(rOffset);
+    color *= saturate(rOffset);
 
     // Screen with the opposite.
-    rOffset = rOffset * rOffset * rOffset;
-    color.rgb = 1 - ((1 - color.rbg) * (1 - saturate(rOffset) * 0.15));
+    color = 1 - ((1 - color) * (1 - saturate(rOffset * rOffset * rOffset) * 0.15));
 
-    return color;
+    return float4(color * AtmosphereTint.a * innerAtmosphereAlpha, 1);
 }
 
 // ------------------------------------------------------------------------- //
@@ -192,13 +192,17 @@ technique Planet
 {
     pass Surface
     {
+        AlphaBlendEnable = True;
         DestBlend = InvSrcAlpha;
+        SrcBlend = SrcAlpha;
         VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 PlanetShaderFunction();
     }
     pass Atmosphere
     {
+        AlphaBlendEnable = True;
         DestBlend = One;
+        SrcBlend = One;
         PixelShader = compile ps_2_0 AtmosphereShaderFunction();
     }
 }
