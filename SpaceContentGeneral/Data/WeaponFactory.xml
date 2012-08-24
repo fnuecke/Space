@@ -4,7 +4,7 @@
     <Item>
       <Name>StarterWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <Model>Textures/Stolen/Weapons/hellbore_cannon_turret_recoil</Model>
       <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
@@ -171,7 +171,7 @@
     <Item>
       <Name>L1_AI_Weapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <Model>Textures/Stolen/Weapons/assault_chaingun_turret_base</Model>
       <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>

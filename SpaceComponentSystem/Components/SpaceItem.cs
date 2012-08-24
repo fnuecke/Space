@@ -1,6 +1,8 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
+using Engine.XnaExtensions;
+using Microsoft.Xna.Framework;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -10,23 +12,6 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class SpaceItem : Item
     {
-        #region Type ID
-
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
-        public new static readonly int TypeId = CreateTypeId();
-
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
-        public override int GetTypeId()
-        {
-            return TypeId;
-        }
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -37,7 +22,17 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The item's minimal required slot size.
         /// </summary>
-        public ItemSlotSize SlotSize;
+        public ItemSlotSize RequiredSlotSize;
+
+        /// <summary>
+        /// Offset at which to render the equipped item relative to its slot.
+        /// </summary>
+        public Vector2 ModelOffset;
+
+        /// <summary>
+        /// Whether to render on below the parent item when equipped.
+        /// </summary>
+        public bool DrawBelowParent;
 
         #endregion
 
@@ -53,7 +48,9 @@ namespace Space.ComponentSystem.Components
 
             var otherItem = (SpaceItem)other;
             Quality = otherItem.Quality;
-            SlotSize = otherItem.SlotSize;
+            RequiredSlotSize = otherItem.RequiredSlotSize;
+            ModelOffset = otherItem.ModelOffset;
+            DrawBelowParent = otherItem.DrawBelowParent;
 
             return this;
         }
@@ -65,15 +62,20 @@ namespace Space.ComponentSystem.Components
         /// <param name="iconName">The name of the icon used for the item.</param>
         /// <param name="quality">The quality level of the item.</param>
         /// <param name="slotSize">Size of the slot.</param>
+        /// <param name="modelOffset">The model offset.</param>
+        /// <param name="drawBelowParent">Whether to draw below the parent item, when equipped.</param>
         /// <returns>
         /// This instance.
         /// </returns>
-        public SpaceItem Initialize(string name, string iconName, ItemQuality quality, ItemSlotSize slotSize)
+        public SpaceItem Initialize(string name, string iconName, ItemQuality quality,
+            ItemSlotSize slotSize, Vector2 modelOffset, bool drawBelowParent)
         {
             Initialize(name, iconName);
 
             Quality = quality;
-            SlotSize = slotSize;
+            RequiredSlotSize = slotSize;
+            ModelOffset = modelOffset;
+            DrawBelowParent = drawBelowParent;
 
             return this;
         }
@@ -87,7 +89,9 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Quality = ItemQuality.Common;
-            SlotSize = ItemSlotSize.None;
+            RequiredSlotSize = ItemSlotSize.None;
+            ModelOffset = Vector2.Zero;
+            DrawBelowParent = false;
         }
 
         #endregion
@@ -105,7 +109,9 @@ namespace Space.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write((byte)Quality)
-                .Write((byte)SlotSize);
+                .Write((byte)RequiredSlotSize)
+                .Write(ModelOffset)
+                .Write(DrawBelowParent);
         }
 
         /// <summary>
@@ -117,7 +123,9 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Quality = (ItemQuality)packet.ReadByte();
-            SlotSize = (ItemSlotSize)packet.ReadByte();
+            RequiredSlotSize = (ItemSlotSize)packet.ReadByte();
+            ModelOffset = packet.ReadVector2();
+            DrawBelowParent = packet.ReadBoolean();
         }
 
         /// <summary>
@@ -130,7 +138,7 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put((byte)Quality);
-            hasher.Put((byte)SlotSize);
+            hasher.Put((byte)RequiredSlotSize);
         }
 
         #endregion

@@ -235,8 +235,8 @@ namespace Space.ComponentSystem.Factories
             var sinRadians = (float)Math.Sin(initialRotation);
 
             FarPosition rotatedOffset;
-            rotatedOffset.X = offset.X * cosRadians - offset.Y * sinRadians;
-            rotatedOffset.Y = offset.X * sinRadians + offset.Y * cosRadians;
+            rotatedOffset.X = -offset.X * cosRadians - offset.Y * sinRadians;
+            rotatedOffset.Y = -offset.X * sinRadians + offset.Y * cosRadians;
 
             // Set initial position.
             var transform = manager.AddComponent<Transform>(entity)

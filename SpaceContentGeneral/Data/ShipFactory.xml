@@ -59,16 +59,7 @@
       <Items>
         <Name>L1_AI_Fuselage</Name>
         <Item>
-          <Name>L1_AI_Wing</Name>
-          <Item>
-            <Name>L1_AI_Weapon</Name>
-          </Item>
-        </Item>
-        <Item>
-          <Name>L1_AI_Wing</Name>
-          <Item>
-            <Name>L1_AI_Weapon</Name>
-          </Item>
+          <Name>L1_AI_Weapon</Name>
         </Item>
         <Item>
           <Name>L1_AI_Reactor</Name>

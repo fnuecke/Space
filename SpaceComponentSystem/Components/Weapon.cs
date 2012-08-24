@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Factories;
 using Space.Data;
 
@@ -28,11 +29,6 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Fields
-
-        /// <summary>
-        /// The texture used to render this weapon.
-        /// </summary>
-        public string ModelName;
 
         /// <summary>
         /// The sound this weapon emits when firing.
@@ -72,7 +68,6 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherWeapon = (Weapon)other;
-            ModelName = otherWeapon.ModelName;
             Sound = otherWeapon.Sound;
             Cooldown = otherWeapon.Cooldown;
             EnergyConsumption = otherWeapon.EnergyConsumption;
@@ -89,8 +84,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="iconName">The name of the icon used for the item.</param>
         /// <param name="quality">The item's quality level.</param>
         /// <param name="slotSize">Size of the slot.</param>
-        /// <param name="modelName">The texture used for rendering the weapon
-        /// on the ship.</param>
+        /// <param name="modelOffset">The model offset.</param>
+        /// <param name="drawBelowParent">Whether to draw below the parent item, when equipped.</param>
         /// <param name="sound">The sound to play when the weapon is fired.</param>
         /// <param name="cooldown">The cooldown in ticks betweens shots.</param>
         /// <param name="energyConsumption">The amount of energy consumed per
@@ -99,14 +94,12 @@ namespace Space.ComponentSystem.Components
         /// <param name="projectiles">The info on projectiles being shot.</param>
         /// <returns></returns>
         public Weapon Initialize(string name, string iconName, ItemQuality quality,
-            ItemSlotSize slotSize,
-            string modelName, string sound,
-            float cooldown, float energyConsumption,
+            ItemSlotSize slotSize, Vector2 modelOffset, bool drawBelowParent,
+            string sound, float cooldown, float energyConsumption,
             float damage, ProjectileFactory[] projectiles)
         {
-            Initialize(name, iconName, quality, slotSize);
+            Initialize(name, iconName, quality, slotSize, modelOffset, drawBelowParent);
 
-            ModelName = modelName;
             Sound = sound;
             Cooldown = cooldown;
             EnergyConsumption = energyConsumption;
@@ -124,7 +117,6 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
-            ModelName = null;
             Sound = null;
             Cooldown = 0;
             EnergyConsumption = 0;
@@ -144,7 +136,6 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(ModelName)
                 .Write(Sound)
                 .Write(Cooldown)
                 .Write(EnergyConsumption)
@@ -160,7 +151,6 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            ModelName = packet.ReadString();
             Sound = packet.ReadString();
             Cooldown = packet.ReadSingle();
             EnergyConsumption = packet.ReadSingle();
@@ -176,7 +166,6 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(ModelName);
             hasher.Put(Sound);
             hasher.Put(Cooldown);
             hasher.Put(EnergyConsumption);

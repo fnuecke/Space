@@ -300,30 +300,33 @@ namespace Space.ComponentSystem.Components
             return inventory != null ? inventory[index] : 0;
         }
 
-        ///// <summary>
-        ///// Get the number of item slots for the specified item type.
-        ///// </summary>
-        ///// <typeparam name="TItem">The item type to check for.</typeparam>
-        ///// <returns></returns>
-        //public int EquipmentSlotCount<TItem>()
-        //    where TItem : Item
-        //{
-        //    var equipment = (ItemSlot)Manager.GetComponent(Entity, ItemSlot.TypeId);
-        //    return equipment != null ? equipment.GetSlotCount<TItem>() : 0;
-        //}
+        /// <summary>
+        /// Get the root item slot.
+        /// </summary>
+        /// <returns>The root item slot.</returns>
+        public SpaceItemSlot Equipment
+        {
+            get { return (SpaceItemSlot)Manager.GetComponent(Entity, ItemSlot.TypeId); }
+        }
 
-        ///// <summary>
-        ///// Get the equipped item of the specified type in the specified slot.
-        ///// </summary>
-        ///// <typeparam name="TItem">The type of item to check.</typeparam>
-        ///// <param name="index">The slot index from which to get the item.</param>
-        ///// <returns>The item at that slot index.</returns>
-        //public int? EquipmentItemAt<TItem>(int index)
-        //    where TItem : Item
-        //{
-        //    var equipment = (ItemSlot)Manager.GetComponent(Entity, ItemSlot.TypeId);
-        //    return equipment != null ? equipment.GetItem<TItem>(index) : null;
-        //}
+        /// <summary>
+        /// Get the equipped item in the slot with the specified id.
+        /// </summary>
+        /// <param name="slotId">The slot id from which to get the item, or zero for the root slot.</param>
+        /// <returns>The item at that slot index.</returns>
+        public int GetItem(int slotId = 0)
+        {
+            ItemSlot slot = null;
+            if (slotId == 0)
+            {
+                slot = Equipment;
+            }
+            else if (Manager.HasComponent(slotId))
+            {
+                slot = Manager.GetComponentById(slotId) as ItemSlot;
+            }
+            return slot != null ? slot.Item : 0;
+        }
 
         #endregion
 

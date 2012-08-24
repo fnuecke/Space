@@ -137,7 +137,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Compute spawn offset.
                 var offset = ((SpaceItemSlot)slot).AccumulateOffset();
-
+                
                 // Generate projectiles.
                 foreach (var projectile in weapon.Projectiles)
                 {

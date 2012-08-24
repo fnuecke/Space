@@ -67,7 +67,12 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Thruster>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize, _effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero);
+            manager.AddComponent<Thruster>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize,
+                                                              ModelOffset.HasValue ? ModelOffset.Value : Vector2.Zero,
+                                                              ModelBelowParent, _effect,
+                                                              _effectOffset.HasValue
+                                                                  ? _effectOffset.Value
+                                                                  : Vector2.Zero);
 
             return SampleAttributes(manager, entity, random);
         }

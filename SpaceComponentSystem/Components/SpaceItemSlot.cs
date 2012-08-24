@@ -90,7 +90,7 @@ namespace Space.ComponentSystem.Components
         public override bool Validate(Item item)
         {
             return item is SpaceItem && base.Validate(item) &&
-                ((SpaceItem)item).SlotSize <= Size;
+                ((SpaceItem)item).RequiredSlotSize <= Size;
         }
 
         /// <summary>
@@ -111,18 +111,26 @@ namespace Space.ComponentSystem.Components
             var potentialRootOffset = Vector2.Zero;
             do
             {
+                var slotOffset = slot.Offset;
+                var parent = slot.Parent;
+                if (parent != null)
+                {
+                    var parentItem = (SpaceItem)Manager.GetComponent(parent.Item, Engine.ComponentSystem.RPG.Components.Item.TypeId);
+                    slotOffset.X = parentItem.RequiredSlotSize.Scale(slotOffset.X);
+                    slotOffset.Y = parentItem.RequiredSlotSize.Scale(slotOffset.Y);
+                }
                 // If there's an offset, mark it as the new top-level node.
                 if (slot.Offset.Y != 0f)
                 {
                     // Dump old top level offset into accumulator.
                     offset += potentialRootOffset;
                     // And set new top level offset.
-                    potentialRootOffset = slot.Offset;
+                    potentialRootOffset = slotOffset;
                 }
                 else
                 {
                     // Nothing special (just offset along the y-axis).
-                    offset += slot.Offset;
+                    offset += slotOffset;
                 }
             } while ((slot = (SpaceItemSlot)slot.Parent) != null);
 

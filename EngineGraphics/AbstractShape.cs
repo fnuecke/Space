@@ -344,8 +344,8 @@ namespace Engine.Graphics
             Quaternion rotation;
             Vector3 translation;
             _transform.Decompose(out scale, out rotation, out translation);
-            translation.X -= GraphicsDevice.Viewport.Width / 2f;
-            translation.Y += GraphicsDevice.Viewport.Height / 2f;
+            translation.X = translation.X - GraphicsDevice.Viewport.Width / 2f;
+            translation.Y = GraphicsDevice.Viewport.Height / 2f - translation.Y;
 
             // Build transforms.
             var transform =

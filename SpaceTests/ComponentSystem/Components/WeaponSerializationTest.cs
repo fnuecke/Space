@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.Math;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.Data;
@@ -21,8 +22,8 @@ namespace SpaceTests.ComponentSystem.Components
             {
                 new Weapon(),
                 (Weapon)new Weapon().Initialize("name1", "icon1"),
-                (Weapon)new Weapon().Initialize("name2", "icon2", ItemQuality.Common, ItemSlotSize.Large),
-                new Weapon().Initialize("name3", "icon3", ItemQuality.Rare, ItemSlotSize.Small, "model", "sound", 1.5f,
+                (Weapon)new Weapon().Initialize("name2", "icon2", ItemQuality.Common, ItemSlotSize.Large, Vector2.Zero, false),
+                new Weapon().Initialize("name3", "icon3", ItemQuality.Rare, ItemSlotSize.Small, Vector2.Zero, false, "sound", 1.5f,
                                         2.5f, 3.5f, new[]
                                         {
                                             new ProjectileFactory
@@ -53,7 +54,6 @@ namespace SpaceTests.ComponentSystem.Components
                 instance => instance.Cooldown += 10,
                 instance => instance.EnergyConsumption += 10,
                 instance => instance.Damage += 10,
-                instance => instance.ModelName += "b",
                 instance => instance.Sound += "b",
                 instance => instance.Projectiles = new[]
                 {

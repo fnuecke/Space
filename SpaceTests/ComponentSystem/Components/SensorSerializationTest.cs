@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
 
@@ -18,7 +19,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Sensor(),
                        (Sensor)new Sensor().Initialize("asd", "zxc"),
-                       (Sensor)new Sensor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Large)
+                       (Sensor)new Sensor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Large, Vector2.Zero, false)
                    };
         }
     }
