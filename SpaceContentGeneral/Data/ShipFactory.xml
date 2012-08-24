@@ -4,7 +4,7 @@
     <Item>
       <Name>Player</Name>
       <Texture>Textures/spaceshipB</Texture>
-      <CollisionRadius>20</CollisionRadius>
+      <CollisionRadius>50</CollisionRadius>
       <Attributes>
         <Item>10 Mass</Item>
         <Item>100 Health</Item>
@@ -45,7 +45,7 @@
     <Item>
       <Name>L1_AI_Ship</Name>
       <Texture>Textures/Stolen/Ships/broadsword_hftr</Texture>
-      <CollisionRadius>24</CollisionRadius>
+      <CollisionRadius>25</CollisionRadius>
       <ItemPool>Starter</ItemPool>
       <Attributes>
         <Item>10 Mass</Item>
