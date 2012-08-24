@@ -112,6 +112,11 @@ namespace Space.Tools.DataEditor
             // Restore layout.
             DesktopBounds = settings.WindowBounds;
 
+            if (settings.WindowMaximized)
+            {
+                WindowState = FormWindowState.Maximized;
+            }
+
             if (settings.MainSplit > 0)
             {
                 scMain.SplitterDistance = settings.MainSplit;
@@ -287,7 +292,16 @@ namespace Space.Tools.DataEditor
             var settings = DataEditorSettings.Default;
 
             // Save layout.
-            settings.WindowBounds = DesktopBounds;
+            if (WindowState == FormWindowState.Maximized)
+            {
+                settings.WindowBounds = RestoreBounds;
+                settings.WindowMaximized = true;
+            }
+            else
+            {
+                settings.WindowBounds = DesktopBounds;
+                settings.WindowMaximized = false;
+            }
 
             settings.MainSplit = scMain.SplitterDistance;
             settings.OuterSplit = scOuter.SplitterDistance;
