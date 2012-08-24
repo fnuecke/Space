@@ -84,6 +84,9 @@
     <Compile Include="DataEditorPreviews.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="DialogEditorIssues.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="SunPreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -209,6 +212,10 @@
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
       <Name>Engine.ComponentSystem.RPG</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
+      <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
+      <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
       <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>

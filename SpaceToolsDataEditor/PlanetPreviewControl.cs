@@ -98,6 +98,12 @@ namespace Space.Tools.DataEditor
                 {
                     _circle.SetSize(_factory.Radius.High * 2);
                 }
+                Control control = FindForm();
+                if (control == null)
+                {
+                    control = this;
+                }
+                control.Cursor = Cursors.WaitCursor;
                 try
                 {
                     _planet.SurfaceTexture = _content.Load<Texture2D>(_factory.Texture);
@@ -105,6 +111,10 @@ namespace Space.Tools.DataEditor
                 }
                 catch
                 {
+                }
+                finally
+                {
+                    control.Cursor = Cursors.Default;
                 }
             }
         }

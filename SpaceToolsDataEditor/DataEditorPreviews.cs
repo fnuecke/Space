@@ -7,12 +7,19 @@ using System.Drawing.Imaging;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Factories;
+using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
+using Space.ComponentSystem.Systems;
 using Space.Data;
 
 namespace Space.Tools.DataEditor
 {
     partial class DataEditor
     {
+        private void PreviewOnResize(object sender, EventArgs eventArgs)
+        {
+            UpdatePreview();
+        }
+
         private void UpdatePreview()
         {
             // Clear image.
@@ -25,52 +32,71 @@ namespace Space.Tools.DataEditor
             _effectPreview.Effect = null;
             _planetPreview.Planet = null;
             _sunPreview.Sun = null;
+            pbPreview.Resize -= PreviewOnResize;
 
             _effectPreview.Visible = false;
             _planetPreview.Visible = false;
             _sunPreview.Visible = false;
             pbPreview.Visible = true;
-
-            // Skip if nothing is selected.
-            if (pgProperties.SelectedObject != null &&
-                pgProperties.SelectedGridItem != null)
+            try
             {
-                // Figure out what to show. If an image asset is selected we simply show that.
-                if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
-                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
-                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
-                        .EditorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
+                // Skip if nothing is selected.
+                if (pgProperties.SelectedObject != null &&
+                    pgProperties.SelectedGridItem != null)
                 {
-                    RenderTextureAssetPreview();
-                }
-                else if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
-                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
-                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
-                        .EditorTypeName.Equals(typeof(EffectAssetEditor).AssemblyQualifiedName))
-                {
-                    RenderEffectAssetPreview();
-                }
-                else if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
-                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
-                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
-                        .EditorTypeName.Equals(typeof(PlanetEditor).AssemblyQualifiedName))
-                {
-                    RenderPlanetPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as PlanetFactory);
-                }
-                else if (pgProperties.SelectedGridItem.PropertyDescriptor != null &&
-                    pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null &&
-                    ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
-                        .EditorTypeName.Equals(typeof(SunEditor).AssemblyQualifiedName))
-                {
-                    RenderSunPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as SunFactory);
-                }
-                else
-                {
+                    // Figure out what to show. If an image asset is selected we simply show that.
+                    if (pgProperties.SelectedGridItem.PropertyDescriptor != null)
+                    {
+                        if (pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null)
+                        {
+                            var editorTypeName = ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)]).EditorTypeName;
+                            if (editorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
+                            {
+                                RenderTextureAssetPreview();
+                                return;
+                            }
+                            if (editorTypeName.Equals(typeof(EffectAssetEditor).AssemblyQualifiedName))
+                            {
+                                RenderEffectAssetPreview();
+                                return;
+                            }
+                            if (editorTypeName.Equals(typeof(PlanetEditor).AssemblyQualifiedName))
+                            {
+                                RenderPlanetPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as PlanetFactory);
+                                return;
+                            }
+                            if (editorTypeName.Equals(typeof(SunEditor).AssemblyQualifiedName))
+                            {
+                                RenderSunPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as SunFactory);
+                                return;
+                            }
+                            if (editorTypeName.Equals(typeof(ItemInfoEditor).AssemblyQualifiedName))
+                            {
+                                RenderItemPreview(pgProperties.SelectedGridItem.Value as ItemFactory);
+                                return;
+                            }
+                        }
+                    }
+
+                    // Render next-best orbit system if possible.
+                    var item = pgProperties.SelectedGridItem;
+                    while (item != null)
+                    {
+                        if (item.PropertyDescriptor != null &&
+                            item.PropertyDescriptor.PropertyType == typeof(Orbiter))
+                        {
+                            RenderOrbiterPreview(item.Value as Orbiter);
+                            return;
+                        }
+                        item = item.Parent;
+                    }
+
                     // We're not rendering based on property grid item selection at this point, so
                     // we just try to render the selected object.
 
                     RenderPlanetPreview(pgProperties.SelectedObject as PlanetFactory);
                     RenderSunPreview(pgProperties.SelectedObject as SunFactory);
+                    RenderSunSystemPreview(pgProperties.SelectedObject as SunSystemFactory);
 
                     // Try rendering the selected object as an item.
                     RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
@@ -79,9 +105,11 @@ namespace Space.Tools.DataEditor
                     RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
                 }
             }
-
-            // Update the picture box.
-            pbPreview.Invalidate();
+            finally
+            {
+                // Update the picture box.
+                pbPreview.Invalidate();
+            }
         }
 
         private void RenderTextureAssetPreview()
@@ -152,6 +180,184 @@ namespace Space.Tools.DataEditor
             pbPreview.Visible = false;
 
             _sunPreview.Sun = factory;
+        }
+
+        private void RenderSunSystemPreview(SunSystemFactory factory)
+        {
+            if (factory == null)
+            {
+                return;
+            }
+
+            pbPreview.Resize += PreviewOnResize;
+
+            // Get furthest out orbit to know how to scale.
+            var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
+            float padding, scale;
+            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
+            {
+                padding = 25f;
+                scale = Math.Min(1, pbPreview.Image.Width / (CellSystem.CellSize / 2f));
+            }
+            else
+            {
+                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
+                scale = Math.Min(1, pbPreview.ClientSize.Width / (CellSystem.CellSize / 2f));
+            }
+
+            // Render all objects from left to right, starting with the sun.
+            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+            {
+                g.SmoothingMode = SmoothingMode.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                using (var brush = new SolidBrush(System.Drawing.Color.White))
+                {
+                    if (sunFactory != null && sunFactory.Radius != null)
+                    {
+                        var sunColor = System.Drawing.Color.FromArgb(
+                            sunFactory.OffsetRadius != null ? 200 : 255, 255, 255, 224);
+                        brush.Color = sunColor;
+                        var diameter = scale * sunFactory.Radius.Low * 2;
+                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                        if (sunFactory.OffsetRadius != null)
+                        {
+                            diameter = scale * (sunFactory.Radius.High + sunFactory.OffsetRadius.High) * 2;
+                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                        }
+                    }
+                    RenderOrbit(factory.Planets, padding, scale, g, brush);
+                }
+            }
+        }
+
+        private void RenderOrbiterPreview(Orbiter orbiter)
+        {
+            if (orbiter == null)
+            {
+                return;
+            }
+
+            pbPreview.Resize += PreviewOnResize;
+
+            var planetFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
+            float padding, scale;
+            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
+            {
+                padding = 25f;
+                scale = Math.Min(1, pbPreview.Image.Width / (GetMaxRadius(orbiter.Moons) + 250));
+            }
+            else
+            {
+                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
+                scale = Math.Min(1, pbPreview.ClientSize.Width / (GetMaxRadius(orbiter.Moons) + 250));
+            }
+
+            // Render all objects from left to right, starting with the sun.
+            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+            {
+                g.SmoothingMode = SmoothingMode.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                using (var brush = new SolidBrush(System.Drawing.Color.White))
+                {
+                    if (planetFactory != null && planetFactory.Radius != null)
+                    {
+                        brush.Color = System.Drawing.Color.FromArgb(150, planetFactory.SurfaceTint.R,
+                                                                    planetFactory.SurfaceTint.G,
+                                                                    planetFactory.SurfaceTint.B);
+                        var diameter = scale * planetFactory.Radius.Low * 2;
+                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                        diameter = scale * planetFactory.Radius.High * 2;
+                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                    }
+
+                    RenderOrbit(orbiter.Moons, padding, scale, g, brush);
+                }
+            }
+        }
+
+        private void RenderOrbit(Orbit orbit, float origin, float scale, System.Drawing.Graphics graphics, SolidBrush brush)
+        {
+            if (orbit == null)
+            {
+                return;
+            }
+            if (orbit.Orbiters != null)
+            {
+                // Check each orbiting object.
+                foreach (var orbiter in orbit.Orbiters)
+                {
+                    var localOrigin = origin;
+                    // We can only really draw something useful if we have a radius...
+                    if (orbiter.OrbitRadius != null)
+                    {
+                        // Figure out max radius of children.
+                        var maxOrbit = scale * GetMaxRadius(orbiter.Moons);
+
+                        // Draw actual stuff at max bounds.
+                        localOrigin += orbiter.OrbitRadius.High * scale;
+                        var orbiterFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
+                        if (orbiterFactory != null)
+                        {
+                            brush.Color = System.Drawing.Color.FromArgb(150, orbiterFactory.SurfaceTint.R,
+                                                                        orbiterFactory.SurfaceTint.G,
+                                                                        orbiterFactory.SurfaceTint.B);
+                            if (orbiterFactory.Radius != null)
+                            {
+                                var diameter = orbiterFactory.Radius.Low * scale * 2;
+                                graphics.FillEllipse(brush, localOrigin - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                                diameter = orbiterFactory.Radius.High * scale * 2;
+                                graphics.FillEllipse(brush, localOrigin - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+
+                                maxOrbit = Math.Max(maxOrbit, orbiterFactory.Radius.High * scale);
+                            }
+                        }
+
+                        // Half the interval of variance we have for our radius.
+                        var halfVariance = scale * (orbiter.OrbitRadius.High - orbiter.OrbitRadius.Low) / 2f;
+
+                        // Add it to the max orbit to get the overall maximum possible
+                        // when rendering a circle with its center in the middle of the
+                        // variance interval. (and times two for width/height)
+                        maxOrbit = (maxOrbit + halfVariance) * 2;
+
+                        // Show the indicator of the maximum bounds for this orbiter.
+                        brush.Color = System.Drawing.Color.FromArgb(20, 255, 165, 0);
+                        graphics.FillEllipse(brush, origin + scale * orbiter.OrbitRadius.Low + halfVariance - maxOrbit / 2f, pbPreview.Image.Height / 2f - maxOrbit / 2f, maxOrbit, maxOrbit);
+
+                        // Draw own orbit.
+                        using (var p = new Pen(System.Drawing.Color.FromArgb(100, 224, 255, 255)))
+                        {
+                            graphics.DrawEllipse(p, origin - orbiter.OrbitRadius.High * scale, pbPreview.Image.Height / 2f - orbiter.OrbitRadius.High * scale, orbiter.OrbitRadius.High * 2 * scale, orbiter.OrbitRadius.High * 2 * scale);
+                            p.Color = System.Drawing.Color.FromArgb(40, 224, 255, 255);
+                            graphics.DrawEllipse(p, origin - orbiter.OrbitRadius.Low * scale, pbPreview.Image.Height / 2f - orbiter.OrbitRadius.Low * scale, orbiter.OrbitRadius.Low * 2 * scale, orbiter.OrbitRadius.Low * 2 * scale);
+                        }
+                    }
+
+                    // Render children.
+                    RenderOrbit(orbiter.Moons, localOrigin, scale, graphics, brush);
+                }
+            }
+        }
+
+        private float GetMaxRadius(Orbit orbit)
+        {
+            if (orbit == null)
+            {
+                return 0f;
+            }
+            var maxRadius = 0f;
+            if (orbit.Orbiters != null)
+            {
+                foreach (var orbiter in orbit.Orbiters)
+                {
+                    var orbiterRadius = orbiter.OrbitRadius != null ? orbiter.OrbitRadius.High : 0f;
+                    orbiterRadius += GetMaxRadius(orbiter.Moons);
+                    maxRadius = Math.Max(maxRadius, orbiterRadius);
+                }
+            }
+            return maxRadius;
         }
 
         private void RenderItemPreview(ItemFactory factory)

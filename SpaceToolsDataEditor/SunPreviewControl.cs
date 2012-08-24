@@ -149,13 +149,23 @@ namespace Space.Tools.DataEditor
             {
                 _circle.SetSize(_factory.Radius.High * 2);
             }
+            Control control = FindForm();
+            if (control == null)
+            {
+                control = this;
+            }
             try
             {
+                control.Cursor = Cursors.WaitCursor;
                 _sun.LoadContent(_batch, _content);
                 _timer.Enabled = true;
             }
             catch
             {
+            }
+            finally
+            {
+                control.Cursor = Cursors.Default;
             }
         }
 

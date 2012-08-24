@@ -74,7 +74,7 @@ namespace Space.Tools.DataEditor
             FactoryManager.FactoryAdded += factory => SavingEnabled = true;
             FactoryManager.FactoryRemoved += factory => SavingEnabled = true;
             FactoryManager.FactoryNameChanged += (a,b) => SavingEnabled = true;
-            pbPreview.Image = new Bitmap(1024, 1024, PixelFormat.Format32bppArgb);
+            pbPreview.Image = new Bitmap(2048, 2048, PixelFormat.Format32bppArgb);
 
             tvData.KeyDown += (sender, args) =>
             {
