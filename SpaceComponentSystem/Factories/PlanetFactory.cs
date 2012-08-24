@@ -107,7 +107,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         [Category("Media")]
-        [Description("The speed with which the planet revolves around its own axis.")]
+        [Description("The speed with which the planet revolves around its own axis, in pixels per second.")]
         public FloatInterval RotationSpeed
         {
             get { return _rotationSpeed; }
@@ -232,7 +232,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Transform>(entity).Initialize(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
 
             // Make it rotate.
-            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / Settings.TicksPerSecond);
+            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed));
 
             // Make it move around its parent.
             manager.AddComponent<EllipsePath>(entity).Initialize(center, a, b, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);

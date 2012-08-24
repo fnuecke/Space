@@ -89,7 +89,7 @@ namespace Space.Tools.DataEditor
             }
 
             // See if the asset is valid (full path).
-            var assetPath = ContentProjectManager.GetFileForEffectAsset(e.Node.FullPath);
+            var assetPath = ContentProjectManager.GetEffectPath(e.Node.FullPath);
             if (assetPath == null)
             {
                 return;

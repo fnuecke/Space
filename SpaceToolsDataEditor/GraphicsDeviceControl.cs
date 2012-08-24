@@ -144,17 +144,12 @@ namespace Space.Tools.DataEditor
                 return deviceResetError;
             }
 
-            // Many GraphicsDeviceControl instances can be sharing the same
-            // GraphicsDevice. The device backbuffer will be resized to fit the
-            // largest of these controls. But what if we are currently drawing
-            // a smaller control? To avoid unwanted stretching, we set the
-            // viewport to only use the top left portion of the full backbuffer.
             var viewport = new Viewport
             {
                 X = 0,
                 Y = 0,
-                Width = ClientSize.Width,
-                Height = ClientSize.Height,
+                Width = GraphicsDevice.PresentationParameters.BackBufferWidth,
+                Height = GraphicsDevice.PresentationParameters.BackBufferHeight,
                 MinDepth = 0,
                 MaxDepth = 1
             };
@@ -211,8 +206,8 @@ namespace Space.Tools.DataEditor
                     // If the device state is ok, check whether it is big enough.
                     var pp = GraphicsDevice.PresentationParameters;
 
-                    deviceNeedsReset = (ClientSize.Width > pp.BackBufferWidth) ||
-                                       (ClientSize.Height > pp.BackBufferHeight);
+                    deviceNeedsReset = (ClientSize.Width != pp.BackBufferWidth) ||
+                                       (ClientSize.Height != pp.BackBufferHeight);
                     break;
             }
 
@@ -242,7 +237,7 @@ namespace Space.Tools.DataEditor
         {
             graphics.Clear(Color.DarkSlateGray);
 
-            using (Brush brush = new SolidBrush(Color.Black))
+            using (Brush brush = new SolidBrush(Color.Red))
             {
                 using (var format = new StringFormat())
                 {

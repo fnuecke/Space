@@ -212,7 +212,7 @@ namespace Engine.Graphics
             Vertices[3].Tex0.Y = 1;
 
             // Set default transformation to map to center of screen.
-            _transform = Matrix.CreateTranslation(-GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f, 0);
+            _transform = Matrix.Identity;
         }
 
         #endregion
@@ -225,7 +225,7 @@ namespace Engine.Graphics
         /// <param name="transform">The transform to use.</param>
         public void SetTransform(ref Matrix transform)
         {
-            _transform = transform * Matrix.CreateTranslation(-GraphicsDevice.Viewport.Width / 2f, -GraphicsDevice.Viewport.Height / 2f, 0);
+            _transform = transform;
             InvalidateVertices();
         }
 
@@ -274,7 +274,7 @@ namespace Engine.Graphics
         /// <summary>
         /// Marks the vertices as invalid, so that they are recomputed before the next draw.
         /// </summary>
-        protected void InvalidateVertices()
+        public void InvalidateVertices()
         {
             _verticesAreValid = false;
         }
@@ -344,6 +344,8 @@ namespace Engine.Graphics
             Quaternion rotation;
             Vector3 translation;
             _transform.Decompose(out scale, out rotation, out translation);
+            translation.X -= GraphicsDevice.Viewport.Width / 2f;
+            translation.Y += GraphicsDevice.Viewport.Height / 2f;
 
             // Build transforms.
             var transform =

@@ -105,7 +105,7 @@ float4 PlanetShaderFunction(VertexShaderData input) : COLOR0
         // Compute the spherized coordinate of the pixel.
         float f = (1 - sqrt(1 - rInner)) / rInner;
         float2 uvSphere = (pInner * f + 1) / 2 + TextureOffset;
-
+        
         // Actual color at position.
         float4 color = tex2D(textureSampler, uvSphere / TextureScale) * SurfaceTint;
         

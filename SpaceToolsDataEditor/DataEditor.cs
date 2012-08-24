@@ -48,12 +48,26 @@ namespace Space.Tools.DataEditor
             Visible = false
         };
 
+        private readonly PlanetPreviewControl _planetPreview = new PlanetPreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
+        private readonly SunPreviewControl _sunPreview = new SunPreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
         public DataEditor()
         {
             InitializeComponent();
             InitializeLogic();
 
             pbPreview.Parent.Controls.Add(_effectPreview);
+            pbPreview.Parent.Controls.Add(_planetPreview);
+            pbPreview.Parent.Controls.Add(_sunPreview);
 
             lvIssues.ListViewItemSorter = new IssueComparer();
             pgProperties.PropertyValueChanged += (o, args) =>
@@ -370,7 +384,13 @@ namespace Space.Tools.DataEditor
                 g.FillRectangle(Brushes.Transparent, 0, 0, pbPreview.Image.Width, pbPreview.Image.Height);
             }
 
+            _effectPreview.Effect = null;
+            _planetPreview.Planet = null;
+            _sunPreview.Sun = null;
+
             _effectPreview.Visible = false;
+            _planetPreview.Visible = false;
+            _sunPreview.Visible = false;
             pbPreview.Visible = true;
 
             // Skip if nothing is selected.
@@ -390,15 +410,15 @@ namespace Space.Tools.DataEditor
                     ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)])
                         .EditorTypeName.Equals(typeof(EffectAssetEditor).AssemblyQualifiedName))
                 {
-                    _effectPreview.Visible = true;
-                    pbPreview.Visible = false;
-
-                    _effectPreview.Effect = "Effects/Thruster";
+                    RenderEffectAssetPreview();
                 }
                 else
                 {
                     // We're not rendering based on property grid item selection at this point, so
                     // we just try to render the selected object.
+
+                    RenderPlanetPreview(pgProperties.SelectedObject as PlanetFactory);
+                    RenderSunPreview(pgProperties.SelectedObject as SunFactory);
 
                     // Try rendering the selected object as an item.
                     RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
@@ -421,7 +441,7 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            var filePath = ContentProjectManager.GetFileForTextureAsset(fullPath);
+            var filePath = ContentProjectManager.GetTexturePath(fullPath);
             if (!string.IsNullOrWhiteSpace(filePath))
             {
                 // We got it. Set as the new image.
@@ -450,7 +470,36 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
+            _effectPreview.Visible = true;
+            pbPreview.Visible = false;
+
             _effectPreview.Effect = fullPath;
+        }
+
+        private void RenderPlanetPreview(PlanetFactory factory)
+        {
+            if (factory == null)
+            {
+                return;
+            }
+
+            _planetPreview.Visible = true;
+            pbPreview.Visible = false;
+
+            _planetPreview.Planet = factory;
+        }
+
+        private void RenderSunPreview(SunFactory factory)
+        {
+            if (factory == null)
+            {
+                return;
+            }
+
+            _sunPreview.Visible = true;
+            pbPreview.Visible = false;
+
+            _sunPreview.Sun = factory;
         }
 
         private void RenderItemPreview(ItemFactory factory)
@@ -461,7 +510,7 @@ namespace Space.Tools.DataEditor
             }
 
             // Draw base image.
-            var modelFile = ContentProjectManager.GetFileForTextureAsset(factory.Model);
+            var modelFile = ContentProjectManager.GetTexturePath(factory.Model);
             if (modelFile != null)
             {
                 using (var bmp = new Bitmap(modelFile))
@@ -536,7 +585,7 @@ namespace Space.Tools.DataEditor
             }
 
             // Draw base image.
-            var modelFile = ContentProjectManager.GetFileForTextureAsset(factory.Texture);
+            var modelFile = ContentProjectManager.GetTexturePath(factory.Texture);
             if (modelFile != null)
             {
                 using (var bmp = new Bitmap(modelFile))
@@ -640,7 +689,7 @@ namespace Space.Tools.DataEditor
                     }
                 }
 
-                var modelPath = ContentProjectManager.GetFileForTextureAsset(itemFactory.Model);
+                var modelPath = ContentProjectManager.GetTexturePath(itemFactory.Model);
                 if (modelPath != null)
                 {
                     renders.Add(new RenderEntry

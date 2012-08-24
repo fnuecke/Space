@@ -20,9 +20,14 @@ namespace Space.Tools.DataEditor
         private static readonly Dictionary<string, string> TextureAssets = new Dictionary<string, string>();
 
         /// <summary>
-        /// All effect assets known from referenced content projects.
+        /// All particle effect assets known from referenced content projects.
         /// </summary>
         private static readonly Dictionary<string, string> EffectAssets = new Dictionary<string, string>();
+
+        /// <summary>
+        /// All shader assets known from referenced content projects.
+        /// </summary>
+        private static readonly Dictionary<string, string> ShaderAssets = new Dictionary<string, string>();
 
         /// <summary>
         /// Perform initial load when used.
@@ -45,7 +50,7 @@ namespace Space.Tools.DataEditor
         /// </summary>
         public static IEnumerable<string> EffectAssetNames
         {
-            get { return EffectAssets.Keys; }
+            get { return ShaderAssets.Keys; }
         }
 
         /// <summary>
@@ -56,6 +61,7 @@ namespace Space.Tools.DataEditor
             // Forget what we knew.
             TextureAssets.Clear();
             EffectAssets.Clear();
+            ShaderAssets.Clear();
 
             // Get "final" content root, as used after compilation. We strip this from content
             // project's individual root paths.
@@ -136,15 +142,15 @@ namespace Space.Tools.DataEditor
                         TextureAssets.Add(assetName.Trim(), assetPath.Trim());
                     }
 
-                    // Find all usable effect assets in the content project.
-                    foreach (var texture in from asset in xml.Elements(ns + "ItemGroup").Elements(ns + "Compile")
+                    // Find all usable particle effect assets in the content project.
+                    foreach (var effect in from asset in xml.Elements(ns + "ItemGroup").Elements(ns + "Compile")
                                             where
                                                 asset.Elements(ns + "Importer").Any() && asset.Elements(ns + "Importer").First().Value.Equals("XmlImporter") &&
                                                 asset.Elements(ns + "Processor").Any() && asset.Elements(ns + "Processor").First().Value.Equals("PassThroughProcessor")
                                             select asset)
                     {
                         // Get path to asset on disk.
-                        var include = texture.Attribute("Include");
+                        var include = effect.Attribute("Include");
                         if (include == null)
                         {
                             return;
@@ -171,16 +177,47 @@ namespace Space.Tools.DataEditor
                         }
 
                         // Build our complete asset name.
-                        if (!texture.Elements(ns + "Name").Any())
+                        if (!effect.Elements(ns + "Name").Any())
                         {
                             continue;
                         }
-                        var assetName = rootPath + relativeAssetPath + texture.Elements(ns + "Name").First().Value;
+                        var assetName = rootPath + relativeAssetPath + effect.Elements(ns + "Name").First().Value;
 
                         // Store the asset in our lookup table.
                         EffectAssets.Add(assetName.Trim(), assetPath.Trim());
                     }
 
+                    // Find all usable effect assets in the content project.
+                    foreach (var shader in from asset in xml.Elements(ns + "ItemGroup").Elements(ns + "Compile")
+                                            where
+                                                asset.Elements(ns + "Importer").Any() && asset.Elements(ns + "Importer").First().Value.Equals("EffectImporter") &&
+                                                asset.Elements(ns + "Processor").Any() && asset.Elements(ns + "Processor").First().Value.Equals("EffectProcessor")
+                                            select asset)
+                    {
+                        // Get path to asset on disk.
+                        var include = shader.Attribute("Include");
+                        if (include == null)
+                        {
+                            return;
+                        }
+                        var assetPath = include.Value.Replace('\\', '/');
+
+                        // Extract the relative path, which we need to prepend to the asset name.
+                        var relativeAssetPath = assetPath.Contains('/') ? assetPath.Substring(0, assetPath.LastIndexOf('/') + 1) : "";
+
+                        // Prepend it with the base path.
+                        assetPath = basePath + assetPath;
+
+                        // Build our complete asset name.
+                        if (!shader.Elements(ns + "Name").Any())
+                        {
+                            continue;
+                        }
+                        var assetName = rootPath + relativeAssetPath + shader.Elements(ns + "Name").First().Value;
+
+                        // Store the asset in our lookup table.
+                        ShaderAssets.Add(assetName.Trim(), assetPath.Trim());
+                    }
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -206,7 +243,7 @@ namespace Space.Tools.DataEditor
         /// </summary>
         /// <param name="assetName">The asset to look up.</param>
         /// <returns>The path to the asset's file.</returns>
-        public static string GetFileForTextureAsset(string assetName)
+        public static string GetTexturePath(string assetName)
         {
             string result;
             TextureAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
@@ -230,12 +267,23 @@ namespace Space.Tools.DataEditor
         /// </summary>
         /// <param name="assetName">The asset to look up.</param>
         /// <returns>The path to the asset's file.</returns>
-        public static string GetFileForEffectAsset(string assetName)
+        public static string GetEffectPath(string assetName)
         {
             string result;
             EffectAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
             return result;
         }
 
+        /// <summary>
+        /// Try to resolve an asset name to a path pointing to the assets file on disk.
+        /// </summary>
+        /// <param name="assetName">The asset to look up.</param>
+        /// <returns>The path to the asset's file.</returns>
+        public static string GetShaderPath(string assetName)
+        {
+            string result;
+            ShaderAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
+            return result;
+        }
     }
 }

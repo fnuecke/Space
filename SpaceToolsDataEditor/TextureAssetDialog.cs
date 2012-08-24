@@ -85,7 +85,7 @@ namespace Space.Tools.DataEditor
             }
 
             // See if the asset is valid (full path).
-            var assetPath = ContentProjectManager.GetFileForTextureAsset(e.Node.FullPath);
+            var assetPath = ContentProjectManager.GetTexturePath(e.Node.FullPath);
             if (assetPath == null)
             {
                 return;
