@@ -19,9 +19,9 @@ namespace Space.Tools.DataEditor
         public override object EditValue(System.ComponentModel.ITypeDescriptorContext context, System.IServiceProvider provider, object value)
         {
             var svc = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
-            if (value is string && svc != null)
+            if (svc != null)
             {
-                _dialog.SelectedAsset = (string)value;
+                _dialog.SelectedAsset = value as string;
                 if (svc.ShowDialog(_dialog) == DialogResult.OK)
                 {
                     return _dialog.SelectedAsset;

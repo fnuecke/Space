@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
@@ -15,6 +16,30 @@ namespace Space.Tools.DataEditor
 {
     partial class DataEditor
     {
+        private readonly EffectPreviewControl _effectPreview = new EffectPreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
+        private readonly PlanetPreviewControl _planetPreview = new PlanetPreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
+        private readonly SunPreviewControl _sunPreview = new SunPreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
+        private readonly ProjectilePreviewControl _projectilePreview = new ProjectilePreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
         private void PreviewOnResize(object sender, EventArgs eventArgs)
         {
             UpdatePreview();
@@ -32,11 +57,13 @@ namespace Space.Tools.DataEditor
             _effectPreview.Effect = null;
             _planetPreview.Planet = null;
             _sunPreview.Sun = null;
+            _projectilePreview.Projectiles = null;
             pbPreview.Resize -= PreviewOnResize;
 
             _effectPreview.Visible = false;
             _planetPreview.Visible = false;
             _sunPreview.Visible = false;
+            _projectilePreview.Visible = false;
             pbPreview.Visible = true;
 
             // Figure out what to show.
@@ -99,6 +126,12 @@ namespace Space.Tools.DataEditor
                                 RenderItemPreview(FactoryManager.GetFactory(info.Name) as ItemFactory);
                                 return;
                             }
+                        }
+                        // Render next-best projectile if possible.
+                        if (item.PropertyDescriptor.PropertyType == typeof(ProjectileFactory[]))
+                        {
+                            RenderProjectilePreview(item.Value as ProjectileFactory[]);
+                            return;
                         }
                     }
                     item = item.Parent;
@@ -368,6 +401,27 @@ namespace Space.Tools.DataEditor
             return maxRadius;
         }
 
+        private void RenderProjectilePreview(ProjectileFactory[] factories)
+        {
+            if (factories == null)
+            {
+                return;
+            }
+
+            _projectilePreview.Visible = true;
+            pbPreview.Visible = false;
+
+            _projectilePreview.Projectiles = factories;
+            if (pgProperties.SelectedObject is WeaponFactory)
+            {
+                _projectilePreview.TriggerSpeed = ((WeaponFactory)pgProperties.SelectedObject).Cooldown;
+            }
+            else
+            {
+                _projectilePreview.TriggerSpeed = null;
+            }
+        }
+
         private void RenderItemPreview(ItemFactory factory)
         {
             if (factory == null)
@@ -436,10 +490,13 @@ namespace Space.Tools.DataEditor
             // Draw origin.
             using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
             {
-                var x = pbPreview.Image.Width / 2f;
-                var y = pbPreview.Image.Height / 2f;
-                g.DrawLine(Pens.LightGray, x - 10, y, x + 10, y);
-                g.DrawLine(Pens.LightGray, x, y - 10, x, y + 10);
+                using (var p = new Pen(System.Drawing.Color.FromArgb(180, 224, 224, 224)))
+                {
+                    var x = pbPreview.Image.Width / 2f;
+                    var y = pbPreview.Image.Height / 2f;
+                    g.DrawLine(p, x - 10, y, x + 10, y);
+                    g.DrawLine(p, x, y - 10, x, y + 10);
+                }
             }
         }
 

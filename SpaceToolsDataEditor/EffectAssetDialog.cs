@@ -29,6 +29,9 @@ namespace Space.Tools.DataEditor
         {
             tvEffects.BeginUpdate();
             tvEffects.Nodes.Clear();
+
+            tvEffects.Nodes.Add("", "None");
+
             foreach (var assetName in ContentProjectManager.EffectAssetNames)
             {
                 // Generate the path through the tree we need to take, to
@@ -85,6 +88,13 @@ namespace Space.Tools.DataEditor
             // Do we have something new?
             if (e.Node == null)
             {
+                return;
+            }
+
+            // See if the "none" entry is selected.
+            if (e.Node.Name.Equals(""))
+            {
+                btnOK.Enabled = true;
                 return;
             }
 

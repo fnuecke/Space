@@ -7,6 +7,7 @@ using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Engine.Serialization;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
@@ -41,6 +42,8 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Name of the particle effect to use for this projectile type.
         /// </summary>
+        [Editor("Space.Tools.DataEditor.EffectAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Media")]
@@ -55,10 +58,9 @@ namespace Space.ComponentSystem.Factories
         /// Offset of the particle effect relative to its center.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        [DefaultValue(null)]
         [Category("Media")]
         [Description("The offset relative to a projectile's position to emit the particle effects at.")]
-        public Vector2? EffectOffset
+        public Vector2 EffectOffset
         {
             get { return _effectOffset; }
             set { _effectOffset = value; }
@@ -121,28 +123,25 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// Allowed range for initial orientation of the projectile. As with
-        /// the initial velocity, this is rotated by the emitters rotation,
-        /// and the rotation applies directly if the emitter is facing to the
-        /// right, i.e. its own rotation is zero.
+        /// Allowed range for the acceleration force applied to this projectile.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        [DefaultValue(0f)]
+        [DefaultValue(null)]
         [Category("Logic")]
-        [Description("The initial rotation of the projectile, relative to its emitter, e.g. for directed acceleration.")]
-        public FloatInterval InitialRotation
+        [Description("The directed acceleration direction of the projectile, relative to its emitter, e.g. for missiles, in degrees.")]
+        public FloatInterval AccelerationDirection
         {
-            get { return _initialRotation; }
-            set { _initialRotation = value; }
+            get { return _accelerationDirection; }
+            set { _accelerationDirection = value; }
         }
 
         /// <summary>
         /// Allowed range for the acceleration force applied to this projectile.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        [DefaultValue(0f)]
+        [DefaultValue(null)]
         [Category("Logic")]
-        [Description("The acceleration of the projectile, e.g. for missiles.")]
+        [Description("The strength of the acceleration of the projectile.")]
         public FloatInterval AccelerationForce
         {
             get { return _accelerationForce; }
@@ -184,7 +183,7 @@ namespace Space.ComponentSystem.Factories
 
         private string _effect;
 
-        private Vector2? _effectOffset;
+        private Vector2 _effectOffset;
 
         private float _collisionRadius;
 
@@ -195,6 +194,8 @@ namespace Space.ComponentSystem.Factories
         private FloatInterval _initialDirection;
 
         private FloatInterval _initialRotation;
+
+        private FloatInterval _accelerationDirection;
 
         private FloatInterval _accelerationForce;
 
@@ -238,18 +239,18 @@ namespace Space.ComponentSystem.Factories
             rotatedOffset.X = -offset.X * cosRadians - offset.Y * sinRadians;
             rotatedOffset.Y = -offset.X * sinRadians + offset.Y * cosRadians;
 
-            // Set initial position.
-            var transform = manager.AddComponent<Transform>(entity)
-                .Initialize(emitterTransform.Translation + rotatedOffset, initialRotation);
-
             // Set initial velocity.
-            var velocity = manager.AddComponent<Velocity>(entity)
-                .Initialize(SampleInitialDirectedVelocity(transform.Rotation, random));
+            var velocity = SampleInitialDirectedVelocity(initialRotation, random);
 
             // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)
             {
-                velocity.Value += emitterVelocity.Value;
+                velocity += emitterVelocity.Value;
+            }
+
+            if (velocity != Vector2.Zero)
+            {
+                manager.AddComponent<Velocity>(entity).Initialize(velocity);
             }
 
             // Sample an acceleration for this projectile. If there is any, create the
@@ -259,6 +260,19 @@ namespace Space.ComponentSystem.Factories
             {
                 manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
             }
+
+            // Adjust rotation for projectile.
+            if (accelerationForce != Vector2.Zero)
+            {
+                initialRotation = (float)Math.Atan2(accelerationForce.Y, accelerationForce.X);
+            }
+            else if (velocity != Vector2.Zero)
+            {
+                initialRotation = (float)Math.Atan2(velocity.Y, velocity.X);
+            }
+
+            // Set initial position.
+            manager.AddComponent<Transform>(entity).Initialize(emitterTransform.Translation + rotatedOffset, initialRotation);
 
             // Apply friction to this projectile if so desired.
             if (_friction > 0)
@@ -312,7 +326,7 @@ namespace Space.ComponentSystem.Factories
             // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(_effect))
             {
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(0, _effect, _effectOffset.HasValue ? _effectOffset.Value : Vector2.Zero, ParticleEffects.EffectGroup.None, true);
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(0, _effect, _effectOffset, ParticleEffects.EffectGroup.None, true);
             }
 
             return entity;
@@ -323,7 +337,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled rotation.</returns>
-        private float SampleInitialRotation(IUniformRandom random)
+        public float SampleInitialRotation(IUniformRandom random)
         {
             if (_initialRotation != null)
             {
@@ -338,20 +352,20 @@ namespace Space.ComponentSystem.Factories
         /// <param name="baseRotation">The base rotation.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled velocity.</returns>
-        private Vector2 SampleInitialDirectedVelocity(float baseRotation, IUniformRandom random)
+        public Vector2 SampleInitialDirectedVelocity(float baseRotation, IUniformRandom random)
         {
-            var velocity = Vector2.UnitX;
-            if (_initialDirection != null)
+            if (_initialDirection != null && _initialVelocity != null)
             {
+                var velocity = Vector2.UnitX;
                 var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(_initialDirection.Low, _initialDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
                 Vector2.Transform(ref velocity, ref rotation, out velocity);
                 velocity.Normalize();
+                return velocity * ((random == null) ? _initialVelocity.Low : MathHelper.Lerp(_initialVelocity.Low, _initialVelocity.High, (float)random.NextDouble()));
             }
-            if (_initialVelocity != null)
+            else
             {
-                velocity *= (random == null) ? _initialVelocity.Low : MathHelper.Lerp(_initialVelocity.Low, _initialVelocity.High, (float)random.NextDouble());
+                return Vector2.Zero;
             }
-            return velocity;
         }
 
         /// <summary>
@@ -360,17 +374,20 @@ namespace Space.ComponentSystem.Factories
         /// <param name="baseRotation">The base rotation.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled acceleration force.</returns>
-        private Vector2 SampleAccelerationForce(float baseRotation, IUniformRandom random)
+        public Vector2 SampleAccelerationForce(float baseRotation, IUniformRandom random)
         {
-            var acceleration = Vector2.UnitX;
-            var rotation = Matrix.CreateRotationZ(baseRotation);
-            Vector2.Transform(ref acceleration, ref rotation, out acceleration);
-            acceleration.Normalize();
-            if (_accelerationForce != null)
+            if (_accelerationDirection != null && _accelerationForce != null)
             {
-                acceleration *= (random == null) ? _accelerationForce.Low : MathHelper.Lerp(_accelerationForce.Low, _accelerationForce.High, (float)random.NextDouble());
+                var acceleration = Vector2.UnitX;
+                var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(_accelerationDirection.Low, _accelerationDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
+                Vector2.Transform(ref acceleration, ref rotation, out acceleration);
+                acceleration.Normalize();
+                return acceleration * ((random == null) ? _accelerationForce.Low : MathHelper.Lerp(_accelerationForce.Low, _accelerationForce.High, (float)random.NextDouble()));
             }
-            return acceleration;
+            else
+            {
+                return Vector2.Zero;
+            }
         }
 
         #endregion
@@ -389,12 +406,16 @@ namespace Space.ComponentSystem.Factories
             return packet
                 .Write(_model)
                 .Write(_effect)
+                .Write(_effectOffset)
                 .Write(_collisionRadius)
                 .Write(_canBeShot)
+
                 .Write(_initialVelocity)
                 .Write(_initialDirection)
                 .Write(_initialRotation)
+                .Write(_accelerationDirection)
                 .Write(_accelerationForce)
+
                 .Write(_friction)
                 .Write(_timeToLive);
         }
@@ -407,12 +428,14 @@ namespace Space.ComponentSystem.Factories
         {
             _model = packet.ReadString();
             _effect = packet.ReadString();
+            _effectOffset = packet.ReadVector2();
             _collisionRadius = packet.ReadSingle();
             _canBeShot = packet.ReadBoolean();
 
             _initialVelocity = packet.ReadPacketizable<FloatInterval>();
             _initialDirection = packet.ReadPacketizable<FloatInterval>();
             _initialRotation = packet.ReadPacketizable<FloatInterval>();
+            _accelerationDirection = packet.ReadPacketizable<FloatInterval>();
             _accelerationForce = packet.ReadPacketizable<FloatInterval>();
 
             _friction = packet.ReadSingle();
@@ -433,6 +456,7 @@ namespace Space.ComponentSystem.Factories
             hasher.Put(_initialVelocity);
             hasher.Put(_initialDirection);
             hasher.Put(_initialRotation);
+            hasher.Put(_accelerationDirection);
             hasher.Put(_accelerationForce);
             hasher.Put(_friction);
             hasher.Put(_timeToLive);

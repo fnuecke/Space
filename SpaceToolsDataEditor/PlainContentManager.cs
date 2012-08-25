@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Xml;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline.Processors;
+using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 using Microsoft.Xna.Framework.Graphics;
+using ProjectMercury;
 
 namespace Space.Tools.DataEditor
 {
@@ -82,6 +85,16 @@ namespace Space.Tools.DataEditor
                         _shaders.Add(assetName, effect);
                         return (T)(object)effect;
                     }
+                }
+            }
+            else if (typeof(T) == typeof(ParticleEffect))
+            {
+                using (var xmlReader = XmlReader.Create(ContentProjectManager.GetEffectPath(assetName)))
+                {
+                    var effect = IntermediateSerializer.Deserialize<ParticleEffect>(xmlReader, null);
+                    effect.Initialise();
+                    effect.LoadContent(this);
+                    return (T)(object)effect;
                 }
             }
             return default(T);

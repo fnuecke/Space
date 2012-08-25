@@ -24,6 +24,7 @@ namespace Space.Tools.DataEditor
         {
             tvTextures.BeginUpdate();
             tvTextures.Nodes.Clear();
+            tvTextures.Nodes.Add("", "None");
             foreach (var assetName in ContentProjectManager.TextureAssetNames)
             {
                 // Generate the path through the tree we need to take, to
@@ -62,6 +63,16 @@ namespace Space.Tools.DataEditor
                     nodes = nodes[hierarchy[i]].Nodes;
                 }
             }
+            else
+            {
+                // Clear preview.
+                var oldImage = pbPreview.Image;
+                pbPreview.Image = null;
+                if (oldImage != null)
+                {
+                    oldImage.Dispose();
+                }
+            }
         }
 
         private void TexturesAfterSelect(object sender, TreeViewEventArgs e)
@@ -81,6 +92,13 @@ namespace Space.Tools.DataEditor
             // Do we have something new?
             if (e.Node == null)
             {
+                return;
+            }
+
+            // See if the "none" entry is selected.
+            if (e.Node.Name.Equals(""))
+            {
+                btnOK.Enabled = true;
                 return;
             }
 

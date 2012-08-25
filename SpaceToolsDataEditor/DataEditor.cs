@@ -13,18 +13,6 @@ namespace Space.Tools.DataEditor
 {
     public sealed partial class DataEditor : Form
     {
-        /// <summary>
-        /// Possible issue types.
-        /// </summary>
-        public enum IssueType
-        {
-            None,
-            Success,
-            Information,
-            Warning,
-            Error
-        }
-
         private readonly CommonOpenFileDialog _openDialog = new CommonOpenFileDialog
         {
             IsFolderPicker = true,
@@ -38,24 +26,6 @@ namespace Space.Tools.DataEditor
 
         private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
 
-        private readonly EffectPreviewControl _effectPreview = new EffectPreviewControl
-        {
-            Dock = DockStyle.Fill,
-            Visible = false
-        };
-
-        private readonly PlanetPreviewControl _planetPreview = new PlanetPreviewControl
-        {
-            Dock = DockStyle.Fill,
-            Visible = false
-        };
-
-        private readonly SunPreviewControl _sunPreview = new SunPreviewControl
-        {
-            Dock = DockStyle.Fill,
-            Visible = false
-        };
-
         public DataEditor()
         {
             InitializeComponent();
@@ -64,6 +34,7 @@ namespace Space.Tools.DataEditor
             pbPreview.Parent.Controls.Add(_effectPreview);
             pbPreview.Parent.Controls.Add(_planetPreview);
             pbPreview.Parent.Controls.Add(_sunPreview);
+            pbPreview.Parent.Controls.Add(_projectilePreview);
 
             lvIssues.ListViewItemSorter = new IssueComparer();
             pgProperties.PropertyValueChanged += (o, args) =>
@@ -170,59 +141,6 @@ namespace Space.Tools.DataEditor
                 Text = "Space - Data Editor" + (value ? " (*)" : "");
                 tsmiSave.Enabled = value;
             }
-        }
-
-        /// <summary>
-        /// Adds a new issue to the issues list.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="factory">The factory, if any.</param>
-        /// <param name="property">The property, if any.</param>
-        /// <param name="type">The type.</param>
-        public void AddIssue(string message, string factory = "", string property = "", IssueType type = IssueType.Success)
-        {
-            if ((int)type < 1)
-            {
-                type = IssueType.Success;
-            }
-            lvIssues.Items.Add(new ListViewItem(new[] { "", message, factory, property }, (int)type - 1));
-        }
-
-        /// <summary>
-        /// Adds a new issue to the issues list.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="type">The type.</param>
-        public void AddIssue(string message, IssueType type = IssueType.Success)
-        {
-            AddIssue(message, "", "", type);
-        }
-
-        /// <summary>
-        /// Removes all issues from the issue list.
-        /// </summary>
-        public void ClearIssues()
-        {
-            lvIssues.Items.Clear();
-        }
-
-        /// <summary>
-        /// Removes all known issues for the factory with the specified name.
-        /// </summary>
-        /// <param name="factory">The factory.</param>
-        private void RemoveIssuesForFactory(string factory)
-        {
-            lvIssues.BeginUpdate();
-
-            for (var i = lvIssues.Items.Count - 1; i >= 0; i--)
-            {
-                if (lvIssues.Items[i].SubItems[2].Text.Equals(factory))
-                {
-                    lvIssues.Items.RemoveAt(i);
-                }
-            }
-
-            lvIssues.EndUpdate();
         }
 
         private void ExitClick(object sender, EventArgs e)

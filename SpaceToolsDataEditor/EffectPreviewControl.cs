@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Xml;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
 using ProjectMercury.Renderers;
@@ -25,6 +23,7 @@ namespace Space.Tools.DataEditor
                 }
                 _lastTrigger = DateTime.MinValue;
                 LoadContent();
+                Invalidate();
             }
         }
 
@@ -44,6 +43,10 @@ namespace Space.Tools.DataEditor
 
         protected override void Initialize()
         {
+            if (_content == null)
+            {
+                _content = new PlainContentManager(Services);
+            }
             if (_renderer == null)
             {
                 _renderer = new SpriteBatchRenderer();
@@ -61,29 +64,14 @@ namespace Space.Tools.DataEditor
             {
                 return;
             }
-            _renderer.LoadContent(_content);
             if (string.IsNullOrWhiteSpace(_assetName))
-            {
-                return;
-            }
-            var fileName = ContentProjectManager.GetEffectPath(_assetName);
-            if (string.IsNullOrWhiteSpace(fileName))
             {
                 return;
             }
             try
             {
-                using (var xmlReader = XmlReader.Create(fileName))
-                {
-                    var effect = IntermediateSerializer.Deserialize<ParticleEffect>(xmlReader, null);
-                    effect.Initialise();
-                    if (_content == null)
-                    {
-                        _content = new PlainContentManager(Services);
-                    }
-                    effect.LoadContent(_content);
-                    _effect = effect;
-                }
+                _renderer.LoadContent(_content);
+                _effect = _content.Load<ParticleEffect>(_assetName);
                 if (_timer == null)
                 {
                     _timer = new Timer

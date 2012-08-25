@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Design;
 using System.IO;
+using System.Windows.Forms;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
 using Space.ComponentSystem.Systems;
@@ -12,6 +13,71 @@ namespace Space.Tools.DataEditor
 {
     partial class DataEditor
     {
+        /// <summary>
+        /// Possible issue types.
+        /// </summary>
+        public enum IssueType
+        {
+            None,
+            Success,
+            Information,
+            Warning,
+            Error
+        }
+
+        /// <summary>
+        /// Adds a new issue to the issues list.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="factory">The factory, if any.</param>
+        /// <param name="property">The property, if any.</param>
+        /// <param name="type">The type.</param>
+        public void AddIssue(string message, string factory = "", string property = "", IssueType type = IssueType.Success)
+        {
+            if ((int)type < 1)
+            {
+                type = IssueType.Success;
+            }
+            lvIssues.Items.Add(new ListViewItem(new[] { "", message, factory, property }, (int)type - 1));
+        }
+
+        /// <summary>
+        /// Adds a new issue to the issues list.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="type">The type.</param>
+        public void AddIssue(string message, IssueType type = IssueType.Success)
+        {
+            AddIssue(message, "", "", type);
+        }
+
+        /// <summary>
+        /// Removes all issues from the issue list.
+        /// </summary>
+        public void ClearIssues()
+        {
+            lvIssues.Items.Clear();
+        }
+
+        /// <summary>
+        /// Removes all known issues for the factory with the specified name.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        private void RemoveIssuesForFactory(string factory)
+        {
+            lvIssues.BeginUpdate();
+
+            for (var i = lvIssues.Items.Count - 1; i >= 0; i--)
+            {
+                if (lvIssues.Items[i].SubItems[2].Text.Equals(factory))
+                {
+                    lvIssues.Items.RemoveAt(i);
+                }
+            }
+
+            lvIssues.EndUpdate();
+        }
+
         /// <summary>
         /// Scans for issues.
         /// </summary>

@@ -246,7 +246,7 @@ namespace Space.Tools.DataEditor
         public static string GetTexturePath(string assetName)
         {
             string result;
-            TextureAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
+            TextureAssets.TryGetValue((assetName ?? "").Replace('\\', '/'), out result);
             return result;
         }
 
@@ -259,7 +259,7 @@ namespace Space.Tools.DataEditor
         /// </returns>
         public static bool HasTextureAsset(string assetName)
         {
-            return TextureAssets.ContainsKey(assetName.Replace('\\', '/'));
+            return TextureAssets.ContainsKey((assetName ?? "").Replace('\\', '/'));
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace Space.Tools.DataEditor
         public static string GetEffectPath(string assetName)
         {
             string result;
-            EffectAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
+            EffectAssets.TryGetValue((assetName ?? "").Replace('\\', '/'), out result);
             return result;
         }
 
@@ -282,7 +282,7 @@ namespace Space.Tools.DataEditor
         public static string GetShaderPath(string assetName)
         {
             string result;
-            ShaderAssets.TryGetValue(assetName.Replace('\\', '/'), out result);
+            ShaderAssets.TryGetValue((assetName ?? "").Replace('\\', '/'), out result);
             return result;
         }
     }

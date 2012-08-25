@@ -81,6 +81,9 @@
     <Compile Include="AddFactoryDialog.Designer.cs">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProjectilePreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DataEditorPreviews.cs">
       <SubType>Form</SubType>
     </Compile>

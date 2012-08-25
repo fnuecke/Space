@@ -122,9 +122,16 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
+            // See if the "none" entry is selected.
+            if (e.Node.Name.Equals(""))
+            {
+                btnOK.Enabled = true;
+                return;
+            }
+
             // See if the item is valid.
             var factory = FactoryManager.GetFactory(e.Node.Name) as ItemFactory;
-            if (factory == null && !e.Node.Name.Equals(""))
+            if (factory == null)
             {
                 return;
             }

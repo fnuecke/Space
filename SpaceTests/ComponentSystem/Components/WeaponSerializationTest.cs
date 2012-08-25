@@ -34,7 +34,6 @@ namespace SpaceTests.ComponentSystem.Components
                                                 Effect = "qwe",
                                                 Friction = 3,
                                                 InitialDirection = new FloatInterval(2, 7),
-                                                InitialRotation = new FloatInterval(3, 6),
                                                 InitialVelocity = new FloatInterval(4, 5),
                                                 Model = "sdf",
                                                 TimeToLive = 5
@@ -65,7 +64,6 @@ namespace SpaceTests.ComponentSystem.Components
                         Effect = "asd",
                         Friction = 1,
                         InitialDirection = new FloatInterval(0, 1),
-                        InitialRotation = new FloatInterval(0, 1),
                         InitialVelocity = new FloatInterval(0, 1),
                         Model = "zxc",
                         TimeToLive = 10
