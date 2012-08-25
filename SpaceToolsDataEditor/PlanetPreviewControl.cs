@@ -41,7 +41,7 @@ namespace Space.Tools.DataEditor
 
         private Planet _planet;
 
-        private Ellipse _circle;
+        private FilledEllipse _circle;
 
         private Timer _timer;
 
@@ -67,9 +67,9 @@ namespace Space.Tools.DataEditor
             {
                 try
                 {
-                    _circle = new Ellipse(_content, GraphicsDevice)
+                    _circle = new FilledEllipse(_content, GraphicsDevice)
                     {
-                        Thickness = 2,
+                        Gradient = 2,
                         Color = Color.SlateGray * 0.5f
                     };
                 }
@@ -141,15 +141,15 @@ namespace Space.Tools.DataEditor
             _planet.SetCenter(Width / 2f, Height / 2f);
             try
             {
+                if (_circle != null)
+                {
+                    _circle.SetCenter(Width / 2f, Height / 2f);
+                    _circle.Draw();
+                }
                 _planet.Draw();
             }
             catch
             {
-            }
-            if (_circle != null)
-            {
-                _circle.SetCenter(Width / 2f, Height / 2f);
-                _circle.Draw();
             }
         }
     }

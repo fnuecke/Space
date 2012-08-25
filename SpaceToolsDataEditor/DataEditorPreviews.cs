@@ -38,72 +38,84 @@ namespace Space.Tools.DataEditor
             _planetPreview.Visible = false;
             _sunPreview.Visible = false;
             pbPreview.Visible = true;
-            try
+
+            // Figure out what to show.
+            try // evil: using try-catch for flow-control, but who can stop me!? muahahaha
             {
-                // Skip if nothing is selected.
-                if (pgProperties.SelectedObject != null &&
-                    pgProperties.SelectedGridItem != null)
+                // Nothing selected, so skip.
+                if (pgProperties.SelectedObject == null)
                 {
-                    // Figure out what to show. If an image asset is selected we simply show that.
-                    if (pgProperties.SelectedGridItem.PropertyDescriptor != null)
+                    return;
+                }
+
+                var item = pgProperties.SelectedGridItem;
+                while (item != null)
+                {
+                    // If an image asset is selected we simply show that.
+                    if (item.PropertyDescriptor != null)
                     {
-                        if (pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null)
+                        if (item.PropertyDescriptor.Attributes[typeof(EditorAttribute)] != null)
                         {
-                            var editorTypeName = ((EditorAttribute)pgProperties.SelectedGridItem.PropertyDescriptor.Attributes[typeof(EditorAttribute)]).EditorTypeName;
-                            if (editorTypeName.Equals(typeof(TextureAssetEditor).AssemblyQualifiedName))
+                            var editorType = Type.GetType(((EditorAttribute)item.PropertyDescriptor.Attributes[typeof(EditorAttribute)]).EditorTypeName);
+                            if (editorType == typeof(TextureAssetEditor))
                             {
-                                RenderTextureAssetPreview();
+                                RenderTextureAssetPreview(item.Value as string);
                                 return;
                             }
-                            if (editorTypeName.Equals(typeof(EffectAssetEditor).AssemblyQualifiedName))
+                            if (editorType == typeof(EffectAssetEditor))
                             {
-                                RenderEffectAssetPreview();
+                                RenderEffectAssetPreview(item.Value as string);
                                 return;
                             }
-                            if (editorTypeName.Equals(typeof(PlanetEditor).AssemblyQualifiedName))
+                            if (editorType == typeof(PlanetEditor))
                             {
-                                RenderPlanetPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as PlanetFactory);
+                                RenderPlanetPreview(FactoryManager.GetFactory(item.Value as string) as PlanetFactory);
                                 return;
                             }
-                            if (editorTypeName.Equals(typeof(SunEditor).AssemblyQualifiedName))
+                            if (editorType == typeof(SunEditor))
                             {
-                                RenderSunPreview(FactoryManager.GetFactory((string)pgProperties.SelectedGridItem.Value) as SunFactory);
+                                RenderSunPreview(FactoryManager.GetFactory(item.Value as string) as SunFactory);
                                 return;
                             }
-                            if (editorTypeName.Equals(typeof(ItemInfoEditor).AssemblyQualifiedName))
+                            if (editorType == typeof(ItemInfoEditor))
                             {
-                                RenderItemPreview(pgProperties.SelectedGridItem.Value as ItemFactory);
+                                RenderItemPreview(FactoryManager.GetFactory(item.Value as string) as ItemFactory);
                                 return;
                             }
                         }
-                    }
 
-                    // Render next-best orbit system if possible.
-                    var item = pgProperties.SelectedGridItem;
-                    while (item != null)
-                    {
-                        if (item.PropertyDescriptor != null &&
-                            item.PropertyDescriptor.PropertyType == typeof(Orbiter))
+                        // Render next-best orbit system if possible.
+                        if (item.PropertyDescriptor.PropertyType == typeof(Orbiter))
                         {
                             RenderOrbiterPreview(item.Value as Orbiter);
                             return;
                         }
-                        item = item.Parent;
+                        // Render next-best item system if possible.
+                        if (item.PropertyDescriptor.PropertyType == typeof(ShipFactory.ItemInfo))
+                        {
+                            var info = item.Value as ShipFactory.ItemInfo;
+                            if (info != null)
+                            {
+                                RenderItemPreview(FactoryManager.GetFactory(info.Name) as ItemFactory);
+                                return;
+                            }
+                        }
                     }
-
-                    // We're not rendering based on property grid item selection at this point, so
-                    // we just try to render the selected object.
-
-                    RenderPlanetPreview(pgProperties.SelectedObject as PlanetFactory);
-                    RenderSunPreview(pgProperties.SelectedObject as SunFactory);
-                    RenderSunSystemPreview(pgProperties.SelectedObject as SunSystemFactory);
-
-                    // Try rendering the selected object as an item.
-                    RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
-
-                    // Try rendering a ship.
-                    RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
+                    item = item.Parent;
                 }
+
+                // We're not rendering based on property grid item selection at this point, so
+                // we just try to render the selected object.
+
+                RenderPlanetPreview(pgProperties.SelectedObject as PlanetFactory);
+                RenderSunPreview(pgProperties.SelectedObject as SunFactory);
+                RenderSunSystemPreview(pgProperties.SelectedObject as SunSystemFactory);
+
+                // Try rendering the selected object as an item.
+                RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
+
+                // Try rendering a ship.
+                RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
             }
             finally
             {
@@ -112,16 +124,14 @@ namespace Space.Tools.DataEditor
             }
         }
 
-        private void RenderTextureAssetPreview()
+        private void RenderTextureAssetPreview(string assetName)
         {
-            // OK, render that image (or try to).
-            var fullPath = (string)pgProperties.SelectedGridItem.Value;
-            if (fullPath == null)
+            if (assetName == null)
             {
                 return;
             }
 
-            var filePath = ContentProjectManager.GetTexturePath(fullPath);
+            var filePath = ContentProjectManager.GetTexturePath(assetName);
             if (!string.IsNullOrWhiteSpace(filePath))
             {
                 // We got it. Set as the new image.
@@ -141,11 +151,9 @@ namespace Space.Tools.DataEditor
             }
         }
 
-        private void RenderEffectAssetPreview()
+        private void RenderEffectAssetPreview(string assetName)
         {
-            // OK, render that effect (or try to).
-            var fullPath = (string)pgProperties.SelectedGridItem.Value;
-            if (fullPath == null)
+            if (assetName == null)
             {
                 return;
             }
@@ -153,7 +161,7 @@ namespace Space.Tools.DataEditor
             _effectPreview.Visible = true;
             pbPreview.Visible = false;
 
-            _effectPreview.Effect = fullPath;
+            _effectPreview.Effect = assetName;
         }
 
         private void RenderPlanetPreview(PlanetFactory factory)

@@ -134,7 +134,7 @@ float4 PlanetShaderFunction(VertexShaderData input) : COLOR0
         color.rgb *= saturate(rOffset);
 
         // Alpha for smoother border.
-        float alpha = 1; //clamp((1 - rInner) * RenderRadius, 0, 1);
+        float alpha = clamp((1 - rInner) * RenderRadius, 0, 1);
         return color * alpha;
     }
 }
