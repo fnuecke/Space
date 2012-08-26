@@ -322,6 +322,21 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Gets all factories that came from the specified file.
+        /// </summary>
+        public static IEnumerable<IFactory> GetFactoriesFromFile(string assetName)
+        {
+            var name = assetName.Replace('/', '\\') + ".xml";
+            foreach (var pair in FactoryFilenames)
+            {
+                if (pair.Value.EndsWith(name))
+                {
+                    yield return pair.Key;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets all item factories.
         /// </summary>
         /// <returns>All item factories.</returns>

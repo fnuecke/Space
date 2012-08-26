@@ -197,12 +197,12 @@ namespace Space
                 "d_speed <x> - set the target game speed to the specified value.");
 
             _console.AddCommand("r_collbounds",
-                args => SetDebugRenderSystemEnabled<DebugCollisionBoundsRenderer>(args[1]),
+                args => SetDebugRenderSystemEnabled<DebugCollisionBoundsRenderSystem>(args[1]),
                 "Sets whether to render collision bounds of objects.",
                 "r_collbounds 1|0 - set whether to render collision bounds.");
 
             _console.AddCommand("r_entityid",
-                args => SetDebugRenderSystemEnabled<DebugEntityIdRenderer>(args[1]),
+                args => SetDebugRenderSystemEnabled<DebugEntityIdRenderSystem>(args[1]),
                 "Sets whether to render entitiy ids at entity position.",
                 "r_entityid 1|0 - set whether to render entity ids.");
 

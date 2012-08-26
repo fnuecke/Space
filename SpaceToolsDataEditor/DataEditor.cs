@@ -31,6 +31,7 @@ namespace Space.Tools.DataEditor
             InitializeComponent();
             InitializeLogic();
 
+            pbPreview.Parent.Controls.Add(_ingamePreview);
             pbPreview.Parent.Controls.Add(_effectPreview);
             pbPreview.Parent.Controls.Add(_planetPreview);
             pbPreview.Parent.Controls.Add(_sunPreview);

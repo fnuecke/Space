@@ -723,7 +723,7 @@ namespace Engine.Serialization
             where T : IPacketizable, new()
         {
             var instance = new T();
-            ReadPacketizableInto(ref instance);
+            instance = ReadPacketizableInto(ref instance);
             return instance;
         }
 

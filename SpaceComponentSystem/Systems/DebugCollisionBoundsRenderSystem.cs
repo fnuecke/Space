@@ -14,14 +14,26 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// This system is used to draw boxes representing the collision bounds of entities.
     /// </summary>
-    public sealed class DebugCollisionBoundsRenderer : AbstractComponentSystem<Collidable>, IDrawingSystem
+    public sealed class DebugCollisionBoundsRenderSystem : AbstractSystem, IDrawingSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// Determines whether this system is enabled, i.e. whether it should perform
         /// updates and react to events.
         /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </value>
         public bool IsEnabled { get; set; }
 
         #endregion
@@ -53,11 +65,11 @@ namespace Space.ComponentSystem.Systems
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DebugCollisionBoundsRenderer"/> class.
+        /// Initializes a new instance of the <see cref="DebugCollisionBoundsRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content.</param>
         /// <param name="graphics">The graphics.</param>
-        public DebugCollisionBoundsRenderer(ContentManager content, GraphicsDevice graphics)
+        public DebugCollisionBoundsRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
             if (_boxShape == null)
             {
@@ -141,7 +153,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     shape.Color = Color.Gray;
                 }
-                shape.Color *= 0.25f;
+                shape.Color *= 0.4f;
 
                 // Get interpolated position.
                 FarPosition position;

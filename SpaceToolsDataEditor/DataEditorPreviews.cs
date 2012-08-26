@@ -6,7 +6,11 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.RPG.Components;
+using Engine.FarMath;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
 using Space.ComponentSystem.Systems;
@@ -16,6 +20,12 @@ namespace Space.Tools.DataEditor
 {
     partial class DataEditor
     {
+        private readonly IngamePreviewControl _ingamePreview = new IngamePreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Visible = false
+        };
+
         private readonly EffectPreviewControl _effectPreview = new EffectPreviewControl
         {
             Dock = DockStyle.Fill,
@@ -54,12 +64,14 @@ namespace Space.Tools.DataEditor
                 g.FillRectangle(Brushes.Transparent, 0, 0, pbPreview.Image.Width, pbPreview.Image.Height);
             }
 
+            _ingamePreview.Clear();
             _effectPreview.Effect = null;
             _planetPreview.Planet = null;
             _sunPreview.Sun = null;
             _projectilePreview.Projectiles = null;
             pbPreview.Resize -= PreviewOnResize;
 
+            _ingamePreview.Visible = false;
             _effectPreview.Visible = false;
             _planetPreview.Visible = false;
             _sunPreview.Visible = false;
@@ -429,6 +441,39 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
+            _ingamePreview.Visible = true;
+            pbPreview.Visible = false;
+
+            var entity = factory.Sample(_ingamePreview.Manager, null);
+            if (entity > 0)
+            {
+                var renderer = (TextureRenderer)_ingamePreview.Manager.GetComponent(entity, TextureRenderer.TypeId);
+                if (renderer != null)
+                {
+                    renderer.Enabled = true;
+                }
+                if (factory.ModelOffset != null)
+                {
+                    var transform = (Transform)_ingamePreview.Manager.GetComponent(entity, Transform.TypeId);
+                    if (transform != null)
+                    {
+                        FarPosition offset;
+                        offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.X);
+                        offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.Y);
+                        transform.SetTranslation(offset);
+                    }
+                }
+                var item = (SpaceItem)_ingamePreview.Manager.GetComponent(entity, Item.TypeId);
+
+                var dummy = _ingamePreview.Manager.AddEntity();
+                var fx = _ingamePreview.Manager.AddComponent<ParticleEffects>(dummy);
+                var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
+                parentSlot.Item = entity;
+                fx.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
+            }
+
+            return;
+
             // Draw base image.
             var modelFile = ContentProjectManager.GetTexturePath(factory.Model);
             if (modelFile != null)
@@ -507,195 +552,17 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            // Draw collision bounds.
-            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+            _ingamePreview.Visible = true;
+            pbPreview.Visible = false;
+
+            var entity = factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
+            if (entity > 0)
             {
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                g.DrawEllipse(Pens.LightSkyBlue, pbPreview.Image.Width / 2f - factory.CollisionRadius,
-                    pbPreview.Image.Height / 2f - factory.CollisionRadius,
-                    factory.CollisionRadius * 2, factory.CollisionRadius * 2);
-            }
-
-            // Draw base image if no fuselage is equipped.
-            if (factory.Items == null || string.IsNullOrWhiteSpace(factory.Items.Name))
-            {
-                var modelFile = ContentProjectManager.GetTexturePath(factory.Texture);
-                if (modelFile != null)
+                var fx = (ParticleEffects)_ingamePreview.Manager.GetComponent(entity, ParticleEffects.TypeId);
+                if (fx != null)
                 {
-                    using (var bmp = new Bitmap(modelFile))
-                    {
-                        using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-                        {
-                            g.SmoothingMode = SmoothingMode.HighQuality;
-                            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                            g.DrawImage(bmp, (pbPreview.Image.Width - bmp.Width) / 2f,
-                                        (pbPreview.Image.Height - bmp.Height) / 2f, bmp.Width, bmp.Height);
-                        }
-                    }
+                    fx.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
                 }
-            }
-
-            // Draw equipped items.
-            var renders = new List<RenderEntry>();
-            // Tuples are: item info, slots the item can equipped in, offset to the parent slot, depth in equipment tree, render mirrored or not
-            var items = new Stack<Tuple<ShipFactory.ItemInfo, List<ItemFactory.ItemSlotInfo>, Vector2, int, bool?, ItemSlotSize>>();
-            const int maxdepth = 32;
-            if (factory.Items != null)
-            {
-                items.Push(Tuple.Create(factory.Items,
-                                        new List<ItemFactory.ItemSlotInfo>
-                                        {
-                                            new ItemFactory.ItemSlotInfo
-                                            {
-                                                Size = ItemSlotSize.Huge,
-                                                Type = ItemFactory.ItemSlotInfo.ItemType.Fuselage
-                                            }
-                                        }, Vector2.Zero, 1, (bool?)null, ItemSlotSize.Small));
-            }
-            while (items.Count > 0)
-            {
-                var info = items.Pop();
-                var itemInfo = info.Item1;
-                var slots = info.Item2;
-                var offset = info.Item3;
-                var depth = info.Item4;
-                var mirrored = info.Item5;
-                var parentSize = info.Item6;
-
-                // Get info on item.
-                var itemFactory = FactoryManager.GetFactory(itemInfo.Name) as ItemFactory;
-                if (itemFactory == null)
-                {
-                    continue;
-                }
-
-                // Adjust depth.
-                depth += (itemFactory.ModelBelowParent ? (maxdepth / depth) : -(maxdepth / depth));
-
-                // Find smallest slot we fit into.
-                ItemFactory.ItemSlotInfo bestSlot = null;
-                foreach (var slot in slots)
-                {
-                    if (slot.Type == itemFactory.GetType().ToItemType() &&
-                        slot.Size >= itemFactory.RequiredSlotSize)
-                    {
-                        if (bestSlot == null || slot.Size < bestSlot.Size)
-                        {
-                            bestSlot = slot;
-                        }
-                    }
-                }
-                // Could not find a slot.
-                if (bestSlot == null)
-                {
-                    continue;
-                }
-
-                // Consume the slot.
-                slots.Remove(bestSlot);
-
-                // Render.
-                if (bestSlot.Offset.HasValue)
-                {
-                    if (mirrored.HasValue)
-                    {
-                        offset.X += parentSize.Scale(bestSlot.Offset.Value.X);
-                        offset.Y += parentSize.Scale(bestSlot.Offset.Value.Y * (mirrored.Value ? -1 : 1));
-                    }
-                    else
-                    {
-                        offset.X += parentSize.Scale(bestSlot.Offset.Value.X);
-                        offset.Y += parentSize.Scale(bestSlot.Offset.Value.Y);
-                        if (bestSlot.Offset.Value.Y != 0f)
-                        {
-                            mirrored = bestSlot.Offset.Value.Y < 0;
-                        }
-                    }
-                }
-                var renderOffset = offset;
-                if (itemFactory.ModelOffset.HasValue)
-                {
-                    if (mirrored.HasValue)
-                    {
-                        renderOffset.X += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.X);
-                        renderOffset.Y += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.Y * (mirrored.Value ? -1 : 1));
-                    }
-                    else
-                    {
-                        renderOffset.X += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.X);
-                        renderOffset.Y += itemFactory.RequiredSlotSize.Scale(itemFactory.ModelOffset.Value.Y);
-                    }
-                }
-
-                var modelPath = ContentProjectManager.GetTexturePath(itemFactory.Model);
-                if (modelPath != null)
-                {
-                    renders.Add(new RenderEntry
-                    {
-                        FileName = modelPath,
-                        Offset = renderOffset,
-                        Mirrored = mirrored.HasValue && mirrored.Value,
-                        Depth = depth,
-                        Size = itemFactory.RequiredSlotSize
-                    });
-                }
-
-                // Queue child items (if we have potential slots for them).
-                if (itemInfo.Slots != null && itemFactory.Slots != null && itemFactory.Slots.Length > 0)
-                {
-                    // Use same list for all children to make sure we consume from the same list.
-                    var availableSlots = new List<ItemFactory.ItemSlotInfo>(itemFactory.Slots);
-                    foreach (var slot in itemInfo.Slots)
-                    {
-                        items.Push(Tuple.Create(slot, availableSlots, offset, depth, mirrored, itemFactory.RequiredSlotSize));
-                    }
-                }
-            }
-
-            renders.Sort();
-            for (var i = 0; i < renders.Count; i++)
-            {
-                var render = renders[i];
-                try
-                {
-                    using (var img = Image.FromFile(render.FileName))
-                    {
-                        var width = render.Size.Scale(img.Width);
-                        var height = render.Size.Scale(img.Height);
-                        using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-                        {
-                            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                            g.SmoothingMode = SmoothingMode.HighQuality;
-                            g.DrawImage(img, (pbPreview.Image.Width - width) / 2f + render.Offset.X,
-                                (pbPreview.Image.Height - height) / 2f + render.Offset.Y + (render.Mirrored ? height : 0), width, render.Mirrored ? -height : height);
-                        }
-                    }
-                }
-                catch (FileNotFoundException)
-                {
-                }
-            }
-        }
-
-        private sealed class RenderEntry : IComparable<RenderEntry>
-        {
-            public int Depth;
-
-            public string FileName;
-
-            public ItemSlotSize Size;
-
-            public Vector2 Offset;
-
-            public bool Mirrored;
-
-            public int CompareTo(RenderEntry other)
-            {
-                return Depth - other.Depth;
             }
         }
 

@@ -93,6 +93,20 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
+        /// Asset name of the particle effect to trigger when this thruster is
+        /// active (accelerating).
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Media")]
+        [Description("A list of effects to that can be triggered when the item is equipped.")]
+        public EffectInfo[] Effects
+        {
+            get { return _effects; }
+            set { _effects = value; }
+        }
+
+        /// <summary>
         /// The quality of the item, to give a rough idea of the value.
         /// </summary>
         [ContentSerializer(Optional = true)]
@@ -190,6 +204,8 @@ namespace Space.ComponentSystem.Factories
 
         private bool _modelBelowParent;
 
+        private EffectInfo[] _effects;
+
         private ItemQuality _quality = ItemQuality.Common;
 
         private ItemSlotSize _requiredSlotSize = ItemSlotSize.Small;
@@ -220,7 +236,7 @@ namespace Space.ComponentSystem.Factories
 
             // Add position (when dropped) and renderer (when dropped or equipped).
             manager.AddComponent<Transform>(entity);
-            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model);
+            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _requiredSlotSize.Scale(1f));
 
             // Do not render initially (only when dropped).
             renderer.Enabled = false;
@@ -244,6 +260,18 @@ namespace Space.ComponentSystem.Factories
                 }
             }
 
+            // Add effect components.
+            if (_effects != null)
+            {
+                foreach (var info in _effects)
+                {
+                    if (!string.IsNullOrWhiteSpace(info.Name))
+                    {
+                        manager.AddComponent<ItemEffect>(entity)
+                            .Initialize(info.Group, info.Name, info.Scale, info.Offset, MathHelper.ToRadians(info.Direction));
+                    }
+                }
+            }
             return entity;
         }
 
@@ -267,15 +295,14 @@ namespace Space.ComponentSystem.Factories
             }
             if (_additionalAttributes != null && _additionalAttributeCount != null)
             {
-                var numAdditionalAttributes = (_additionalAttributeCount.Low == _additionalAttributeCount.High)
+                var numAdditionalAttributes = (_additionalAttributeCount.Low == _additionalAttributeCount.High || random == null)
                                                   ? _additionalAttributeCount.Low
                                                   : random.NextInt32(_additionalAttributeCount.Low,
                                                                      _additionalAttributeCount.High);
                 for (var i = 0; i < numAdditionalAttributes; i++)
                 {
                     manager.AddComponent<Attribute<AttributeType>>(item).Initialize(
-                        _additionalAttributes[random.NextInt32(_additionalAttributes.Length)].SampleAttributeModifier(
-                            random));
+                        _additionalAttributes[random == null ? (i % _additionalAttributes.Length) : random.NextInt32(_additionalAttributes.Length)].SampleAttributeModifier(random));
                 }
             }
             return item;
@@ -387,6 +414,96 @@ namespace Space.ComponentSystem.Factories
             {
                 return Size + " " + Type + (Offset == null ? "" : (" @ " + Offset));
             }
+
+            #endregion
+        }
+
+        /// <summary>
+        /// Holds information for a single thruster effect attachment.
+        /// </summary>
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public sealed class EffectInfo
+        {
+            /// <summary>
+            /// Gets or sets the group to which this effect belongs. This allows the
+            /// game to trigger the effect when appropriate, e.g. it will trigger
+            /// weapon effects when a weapon is fired, thruster effects when accelerating.
+            /// </summary>
+            [ContentSerializer(Optional = true)]
+            [DefaultValue(ParticleEffects.EffectGroup.None)]
+            [Category("Logic")]
+            [Description("The group this effect belongs to, which will allow the game to trigger the effect when appropriate.")]
+            public ParticleEffects.EffectGroup Group
+            {
+                get { return _group; }
+                set { _group = value; }
+            }
+
+            /// <summary>
+            /// Asset name of the particle effect to trigger when this thruster is
+            /// active (accelerating).
+            /// </summary>
+            [Editor("Space.Tools.DataEditor.EffectAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+            [ContentSerializer(Optional = true)]
+            [DefaultValue(null)]
+            [Category("General")]
+            [Description("The asset name of the particle effect to use for this thruster when accelerating.")]
+            public string Name
+            {
+                get { return _name; }
+                set { _name = value; }
+            }
+
+            /// <summary>
+            /// The scale at which to render the thruster effect.
+            /// </summary>
+            [ContentSerializer(Optional = true)]
+            [DefaultValue(1f)]
+            [Category("Media")]
+            [Description("The scale at which to render the thruster effect.")]
+            public float Scale
+            {
+                get { return _scale; }
+                set { _scale = value; }
+            }
+
+            /// <summary>
+            /// Offset for the thruster effect relative to the texture.
+            /// </summary>
+            [ContentSerializer(Optional = true)]
+            [Category("Media")]
+            [Description("The offset relative to the slot the item is equipped in at which to emit particle effects when accelerating.")]
+            public Vector2 Offset
+            {
+                get { return _offset; }
+                set { _offset = value; }
+            }
+
+            /// <summary>
+            /// Gets or sets the direction in which the effect should be emitted. It will be
+            /// triggered when the ship accelerates in the opposite direction.
+            /// </summary>
+            [ContentSerializer(Optional = true)]
+            [Category("Media")]
+            [Description("The direction in which to emit the effect, in degrees, relative to the ships rotation. This will be triggered when the ship accelerates in the opposite direction.")]
+            public float Direction
+            {
+                get { return _direction; }
+                set { _direction = value; }
+            }
+
+            #region Backing fields
+
+            private ParticleEffects.EffectGroup _group;
+
+            private string _name;
+
+            private float _scale = 1f;
+
+            private Vector2 _offset;
+
+            private float _direction;
 
             #endregion
         }

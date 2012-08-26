@@ -103,6 +103,7 @@
     <Compile Include="Components\ShipControl.cs" />
     <Compile Include="Components\ShipInfo.cs" />
     <Compile Include="Components\SunRenderer.cs" />
+    <Compile Include="Components\ItemEffect.cs" />
     <Compile Include="Components\WeaponControl.cs" />
     <Compile Include="Components\Wing.cs" />
     <Compile Include="EntityFactory.cs" />
@@ -125,8 +126,9 @@
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionDamageSystem.cs" />
     <Compile Include="Systems\DeathSystem.cs" />
-    <Compile Include="Systems\DebugCollisionBoundsRenderer.cs" />
-    <Compile Include="Systems\DebugEntityIdRenderer.cs" />
+    <Compile Include="Systems\DebugCollisionBoundsRenderSystem.cs" />
+    <Compile Include="Systems\DebugEntityIdRenderSystem.cs" />
+    <Compile Include="Systems\DebugSlotRenderSystem.cs" />
     <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />
@@ -141,7 +143,7 @@
     <Compile Include="Systems\ShipSpawnSystem.cs" />
     <Compile Include="Systems\SpaceUsablesSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />
-    <Compile Include="Systems\ThrusterEffectSystem.cs" />
+    <Compile Include="Systems\ItemEffectSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Systems\WeaponControlSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />

@@ -67,6 +67,11 @@ namespace Engine.ComponentSystem.RPG.Components
             get { return _item; }
             set
             {
+                if (value == Entity)
+                {
+                    throw new ArgumentException("Cannot equip item in itself.");
+                }
+
                 // Empty this slot.
                 var oldItem = _item;
                 _item = 0;

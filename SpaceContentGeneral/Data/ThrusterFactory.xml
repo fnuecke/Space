@@ -7,6 +7,14 @@
       <Model>Textures/Items/Thruster/test_thruster</Model>
       <ModelOffset>-21 0</ModelOffset>
       <ModelBelowParent>true</ModelBelowParent>
+      <Effects>
+        <Item>
+          <Group>Thruster</Group>
+          <Name>Effects/Thruster</Name>
+          <Offset>-30 0</Offset>
+          <Direction>180</Direction>
+        </Item>
+      </Effects>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -14,14 +22,19 @@
         <Item>30 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
-      <Effect>Effects/Thruster</Effect>
-      <EffectOffset>-30 0</EffectOffset>
     </Item>
     <Item>
       <Name>PoorBasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects>
+        <Item>
+          <Group>Thruster</Group>
+          <Name>Effects/Thruster</Name>
+          <Direction>180</Direction>
+        </Item>
+      </Effects>
       <Quality>Poor</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -42,13 +55,19 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <Effect>Effects/Thruster</Effect>
     </Item>
     <Item>
       <Name>BasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects>
+        <Item>
+          <Group>Thruster</Group>
+          <Name>Effects/Thruster</Name>
+          <Direction>180</Direction>
+        </Item>
+      </Effects>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -69,13 +88,19 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
-      <Effect>Effects/Thruster</Effect>
     </Item>
     <Item>
       <Name>UncommonBasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects>
+        <Item>
+          <Group>Thruster</Group>
+          <Name>Effects/Thruster</Name>
+          <Direction>180</Direction>
+        </Item>
+      </Effects>
       <Quality>Uncommon</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -96,13 +121,19 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
-      <Effect>Effects/Thruster</Effect>
     </Item>
     <Item>
       <Name>RareBasicThruster</Name>
       <Icon>Images/Icons/Buffs/stabilisator</Icon>
       <Model>Textures/Items/default</Model>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects>
+        <Item>
+          <Group>Thruster</Group>
+          <Name>Effects/Thruster</Name>
+          <Direction>180</Direction>
+        </Item>
+      </Effects>
       <Quality>Rare</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -123,13 +154,19 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
-      <Effect>Effects/Thruster</Effect>
     </Item>
     <Item>
       <Name>L1_AI_Thruster</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects>
+        <Item>
+          <Group>Thruster</Group>
+          <Name>Effects/Thruster</Name>
+          <Direction>180</Direction>
+        </Item>
+      </Effects>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <GuaranteedAttributes>
@@ -137,7 +174,6 @@
         <Item>4.5 to 9 RotationForce</Item>
         <Item>2.25 to 2.75 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
-      <Effect>Effects/Thruster</Effect>
     </Item>
   </Asset>
 </XnaContent>

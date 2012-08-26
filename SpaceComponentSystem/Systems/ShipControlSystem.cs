@@ -99,7 +99,7 @@ namespace Space.ComponentSystem.Systems
                 acceleration.Value += accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
 
                 // Adjust thruster PFX based on acceleration, if it just started.
-                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thrusters, true);
+                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
 
                 // Enable thruster sound for this ship.
                 sound.Enabled = true;
@@ -107,7 +107,7 @@ namespace Space.ComponentSystem.Systems
             else
             {
                 // Not accelerating. Disable thruster effects if we were accelerating before.
-                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thrusters, false);
+                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, false);
 
                 // Disable thruster sound for this ship.
                 sound.Enabled = false;

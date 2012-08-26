@@ -193,8 +193,6 @@ namespace Space.ComponentSystem.Factories
 
         private FloatInterval _initialDirection;
 
-        private FloatInterval _initialRotation;
-
         private FloatInterval _accelerationDirection;
 
         private FloatInterval _accelerationForce;
@@ -228,19 +226,16 @@ namespace Space.ComponentSystem.Factories
             var emitterTransform = (Transform)manager.GetComponent(emitter, Transform.TypeId);
             var emitterVelocity = (Velocity)manager.GetComponent(emitter, Velocity.TypeId);
 
-            // Get initial rotation via emitter rotation plus sampled delta.
-            var initialRotation = emitterTransform.Rotation + SampleInitialRotation(random);
-
             // Rotate the offset.
-            var cosRadians = (float)Math.Cos(initialRotation);
-            var sinRadians = (float)Math.Sin(initialRotation);
+            var cosRadians = (float)Math.Cos(emitterTransform.Rotation);
+            var sinRadians = (float)Math.Sin(emitterTransform.Rotation);
 
             FarPosition rotatedOffset;
             rotatedOffset.X = -offset.X * cosRadians - offset.Y * sinRadians;
             rotatedOffset.Y = -offset.X * sinRadians + offset.Y * cosRadians;
 
             // Set initial velocity.
-            var velocity = SampleInitialDirectedVelocity(initialRotation, random);
+            var velocity = SampleInitialDirectedVelocity(emitterTransform.Rotation, random);
 
             // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)
@@ -255,24 +250,25 @@ namespace Space.ComponentSystem.Factories
 
             // Sample an acceleration for this projectile. If there is any, create the
             // component for it, otherwise disregard.
-            var accelerationForce = SampleAccelerationForce(initialRotation, random);
+            var accelerationForce = SampleAccelerationForce(emitterTransform.Rotation, random);
             if (accelerationForce != Vector2.Zero)
             {
                 manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
             }
 
             // Adjust rotation for projectile.
+            var rotation = emitterTransform.Rotation;
             if (accelerationForce != Vector2.Zero)
             {
-                initialRotation = (float)Math.Atan2(accelerationForce.Y, accelerationForce.X);
+                rotation = (float)Math.Atan2(accelerationForce.Y, accelerationForce.X);
             }
             else if (velocity != Vector2.Zero)
             {
-                initialRotation = (float)Math.Atan2(velocity.Y, velocity.X);
+                rotation = (float)Math.Atan2(velocity.Y, velocity.X);
             }
 
             // Set initial position.
-            manager.AddComponent<Transform>(entity).Initialize(emitterTransform.Translation + rotatedOffset, initialRotation);
+            manager.AddComponent<Transform>(entity).Initialize(emitterTransform.Translation + rotatedOffset, rotation);
 
             // Apply friction to this projectile if so desired.
             if (_friction > 0)
@@ -326,24 +322,10 @@ namespace Space.ComponentSystem.Factories
             // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(_effect))
             {
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(0, _effect, _effectOffset, ParticleEffects.EffectGroup.None, true);
+                manager.AddComponent<ParticleEffects>(entity).TryAdd(0, _effect, 1f, 0, _effectOffset, ParticleEffects.EffectGroup.None, true);
             }
 
             return entity;
-        }
-
-        /// <summary>
-        /// Samples the initial rotation.
-        /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled rotation.</returns>
-        public float SampleInitialRotation(IUniformRandom random)
-        {
-            if (_initialRotation != null)
-            {
-                return MathHelper.ToRadians((random == null) ? _initialRotation.Low : MathHelper.Lerp(_initialRotation.Low, _initialRotation.High, (float)random.NextDouble()));
-            }
-            return 0f;
         }
 
         /// <summary>
@@ -403,21 +385,21 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(_model)
-                .Write(_effect)
-                .Write(_effectOffset)
-                .Write(_collisionRadius)
-                .Write(_canBeShot)
+            packet.Write(_model);
+            packet.Write(_effect);
+            packet.Write(_effectOffset);
+            packet.Write(_collisionRadius);
+            packet.Write(_canBeShot);
 
-                .Write(_initialVelocity)
-                .Write(_initialDirection)
-                .Write(_initialRotation)
-                .Write(_accelerationDirection)
-                .Write(_accelerationForce)
+            packet.Write(_initialVelocity);
+            packet.Write(_initialDirection);
+            packet.Write(_accelerationDirection);
+            packet.Write(_accelerationForce);
 
-                .Write(_friction)
-                .Write(_timeToLive);
+            packet.Write(_friction);
+            packet.Write(_timeToLive);
+            
+            return packet;
         }
 
         /// <summary>
@@ -434,7 +416,6 @@ namespace Space.ComponentSystem.Factories
 
             _initialVelocity = packet.ReadPacketizable<FloatInterval>();
             _initialDirection = packet.ReadPacketizable<FloatInterval>();
-            _initialRotation = packet.ReadPacketizable<FloatInterval>();
             _accelerationDirection = packet.ReadPacketizable<FloatInterval>();
             _accelerationForce = packet.ReadPacketizable<FloatInterval>();
 
@@ -455,7 +436,6 @@ namespace Space.ComponentSystem.Factories
             hasher.Put(_canBeShot);
             hasher.Put(_initialVelocity);
             hasher.Put(_initialDirection);
-            hasher.Put(_initialRotation);
             hasher.Put(_accelerationDirection);
             hasher.Put(_accelerationForce);
             hasher.Put(_friction);

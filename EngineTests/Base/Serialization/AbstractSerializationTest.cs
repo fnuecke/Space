@@ -33,7 +33,8 @@ namespace Engine.Tests.Base.Serialization
                     packet.Reset();
 
                     Assert.AreEqual(123, packet.ReadInt32());
-                    Assert.AreEqual(hash, GetHash(packet.ReadPacketizable<T>()));
+                    var readInstance = packet.ReadPacketizable<T>();
+                    Assert.AreEqual(hash, GetHash(readInstance));
                     Assert.AreEqual(456, packet.ReadInt32());
                 }
 

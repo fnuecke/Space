@@ -42,8 +42,8 @@ namespace Space.ComponentSystem.Components
         public enum EffectGroup
         {
             None,
-
-            Thrusters
+            Thruster,
+            Weapon,
         }
 
         #endregion
@@ -73,8 +73,12 @@ namespace Space.ComponentSystem.Components
             {
                 Effects.Add(new PositionedEffect
                 {
+                    Id = effect.Id,
                     AssetName = effect.AssetName,
+                    Scale = effect.Scale,
+                    Direction = effect.Direction,
                     Offset = effect.Offset,
+                    Group = effect.Group,
                     Enabled = effect.Enabled
                 });
             }
@@ -103,11 +107,18 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="id">The id of the effect.</param>
         /// <param name="effect">The effect.</param>
+        /// <param name="scale">The scale.</param>
+        /// <param name="direction">The direction.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="group">The group.</param>
         /// <param name="enabled">Whether the effect should be initially enabled.</param>
-        public void TryAdd(int id, string effect, Vector2 offset, EffectGroup group = EffectGroup.None, bool enabled = false)
+        public void TryAdd(int id, string effect, float scale, float direction, Vector2 offset,
+            EffectGroup group = EffectGroup.None, bool enabled = false)
         {
+            if (string.IsNullOrWhiteSpace(effect))
+            {
+                return;
+            }
             foreach (var pfx in Effects)
             {
                 if (pfx.Id == id && pfx.AssetName.Equals(effect) && pfx.Offset == offset)
@@ -119,6 +130,8 @@ namespace Space.ComponentSystem.Components
             {
                 Id = id,
                 AssetName = effect,
+                Scale = scale,
+                Direction = direction,
                 Offset = offset,
                 Group = group,
                 Enabled = enabled
@@ -170,8 +183,12 @@ namespace Space.ComponentSystem.Components
             packet.Write(Effects.Count);
             foreach (var effect in Effects)
             {
+                packet.Write(effect.Id);
                 packet.Write(effect.AssetName);
+                packet.Write(effect.Scale);
+                packet.Write(effect.Direction);
                 packet.Write(effect.Offset);
+                packet.Write((byte)effect.Group);
                 packet.Write(effect.Enabled);
             }
 
@@ -190,13 +207,21 @@ namespace Space.ComponentSystem.Components
             var numEffects = packet.ReadInt32();
             for (var i = 0; i < numEffects; i++)
             {
+                var id = packet.ReadInt32();
                 var name = packet.ReadString();
+                var scale = packet.ReadSingle();
+                var direction = packet.ReadSingle();
                 var offset = packet.ReadVector2();
+                var group = (EffectGroup)packet.ReadByte();
                 var enabled = packet.ReadBoolean();
                 Effects.Add(new PositionedEffect
                 {
+                    Id = id,
                     AssetName = name,
+                    Scale = scale,
+                    Direction = direction,
                     Offset = offset,
+                    Group = group,
                     Enabled = enabled
                 });
             }
@@ -244,6 +269,16 @@ namespace Space.ComponentSystem.Components
             /// The asset name of the effect, for re-loading after serialization.
             /// </summary>
             public string AssetName;
+
+            /// <summary>
+            /// The scale at which to render the effect.
+            /// </summary>
+            public float Scale;
+
+            /// <summary>
+            /// The direction in which to emit the effect.
+            /// </summary>
+            public float Direction;
 
             /// <summary>
             /// The actual particle effect structure.
