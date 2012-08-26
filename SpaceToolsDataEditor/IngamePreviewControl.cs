@@ -8,13 +8,14 @@ using Engine.FarMath;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.Data;
 
 namespace Space.Tools.DataEditor
 {
-    class IngamePreviewControl : GraphicsDeviceControl
+    sealed class IngamePreviewControl : GraphicsDeviceControl
     {
         public IManager Manager { get { return _manager; } }
 
@@ -30,6 +31,8 @@ namespace Space.Tools.DataEditor
             Enabled = false
         };
 
+        private readonly ContextMenuStrip _contextMenu = new ContextMenuStrip();
+
         private ContentManager _content;
 
         private SpriteBatch _batch;
@@ -38,6 +41,9 @@ namespace Space.Tools.DataEditor
 
         public IngamePreviewControl()
         {
+            _contextMenu.Items.Add(new ToolStripMenuItem("Thruster effects", null, null, "thrusterfx") {CheckOnClick = true, CheckState = CheckState.Checked});
+
+            ContextMenuStrip = _contextMenu;
             _updateTimer.Tick += (sender, args) => _manager.Update(0);
             _drawTimer.Tick += (sender, args) => Refresh();
         }
@@ -45,12 +51,6 @@ namespace Space.Tools.DataEditor
         public void Clear()
         {
             _manager.Clear();
-        }
-
-        private void TimerOnTick(object sender, EventArgs eventArgs)
-        {
-            _manager.Update(0);
-            Refresh();
         }
 
         protected override void Initialize()
@@ -84,11 +84,14 @@ namespace Space.Tools.DataEditor
                     new RegeneratingValueSystem(),
                     new CameraCenteredInterpolationSystem(GraphicsDevice, () => 20f),
                     new CameraSystem(GraphicsDevice, null, null),
+
+                    new DebugCollisionBoundsRenderSystem(_content, GraphicsDevice),
+
                     new CameraCenteredTextureRenderSystem(_content, _batch),
                     new CameraCenteredParticleEffectSystem(_content, (IGraphicsDeviceService)Services.GetService(typeof(IGraphicsDeviceService)), () => 20f),
                     
-                    new DebugCollisionBoundsRenderSystem(_content, GraphicsDevice),
                     new DebugSlotRenderSystem(_content, GraphicsDevice), 
+                    
             });
             // Fix position to avoid querying unavailable services.
             ((CameraSystem)_manager.GetSystem(CameraSystem.TypeId)).CameraPositon = FarPosition.Zero;
@@ -106,6 +109,14 @@ namespace Space.Tools.DataEditor
             GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
             try
             {
+                foreach (var component in _manager.Components)
+                {
+                    if (component is ParticleEffects)
+                    {
+                        ((ParticleEffects)component).SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, ((ToolStripMenuItem)_contextMenu.Items["thrusterfx"]).Checked);
+                    }
+                }
+
                 _manager.Draw(0, _drawTimer.Interval);
             }
             catch (Exception ex)

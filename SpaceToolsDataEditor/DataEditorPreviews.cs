@@ -469,7 +469,6 @@ namespace Space.Tools.DataEditor
                 var fx = _ingamePreview.Manager.AddComponent<ParticleEffects>(dummy);
                 var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
                 parentSlot.Item = entity;
-                fx.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
             }
 
             return;
@@ -555,15 +554,7 @@ namespace Space.Tools.DataEditor
             _ingamePreview.Visible = true;
             pbPreview.Visible = false;
 
-            var entity = factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
-            if (entity > 0)
-            {
-                var fx = (ParticleEffects)_ingamePreview.Manager.GetComponent(entity, ParticleEffects.TypeId);
-                if (fx != null)
-                {
-                    fx.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
-                }
-            }
+            factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
         }
 
         private static readonly Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image> MountpointImages = new Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image>

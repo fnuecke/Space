@@ -153,7 +153,8 @@ namespace Space.ComponentSystem.Systems
                 {
                     shape.Color = Color.Gray;
                 }
-                shape.Color *= 0.4f;
+                shape.Color *= 0.25f;
+                shape.BlendState = BlendState.Additive;
 
                 // Get interpolated position.
                 FarPosition position;

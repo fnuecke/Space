@@ -100,6 +100,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Adjust thruster PFX based on acceleration, if it just started.
                 effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
+                effects.SetGroupDirection(ParticleEffects.EffectGroup.Thruster, (float)Math.Atan2(-accelerationDirection.Y, -accelerationDirection.X) - transform.Rotation);
 
                 // Enable thruster sound for this ship.
                 sound.Enabled = true;

@@ -225,6 +225,7 @@ namespace Space.Tools.DataEditor
             {
                 type.Value.Clear();
             }
+            FactoryFilenames.Clear();
             OnFactoriesCleared();
         }
 

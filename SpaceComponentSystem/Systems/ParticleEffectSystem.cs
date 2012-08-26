@@ -124,9 +124,8 @@ namespace Space.ComponentSystem.Systems
                     // Only do the triggering work if the effect is actually enabled.
                     // ALWAYS RENDER, to allow already triggered effects to play out (and not
                     // instantly disappear).
-                    if (effect.Enabled)
+                    if (effect.Enabled && effect.Intensity > 0.1f)
                     {
-
                         // Check if it's in bounds, i.e. whether we have to trigger it at all.
                         Vector2 translation;
                         FarPosition.Transform(ref position, ref transform, out translation);
@@ -150,7 +149,7 @@ namespace Space.ComponentSystem.Systems
                             rotation += effect.Direction;
 
                             // Trigger.
-                            effect.Effect.Trigger(offset, rotation, effect.Scale);
+                            effect.Effect.Trigger(offset, rotation, effect.Scale * effect.Intensity);
                         }
                     }
 

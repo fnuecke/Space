@@ -1,4 +1,6 @@
-﻿namespace Space.Data
+﻿using System.ComponentModel;
+
+namespace Space.Data
 {
     /// <summary>
     /// Different possible item sizes, which is used to determine which items
@@ -9,6 +11,7 @@
         /// <summary>
         /// Invalid value.
         /// </summary>
+        [Browsable(false)]
         None,
 
         /// <summary>

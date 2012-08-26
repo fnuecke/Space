@@ -42,7 +42,7 @@ namespace Space.ComponentSystem.Systems
                     var offset = effect.Offset;
                     offset.X = item.RequiredSlotSize.Scale(offset.X);
                     offset.Y = item.RequiredSlotSize.Scale(offset.Y);
-                    effects.TryAdd(effect.Id, effect.Name, item.RequiredSlotSize.Scale(effect.Scale), effect.Direction,
+                    effects.TryAdd(effect.Id, effect.Name, item.RequiredSlotSize.Scale(effect.Scale), slot.Mirror(effect.Direction),
                         slot.AccumulateOffset(offset), effect.Group, effect.Group == ParticleEffects.EffectGroup.None);
                 }
             }

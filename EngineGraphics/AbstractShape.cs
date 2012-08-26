@@ -41,6 +41,11 @@ namespace Engine.Graphics
         public GraphicsDevice GraphicsDevice { get { return Device; } }
 
         /// <summary>
+        /// Gets or sets the state of the blend to use when rendering.
+        /// </summary>
+        public BlendState BlendState { get; set; }
+
+        /// <summary>
         /// The transformation to apply when rendering.
         /// </summary>
         public Matrix Transform
@@ -200,6 +205,7 @@ namespace Engine.Graphics
                 Effect = content.Load<Effect>(effectName);
             }
             Device = graphics;
+            BlendState = BlendState.AlphaBlend;
 
             // Set texture coordinates.
             Vertices[0].Tex0.X = -1;
@@ -294,6 +300,9 @@ namespace Engine.Graphics
             // Always adjust shader parameters, because it may be re-used by
             // different shape renderers.
             AdjustParameters();
+
+            // Apply blend state.
+            Device.BlendState = BlendState;
 
             // Apply the effect and render our area.
             foreach (var pass in Effect.CurrentTechnique.Passes)
