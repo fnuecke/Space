@@ -177,14 +177,15 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="group">The group.</param>
         /// <param name="direction">The direction.</param>
-        public void SetGroupDirection(EffectGroup group, float direction)
+        /// <param name="intensity">The intensity at full power.</param>
+        public void SetGroupDirection(EffectGroup group, float direction, float intensity)
         {
             foreach (var pfx in Effects)
             {
                 if (pfx.Group == group)
                 {
                     var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(pfx.Direction, direction)));
-                    pfx.Intensity = Math.Max(0, 60f - Math.Max(0, angle - 20f)) / 60f;
+                    pfx.Intensity = intensity * Math.Max(0, 60f - Math.Max(0, angle - 20f)) / 60f;
                 }
             }
         }

@@ -194,7 +194,7 @@ namespace Space.ComponentSystem.Factories
             // Sample all values in advance, to allow reshuffling component creation
             // order in case we need to, without influencing the 'random' results.
             var planetRadius = SampleRadius(random);
-            var rotationSpeed = SampleRotationSpeed(random);
+            var rotationSpeed = SampleRotationSpeed(random) / Settings.TicksPerSecond;
             var mass = SampleMass(random);
             var eccentricity = SampleEccentricity(random);
             var angleOffset = SampleAngleOffset(random);
@@ -232,7 +232,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Transform>(entity).Initialize(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
 
             // Make it rotate.
-            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed));
+            manager.AddComponent<Spin>(entity).Initialize(rotationSpeed);
 
             // Make it move around its parent.
             manager.AddComponent<EllipsePath>(entity).Initialize(center, a, b, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
@@ -290,8 +290,8 @@ namespace Space.ComponentSystem.Factories
         {
             if (_rotationSpeed != null)
             {
-                return (random == null) ? _rotationSpeed.Low
-                    : MathHelper.Lerp(_rotationSpeed.Low, _rotationSpeed.High, (float)random.NextDouble());
+                return MathHelper.ToRadians((random == null) ? _rotationSpeed.Low
+                    : MathHelper.Lerp(_rotationSpeed.Low, _rotationSpeed.High, (float)random.NextDouble()));
             }
             else
             {

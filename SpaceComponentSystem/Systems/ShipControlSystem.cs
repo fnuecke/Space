@@ -37,74 +37,87 @@ namespace Space.ComponentSystem.Systems
             var acceleration = ((Acceleration)Manager.GetComponent(component.Entity, Acceleration.TypeId));
             var effects = ((ParticleEffects)Manager.GetComponent(component.Entity, ParticleEffects.TypeId));
             var sound = ((Sound)Manager.GetComponent(component.Entity, Sound.TypeId));
+            var maxAccelerationForce = character.GetValue(AttributeType.AccelerationForce) / Settings.TicksPerSecond;
 
             // Get the mass of the ship.
             var mass = info.Mass;
 
             // Get our acceleration direction, based on whether we're
             // currently stabilizing or not.
-            Vector2 accelerationDirection;
-            var desiredAcceleration = float.MaxValue;
-            if (component.DirectedAcceleration == Vector2.Zero && component.Stabilizing)
+            var direction = component.DirectedAcceleration;
+            var desiredAccelerationForce = 0f;
+            if (direction == Vector2.Zero)
             {
-                // We want to stabilize.
-                var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
-                accelerationDirection = -(velocity.Value + acceleration.Value);
-                desiredAcceleration = accelerationDirection.Length();
-
-                // If it's zero, normalize will make it {NaN, NaN}. Avoid that.
-                if (accelerationDirection != Vector2.Zero)
+                if (component.Stabilizing)
                 {
-                    accelerationDirection.Normalize();
+                    // We want to stabilize.
+                    var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
+                    direction = -(velocity.Value + acceleration.Value);
+                    desiredAccelerationForce = direction.Length() * mass;
                 }
             }
             else
             {
                 // Player is accelerating.
-                accelerationDirection = component.DirectedAcceleration;
+                desiredAccelerationForce = maxAccelerationForce * direction.Length();
             }
 
             // Check if we're accelerating at all.
-            if (accelerationDirection != Vector2.Zero && desiredAcceleration > 0)
+            if (direction != Vector2.Zero && desiredAccelerationForce > 0)
             {
+                // Normalize our direction vector.
+                direction.Normalize();
+
                 // Get the needed energy and thruster power.
-                var energyConsumption = character.GetValue(AttributeType.ThrusterEnergyConsumption) / Settings.TicksPerSecond;
-                var accelerationForce = character.GetValue(AttributeType.AccelerationForce) / Settings.TicksPerSecond;
+                var maxEnergyConsumption = character.GetValue(AttributeType.ThrusterEnergyConsumption) / Settings.TicksPerSecond;
+
+                // Apply some dampening on how fast we accelerate when accelerating
+                // sideways/backwards. We do this before computing energy consumption
+                // and such, to avoid using full energy even though we're moving
+                // slower.
+                var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(transform.Rotation, (float)Math.Atan2(direction.Y, direction.X))));
+                maxAccelerationForce *= Math.Max(0, 200f - Math.Max(0, angle - 60f)) / 200f;
 
                 // Get the percentage of the overall thrusters' power we
-                // still need to fulfill our quota.
-                var load = Math.Min(1, desiredAcceleration * mass / accelerationForce);
-
-                // Apply some dampening on how fast we accelerate when accelerating sideways/backwards.
-                var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(transform.Rotation, (float)Math.Atan2(accelerationDirection.Y, accelerationDirection.X))));
-                load *= Math.Max(0, 200f - Math.Max(0, angle - 60f)) / 200f;
+                // still need to fulfill our quota. Our timeslices are of
+                // size one, so we can define velocity == acceleration.
+                // Thus with F=m*a, where a is our velocity, the system
+                // load is the fraction of desired acceleration force divided
+                // by the possibly achievable one.
+                var load = Math.Min(1, desiredAccelerationForce / maxAccelerationForce);
 
                 // And apply it to our energy and power values.
-                energyConsumption *= load;
-                accelerationForce *= load;
+                var energyConsumption = maxEnergyConsumption * load;
+                var accelerationForce = maxAccelerationForce * load;
 
-                // Make sure we have enough energy.
+                // Make sure we have enough energy. If we don't we have to slow down.
                 var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
                 if (energy.Value <= energyConsumption)
                 {
                     // Not enough energy, adjust our output.
-                    accelerationForce *= energy.Value / energyConsumption;
+                    var fraction = energy.Value / energyConsumption;
+
+                    accelerationForce *= fraction;
                     energyConsumption = energy.Value;
+
+                    // Also adjust the original load variable, as it's used for
+                    // scaling the thruster effects.
+                    load *= fraction;
                 }
 
-                // Consume it.
+                // Consume the energy.
                 energy.SetValue(energy.Value - energyConsumption);
 
-                // Get modified acceleration, adjust by our mass.
-                accelerationForce /= mass;
+                // Get actual acceleration by dividing the acceleration force we
+                // can produce by our mass.
+                var finalAcceleration = accelerationForce / mass;
 
-                // Apply our acceleration. Use the min to our desired
-                // acceleration so we don't exceed our target.
-                acceleration.Value += accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
+                // Apply our acceleration in the desired direction.
+                acceleration.Value += direction * finalAcceleration;
 
                 // Adjust thruster PFX based on acceleration, if it just started.
                 effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
-                effects.SetGroupDirection(ParticleEffects.EffectGroup.Thruster, (float)Math.Atan2(-accelerationDirection.Y, -accelerationDirection.X) - transform.Rotation);
+                effects.SetGroupDirection(ParticleEffects.EffectGroup.Thruster, (float)Math.Atan2(-direction.Y, -direction.X) - transform.Rotation, Math.Max(0.3f, load));
 
                 // Enable thruster sound for this ship.
                 sound.Enabled = true;

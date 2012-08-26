@@ -31,12 +31,12 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Color to paint orbits in.
         /// </summary>
-        private static readonly Color OrbitColor = Color.Turquoise * 0.3f;
+        private static readonly Color OrbitColor = Color.Turquoise * 0.5f;
 
         /// <summary>
         /// Color to paint the dead zone around gravitational attractors in.
         /// </summary>
-        private static readonly Color DeadZoneColor = Color.DarkRed * 0.2f;
+        private static readonly Color DeadZoneColor = Color.FromNonPremultiplied(255, 0, 0, 64);
 
         #endregion
 
@@ -65,13 +65,13 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Used to draw orbits.
         /// </summary>
-        private readonly Ellipse _orbitEllipse;
+        private readonly Ellipse _ellipse;
 
         /// <summary>
         /// Used to draw areas where gravitation force is stronger than ship's
         /// thrusters' force.
         /// </summary>
-        private readonly FilledEllipse _deadZoneEllipse;
+        private readonly FilledEllipse _filledEllipse;
 
         #endregion
 
@@ -97,8 +97,17 @@ namespace Space.ComponentSystem.Systems
             _spriteBatch = spriteBatch;
             _session = session;
 
-            _orbitEllipse = new Ellipse(content, spriteBatch.GraphicsDevice) { Thickness = OrbitThickness };
-            _deadZoneEllipse = new FilledEllipse(content, spriteBatch.GraphicsDevice) { Gradient = DeadZoneDiffuseWidth, Color = DeadZoneColor };
+            _ellipse = new Ellipse(content, spriteBatch.GraphicsDevice)
+            {
+                Thickness = OrbitThickness,
+                BlendState = BlendState.Additive
+            };
+            _filledEllipse = new FilledEllipse(content, spriteBatch.GraphicsDevice)
+            {
+                Gradient = DeadZoneDiffuseWidth,
+                Color = DeadZoneColor,
+                BlendState = BlendState.Additive
+            };
 
             IsEnabled = true;
         }
@@ -136,6 +145,10 @@ namespace Space.ComponentSystem.Systems
 
             // Get zoom from camera.
             var zoom = camera.Zoom;
+            
+            // Scale ellipse based on camera zoom.
+            _filledEllipse.Scale = zoom;
+            _ellipse.Scale = zoom;
 
             // Figure out the overall range of our radar system.
             var radarRange = info.RadarRange;
@@ -161,7 +174,7 @@ namespace Space.ComponentSystem.Systems
 
             // Increase radius accordingly, to include stuff possibly further away.
             radius /= zoom;
-
+            
             // Loop through all our neighbors.
             index.Find(position, radarRange, ref _reusableNeighborList, DetectableSystem.IndexGroupMask);
 
@@ -233,21 +246,19 @@ namespace Space.ComponentSystem.Systems
                         nearClipDistance <= distanceToCenterSquared)
                     {
                         // Yes, set the properties for our ellipse renderer.
-                        _orbitEllipse.Center = toCenter + center;
-                        _orbitEllipse.MajorRadius = ellipse.MajorRadius;
-                        _orbitEllipse.MinorRadius = ellipse.MinorRadius;
-                        _orbitEllipse.Rotation = ellipse.Angle;
+                        _ellipse.Center = toCenter + center;
+                        _ellipse.MajorRadius = ellipse.MajorRadius;
+                        _ellipse.MinorRadius = ellipse.MinorRadius;
+                        _ellipse.Rotation = ellipse.Angle;
 
                         // Diameter the opacity based on our distance to the
                         // actual object. Apply a exponential fall-off, and
                         // make it cap a little early to get the 100% alpha
                         // when nearby, not only when exactly on top of the
                         // object ;)
-                        _orbitEllipse.Color = OrbitColor * ld;
-                        // Scale ellipse based on camera zoom.
-                        _orbitEllipse.Scale = zoom;
+                        _ellipse.Color = OrbitColor * ld;
                         // And draw it!
-                        _orbitEllipse.Draw();
+                        _ellipse.Draw();
                     }
                 }
 
@@ -267,17 +278,22 @@ namespace Space.ComponentSystem.Systems
                 // output.
                 var maxAcceleration = info.MaxAcceleration;
                 var neighborMass = neighborGravitation.Mass;
-                var pointOfNoReturn = (float)Math.Sqrt(mass * neighborMass / (maxAcceleration * Settings.TicksPerSecond));
-                _deadZoneEllipse.Center = (Vector2)(neighborTransform.Translation - position) + center;
-                // Add the complete diffuse width, not just the half (which
-                // would be the exact point), because it's unlikely someone
-                // will exactly hit that point, so give them some fair
-                // warning.
-                _deadZoneEllipse.Radius = pointOfNoReturn + DeadZoneDiffuseWidth;
-                // Scale ellipse based on camera zoom.
-                _deadZoneEllipse.Scale = zoom;
-                // And draw it!
-                _deadZoneEllipse.Draw();
+                var dangerPoint = (float)Math.Sqrt(mass * neighborMass / (maxAcceleration * 0.4f * Settings.TicksPerSecond)) + DeadZoneDiffuseWidth;
+                _filledEllipse.Center = direction + center;
+                var distToCenter = (center - _filledEllipse.Center).Length();
+                // Check if we're potentially seeing the marker.
+                if (radius >= distToCenter - dangerPoint)
+                {
+                    _filledEllipse.Radius = dangerPoint;
+                    _filledEllipse.Draw();
+
+                    var pointOfNoReturn = (float)Math.Sqrt(mass * neighborMass / (maxAcceleration * Settings.TicksPerSecond)) + DeadZoneDiffuseWidth;
+                    if (radius >= distToCenter - pointOfNoReturn)
+                    {
+                        _filledEllipse.Radius = pointOfNoReturn;
+                        _filledEllipse.Draw();
+                    }
+                }
             }
             // Done drawing.
             _spriteBatch.End();
