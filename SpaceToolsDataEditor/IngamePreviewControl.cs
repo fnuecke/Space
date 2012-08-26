@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -39,9 +40,12 @@ namespace Space.Tools.DataEditor
 
         private readonly Manager _manager = new Manager();
 
+        private Grid _grid;
+
         public IngamePreviewControl()
         {
-            _contextMenu.Items.Add(new ToolStripMenuItem("Thruster effects", null, null, "thrusterfx") {CheckOnClick = true, CheckState = CheckState.Checked});
+            _contextMenu.Items.Add(new ToolStripMenuItem("Thruster effects", null, null, "thrusterfx") { CheckOnClick = true, CheckState = CheckState.Checked });
+            _contextMenu.Items.Add(new ToolStripMenuItem("Show grid", null, null, "grid") { CheckOnClick = true, CheckState = CheckState.Checked });
 
             ContextMenuStrip = _contextMenu;
             _updateTimer.Tick += (sender, args) => _manager.Update(0);
@@ -62,6 +66,10 @@ namespace Space.Tools.DataEditor
             if (_batch == null)
             {
                 _batch = new SpriteBatch(GraphicsDevice);
+            }
+            if (_grid == null)
+            {
+                _grid = new Grid(_content, GraphicsDevice);
             }
 
             FactoryLibrary.LoadContent(_content);
@@ -115,6 +123,13 @@ namespace Space.Tools.DataEditor
                     {
                         ((ParticleEffects)component).SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, ((ToolStripMenuItem)_contextMenu.Items["thrusterfx"]).Checked);
                     }
+                }
+
+                if (_grid != null && ((ToolStripMenuItem)_contextMenu.Items["grid"]).Checked)
+                {
+                    _grid.SetSize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+                    _grid.SetCenter(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f);
+                    _grid.Draw();
                 }
 
                 _manager.Draw(0, _drawTimer.Interval);

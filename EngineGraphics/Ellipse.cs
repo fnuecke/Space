@@ -59,7 +59,11 @@ namespace Engine.Graphics
         {
             base.AdjustParameters();
 
-            Effect.Parameters["Thickness"].SetValue((_thickness + _thickness) / Width);
+            var thickness = Effect.Parameters["Thickness"];
+            if (thickness != null)
+            {
+                thickness.SetValue((_thickness + _thickness) / Width);
+            }
         }
 
         #endregion
