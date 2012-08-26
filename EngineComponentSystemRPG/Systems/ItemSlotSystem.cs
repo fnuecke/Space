@@ -23,6 +23,18 @@ namespace Engine.ComponentSystem.RPG.Systems
 
             if (component is Item)
             {
+                // Remove items that were equipped inside this item. Do this first,
+                // to keep the hierarchy alive as long as possible (due to this
+                // recursing this will delete bottom up). This is necessary to allow
+                // other systems to check the root node (e.g. thruster effect tsystem).
+                foreach (ItemSlot slot in Manager.GetComponents(component.Entity, ItemSlot.TypeId))
+                {
+                    if (slot.Item > 0)
+                    {
+                        Manager.RemoveEntity(slot.Item);
+                    }
+                }
+
                 // An item was removed, unequip it everywhere.
                 foreach (var slot in Components)
                 {
@@ -40,6 +52,7 @@ namespace Engine.ComponentSystem.RPG.Systems
                 var item = ((ItemSlot)component).Item;
                 if (item > 0)
                 {
+                    ((ItemSlot)component).Item = 0;
                     Manager.RemoveEntity(item);
                 }
             }

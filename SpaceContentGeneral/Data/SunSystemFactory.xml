@@ -18,7 +18,7 @@
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
-          <OrbitRadius>12000 to 13000</OrbitRadius>
+          <OrbitRadius>12500 to 13500</OrbitRadius>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>

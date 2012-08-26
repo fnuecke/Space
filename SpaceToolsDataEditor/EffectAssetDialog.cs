@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 
 namespace Space.Tools.DataEditor
@@ -8,29 +6,38 @@ namespace Space.Tools.DataEditor
     /// <summary>
     /// Dialog to select textures from known pool.
     /// </summary>
-    public sealed partial class TextureAssetDialog : Form
+    public sealed partial class EffectAssetDialog : Form
     {
         /// <summary>
         /// Gets or sets the selected asset.
         /// </summary>
         public string SelectedAsset { get; set; }
 
-        public TextureAssetDialog()
+        /// <summary>
+        /// The preview control used to render the particle effect preview.
+        /// </summary>
+        private readonly EffectPreviewControl _preview;
+
+        public EffectAssetDialog()
         {
             InitializeComponent();
+
+            gbPreview.Controls.Add(_preview = new EffectPreviewControl { Dock = DockStyle.Fill });
         }
 
-        private void TextureAssetDialogLoad(object sender, EventArgs e)
+        private void EffectAssetDialogLoad(object sender, EventArgs e)
         {
-            tvTextures.BeginUpdate();
-            tvTextures.Nodes.Clear();
-            tvTextures.Nodes.Add("", "None");
-            foreach (var assetName in ContentProjectManager.TextureAssetNames)
+            tvEffects.BeginUpdate();
+            tvEffects.Nodes.Clear();
+
+            tvEffects.Nodes.Add("", "None");
+
+            foreach (var assetName in ContentProjectManager.EffectAssetNames)
             {
                 // Generate the path through the tree we need to take, to
                 // insert this asset name as its own node.
-                var hierarchy = assetName.Split(new[] { tvTextures.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
-                var nodes = tvTextures.Nodes;
+                var hierarchy = assetName.Split(new[] { tvEffects.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+                var nodes = tvEffects.Nodes;
                 for (var i = 0; i < hierarchy.Length; i++)
                 {
                     // Create entry for this hierarchy level is necessary.
@@ -42,16 +49,16 @@ namespace Space.Tools.DataEditor
                     nodes = nodes[hierarchy[i]].Nodes;
                 }
             }
-            tvTextures.EndUpdate();
+            tvEffects.EndUpdate();
 
             // Try re-selecting. We do this in an extra iteration to select as far down the
             // tree as possible.
-            tvTextures.SelectedNode = null;
+            tvEffects.SelectedNode = null;
             if (!string.IsNullOrWhiteSpace(SelectedAsset))
             {
                 var hierarchy = SelectedAsset.Replace('\\', '/').
-                    Split(new[] {tvTextures.PathSeparator}, StringSplitOptions.RemoveEmptyEntries);
-                var nodes = tvTextures.Nodes;
+                    Split(new[] {tvEffects.PathSeparator}, StringSplitOptions.RemoveEmptyEntries);
+                var nodes = tvEffects.Nodes;
                 for (var i = 0; i < hierarchy.Length; i++)
                 {
                     if (!nodes.ContainsKey(hierarchy[i]))
@@ -59,35 +66,24 @@ namespace Space.Tools.DataEditor
                         // No such entry known in currently loaded content projects...
                         return;
                     }
-                    tvTextures.SelectedNode = nodes[hierarchy[i]];
+                    tvEffects.SelectedNode = nodes[hierarchy[i]];
                     nodes = nodes[hierarchy[i]].Nodes;
                 }
             }
-            else
+            if (tvEffects.SelectedNode != null)
             {
-                // Clear preview.
-                var oldImage = pbPreview.Image;
-                pbPreview.Image = null;
-                if (oldImage != null)
-                {
-                    oldImage.Dispose();
-                }
+                _preview.Effect = tvEffects.SelectedNode.FullPath;
             }
         }
 
-        private void TexturesAfterSelect(object sender, TreeViewEventArgs e)
+        private void EffectsAfterSelect(object sender, TreeViewEventArgs e)
         {
             // Disable OK button until we have a valid image.
             btnOK.Enabled = false;
             SelectedAsset = null;
 
             // Clear preview.
-            var oldImage = pbPreview.Image;
-            pbPreview.Image = null;
-            if (oldImage != null)
-            {
-                oldImage.Dispose();
-            }
+            _preview.Effect = null;
 
             // Do we have something new?
             if (e.Node == null)
@@ -103,22 +99,16 @@ namespace Space.Tools.DataEditor
             }
 
             // See if the asset is valid (full path).
-            var assetPath = ContentProjectManager.GetTexturePath(e.Node.FullPath);
+            var assetPath = ContentProjectManager.GetEffectPath(e.Node.FullPath);
             if (assetPath == null)
             {
                 return;
             }
 
             // OK, try to load it.
-            try
-            {
-                pbPreview.Image = Image.FromFile(assetPath);
-                btnOK.Enabled = true;
-                SelectedAsset = e.Node.FullPath;
-            }
-            catch (FileNotFoundException)
-            {
-            }
+            _preview.Effect = e.Node.FullPath;
+            btnOK.Enabled = true;
+            SelectedAsset = e.Node.FullPath;
         }
 
         private void OkClick(object sender, EventArgs e)
@@ -131,7 +121,7 @@ namespace Space.Tools.DataEditor
             DialogResult = DialogResult.Cancel;
         }
 
-        private void TexturesDoubleClick(object sender, EventArgs e)
+        private void EffectsDoubleClick(object sender, EventArgs e)
         {
             if (btnOK.Enabled)
             {

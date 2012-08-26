@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
 
@@ -18,7 +19,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Armor(),
                        (Armor)new Armor().Initialize("asd", "zxc"),
-                       (Armor)new Armor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Huge)
+                       (Armor)new Armor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Huge, Vector2.Zero, false)
                    };
         }
     }

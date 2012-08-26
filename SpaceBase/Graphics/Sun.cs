@@ -44,7 +44,7 @@ namespace Space.Graphics
         /// The current game time, which is used to determine the current
         /// rotation of the sun.
         /// </summary>
-        public long Time
+        public float Time
         {
             get { return _time; }
             set { _time = value; }
@@ -122,7 +122,7 @@ namespace Space.Graphics
         /// <summary>
         /// The current game time to base our rotation on.
         /// </summary>
-        private long _time;
+        private float _time;
 
         #endregion
 
@@ -182,6 +182,27 @@ namespace Space.Graphics
             Effect.Parameters["TurbulenceTwo"].SetValue(_turbulenceTwo);
             Effect.Parameters["TurbulenceColor"].SetValue(_turbulenceColor);
 
+            RecreateRenderTargets();
+        }
+
+        private void RecreateRenderTargets()
+        {
+            if (_surfaceSphere != null)
+            {
+                _surfaceSphere.Dispose();
+            }
+            if (_turbulenceSphere != null)
+            {
+                _turbulenceSphere.Dispose();
+            }
+            for (var i = 0; i < _mipmaps.Length; i++)
+            {
+                if (_mipmaps[i] != null)
+                {
+                    _mipmaps[i].Dispose();
+                }
+            }
+
             // Get settings. We use the whole screen to draw.
             var pp = GraphicsDevice.PresentationParameters;
 
@@ -201,6 +222,14 @@ namespace Space.Graphics
             {
                 width >>= 1;
                 height >>= 1;
+                if (width < 1)
+                {
+                    width = 1;
+                }
+                if (height < 1)
+                {
+                    height = 1;
+                }
                 _mipmaps[i] = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
                                                  DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
             }
@@ -218,6 +247,13 @@ namespace Space.Graphics
             // Update our paint canvas if necessary.
             RecomputeQuads();
 
+            // Recreate render targets as necessary.
+            if (_surfaceSphere.Width != GraphicsDevice.PresentationParameters.BackBufferWidth ||
+                _surfaceSphere.Height != GraphicsDevice.PresentationParameters.BackBufferHeight)
+            {
+                RecreateRenderTargets();
+            }
+
             // Save main render targets.
             var previousRenderTargets = GraphicsDevice.GetRenderTargets();
 
@@ -225,7 +261,7 @@ namespace Space.Graphics
             GraphicsDevice.SetRenderTarget(_surfaceSphere);
             GraphicsDevice.Clear(Color.Transparent);
 
-            var offset = _time / 17f / Width;
+            var offset = _time / Width;
             Effect.Parameters["SurfaceOffset"].SetValue(_surfaceRotation * 8 * offset);
             Effect.Parameters["TurbulenceOneOffset"].SetValue(_turbulenceOneRotation * 6 * offset);
             Effect.Parameters["TurbulenceTwoOffset"].SetValue(_turbulenceTwoRotation * 4 * offset);

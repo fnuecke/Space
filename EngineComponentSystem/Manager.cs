@@ -390,20 +390,16 @@ namespace Engine.ComponentSystem
             Debug.Assert(component != null);
             Debug.Assert(HasComponent(component.Id), "No such component in the system.");
 
-            // Remove it from the mapping and release the id for reuse.
-            _entities[component.Entity].Remove(component);
-            _components[component.Id] = null;
-            _componentIds.ReleaseId(component.Id);
-
             // Send a message to all systems.
             foreach (var system in _systems)
             {
                 system.OnComponentRemoved(component);
             }
 
-            // This will reset the component, so do that after sending the
-            // event, to allow listeners to do something sensible with the
-            // component before that.
+            // Remove it from the mapping and release the id for reuse.
+            _entities[component.Entity].Remove(component);
+            _components[component.Id] = null;
+            _componentIds.ReleaseId(component.Id);
             ReleaseComponent(component);
         }
 

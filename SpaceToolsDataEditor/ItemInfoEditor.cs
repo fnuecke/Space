@@ -24,10 +24,8 @@ namespace Space.Tools.DataEditor
             var svc = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
             if ((value is string || value == null) && svc != null)
             {
-                value = value ?? string.Empty;
-
                 // Preselect old entry.
-                _dialog.SelectedItemName = (string)value;
+                _dialog.SelectedItemName = value as string;
 
                 // Restrict selection.
                 var giContext = context as GridItem;

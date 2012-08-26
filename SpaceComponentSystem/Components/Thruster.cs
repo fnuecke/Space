@@ -51,12 +51,15 @@ namespace Space.ComponentSystem.Components
         /// <param name="iconName">Name of the icon.</param>
         /// <param name="quality">The quality.</param>
         /// <param name="slotSize">Size of the slot.</param>
+        /// <param name="modelOffset">The model offset.</param>
+        /// <param name="drawBelowParent">Whether to draw below the parent item, when equipped.</param>
         /// <param name="effect">The effect.</param>
         /// <param name="effectOffset">The effect offset.</param>
         /// <returns></returns>
-        public Thruster Initialize(string name, string iconName, ItemQuality quality, ItemSlotSize slotSize, string effect, Vector2 effectOffset)
+        public Thruster Initialize(string name, string iconName, ItemQuality quality,
+            ItemSlotSize slotSize, Vector2 modelOffset, bool drawBelowParent, string effect, Vector2 effectOffset)
         {
-            Initialize(name, iconName, quality, slotSize);
+            Initialize(name, iconName, quality, slotSize, modelOffset, drawBelowParent);
 
             Effect = effect;
             EffectOffset = effectOffset;

@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Graphics;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -91,7 +92,7 @@ namespace Space.ComponentSystem.Systems
 
             // Set/get loop invariants.
             var transform = camera.Transform;
-            _sun.Time = frame;
+            _sun.Time = frame / Settings.TicksPerSecond;
 
             // Render everything in sight.
             foreach (var entity in _drawablesInView)

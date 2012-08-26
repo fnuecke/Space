@@ -50,13 +50,13 @@
             switch (size)
             {
                 case ItemSlotSize.Small:
-                    return pixelSize;
+                    return pixelSize * 0.5f;
                 case ItemSlotSize.Medium:
-                    return pixelSize * 1.5f;
+                    return pixelSize * 0.7f;
                 case ItemSlotSize.Large:
-                    return pixelSize * 2f;
+                    return pixelSize * 0.85f;
                 default:
-                    return pixelSize * 3f;
+                    return pixelSize * 1f;
             }
         }
     }

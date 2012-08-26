@@ -60,9 +60,9 @@ namespace Space.Graphics
 
         /// <summary>
         /// The current game time, which is used to determine the current
-        /// rotation of the planet.
+        /// rotation of the planet, in seconds.
         /// </summary>
-        public long Time
+        public float Time
         {
             get { return _time; }
             set { _time = value; }
@@ -95,7 +95,7 @@ namespace Space.Graphics
         /// <summary>
         /// The current game time to base our rotation on.
         /// </summary>
-        private long _time;
+        private float _time;
 
         #endregion
 
@@ -128,7 +128,10 @@ namespace Space.Graphics
             Effect.Parameters["RenderRadius"].SetValue(Width / 2f);
             Effect.Parameters["EmbossScale"].SetValue(1f / Width);
 
-            Effect.Parameters["TextureOffset"].SetValue(_surfaceRotation * (_time / 17f / Width));
+            var offset = _surfaceRotation * _time / Width;
+            offset.X %= _surface.Width;
+            offset.Y %= _surface.Height;
+            Effect.Parameters["TextureOffset"].SetValue(offset);
             Effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * Width));
         }
 

@@ -7,9 +7,9 @@ namespace Space.Tools.DataEditor
     /// <summary>
     /// Editor for texture assets, opening a form that show known textures.
     /// </summary>
-    public sealed class TextureAssetEditor : UITypeEditor
+    public sealed class EffectAssetEditor : UITypeEditor
     {
-        private readonly TextureAssetDialog _dialog = new TextureAssetDialog();
+        private readonly EffectAssetDialog _dialog = new EffectAssetDialog();
 
         public override UITypeEditorEditStyle GetEditStyle(System.ComponentModel.ITypeDescriptorContext context)
         {

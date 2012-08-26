@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
+using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -39,7 +40,10 @@ namespace Space.ComponentSystem.Systems
 
                 // OK, add the effect.
                 var slot = (SpaceItemSlot)equipped.Slot;
-                effects.TryAdd(thruster.Effect, thruster.EffectOffset + slot.AccumulateOffset(), ParticleEffects.EffectGroup.Thrusters);
+                var offset = thruster.EffectOffset;
+                offset.X = thruster.RequiredSlotSize.Scale(offset.X);
+                offset.Y = thruster.RequiredSlotSize.Scale(offset.Y);
+                effects.TryAdd(thruster.Id, thruster.Effect, offset + slot.AccumulateOffset(), ParticleEffects.EffectGroup.Thrusters);
             }
             else if (message is ItemUnequipped)
             {
@@ -60,8 +64,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // OK, remove the effect.
-                var slot = (SpaceItemSlot)unequipped.Slot;
-                effects.Remove(thruster.Effect, thruster.EffectOffset + slot.AccumulateOffset(), ParticleEffects.EffectGroup.Thrusters);
+                effects.Remove(thruster.Id);
             }
         }
 

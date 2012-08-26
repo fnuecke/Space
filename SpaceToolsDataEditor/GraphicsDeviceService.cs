@@ -110,20 +110,38 @@ namespace Space.Tools.DataEditor
         /// resolution or its current size. This behavior means the device will
         /// demand-grow to the largest of all its GraphicsDeviceControl clients.
         /// </summary>
-        public void ResetDevice(int width, int height)
+        public void ResetDevice(int width, int height, Func<int, int, int> adjust = null)
         {
+            // Cheap hack to limit rendertarget sizes for reach profile.
+            if (width > 2048)
+            {
+                width = 2048;
+            }
+            if (height > 2048)
+            {
+                height = 2048;
+            }
+
             if (DeviceResetting != null)
                 DeviceResetting(this, EventArgs.Empty);
 
-            _parameters.BackBufferWidth = Math.Max(_parameters.BackBufferWidth, width);
-            _parameters.BackBufferHeight = Math.Max(_parameters.BackBufferHeight, height);
+            if (adjust != null)
+            {
+                _parameters.BackBufferWidth = adjust(_parameters.BackBufferWidth, width);
+                _parameters.BackBufferHeight = adjust(_parameters.BackBufferHeight, height);
+            }
+            else
+            {
+                _parameters.BackBufferWidth = width;
+                _parameters.BackBufferHeight = height;
+            }
 
             _graphicsDevice.Reset(_parameters);
 
             if (DeviceReset != null)
                 DeviceReset(this, EventArgs.Empty);
         }
-
+        
         /// <summary>
         /// Gets the current graphics device.
         /// </summary>

@@ -52,17 +52,13 @@
     <Item>
       <Name>L1_AI_Fuselage</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Items/default</Model>
+      <Model>Textures/Stolen/Ships/hyperion_ff</Model>
       <ModelBelowParent>false</ModelBelowParent>
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>
         <Item>
-          <Type>Wing</Type>
-          <Size>Small</Size>
-        </Item>
-        <Item>
-          <Type>Wing</Type>
+          <Type>Weapon</Type>
           <Size>Small</Size>
         </Item>
         <Item>
@@ -80,6 +76,7 @@
         <Item>
           <Type>Thruster</Type>
           <Size>Small</Size>
+          <Offset>-25 0</Offset>
         </Item>
         <Item>
           <Type>Sensor</Type>

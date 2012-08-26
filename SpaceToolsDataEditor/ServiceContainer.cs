@@ -29,6 +29,10 @@ namespace WinFormsContentLoading
         /// </summary>
         public void AddService<T>(T service)
         {
+            if (services.ContainsKey(typeof(T)) && !ReferenceEquals(services[typeof(T)], service))
+            {
+                throw new ArgumentException("Service of the same type is already registered.");
+            }
             services.Add(typeof(T), service);
         }
 

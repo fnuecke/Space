@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Xml;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
 using ProjectMercury.Renderers;
@@ -23,15 +21,10 @@ namespace Space.Tools.DataEditor
                 {
                     _timer.Enabled = false;
                 }
+                _lastTrigger = DateTime.MinValue;
                 LoadContent();
+                Invalidate();
             }
-        }
-
-        private void TimerOnTick(object sender, EventArgs eventArgs)
-        {
-            _effect.Trigger(FarPosition.Zero);
-            _effect.Update(_timer.Interval / 1000f);
-            Refresh();
         }
 
         private string _assetName;
@@ -42,12 +35,18 @@ namespace Space.Tools.DataEditor
 
         private Timer _timer;
 
-        private TextureContentManager _content;
+        private PlainContentManager _content;
 
         private SpriteBatch _batch;
 
+        private DateTime _lastTrigger;
+
         protected override void Initialize()
         {
+            if (_content == null)
+            {
+                _content = new PlainContentManager(Services);
+            }
             if (_renderer == null)
             {
                 _renderer = new SpriteBatchRenderer();
@@ -61,33 +60,23 @@ namespace Space.Tools.DataEditor
 
         private void LoadContent()
         {
-            if (string.IsNullOrWhiteSpace(_assetName))
+            if (_renderer == null)
             {
                 return;
             }
-            var fileName = ContentProjectManager.GetFileForEffectAsset(_assetName);
-            if (string.IsNullOrWhiteSpace(fileName))
+            if (string.IsNullOrWhiteSpace(_assetName))
             {
                 return;
             }
             try
             {
-                using (var xmlReader = XmlReader.Create(fileName))
-                {
-                    var effect = IntermediateSerializer.Deserialize<ParticleEffect>(xmlReader, null);
-                    effect.Initialise();
-                    if (_content == null)
-                    {
-                        _content = new TextureContentManager(Services);
-                    }
-                    effect.LoadContent(_content);
-                    _effect = effect;
-                }
+                _renderer.LoadContent(_content);
+                _effect = _content.Load<ParticleEffect>(_assetName);
                 if (_timer == null)
                 {
                     _timer = new Timer
                     {
-                        Interval = 16
+                        Interval = 1000 / 30
                     };
                     _timer.Tick += TimerOnTick;
                 }
@@ -98,8 +87,33 @@ namespace Space.Tools.DataEditor
             }
         }
 
+        private void TimerOnTick(object sender, EventArgs eventArgs)
+        {
+            bool allowTrigger = (DateTime.UtcNow - _lastTrigger).TotalSeconds >= 1;
+            foreach (var emitter in _effect)
+            {
+                // Force a minimum wait for effects that may trigger multiple
+                // times per frame (one-shots used by different entities).
+                if (emitter.MinimumTriggerPeriod <= 0)
+                {
+                    if (allowTrigger)
+                    {
+                        _lastTrigger = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                emitter.Trigger(FarPosition.Zero);
+            }
+            _effect.Update(_timer.Interval / 1000f);
+            Refresh();
+        }
+
         protected override void Draw()
         {
+            GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
             if (_effect == null)
             {
                 return;
@@ -113,8 +127,6 @@ namespace Space.Tools.DataEditor
             transform.Translation.X = Width / 2;
             transform.Translation.Y = Height / 2;
             _renderer.RenderEffect(_effect, ref transform);
-
-            _batch.Draw(_effect[0].ParticleTexture, Vector2.Zero, Color.White);
         }
     }
 }

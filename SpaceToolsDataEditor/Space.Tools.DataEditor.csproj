@@ -81,6 +81,25 @@
     <Compile Include="AddFactoryDialog.Designer.cs">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProjectilePreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DataEditorPreviews.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogEditorIssues.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SunPreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="EffectAssetDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EffectAssetDialog.Designer.cs">
+      <DependentUpon>EffectAssetDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EffectAssetEditor.cs" />
     <Compile Include="EffectPreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -94,6 +113,10 @@
     </Compile>
     <Compile Include="ItemPoolEditor.cs" />
     <Compile Include="TextureContentManager.cs" />
+    <Compile Include="PlanetPreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PlainContentManager.cs" />
     <Compile Include="PlanetEditor.cs" />
     <Compile Include="DataEditor.cs">
       <SubType>Form</SubType>
@@ -146,6 +169,9 @@
     <EmbeddedResource Include="AddFactoryDialog.resx">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="EffectAssetDialog.resx">
+      <DependentUpon>EffectAssetDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DataEditor.resx">
       <DependentUpon>DataEditor.cs</DependentUpon>
     </EmbeddedResource>
@@ -196,13 +222,29 @@
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
       <Name>Engine.ComponentSystem.RPG</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
+      <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
+      <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
+      <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
+      <Name>Engine.Graphics</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
       <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
       <Name>Engine.Math</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineRandom\Engine.Random.csproj">
+      <Project>{ABEE1E15-1CDA-4BD1-B37B-3500D27A8A7E}</Project>
+      <Name>Engine.Random</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
       <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
       <Name>Engine.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
+      <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
+      <Name>Engine.Util</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>

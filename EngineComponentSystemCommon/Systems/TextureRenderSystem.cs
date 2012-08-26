@@ -57,7 +57,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// The content manager used to load textures.
         /// </summary>
-        private readonly ContentManager _content;
+        protected readonly ContentManager Content;
 
         #endregion
 
@@ -80,7 +80,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="spriteBatch">The sprite batch.</param>
         protected TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
-            _content = content;
+            Content = content;
             SpriteBatch = spriteBatch;
             IsEnabled = true;
         }
@@ -110,7 +110,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 var cameraTransform = GetTransform();
 
                 // Begin rendering.
-                SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
+                SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
 
                 foreach (var entity in _drawablesInView)
                 {
@@ -119,7 +119,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        DrawComponent(component, cameraTransform.Translation, interpolation);
+                        BeginDrawComponent(component, cameraTransform.Translation, interpolation);
                     }
                 }
 
@@ -132,17 +132,17 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>
-        /// Draws the component.
+        /// Prepares for drawing the component. Computes screen space coordinates and then calls DrawComponent.
         /// </summary>
         /// <param name="component">The component to draw.</param>
         /// <param name="translation">The camera translation.</param>
         /// <param name="interpolation">The interpolation system to get position and rotation from.</param>
-        private void DrawComponent(TextureRenderer component, FarPosition translation, InterpolationSystem interpolation)
+        private void BeginDrawComponent(TextureRenderer component, FarPosition translation, InterpolationSystem interpolation)
         {
             // Load the texture if it isn't already.
             if (component.Texture == null)
             {
-                component.Texture = _content.Load<Texture2D>(component.TextureName);
+                component.Texture = Content.Load<Texture2D>(component.TextureName);
             }
 
             // Get interpolated position.
@@ -159,13 +159,24 @@ namespace Engine.ComponentSystem.Common.Systems
                 layer = parallax.Layer;
             }
 
+            // Draw.
+            DrawComponent(component, ((Vector2)(position + translation)) * layer, rotation);
+        }
+
+        /// <summary>
+        /// Draws the component.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        /// <param name="position">The position.</param>
+        /// <param name="rotation">The rotation.</param>
+        protected virtual void DrawComponent(TextureRenderer component, Vector2 position, float rotation)
+        {
             // Get the rectangle at which we'll draw.
             Vector2 origin;
             origin.X = component.Texture.Width / 2f;
             origin.Y = component.Texture.Height / 2f;
 
-            // Draw.
-            SpriteBatch.Draw(component.Texture, ((Vector2)(position + translation)) * layer, null, component.Tint, rotation, origin, component.Scale, SpriteEffects.None, 0);
+            SpriteBatch.Draw(component.Texture, position, null, component.Tint, rotation, origin, component.Scale, SpriteEffects.None, 0);
         }
 
         /// <summary>

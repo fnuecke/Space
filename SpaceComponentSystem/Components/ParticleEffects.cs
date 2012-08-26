@@ -101,21 +101,23 @@ namespace Space.ComponentSystem.Components
         /// Add a particle effect with the specified offset, if it's not
         /// already in the list.
         /// </summary>
+        /// <param name="id">The id of the effect.</param>
         /// <param name="effect">The effect.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="group">The group.</param>
         /// <param name="enabled">Whether the effect should be initially enabled.</param>
-        public void TryAdd(string effect, Vector2 offset, EffectGroup group = EffectGroup.None, bool enabled = false)
+        public void TryAdd(int id, string effect, Vector2 offset, EffectGroup group = EffectGroup.None, bool enabled = false)
         {
             foreach (var pfx in Effects)
             {
-                if (pfx.AssetName.Equals(effect) && pfx.Offset == offset)
+                if (pfx.Id == id && pfx.AssetName.Equals(effect) && pfx.Offset == offset)
                 {
                     return;
                 }
             }
             Effects.Add(new PositionedEffect
             {
+                Id = id,
                 AssetName = effect,
                 Offset = offset,
                 Group = group,
@@ -126,21 +128,11 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Removes all occurrences of the specified effect at the specified offset.
         /// </summary>
-        /// <param name="effect">The effect.</param>
-        /// <param name="offset">The offset.</param>
-        /// <param name="group">The group.</param>
-        public void Remove(string effect, Vector2 offset, EffectGroup group = EffectGroup.None)
+        /// <param name="id">The id of the effect.</param>
+        /// <param name="effect">The effect type. Leave empty or omit to remove all for that id.</param>
+        public void Remove(int id, string effect = null)
         {
-            Effects.RemoveAll(x => x.AssetName.Equals(effect) && x.Group == group && x.Offset == offset);
-        }
-
-        /// <summary>
-        /// Removes all occurrences of the specified effect.
-        /// </summary>
-        /// <param name="effect">The effect.</param>
-        public void Remove(string effect)
-        {
-            Effects.RemoveAll(x => x.AssetName.Equals(effect));
+            Effects.RemoveAll(x => x.Id == id && (string.IsNullOrWhiteSpace(effect) || effect.Equals(x.AssetName)));
         }
 
         /// <summary>
@@ -243,6 +235,11 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         internal sealed class PositionedEffect
         {
+            /// <summary>
+            /// The id the effect is referenced by (usually the component that caused its creation).
+            /// </summary>
+            public int Id;
+
             /// <summary>
             /// The asset name of the effect, for re-loading after serialization.
             /// </summary>

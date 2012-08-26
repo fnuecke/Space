@@ -142,8 +142,8 @@ namespace Space.ComponentSystem.Systems
                             offset.X = effect.Offset.X * cosRadians - effect.Offset.Y * sinRadians;
                             offset.Y = effect.Offset.X * sinRadians + effect.Offset.Y * cosRadians;
 
-                            // Trigger. Adjust rotation to fit into the particle system logic.
-                            effect.Effect.Trigger(offset, rotation + MathHelper.Pi);
+                            // Trigger.
+                            effect.Effect.Trigger(offset, rotation);
                         }
                     }
 
@@ -229,9 +229,8 @@ namespace Space.ComponentSystem.Systems
             float rotation;
             interpolation.GetInterpolatedRotation(entity, out rotation);
 
-            // Apply the generator offset and rotate to fit into the particle system logic.
+            // Apply the generator offset.
             position += offset;
-            rotation += MathHelper.Pi;
 
             // See if we have a velocity to adjust the impulse.
             var velocity = (Velocity)Manager.GetComponent(entity, Velocity.TypeId);

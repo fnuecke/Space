@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
 
@@ -18,7 +19,7 @@ namespace SpaceTests.ComponentSystem.Components
                    {
                        new Reactor(),
                        (Reactor)new Reactor().Initialize("asd", "zxc"),
-                       (Reactor)new Reactor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Medium)
+                       (Reactor)new Reactor().Initialize("asd", "zxc", ItemQuality.Poor, ItemSlotSize.Medium, Vector2.Zero, true)
                    };
         }
     }

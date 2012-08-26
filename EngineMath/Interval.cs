@@ -441,7 +441,6 @@ namespace Engine.Math
             if (value is string)
             {
                 // Parse the content.
-                //bool round = input.Xml.GetAttribute("round") != null && bool.Parse(input.Xml.GetAttribute("round"));
                 var match = IntervalPattern.Match((string)value);
                 if (match.Success)
                 {
@@ -467,7 +466,7 @@ namespace Engine.Math
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid format.", "value");
+                    return null;
                 }
             }
             return base.ConvertFrom(context, culture, value);

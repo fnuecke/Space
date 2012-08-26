@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -689,20 +690,22 @@ namespace Engine.Serialization
         /// </para>
         /// </summary>
         /// <typeparam name="T">The type of object being read.</typeparam>
-        /// <returns>The read value.</returns>
+        /// <returns>The read value (which may be null).</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public void ReadPacketizableInto<T>(ref T existingInstance)
+        public T ReadPacketizableInto<T>(ref T existingInstance)
             where T : IPacketizable
         {
             using (var packet = ReadPacket())
             {
                 if (packet == null)
                 {
-                    throw new PacketException("Trying to read null value in ReadPacketizableInto.");
+                    Debug.Assert(!typeof(ValueType).IsAssignableFrom(typeof(T)), "Got a null value for a value type.");
+                    return default(T);
                 }
                 existingInstance.Depacketize(packet);
             }
+            return existingInstance;
         }
 
         /// <summary>
