@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.ItemPool[]">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:ItemPool[]">
     <Item>
       <Name>Starter</Name>
       <MaxDrops>3</MaxDrops>
@@ -83,6 +83,22 @@
       <Item>
         <ItemName>RareBasicThruster</ItemName>
         <Probability>0.001</Probability>
+      </Item>
+    </Item>
+    <Item>
+      <Name>asd</Name>
+      <MaxDrops>2</MaxDrops>
+      <Item>
+        <ItemName>StarterThruster</ItemName>
+        <Probability>0</Probability>
+      </Item>
+      <Item>
+        <ItemName>StarterWing</ItemName>
+        <Probability>0</Probability>
+      </Item>
+      <Item>
+        <ItemName>PoorBasicReactor</ItemName>
+        <Probability>0</Probability>
       </Item>
     </Item>
   </Asset>

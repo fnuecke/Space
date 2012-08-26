@@ -5,6 +5,7 @@
       <Name>Player</Name>
       <Texture>Textures/spaceshipB</Texture>
       <CollisionRadius>50</CollisionRadius>
+      <ItemPool>asd</ItemPool>
       <Attributes>
         <Item>10 Mass</Item>
         <Item>100 Health</Item>

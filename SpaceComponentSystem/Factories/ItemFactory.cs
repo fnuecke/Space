@@ -34,6 +34,7 @@ namespace Space.ComponentSystem.Factories
             set { _name = value; }
         }
 
+        
         /// <summary>
         /// Asset name of the texture to use for this item type to render it in
         /// menus and the inventory.
@@ -195,6 +196,8 @@ namespace Space.ComponentSystem.Factories
         #region Backing fields
 
         private string _name = "";
+
+        private string _itemPool = "";
 
         private string _icon = "Images/Icons/Buffs/default";
 
