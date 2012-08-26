@@ -184,7 +184,7 @@ namespace Space.ComponentSystem.Components
                 if (pfx.Group == group)
                 {
                     var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(pfx.Direction, direction)));
-                    pfx.Intensity = Math.Max(0, 80f - Math.Max(0, angle - 20f)) / 80f;
+                    pfx.Intensity = Math.Max(0, 60f - Math.Max(0, angle - 20f)) / 60f;
                 }
             }
         }

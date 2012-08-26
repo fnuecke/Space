@@ -124,7 +124,7 @@ namespace Space.ComponentSystem.Systems
                     // Only do the triggering work if the effect is actually enabled.
                     // ALWAYS RENDER, to allow already triggered effects to play out (and not
                     // instantly disappear).
-                    if (effect.Enabled && effect.Intensity > 0.1f)
+                    if (effect.Enabled && effect.Intensity > 0.2f)
                     {
                         // Check if it's in bounds, i.e. whether we have to trigger it at all.
                         Vector2 translation;

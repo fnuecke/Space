@@ -75,6 +75,10 @@ namespace Space.ComponentSystem.Systems
                 // still need to fulfill our quota.
                 var load = Math.Min(1, desiredAcceleration * mass / accelerationForce);
 
+                // Apply some dampening on how fast we accelerate when accelerating sideways/backwards.
+                var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(transform.Rotation, (float)Math.Atan2(accelerationDirection.Y, accelerationDirection.X))));
+                load *= Math.Max(0, 200f - Math.Max(0, angle - 60f)) / 200f;
+
                 // And apply it to our energy and power values.
                 energyConsumption *= load;
                 accelerationForce *= load;
