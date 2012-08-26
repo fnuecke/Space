@@ -60,6 +60,7 @@
             this.chFactory = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chProperty = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ilIssueTypes = new System.Windows.Forms.ImageList(this.components);
+            this.tsmiAddItemPool = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsFactories.SuspendLayout();
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
@@ -109,15 +110,16 @@
             // 
             this.cmsFactories.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiAddFactory,
+            this.tsmiAddItemPool,
             this.tsmiRemove});
             this.cmsFactories.Name = "cmsFactories";
-            this.cmsFactories.Size = new System.Drawing.Size(141, 48);
+            this.cmsFactories.Size = new System.Drawing.Size(153, 92);
             // 
             // tsmiAddFactory
             // 
             this.tsmiAddFactory.Image = global::Space.Tools.DataEditor.Properties.Resources._077_AddFile_16x16_72;
             this.tsmiAddFactory.Name = "tsmiAddFactory";
-            this.tsmiAddFactory.Size = new System.Drawing.Size(140, 22);
+            this.tsmiAddFactory.Size = new System.Drawing.Size(152, 22);
             this.tsmiAddFactory.Text = "New &Factory";
             this.tsmiAddFactory.Click += new System.EventHandler(this.AddFactoryClick);
             // 
@@ -126,7 +128,7 @@
             this.tsmiRemove.Enabled = false;
             this.tsmiRemove.Image = global::Space.Tools.DataEditor.Properties.Resources.DeleteHS;
             this.tsmiRemove.Name = "tsmiRemove";
-            this.tsmiRemove.Size = new System.Drawing.Size(140, 22);
+            this.tsmiRemove.Size = new System.Drawing.Size(152, 22);
             this.tsmiRemove.Text = "&Delete";
             this.tsmiRemove.Click += new System.EventHandler(this.RemoveClick);
             // 
@@ -171,7 +173,7 @@
             this.tsmiSave.Image = global::Space.Tools.DataEditor.Properties.Resources.saveHS;
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.tsmiSave.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSave.Size = new System.Drawing.Size(152, 22);
             this.tsmiSave.Text = "&Save";
             this.tsmiSave.Click += new System.EventHandler(this.SaveClick);
             // 
@@ -180,34 +182,34 @@
             this.tsmiLoad.Image = global::Space.Tools.DataEditor.Properties.Resources._075b_UpFolder_16x16_72;
             this.tsmiLoad.Name = "tsmiLoad";
             this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.tsmiLoad.Size = new System.Drawing.Size(143, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(152, 22);
             this.tsmiLoad.Text = "L&oad";
             this.tsmiLoad.Click += new System.EventHandler(this.LoadClick);
             // 
             // separator0
             // 
             this.separator0.Name = "separator0";
-            this.separator0.Size = new System.Drawing.Size(140, 6);
+            this.separator0.Size = new System.Drawing.Size(149, 6);
             // 
             // tsmiSettings
             // 
             this.tsmiSettings.Image = global::Space.Tools.DataEditor.Properties.Resources._327_Options_16x16_72;
             this.tsmiSettings.Name = "tsmiSettings";
             this.tsmiSettings.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.tsmiSettings.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSettings.Size = new System.Drawing.Size(152, 22);
             this.tsmiSettings.Text = "S&ettings";
             this.tsmiSettings.Click += new System.EventHandler(this.SettingsClick);
             // 
             // separator2
             // 
             this.separator2.Name = "separator2";
-            this.separator2.Size = new System.Drawing.Size(140, 6);
+            this.separator2.Size = new System.Drawing.Size(149, 6);
             // 
             // tsmiExit
             // 
             this.tsmiExit.Name = "tsmiExit";
             this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.tsmiExit.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExit.Size = new System.Drawing.Size(152, 22);
             this.tsmiExit.Text = "E&xit";
             this.tsmiExit.Click += new System.EventHandler(this.ExitClick);
             // 
@@ -405,6 +407,13 @@
             this.ilIssueTypes.Images.SetKeyName(2, "109_AllAnnotations_Warning_16x16_72.png");
             this.ilIssueTypes.Images.SetKeyName(3, "109_AllAnnotations_Error_16x16_72.png");
             // 
+            // tsmiAddItemPool
+            // 
+            this.tsmiAddItemPool.Name = "tsmiAddItemPool";
+            this.tsmiAddItemPool.Size = new System.Drawing.Size(152, 22);
+            this.tsmiAddItemPool.Text = "New Item Pool";
+            this.tsmiAddItemPool.Click += new System.EventHandler(this.AddItemPoolClick);
+            // 
             // DataEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -478,6 +487,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEdit;
         private System.Windows.Forms.ToolStripMenuItem miNewFactory;
         private System.Windows.Forms.ToolStripMenuItem miDelete;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAddItemPool;
     }
 }
 

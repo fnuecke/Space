@@ -81,6 +81,19 @@
     <Compile Include="AddFactoryDialog.Designer.cs">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="AddItemPoolDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddItemPoolDialog.Designer.cs">
+      <DependentUpon>AddItemPoolDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ItemPoolDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ItemPoolDialog.Designer.cs">
+      <DependentUpon>ItemPoolDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ItemPoolChooserEditor.cs" />
     <Compile Include="ProjectilePreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -108,11 +121,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GraphicsDeviceService.cs" />
-    <Compile Include="ItemPoolDataDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="ItemPoolEditor.cs" />
-    <Compile Include="TextureContentManager.cs" />
     <Compile Include="PlanetPreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -168,6 +177,12 @@
     <Compile Include="XnaColorEditor.cs" />
     <EmbeddedResource Include="AddFactoryDialog.resx">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddItemPoolDialog.resx">
+      <DependentUpon>AddItemPoolDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ItemPoolDialog.resx">
+      <DependentUpon>ItemPoolDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EffectAssetDialog.resx">
       <DependentUpon>EffectAssetDialog.cs</DependentUpon>

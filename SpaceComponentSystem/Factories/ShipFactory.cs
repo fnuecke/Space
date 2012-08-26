@@ -64,6 +64,8 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// The Item Pool which is used if the Entity is destroyed
         /// </summary>
+        [Editor("Space.Tools.DataEditor.ItemPoolChooserEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Logic")]

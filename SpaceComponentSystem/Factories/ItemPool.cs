@@ -18,6 +18,8 @@ namespace Space.ComponentSystem.Factories
             /// <summary>
             /// The logical name of the item.
             /// </summary>
+            [Editor("Space.Tools.DataEditor.ItemPoolEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
             [Description("The name of the item type to sample.")]
             public string ItemName
             {
@@ -39,6 +41,11 @@ namespace Space.ComponentSystem.Factories
             private string _itemName = "";
 
             private float _probability;
+
+            public override string ToString()
+            {
+                return _itemName;
+            }
         }
 
         /// <summary>

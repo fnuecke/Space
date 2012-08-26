@@ -25,6 +25,7 @@ namespace Space.Tools.DataEditor
         private readonly DataEditorSettingsDialog _settingsDialog = new DataEditorSettingsDialog();
 
         private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
+        private readonly AddItemPoolDialog _itemPoolDialog = new AddItemPoolDialog();
 
         public DataEditor()
         {
@@ -45,6 +46,11 @@ namespace Space.Tools.DataEditor
             FactoryManager.FactoryAdded += factory => SavingEnabled = true;
             FactoryManager.FactoryRemoved += factory => SavingEnabled = true;
             FactoryManager.FactoryNameChanged += (a,b) => SavingEnabled = true;
+
+            ItemPoolManager.ItemPoolAdded += itemPool => SavingEnabled = true;
+            ItemPoolManager.ItemPoolRemoved += itemPool => SavingEnabled = true;
+            ItemPoolManager.ItemPoolNameChanged += (a, b) => SavingEnabled = true;
+
             pbPreview.Image = new Bitmap(2048, 2048, PixelFormat.Format32bppArgb);
 
             tvData.KeyDown += (sender, args) =>
@@ -151,6 +157,7 @@ namespace Space.Tools.DataEditor
         private void SaveClick(object sender, EventArgs e)
         {
             FactoryManager.Save();
+            ItemPoolManager.Save();
             SavingEnabled = false;
         }
 
@@ -269,7 +276,37 @@ namespace Space.Tools.DataEditor
                 }
             }
         }
+        private void AddItemPoolClick(object sender, EventArgs e)
+        {
+            if (_itemPoolDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                var type = _itemPoolDialog.ItemPoolType;
+                var name = _itemPoolDialog.FactoryName;
 
+                try
+                {
+                    // Create a new instance of this factory type.
+                    var instance = Activator.CreateInstance(type) as ItemPool;
+                    if (instance == null)
+                    {
+                        // This should not happen. Ever.
+                        throw new ArgumentException("Resulting object was not a factory.");
+                    }
+                    instance.Name = name;
+
+                    // Register it.
+                    ItemPoolManager.Add(instance);
+
+                    // And select it.
+                    SelectItemPool(name);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("Failed creating new Item Pool instance:\n" + ex, "Error",
+                                                   MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
         private void RemoveClick(object sender, EventArgs e)
         {
             if (pgProperties.SelectedObject == null)
@@ -384,12 +421,12 @@ namespace Space.Tools.DataEditor
                     // Sort by factory.
                     return string.CompareOrdinal(xFactory, yFactory);
                 }
-                else if (!string.IsNullOrWhiteSpace(xProperty) && !string.IsNullOrWhiteSpace(yProperty) && !xProperty.Equals(yProperty))
+                if (!string.IsNullOrWhiteSpace(xProperty) && !string.IsNullOrWhiteSpace(yProperty) && !xProperty.Equals(yProperty))
                 {
                     // Sort by property.
                     return string.CompareOrdinal(xProperty, yProperty);
                 }
-                else
+                
                 {
                     // Sort by message.
                     return string.CompareOrdinal(xMessage, yMessage);   
@@ -405,5 +442,7 @@ namespace Space.Tools.DataEditor
                 throw new ArgumentException("Invalid item type.");
             }
         }
+
+        
     }
 }

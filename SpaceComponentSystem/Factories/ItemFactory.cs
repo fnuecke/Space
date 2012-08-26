@@ -34,18 +34,7 @@ namespace Space.ComponentSystem.Factories
             set { _name = value; }
         }
 
-        /// <summary>
-        /// The name of the item (template name).
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        [Editor("Space.Tools.DataEditor.ItemPoolEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-        [Description("The name of the item type to sample.")]
-        public string ItemPool
-        {
-            get { return _itemPool; }
-            set { _itemPool = value; }
-        }
+        
         /// <summary>
         /// Asset name of the texture to use for this item type to render it in
         /// menus and the inventory.

@@ -47,7 +47,7 @@ namespace Space.Tools.DataEditor
             }
 
             // Validate that factory.
-            ScanForIssues(pool);
+          //  ScanForIssues(pool);TODO
         }
         private void HandleFactoryRemoved(IFactory factory)
         {
@@ -185,6 +185,29 @@ namespace Space.Tools.DataEditor
             pgProperties.SelectedObject = null;
             //tvData.SelectedNode = null;
             var factory = FactoryManager.GetFactory(name);
+            if (factory != null)
+            {
+                pgProperties.SelectedObject = factory;
+                var node = tvData.Nodes.Find(name, true);
+                if (node.Length > 0)
+                {
+                    tvData.SelectedNode = node[0];
+                }
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Selects the Itempool in our property grid if it exists, else selects
+        /// nothing (clears property grid).
+        /// </summary>
+        /// <param name="name">The name of the factory.</param>
+        private bool SelectItemPool(string name)
+        {
+            pgProperties.SelectedObject = null;
+            //tvData.SelectedNode = null;
+            var factory = ItemPoolManager.GetItemPool(name);
             if (factory != null)
             {
                 pgProperties.SelectedObject = factory;

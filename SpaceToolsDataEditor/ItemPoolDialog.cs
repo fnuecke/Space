@@ -9,21 +9,15 @@ namespace Space.Tools.DataEditor
     /// <summary>
     /// Dialog to select items valid for a slot.
     /// </summary>
-    public partial class ItemInfoDialog : Form
+    public partial class ItemPoolDialog : Form
     {
         /// <summary>
         /// The currently selected item name.
         /// </summary>
         public string SelectedItemName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the available slots. Based on these the available items will
-        /// be filtered, to only contain items that can be put in one of these slots.
-        /// </summary>
-        public IEnumerable<ItemFactory.ItemSlotInfo> AvailableSlots { get; set; }
 
-        public bool AllItems { get; set; }
-        public ItemInfoDialog()
+        public ItemPoolDialog()
         {
             InitializeComponent();
 
@@ -48,26 +42,21 @@ namespace Space.Tools.DataEditor
 
             tvItems.Nodes.Add("", "None");
 
-            if (AvailableSlots != null||AllItems)
+          
+            foreach (var itemPool in ItemPoolManager.GetItemPool())
             {
-                foreach (var factory in FactoryManager.GetAllItems())
+                    
+                var typeName = itemPool.GetType().Name;
+                if (!tvItems.Nodes.ContainsKey(typeName))
                 {
-                    if (!AllItems&&!IsSlotAvailable(factory))
+                    var cleanTypeName = typeName;
+                    if (typeName.EndsWith("Factory"))
                     {
-                        continue;
+                        cleanTypeName = typeName.Substring(0, typeName.Length - "Factory".Length);
                     }
-                    var typeName = factory.GetType().Name;
-                    if (!tvItems.Nodes.ContainsKey(typeName))
-                    {
-                        var cleanTypeName = typeName;
-                        if (typeName.EndsWith("Factory"))
-                        {
-                            cleanTypeName = typeName.Substring(0, typeName.Length - "Factory".Length);
-                        }
-                        tvItems.Nodes.Add(typeName, cleanTypeName);
-                    }
-                    tvItems.Nodes[typeName].Nodes.Add(factory.Name, factory.Name);
+                    tvItems.Nodes.Add(typeName, cleanTypeName);
                 }
+                tvItems.Nodes[typeName].Nodes.Add(itemPool.Name, itemPool.Name);
             }
             tvItems.EndUpdate();
 
@@ -90,25 +79,7 @@ namespace Space.Tools.DataEditor
             }
         }
 
-        /// <summary>
-        /// Determines whether there is any slot available that can hold the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>
-        ///   <c>true</c> if a slot is available; otherwise, <c>false</c>.
-        /// </returns>
-        protected bool IsSlotAvailable(ItemFactory item)
-        {
-            foreach (var slot in AvailableSlots)
-            {
-                if (slot.Type == item.GetType().ToItemType() &&
-                    slot.Size >= item.RequiredSlotSize)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+      
 
         private void ItemsAfterSelect(object sender, TreeViewEventArgs e)
         {
@@ -131,8 +102,8 @@ namespace Space.Tools.DataEditor
             }
 
             // See if the item is valid.
-            var factory = FactoryManager.GetFactory(e.Node.Name) as ItemFactory;
-            if (factory == null)
+            var itemPool = ItemPoolManager.GetItemPool(e.Node.Name) ;
+            if (itemPool == null)
             {
                 return;
             }
@@ -140,7 +111,7 @@ namespace Space.Tools.DataEditor
             // OK, allow selecting it.
             btnOK.Enabled = true;
             SelectedItemName = e.Node.Name;
-            pgPreview.SelectedObject = factory;
+            pgPreview.SelectedObject = itemPool;
         }
 
         private void OkClick(object sender, EventArgs e)

@@ -25,16 +25,27 @@ namespace Space.Tools.DataEditor
         /// </summary>
         private static readonly Dictionary<ItemPool, string> ItemPoolFilenames = new Dictionary<ItemPool, string>();
 
-        public delegate void ItemPoolChangedDelegate(ItemPool factory);
+        public delegate void ItemPoolChangedDelegate(ItemPool itempool);
+
+        public delegate void ItemPoolNameChangedDelegate(string oldName, string newName);
+
+        public delegate void ItemPoolClearedDelegate();
+
         public static event ItemPoolChangedDelegate ItemPoolAdded;
+
         public static event ItemPoolChangedDelegate ItemPoolRemoved;
+
+
+        public static event ItemPoolNameChangedDelegate ItemPoolNameChanged;
+
+        public static event ItemPoolClearedDelegate ItemPoolCleared;
         /// <summary>
         /// Loads all factories found at the specified path.
         /// </summary>
         /// <param name="path">The path.</param>
         public static void Load(string path)
         {
-
+            Clear();
             foreach (var file in Directory.GetFiles(path, "*.xml", SearchOption.AllDirectories))
             {
                 using (var reader = new XmlTextReader(file))
@@ -71,6 +82,63 @@ namespace Space.Tools.DataEditor
         }
 
 
+        /// <summary>
+        /// Saves all known factories back to file.
+        /// </summary>
+        public static void Save()
+        {
+            // In case we need to create new files.
+            string baseFolder;
+
+            // Ask for destination folder if we didn't load before.
+            if (ItemPools.Count > 0 && ItemPoolFilenames.Count == 0)
+            {
+                // TODO
+                return;
+            }
+            else
+            {
+                baseFolder = ItemPoolFilenames.Values.First().Replace('\\', '/');
+                baseFolder = baseFolder.Substring(0, baseFolder.LastIndexOf('/') + 1);
+            }
+
+            object output;
+            foreach (var itemPool in ItemPools.Values)
+            {
+                if (!ItemPoolFilenames.ContainsKey(itemPool))
+                {
+                    // No such factories yet, create new file.
+                    var fileName = baseFolder + itemPool.GetType().Name + ".xml";
+                    ItemPoolFilenames.Add(itemPool, fileName);
+                }
+                
+                
+            }
+            // Yes. Create specific array.
+            var array = Array.CreateInstance(ItemPools.Values.ElementAt(0).GetType(), ItemPools.Count);
+            for (var i = 0; i < ItemPools.Values.Count; i++)
+            {
+                array.SetValue(ItemPools.Values.ElementAt(i), i);
+            }
+            output = array;
+            using (var writer = new XmlTextWriter(ItemPoolFilenames[ItemPools.Values.ElementAt(0)], Encoding.UTF8))
+            {
+                writer.Formatting = Formatting.Indented;
+                writer.WriteStartDocument();
+                try
+                {
+                    IntermediateSerializer.Serialize(writer, output, null);
+                }
+                catch (InvalidContentException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                }
+            }
+
+               
+            
+        }
 
         /// <summary>
         /// Adds a single itempool to the list of known itempools.
@@ -83,7 +151,18 @@ namespace Space.Tools.DataEditor
            // FactoriesByType[type].Add(factory);
             OnItemPoolAdded(itemPool);
         }
+        /// <summary>
+        /// Clears the lists with known factories as well as the list with
+        /// factories in the GUI.
+        /// </summary>
+        public static void Clear()
+        {
+            ItemPools.Clear();
 
+            ItemPoolFilenames.Clear();
+
+            OnItemPoolCleared();
+        }
         private static void OnItemPoolAdded(ItemPool itemPool)
         {
             if (ItemPoolAdded != null)
@@ -100,7 +179,21 @@ namespace Space.Tools.DataEditor
             }
         }
 
+        private static void OnItemPoolNameChanged(string oldName, string newName)
+        {
+            if (ItemPoolNameChanged != null)
+            {
+                ItemPoolNameChanged(oldName, newName);
+            }
+        }
 
+        private static void OnItemPoolCleared()
+        {
+            if (ItemPoolCleared != null)
+            {
+                ItemPoolCleared();
+            }
+        }
         /// <summary>
         /// Gets the all known itempools.
         /// </summary>

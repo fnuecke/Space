@@ -15,6 +15,7 @@
       <Projectiles>
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
+          <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>15</CollisionRadius>
           <CanBeShot>false</CanBeShot>
           <InitialVelocity>80</InitialVelocity>
@@ -51,6 +52,7 @@
       <Projectiles>
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
+          <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>8</CollisionRadius>
           <CanBeShot>false</CanBeShot>
           <InitialVelocity>70</InitialVelocity>
@@ -87,6 +89,7 @@
       <Projectiles>
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
+          <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>8</CollisionRadius>
           <CanBeShot>false</CanBeShot>
           <InitialVelocity>20</InitialVelocity>
@@ -123,6 +126,7 @@
       <Projectiles>
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
+          <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>8</CollisionRadius>
           <CanBeShot>false</CanBeShot>
           <InitialVelocity>90</InitialVelocity>
@@ -159,6 +163,7 @@
       <Projectiles>
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
+          <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>8</CollisionRadius>
           <CanBeShot>false</CanBeShot>
           <InitialVelocity>110</InitialVelocity>
@@ -182,6 +187,7 @@
       <Projectiles>
         <Item>
           <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
+          <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>8</CollisionRadius>
           <CanBeShot>false</CanBeShot>
           <InitialVelocity>125</InitialVelocity>
