@@ -137,6 +137,15 @@ namespace Space.Tools.DataEditor
                                 return;
                             }
                         }
+                        if (item.PropertyDescriptor.PropertyType == typeof(ItemPool.DropInfo))
+                        {
+                            var info = item.Value as ItemPool.DropInfo;
+                            if (info != null)
+                            {
+                                RenderItemPreview(FactoryManager.GetFactory(info.ItemName) as ItemFactory);
+                                return;
+                            }
+                        }
                         // Render next-best projectile if possible.
                         if (item.PropertyDescriptor.PropertyType == typeof(ProjectileFactory[]))
                         {

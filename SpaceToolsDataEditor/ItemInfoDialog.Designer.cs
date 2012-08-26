@@ -1,6 +1,6 @@
 ﻿namespace Space.Tools.DataEditor
 {
-    partial class ItemInfoDialog
+    sealed partial class ItemInfoDialog
     {
         /// <summary>
         /// Required designer variable.
@@ -165,7 +165,8 @@
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.GroupBox gbItems;
-        protected System.Windows.Forms.TreeView tvItems;
+
+        private System.Windows.Forms.TreeView tvItems;
         private System.Windows.Forms.GroupBox gbInfo;
         private System.Windows.Forms.SplitContainer scMain;
         private System.Windows.Forms.PropertyGrid pgPreview;

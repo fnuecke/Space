@@ -9,7 +9,7 @@ namespace Space.Tools.DataEditor
     /// <summary>
     /// Dialog to select items valid for a slot.
     /// </summary>
-    public partial class ItemInfoDialog : Form
+    sealed partial class ItemInfoDialog : Form
     {
         /// <summary>
         /// The currently selected item name.
@@ -22,11 +22,17 @@ namespace Space.Tools.DataEditor
         /// </summary>
         public IEnumerable<ItemFactory.ItemSlotInfo> AvailableSlots { get; set; }
 
-        public bool AllItems { get; set; }
-        public ItemInfoDialog()
+        /// <summary>
+        /// Determines whether all items should be listed, regardless of slot availability.
+        /// </summary>
+        private readonly bool _showAllItems;
+
+        public ItemInfoDialog(bool showAllItems = false)
         {
             InitializeComponent();
+            _showAllItems = showAllItems;
 
+            // Force "read only" (by reverting to old value).
             pgPreview.PropertyValueChanged += PropertyValueChanged;
         }
 
@@ -41,18 +47,18 @@ namespace Space.Tools.DataEditor
             args.ChangedItem.PropertyDescriptor.SetValue(parent.Value, args.OldValue);
         }
 
-        protected virtual void ItemInfoDialogLoad(object sender, EventArgs e)
+        private void ItemInfoDialogLoad(object sender, EventArgs e)
         {
             tvItems.BeginUpdate();
             tvItems.Nodes.Clear();
 
             tvItems.Nodes.Add("", "None");
 
-            if (AvailableSlots != null||AllItems)
+            if (AvailableSlots != null || _showAllItems)
             {
                 foreach (var factory in FactoryManager.GetAllItems())
                 {
-                    if (!AllItems&&!IsSlotAvailable(factory))
+                    if (!_showAllItems && !IsSlotAvailable(factory))
                     {
                         continue;
                     }
@@ -97,7 +103,7 @@ namespace Space.Tools.DataEditor
         /// <returns>
         ///   <c>true</c> if a slot is available; otherwise, <c>false</c>.
         /// </returns>
-        protected bool IsSlotAvailable(ItemFactory item)
+        private bool IsSlotAvailable(ItemFactory item)
         {
             foreach (var slot in AvailableSlots)
             {

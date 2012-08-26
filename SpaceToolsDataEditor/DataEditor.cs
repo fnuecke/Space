@@ -427,11 +427,8 @@ namespace Space.Tools.DataEditor
                     // Sort by property.
                     return string.CompareOrdinal(xProperty, yProperty);
                 }
-                
-                {
-                    // Sort by message.
-                    return string.CompareOrdinal(xMessage, yMessage);   
-                }
+                // Sort by message.
+                return string.CompareOrdinal(xMessage, yMessage);
             }
 
             public int Compare(object x, object y)
@@ -443,7 +440,5 @@ namespace Space.Tools.DataEditor
                 throw new ArgumentException("Invalid item type.");
             }
         }
-
-        
     }
 }

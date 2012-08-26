@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing.Design;
-using System.Linq;
-using System.Text;
+﻿using System.Drawing.Design;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
-using Space.ComponentSystem.Factories;
-using Space.Data;
 
 namespace Space.Tools.DataEditor
 {
     public sealed class ItemPoolEditor : UITypeEditor
     {
-        private readonly ItemInfoDialog _dialog = new ItemInfoDialog();
+        private readonly ItemInfoDialog _dialog = new ItemInfoDialog(true);
 
         public override UITypeEditorEditStyle GetEditStyle(System.ComponentModel.ITypeDescriptorContext context)
         {
@@ -29,7 +23,7 @@ namespace Space.Tools.DataEditor
 
                 // Preselect old entry.
                 _dialog.SelectedItemName = (string) value;
-                _dialog.AllItems = true;
+
                 // Restrict selection.
                 var giContext = context as GridItem;
                 //if ((giContext == null ||
