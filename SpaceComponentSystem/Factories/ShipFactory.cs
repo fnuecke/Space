@@ -292,6 +292,7 @@ namespace Space.ComponentSystem.Factories
             /// </summary>
             [Editor("Space.Tools.DataEditor.ItemInfoEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+            [TypeConverter(typeof(ReadonlyItemNameConverter))]
             [Description("The name of the item type to sample.")]
             public string Name
             {
@@ -334,6 +335,14 @@ namespace Space.ComponentSystem.Factories
             }
 
             #endregion
+        }
+
+        public sealed class ReadonlyItemNameConverter : TypeConverter
+        {
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                return false;
+            }
         }
 
         #endregion

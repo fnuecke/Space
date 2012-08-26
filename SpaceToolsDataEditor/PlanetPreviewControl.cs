@@ -69,8 +69,9 @@ namespace Space.Tools.DataEditor
                 {
                     _circle = new FilledEllipse(_content, GraphicsDevice)
                     {
-                        Gradient = 2,
-                        Color = Color.SlateGray * 0.5f
+                        Gradient = 3,
+                        Color = Color.LightSlateGray * 0.9f,
+                        BlendState = BlendState.Additive
                     };
                 }
                 catch (Exception ex)

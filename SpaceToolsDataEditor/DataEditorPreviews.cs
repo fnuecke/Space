@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using Engine.ComponentSystem.Common.Components;
@@ -470,78 +468,6 @@ namespace Space.Tools.DataEditor
                 var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
                 parentSlot.Item = entity;
             }
-
-            return;
-
-            // Draw base image.
-            var modelFile = ContentProjectManager.GetTexturePath(factory.Model);
-            if (modelFile != null)
-            {
-                using (var bmp = new Bitmap(modelFile))
-                {
-                    var newWidth = factory.RequiredSlotSize.Scale(bmp.Width);
-                    var newHeight = factory.RequiredSlotSize.Scale(bmp.Height);
-                    var x = (pbPreview.Image.Width - newWidth) / 2f;
-                    var y = (pbPreview.Image.Height - newHeight) / 2f;
-                    if (factory.ModelOffset.HasValue)
-                    {
-                        x += factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.X);
-                        y += factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.Y);
-                    }
-                    using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-                    {
-                        g.SmoothingMode = SmoothingMode.HighQuality;
-                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                        g.DrawImage(bmp, x, y, newWidth, newHeight);
-                    }
-                }
-            }
-
-            // Draw slot mounting positions.
-            if (factory.Slots != null)
-            {
-                // Set up required stuff for alpha blended drawing.
-                var ia = new ImageAttributes();
-                ia.SetColorMatrix(new ColorMatrix { Matrix00 = 1f, Matrix11 = 1f, Matrix22 = 1f, Matrix44 = 1f, Matrix33 = 0.7f });
-
-                foreach (var slot in factory.Slots)
-                {
-                    Image mountpointImage;
-                    MountpointImages.TryGetValue(slot.Type, out mountpointImage);
-                    if (mountpointImage == null)
-                    {
-                        continue;
-                    }
-                    var size = slot.Size.Scale(32);
-                    var x = (pbPreview.Image.Width - size - 1) / 2f;
-                    var y = (pbPreview.Image.Height - size - 1) / 2f;
-                    if (slot.Offset.HasValue)
-                    {
-                        x += factory.RequiredSlotSize.Scale(slot.Offset.Value.X);
-                        y += factory.RequiredSlotSize.Scale(slot.Offset.Value.Y);
-                    }
-                    using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-                    {
-                        g.SmoothingMode = SmoothingMode.HighQuality;
-                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                        g.DrawImage(mountpointImage, new System.Drawing.Rectangle((int)x, (int)y, (int)size, (int)size), 0, 0, mountpointImage.Width, mountpointImage.Height, GraphicsUnit.Pixel, ia);
-                    }
-                }
-            }
-
-            // Draw origin.
-            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-            {
-                using (var p = new Pen(System.Drawing.Color.FromArgb(180, 224, 224, 224)))
-                {
-                    var x = pbPreview.Image.Width / 2f;
-                    var y = pbPreview.Image.Height / 2f;
-                    g.DrawLine(p, x - 10, y, x + 10, y);
-                    g.DrawLine(p, x, y - 10, x, y + 10);
-                }
-            }
         }
 
         private void RenderShipPreview(ShipFactory factory)
@@ -556,17 +482,5 @@ namespace Space.Tools.DataEditor
 
             factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
         }
-
-        private static readonly Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image> MountpointImages = new Dictionary<ItemFactory.ItemSlotInfo.ItemType, Image>
-        {
-            {ItemFactory.ItemSlotInfo.ItemType.Armor, Images.mountpoint_armor},
-            {ItemFactory.ItemSlotInfo.ItemType.Fuselage, Images.mountpoint_fuselage},
-            {ItemFactory.ItemSlotInfo.ItemType.Reactor, Images.mountpoint_reactor},
-            {ItemFactory.ItemSlotInfo.ItemType.Sensor, Images.mountpoint_sensor},
-            {ItemFactory.ItemSlotInfo.ItemType.Shield, Images.mountpoint_shield},
-            {ItemFactory.ItemSlotInfo.ItemType.Thruster, Images.mountpoint_thruster},
-            {ItemFactory.ItemSlotInfo.ItemType.Weapon, Images.mountpoint_weapon},
-            {ItemFactory.ItemSlotInfo.ItemType.Wing, Images.mountpoint_wing},
-        };
     }
 }

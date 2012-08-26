@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
 {
+    /// <summary>
+    /// Renders a grid.
+    /// </summary>
     public sealed class Grid : AbstractShape
     {
         #region Properties
