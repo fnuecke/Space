@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline;
@@ -10,6 +11,7 @@ using Microsoft.Xna.Framework.Content.Pipeline.Processors;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
+using Space.ComponentSystem.Factories;
 
 namespace Space.Tools.DataEditor
 {
@@ -96,6 +98,10 @@ namespace Space.Tools.DataEditor
                     effect.LoadContent(this);
                     return (T)(object)effect;
                 }
+            }
+            else if (typeof(T) == typeof(IFactory[]))
+            {
+                return (T)(object)FactoryManager.GetFactoriesFromFile(assetName).ToArray();
             }
             return default(T);
         }

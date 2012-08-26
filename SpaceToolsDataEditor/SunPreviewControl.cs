@@ -43,7 +43,7 @@ namespace Space.Tools.DataEditor
 
         private Sun _sun;
 
-        private Ellipse _circle;
+        private FilledEllipse _circle;
 
         private Timer _timer;
 
@@ -103,10 +103,11 @@ namespace Space.Tools.DataEditor
             {
                 try
                 {
-                    _circle = new Ellipse(_content, GraphicsDevice)
+                    _circle = new FilledEllipse(_content, GraphicsDevice)
                     {
-                        Thickness = 2,
-                        Color = Color.SlateGray * 0.5f
+                        Gradient = 5,
+                        Color = Color.LightSlateGray * 0.9f,
+                        BlendState = BlendState.Additive
                     };
                 }
                 catch (Exception ex)
@@ -182,6 +183,11 @@ namespace Space.Tools.DataEditor
             {
                 return;
             }
+            if (_circle != null)
+            {
+                _circle.SetCenter(Width / 2f, Height / 2f);
+                _circle.Draw();
+            }
             _sun.Time = (float)(DateTime.UtcNow - DateTime.Today).TotalMilliseconds / 1000;
             _sun.SetCenter(Width / 2f, Height / 2f);
             try
@@ -195,11 +201,6 @@ namespace Space.Tools.DataEditor
             _batch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
             _batch.Draw(_target, GraphicsDevice.PresentationParameters.Bounds, Color.White);
             _batch.End();
-            if (_circle != null)
-            {
-                _circle.SetCenter(Width / 2f, Height / 2f);
-                _circle.Draw();
-            }
         }
     }
 }

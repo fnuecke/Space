@@ -1,4 +1,6 @@
-﻿using Engine.ComponentSystem.Common.Components;
+﻿using System;
+using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -11,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Renders entity ids at their position, if they have a position.
     /// </summary>
-    public sealed class DebugEntityIdRenderer : AbstractComponentSystem<Transform>, IDrawingSystem
+    public sealed class DebugEntityIdRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Properties
 
@@ -39,14 +41,24 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components when updating, to avoid
+        /// modifications to the list of components breaking the update.
+        /// </summary>
+        private ISet<int> _entitiesInView = new HashSet<int>();
+
+        #endregion
+
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DebugEntityIdRenderer"/> class.
+        /// Initializes a new instance of the <see cref="DebugEntityIdRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="spriteBatch">The sprite batch.</param>
-        public DebugEntityIdRenderer(ContentManager content, SpriteBatch spriteBatch)
+        public DebugEntityIdRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _spriteBatch = spriteBatch;
             _font = content.Load<SpriteFont>("Fonts/ConsoleFont");
@@ -67,15 +79,18 @@ namespace Space.ComponentSystem.Systems
 
             // Get all renderable entities in the viewport.
             var view = camera.ComputeVisibleBounds(_spriteBatch.GraphicsDevice.Viewport);
+            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _entitiesInView, InterpolationSystem.IndexGroupMask);
 
             // Get camera transform.
             var transform = camera.Transform;
             var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
 
+            // Iterate over all visible entities.
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, transform.Matrix);
-            foreach (var component in Components)
+            foreach (var entity in _entitiesInView)
             {
-                if (view.Contains(component.Translation))
+                var component = (Transform)Manager.GetComponent(entity, Transform.TypeId);
+                if (component != null)
                 {
                     FarPosition position;
                     interpolation.GetInterpolatedPosition(component.Entity, out position);
@@ -84,6 +99,33 @@ namespace Space.ComponentSystem.Systems
                 }
             }
             _spriteBatch.End();
+
+            // Clear for next iteration.
+            _entitiesInView.Clear();
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override AbstractSystem NewInstance()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Not supported by presentation types.
+        /// </summary>
+        /// <returns>Never.</returns>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        public override void CopyInto(AbstractSystem into)
+        {
+            throw new NotSupportedException();
         }
 
         #endregion

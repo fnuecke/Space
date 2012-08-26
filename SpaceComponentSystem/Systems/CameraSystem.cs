@@ -57,15 +57,9 @@ namespace Space.ComponentSystem.Systems
         /// The current camera position.
         /// </summary>
         public FarPosition CameraPositon
-        { 
-            get
-            {
-                return _customCameraPosition ?? (_cameraPosition + _currentOffset);
-            } 
-            set 
-            {
-                _customCameraPosition = value; 
-            }
+        {
+            get { return _customCameraPosition ?? (_cameraPosition + _currentOffset); }
+            set { _customCameraPosition = value; }
         }
 
         /// <summary>
@@ -90,9 +84,14 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The game this system belongs to.
+        /// The graphics device we render to.
         /// </summary>
-        private readonly Game _game;
+        private readonly GraphicsDevice _graphics;
+
+        /// <summary>
+        /// Services provided by our game.
+        /// </summary>
+        private readonly IServiceProvider _services;
 
         /// <summary>
         /// The session this system belongs to, for fetching the local player.
@@ -139,11 +138,13 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="CameraSystem"/> class.
         /// </summary>
-        /// <param name="game">The game.</param>
+        /// <param name="graphics">The graphics.</param>
+        /// <param name="services">The services.</param>
         /// <param name="session">The session.</param>
-        public CameraSystem(Game game, IClientSession session)
+        public CameraSystem(GraphicsDevice graphics, IServiceProvider services, IClientSession session)
         {
-            _game = game;
+            _graphics = graphics;
+            _services = services;
             _session = session;
             IsEnabled = true;
         }
@@ -224,6 +225,8 @@ namespace Space.ComponentSystem.Systems
             // Don't update if our position is fixed or we're not in a game.
             if (_customCameraPosition.HasValue || _session.ConnectionState != ClientState.Connected)
             {
+                // Update the transformation.
+                UpdateTransformation();
                 return;
             }
 
@@ -263,10 +266,10 @@ namespace Space.ComponentSystem.Systems
             offset.Y = 0;
 
             // Get viewport, for mouse position scaling and offset scaling.
-            var viewport = _game.GraphicsDevice.Viewport;
+            var viewport = _graphics.Viewport;
             var offsetScale = (float)(Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
 
-            var inputManager = (InputManager)_game.Services.GetService(typeof(InputManager));
+            var inputManager = (InputManager)_services.GetService(typeof(InputManager));
             var mouse = inputManager.GetMouse();
 
             // If we have a game pad attached, get the stick tilt.
@@ -313,7 +316,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private void UpdateTransformation()
         {
-            var viewport = _game.GraphicsDevice.Viewport;
+            var viewport = _graphics.Viewport;
             // Use far position for camera translation.
             _transform.Translation = -CameraPositon;
             // Apply zoom and viewport offset via normal matrix.

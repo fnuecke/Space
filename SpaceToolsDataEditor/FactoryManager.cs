@@ -225,6 +225,7 @@ namespace Space.Tools.DataEditor
             {
                 type.Value.Clear();
             }
+            FactoryFilenames.Clear();
             OnFactoriesCleared();
         }
 
@@ -319,6 +320,21 @@ namespace Space.Tools.DataEditor
         public static IEnumerable<Type> GetFactoryTypes()
         {
             return FactoriesByType.Keys;
+        }
+
+        /// <summary>
+        /// Gets all factories that came from the specified file.
+        /// </summary>
+        public static IEnumerable<IFactory> GetFactoriesFromFile(string assetName)
+        {
+            var name = assetName.Replace('/', '\\') + ".xml";
+            foreach (var pair in FactoryFilenames)
+            {
+                if (pair.Value.EndsWith(name))
+                {
+                    yield return pair.Key;
+                }
+            }
         }
 
         /// <summary>

@@ -170,7 +170,7 @@ namespace Space.Control
                     new ItemSlotSystem(),
                     // The following systems will react to equipment changes, to adjust
                     // how a ship is rendered.
-                    new ThrusterEffectSystem(),
+                    new ItemEffectSystem(),
 
                     // Check which cells are active after updating positions. This system
                     // may also remove entities if they are now out of bounds. But it'll
@@ -229,7 +229,7 @@ namespace Space.Control
                     new CameraCenteredInterpolationSystem(game.GraphicsDevice, simulationFps),
 
                     // Update camera first, as it determines what to render.
-                    new CameraSystem(game, session),
+                    new CameraSystem(game.GraphicsDevice, game.Services, session),
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance"), session),
@@ -268,8 +268,8 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    new DebugCollisionBoundsRenderer(game.Content, game.GraphicsDevice),
-                    new DebugEntityIdRenderer(game.Content, spriteBatch)
+                    new DebugCollisionBoundsRenderSystem(game.Content, game.GraphicsDevice),
+                    new DebugEntityIdRenderSystem(game.Content, spriteBatch)
                 });
         }
     }

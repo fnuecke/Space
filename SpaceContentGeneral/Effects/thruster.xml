@@ -8,7 +8,7 @@
       <ReleaseQuantity>1</ReleaseQuantity>
       <Enabled>true</Enabled>
       <ReleaseSpeed>
-        <Value>-128</Value>
+        <Value>128</Value>
         <Variation>32</Variation>
       </ReleaseSpeed>
       <ReleaseColour>
@@ -55,7 +55,7 @@
       <ReleaseQuantity>1</ReleaseQuantity>
       <Enabled>true</Enabled>
       <ReleaseSpeed>
-        <Value>-128</Value>
+        <Value>128</Value>
         <Variation>32</Variation>
       </ReleaseSpeed>
       <ReleaseColour>

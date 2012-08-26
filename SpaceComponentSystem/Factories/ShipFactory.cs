@@ -126,16 +126,19 @@ namespace Space.ComponentSystem.Factories
         /// <param name="position">The position at which to spawn the ship.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public int SampleShip(IManager manager, Factions faction, FarPosition position, IUniformRandom random)
+        public int Sample(IManager manager, Factions faction, FarPosition position, IUniformRandom random)
         {
             var entity = CreateShip(manager, faction, position);
 
             // Create initial equipment.
             var equipment = (ItemSlot)manager.GetComponent(entity, ItemSlot.TypeId);
             equipment.Item = FactoryLibrary.SampleItem(manager, _items.Name, position, random);
-            foreach (var item in _items.Slots)
+            if (equipment.Item > 0)
             {
-                SampleItems(manager, position, random, equipment.Item, item);
+                foreach (var item in _items.Slots)
+                {
+                    SampleItems(manager, position, random, equipment.Item, item);
+                }
             }
 
             // Add our attributes.
@@ -171,6 +174,11 @@ namespace Space.ComponentSystem.Factories
         {
             // Create the actual item.
             var itemId = FactoryLibrary.SampleItem(manager, itemInfo.Name, position, random);
+            if (itemId < 1)
+            {
+                // No such item.
+                return;
+            }
             var item = (Item)manager.GetComponent(itemId, Item.TypeId);
 
             // Then equip it in the parent.
@@ -286,6 +294,7 @@ namespace Space.ComponentSystem.Factories
             /// </summary>
             [Editor("Space.Tools.DataEditor.ItemInfoEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+            [TypeConverter(typeof(ReadonlyItemNameConverter))]
             [Description("The name of the item type to sample.")]
             public string Name
             {
@@ -328,6 +337,14 @@ namespace Space.ComponentSystem.Factories
             }
 
             #endregion
+        }
+
+        public sealed class ReadonlyItemNameConverter : TypeConverter
+        {
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                return false;
+            }
         }
 
         #endregion

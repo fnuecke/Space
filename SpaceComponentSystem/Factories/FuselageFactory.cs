@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Fuselage>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize,
                                                               ModelOffset.HasValue ? ModelOffset.Value : Vector2.Zero,
                                                               ModelBelowParent);
-
+            
             return SampleAttributes(manager, entity, random);
         }
 

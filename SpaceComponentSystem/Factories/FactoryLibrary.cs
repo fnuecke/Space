@@ -20,11 +20,6 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         private static readonly Dictionary<string, IFactory> Factories = new Dictionary<string, IFactory>();
         
-        /// <summary>
-        /// Whether the library is initialized (has loaded its assets).
-        /// </summary>
-        private static bool _isInitialized;
-
         #endregion
 
         #region Initialization
@@ -35,10 +30,7 @@ namespace Space.ComponentSystem.Factories
         /// <param name="content">The content manager to use to load constraints.</param>
         public static void LoadContent(ContentManager content)
         {
-            if (_isInitialized)
-            {
-                return;
-            }
+            Factories.Clear();
 
             Load("Data/ArmorFactory", content);
             Load("Data/FuselageFactory", content);
@@ -53,8 +45,6 @@ namespace Space.ComponentSystem.Factories
             Load("Data/PlanetFactory", content);
             Load("Data/SunFactory", content);
             Load("Data/SunSystemFactory", content);
-
-            _isInitialized = true;
         }
 
         /// <summary>
@@ -103,6 +93,10 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public static int SampleItem(IManager manager, string name, FarPosition position, IUniformRandom random)
         {
+            if (!Factories.ContainsKey(name))
+            {
+                return 0;
+            }
             var factory = Factories[name] as ItemFactory;
             if (factory == null)
             {
@@ -132,7 +126,7 @@ namespace Space.ComponentSystem.Factories
         public static int SampleShip(IManager manager, string name, Factions faction, FarPosition position, IUniformRandom random)
         {
             var factory = Factories[name] as ShipFactory;
-            return factory != null ? factory.SampleShip(manager, faction, position, random) : 0;
+            return factory != null ? factory.Sample(manager, faction, position, random) : 0;
         }
 
         /// <summary>

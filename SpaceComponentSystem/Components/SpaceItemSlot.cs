@@ -163,6 +163,42 @@ namespace Space.ComponentSystem.Components
             return AccumulateOffset(Vector2.Zero);
         }
 
+
+        /// <summary>
+        /// Mirrors the specified direction if necessary (i.e. if the first
+        /// node in this equipment branch with an offset along the y axis has
+        /// a negative y offset).
+        /// </summary>
+        /// <param name="direction">The direction.</param>
+        /// <returns>The adjusted direction, as necessary.</returns>
+        public float Mirror(float direction)
+        {
+            // Walk up the tree and accumulate offsets.
+            var slot = this;
+
+            // Keep track of the first (or, walking up: last) node that
+            // has an actual offset along the x-axis.
+            var potentialRootOffset = Vector2.Zero;
+            bool mirror = false;
+            do
+            {
+                // If there's an offset, mark it as the new top-level node.
+                if (slot.Offset.Y != 0f)
+                {
+                    mirror = slot.Offset.Y < 0f;
+                }
+            } while ((slot = (SpaceItemSlot)slot.Parent) != null);
+
+            if (mirror)
+            {
+                return -direction;
+            }
+            else
+            {
+                return direction;
+            }
+        }
+
         #endregion
 
         #region Serialization

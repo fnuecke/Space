@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
 using ProjectMercury.Renderers;
 using Space.ComponentSystem.Components;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -97,7 +98,7 @@ namespace Space.ComponentSystem.Systems
             var transform = GetTransform();
 
             // Get delta to keep update speed constant regardless of framerate.
-            var delta = elapsedMilliseconds / (1000 / _simulationFps()) / 20;
+            var delta = elapsedMilliseconds / (1000 / (_simulationFps() / Settings.TicksPerSecond));
 
             // Get the interpolation system to get an interpolated position for the effect generator.
             var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
@@ -108,6 +109,10 @@ namespace Space.ComponentSystem.Systems
                 // Handle each effect per component.
                 foreach (var effect in component.Effects)
                 {
+                    // Get info for triggering and rendering.
+                    FarPosition position;
+                    interpolation.GetInterpolatedPosition(component.Entity, out position);
+
                     // Load / initialize particle effects if they aren't yet.
                     if (effect.Effect == null)
                     {
@@ -116,14 +121,12 @@ namespace Space.ComponentSystem.Systems
                         effect.Effect.Initialise();
                     }
 
-                    // Get info for triggering and rendering.
-                    FarPosition position;
-                    interpolation.GetInterpolatedPosition(component.Entity, out position);
-
-                    // Only do the remaining work if the effect is actually enabled.
-                    if (effect.Enabled)
+                    // Only do the triggering work if the effect is actually enabled.
+                    // ALWAYS RENDER, to allow already triggered effects to play out (and not
+                    // instantly disappear).
+                    if (effect.Enabled && effect.Intensity > 0.2f)
                     {
-                        // Check if it's in bounds, i.e. whether we have to render it at all.
+                        // Check if it's in bounds, i.e. whether we have to trigger it at all.
                         Vector2 translation;
                         FarPosition.Transform(ref position, ref transform, out translation);
                         var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
@@ -142,8 +145,11 @@ namespace Space.ComponentSystem.Systems
                             offset.X = effect.Offset.X * cosRadians - effect.Offset.Y * sinRadians;
                             offset.Y = effect.Offset.X * sinRadians + effect.Offset.Y * cosRadians;
 
+                            // Adjust emitting rotation.
+                            rotation += effect.Direction;
+
                             // Trigger.
-                            effect.Effect.Trigger(offset, rotation);
+                            effect.Effect.Trigger(offset, rotation, effect.Scale * effect.Intensity);
                         }
                     }
 
@@ -151,7 +157,7 @@ namespace Space.ComponentSystem.Systems
                     var localTransform = transform;
                     localTransform.Translation += position;
                     _renderer.RenderEffect(effect.Effect, ref localTransform);
-                    
+
                     // Update after rendering.
                     effect.Effect.Update(delta);
                 }

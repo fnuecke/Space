@@ -97,20 +97,29 @@ namespace Space.ComponentSystem.Factories
             var offset = SampleOffset(random);
             var mass = SampleMass(random);
 
-            Vector2 surfaceRotation;
-            surfaceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
-            surfaceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
-            surfaceRotation.Normalize();
+            var surfaceRotation = Vector2.Zero;
+            if (random != null)
+            {
+                surfaceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
+                surfaceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
+                surfaceRotation.Normalize();
+            }
 
-            Vector2 primaryTurbulenceRotation;
-            primaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
-            primaryTurbulenceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
-            primaryTurbulenceRotation.Normalize();
+            var primaryTurbulenceRotation = Vector2.Zero;
+            if (random != null)
+            {
+                primaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
+                primaryTurbulenceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
+                primaryTurbulenceRotation.Normalize();
+            }
 
-            Vector2 secondaryTurbulenceRotation;
-            secondaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
-            secondaryTurbulenceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
-            secondaryTurbulenceRotation.Normalize();
+            var secondaryTurbulenceRotation = Vector2.Zero;
+            if (random != null)
+            {
+                secondaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
+                secondaryTurbulenceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
+                secondaryTurbulenceRotation.Normalize();
+            }
 
             manager.AddComponent<Transform>(entity).Initialize(offset + cellCenter);
 

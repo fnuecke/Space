@@ -60,7 +60,9 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86" />
+    <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
+    </Reference>
     <Reference Include="SlimDX.DirectInput, Version=4.0.10.43, Culture=neutral, PublicKeyToken=96bb577564343f16, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -175,6 +177,9 @@
       <DependentUpon>DataEditorSettings.settings</DependentUpon>
     </Compile>
     <Compile Include="XnaColorEditor.cs" />
+    <Compile Include="IngamePreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <EmbeddedResource Include="AddFactoryDialog.resx">
       <DependentUpon>AddFactoryDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -233,6 +238,10 @@
     <None Include="Resources\OpenFile.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
+      <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
+      <Name>Engine.ComponentSystem.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
       <Name>Engine.ComponentSystem.RPG</Name>
@@ -256,6 +265,10 @@
     <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
       <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
       <Name>Engine.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
+      <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>
+      <Name>Engine.Session</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>

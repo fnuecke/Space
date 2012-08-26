@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using ProjectMercury;
@@ -42,8 +44,8 @@ namespace Space.ComponentSystem.Components
         public enum EffectGroup
         {
             None,
-
-            Thrusters
+            Thruster,
+            Weapon,
         }
 
         #endregion
@@ -73,9 +75,14 @@ namespace Space.ComponentSystem.Components
             {
                 Effects.Add(new PositionedEffect
                 {
+                    Id = effect.Id,
                     AssetName = effect.AssetName,
+                    Scale = effect.Scale,
+                    Direction = effect.Direction,
                     Offset = effect.Offset,
-                    Enabled = effect.Enabled
+                    Group = effect.Group,
+                    Enabled = effect.Enabled,
+                    Intensity = effect.Intensity
                 });
             }
 
@@ -103,11 +110,18 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="id">The id of the effect.</param>
         /// <param name="effect">The effect.</param>
+        /// <param name="scale">The scale.</param>
+        /// <param name="direction">The direction.</param>
         /// <param name="offset">The offset.</param>
         /// <param name="group">The group.</param>
         /// <param name="enabled">Whether the effect should be initially enabled.</param>
-        public void TryAdd(int id, string effect, Vector2 offset, EffectGroup group = EffectGroup.None, bool enabled = false)
+        public void TryAdd(int id, string effect, float scale, float direction, Vector2 offset,
+            EffectGroup group = EffectGroup.None, bool enabled = false)
         {
+            if (string.IsNullOrWhiteSpace(effect))
+            {
+                return;
+            }
             foreach (var pfx in Effects)
             {
                 if (pfx.Id == id && pfx.AssetName.Equals(effect) && pfx.Offset == offset)
@@ -119,9 +133,12 @@ namespace Space.ComponentSystem.Components
             {
                 Id = id,
                 AssetName = effect,
+                Scale = scale,
+                Direction = direction,
                 Offset = offset,
                 Group = group,
-                Enabled = enabled
+                Enabled = enabled,
+                Intensity = 1f
             });
         }
 
@@ -152,6 +169,26 @@ namespace Space.ComponentSystem.Components
             }
         }
 
+        /// <summary>
+        /// Sets the direction of the effects in a group that should be active. This will
+        /// scale the intensity for all effects in the group based on their relative
+        /// orientation to the specified direction (this is primarily intended for thruster
+        /// effects).
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="direction">The direction.</param>
+        public void SetGroupDirection(EffectGroup group, float direction)
+        {
+            foreach (var pfx in Effects)
+            {
+                if (pfx.Group == group)
+                {
+                    var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(pfx.Direction, direction)));
+                    pfx.Intensity = Math.Max(0, 60f - Math.Max(0, angle - 20f)) / 60f;
+                }
+            }
+        }
+
         #endregion
 
         #region Serialization
@@ -167,13 +204,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(Effects.Count);
-            foreach (var effect in Effects)
-            {
-                packet.Write(effect.AssetName);
-                packet.Write(effect.Offset);
-                packet.Write(effect.Enabled);
-            }
+            packet.Write(Effects);
 
             return packet;
         }
@@ -187,19 +218,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Effects.Clear();
-            var numEffects = packet.ReadInt32();
-            for (var i = 0; i < numEffects; i++)
-            {
-                var name = packet.ReadString();
-                var offset = packet.ReadVector2();
-                var enabled = packet.ReadBoolean();
-                Effects.Add(new PositionedEffect
-                {
-                    AssetName = name,
-                    Offset = offset,
-                    Enabled = enabled
-                });
-            }
+            Effects.AddRange(packet.ReadPacketizables<PositionedEffect>());
         }
 
         /// <summary>
@@ -233,7 +252,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Utility structure to represent particle effects with the offset.
         /// </summary>
-        internal sealed class PositionedEffect
+        internal sealed class PositionedEffect : IPacketizable
         {
             /// <summary>
             /// The id the effect is referenced by (usually the component that caused its creation).
@@ -244,6 +263,16 @@ namespace Space.ComponentSystem.Components
             /// The asset name of the effect, for re-loading after serialization.
             /// </summary>
             public string AssetName;
+
+            /// <summary>
+            /// The scale at which to render the effect.
+            /// </summary>
+            public float Scale;
+
+            /// <summary>
+            /// The direction in which to emit the effect.
+            /// </summary>
+            public float Direction;
 
             /// <summary>
             /// The actual particle effect structure.
@@ -268,6 +297,37 @@ namespace Space.ComponentSystem.Components
             /// and harder to serialize.
             /// </remarks>
             public bool Enabled;
+
+            /// <summary>
+            /// The intensity of the effect (relative scale).
+            /// </summary>
+            public float Intensity;
+
+            public Packet Packetize(Packet packet)
+            {
+                packet.Write(Id);
+                packet.Write(AssetName);
+                packet.Write(Scale);
+                packet.Write(Direction);
+                packet.Write(Offset);
+                packet.Write((byte)Group);
+                packet.Write(Enabled);
+                packet.Write(Intensity);
+
+                return packet;
+            }
+
+            public void Depacketize(Packet packet)
+            {
+                Id = packet.ReadInt32();
+                AssetName = packet.ReadString();
+                Scale = packet.ReadSingle();
+                Direction = packet.ReadSingle();
+                Offset = packet.ReadVector2();
+                Group = (EffectGroup)packet.ReadByte();
+                Enabled = packet.ReadBoolean();
+                Intensity = packet.ReadSingle();
+            }
         }
 
         #endregion

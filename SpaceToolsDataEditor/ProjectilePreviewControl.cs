@@ -139,7 +139,7 @@ namespace Space.Tools.DataEditor
                         Position = Vector2.Zero,
                         Acceleration = _factories[i].SampleAccelerationForce(0, _random),
                         Velocity =
-                            _factories[i].SampleInitialDirectedVelocity(_factories[i].SampleInitialRotation(_random), _random),
+                            _factories[i].SampleInitialDirectedVelocity(0, _random),
                         Friction = (1 - _factories[i].Friction),
                         Texture = _models[i],
                         Effect = _effects[i] == null ? null : _effects[i].DeepCopy(),

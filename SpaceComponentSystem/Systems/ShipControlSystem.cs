@@ -75,6 +75,10 @@ namespace Space.ComponentSystem.Systems
                 // still need to fulfill our quota.
                 var load = Math.Min(1, desiredAcceleration * mass / accelerationForce);
 
+                // Apply some dampening on how fast we accelerate when accelerating sideways/backwards.
+                var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(transform.Rotation, (float)Math.Atan2(accelerationDirection.Y, accelerationDirection.X))));
+                load *= Math.Max(0, 200f - Math.Max(0, angle - 60f)) / 200f;
+
                 // And apply it to our energy and power values.
                 energyConsumption *= load;
                 accelerationForce *= load;
@@ -99,7 +103,8 @@ namespace Space.ComponentSystem.Systems
                 acceleration.Value += accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
 
                 // Adjust thruster PFX based on acceleration, if it just started.
-                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thrusters, true);
+                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
+                effects.SetGroupDirection(ParticleEffects.EffectGroup.Thruster, (float)Math.Atan2(-accelerationDirection.Y, -accelerationDirection.X) - transform.Rotation);
 
                 // Enable thruster sound for this ship.
                 sound.Enabled = true;
@@ -107,7 +112,7 @@ namespace Space.ComponentSystem.Systems
             else
             {
                 // Not accelerating. Disable thruster effects if we were accelerating before.
-                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thrusters, false);
+                effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, false);
 
                 // Disable thruster sound for this ship.
                 sound.Enabled = false;
