@@ -136,7 +136,7 @@ namespace Space.Tools.DataEditor
             }
             catch (Exception ex)
             {
-                throw;
+                _manager.Clear();
             }
         }
     }
