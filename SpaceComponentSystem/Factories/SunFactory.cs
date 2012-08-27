@@ -70,11 +70,11 @@ namespace Space.ComponentSystem.Factories
 
         private string _name = "";
 
-        private FloatInterval _radius;
+        private FloatInterval _radius = FloatInterval.Zero;
 
-        private FloatInterval _offsetRadius;
+        private FloatInterval _offsetRadius = FloatInterval.Zero;
 
-        private FloatInterval _mass;
+        private FloatInterval _mass = FloatInterval.Zero;
 
         #endregion
 

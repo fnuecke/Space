@@ -31,9 +31,9 @@ namespace Space.Tools.DataEditor
                 }
                 else if (_sun != null)
                 {
-                    _sun.SetSize(_factory.Radius.Low * 2 * 0.95f);
                     LoadContent();
                 }
+                Invalidate();
             }
         }
 
@@ -146,23 +146,25 @@ namespace Space.Tools.DataEditor
 
         private void LoadContent()
         {
-            if (_circle != null)
-            {
-                _circle.SetSize(_factory.Radius.High * 2);
-            }
             Control control = FindForm();
             if (control == null)
             {
                 control = this;
             }
+            control.Cursor = Cursors.WaitCursor;
             try
             {
-                control.Cursor = Cursors.WaitCursor;
+                if (_circle != null)
+                {
+                    _circle.SetSize(_factory.Radius.High * 2);
+                }
+                _sun.SetSize(_factory.Radius.Low * 2 * 0.95f);
                 _sun.LoadContent(_batch, _content);
                 _timer.Enabled = true;
             }
             catch
             {
+                _factory = null;
             }
             finally
             {
@@ -179,23 +181,22 @@ namespace Space.Tools.DataEditor
         {
             GraphicsDevice.SetRenderTarget(_target);
             GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
-            if (_sun == null || _factory == null)
+            if (_sun != null && _factory != null)
             {
-                return;
+                if (_circle != null)
+                {
+                    _circle.SetCenter(Width / 2f, Height / 2f);
+                    _circle.Draw();
+                }
+                _sun.Time = (float)(DateTime.UtcNow - DateTime.Today).TotalMilliseconds / 1000;
+                _sun.SetCenter(Width / 2f, Height / 2f);
+                try
+                {
+                    _sun.Draw();
+                }
+                catch
+                {
             }
-            if (_circle != null)
-            {
-                _circle.SetCenter(Width / 2f, Height / 2f);
-                _circle.Draw();
-            }
-            _sun.Time = (float)(DateTime.UtcNow - DateTime.Today).TotalMilliseconds / 1000;
-            _sun.SetCenter(Width / 2f, Height / 2f);
-            try
-            {
-                _sun.Draw();
-            }
-            catch
-            {
             }
             GraphicsDevice.SetRenderTarget(null);
             _batch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);

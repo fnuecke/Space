@@ -236,25 +236,7 @@ namespace Space.ComponentSystem.Factories
 
             // Set initial velocity.
             var velocity = SampleInitialDirectedVelocity(emitterTransform.Rotation, random);
-
-            // If our emitter was moving, apply its velocity.
-            if (emitterVelocity != null)
-            {
-                velocity += emitterVelocity.Value;
-            }
-
-            if (velocity != Vector2.Zero)
-            {
-                manager.AddComponent<Velocity>(entity).Initialize(velocity);
-            }
-
-            // Sample an acceleration for this projectile. If there is any, create the
-            // component for it, otherwise disregard.
             var accelerationForce = SampleAccelerationForce(emitterTransform.Rotation, random);
-            if (accelerationForce != Vector2.Zero)
-            {
-                manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
-            }
 
             // Adjust rotation for projectile.
             var rotation = emitterTransform.Rotation;
@@ -269,6 +251,24 @@ namespace Space.ComponentSystem.Factories
 
             // Set initial position.
             manager.AddComponent<Transform>(entity).Initialize(emitterTransform.Translation + rotatedOffset, rotation);
+
+            // If our emitter was moving, apply its velocity.
+            if (emitterVelocity != null)
+            {
+                velocity += emitterVelocity.Value;
+            }
+
+            if (velocity != Vector2.Zero)
+            {
+                manager.AddComponent<Velocity>(entity).Initialize(velocity);
+            }
+
+            // Sample an acceleration for this projectile. If there is any, create the
+            // component for it, otherwise disregard.
+            if (accelerationForce != Vector2.Zero)
+            {
+                manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
+            }
 
             // Apply friction to this projectile if so desired.
             if (_friction > 0)

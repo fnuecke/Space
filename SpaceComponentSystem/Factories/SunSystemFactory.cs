@@ -61,7 +61,7 @@ namespace Space.ComponentSystem.Factories
 
         private string _sun;
 
-        private Orbit _planets;
+        private Orbit _planets = new Orbit();
 
         #endregion
 
@@ -121,7 +121,7 @@ namespace Space.ComponentSystem.Factories
 
             private FloatInterval _angle = new FloatInterval(0, 360);
 
-            private Orbiter[] _orbiters;
+            private Orbiter[] _orbiters = new Orbiter[0];
 
             internal void SampleOrbiters(IManager manager, int center, IUniformRandom random)
             {
@@ -133,7 +133,8 @@ namespace Space.ComponentSystem.Factories
                 {
                     if (orbiter.ChanceToExist > random.NextDouble())
                     {
-                        var entity = FactoryLibrary.SamplePlanet(manager, orbiter.Name, center, dominantAngle, orbiter.SampleOrbitRadius(random), random);
+                        var entity = FactoryLibrary.SamplePlanet(manager, orbiter.Name, center, dominantAngle,
+                                                                    orbiter.SampleOrbitRadius(random), random);
 
                         // Recurse.
                         if (orbiter.Moons != null)
@@ -214,13 +215,13 @@ namespace Space.ComponentSystem.Factories
                 set { _moons = value; }
             }
 
-            private string _name;
+            private string _name = "";
 
-            private FloatInterval _orbitRadius;
+            private FloatInterval _orbitRadius = FloatInterval.Zero;
 
-            private float _chanceToExist = 1;
+            private float _chanceToExist = 1f;
 
-            private Orbit _moons;
+            private Orbit _moons = new Orbit();
 
             /// <summary>
             /// Samples the angle of this planet's orbit.

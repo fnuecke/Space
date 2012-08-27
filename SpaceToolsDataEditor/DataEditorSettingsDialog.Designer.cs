@@ -29,21 +29,53 @@
         private void InitializeComponent()
         {
             this.pgSettings = new System.Windows.Forms.PropertyGrid();
+            this.btnSearch = new System.Windows.Forms.Button();
+            this.btnOK = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // pgSettings
             // 
-            this.pgSettings.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pgSettings.Location = new System.Drawing.Point(5, 5);
+            this.pgSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pgSettings.Location = new System.Drawing.Point(8, 8);
             this.pgSettings.Name = "pgSettings";
-            this.pgSettings.Size = new System.Drawing.Size(474, 352);
+            this.pgSettings.Size = new System.Drawing.Size(468, 317);
             this.pgSettings.TabIndex = 2;
+            // 
+            // btnSearch
+            // 
+            this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSearch.Image = global::Space.Tools.DataEditor.Properties.Resources._075b_UpFolder_16x16_72;
+            this.btnSearch.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnSearch.Location = new System.Drawing.Point(8, 331);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(133, 23);
+            this.btnSearch.TabIndex = 3;
+            this.btnSearch.Text = "Find content projects";
+            this.btnSearch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.Click += new System.EventHandler(this.BtnSearchClick);
+            // 
+            // btnOK
+            // 
+            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOK.Location = new System.Drawing.Point(401, 331);
+            this.btnOK.Name = "btnOK";
+            this.btnOK.Size = new System.Drawing.Size(75, 23);
+            this.btnOK.TabIndex = 4;
+            this.btnOK.Text = "&OK";
+            this.btnOK.UseVisualStyleBackColor = true;
+            this.btnOK.Click += new System.EventHandler(this.BtnOkClick);
             // 
             // DataEditorSettingsDialog
             // 
+            this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 362);
+            this.Controls.Add(this.btnOK);
+            this.Controls.Add(this.btnSearch);
             this.Controls.Add(this.pgSettings);
             this.Name = "DataEditorSettingsDialog";
             this.Padding = new System.Windows.Forms.Padding(5);
@@ -58,5 +90,7 @@
         #endregion
 
         private System.Windows.Forms.PropertyGrid pgSettings;
+        private System.Windows.Forms.Button btnSearch;
+        private System.Windows.Forms.Button btnOK;
     }
 }

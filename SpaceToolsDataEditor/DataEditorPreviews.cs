@@ -459,14 +459,14 @@ namespace Space.Tools.DataEditor
                 {
                     renderer.Enabled = true;
                 }
-                if (factory.ModelOffset != null)
+                if (factory.ModelOffset != Vector2.Zero)
                 {
                     var transform = (Transform)_ingamePreview.Manager.GetComponent(entity, Transform.TypeId);
                     if (transform != null)
                     {
                         FarPosition offset;
-                        offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.X);
-                        offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Value.Y);
+                        offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.X);
+                        offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Y);
                         transform.SetTranslation(offset);
                     }
                 }

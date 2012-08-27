@@ -191,7 +191,13 @@ namespace Space.Tools.DataEditor
                 var node = tvData.Nodes.Find(name, true);
                 if (node.Length > 0)
                 {
-                    tvData.SelectedNode = node[0];
+                    foreach (var match in node)
+                    {
+                        if (!match.Parent.Name.Equals("ItemPool"))
+                        {
+                            tvData.SelectedNode = match;
+                        }
+                    }
                 }
                 return true;
             }

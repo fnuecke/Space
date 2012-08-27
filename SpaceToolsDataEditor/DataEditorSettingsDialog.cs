@@ -10,5 +10,15 @@ namespace Space.Tools.DataEditor
 
             pgSettings.SelectedObject = DataEditorSettingsProxy.Default;
         }
+
+        private void BtnOkClick(object sender, System.EventArgs e)
+        {
+            DialogResult = DialogResult.OK;
+        }
+
+        private void BtnSearchClick(object sender, System.EventArgs e)
+        {
+
+        }
     }
 }
