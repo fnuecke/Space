@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows;
 using System.Windows.Forms;
 using Space.ComponentSystem.Factories;
 
@@ -68,7 +67,7 @@ namespace Space.Tools.DataEditor
             // Find parent node (base type) and insert in it.
             var node = tvData.Nodes.Find(factory.GetType().AssemblyQualifiedName, true).FirstOrDefault(IsFactory);
             Debug.Assert(node != null);
-            node.Nodes.Add(factory.Name, factory.Name);
+            node.Nodes.Add(factory.Name, factory.Name).Tag = factory;
 
             // Validate that factory.
             ScanForIssues(factory);
@@ -90,7 +89,7 @@ namespace Space.Tools.DataEditor
             // Find old entry, add new entry to old parent and remove old one.
             var node = tvData.Nodes.Find(oldName, true).FirstOrDefault(n => IsFactory(n.Parent));
             Debug.Assert(node != null);
-            node.Parent.Nodes.Add(newName, newName);
+            node.Parent.Nodes.Add(newName, newName).Tag = node.Tag;
             node.Remove();
 
             // See if this causes us any trouble.
@@ -106,7 +105,7 @@ namespace Space.Tools.DataEditor
             // Find parent node (base type) and insert in it.
             var node = tvData.Nodes.Find(pool.GetType().AssemblyQualifiedName, true).FirstOrDefault(IsItemPool);
             Debug.Assert(node != null);
-            node.Nodes.Add(pool.Name, pool.Name);
+            node.Nodes.Add(pool.Name, pool.Name).Tag = pool;
 
             // Validate that item pool.
             ScanForIssues(pool);
@@ -128,7 +127,7 @@ namespace Space.Tools.DataEditor
             // Find old entry, add new entry to old parent and remove old one.
             var node = tvData.Nodes.Find(oldName, true).FirstOrDefault(n => IsItemPool(n.Parent));
             Debug.Assert(node != null);
-            node.Parent.Nodes.Add(newName, newName);
+            node.Parent.Nodes.Add(newName, newName).Tag = node.Tag;
             node.Remove();
 
             // See if this causes us any trouble.
@@ -205,7 +204,7 @@ namespace Space.Tools.DataEditor
                         FactoryManager.Rename(oldName, newName);
                         tvData.EndUpdate();
 
-                        SelectFactory(newName);
+                        SelectFactory(factory);
                         SelectProperty("Name");
 
                         // Do a full scan as this factory may have been referenced somewhere.
@@ -215,11 +214,8 @@ namespace Space.Tools.DataEditor
                     {
                         tvData.EndUpdate();
 
-                        // Failed renaming, revert to old name.
-                        factory.Name = oldName;
-
                         // Tell the user why.
-                        System.Windows.MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else
@@ -238,19 +234,19 @@ namespace Space.Tools.DataEditor
             else if(pgProperties.SelectedObject is ItemPool)
             {
                 var itemPool = (ItemPool) pgProperties.SelectedObject;
-                if(ReferenceEquals(args.ChangedItem.PropertyDescriptor,TypeDescriptor.GetProperties(itemPool)["Name"]))
+                if(ReferenceEquals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(itemPool)["Name"]))
                 {
                     // Yes, get old and new value.
                     var oldName = args.OldValue as string;
                     var newName = args.ChangedItem.Value as string;
-                    // Adjust factory manager layout, this will throw as necessary.
+                    // Adjust item pool manager layout, this will throw as necessary.
                     tvData.BeginUpdate();
                     try
                     {
                         ItemPoolManager.Rename(oldName, newName);
                         tvData.EndUpdate();
 
-                        SelectItemPool(newName);
+                        SelectItemPool(itemPool);
                         SelectProperty("Name");
 
                         // Do a full scan as this factory may have been referenced somewhere.
@@ -260,11 +256,20 @@ namespace Space.Tools.DataEditor
                     {
                         tvData.EndUpdate();
 
-                        // Failed renaming, revert to old name.
-                        itemPool.Name = oldName;
-
                         // Tell the user why.
-                        System.Windows.MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    // Rescan of issues related to this property.
+                    if (args.ChangedItem.PropertyDescriptor == null || args.ChangedItem.PropertyDescriptor.Attributes[typeof(TriggersFullValidationAttribute)] != null)
+                    {
+                        ScanForIssues();
+                    }
+                    else
+                    {
+                        ScanForIssues(itemPool);
                     }
                 }
             }
@@ -278,18 +283,18 @@ namespace Space.Tools.DataEditor
         /// Selects the factory in our property grid if it exists, else selects
         /// nothing (clears property grid).
         /// </summary>
-        /// <param name="name">The name of the factory.</param>
-        private bool SelectFactory(string name)
+        /// <param name="factory">The factory.</param>
+        /// <returns></returns>
+        private bool SelectFactory(IFactory factory)
         {
             // Deselect object first, to reset property selection in property grid.
             pgProperties.SelectedObject = null;
 
             // See if that factory is known and select it if possible.
-            var factory = FactoryManager.GetFactory(name);
             if (factory != null)
             {
                 pgProperties.SelectedObject = factory;
-                tvData.SelectedNode = tvData.Nodes.Find(name, true).FirstOrDefault(n => IsFactory(n.Parent));
+                tvData.SelectedNode = tvData.Nodes.Find(factory.Name, true).FirstOrDefault(n => IsFactory(n.Parent));
                 return true;
             }
             return false;
@@ -299,18 +304,18 @@ namespace Space.Tools.DataEditor
         /// Selects the Itempool in our property grid if it exists, else selects
         /// nothing (clears property grid).
         /// </summary>
-        /// <param name="name">The name of the factory.</param>
-        private bool SelectItemPool(string name)
+        /// <param name="pool">The pool.</param>
+        /// <returns></returns>
+        private bool SelectItemPool(ItemPool pool)
         {
             // Deselect object first, to reset property selection in property grid.
             pgProperties.SelectedObject = null;
 
             // See if that item pool is known and select it if possible.
-            var pool = ItemPoolManager.GetItemPool(name);
             if (pool != null)
             {
                 pgProperties.SelectedObject = pool;
-                tvData.SelectedNode = tvData.Nodes.Find(name, true).FirstOrDefault(n => IsItemPool(n.Parent));
+                tvData.SelectedNode = tvData.Nodes.Find(pool.Name, true).FirstOrDefault(n => IsItemPool(n.Parent));
                 return true;
             }
             return false;

@@ -13,7 +13,7 @@ namespace Space.Tools.DataEditor
         /// <summary>
         /// Gets the name of the factory.
         /// </summary>
-        public string FactoryName { get { return tbName.Text; } }
+        public string FactoryName { get { return tbName.Text.Trim(); } }
 
         public AddFactoryDialog()
         {

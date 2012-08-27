@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Factories
         /// The maximum amount of simultaneously dropped items.
         /// </summary>
         [DefaultValue(0)]
-        [Category("Drops")]
+        [Category("Logic")]
         [Description("The maximum number of items to sample from this item pool (actual number is randomly determined per drop, with this as the maximum number of items).")]
         public int MaxDrops
         {
@@ -82,7 +82,7 @@ namespace Space.ComponentSystem.Factories
         /// probability the item will be dropped.
         /// </summary>
         [ContentSerializer(FlattenContent = true, CollectionItemName = "Item")]
-        [Category("Drops")]
+        [Category("Logic")]
         [Description("The list of items that can be drawn from this item pool.")]
         public DropInfo[] Items
         {

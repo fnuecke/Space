@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Windows;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Space.ComponentSystem.Factories;
@@ -18,7 +17,7 @@ namespace Space.Tools.DataEditor
             IsFolderPicker = true,
             EnsurePathExists = true,
             EnsureValidNames = true,
-            InitialDirectory = System.Windows.Forms.Application.StartupPath,
+            InitialDirectory = Application.StartupPath,
             Title = "Select folder with factory XMLs"
         };
 
@@ -136,11 +135,11 @@ namespace Space.Tools.DataEditor
                 DataEditorSettings.Default.FirstStart = false;
                 DataEditorSettings.Default.Save();
 
-                if (System.Windows.MessageBox.Show("It appears you are starting the program for the first time.\n" +
-                                                   "Do you wish to configure your data directories now?\n" +
-                                                   "(You can also do so later in the settings)", "First start",
-                                                   MessageBoxButton.YesNo, MessageBoxImage.Question,
-                                                   MessageBoxResult.Yes) == MessageBoxResult.Yes)
+                if (MessageBox.Show(this,
+                                    "It appears you are starting the program for the first time.\n" +
+                                    "Do you wish to configure your data directories now?\n" +
+                                    "(You can also do so later in the settings)",
+                                    "First start", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     _settingsDialog.ShowDialog(this);
                 }
@@ -152,14 +151,14 @@ namespace Space.Tools.DataEditor
             get { return tsmiSave.Enabled; }
             set
             {
-                Text = "Space - Data Editor" + (value ? " (*)" : "");
+                Text = @"Space - Data Editor" + (value ? " (*)" : "");
                 tsmiSave.Enabled = value;
             }
         }
 
         private void ExitClick(object sender, EventArgs e)
         {
-            System.Windows.Forms.Application.Exit();
+            Application.Exit();
         }
 
         private void SaveClick(object sender, EventArgs e)
@@ -188,10 +187,10 @@ namespace Space.Tools.DataEditor
             SavingEnabled = false;
         }
 
-        private void FactorySelected(object sender, TreeViewEventArgs e)
+        private void DataSelected(object sender, TreeViewEventArgs e)
         {
-            if (SelectFactory(e.Node.Name) ||
-                SelectItemPool(e.Node.Name))
+            if (SelectFactory(e.Node.Tag as IFactory) ||
+                SelectItemPool(e.Node.Tag as ItemPool))
             {
                 tsmiRemove.Enabled = true;
                 miDelete.Enabled = true;
@@ -208,12 +207,15 @@ namespace Space.Tools.DataEditor
         {
             if (SavingEnabled)
             {
-                switch (System.Windows.MessageBox.Show("You have unsaved changes, do you want to save them now?", "Question", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel))
+                switch (MessageBox.Show(this,
+                                        "You have unsaved changes, do you want to save them now?",
+                                        "Question", MessageBoxButtons.YesNoCancel,
+                                        MessageBoxIcon.Exclamation))
                 {
-                    case MessageBoxResult.Yes:
+                    case DialogResult.Yes:
                         SaveClick(null, null);
                         break;
-                    case MessageBoxResult.Cancel:
+                    case DialogResult.Cancel:
                         e.Cancel = true;
                         return;
                 }
@@ -276,46 +278,41 @@ namespace Space.Tools.DataEditor
                     FactoryManager.Add(instance);
 
                     // And select it.
-                    SelectFactory(name);
+                    SelectFactory(instance);
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show("Failed creating new factory instance:\n" + ex, "Error",
-                                                   MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, "Failed creating new factory:\n" + ex, "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
+
         private void AddItemPoolClick(object sender, EventArgs e)
         {
             if (_itemPoolDialog.ShowDialog(this) == DialogResult.OK)
             {
-                var type = _itemPoolDialog.ItemPoolType;
-                var name = _itemPoolDialog.FactoryName;
+                var name = _itemPoolDialog.ItemPoolName;
 
                 try
                 {
-                    // Create a new instance of this factory type.
-                    var instance = Activator.CreateInstance(type) as ItemPool;
-                    if (instance == null)
-                    {
-                        // This should not happen. Ever.
-                        throw new ArgumentException("Resulting object was not a factory.");
-                    }
-                    instance.Name = name;
+                    // Create a new instance.
+                    var instance = new ItemPool {Name = name};
 
                     // Register it.
                     ItemPoolManager.Add(instance);
 
                     // And select it.
-                    SelectItemPool(name);
+                    SelectItemPool(instance);
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show("Failed creating new Item Pool instance:\n" + ex, "Error",
-                                                   MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, "Failed creating new item pool:\n" + ex, "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
+
         private void RemoveClick(object sender, EventArgs e)
         {
             if (pgProperties.SelectedObject == null)
@@ -328,10 +325,11 @@ namespace Space.Tools.DataEditor
                 if (pgProperties.SelectedObject is IFactory)
                 {
                     var factory = (IFactory)pgProperties.SelectedObject;
-                    if (ModifierKeys == Keys.Shift ||
-                        System.Windows.MessageBox.Show("Are you sure you wish to delete '" + factory.Name + "'?",
-                                                       "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question,
-                                                       MessageBoxResult.No) == MessageBoxResult.Yes)
+                    if ((ModifierKeys & Keys.Shift) != 0 ||
+                        MessageBox.Show(this,
+                                        "Are you sure you wish to delete '" + factory.Name + "'?",
+                                        "Confirmation", MessageBoxButtons.YesNo,
+                                        MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         FactoryManager.Remove(factory);
                     }
@@ -339,10 +337,11 @@ namespace Space.Tools.DataEditor
                 else if (pgProperties.SelectedObject is ItemPool)
                 {
                     var itemPool = (ItemPool)pgProperties.SelectedObject;
-                    if (ModifierKeys == Keys.Shift ||
-                        System.Windows.MessageBox.Show("Are you sure you wish to delete '" + itemPool.Name + "'?",
-                                                       "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question,
-                                                       MessageBoxResult.No) == MessageBoxResult.Yes)
+                    if ((ModifierKeys & Keys.Shift) != 0 ||
+                        MessageBox.Show(this,
+                                        "Are you sure you wish to delete '" + itemPool.Name + "'?",
+                                        "Confirmation", MessageBoxButtons.YesNo,
+                                        MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         ItemPoolManager.Remove(itemPool);
                     }
@@ -366,20 +365,15 @@ namespace Space.Tools.DataEditor
             {
                 return;
             }
-            // Figure out factory and property names.
-            var factory = lvIssues.SelectedItems[0].SubItems[2].Text;
-            var property = lvIssues.SelectedItems[0].SubItems[3].Text;
-
-            // Navigate to that factory.
-            var nodes = tvData.Nodes.Find(factory, true);
-            if (nodes.Length == 0)
+            // Try to select the object.
+            var target = lvIssues.SelectedItems[0].Tag;
+            if (!SelectFactory(target as IFactory) && !SelectItemPool(target as ItemPool))
             {
                 return;
             }
-            tvData.SelectedNode = nodes[0];
 
             // Navigate to that property.
-            if (SelectProperty(property))
+            if (SelectProperty(lvIssues.SelectedItems[0].SubItems[3].Text))
             {
                 // Got the property, focus the property grid.
                 pgProperties.Focus();   
