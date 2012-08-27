@@ -328,6 +328,17 @@ namespace Space.Tools.DataEditor
                         FactoryManager.Remove(factory);
                     }
                 }
+                else if (pgProperties.SelectedObject is ItemPool)
+                {
+                    var itemPool = (ItemPool)pgProperties.SelectedObject;
+                    if (ModifierKeys == Keys.Shift ||
+                        System.Windows.MessageBox.Show("Are you sure you wish to delete '" + itemPool.Name + "'?",
+                                                       "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question,
+                                                       MessageBoxResult.No) == MessageBoxResult.Yes)
+                    {
+                        ItemPoolManager.Remove(itemPool);
+                    }
+                }
             }
         }
 

@@ -24,6 +24,10 @@ namespace Space.Tools.DataEditor
             FactoryManager.FactoryNameChanged += HandleFactoryNameChanged;
 
             ItemPoolManager.ItemPoolAdded += HandleItemPoolAdded;
+            ItemPoolManager.ItemPoolRemoved += HandleItemPoolRemoved;
+            ItemPoolManager.ItemPoolCleared += HandleItemPoolCleared;
+            ItemPoolManager.ItemPoolNameChanged += HandleFactoryNameChanged;
+
         }
 
         private void HandleFactoryAdded(IFactory factory)
@@ -61,6 +65,17 @@ namespace Space.Tools.DataEditor
             ScanForIssues();
         }
 
+        private void HandleItemPoolRemoved(ItemPool itemPool)
+        {
+            var node = tvData.Nodes.Find(itemPool.Name, true);
+            if (node.Length > 0)
+            {
+                node[0].Remove();
+            }
+
+            // See if this causes us any trouble.
+          //  ScanForIssues();
+        }
         private void HandleFactoriesCleared()
         {
             tvData.BeginUpdate();
@@ -81,13 +96,19 @@ namespace Space.Tools.DataEditor
                     tvData.Nodes.Add(type.Name, CleanFactoryName(type));
                 }
             }
-            tvData.Nodes.Add("ItemPool", "Item Pool");
+
             tvData.EndUpdate();
 
             // No factories means less issues! Rescan anyway, because some settings might be bad.
             ScanForIssues();
         }
 
+        private void HandleItemPoolCleared()
+        {
+            tvData.BeginUpdate();
+            tvData.Nodes.Add("ItemPool", "Item Pool");
+            tvData.EndUpdate();
+        }
         private void HandleFactoryNameChanged(string oldName, string newName)
         {
             var oldNode = tvData.Nodes.Find(oldName, true);
@@ -97,7 +118,6 @@ namespace Space.Tools.DataEditor
                 oldNode[0].Remove();
             }
         }
-
         private void HandlePropertyValueChanged(object o, PropertyValueChangedEventArgs args)
         {
             if (pgProperties.SelectedObject is IFactory)
@@ -143,6 +163,39 @@ namespace Space.Tools.DataEditor
                     else
                     {
                         ScanForIssues(factory);
+                    }
+                }
+            }
+            else if(pgProperties.SelectedObject is ItemPool)
+            {
+                var itemPool = (ItemPool) pgProperties.SelectedObject;
+                if(ReferenceEquals(args.ChangedItem.PropertyDescriptor,TypeDescriptor.GetProperties(itemPool)["Name"]))
+                {
+                    // Yes, get old and ned value.
+                    var oldName = args.OldValue as string;
+                    var newName = args.ChangedItem.Value as string;
+                    // Adjust factory manager layout, this will throw as necessary.
+                    tvData.BeginUpdate();
+                    try
+                    {
+                        ItemPoolManager.Rename(oldName, newName);
+                        tvData.EndUpdate();
+
+                        SelectItemPool(newName);
+                        SelectProperty("Name");
+
+                        // Do a full scan as this factory may have been referenced somewhere.
+                        ScanForIssues();
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        tvData.EndUpdate();
+
+                        // Failed renaming, revert to old name.
+                        itemPool.Name = oldName;
+
+                        // Tell the user why.
+                        System.Windows.MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }

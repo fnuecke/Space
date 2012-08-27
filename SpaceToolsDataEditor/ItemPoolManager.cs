@@ -141,6 +141,40 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Renames the item pool with the specified name.
+        /// </summary>
+        /// <param name="oldName">The name of the item pool to rename.</param>
+        /// <param name="newName">The new name.</param>
+        public static void Rename(string oldName, string newName)
+        {
+            // Require a name.
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                throw new ArgumentException("Name must not be empty.");
+            }
+
+            // Skip if nothing changes.
+            if (newName.Equals(oldName))
+            {
+                return;
+            }
+
+            // Make sure the name isn't yet taken.
+            if (HasItemPool(newName))
+            {
+                // Already taken.
+                throw new ArgumentException("Factory name already taken, please choose another one.");
+            }
+
+            var itemPool = ItemPools[oldName];
+            ItemPools.Remove(oldName);
+            ItemPools.Add(newName, itemPool);
+
+            OnItemPoolNameChanged(oldName, newName);
+        }
+
+
+        /// <summary>
         /// Adds a single itempool to the list of known itempools.
         /// </summary>
         /// <param name="factory">The factory.</param>
@@ -150,6 +184,33 @@ namespace Space.Tools.DataEditor
            //var type = factory.GetType();
            // FactoriesByType[type].Add(factory);
             OnItemPoolAdded(itemPool);
+        }
+        /// <summary>
+        /// Determines whether a Item Pool with the specified name exists.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>
+        ///   <c>true</c> if the Item Pool exists; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasItemPool(string name)
+        {
+            return ItemPools.ContainsKey(name);
+        }
+        /// <summary>
+        /// Removes the specified item pool.
+        /// </summary>
+        /// <param name="itemPool">The item pool.</param>
+        public static void Remove(ItemPool itemPool)
+        {
+            if (itemPool == null || string.IsNullOrWhiteSpace(itemPool.Name) || !ItemPools.ContainsKey(itemPool.Name))
+            {
+                return;
+            }
+
+            ItemPools.Remove(itemPool.Name);
+            ItemPoolFilenames.Remove(itemPool);
+
+            OnItemPoolRemoved(itemPool);
         }
         /// <summary>
         /// Clears the lists with known factories as well as the list with
