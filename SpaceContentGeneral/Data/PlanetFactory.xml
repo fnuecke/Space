@@ -19,6 +19,7 @@
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>30 to 40</Radius>
+      <Mass>0</Mass>
       <RotationSpeed>1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>30</AngleOffset>
@@ -30,6 +31,7 @@
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>40 to 60</Radius>
+      <Mass>0</Mass>
       <RotationSpeed>1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>30</AngleOffset>
@@ -41,6 +43,7 @@
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>60 to 80</Radius>
+      <Mass>0</Mass>
       <RotationSpeed>1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>30</AngleOffset>
@@ -52,6 +55,7 @@
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <AtmosphereTint>00000000</AtmosphereTint>
       <Radius>80 to 100</Radius>
+      <Mass>0</Mass>
       <RotationSpeed>1</RotationSpeed>
       <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>30</AngleOffset>

@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
-using Space.ComponentSystem.Factories;
 
 namespace Space.Tools.DataEditor
 {
     /// <summary>
     /// Dialog to select items valid for a slot.
     /// </summary>
-    public partial class ItemPoolDialog : Form
+    public sealed partial class ItemPoolDialog : Form
     {
         /// <summary>
         /// The currently selected item name.
         /// </summary>
         public string SelectedItemName { get; set; }
-
 
         public ItemPoolDialog()
         {
@@ -35,15 +32,14 @@ namespace Space.Tools.DataEditor
             args.ChangedItem.PropertyDescriptor.SetValue(parent.Value, args.OldValue);
         }
 
-        protected virtual void ItemInfoDialogLoad(object sender, EventArgs e)
+        private void ItemInfoDialogLoad(object sender, EventArgs e)
         {
             tvItems.BeginUpdate();
             tvItems.Nodes.Clear();
 
             tvItems.Nodes.Add("", "None");
 
-          
-            foreach (var itemPool in ItemPoolManager.GetItemPool())
+            foreach (var itemPool in ItemPoolManager.GetItemPools())
             {
                     
                 var typeName = itemPool.GetType().Name;
@@ -78,8 +74,6 @@ namespace Space.Tools.DataEditor
                 DialogResult = DialogResult.Cancel;
             }
         }
-
-      
 
         private void ItemsAfterSelect(object sender, TreeViewEventArgs e)
         {

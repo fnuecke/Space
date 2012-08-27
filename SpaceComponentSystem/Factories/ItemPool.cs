@@ -42,9 +42,15 @@ namespace Space.ComponentSystem.Factories
 
             private float _probability;
 
+            /// <summary>
+            /// Returns a <see cref="System.String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="System.String"/> that represents this instance.
+            /// </returns>
             public override string ToString()
             {
-                return _itemName;
+                return _itemName + _probability.ToString(" (0.00%)");
             }
         }
 

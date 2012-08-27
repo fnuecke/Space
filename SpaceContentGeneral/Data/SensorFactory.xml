@@ -4,21 +4,28 @@
     <Item>
       <Name>StarterSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Items/default</Model>
+      <Model>Textures/Stolen/Weapons/hypervelocity_driver_turret_recoil</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
     <Item>
       <Name>PoorBasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Poor</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -40,9 +47,12 @@
       <Name>BasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -64,9 +74,12 @@
       <Name>UncommonBasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Uncommon</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -88,9 +101,12 @@
       <Name>RareBasicSensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Rare</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
@@ -112,12 +128,16 @@
       <Name>L1_AI_Sensor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <GuaranteedAttributes>
         <Item>2000 SensorRange</Item>
       </GuaranteedAttributes>
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
   </Asset>
 </XnaContent>

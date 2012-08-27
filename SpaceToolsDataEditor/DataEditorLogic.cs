@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
 using Space.ComponentSystem.Factories;
@@ -8,6 +10,10 @@ namespace Space.Tools.DataEditor
 {
     public sealed partial class DataEditor
     {
+        private int _isValidationEnabled;
+
+        #region Initialization / Loading
+        
         /// <summary>
         /// Initializes the factory type dictionary (creates list for each known factory type).
         /// </summary>
@@ -20,128 +26,165 @@ namespace Space.Tools.DataEditor
 
             FactoryManager.FactoryAdded += HandleFactoryAdded;
             FactoryManager.FactoryRemoved += HandleFactoryRemoved;
-            FactoryManager.FactoriesCleared += HandleFactoriesCleared;
             FactoryManager.FactoryNameChanged += HandleFactoryNameChanged;
+            FactoryManager.FactoriesCleared += HandleCleared;
 
             ItemPoolManager.ItemPoolAdded += HandleItemPoolAdded;
             ItemPoolManager.ItemPoolRemoved += HandleItemPoolRemoved;
-            ItemPoolManager.ItemPoolCleared += HandleItemPoolCleared;
             ItemPoolManager.ItemPoolNameChanged += HandleItemPoolNameChanged;
+            ItemPoolManager.ItemPoolCleared += HandleCleared;
 
         }
 
+        /// <summary>
+        /// Loads all factories and so on found at the specified path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        private void LoadData(string path)
+        {
+            // Disable validation and tree updates while loading, because
+            // there will be a lot of changes (and redundant updates otherwise).
+            ++_isValidationEnabled;
+            tvData.BeginUpdate();
+
+            // Load stuff.
+            FactoryManager.Load(path);
+            ItemPoolManager.Load(path);
+
+            // Reenable tree and validation.
+            tvData.EndUpdate();
+            --_isValidationEnabled;
+
+            // Done loading, see if there are any problem with what we got.
+            ScanForIssues();
+        }
+
+        #endregion
+
+        #region Factory handlers
+
         private void HandleFactoryAdded(IFactory factory)
         {
-            foreach (var match in tvData.Nodes.Find(factory.GetType().Name, true))
-            {
-                if (IsFactory(match))
-                {
-                    match.Nodes.Add(factory.Name, factory.Name);
-                }
-            }
+            // Find parent node (base type) and insert in it.
+            var node = tvData.Nodes.Find(factory.GetType().AssemblyQualifiedName, true).FirstOrDefault(IsFactory);
+            Debug.Assert(node != null);
+            node.Nodes.Add(factory.Name, factory.Name);
 
             // Validate that factory.
             ScanForIssues(factory);
         }
-        private void HandleItemPoolAdded(ItemPool pool)
-        {
-            foreach (var match in tvData.Nodes.Find(pool.GetType().Name, true))
-            {
-                if (IsItemPool(match))
-                {
-                    match.Nodes.Add(pool.Name, pool.Name);
-                }
-            }
 
-            // Validate that factory.
-            //  ScanForIssues(pool);TODO
-        }
         private void HandleFactoryRemoved(IFactory factory)
         {
-            foreach (var match in tvData.Nodes.Find(factory.Name, true))
-            {
-                if (IsFactory(match.Parent))
-                {
-                    match.Remove();
-                    break;
-                }
-            }
+            // Find the corresponding node and remove it.
+            var node = tvData.Nodes.Find(factory.Name, true).FirstOrDefault(n => IsFactory(n.Parent));
+            Debug.Assert(node != null);
+            node.Remove();
 
             // See if this causes us any trouble.
             ScanForIssues();
+        }
+
+        private void HandleFactoryNameChanged(string oldName, string newName)
+        {
+            // Find old entry, add new entry to old parent and remove old one.
+            var node = tvData.Nodes.Find(oldName, true).FirstOrDefault(n => IsFactory(n.Parent));
+            Debug.Assert(node != null);
+            node.Parent.Nodes.Add(newName, newName);
+            node.Remove();
+
+            // See if this causes us any trouble.
+            ScanForIssues();
+        }
+
+        #endregion
+
+        #region Item pool handlers
+
+        private void HandleItemPoolAdded(ItemPool pool)
+        {
+            // Find parent node (base type) and insert in it.
+            var node = tvData.Nodes.Find(pool.GetType().AssemblyQualifiedName, true).FirstOrDefault(IsItemPool);
+            Debug.Assert(node != null);
+            node.Nodes.Add(pool.Name, pool.Name);
+
+            // Validate that item pool.
+            ScanForIssues(pool);
         }
 
         private void HandleItemPoolRemoved(ItemPool itemPool)
         {
-            foreach (var match in tvData.Nodes.Find(itemPool.Name, true))
-            {
-                if (IsItemPool(match.Parent))
-                {
-                    match.Remove();
-                    break;
-                }
-            }
-            
+            // Find the corresponding node and remove it.
+            var node = tvData.Nodes.Find(itemPool.Name, true).FirstOrDefault(n => IsItemPool(n.Parent));
+            Debug.Assert(node != null);
+            node.Remove();
 
             // See if this causes us any trouble.
-          //  ScanForIssues();
-        }
-        private void HandleFactoriesCleared()
-        {
-            tvData.BeginUpdate();
-            tvData.Nodes.Clear();
-            // Create base type nodes in tree.
-            foreach (var type in FactoryManager.GetFactoryTypes())
-            {
-                if (type.BaseType != null && type.BaseType != typeof(object))
-                {
-                    if (!tvData.Nodes.ContainsKey(type.BaseType.Name))
-                    {
-                        tvData.Nodes.Add(type.BaseType.Name, CleanFactoryName(type.BaseType));
-                    }
-                    tvData.Nodes[type.BaseType.Name].Nodes.Add(type.Name, CleanFactoryName(type));
-                }
-                else
-                {
-                    tvData.Nodes.Add(type.Name, CleanFactoryName(type));
-                }
-            }
-
-            tvData.EndUpdate();
-
-            // No factories means less issues! Rescan anyway, because some settings might be bad.
             ScanForIssues();
         }
 
-        private void HandleItemPoolCleared()
-        {
-            tvData.BeginUpdate();
-            tvData.Nodes.Add(typeof(ItemPool).Name, typeof(ItemPool).Name);
-            tvData.EndUpdate();
-        }
-        private void HandleFactoryNameChanged(string oldName, string newName)
-        {
-            foreach (var match in tvData.Nodes.Find(oldName, true))
-            {
-                if (IsFactory(match.Parent))
-                {
-                    match.Parent.Nodes.Add(newName, newName);
-                    match.Remove();
-                    break;
-                }
-            }
-        }
         private void HandleItemPoolNameChanged(string oldName, string newName)
         {
-            foreach (var match in tvData.Nodes.Find(oldName, true))
+            // Find old entry, add new entry to old parent and remove old one.
+            var node = tvData.Nodes.Find(oldName, true).FirstOrDefault(n => IsItemPool(n.Parent));
+            Debug.Assert(node != null);
+            node.Parent.Nodes.Add(newName, newName);
+            node.Remove();
+
+            // See if this causes us any trouble.
+            ScanForIssues();
+        }
+
+        #endregion
+
+        #region Common handlers
+
+        private void HandleCleared()
+        {
+            // Disable validation and tree updates (performance).
+            ++_isValidationEnabled;
+            tvData.BeginUpdate();
+
+            // Clear the nodes.
+            tvData.Nodes.Clear();
+
+            // Create factory base type nodes in tree.
+            foreach (var type in FactoryManager.GetFactoryTypes())
             {
-                if (IsItemPool(match.Parent))
+                var baseType = type.BaseType;
+                if (baseType != null && baseType != typeof(object))
                 {
-                    match.Parent.Nodes.Add(newName, newName);
-                    match.Remove();
-                    break;
+                    if (!tvData.Nodes.ContainsKey(baseType.AssemblyQualifiedName))
+                    {
+                        tvData.Nodes.Add(baseType.AssemblyQualifiedName, CleanFactoryName(baseType));
+                    }
+                    tvData.Nodes[baseType.AssemblyQualifiedName].Nodes.Add(type.AssemblyQualifiedName, CleanFactoryName(type));
+                }
+                else
+                {
+                    tvData.Nodes.Add(type.AssemblyQualifiedName, CleanFactoryName(type));
                 }
             }
+
+            // Create entry for item pools.
+            tvData.Nodes.Add(typeof(ItemPool).AssemblyQualifiedName, typeof(ItemPool).Name);
+
+            // Re-add existing data.
+            foreach (var factory in FactoryManager.GetFactories())
+            {
+                HandleFactoryAdded(factory);
+            }
+            foreach (var pool in ItemPoolManager.GetItemPools())
+            {
+                HandleItemPoolAdded(pool);
+            }
+
+            // Reenable tree updating and validation.
+            tvData.EndUpdate();
+            --_isValidationEnabled;
+
+            // Rescan.
+            ScanForIssues();
         }
 
         private void HandlePropertyValueChanged(object o, PropertyValueChangedEventArgs args)
@@ -152,7 +195,7 @@ namespace Space.Tools.DataEditor
                 // See if what we changed is the name of the factory.
                 if (ReferenceEquals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(factory)["Name"]))
                 {
-                    // Yes, get old and ned value.
+                    // Yes, get old and new value.
                     var oldName = args.OldValue as string;
                     var newName = args.ChangedItem.Value as string;
                     // Adjust factory manager layout, this will throw as necessary.
@@ -197,7 +240,7 @@ namespace Space.Tools.DataEditor
                 var itemPool = (ItemPool) pgProperties.SelectedObject;
                 if(ReferenceEquals(args.ChangedItem.PropertyDescriptor,TypeDescriptor.GetProperties(itemPool)["Name"]))
                 {
-                    // Yes, get old and ned value.
+                    // Yes, get old and new value.
                     var oldName = args.OldValue as string;
                     var newName = args.ChangedItem.Value as string;
                     // Adjust factory manager layout, this will throw as necessary.
@@ -227,14 +270,78 @@ namespace Space.Tools.DataEditor
             }
         }
 
-        private static bool IsFactory(TreeNode match)
+        #endregion
+
+        #region Selection in tree
+
+        /// <summary>
+        /// Selects the factory in our property grid if it exists, else selects
+        /// nothing (clears property grid).
+        /// </summary>
+        /// <param name="name">The name of the factory.</param>
+        private bool SelectFactory(string name)
         {
-            return match != null && typeof(IFactory).IsAssignableFrom(Type.GetType(typeof(IFactory).Namespace + "." + match.Name + ", " + typeof(IFactory).Assembly));
+            // Deselect object first, to reset property selection in property grid.
+            pgProperties.SelectedObject = null;
+
+            // See if that factory is known and select it if possible.
+            var factory = FactoryManager.GetFactory(name);
+            if (factory != null)
+            {
+                pgProperties.SelectedObject = factory;
+                tvData.SelectedNode = tvData.Nodes.Find(name, true).FirstOrDefault(n => IsFactory(n.Parent));
+                return true;
+            }
+            return false;
         }
 
-        private static bool IsItemPool(TreeNode match)
+        /// <summary>
+        /// Selects the Itempool in our property grid if it exists, else selects
+        /// nothing (clears property grid).
+        /// </summary>
+        /// <param name="name">The name of the factory.</param>
+        private bool SelectItemPool(string name)
         {
-            return match != null && typeof(ItemPool).IsAssignableFrom(Type.GetType(typeof(ItemPool).Namespace + "." + match.Name + ", " + typeof(ItemPool).Assembly));
+            // Deselect object first, to reset property selection in property grid.
+            pgProperties.SelectedObject = null;
+
+            // See if that item pool is known and select it if possible.
+            var pool = ItemPoolManager.GetItemPool(name);
+            if (pool != null)
+            {
+                pgProperties.SelectedObject = pool;
+                tvData.SelectedNode = tvData.Nodes.Find(name, true).FirstOrDefault(n => IsItemPool(n.Parent));
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region Utility methods
+
+        /// <summary>
+        /// Determines whether the specified tree node represents a factory.
+        /// </summary>
+        /// <param name="node">The tree node.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified node represents a factory; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsFactory(TreeNode node)
+        {
+            return node != null && typeof(IFactory).IsAssignableFrom(Type.GetType(node.Name));
+        }
+
+        /// <summary>
+        /// Determines whether the specified tree node represents an item pool.
+        /// </summary>
+        /// <param name="node">The tree node.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified node represents an item pool; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsItemPool(TreeNode node)
+        {
+            return node != null && typeof(ItemPool).IsAssignableFrom(Type.GetType(node.Name));
         }
 
         /// <summary>
@@ -250,70 +357,6 @@ namespace Space.Tools.DataEditor
                        : type.Name;
         }
 
-        /// <summary>
-        /// Loads all factories found at the specified path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        private void LoadFactories(string path)
-        {
-            tvData.BeginUpdate();
-            FactoryManager.Load(path);
-            ItemPoolManager.Load(path);
-            tvData.EndUpdate();
-
-            ScanForIssues();
-        }
-
-        /// <summary>
-        /// Selects the factory in our property grid if it exists, else selects
-        /// nothing (clears property grid).
-        /// </summary>
-        /// <param name="name">The name of the factory.</param>
-        private bool SelectFactory(string name)
-        {
-            pgProperties.SelectedObject = null;
-            //tvData.SelectedNode = null;
-            var factory = FactoryManager.GetFactory(name);
-            if (factory != null)
-            {
-                pgProperties.SelectedObject = factory;
-                var nodes = tvData.Nodes.Find(name, true);
-                if (nodes.Length > 0)
-                {
-                    foreach (var match in nodes)
-                    {
-                        if (typeof(IFactory).IsAssignableFrom(Type.GetType(typeof(IFactory).Namespace + "." + match.Parent.Name + ", " + typeof(IFactory).Assembly)))
-                        {
-                            tvData.SelectedNode = match;
-                        }
-                    }
-                }
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Selects the Itempool in our property grid if it exists, else selects
-        /// nothing (clears property grid).
-        /// </summary>
-        /// <param name="name">The name of the factory.</param>
-        private bool SelectItemPool(string name)
-        {
-            pgProperties.SelectedObject = null;
-            //tvData.SelectedNode = null;
-            var factory = ItemPoolManager.GetItemPool(name);
-            if (factory != null)
-            {
-                pgProperties.SelectedObject = factory;
-                var node = tvData.Nodes.Find(name, true);
-                if (node.Length > 0)
-                {
-                    tvData.SelectedNode = node[0];
-                }
-                return true;
-            }
-            return false;
-        }
+        #endregion
     }
 }

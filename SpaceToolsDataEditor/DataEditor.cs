@@ -62,6 +62,13 @@ namespace Space.Tools.DataEditor
                     RemoveClick(sender, args);
                 }
             };
+            tvData.NodeMouseClick += (sender, args) =>
+            {
+                if (args.Button == MouseButtons.Right)
+                {
+                    tvData.SelectedNode = args.Node;
+                }
+            };
 
             var settings = DataEditorSettings.Default;
 
@@ -70,7 +77,7 @@ namespace Space.Tools.DataEditor
                 _openDialog.InitialDirectory = settings.LastOpenedFolder;
                 if (settings.AutoLoad)
                 {
-                    LoadFactories(_openDialog.InitialDirectory);
+                    LoadData(_openDialog.InitialDirectory);
                     if (!string.IsNullOrWhiteSpace(settings.LastSelectedFactory))
                     {
                         var result = tvData.Nodes.Find(settings.LastSelectedFactory, true);
@@ -176,7 +183,7 @@ namespace Space.Tools.DataEditor
             DataEditorSettings.Default.LastOpenedFolder = _openDialog.FileName;
             DataEditorSettings.Default.Save();
 
-            LoadFactories(_openDialog.FileName);
+            LoadData(_openDialog.FileName);
 
             SavingEnabled = false;
         }
@@ -350,7 +357,7 @@ namespace Space.Tools.DataEditor
 
         private void PropertiesPropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
-            UpdatePreview();
+            UpdatePreview(true);
         }
 
         private void IssuesDoubleClick(object sender, EventArgs e)

@@ -32,12 +32,15 @@
           <Offset>-5 16</Offset>
         </Item>
       </Slots>
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
     <Item>
       <Name>L1_AI_Wing</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/default</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>
@@ -46,6 +49,7 @@
           <Size>Small</Size>
         </Item>
       </Slots>
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
   </Asset>
 </XnaContent>

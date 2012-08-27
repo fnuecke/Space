@@ -5,9 +5,13 @@
       <Name>StarterWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Weapons/hellbore_cannon_turret_recoil</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
       <Sound>laser</Sound>
       <Cooldown>0.5</Cooldown>
       <EnergyConsumption>5</EnergyConsumption>
@@ -29,9 +33,12 @@
       <Name>PoorBasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Poor</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -66,9 +73,12 @@
       <Name>BasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -103,9 +113,12 @@
       <Name>UncommonBasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Uncommon</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -140,9 +153,12 @@
       <Name>RareBasicWeapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Rare</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
       <AdditionalAttributes>
         <Item>10 to 15 Health</Item>
         <Item>10 to 15 Energy</Item>
@@ -177,9 +193,13 @@
       <Name>L1_AI_Weapon</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Weapons/assault_chaingun_turret_base</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
       <Sound>laser</Sound>
       <Cooldown>0.5 to 0.75</Cooldown>
       <EnergyConsumption>5 to 7.5</EnergyConsumption>

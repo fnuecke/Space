@@ -5,7 +5,9 @@
       <Name>StarterFuselage</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Items/Fuselage/test_fuselage</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>
@@ -48,12 +50,15 @@
           <Offset>-20 0</Offset>
         </Item>
       </Slots>
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
     <Item>
       <Name>L1_AI_Fuselage</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
       <Model>Textures/Stolen/Ships/hyperion_ff</Model>
+      <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
       <Quality>Common</Quality>
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots>
@@ -83,6 +88,7 @@
           <Size>Small</Size>
         </Item>
       </Slots>
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
     </Item>
   </Asset>
 </XnaContent>

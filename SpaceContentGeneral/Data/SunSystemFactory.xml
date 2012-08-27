@@ -4,6 +4,9 @@
     <Item>
       <Name>home_system</Name>
       <Sun>sun_1</Sun>
+      <Planets>
+        <Angle>0 to 360</Angle>
+      </Planets>
     </Item>
     <Item>
       <Name>sunsystem_1</Name>
@@ -68,22 +71,38 @@
         <Name>moon_tiny</Name>
         <OrbitRadius>900 to 1000</OrbitRadius>
         <ChanceToExist>0.3</ChanceToExist>
+        <Moons>#Resource2</Moons>
       </Orbiter>
       <Orbiter>
         <Name>moon_small</Name>
         <OrbitRadius>1400 to 1500</OrbitRadius>
         <ChanceToExist>0.5</ChanceToExist>
+        <Moons>#Resource3</Moons>
       </Orbiter>
       <Orbiter>
         <Name>moon_large</Name>
         <OrbitRadius>1800 to 1900</OrbitRadius>
         <ChanceToExist>0.6</ChanceToExist>
+        <Moons>#Resource4</Moons>
       </Orbiter>
       <Orbiter>
         <Name>moon_medium</Name>
         <OrbitRadius>2300 to 2400</OrbitRadius>
         <ChanceToExist>0.4</ChanceToExist>
+        <Moons>#Resource5</Moons>
       </Orbiter>
+    </Resource>
+    <Resource ID="#Resource2" Type="SunSystemFactoryTypes:Orbit">
+      <Angle>0 to 360</Angle>
+    </Resource>
+    <Resource ID="#Resource3" Type="SunSystemFactoryTypes:Orbit">
+      <Angle>0 to 360</Angle>
+    </Resource>
+    <Resource ID="#Resource4" Type="SunSystemFactoryTypes:Orbit">
+      <Angle>0 to 360</Angle>
+    </Resource>
+    <Resource ID="#Resource5" Type="SunSystemFactoryTypes:Orbit">
+      <Angle>0 to 360</Angle>
     </Resource>
   </Resources>
 </XnaContent>

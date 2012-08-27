@@ -83,6 +83,11 @@ namespace Space.Tools.DataEditor
         /// </summary>
         public void ScanForIssues()
         {
+            if (_isValidationEnabled > 0)
+            {
+                return;
+            }
+
             // Clear old list.
             ClearIssues();
 
@@ -100,6 +105,12 @@ namespace Space.Tools.DataEditor
             {
                 ScanForIssues(factory);
             }
+
+            // Check item pools.
+            foreach (var pool in ItemPoolManager.GetItemPools())
+            {
+                ScanForIssues(pool);
+            }
         }
 
         /// <summary>
@@ -108,20 +119,18 @@ namespace Space.Tools.DataEditor
         /// <param name="factory">The factory.</param>
         private void ScanForIssues(IFactory factory)
         {
+            if (_isValidationEnabled > 0)
+            {
+                return;
+            }
+
             // Remove issues involving this factory.
             RemoveIssuesForFactory(factory.Name);
 
             lvIssues.BeginUpdate();
 
             // Check image asset properties.
-            foreach (PropertyDescriptor property in TypeDescriptor
-                .GetProperties(factory,
-                               new Attribute[]
-                               {
-                                   new EditorAttribute(
-                                   typeof(TextureAssetEditor),
-                                   typeof(UITypeEditor))
-                               }))
+            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(factory, new Attribute[] {new EditorAttribute(typeof(TextureAssetEditor), typeof(UITypeEditor))}))
             {
                 if (property.PropertyType != typeof(string))
                 {
@@ -154,6 +163,20 @@ namespace Space.Tools.DataEditor
             lvIssues.EndUpdate();
         }
 
+        /// <summary>
+        /// Scans for issues for a specific item pool.
+        /// </summary>
+        /// <param name="pool">The pool.</param>
+        public void ScanForIssues(ItemPool pool)
+        {
+            if (_isValidationEnabled > 0)
+            {
+                return;
+            }
+
+            // TODO
+        }
+
         private void ScanShipFactory(ShipFactory factory)
         {
             if (factory == null)
@@ -161,6 +184,13 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
+            // Validate item pool.
+            if (!string.IsNullOrWhiteSpace(factory.ItemPool) && ItemPoolManager.GetItemPool(factory.ItemPool) == null)
+            {
+                AddIssue("Invalid item pool name: " + factory.ItemPool, factory.Name, "ItemPool", IssueType.Error);
+            }
+
+            // Validate selected items.
             var root = factory.Items;
             if (root != null)
             {

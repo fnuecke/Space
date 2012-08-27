@@ -259,7 +259,7 @@ namespace Space.Tools.DataEditor
         /// Gets the all known itempools.
         /// </summary>
         /// <returns>All known itempools.</returns>
-        public static IEnumerable<ItemPool> GetItemPool()
+        public static IEnumerable<ItemPool> GetItemPools()
         {
             return ItemPools.Values;
         }

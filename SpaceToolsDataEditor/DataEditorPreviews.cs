@@ -48,33 +48,72 @@ namespace Space.Tools.DataEditor
             Visible = false
         };
 
-        private void PreviewOnResize(object sender, EventArgs eventArgs)
+        private enum PreviewType
         {
-            UpdatePreview();
+            Default,
+            Ingame,
+            Projectile,
+            Effect,
+            Planet,
+            Sun
         }
 
-        private void UpdatePreview()
+        private PreviewType _previewType;
+
+        private object _previewObject;
+
+        private void PreviewOnResize(object sender, EventArgs eventArgs)
         {
-            // Clear image.
-            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+            // Force re-render.
+            UpdatePreview(true);
+        }
+
+        private bool SetPreviews(PreviewType type, object target)
+        {
+            if (type != _previewType || !ReferenceEquals(target, _previewObject))
             {
-                g.CompositingMode = CompositingMode.SourceCopy;
-                g.FillRectangle(Brushes.Transparent, 0, 0, pbPreview.Image.Width, pbPreview.Image.Height);
+                // Clear image.
+                using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                {
+                    g.CompositingMode = CompositingMode.SourceCopy;
+                    g.FillRectangle(Brushes.Transparent, 0, 0, pbPreview.Image.Width, pbPreview.Image.Height);
+                }
+
+                // Clear / set other previews.
+                _ingamePreview.Clear();
+                _effectPreview.Effect = (string)(type == PreviewType.Effect ? target : null);
+                _planetPreview.Planet = (PlanetFactory)(type == PreviewType.Planet ? target : null);
+                _sunPreview.Sun = (SunFactory)(type == PreviewType.Sun ? target : null);
+                _projectilePreview.Projectiles = (ProjectileFactory[])(type == PreviewType.Projectile ? target : null);
+
+                // Adjust preview visibility.
+                pbPreview.Visible = type == PreviewType.Default;
+                _ingamePreview.Visible = type == PreviewType.Ingame;
+                _effectPreview.Visible = type == PreviewType.Effect;
+                _planetPreview.Visible = type == PreviewType.Planet;
+                _sunPreview.Visible = type == PreviewType.Sun;
+                _projectilePreview.Visible = type == PreviewType.Projectile;
+
+                pbPreview.Resize -= PreviewOnResize;
+
+                // Remember new state.
+                _previewType = type;
+                _previewObject = target;
+
+                // Something changed.
+                return true;
             }
 
-            _ingamePreview.Clear();
-            _effectPreview.Effect = null;
-            _planetPreview.Planet = null;
-            _sunPreview.Sun = null;
-            _projectilePreview.Projectiles = null;
-            pbPreview.Resize -= PreviewOnResize;
+            // Nothing changed.
+            return false;
+        }
 
-            _ingamePreview.Visible = false;
-            _effectPreview.Visible = false;
-            _planetPreview.Visible = false;
-            _sunPreview.Visible = false;
-            _projectilePreview.Visible = false;
-            pbPreview.Visible = true;
+        private void UpdatePreview(bool force = false)
+        {
+            if (force)
+            {
+                SetPreviews(PreviewType.Default, null);
+            }
 
             // Figure out what to show.
             try // evil: using try-catch for flow-control, but who can stop me!? muahahaha
@@ -82,6 +121,7 @@ namespace Space.Tools.DataEditor
                 // Nothing selected, so skip.
                 if (pgProperties.SelectedObject == null)
                 {
+                    SetPreviews(PreviewType.Default, null);
                     return;
                 }
 
@@ -159,15 +199,34 @@ namespace Space.Tools.DataEditor
                 // We're not rendering based on property grid item selection at this point, so
                 // we just try to render the selected object.
 
-                RenderPlanetPreview(pgProperties.SelectedObject as PlanetFactory);
-                RenderSunPreview(pgProperties.SelectedObject as SunFactory);
-                RenderSunSystemPreview(pgProperties.SelectedObject as SunSystemFactory);
+                if (pgProperties.SelectedObject is PlanetFactory)
+                {
+                    RenderPlanetPreview(pgProperties.SelectedObject as PlanetFactory);
+                    return;
+                }
+                if (pgProperties.SelectedObject is SunFactory)
+                {
+                    RenderSunPreview(pgProperties.SelectedObject as SunFactory);
+                    return;
+                }
+                if (pgProperties.SelectedObject is SunSystemFactory)
+                {
+                    RenderSunSystemPreview(pgProperties.SelectedObject as SunSystemFactory);
+                    return;
+                }
+                if (pgProperties.SelectedObject is ItemFactory)
+                {
+                    RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
+                    return;
+                }
+                if (pgProperties.SelectedObject is ShipFactory)
+                {
+                    RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
+                    return;
+                }
 
-                // Try rendering the selected object as an item.
-                RenderItemPreview(pgProperties.SelectedObject as ItemFactory);
-
-                // Try rendering a ship.
-                RenderShipPreview(pgProperties.SelectedObject as ShipFactory);
+                // Could not render anything, clear previews.
+                SetPreviews(PreviewType.Default, null);
             }
             finally
             {
@@ -183,22 +242,25 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            var filePath = ContentProjectManager.GetTexturePath(assetName);
-            if (!string.IsNullOrWhiteSpace(filePath))
+            if (SetPreviews(PreviewType.Default, assetName))
             {
-                // We got it. Set as the new image.
-                try
+                var filePath = ContentProjectManager.GetTexturePath(assetName);
+                if (!string.IsNullOrWhiteSpace(filePath))
                 {
-                    using (var img = Image.FromFile(filePath))
+                    // We got it. Set as the new image.
+                    try
                     {
-                        using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                        using (var img = Image.FromFile(filePath))
                         {
-                            g.DrawImage(img, (pbPreview.Image.Width - img.Width) / 2f, (pbPreview.Image.Height - img.Height) / 2f, img.Width, img.Height);
+                            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                            {
+                                g.DrawImage(img, (pbPreview.Image.Width - img.Width) / 2f, (pbPreview.Image.Height - img.Height) / 2f, img.Width, img.Height);
+                            }
                         }
                     }
-                }
-                catch (FileNotFoundException)
-                {
+                    catch (FileNotFoundException)
+                    {
+                    }
                 }
             }
         }
@@ -210,10 +272,10 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _effectPreview.Visible = true;
-            pbPreview.Visible = false;
-
-            _effectPreview.Effect = assetName;
+            if (SetPreviews(PreviewType.Effect, assetName))
+            {
+                _effectPreview.Effect = assetName;
+            }
         }
 
         private void RenderPlanetPreview(PlanetFactory factory)
@@ -223,10 +285,10 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _planetPreview.Visible = true;
-            pbPreview.Visible = false;
-
-            _planetPreview.Planet = factory;
+            if (SetPreviews(PreviewType.Planet, factory))
+            {
+                _planetPreview.Planet = factory;
+            }
         }
 
         private void RenderSunPreview(SunFactory factory)
@@ -236,10 +298,10 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _sunPreview.Visible = true;
-            pbPreview.Visible = false;
-
-            _sunPreview.Sun = factory;
+            if (SetPreviews(PreviewType.Sun, factory))
+            {
+                _sunPreview.Sun = factory;
+            }
         }
 
         private void RenderSunSystemPreview(SunSystemFactory factory)
@@ -249,44 +311,49 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            pbPreview.Resize += PreviewOnResize;
+            if (SetPreviews(PreviewType.Default, factory))
+            {
+                pbPreview.Resize += PreviewOnResize;
 
-            // Get furthest out orbit to know how to scale.
-            var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
-            float padding, scale;
-            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
-            {
-                padding = 25f;
-                scale = Math.Min(1, pbPreview.Image.Width / (CellSystem.CellSize / 2f));
-            }
-            else
-            {
-                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
-                scale = Math.Min(1, pbPreview.ClientSize.Width / (CellSystem.CellSize / 2f));
-            }
-
-            // Render all objects from left to right, starting with the sun.
-            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-            {
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                using (var brush = new SolidBrush(System.Drawing.Color.White))
+                // Get furthest out orbit to know how to scale.
+                var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
+                float padding, scale;
+                if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
                 {
-                    if (sunFactory != null && sunFactory.Radius != null)
+                    padding = 25f;
+                    scale = Math.Min(1, pbPreview.Image.Width / (CellSystem.CellSize / 2f));
+                }
+                else
+                {
+                    padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
+                    scale = Math.Min(1, pbPreview.ClientSize.Width / (CellSystem.CellSize / 2f));
+                }
+
+                // Render all objects from left to right, starting with the sun.
+                using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                {
+                    g.SmoothingMode = SmoothingMode.HighQuality;
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    using (var brush = new SolidBrush(System.Drawing.Color.White))
                     {
-                        var sunColor = System.Drawing.Color.FromArgb(
-                            sunFactory.OffsetRadius != null ? 200 : 255, 255, 255, 224);
-                        brush.Color = sunColor;
-                        var diameter = scale * sunFactory.Radius.Low * 2;
-                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
-                        if (sunFactory.OffsetRadius != null)
+                        if (sunFactory != null && sunFactory.Radius != null)
                         {
-                            diameter = scale * (sunFactory.Radius.High + sunFactory.OffsetRadius.High) * 2;
-                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                            var sunColor = System.Drawing.Color.FromArgb(
+                                sunFactory.OffsetRadius != null ? 200 : 255, 255, 255, 224);
+                            brush.Color = sunColor;
+                            var diameter = scale * sunFactory.Radius.Low * 2;
+                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
+                                          diameter, diameter);
+                            if (sunFactory.OffsetRadius != null)
+                            {
+                                diameter = scale * (sunFactory.Radius.High + sunFactory.OffsetRadius.High) * 2;
+                                g.FillEllipse(brush, padding - diameter / 2f,
+                                              pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                            }
                         }
+                        RenderOrbit(factory.Planets, padding, scale, g, brush);
                     }
-                    RenderOrbit(factory.Planets, padding, scale, g, brush);
                 }
             }
         }
@@ -298,41 +365,46 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            pbPreview.Resize += PreviewOnResize;
+            if (SetPreviews(PreviewType.Default, orbiter))
+            {
+                pbPreview.Resize += PreviewOnResize;
 
-            var planetFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
-            float padding, scale;
-            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
-            {
-                padding = 25f;
-                scale = Math.Min(1, pbPreview.Image.Width / (GetMaxRadius(orbiter.Moons) + 250));
-            }
-            else
-            {
-                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
-                scale = Math.Min(1, pbPreview.ClientSize.Width / (GetMaxRadius(orbiter.Moons) + 250));
-            }
-
-            // Render all objects from left to right, starting with the sun.
-            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-            {
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                using (var brush = new SolidBrush(System.Drawing.Color.White))
+                var planetFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
+                float padding, scale;
+                if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
                 {
-                    if (planetFactory != null && planetFactory.Radius != null)
-                    {
-                        brush.Color = System.Drawing.Color.FromArgb(150, planetFactory.SurfaceTint.R,
-                                                                    planetFactory.SurfaceTint.G,
-                                                                    planetFactory.SurfaceTint.B);
-                        var diameter = scale * planetFactory.Radius.Low * 2;
-                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
-                        diameter = scale * planetFactory.Radius.High * 2;
-                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
-                    }
+                    padding = 25f;
+                    scale = Math.Min(1, pbPreview.Image.Width / (GetMaxRadius(orbiter.Moons) + 250));
+                }
+                else
+                {
+                    padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
+                    scale = Math.Min(1, pbPreview.ClientSize.Width / (GetMaxRadius(orbiter.Moons) + 250));
+                }
 
-                    RenderOrbit(orbiter.Moons, padding, scale, g, brush);
+                // Render all objects from left to right, starting with the sun.
+                using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+                {
+                    g.SmoothingMode = SmoothingMode.HighQuality;
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    using (var brush = new SolidBrush(System.Drawing.Color.White))
+                    {
+                        if (planetFactory != null && planetFactory.Radius != null)
+                        {
+                            brush.Color = System.Drawing.Color.FromArgb(150, planetFactory.SurfaceTint.R,
+                                                                        planetFactory.SurfaceTint.G,
+                                                                        planetFactory.SurfaceTint.B);
+                            var diameter = scale * planetFactory.Radius.Low * 2;
+                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
+                                          diameter, diameter);
+                            diameter = scale * planetFactory.Radius.High * 2;
+                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
+                                          diameter, diameter);
+                        }
+
+                        RenderOrbit(orbiter.Moons, padding, scale, g, brush);
+                    }
                 }
             }
         }
@@ -427,17 +499,17 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _projectilePreview.Visible = true;
-            pbPreview.Visible = false;
-
-            _projectilePreview.Projectiles = factories;
-            if (pgProperties.SelectedObject is WeaponFactory)
+            if (SetPreviews(PreviewType.Projectile, factories))
             {
-                _projectilePreview.TriggerSpeed = ((WeaponFactory)pgProperties.SelectedObject).Cooldown;
-            }
-            else
-            {
-                _projectilePreview.TriggerSpeed = null;
+                _projectilePreview.Projectiles = factories;
+                if (pgProperties.SelectedObject is WeaponFactory)
+                {
+                    _projectilePreview.TriggerSpeed = ((WeaponFactory)pgProperties.SelectedObject).Cooldown;
+                }
+                else
+                {
+                    _projectilePreview.TriggerSpeed = null;
+                }
             }
         }
 
@@ -448,34 +520,34 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _ingamePreview.Visible = true;
-            pbPreview.Visible = false;
-
-            var entity = factory.Sample(_ingamePreview.Manager, null);
-            if (entity > 0)
+            if (SetPreviews(PreviewType.Ingame, factory))
             {
-                var renderer = (TextureRenderer)_ingamePreview.Manager.GetComponent(entity, TextureRenderer.TypeId);
-                if (renderer != null)
+                var entity = factory.Sample(_ingamePreview.Manager, null);
+                if (entity > 0)
                 {
-                    renderer.Enabled = true;
-                }
-                if (factory.ModelOffset != Vector2.Zero)
-                {
-                    var transform = (Transform)_ingamePreview.Manager.GetComponent(entity, Transform.TypeId);
-                    if (transform != null)
+                    var renderer = (TextureRenderer)_ingamePreview.Manager.GetComponent(entity, TextureRenderer.TypeId);
+                    if (renderer != null)
                     {
-                        FarPosition offset;
-                        offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.X);
-                        offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Y);
-                        transform.SetTranslation(offset);
+                        renderer.Enabled = true;
                     }
-                }
-                var item = (SpaceItem)_ingamePreview.Manager.GetComponent(entity, Item.TypeId);
+                    if (factory.ModelOffset != Vector2.Zero)
+                    {
+                        var transform = (Transform)_ingamePreview.Manager.GetComponent(entity, Transform.TypeId);
+                        if (transform != null)
+                        {
+                            FarPosition offset;
+                            offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.X);
+                            offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Y);
+                            transform.SetTranslation(offset);
+                        }
+                    }
+                    var item = (SpaceItem)_ingamePreview.Manager.GetComponent(entity, Item.TypeId);
 
-                var dummy = _ingamePreview.Manager.AddEntity();
-                var fx = _ingamePreview.Manager.AddComponent<ParticleEffects>(dummy);
-                var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
-                parentSlot.Item = entity;
+                    var dummy = _ingamePreview.Manager.AddEntity();
+                    _ingamePreview.Manager.AddComponent<ParticleEffects>(dummy);
+                    var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
+                    parentSlot.Item = entity;
+                }
             }
         }
 
@@ -486,10 +558,10 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _ingamePreview.Visible = true;
-            pbPreview.Visible = false;
-
-            factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
+            if (SetPreviews(PreviewType.Ingame, factory))
+            {
+                factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
+            }
         }
     }
 }
