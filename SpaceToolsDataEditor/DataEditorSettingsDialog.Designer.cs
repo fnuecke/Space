@@ -28,9 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.pgSettings = new System.Windows.Forms.PropertyGrid();
             this.btnSearch = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // pgSettings
@@ -54,6 +56,8 @@
             this.btnSearch.TabIndex = 3;
             this.btnSearch.Text = "Find content projects";
             this.btnSearch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.toolTip1.SetToolTip(this.btnSearch, "Select a folder to automatically search that folder\r\nand all its subfolders for c" +
+        "ontent projects and add\r\nthem if they\'re not yet known.");
             this.btnSearch.UseVisualStyleBackColor = true;
             this.btnSearch.Click += new System.EventHandler(this.BtnSearchClick);
             // 
@@ -67,6 +71,11 @@
             this.btnOK.Text = "&OK";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.BtnOkClick);
+            // 
+            // toolTip1
+            // 
+            this.toolTip1.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.toolTip1.ToolTipTitle = "Automatic content project search";
             // 
             // DataEditorSettingsDialog
             // 
@@ -92,5 +101,6 @@
         private System.Windows.Forms.PropertyGrid pgSettings;
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.Button btnOK;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
