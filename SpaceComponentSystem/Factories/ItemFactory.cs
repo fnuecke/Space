@@ -326,7 +326,9 @@ namespace Space.ComponentSystem.Factories
             /// </summary>
             public enum ItemType
             {
+                [Browsable(false)]
                 None,
+
                 Armor,
                 Fuselage,
                 Reactor,

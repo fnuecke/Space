@@ -386,36 +386,6 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
-        /// Selects the property with the specified name.
-        /// </summary>
-        /// <param name="name">The name of the property.</param>
-        private bool SelectProperty(string name)
-        {
-            var root = pgProperties.SelectedGridItem;
-            while (root.Parent != null)
-            {
-                root = root.Parent;
-            }
-
-            var nodes = new Stack<GridItem>();
-            nodes.Push(root);
-            while (nodes.Count > 0)
-            {
-                var node = nodes.Pop();
-                if (name.Equals(node.Label))
-                {
-                    node.Select();
-                    return true;
-                }
-                foreach (GridItem child in node.GridItems)
-                {
-                    nodes.Push(child);
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Sorter for issue list.
         /// </summary>
         private sealed class IssueComparer : IComparer<ListViewItem>, IComparer

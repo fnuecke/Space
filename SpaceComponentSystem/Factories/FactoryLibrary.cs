@@ -93,7 +93,7 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public static int SampleItem(IManager manager, string name, FarPosition position, IUniformRandom random)
         {
-            if (!Factories.ContainsKey(name))
+            if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
             {
                 return 0;
             }
@@ -125,6 +125,10 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public static int SampleShip(IManager manager, string name, Factions faction, FarPosition position, IUniformRandom random)
         {
+            if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
+            {
+                return 0;
+            }
             var factory = Factories[name] as ShipFactory;
             return factory != null ? factory.Sample(manager, faction, position, random) : 0;
         }
@@ -143,6 +147,10 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public static int SamplePlanet(IManager manager, string name, int center, float angle, float radius, IUniformRandom random)
         {
+            if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
+            {
+                return 0;
+            }
             var factory = Factories[name] as PlanetFactory;
             if (factory != null)
             {
@@ -163,6 +171,10 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public static int SampleSun(IManager manager, string name, FarPosition cellCenter, IUniformRandom random)
         {
+            if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
+            {
+                return 0;
+            }
             var factory = Factories[name] as SunFactory;
             if (factory != null)
             {
@@ -183,6 +195,10 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public static void SampleSunSystem(IManager manager, string name, FarPosition cellCenter, IUniformRandom random)
         {
+            if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
+            {
+                return;
+            }
             var factory = Factories[name] as SunSystemFactory;
             if (factory != null)
             {

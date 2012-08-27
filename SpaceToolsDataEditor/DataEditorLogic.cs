@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -277,7 +278,7 @@ namespace Space.Tools.DataEditor
 
         #endregion
 
-        #region Selection in tree
+        #region Selection
 
         /// <summary>
         /// Selects the factory in our property grid if it exists, else selects
@@ -318,6 +319,101 @@ namespace Space.Tools.DataEditor
                 tvData.SelectedNode = tvData.Nodes.Find(pool.Name, true).FirstOrDefault(n => IsItemPool(n.Parent));
                 return true;
             }
+            return false;
+        }
+
+        /// <summary>
+        /// Selects the property with the specified name.
+        /// </summary>
+        /// <param name="fullPath">The full path to the property, separated by points ('.').</param>
+        /// <returns>Whether the property was successfully selected or not.</returns>
+        private bool SelectProperty(string fullPath)
+        {
+            // Get the root node at which to start.
+            var root = pgProperties.SelectedGridItem;
+            while (root.Parent != null)
+            {
+                root = root.Parent;
+            }
+
+            // Split our path.
+            var path = new Stack<string>(fullPath.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries).Reverse());
+
+            // Create stack for grid traversal (we need this to skip
+            // category entries, that do not represent actual properties).
+            var branches = new Stack<Tuple<GridItem, string>>();
+            branches.Push(Tuple.Create(root, path.Pop()));
+
+            // Walk down our path.
+            while (branches.Count > 0)
+            {
+                var currentLevel = branches.Pop();
+                var node = currentLevel.Item1;
+                var propertyName = currentLevel.Item2;
+
+                // If it's an indexed property, get the entry in the array.
+                GridItem property;
+                if (propertyName.EndsWith("]"))
+                {
+                    var openingBracket = propertyName.LastIndexOf("[", StringComparison.Ordinal);
+                    var index = int.Parse(propertyName.Substring(openingBracket + 1, propertyName.Length - openingBracket - 2));
+                    property = node.GridItems[propertyName.Substring(0, openingBracket)];
+                    if (property != null)
+                    {
+                        property = property.GridItems[index];
+                    }
+                }
+                else
+                {
+                    property = node.GridItems[propertyName];
+                }
+
+                // See if we can directly get the property.
+                if (property != null)
+                {
+                    // Got part of our path, see how to continue.
+                    if (path.Count > 0)
+                    {
+                        // Still more to go.
+                        branches.Clear();
+                        branches.Push(Tuple.Create(property, path.Pop()));
+                        continue;
+                    }
+                    else
+                    {
+                        // We're done, expand (otherwise we get an error) select and quit.
+                        var parent = property.Parent;
+                        while (parent != null)
+                        {
+                            if (parent.Expandable)
+                            {
+                                parent.Expanded = true;
+                            }
+                            parent = parent.Parent;
+                        }
+                        pgProperties.SelectedGridItem = property;
+                        return true;
+                    }
+                }
+
+                // Otherwise check for skippable entries.
+                foreach (GridItem item in node.GridItems)
+                {
+                    if (item.GridItemType == GridItemType.Category)
+                    {
+                        branches.Push(Tuple.Create(item, propertyName));
+                    }
+                }
+            }
+
+            // See if we have a node.
+            if (root != null)
+            {
+                // Yes, select it and report success.
+                root.Select();
+                return true;
+            }
+
             return false;
         }
 

@@ -263,6 +263,30 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
+        /// Determines whether a texture asset with the specified name is known.
+        /// </summary>
+        /// <param name="assetName">Name of the asset.</param>
+        /// <returns>
+        ///   <c>true</c> if the texture asset is known; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasEffectAsset(string assetName)
+        {
+            return EffectAssets.ContainsKey((assetName ?? "").Replace('\\', '/'));
+        }
+
+        /// <summary>
+        /// Determines whether a texture asset with the specified name is known.
+        /// </summary>
+        /// <param name="assetName">Name of the asset.</param>
+        /// <returns>
+        ///   <c>true</c> if the texture asset is known; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasShaderAsset(string assetName)
+        {
+            return ShaderAssets.ContainsKey((assetName ?? "").Replace('\\', '/'));
+        }
+
+        /// <summary>
         /// Try to resolve an asset name to a path pointing to the assets file on disk.
         /// </summary>
         /// <param name="assetName">The asset to look up.</param>

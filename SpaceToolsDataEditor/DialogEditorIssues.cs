@@ -28,32 +28,29 @@ namespace Space.Tools.DataEditor
         /// Adds a new issue to the issues list.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="factory">The factory, if any.</param>
+        /// <param name="target">The object, if any.</param>
         /// <param name="property">The property, if any.</param>
         /// <param name="type">The type.</param>
-        public void AddIssue(string message, IFactory factory, string property, IssueType type = IssueType.Success)
+        public void AddIssue(string message, object target, string property, IssueType type = IssueType.Success)
         {
             if ((int)type < 1)
             {
                 type = IssueType.Success;
             }
-            lvIssues.Items.Add(new ListViewItem(new[] {"", message, factory.Name, property}, (int)type - 1) {Tag = factory});
-        }
-
-        /// <summary>
-        /// Adds a new issue to the issues list.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="pool">The factory, if any.</param>
-        /// <param name="property">The property, if any.</param>
-        /// <param name="type">The type.</param>
-        public void AddIssue(string message, ItemPool pool, string property, IssueType type = IssueType.Success)
-        {
-            if ((int)type < 1)
+            string name;
+            if (target is IFactory)
             {
-                type = IssueType.Success;
+                name = ((IFactory)target).Name;
             }
-            lvIssues.Items.Add(new ListViewItem(new[] {"", message, pool.Name, property}, (int)type - 1) {Tag = pool});
+            else if (target is ItemPool)
+            {
+                name = ((ItemPool)target).Name;
+            }
+            else
+            {
+                name = target.GetType().Name;
+            }
+            lvIssues.Items.Add(new ListViewItem(new[] {"", message, name, property}, (int)type - 1) {Tag = target});
         }
 
         /// <summary>
@@ -135,23 +132,14 @@ namespace Space.Tools.DataEditor
                 }
             }
 
-            // Check image asset properties.
-            foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(factory, new Attribute[] {new EditorAttribute(typeof(TextureAssetEditor), typeof(UITypeEditor))}))
-            {
-                if (property.PropertyType != typeof(string))
-                {
-                    AddIssue("Property marked as texture asset is not of type string.", factory, property.Name, IssueType.Warning);
-                }
-                else
-                {
-                    var path = ((string)property.GetValue(factory));
-                    if (!string.IsNullOrWhiteSpace(path) &&
-                        !ContentProjectManager.HasTextureAsset(path.Replace('\\', '/')))
-                    {
-                        AddIssue("Invalid texture asset name, no such texture asset.", factory, property.Name, IssueType.Error);
-                    }
-                }
-            }
+            // Check image asset etc properties at top level.
+            ScanReferences(factory, factory);
+
+            // Check effects and slots.
+            ScanFactory(factory as ItemFactory);
+
+            // Check projectiles.
+            ScanFactory(factory as WeaponFactory);
 
             // Check ship loadouts for validity (used slots vs. available slots, item name).
             ScanFactory(factory as ShipFactory);
@@ -169,45 +157,54 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
-        /// Scans for issues for a specific item pool.
+        /// Checks items for effect and slot validity.
         /// </summary>
-        /// <param name="pool">The pool.</param>
-        public void ScanForIssues(ItemPool pool)
+        /// <param name="factory">The factory.</param>
+        private void ScanFactory(ItemFactory factory)
         {
-            if (_isValidationEnabled > 0)
+            if (factory == null)
             {
                 return;
             }
 
-            // Remove issues involving this pool.
-            for (var i = lvIssues.Items.Count - 1; i >= 0; i--)
+            for (var i = 0; i < factory.Effects.Length; i++)
             {
-                if (lvIssues.Items[i].Tag is ItemPool && ReferenceEquals(lvIssues.Items[i].Tag, pool))
-                {
-                    lvIssues.Items.RemoveAt(i);
-                }
+                ScanReferences(factory, factory.Effects[i], "Effects[" + i + "]");
             }
 
-            // Something should drop...
-            if (pool.MaxDrops < 1)
+            // Does nothing, yet, but may some day.
+            for (var i = 0; i < factory.Slots.Length; i++)
             {
-                AddIssue("Item pools should allow for at least one item to drop.", pool, "MaxDrops", IssueType.Information);
+                ScanReferences(factory, factory.Slots[i], "Slots[" + i + "]");
+            }
+        }
+
+        /// <summary>
+        /// Checks weapons' projectiles for validity.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        private void ScanFactory(WeaponFactory factory)
+        {
+            if (factory == null)
+            {
+                return;
             }
 
-            // Check if the items exist.
-            foreach (var info in pool.Items)
+            for (var i = 0; i < factory.Projectiles.Length; i++)
             {
-                if (info.Probability <= 0f)
+                ScanReferences(factory, factory.Projectiles[i], "Projectiles[" + i + "]");
+
+                if (factory.Projectiles[i].TimeToLive <= 0)
                 {
-                    AddIssue("Items should have a drop probability larger than zero (" + info.ItemName + ").", pool, "Items", IssueType.Information);
-                }
-                if (FactoryManager.GetFactory(info.ItemName) as ItemFactory == null)
-                {
-                    AddIssue("Invalid item name " + info.ItemName + ", no such item.", pool, "Items", IssueType.Error);
+                    AddIssue("Projectile will immediately despawn.", factory, "Projectiles[" + i + "].TimeToLive", IssueType.Warning);
                 }
             }
         }
 
+        /// <summary>
+        /// Check default loadout (equipment) of ships for validity.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
         private void ScanFactory(ShipFactory factory)
         {
             if (factory == null)
@@ -215,13 +212,13 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            // Validate item pool.
-            if (!string.IsNullOrWhiteSpace(factory.ItemPool) && ItemPoolManager.GetItemPool(factory.ItemPool) == null)
+            // Check collision bounds.
+            if (factory.CollisionRadius <= 0f)
             {
-                AddIssue("Invalid item pool name: " + factory.ItemPool, factory, "ItemPool", IssueType.Error);
+                AddIssue("Ship has no collision radius.", factory, "CollisionRadius", IssueType.Information);
             }
 
-            // Validate selected items.
+            // Validate selected items. Make sure the root item is a fuselage.
             var root = factory.Items;
             if (root != null)
             {
@@ -233,58 +230,68 @@ namespace Space.Tools.DataEditor
                     AddIssue("Root item must always be a fuselage.", factory, "Items", IssueType.Error);
                 }
             }
-            var items = new Stack<ShipFactory.ItemInfo>();
-            items.Push(root);
-        outer:
+            else
+            {
+                // Nothing to do.
+                return;
+            }
+
+            // Start with the fuselage.
+            var items = new Stack<Tuple<ShipFactory.ItemInfo, string>>();
+            items.Push(Tuple.Create(root, "Items"));
             while (items.Count > 0)
             {
-                var item = items.Pop();
+                // Get entry info, skip empty ones.
+                var entry = items.Pop();
+                var item = entry.Item1;
+                var prefix = entry.Item2;
                 if (item == null)
                 {
                     continue;
                 }
 
-                // Check item name.
+                // Check asset references.
+                ScanReferences(factory, item, prefix);
+
+                // Adjust prefix for further access.
+                prefix = string.IsNullOrWhiteSpace(prefix) ? "" : (prefix + ".");
+
+                // Notify about empty slots that can be removed, but keep going
+                // to properly warn if any items are equipped in this null item.
                 if (string.IsNullOrWhiteSpace(item.Name))
                 {
-                    // Empty, make sure there are no child items.
-                    if (item.Slots.Length > 0)
-                    {
-                        AddIssue("Items equipped in a null item, will be ignored when generating the ship.", factory, "Items", IssueType.Warning);
-                    }
-                    continue;
+                    AddIssue("Empty item name, branch will be skipped when generating the ship.", factory, prefix + "Name", IssueType.Information);
                 }
 
-                // We have an item name, make sure it's a proper item.
-                var itemFactory = FactoryManager.GetFactory(item.Name) as ItemFactory;
-                if (itemFactory == null)
+                // Queue checks for children.
+                for (var i = 0; i < item.Slots.Length; i++)
                 {
-                    AddIssue("Invalid item name or type: " + item.Name, factory, "Items", IssueType.Error);
-                    continue;
+                    items.Push(Tuple.Create(item.Slots[i], prefix + "Slots[" + i + "]"));
                 }
 
-                // Check used vs. available slots.
+                // Get slot information to validate occupied slots.
+                var itemFactory = FactoryManager.GetFactory(item.Name) as ItemFactory;
                 var availableSlots = new List<ItemFactory.ItemSlotInfo>();
-                if (itemFactory.Slots != null)
+                if (itemFactory != null && itemFactory.Slots != null)
                 {
                     availableSlots.AddRange(itemFactory.Slots);
                 }
-                foreach (var slot in item.Slots)
+                for (var i = 0; i < item.Slots.Length; i++)
                 {
+                    var slot = item.Slots[i];
+
                     // Skip empty ones.
                     if (string.IsNullOrWhiteSpace(slot.Name))
                     {
-                        AddIssue("Empty item declaration, will be skipped when generating the ship.", factory,
-                                 "Items", IssueType.Information);
-                        goto outer;
+                        continue;
                     }
 
-                    // Get the item of that type.
+                    // Get the item of that type. Skip if unknown (warning will come when that
+                    // item itself is processed).
                     var slotItemFactory = FactoryManager.GetFactory(slot.Name) as ItemFactory;
                     if (slotItemFactory == null)
                     {
-                        AddIssue("Invalid item name or type: " + slot.Name, factory, "Items", IssueType.Error);
-                        goto outer;
+                        continue;
                     }
 
                     // OK, try to consume a slot (the smallest one possible).
@@ -304,20 +311,20 @@ namespace Space.Tools.DataEditor
                     }
                     if (bestSlot == null)
                     {
-                        AddIssue("Equipped item cannot be fit into any slot: " + slotItemFactory.Name + " (parent: " + itemFactory.Name + ")", factory, "Items", IssueType.Error);
-                        goto outer;
+                        AddIssue("Equipped item cannot be fit into any slot.", factory, prefix + "Slots[" + i + "]", IssueType.Error);
                     }
-                    availableSlots.Remove(bestSlot);
-                }
-
-                // All well on this level, check children.
-                foreach (var slot in item.Slots)
-                {
-                    items.Push(slot);
+                    else
+                    {
+                        availableSlots.Remove(bestSlot);
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Checks the planet's parameters for validity.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
         private void ScanFactory(PlanetFactory factory)
         {
             if (factory == null)
@@ -343,6 +350,10 @@ namespace Space.Tools.DataEditor
             }
         }
 
+        /// <summary>
+        /// Checks the sun's parameters for validity.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
         private void ScanFactory(SunFactory factory)
         {
             if (factory == null)
@@ -362,6 +373,10 @@ namespace Space.Tools.DataEditor
             }
         }
 
+        /// <summary>
+        /// Checks orbits for validity.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
         private void ScanFactory(SunSystemFactory factory)
         {
             if (factory == null)
@@ -369,53 +384,153 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            // See if the selected sun is valid.
-            var sun = factory.Sun;
-            var sunFactory = FactoryManager.GetFactory(sun) as SunFactory;
-            if (sunFactory == null && !string.IsNullOrWhiteSpace(sun))
-            {
-                AddIssue("Invalid sun name, no such sun type.", factory, "Sun", IssueType.Error);
-            }
-
-            // See if the planets are valid.
-            var orbits = new Stack<Tuple<Orbit, float>>();
-            orbits.Push(Tuple.Create(factory.Planets, sunFactory != null && sunFactory.OffsetRadius != null ? sunFactory.OffsetRadius.High : 0f));
+            // Get sun factory, to extract base radius offset, if possible.
+            var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
+            var orbits = new Stack<Tuple<Orbit, float, string>>();
+            orbits.Push(Tuple.Create(factory.Planets, sunFactory != null && sunFactory.OffsetRadius != null ? sunFactory.OffsetRadius.High : 0f, "Planets"));
             while (orbits.Count > 0)
             {
                 var data = orbits.Pop();
                 var orbit = data.Item1;
+                var radius = data.Item2;
+                var prefix = string.IsNullOrWhiteSpace(data.Item3) ? "" : (data.Item3 + ".");
                 if (orbit == null)
                 {
                     continue;
                 }
 
-                foreach (var orbiter in orbit.Orbiters)
+                for (var i = 0; i < orbit.Orbiters.Length; i++)
                 {
-                    var orbiterFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
-                    if (orbiterFactory == null && !string.IsNullOrWhiteSpace(orbiter.Name))
-                    {
-                        AddIssue("Invalid planet name, no such planet type: " + orbiter.Name, factory, "Planets", IssueType.Error);
-                    }
-                    if (orbiter.OrbitRadius == null)
-                    {
-                        AddIssue("Nor orbit radius set for planet '" + orbiter.Name + "'.", factory, "Planets", IssueType.Error);
-                    }
-                    else if (orbiter.OrbitRadius.Low <= 0 || orbiter.OrbitRadius.High <= 0)
-                    {
-                        AddIssue("Orbit radius should be larger than zero for planet '" + orbiter.Name + "'.", factory, "Planets", IssueType.Warning);
-                    }
+                    var orbiter = orbit.Orbiters[i];
+                    var localPrefix = prefix + "Orbiters[" + i + "].";
+                    var childRadius = radius;
+
+                    ScanReferences(factory, orbiter, localPrefix);
+
                     if (orbiter.ChanceToExist <= 0)
                     {
-                        AddIssue("Planet '" + orbiter.Name + "' will never be generated (probability <= 0).", factory, "Planets", IssueType.Information);
+                        AddIssue("Planet will never be generated (probability <= 0).", factory, localPrefix + "ChanceToExist", IssueType.Information);
                     }
 
-                    var childRadius = data.Item2 + (orbiter.OrbitRadius != null ? orbiter.OrbitRadius.High : 0f);
-                    if (childRadius >= CellSystem.CellSize)
+                    if (orbiter.OrbitRadius == null)
                     {
-                        AddIssue("Accumulative radii of orbits potentially exceed cell size.", factory, "Planets", IssueType.Warning);
+                        AddIssue("Nor orbit radius set for planet.", factory, localPrefix + "OrbitRadius", IssueType.Error);
+                    }
+                    else
+                    {
+                        // Check if we're too large (exceeding cell size). Only trigger this message
+                        // for the first object exceeding the bounds, not for its children.
+                        childRadius += orbiter.OrbitRadius.High;
+                        if (radius < CellSystem.CellSize / 2f && childRadius >= CellSystem.CellSize / 2f)
+                        {
+                            AddIssue("Accumulative radii of orbits potentially exceed cell size.", factory, localPrefix + "OrbitRadius", IssueType.Warning);
+                        }
+
+                        if (orbiter.OrbitRadius.Low <= 0 || orbiter.OrbitRadius.High <= 0)
+                        {
+                            AddIssue("Orbit radius should be larger than zero for planet.", factory,
+                                     localPrefix + "OrbitRadius", IssueType.Warning);
+                        }
                     }
 
-                    orbits.Push(Tuple.Create(orbiter.Moons, childRadius));
+                    orbits.Push(Tuple.Create(orbiter.Moons, childRadius, localPrefix + "Moons"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Scans for issues for a specific item pool.
+        /// </summary>
+        /// <param name="pool">The pool.</param>
+        public void ScanForIssues(ItemPool pool)
+        {
+            if (_isValidationEnabled > 0)
+            {
+                return;
+            }
+
+            lvIssues.BeginUpdate();
+
+            // Remove issues involving this pool.
+            for (var i = lvIssues.Items.Count - 1; i >= 0; i--)
+            {
+                if (lvIssues.Items[i].Tag is ItemPool && ReferenceEquals(lvIssues.Items[i].Tag, pool))
+                {
+                    lvIssues.Items.RemoveAt(i);
+                }
+            }
+
+            // Something should drop...
+            if (pool.MaxDrops < 1)
+            {
+                AddIssue("Item pools should allow for at least one item to drop.", pool, "MaxDrops", IssueType.Information);
+            }
+
+            // Check if the items exist.
+            for (var i = 0; i < pool.Items.Length; i++)
+            {
+                var info = pool.Items[i];
+
+                if (info.Probability <= 0f)
+                {
+                    AddIssue("Items should have a drop probability larger than zero (" + info.ItemName + ").", pool, "Items", IssueType.Information);
+                }
+
+                ScanReferences(pool, info, "Items[" + i + "]");
+            }
+
+            lvIssues.EndUpdate();
+        }
+
+        /// <summary>
+        /// Check all known asset reference types for validity (i.e. whether the referenced object exists).
+        /// </summary>
+        /// <param name="main">The main object this relates to.</param>
+        /// <param name="current">The current object being checked (that is some child of the main object).</param>
+        /// <param name="prefix">The "path" to the current object in the main object, separated by dots ('.').</param>
+        private void ScanReferences(object main, object current, string prefix = null)
+        {
+            // Skip null objects.
+            if (main == null || current == null)
+            {
+                return;
+            }
+
+            // Adjust our prefix.
+            prefix = string.IsNullOrWhiteSpace(prefix) ? "" : (prefix + ".");
+
+            // Known checks: editor type to recognize the property, display name (in issue) and method to check validity.
+            var checks = new[]
+            {
+                Tuple.Create<Type, string, Func<string, bool>>(typeof(TextureAssetEditor), "texture asset", ContentProjectManager.HasTextureAsset),
+                Tuple.Create<Type, string, Func<string, bool>>(typeof(EffectAssetEditor), "effect asset", ContentProjectManager.HasEffectAsset),
+                Tuple.Create<Type, string, Func<string, bool>>(typeof(ItemInfoEditor), "item", s => FactoryManager.GetFactory(s) as ItemFactory != null),
+                Tuple.Create<Type, string, Func<string, bool>>(typeof(ItemPoolEditor), "item", s => FactoryManager.GetFactory(s) as ItemFactory != null),
+                Tuple.Create<Type, string, Func<string, bool>>(typeof(ItemPoolChooserEditor), "item pool", s => ItemPoolManager.GetItemPool(s) != null),
+                Tuple.Create<Type, string, Func<string, bool>>(typeof(PlanetEditor), "planet", s => FactoryManager.GetFactory(s) as PlanetFactory != null),
+                Tuple.Create<Type, string, Func<string, bool>>(typeof(SunEditor), "sun", s => FactoryManager.GetFactory(s) as SunFactory != null)
+            };
+
+            // Perform all checks.
+            foreach (var check in checks)
+            {
+                // Get properties we can handle with this check.
+                foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(current, new Attribute[] { new EditorAttribute(check.Item1, typeof(UITypeEditor)) }))
+                {
+                    // See if the actual value is a string, which is the format we store the references in.
+                    if (property.PropertyType != typeof(string))
+                    {
+                        AddIssue("Property marked as " + check.Item2 + " is not of type string.", main, prefix + property.Name, IssueType.Warning);
+                    }
+                    else
+                    {
+                        // Check if the reference is valid, ignore empty ones.
+                        var path = (string)property.GetValue(current);
+                        if (!string.IsNullOrWhiteSpace(path) && !check.Item3(path.Replace('\\', '/')))
+                        {
+                            AddIssue("Invalid or unknown " + check.Item2 + " name.", main, prefix + property.Name, IssueType.Error);
+                        }
+                    }
                 }
             }
         }

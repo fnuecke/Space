@@ -115,6 +115,7 @@
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
     <Compile Include="Factories\PlanetFactory.cs" />
+    <Compile Include="Factories\ReadonlyItemNameConverter.cs" />
     <Compile Include="Factories\SunFactory.cs" />
     <Compile Include="Factories\SunSystemFactory.cs" />
     <Compile Include="Factories\TriggersFullValidationAttribute.cs" />

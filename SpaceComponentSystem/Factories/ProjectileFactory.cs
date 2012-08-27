@@ -311,7 +311,7 @@ namespace Space.ComponentSystem.Factories
             }
 
             // Give the collision some info on how to handle us.
-            manager.AddComponent<CollidableSphere>(entity).Initialize(CollisionRadius, collisionGroup);
+            manager.AddComponent<CollidableSphere>(entity).Initialize(_collisionRadius, collisionGroup);
 
             // Make us visible!
             if (!string.IsNullOrWhiteSpace(_model))

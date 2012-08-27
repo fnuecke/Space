@@ -47,6 +47,7 @@
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.miNewFactory = new System.Windows.Forms.ToolStripMenuItem();
+            this.newItemPoolToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.gbProperties = new System.Windows.Forms.GroupBox();
             this.gbPreview = new System.Windows.Forms.GroupBox();
@@ -58,10 +59,9 @@
             this.lvIssues = new System.Windows.Forms.ListView();
             this.chIcon = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chText = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chFactory = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chObject = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chProperty = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ilIssueTypes = new System.Windows.Forms.ImageList(this.components);
-            this.newItemPoolToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsFactories.SuspendLayout();
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
@@ -240,6 +240,13 @@
             this.miNewFactory.Text = "New &Factory";
             this.miNewFactory.Click += new System.EventHandler(this.AddFactoryClick);
             // 
+            // newItemPoolToolStripMenuItem
+            // 
+            this.newItemPoolToolStripMenuItem.Name = "newItemPoolToolStripMenuItem";
+            this.newItemPoolToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.newItemPoolToolStripMenuItem.Text = "New Item Pool";
+            this.newItemPoolToolStripMenuItem.Click += new System.EventHandler(this.AddItemPoolClick);
+            // 
             // miDelete
             // 
             this.miDelete.Enabled = false;
@@ -371,7 +378,7 @@
             this.lvIssues.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.chIcon,
             this.chText,
-            this.chFactory,
+            this.chObject,
             this.chProperty});
             this.lvIssues.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lvIssues.FullRowSelect = true;
@@ -397,14 +404,14 @@
             this.chText.Text = "Description";
             this.chText.Width = 426;
             // 
-            // chFactory
+            // chObject
             // 
-            this.chFactory.Text = "Factory Name";
-            this.chFactory.Width = 133;
+            this.chObject.Text = "Object";
+            this.chObject.Width = 133;
             // 
             // chProperty
             // 
-            this.chProperty.Text = "Property Name";
+            this.chProperty.Text = "Property";
             this.chProperty.Width = 122;
             // 
             // ilIssueTypes
@@ -415,13 +422,6 @@
             this.ilIssueTypes.Images.SetKeyName(1, "109_AllAnnotations_Info_16x16_72.png");
             this.ilIssueTypes.Images.SetKeyName(2, "109_AllAnnotations_Warning_16x16_72.png");
             this.ilIssueTypes.Images.SetKeyName(3, "109_AllAnnotations_Error_16x16_72.png");
-            // 
-            // newItemPoolToolStripMenuItem
-            // 
-            this.newItemPoolToolStripMenuItem.Name = "newItemPoolToolStripMenuItem";
-            this.newItemPoolToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
-            this.newItemPoolToolStripMenuItem.Text = "New Item Pool";
-            this.newItemPoolToolStripMenuItem.Click += new System.EventHandler(this.AddItemPoolClick);
             // 
             // DataEditor
             // 
@@ -486,7 +486,7 @@
         private System.Windows.Forms.GroupBox gbIssues;
         private System.Windows.Forms.ListView lvIssues;
         private System.Windows.Forms.ColumnHeader chIcon;
-        private System.Windows.Forms.ColumnHeader chFactory;
+        private System.Windows.Forms.ColumnHeader chObject;
         private System.Windows.Forms.ColumnHeader chProperty;
         private System.Windows.Forms.ColumnHeader chText;
         private System.Windows.Forms.ImageList ilIssueTypes;

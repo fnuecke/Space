@@ -339,14 +339,6 @@ namespace Space.ComponentSystem.Factories
             #endregion
         }
 
-        public sealed class ReadonlyItemNameConverter : TypeConverter
-        {
-            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-            {
-                return false;
-            }
-        }
-
         #endregion
     }
 }
