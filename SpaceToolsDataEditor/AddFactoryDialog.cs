@@ -38,6 +38,7 @@ namespace Space.Tools.DataEditor
 
         private void OkClick(object sender, EventArgs e)
         {
+            tbName.Text = tbName.Text.Trim();
             DialogResult = DialogResult.OK;
         }
 
@@ -48,7 +49,7 @@ namespace Space.Tools.DataEditor
 
         private void NameChanged(object sender, EventArgs e)
         {
-            btnOK.Enabled = !string.IsNullOrWhiteSpace(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrWhiteSpace(tbName.Text) && !FactoryManager.HasFactory(tbName.Text.Trim());
         }
     }
 }

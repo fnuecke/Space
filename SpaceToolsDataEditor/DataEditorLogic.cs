@@ -32,33 +32,27 @@ namespace Space.Tools.DataEditor
 
         private void HandleFactoryAdded(IFactory factory)
         {
-            var insertionNode = tvData.Nodes.Find(factory.GetType().Name, true);
-            if (insertionNode.Length > 0)
+            foreach (var match in tvData.Nodes.Find(factory.GetType().Name, true))
             {
-                insertionNode[0].Nodes.Add(factory.Name, factory.Name);
+                if (IsFactory(match))
+                {
+                    match.Nodes.Add(factory.Name, factory.Name);
+                }
             }
 
             // Validate that factory.
             ScanForIssues(factory);
         }
 
-        private void HandleItemPoolAdded(ItemPool pool)
-        {
-            var insertionNode = tvData.Nodes.Find("ItemPool", true);
-            if (insertionNode.Length > 0)
-            {
-                insertionNode[0].Nodes.Add(pool.Name, pool.Name);
-            }
-
-            // Validate that factory.
-          //  ScanForIssues(pool);TODO
-        }
         private void HandleFactoryRemoved(IFactory factory)
         {
-            var node = tvData.Nodes.Find(factory.Name, true);
-            if (node.Length > 0)
+            foreach (var match in tvData.Nodes.Find(factory.Name, true))
             {
-                node[0].Remove();
+                if (IsFactory(match.Parent))
+                {
+                    match.Remove();
+                    break;
+                }
             }
 
             // See if this causes us any trouble.
@@ -106,18 +100,36 @@ namespace Space.Tools.DataEditor
         private void HandleItemPoolCleared()
         {
             tvData.BeginUpdate();
-            tvData.Nodes.Add("ItemPool", "Item Pool");
+            tvData.Nodes.Add(typeof(ItemPool).Name, typeof(ItemPool).Name);
             tvData.EndUpdate();
         }
         private void HandleFactoryNameChanged(string oldName, string newName)
         {
-            var oldNode = tvData.Nodes.Find(oldName, true);
-            if (oldNode.Length > 0)
+            foreach (var match in tvData.Nodes.Find(oldName, true))
             {
-                oldNode[0].Parent.Nodes.Add(newName, newName);
-                oldNode[0].Remove();
+                if (IsFactory(match.Parent))
+                {
+                    match.Parent.Nodes.Add(newName, newName);
+                    match.Remove();
+                    break;
+                }
             }
         }
+        private void HandleItemPoolAdded(ItemPool pool)
+        {
+            foreach (var match in tvData.Nodes.Find(typeof(ItemPool).Name, true))
+            {
+                if (IsItemPool(match))
+                {
+                    match.Nodes.Add(pool.Name, pool.Name);
+                    break;
+                }
+            }
+
+            // Validate that factory.
+            //  ScanForIssues(pool);TODO
+        }
+
         private void HandlePropertyValueChanged(object o, PropertyValueChangedEventArgs args)
         {
             if (pgProperties.SelectedObject is IFactory)
@@ -201,6 +213,16 @@ namespace Space.Tools.DataEditor
             }
         }
 
+        private static bool IsFactory(TreeNode match)
+        {
+            return match != null && typeof(IFactory).IsAssignableFrom(Type.GetType(typeof(IFactory).Namespace + "." + match.Name + ", " + typeof(IFactory).Assembly));
+        }
+
+        private static bool IsItemPool(TreeNode match)
+        {
+            return match != null && typeof(ItemPool).IsAssignableFrom(Type.GetType(typeof(ItemPool).Namespace + "." + match.Name + ", " + typeof(ItemPool).Assembly));
+        }
+
         /// <summary>
         /// Cleans the name of the factory type by stripping the 'Factory' postfix
         /// if it exists.
@@ -241,10 +263,16 @@ namespace Space.Tools.DataEditor
             if (factory != null)
             {
                 pgProperties.SelectedObject = factory;
-                var node = tvData.Nodes.Find(name, true);
-                if (node.Length > 0)
+                var nodes = tvData.Nodes.Find(name, true);
+                if (nodes.Length > 0)
                 {
-                    tvData.SelectedNode = node[0];
+                    foreach (var match in nodes)
+                    {
+                        if (typeof(IFactory).IsAssignableFrom(Type.GetType(typeof(IFactory).Namespace + "." + match.Parent.Name + ", " + typeof(IFactory).Assembly)))
+                        {
+                            tvData.SelectedNode = match;
+                        }
+                    }
                 }
                 return true;
             }

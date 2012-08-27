@@ -34,6 +34,7 @@
             this.tvData = new System.Windows.Forms.TreeView();
             this.cmsFactories = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiAddFactory = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAddItemPool = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.gbData = new System.Windows.Forms.GroupBox();
             this.msMain = new System.Windows.Forms.MenuStrip();
@@ -60,7 +61,6 @@
             this.chFactory = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chProperty = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ilIssueTypes = new System.Windows.Forms.ImageList(this.components);
-            this.tsmiAddItemPool = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsFactories.SuspendLayout();
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
@@ -122,6 +122,13 @@
             this.tsmiAddFactory.Size = new System.Drawing.Size(152, 22);
             this.tsmiAddFactory.Text = "New &Factory";
             this.tsmiAddFactory.Click += new System.EventHandler(this.AddFactoryClick);
+            // 
+            // tsmiAddItemPool
+            // 
+            this.tsmiAddItemPool.Name = "tsmiAddItemPool";
+            this.tsmiAddItemPool.Size = new System.Drawing.Size(152, 22);
+            this.tsmiAddItemPool.Text = "New Item Pool";
+            this.tsmiAddItemPool.Click += new System.EventHandler(this.AddItemPoolClick);
             // 
             // tsmiRemove
             // 
@@ -406,13 +413,6 @@
             this.ilIssueTypes.Images.SetKeyName(1, "109_AllAnnotations_Info_16x16_72.png");
             this.ilIssueTypes.Images.SetKeyName(2, "109_AllAnnotations_Warning_16x16_72.png");
             this.ilIssueTypes.Images.SetKeyName(3, "109_AllAnnotations_Error_16x16_72.png");
-            // 
-            // tsmiAddItemPool
-            // 
-            this.tsmiAddItemPool.Name = "tsmiAddItemPool";
-            this.tsmiAddItemPool.Size = new System.Drawing.Size(152, 22);
-            this.tsmiAddItemPool.Text = "New Item Pool";
-            this.tsmiAddItemPool.Click += new System.EventHandler(this.AddItemPoolClick);
             // 
             // DataEditor
             // 

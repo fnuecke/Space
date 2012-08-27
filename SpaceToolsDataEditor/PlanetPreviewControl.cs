@@ -32,6 +32,7 @@ namespace Space.Tools.DataEditor
                 {
                     LoadContent();
                 }
+                Invalidate();
             }
         }
 

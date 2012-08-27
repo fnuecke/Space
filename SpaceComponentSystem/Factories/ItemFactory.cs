@@ -73,7 +73,7 @@ namespace Space.ComponentSystem.Factories
         [DefaultValue(null)]
         [Category("Media")]
         [Description("The offset relative to the items mount point with which render it when equipped.")]
-        public Vector2? ModelOffset
+        public Vector2 ModelOffset
         {
             get { return _modelOffset; }
             set { _modelOffset = value; }
@@ -200,23 +200,23 @@ namespace Space.ComponentSystem.Factories
 
         private string _model = "Textures/Items/default";
 
-        private Vector2? _modelOffset;
+        private Vector2 _modelOffset;
 
         private bool _modelBelowParent;
 
-        private EffectInfo[] _effects;
+        private EffectInfo[] _effects = new EffectInfo[0];
 
         private ItemQuality _quality = ItemQuality.Common;
 
         private ItemSlotSize _requiredSlotSize = ItemSlotSize.Small;
 
-        private ItemSlotInfo[] _slots;
+        private ItemSlotInfo[] _slots = new ItemSlotInfo[0];
 
         private AttributeModifierConstraint<AttributeType>[] _guaranteedAttributes;
 
         private AttributeModifierConstraint<AttributeType>[] _additionalAttributes;
 
-        private IntInterval _additionalAttributeCount;
+        private IntInterval _additionalAttributeCount = IntInterval.Zero;
 
         #endregion
 

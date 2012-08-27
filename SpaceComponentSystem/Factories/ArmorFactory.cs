@@ -1,6 +1,5 @@
 ﻿using Engine.ComponentSystem;
 using Engine.Random;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Factories
@@ -24,9 +23,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Armor>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize,
-                                                           ModelOffset.HasValue ? ModelOffset.Value : Vector2.Zero,
-                                                           ModelBelowParent);
+            manager.AddComponent<Armor>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
             return SampleAttributes(manager, entity, random);
         }

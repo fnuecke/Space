@@ -162,17 +162,17 @@ namespace Space.ComponentSystem.Factories
 
         private Color _atmosphereTint = Color.Transparent;
 
-        private FloatInterval _radius;
+        private FloatInterval _radius = FloatInterval.Zero;
 
-        private FloatInterval _mass;
+        private FloatInterval _mass = FloatInterval.Zero;
 
-        private FloatInterval _rotationSpeed;
+        private FloatInterval _rotationSpeed = FloatInterval.Zero;
 
-        private FloatInterval _eccentricity;
+        private FloatInterval _eccentricity = FloatInterval.Zero;
 
-        private FloatInterval _angleOffset;
+        private FloatInterval _angleOffset = FloatInterval.Zero;
 
-        private FloatInterval _travelSpeed;
+        private FloatInterval _travelSpeed = FloatInterval.Zero;
 
         #endregion
 

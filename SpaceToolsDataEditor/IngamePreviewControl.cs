@@ -49,7 +49,7 @@ namespace Space.Tools.DataEditor
 
             ContextMenuStrip = _contextMenu;
             _updateTimer.Tick += (sender, args) => _manager.Update(0);
-            _drawTimer.Tick += (sender, args) => Refresh();
+            _drawTimer.Tick += (sender, args) => Invalidate();
         }
 
         public void Clear()
