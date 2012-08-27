@@ -26,7 +26,7 @@ namespace Space.Tools.DataEditor
             ItemPoolManager.ItemPoolAdded += HandleItemPoolAdded;
             ItemPoolManager.ItemPoolRemoved += HandleItemPoolRemoved;
             ItemPoolManager.ItemPoolCleared += HandleItemPoolCleared;
-            ItemPoolManager.ItemPoolNameChanged += HandleFactoryNameChanged;
+            ItemPoolManager.ItemPoolNameChanged += HandleItemPoolNameChanged;
 
         }
 
@@ -43,7 +43,19 @@ namespace Space.Tools.DataEditor
             // Validate that factory.
             ScanForIssues(factory);
         }
+        private void HandleItemPoolAdded(ItemPool pool)
+        {
+            foreach (var match in tvData.Nodes.Find(pool.GetType().Name, true))
+            {
+                if (IsItemPool(match))
+                {
+                    match.Nodes.Add(pool.Name, pool.Name);
+                }
+            }
 
+            // Validate that factory.
+            //  ScanForIssues(pool);TODO
+        }
         private void HandleFactoryRemoved(IFactory factory)
         {
             foreach (var match in tvData.Nodes.Find(factory.Name, true))
@@ -61,11 +73,15 @@ namespace Space.Tools.DataEditor
 
         private void HandleItemPoolRemoved(ItemPool itemPool)
         {
-            var node = tvData.Nodes.Find(itemPool.Name, true);
-            if (node.Length > 0)
+            foreach (var match in tvData.Nodes.Find(itemPool.Name, true))
             {
-                node[0].Remove();
+                if (IsItemPool(match.Parent))
+                {
+                    match.Remove();
+                    break;
+                }
             }
+            
 
             // See if this causes us any trouble.
           //  ScanForIssues();
@@ -115,19 +131,17 @@ namespace Space.Tools.DataEditor
                 }
             }
         }
-        private void HandleItemPoolAdded(ItemPool pool)
+        private void HandleItemPoolNameChanged(string oldName, string newName)
         {
-            foreach (var match in tvData.Nodes.Find(typeof(ItemPool).Name, true))
+            foreach (var match in tvData.Nodes.Find(oldName, true))
             {
-                if (IsItemPool(match))
+                if (IsItemPool(match.Parent))
                 {
-                    match.Nodes.Add(pool.Name, pool.Name);
+                    match.Parent.Nodes.Add(newName, newName);
+                    match.Remove();
                     break;
                 }
             }
-
-            // Validate that factory.
-            //  ScanForIssues(pool);TODO
         }
 
         private void HandlePropertyValueChanged(object o, PropertyValueChangedEventArgs args)
