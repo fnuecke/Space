@@ -122,6 +122,7 @@ namespace Space.ComponentSystem.Systems
             // Apply transformation.
             _sun.Center = (Vector2)(position + transform.Translation);
             _sun.SetTransform(transform.Matrix);
+            _sun.Color = component.Tint;
 
             // Set remaining parameters for draw.
             _sun.SetSize(component.Radius * 2);

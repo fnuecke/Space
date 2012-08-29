@@ -1,5 +1,7 @@
 // ------------------------------------------------------------------------- //
 
+uniform extern float4 Color;
+
 uniform extern texture Surface;
 uniform extern texture TurbulenceOne;
 uniform extern texture TurbulenceTwo;
@@ -86,7 +88,7 @@ float4 SurfaceShader(VertexShaderData input) : COLOR0
         float2 uvSphere = (p * f + 1) / 2 + SurfaceOffset;
 
         // Actual color at position.
-        float4 color = tex2D(baseSampler, uvSphere / TextureScale);
+        float4 color = tex2D(baseSampler, uvSphere / TextureScale) * Color;
         
         // Alpha for smoother border.
         float alpha = clamp((1 - r) * RenderRadius, 0, 1);
@@ -131,7 +133,7 @@ float4 TurbulenceShader(VertexShaderData input) : COLOR0
         float2 uvSphereTwo = (p * f + 1) / 2 + TurbulenceTwoOffset;
 
         // Actual colors at position.
-        float4 color = tex2D(baseSampler, uvSphereBase / TextureScale) * 2 +
+        float4 color = tex2D(baseSampler, uvSphereBase / TextureScale) * 2 * Color +
                        tex2D(turbulenceOneSampler, uvSphereOne / TextureScale) +
                        tex2D(turbulenceTwoSampler, uvSphereTwo / TextureScale) - 2;
         
@@ -142,7 +144,8 @@ float4 TurbulenceShader(VertexShaderData input) : COLOR0
             if( pos > 0.98 ) pos = 0.98;
             if( pos < 0.02 ) pos = 0.02;
 
-            color = tex2D( gradientSampler, pos ) * Brightness;
+            //color = tex2D( gradientSampler, pos ) * Brightness * Color;
+            color = pos * Brightness * Color;
 
             return float4( color.rgb, 1 );
         }

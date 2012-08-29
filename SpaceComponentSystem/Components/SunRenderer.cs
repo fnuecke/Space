@@ -36,6 +36,11 @@ namespace Space.ComponentSystem.Components
         public float Radius;
 
         /// <summary>
+        /// The color tint for this sun.
+        /// </summary>
+        public Color Tint;
+
+        /// <summary>
         /// Surface rotation of the sun.
         /// </summary>
         public Vector2 SurfaceRotation;
@@ -78,10 +83,12 @@ namespace Space.ComponentSystem.Components
         /// <param name="surfaceRotation">Surface rotation of the sun.</param>
         /// <param name="primaryTurbulenceRotation">Rotational direction of primary surface turbulence.</param>
         /// <param name="secondaryTurbulenceRotation">Rotational direction of secondary surface turbulence.</param>
+        /// <param name="tint"> </param>
         /// <returns></returns>
-        public SunRenderer Initialize(float radius, Vector2 surfaceRotation, Vector2 primaryTurbulenceRotation, Vector2 secondaryTurbulenceRotation)
+        public SunRenderer Initialize(float radius, Vector2 surfaceRotation, Vector2 primaryTurbulenceRotation, Vector2 secondaryTurbulenceRotation, Color tint)
         {
             Radius = radius;
+            Tint = tint;
             SurfaceRotation = surfaceRotation;
             PrimaryTurbulenceRotation = primaryTurbulenceRotation;
             SecondaryTurbulenceRotation = secondaryTurbulenceRotation;
@@ -98,6 +105,7 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Radius = 0;
+            Tint = Color.White;
             SurfaceRotation = Vector2.Zero;
             PrimaryTurbulenceRotation = Vector2.Zero;
             SecondaryTurbulenceRotation = Vector2.Zero;
@@ -118,6 +126,7 @@ namespace Space.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write(Radius)
+                .Write(Tint)
                 .Write(SurfaceRotation)
                 .Write(PrimaryTurbulenceRotation)
                 .Write(SecondaryTurbulenceRotation);
@@ -132,6 +141,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Radius = packet.ReadSingle();
+            Tint = packet.ReadColor();
             SurfaceRotation = packet.ReadVector2();
             PrimaryTurbulenceRotation = packet.ReadVector2();
             SecondaryTurbulenceRotation = packet.ReadVector2();
@@ -158,7 +168,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Radius=" + Radius.ToString(CultureInfo.InvariantCulture) +
+            return base.ToString() + ", Radius=" + Radius.ToString(CultureInfo.InvariantCulture) + ", Color=" + Tint +
                 ", SurfaceRotation=" + SurfaceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + SurfaceRotation.Y.ToString(CultureInfo.InvariantCulture) +
                 ", PrimaryTurbulenceRotation=" + PrimaryTurbulenceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + PrimaryTurbulenceRotation.Y.ToString(CultureInfo.InvariantCulture) +
                 ", SecondaryTurbulenceRotation=" + SecondaryTurbulenceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + SecondaryTurbulenceRotation.Y.ToString(CultureInfo.InvariantCulture);

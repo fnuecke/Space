@@ -159,6 +159,7 @@ namespace Space.Tools.DataEditor
                     _circle.SetSize(_factory.Radius.High * 2);
                 }
                 _sun.SetSize(_factory.Radius.Low * 2 * 0.95f);
+                _sun.Color = _factory.Tint;
                 _sun.LoadContent(_batch, _content);
                 _timer.Enabled = true;
             }

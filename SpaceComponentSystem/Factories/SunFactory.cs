@@ -6,6 +6,8 @@ using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Design;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Data;
@@ -43,6 +45,22 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
+        /// The color tint for generated planets' surface.
+        /// </summary>
+        [Editor("Space.Tools.DataEditor.XnaColorEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [TypeConverter(typeof(ColorConverter))]
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(0xFFFFFFFF)]
+        [Category("Media")]
+        [Description("The color tint to apply to the surface texture.")]
+        public Color Tint
+        {
+            get { return _tint; }
+            set { _tint = value; }
+        }
+
+        /// <summary>
         /// Offset from cell center for generated suns.
         /// </summary>
         [Category("Media")]
@@ -71,6 +89,8 @@ namespace Space.ComponentSystem.Factories
         private string _name = "";
 
         private FloatInterval _radius = FloatInterval.Zero;
+
+        private Color _tint = Color.White;
 
         private FloatInterval _offsetRadius = FloatInterval.Zero;
 
@@ -139,7 +159,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
 
             // Make it glow.
-            manager.AddComponent<SunRenderer>(entity).Initialize(radius * 0.95f, surfaceRotation, primaryTurbulenceRotation, secondaryTurbulenceRotation);
+            manager.AddComponent<SunRenderer>(entity).Initialize(radius * 0.95f, surfaceRotation, primaryTurbulenceRotation, secondaryTurbulenceRotation, _tint);
 
             // Make it go whoooosh.
             manager.AddComponent<Sound>(entity).Initialize("Sun");

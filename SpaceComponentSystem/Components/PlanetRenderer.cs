@@ -155,8 +155,8 @@ namespace Space.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write(Radius)
-                .Write(PlanetTint.PackedValue)
-                .Write(AtmosphereTint.PackedValue)
+                .Write(PlanetTint)
+                .Write(AtmosphereTint)
                 .Write(SurfaceRotation)
                 .Write(TextureName);
         }
@@ -170,8 +170,8 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Radius = packet.ReadSingle();
-            PlanetTint.PackedValue = packet.ReadUInt32();
-            AtmosphereTint.PackedValue = packet.ReadUInt32();
+            PlanetTint = packet.ReadColor();
+            AtmosphereTint = packet.ReadColor();
             SurfaceRotation = packet.ReadVector2();
             TextureName = packet.ReadString();
         }
