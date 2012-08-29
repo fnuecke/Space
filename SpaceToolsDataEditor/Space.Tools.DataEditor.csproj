@@ -89,6 +89,20 @@
     <Compile Include="AddItemPoolDialog.Designer.cs">
       <DependentUpon>AddItemPoolDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="AttributePoolManager.cs" />
+    <Compile Include="AttributePoolDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AttributePoolDialog.Designer.cs">
+      <DependentUpon>AttributePoolDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddAttributePoolDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddAttributePoolDialog.Designer.cs">
+      <DependentUpon>AddAttributePoolDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AttributePoolChooserEditor.cs" />
     <Compile Include="ItemPoolDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -105,6 +119,7 @@
     <Compile Include="DialogEditorIssues.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ResourceManager.cs" />
     <Compile Include="SunPreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -185,6 +200,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddItemPoolDialog.resx">
       <DependentUpon>AddItemPoolDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AttributePoolDialog.resx">
+      <DependentUpon>AttributePoolDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddAttributePoolDialog.resx">
+      <DependentUpon>AddAttributePoolDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ItemPoolDialog.resx">
       <DependentUpon>ItemPoolDialog.cs</DependentUpon>

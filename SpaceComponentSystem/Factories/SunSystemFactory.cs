@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.FarMath;
 using Engine.Math;
@@ -34,6 +35,7 @@ namespace Space.ComponentSystem.Factories
         [Editor("Space.Tools.DataEditor.SunEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
             "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [Category("Structure")]
+        
         [Description("The name of the sun to use as the center of this sun system.")]
         public string Sun
         {
@@ -41,11 +43,16 @@ namespace Space.ComponentSystem.Factories
             set { _sun = value; }
         }
 
+        public class ChildrenHaveSharedResourcesAttribute : Attribute
+        {
+        }
+
         /// <summary>
         /// The planets to create.
         /// </summary>
         [ContentSerializer(Optional = true)]
         [Category("Structure")]
+        [ChildrenHaveSharedResources]
         [Description("The hierarchical list of planets and moons in this sun system.")]
         public Orbit Planets
         {
@@ -112,6 +119,7 @@ namespace Space.ComponentSystem.Factories
             /// Objects in this orbit system.
             /// </summary>
             [ContentSerializer(FlattenContent = true, CollectionItemName = "Orbiter")]
+            [SunSystemFactory.ChildrenHaveSharedResourcesAttribute]
             [Description("The list of objects orbiting this object.")]
             public Orbiter[] Orbiters
             {

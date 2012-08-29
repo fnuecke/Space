@@ -25,7 +25,7 @@ namespace Space.Tools.DataEditor
 
         private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
         private readonly AddItemPoolDialog _itemPoolDialog = new AddItemPoolDialog();
-
+        private readonly AddAttributePoolDialog _attributePoolDialog = new AddAttributePoolDialog();
         public DataEditor()
         {
             InitializeComponent();
@@ -50,6 +50,11 @@ namespace Space.Tools.DataEditor
             ItemPoolManager.ItemPoolAdded += itemPool => SavingEnabled = true;
             ItemPoolManager.ItemPoolRemoved += itemPool => SavingEnabled = true;
             ItemPoolManager.ItemPoolNameChanged += (a, b) => SavingEnabled = true;
+
+
+            AttributePoolManager.AttributePoolAdded += attributePool => SavingEnabled = true;
+            AttributePoolManager.AttributePoolRemoved += attributePool => SavingEnabled = true;
+            AttributePoolManager.AttributePoolNameChanged += (a, b) => SavingEnabled = true;
 
             pbPreview.Image = new Bitmap(2048, 2048, PixelFormat.Format32bppArgb);
 
@@ -165,6 +170,7 @@ namespace Space.Tools.DataEditor
         {
             FactoryManager.Save();
             ItemPoolManager.Save();
+            AttributePoolManager.Save();
             SavingEnabled = false;
         }
 
@@ -190,7 +196,8 @@ namespace Space.Tools.DataEditor
         private void DataSelected(object sender, TreeViewEventArgs e)
         {
             if (SelectFactory(e.Node.Tag as IFactory) ||
-                SelectItemPool(e.Node.Tag as ItemPool))
+                SelectItemPool(e.Node.Tag as ItemPool) ||
+                SelectAttributePool(e.Node.Tag as AttributePool))
             {
                 tsmiRemove.Enabled = true;
                 miDelete.Enabled = true;
@@ -312,7 +319,30 @@ namespace Space.Tools.DataEditor
                 }
             }
         }
+        private void AddAttributePoolClick(object sender, EventArgs e)
+        {
+            if (_attributePoolDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                var name = _attributePoolDialog.AttributePoolName;
 
+                try
+                {
+                    // Create a new instance.
+                    var instance = new AttributePool() { Name = name };
+
+                    // Register it.
+                    AttributePoolManager.Add(instance);
+
+                    // And select it.
+                    SelectAttributePool(instance);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Failed creating new attribute pool:\n" + ex, "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
         private void RemoveClick(object sender, EventArgs e)
         {
             if (pgProperties.SelectedObject == null)
@@ -344,6 +374,18 @@ namespace Space.Tools.DataEditor
                                         MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         ItemPoolManager.Remove(itemPool);
+                    }
+                }
+                else if (pgProperties.SelectedObject is AttributePool)
+                {
+                    var attributePool = (AttributePool)pgProperties.SelectedObject;
+                    if ((ModifierKeys & Keys.Shift) != 0 ||
+                        MessageBox.Show(this,
+                                        "Are you sure you wish to delete '" + attributePool.Name + "'?",
+                                        "Confirmation", MessageBoxButtons.YesNo,
+                                        MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        AttributePoolManager.Remove(attributePool);
                     }
                 }
             }
@@ -423,5 +465,7 @@ namespace Space.Tools.DataEditor
                 throw new ArgumentException("Invalid item type.");
             }
         }
+
+        
     }
 }

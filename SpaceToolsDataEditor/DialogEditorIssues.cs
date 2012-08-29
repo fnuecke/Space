@@ -482,6 +482,15 @@ namespace Space.Tools.DataEditor
             lvIssues.EndUpdate();
         }
 
+        
+        /// <summary>
+        /// Scans for issues for a specific attribute pool.
+        /// </summary>
+        /// <param name="pool">The pool.</param>
+        public void ScanForIssues(AttributePool pool)
+        {
+        }
+
         /// <summary>
         /// Check all known asset reference types for validity (i.e. whether the referenced object exists).
         /// </summary>

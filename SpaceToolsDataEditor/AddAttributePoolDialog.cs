@@ -1,22 +1,21 @@
 ﻿using System;
-using System;
 using System.Windows.Forms;
 
 namespace Space.Tools.DataEditor
 {
-    public sealed partial class AddItemPoolDialog : Form
+    public sealed partial class AddAttributePoolDialog : Form
     {
         /// <summary>
         /// Gets the name of the factory.
         /// </summary>
-        public string ItemPoolName { get { return tbName.Text.Trim(); } }
+        public string AttributePoolName { get { return tbName.Text.Trim(); } }
 
-        public AddItemPoolDialog()
+        public AddAttributePoolDialog()
         {
             InitializeComponent();
         }
 
-        private void AddItemPoolDialogLoad(object sender, EventArgs e)
+        private void AddAttributePoolDialogLoad(object sender, EventArgs e)
         {
             tbName.Text = string.Empty;
         }
@@ -33,7 +32,7 @@ namespace Space.Tools.DataEditor
 
         private void NameChanged(object sender, EventArgs e)
         {
-            btnOK.Enabled = !string.IsNullOrWhiteSpace(tbName.Text) && ItemPoolManager.GetItemPool(tbName.Text.Trim()) == null;
+            btnOK.Enabled = !string.IsNullOrWhiteSpace(tbName.Text) && AttributePoolManager.GetAttributePool(tbName.Text.Trim()) == null;
         }
     }
 }

@@ -34,6 +34,11 @@ namespace Space.Tools.DataEditor
             ItemPoolManager.ItemPoolNameChanged += HandleItemPoolNameChanged;
             ItemPoolManager.ItemPoolCleared += HandleCleared;
 
+            AttributePoolManager.AttributePoolAdded += HandleAttributePoolAdded;
+            AttributePoolManager.AttributePoolRemoved += HandleAttributePoolRemoved;
+            AttributePoolManager.AttributePoolNameChanged += HandleAttributePoolNameChanged;
+            AttributePoolManager.AttributePoolCleared += HandleCleared;
+
         }
 
         /// <summary>
@@ -50,7 +55,7 @@ namespace Space.Tools.DataEditor
             // Load stuff.
             FactoryManager.Load(path);
             ItemPoolManager.Load(path);
-
+            AttributePoolManager.Load(path);
             // Reenable tree and validation.
             tvData.EndUpdate();
             --_isValidationEnabled;
@@ -137,6 +142,43 @@ namespace Space.Tools.DataEditor
 
         #endregion
 
+        #region attribute pool handlers
+
+        private void HandleAttributePoolAdded(AttributePool pool)
+        {
+            // Find parent node (base type) and insert in it.
+            var node = tvData.Nodes.Find(pool.GetType().AssemblyQualifiedName, true).FirstOrDefault(IsAttributePool);
+            Debug.Assert(node != null);
+            node.Nodes.Add(pool.Name, pool.Name).Tag = pool;
+
+            // Validate that item pool.
+            ScanForIssues(pool);
+        }
+
+        private void HandleAttributePoolRemoved(AttributePool AttributePool)
+        {
+            // Find the corresponding node and remove it.
+            var node = tvData.Nodes.Find(AttributePool.Name, true).FirstOrDefault(n => IsAttributePool(n.Parent));
+            Debug.Assert(node != null);
+            node.Remove();
+
+            // See if this causes us any trouble.
+            ScanForIssues();
+        }
+
+        private void HandleAttributePoolNameChanged(string oldName, string newName)
+        {
+            // Find old entry, add new entry to old parent and remove old one.
+            var node = tvData.Nodes.Find(oldName, true).FirstOrDefault(n => IsAttributePool(n.Parent));
+            Debug.Assert(node != null);
+            node.Parent.Nodes.Add(newName, newName).Tag = node.Tag;
+            node.Remove();
+
+            // See if this causes us any trouble.
+            ScanForIssues();
+        }
+
+        #endregion
         #region Common handlers
 
         private void HandleCleared()
@@ -169,6 +211,7 @@ namespace Space.Tools.DataEditor
             // Create entry for item pools.
             tvData.Nodes.Add(typeof(ItemPool).AssemblyQualifiedName, typeof(ItemPool).Name);
 
+            tvData.Nodes.Add(typeof(AttributePool).AssemblyQualifiedName, typeof(AttributePool).Name);
             // Re-add existing data.
             foreach (var factory in FactoryManager.GetFactories())
             {
@@ -177,6 +220,10 @@ namespace Space.Tools.DataEditor
             foreach (var pool in ItemPoolManager.GetItemPools())
             {
                 HandleItemPoolAdded(pool);
+            }
+            foreach (var pool in AttributePoolManager.GetAttributePools())
+            {
+                HandleAttributePoolAdded(pool);
             }
 
             // Reenable tree updating and validation.
@@ -274,6 +321,48 @@ namespace Space.Tools.DataEditor
                     }
                 }
             }
+            else if (pgProperties.SelectedObject is AttributePool)
+            {
+                var attributePool = (AttributePool)pgProperties.SelectedObject;
+                if (ReferenceEquals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(attributePool)["Name"]))
+                {
+                    // Yes, get old and new value.
+                    var oldName = args.OldValue as string;
+                    var newName = args.ChangedItem.Value as string;
+                    // Adjust item pool manager layout, this will throw as necessary.
+                    tvData.BeginUpdate();
+                    try
+                    {
+                        AttributePoolManager.Rename(oldName, newName);
+                        tvData.EndUpdate();
+
+                        SelectAttributePool(attributePool);
+                        SelectProperty("Name");
+
+                        // Do a full scan as this factory may have been referenced somewhere.
+                        ScanForIssues();
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        tvData.EndUpdate();
+
+                        // Tell the user why.
+                        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    // Rescan of issues related to this property.
+                    if (args.ChangedItem.PropertyDescriptor == null || args.ChangedItem.PropertyDescriptor.Attributes[typeof(TriggersFullValidationAttribute)] != null)
+                    {
+                        ScanForIssues();
+                    }
+                    else
+                    {
+                        ScanForIssues(attributePool);
+                    }
+                }
+            }
         }
 
         #endregion
@@ -321,7 +410,26 @@ namespace Space.Tools.DataEditor
             }
             return false;
         }
+        /// <summary>
+        /// Selects the Itempool in our property grid if it exists, else selects
+        /// nothing (clears property grid).
+        /// </summary>
+        /// <param name="pool">The pool.</param>
+        /// <returns></returns>
+        private bool SelectAttributePool(AttributePool pool)
+        {
+            // Deselect object first, to reset property selection in property grid.
+            pgProperties.SelectedObject = null;
 
+            // See if that item pool is known and select it if possible.
+            if (pool != null)
+            {
+                pgProperties.SelectedObject = pool;
+                tvData.SelectedNode = tvData.Nodes.Find(pool.Name, true).FirstOrDefault(n => IsAttributePool(n.Parent));
+                return true;
+            }
+            return false;
+        }
         /// <summary>
         /// Selects the property with the specified name.
         /// </summary>
@@ -443,6 +551,18 @@ namespace Space.Tools.DataEditor
         private static bool IsItemPool(TreeNode node)
         {
             return node != null && typeof(ItemPool).IsAssignableFrom(Type.GetType(node.Name));
+        }
+
+        /// <summary>
+        /// Determines whether the specified tree node represents an attribute pool.
+        /// </summary>
+        /// <param name="node">The tree node.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified node represents an attribute pool; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsAttributePool(TreeNode node)
+        {
+            return node != null && typeof(AttributePool).IsAssignableFrom(Type.GetType(node.Name));
         }
 
         /// <summary>
