@@ -61,6 +61,7 @@
     <Compile Include="Components\AttributeModifier.cs" />
     <Compile Include="Components\AttributeStatusEffect.cs" />
     <Compile Include="Components\Character.cs" />
+    <Compile Include="Components\Experience.cs" />
     <Compile Include="Components\ItemSlot.cs" />
     <Compile Include="Components\Inventory.cs" />
     <Compile Include="Components\StatusEffect.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="Messages\CharacterStatsInvalidated.cs" />
     <Compile Include="Messages\ItemEquipped.cs" />
     <Compile Include="Messages\ItemUnequipped.cs" />
+    <Compile Include="Messages\ExperienceLevelChanged.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CharacterSystem.cs" />
     <Compile Include="Systems\ItemSlotSystem.cs" />

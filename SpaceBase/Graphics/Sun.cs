@@ -77,7 +77,7 @@ namespace Space.Graphics
         /// <summary>
         /// The color gradient to use for turbulence.
         /// </summary>
-        private Texture2D _turbulenceColor;
+        //private Texture2D _turbulenceColor;
 
         /// <summary>
         /// Gaussian blur shader used on the turbulence.
@@ -172,7 +172,7 @@ namespace Space.Graphics
             _surface = content.Load<Texture2D>("Textures/Suns/sun_00");
             _turbulenceOne = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence1");
             _turbulenceTwo = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence2");
-            _turbulenceColor = content.Load<Texture2D>("Textures/Suns/sun_00_gradient");
+            //_turbulenceColor = content.Load<Texture2D>("Textures/Suns/sun_00_gradient");
             _gaussianBlur = content.Load<Effect>("Shaders/SunBlur");
             _additiveBlend = content.Load<Effect>("Shaders/SunBlend");
 
@@ -180,7 +180,7 @@ namespace Space.Graphics
             Effect.Parameters["Surface"].SetValue(_surface);
             Effect.Parameters["TurbulenceOne"].SetValue(_turbulenceOne);
             Effect.Parameters["TurbulenceTwo"].SetValue(_turbulenceTwo);
-            Effect.Parameters["TurbulenceColor"].SetValue(_turbulenceColor);
+            //Effect.Parameters["TurbulenceColor"].SetValue(_turbulenceColor);
 
             RecreateRenderTargets();
         }
@@ -260,6 +260,8 @@ namespace Space.Graphics
             // Set the render target for our base sun image.
             GraphicsDevice.SetRenderTarget(_surfaceSphere);
             GraphicsDevice.Clear(Color.Transparent);
+
+            AdjustParameters();
 
             var offset = _time / Width;
             Effect.Parameters["SurfaceOffset"].SetValue(_surfaceRotation * 8 * offset);

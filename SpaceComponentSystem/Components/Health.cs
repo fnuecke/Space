@@ -33,13 +33,15 @@ namespace Space.ComponentSystem.Components
         /// Sets the value.
         /// </summary>
         /// <param name="value">The value.</param>
-        public override void SetValue(float value)
+        /// <param name="causingEntity">The entity that triggered the value change.</param>
+        public override void SetValue(float value, int causingEntity = 0)
         {
-            base.SetValue(value);
+            base.SetValue(value, causingEntity);
             if (Value <= 0)
             {
                 EntityDied message;
-                message.Entity = Entity;
+                message.KilledEntity = Entity;
+                message.KillingEntity = causingEntity;
                 Manager.SendMessage(ref message);
             }
         }

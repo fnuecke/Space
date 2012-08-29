@@ -62,7 +62,7 @@ namespace Space.ComponentSystem.Systems
                     var firstHealth = ((Health)Manager.GetComponent(firstEntity, Health.TypeId));
                     if (firstHealth != null)
                     {
-                        firstHealth.SetValue(firstHealth.Value - secondDamage.Damage);
+                        firstHealth.SetValue(firstHealth.Value - secondDamage.Damage, secondEntity);
                     }
 
                     // One-shot?

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -54,6 +55,9 @@ namespace Space.ComponentSystem
                 typeof(Health),
                 typeof(Energy)
             }, position);
+
+            // Allow leveling up.
+            manager.AddComponent<Experience>(entity).Initialize(100, 100f, 2.15f);
 
             return entity;
         }

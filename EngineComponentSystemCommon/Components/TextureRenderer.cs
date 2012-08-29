@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -139,7 +140,7 @@ namespace Engine.ComponentSystem.Common.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Tint.PackedValue)
+                .Write(Tint)
                 .Write(Scale)
                 .Write(TextureName);
         }
@@ -152,7 +153,7 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Depacketize(packet);
 
-            Tint.PackedValue = packet.ReadUInt32();
+            Tint = packet.ReadColor();
             Scale = packet.ReadSingle();
             TextureName = packet.ReadString();
             Texture = null;

@@ -74,13 +74,13 @@ namespace Space.ComponentSystem.Systems
 
             // Fetch the local avatar.
             var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
 
             // Check the sector we're in.
-            var transform = ((Transform)Manager.GetComponent(avatar.Value, Transform.TypeId));
+            var transform = ((Transform)Manager.GetComponent(avatar, Transform.TypeId));
             var x = ((int)transform.Translation.X) >> CellSystem.CellSizeShiftAmount;
             var y = ((int)transform.Translation.Y) >> CellSystem.CellSizeShiftAmount;
 

@@ -27,10 +27,49 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             get
             {
+                // Only return first (enabled) avatar component for a each player.
+                var yieldedPlayers = 0;
                 foreach (var component in Components)
                 {
-                    yield return component.Entity;
+                    if (!component.Enabled)
+                    {
+                        continue;
+                    }
+
+                    var playerBit = 1 << component.PlayerNumber;
+                    if ((yieldedPlayers & playerBit) == 0)
+                    {
+                        yieldedPlayers = yieldedPlayers | playerBit;
+                        yield return component.Entity;
+                    }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of avatars (number of players).
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                var countedPlayers = 0;
+                var count = 0;
+                foreach (var component in Components)
+                {
+                    if (!component.Enabled)
+                    {
+                        continue;
+                    }
+
+                    var playerBit = 1 << component.PlayerNumber;
+                    if ((countedPlayers & playerBit) == 0)
+                    {
+                        countedPlayers = countedPlayers | playerBit;
+                        ++count;
+                    }
+                }
+                return count;
             }
         }
 
@@ -43,16 +82,16 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <param name="playerNumber">The player to fetch the avatar for.</param>
         /// <returns>The avatar entity, or <c>0</c> if none is known for this player.</returns>
-        public int? GetAvatar(int playerNumber)
+        public int GetAvatar(int playerNumber)
         {
             foreach (var component in Components)
             {
-                if (component.PlayerNumber == playerNumber)
+                if (component.Enabled && component.PlayerNumber == playerNumber)
                 {
                     return component.Entity;
                 }
             }
-            return null;
+            return 0;
         }
 
         #endregion

@@ -115,7 +115,8 @@ namespace Space.ComponentSystem.Components
         /// Sets the value.
         /// </summary>
         /// <param name="value">The value.</param>
-        public virtual void SetValue(float value)
+        /// <param name="causingEntity">The entity that caused the value change.</param>
+        public virtual void SetValue(float value, int causingEntity = 0)
         {
             if (value < Value)
             {

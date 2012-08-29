@@ -71,7 +71,7 @@ namespace Space.ComponentSystem.Systems
         {
             if (message is EntityDied)
             {
-                var entity = ((EntityDied)(ValueType)message).Entity;
+                var entity = ((EntityDied)(ValueType)message).KilledEntity;
 
                 // See if the entity respawns.
                 var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));

@@ -184,7 +184,7 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(~command.PlayerNumber);
 
             // Only allow loading once a session, so skip if he already has an avatar.
-            if (avatar.HasValue)
+            if (avatar > 0)
             {
                 Logger.Warn("Player already has an avatar, not restoring received profile.");
             }
@@ -203,13 +203,13 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
 
             // Get the ship control.
-            var control = ((ShipControl)manager.GetComponent(avatar.Value, ShipControl.TypeId));
+            var control = ((ShipControl)manager.GetComponent(avatar, ShipControl.TypeId));
 
             // What type of player input should we process?
             switch (command.Input)
@@ -249,14 +249,14 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
 
             // Get the player's inventory and equipment.
-            var inventory = (Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId);
-            var equipment = (ItemSlot)manager.GetComponent(avatar.Value, ItemSlot.TypeId);
+            var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
+            var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
 
             // Make sure the inventory index is valid.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -314,13 +314,13 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
 
             // The the player's inventory.
-            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
+            var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
 
             // Validate the indexes.
             if (command.FirstIndex < 0 || command.SecondIndex < 0 ||
@@ -341,15 +341,15 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
 
             // Get the inventory of the player and the index system.
-            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
+            var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
             var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-            var transform = ((Transform)manager.GetComponent(avatar.Value, Transform.TypeId));
+            var transform = ((Transform)manager.GetComponent(avatar, Transform.TypeId));
 
             // We may be called from a multi threaded environment (TSS), so
             // lock this shared list.
@@ -379,7 +379,7 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
@@ -390,7 +390,7 @@ from Space.Data import *
                 case Source.Inventory:
                     {
                         // From our inventory, so get it.
-                        var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
+                        var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
 
                         // Validate the index.
                         if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -410,7 +410,7 @@ from Space.Data import *
                             // Position the item to be at the position of the
                             // player that dropped it.
                             var transform = (Transform)manager.GetComponent(item, Transform.TypeId);
-                            transform.SetTranslation(((Transform)manager.GetComponent(avatar.Value, Transform.TypeId)).Translation);
+                            transform.SetTranslation(((Transform)manager.GetComponent(avatar, Transform.TypeId)).Translation);
                             transform.ApplyTranslation();
 
                             // Enable rendering, if available.
@@ -449,13 +449,13 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
 
             // Get the inventory of the player, containing the item to use.
-            var inventory = (Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId);
+            var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
 
             // Validate inventory index.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -467,7 +467,7 @@ from Space.Data import *
             // Get the item.
             var id = inventory[command.InventoryIndex];
             var usable = (Usable<UsableResponse>)manager.GetComponent(id, Usable<UsableResponse>.TypeId);
-            var item = (SpaceItem)manager.GetComponent(id, SpaceItem.TypeId);
+            var item = (SpaceItem)manager.GetComponent(id, Item.TypeId);
 
             // Check if there really is an item there.
             if (id <= 0)
@@ -486,7 +486,7 @@ from Space.Data import *
             {
                 // If we have a free slot for that item type equip it there,
                 // otherwise swap with the first item.
-                var equipment = (ItemSlot)manager.GetComponent(avatar.Value, ItemSlot.TypeId);
+                var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
 
                 // Find free slot that can take the item, or failing that, the first
                 // slot that can hold the item.
@@ -545,7 +545,7 @@ from Space.Data import *
             var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
@@ -575,9 +575,9 @@ from Space.Data import *
                 // Some more utility variables used frequently.
                 scope.SetVariable("manager", manager);
                 scope.SetVariable("avatar", avatar);
-                scope.SetVariable("character", manager.GetComponent(avatar.Value, Character<AttributeType>.TypeId));
-                scope.SetVariable("inventory", manager.GetComponent(avatar.Value, Inventory.TypeId));
-                scope.SetVariable("equipment", manager.GetComponent(avatar.Value, ItemSlot.TypeId));
+                scope.SetVariable("character", manager.GetComponent(avatar, Character<AttributeType>.TypeId));
+                scope.SetVariable("inventory", manager.GetComponent(avatar, Inventory.TypeId));
+                scope.SetVariable("equipment", manager.GetComponent(avatar, ItemSlot.TypeId));
 
                 // Try executing our script.
                 try

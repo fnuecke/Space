@@ -39,6 +39,16 @@ namespace Engine.XnaExtensions
         }
 
         /// <summary>
+        /// Writes the specified vector value.
+        /// </summary>
+        /// <param name="data">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Write(this Packet packet, Color data)
+        {
+            return packet.Write(data.PackedValue);
+        }
+
+        /// <summary>
         /// Reads a vector value.
         /// </summary>
         /// <returns>The read value.</returns>
@@ -81,6 +91,17 @@ namespace Engine.XnaExtensions
             result.Width = packet.ReadInt32();
             result.Height = packet.ReadInt32();
             return result;
+        }
+
+        /// <summary>
+        /// Reads a vector value.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        public static Color ReadColor(this Packet packet)
+        {
+            return new Color {PackedValue = packet.ReadUInt32()};
         }
     }
 }
