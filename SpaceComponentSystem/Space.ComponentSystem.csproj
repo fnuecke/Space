@@ -82,6 +82,7 @@
     <Compile Include="Components\Behaviors\AttackMoveBehavior.cs" />
     <Compile Include="Components\ArtificialIntelligence.cs" />
     <Compile Include="Components\Behaviors\RoamBehavior.cs" />
+    <Compile Include="Components\ExperiencePoints.cs" />
     <Compile Include="Components\Fuselage.cs" />
     <Compile Include="Components\ItemInfo.cs" />
     <Compile Include="Components\SpaceItemSlot.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="Systems\DebugSlotRenderSystem.cs" />
     <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
+    <Compile Include="Systems\ExperienceSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />
     <Compile Include="Systems\OrbitRenderSystem.cs" />
     <Compile Include="Systems\PlanetRenderSystem.cs" />

@@ -77,6 +77,19 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
+        /// Gets or sets the experience points the ship is worth when destroyed.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(0)]
+        [Category("Logic")]
+        [Description("The experience the ship is worth when destroyed.")]
+        public int ExperiencePoints
+        {
+            get { return _xp; }
+            set { _xp = value; }
+        }
+
+        /// <summary>
         /// List of basic stats for this ship class.
         /// </summary>
         [Category("Stats")]
@@ -109,6 +122,8 @@ namespace Space.ComponentSystem.Factories
         private float _collisionRadius;
 
         private string _itemPool;
+
+        private int _xp;
 
         private AttributeModifierConstraint<AttributeType>[] _attributes;
 
@@ -158,6 +173,12 @@ namespace Space.ComponentSystem.Factories
             var energy = ((Energy)manager.GetComponent(entity, Energy.TypeId));
             health.Value = health.MaxValue;
             energy.Value = energy.MaxValue;
+
+            // Add experience points if we're worth any.
+            if (_xp > 0)
+            {
+                manager.AddComponent<ExperiencePoints>(entity).Initialize(_xp);
+            }
 
             return entity;
         }

@@ -76,6 +76,7 @@
     <Compile Include="Components\Intersection\AABBSweep.cs" />
     <Compile Include="Components\Intersection\SphereAABBSweep.cs" />
     <Compile Include="Components\Intersection\SphereSweep.cs" />
+    <Compile Include="Components\Owner.cs" />
     <Compile Include="Components\Parallax.cs" />
     <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\Spin.cs" />

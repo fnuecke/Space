@@ -46,4 +46,7 @@ def unequip(slotId):
 		itemId = slot.Item
 		slot.Item = 0
 		inventory.Add(itemId)
-		
+
+def level():
+	xp = manager.GetComponent(avatar, Experience.TypeId)
+	print("Level %s [%d / %d XP (%.2f%%)" % (xp.Level, xp.Value, xp.RequiredForNextLevel, (xp.Value / float(xp.RequiredForNextLevel))))

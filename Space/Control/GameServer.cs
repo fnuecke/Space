@@ -94,9 +94,9 @@ namespace Space.Control
             // Player left the game, remove his ship.
             var avatarSystem = (AvatarSystem)Controller.Simulation.Manager.GetSystem(AvatarSystem.TypeId);
             var ship = avatarSystem.GetAvatar(e.Player.Number);
-            if (ship.HasValue)
+            if (ship > 0)
             {
-                Controller.Simulation.Manager.RemoveEntity(ship.Value);
+                Controller.Simulation.Manager.RemoveEntity(ship);
             }
         }
         

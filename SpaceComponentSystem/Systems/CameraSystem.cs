@@ -232,7 +232,7 @@ namespace Space.ComponentSystem.Systems
 
             // Don't update if we don't have an avatar representing the local player.
             var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
@@ -241,7 +241,7 @@ namespace Space.ComponentSystem.Systems
             // or mouse position, relative to the ship.
             var targetOffset = GetInputInducedOffset();
             var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
-            interpolation.GetInterpolatedPosition(avatar.Value, out _cameraPosition);
+            interpolation.GetInterpolatedPosition(avatar, out _cameraPosition);
 
             // The interpolate to our new offset, slowly to make the
             // effect less brain-melting.

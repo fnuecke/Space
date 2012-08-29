@@ -325,6 +325,9 @@ namespace Space.ComponentSystem.Factories
                 manager.AddComponent<ParticleEffects>(entity).TryAdd(0, _effect, 1f, 0, _effectOffset, ParticleEffects.EffectGroup.None, true);
             }
 
+            // Assign owner, to track original cause when they do something (e.g. kill something).
+            manager.AddComponent<Owner>(entity).Initialize(emitter);
+
             return entity;
         }
 

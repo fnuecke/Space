@@ -126,13 +126,13 @@ namespace Space.ComponentSystem.Systems
         {
             // Get local player's avatar.
             var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-            if (!avatar.HasValue)
+            if (avatar <= 0)
             {
                 return;
             }
 
             // Get info on the local player's ship.
-            var info = (ShipInfo)Manager.GetComponent(avatar.Value, ShipInfo.TypeId);
+            var info = (ShipInfo)Manager.GetComponent(avatar, ShipInfo.TypeId);
 
             // Get the index we use for looking up nearby objects.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);

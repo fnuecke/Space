@@ -150,6 +150,8 @@ namespace Space.Control
                     // This system is purely reactive, and will trigger on entity death
                     // from whatever cause (debuffs, normally).
                     new DropSystem(game.Content),
+                    // Handle deaths granting experience.
+                    new ExperienceSystem(),
                     
                     // Update this system after updating the cell system, to
                     // make sure we give cells a chance to 'activate' before

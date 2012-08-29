@@ -117,7 +117,7 @@ namespace Space.ComponentSystem.Systems
         {
             if (message is EntityDied)
             {
-                var entity = ((EntityDied)(ValueType)message).Entity;
+                var entity = ((EntityDied)(ValueType)message).KilledEntity;
 
                 var drops = ((Drops)Manager.GetComponent(entity, Drops.TypeId));
                 if (drops != null)

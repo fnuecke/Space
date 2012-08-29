@@ -33,7 +33,7 @@ namespace Space.Session
         /// fundamentally so that we can handle files differently. This is
         /// the version we write to new snapshots.
         /// </summary>
-        private const int Version = 4;
+        private const int Version = 5;
 
         /// <summary>
         /// Header for our save game files.
@@ -321,6 +321,7 @@ namespace Space.Session
             // Get the elements we need to save.
             var playerClass = (PlayerClass)manager.GetComponent(avatar, ComponentSystem.Components.PlayerClass.TypeId);
             var respawn = (Respawn)manager.GetComponent(avatar, Respawn.TypeId);
+            var experience = (Experience)manager.GetComponent(avatar, Experience.TypeId);
             var character = (Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId);
             var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
             var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
@@ -353,6 +354,9 @@ namespace Space.Session
 
             // Save the current spawning position.
             _data.Write(respawn.Position);
+
+            // Store experience.
+            _data.Write(experience.Value);
 
             // Store the character's base values, just use serialization. This
             // is a slightly adjusted serialization method which does not touch
@@ -426,7 +430,7 @@ namespace Space.Session
             {
                 switch (_data.ReadInt32())
                 {
-                    case 4:
+                    case Version:
                         return Restore0(playerNumber, manager);
 
                     default:
@@ -467,6 +471,7 @@ namespace Space.Session
 
                 // Get the elements we need to save.
                 var character = (Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId);
+                var experience = (Experience)manager.GetComponent(avatar, Experience.TypeId);
                 var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
                 var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
 
@@ -485,6 +490,11 @@ namespace Space.Session
                         manager.RemoveEntity(item);
                     }
                 }
+
+                // Read back experience. Disable while setting to suppress message.
+                experience.Enabled = false;
+                experience.Value = _data.ReadInt32();
+                experience.Enabled = true;
 
                 // Restore character. Use special packetizer implementation only
                 // adjusting the actual character data, not the base data.

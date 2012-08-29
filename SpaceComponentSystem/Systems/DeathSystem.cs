@@ -71,7 +71,7 @@ namespace Space.ComponentSystem.Systems
         {
             if (message is EntityDied)
             {
-                var entity = ((EntityDied)(ValueType)message).Entity;
+                var entity = ((EntityDied)(ValueType)message).KilledEntity;
 
                 // Play explosion effect at point of death.
                 var particleSystem = (CameraCenteredParticleEffectSystem)Manager.GetSystem(ParticleEffectSystem.TypeId);

@@ -137,9 +137,9 @@ namespace Space.Control
             if (avatarSystem != null)
             {
                 var avatar = avatarSystem.GetAvatar(playerNumber);
-                if (avatar.HasValue)
+                if (avatar > 0)
                 {
-                    return GetComponent<ShipInfo>(avatar.Value);
+                    return GetComponent<ShipInfo>(avatar);
                 }
             }
             return null;
@@ -280,7 +280,7 @@ namespace Space.Control
 
             // Should we run some console commands? If so, and we have our avatar
             // (which signifies we successfully joined) run them.
-            if (_shouldRunAutoexec && GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number) != null)
+            if (_shouldRunAutoexec && GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number) > 0)
             {
                 ConsoleAutoexec();
             }

@@ -50,9 +50,9 @@ namespace Space.ComponentSystem.Systems
             if (_session.ConnectionState == ClientState.Connected)
             {
                 var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-                if (avatar.HasValue)
+                if (avatar > 0)
                 {
-                    return ((Transform)Manager.GetComponent(avatar.Value, Transform.TypeId)).Translation;
+                    return ((Transform)Manager.GetComponent(avatar, Transform.TypeId)).Translation;
                 }
             }
             return FarPosition.Zero;
@@ -66,9 +66,9 @@ namespace Space.ComponentSystem.Systems
             if (_session.ConnectionState == ClientState.Connected)
             {
                 var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-                if (avatar.HasValue)
+                if (avatar > 0)
                 {
-                    return ((Velocity)Manager.GetComponent(avatar.Value, Velocity.TypeId)).Value;
+                    return ((Velocity)Manager.GetComponent(avatar, Velocity.TypeId)).Value;
                 }
             }
             return Vector2.Zero;
