@@ -237,174 +237,180 @@ namespace Space.Tools.DataEditor
 
         private void RenderTextureAssetPreview(string assetName)
         {
+            if (!SetPreviews(PreviewType.Default, assetName))
+            {
+                return;
+            }
             if (assetName == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Default, assetName))
+            var filePath = ContentProjectManager.GetTexturePath(assetName);
+            if (!string.IsNullOrWhiteSpace(filePath))
             {
-                var filePath = ContentProjectManager.GetTexturePath(assetName);
-                if (!string.IsNullOrWhiteSpace(filePath))
+                // We got it. Set as the new image.
+                try
                 {
-                    // We got it. Set as the new image.
-                    try
+                    using (var img = Image.FromFile(filePath))
                     {
-                        using (var img = Image.FromFile(filePath))
+                        using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
                         {
-                            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-                            {
-                                g.DrawImage(img, (pbPreview.Image.Width - img.Width) / 2f, (pbPreview.Image.Height - img.Height) / 2f, img.Width, img.Height);
-                            }
+                            g.DrawImage(img, (pbPreview.Image.Width - img.Width) / 2f, (pbPreview.Image.Height - img.Height) / 2f, img.Width, img.Height);
                         }
                     }
-                    catch (FileNotFoundException)
-                    {
-                    }
+                }
+                catch (FileNotFoundException)
+                {
                 }
             }
         }
 
         private void RenderEffectAssetPreview(string assetName)
         {
+            if (!SetPreviews(PreviewType.Effect, assetName))
+            {
+                return;
+            }
             if (assetName == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Effect, assetName))
-            {
-                _effectPreview.Effect = assetName;
-            }
+            _effectPreview.Effect = assetName;
         }
 
         private void RenderPlanetPreview(PlanetFactory factory)
         {
+            if (!SetPreviews(PreviewType.Planet, factory))
+            {
+                return;
+            }
             if (factory == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Planet, factory))
-            {
-                _planetPreview.Planet = factory;
-            }
+            _planetPreview.Planet = factory;
         }
 
         private void RenderSunPreview(SunFactory factory)
         {
+            if (!SetPreviews(PreviewType.Sun, factory))
+            {
+                return;
+            }
             if (factory == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Sun, factory))
-            {
-                _sunPreview.Sun = factory;
-            }
+            _sunPreview.Sun = factory;
         }
 
         private void RenderSunSystemPreview(SunSystemFactory factory)
         {
+            if (!SetPreviews(PreviewType.Default, factory))
+            {
+                return;
+            }
             if (factory == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Default, factory))
+            pbPreview.Resize += PreviewOnResize;
+
+            // Get furthest out orbit to know how to scale.
+            var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
+            float padding, scale;
+            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
             {
-                pbPreview.Resize += PreviewOnResize;
+                padding = 25f;
+                scale = Math.Min(1, pbPreview.Image.Width / (CellSystem.CellSize / 2f));
+            }
+            else
+            {
+                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
+                scale = Math.Min(1, pbPreview.ClientSize.Width / (CellSystem.CellSize / 2f));
+            }
 
-                // Get furthest out orbit to know how to scale.
-                var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
-                float padding, scale;
-                if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
+            // Render all objects from left to right, starting with the sun.
+            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+            {
+                g.SmoothingMode = SmoothingMode.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                using (var brush = new SolidBrush(System.Drawing.Color.White))
                 {
-                    padding = 25f;
-                    scale = Math.Min(1, pbPreview.Image.Width / (CellSystem.CellSize / 2f));
-                }
-                else
-                {
-                    padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
-                    scale = Math.Min(1, pbPreview.ClientSize.Width / (CellSystem.CellSize / 2f));
-                }
-
-                // Render all objects from left to right, starting with the sun.
-                using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-                {
-                    g.SmoothingMode = SmoothingMode.HighQuality;
-                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    using (var brush = new SolidBrush(System.Drawing.Color.White))
+                    if (sunFactory != null && sunFactory.Radius != null)
                     {
-                        if (sunFactory != null && sunFactory.Radius != null)
+                        var sunColor = System.Drawing.Color.FromArgb(
+                            sunFactory.OffsetRadius != null ? 200 : 255, 255, 255, 224);
+                        brush.Color = sunColor;
+                        var diameter = scale * sunFactory.Radius.Low * 2;
+                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
+                                      diameter, diameter);
+                        if (sunFactory.OffsetRadius != null)
                         {
-                            var sunColor = System.Drawing.Color.FromArgb(
-                                sunFactory.OffsetRadius != null ? 200 : 255, 255, 255, 224);
-                            brush.Color = sunColor;
-                            var diameter = scale * sunFactory.Radius.Low * 2;
-                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
-                                          diameter, diameter);
-                            if (sunFactory.OffsetRadius != null)
-                            {
-                                diameter = scale * (sunFactory.Radius.High + sunFactory.OffsetRadius.High) * 2;
-                                g.FillEllipse(brush, padding - diameter / 2f,
-                                              pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
-                            }
+                            diameter = scale * (sunFactory.Radius.High + sunFactory.OffsetRadius.High) * 2;
+                            g.FillEllipse(brush, padding - diameter / 2f,
+                                          pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
                         }
-                        RenderOrbit(factory.Planets, padding, scale, g, brush);
                     }
+                    RenderOrbit(factory.Planets, padding, scale, g, brush);
                 }
             }
         }
 
         private void RenderOrbiterPreview(Orbiter orbiter)
         {
+            if (!SetPreviews(PreviewType.Default, orbiter))
+            {
+                return;
+            }
             if (orbiter == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Default, orbiter))
+            pbPreview.Resize += PreviewOnResize;
+
+            var planetFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
+            float padding, scale;
+            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
             {
-                pbPreview.Resize += PreviewOnResize;
+                padding = 25f;
+                scale = Math.Min(1, pbPreview.Image.Width / (GetMaxRadius(orbiter.Moons) + 250));
+            }
+            else
+            {
+                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
+                scale = Math.Min(1, pbPreview.ClientSize.Width / (GetMaxRadius(orbiter.Moons) + 250));
+            }
 
-                var planetFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
-                float padding, scale;
-                if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
+            // Render all objects from left to right, starting with the sun.
+            using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
+            {
+                g.SmoothingMode = SmoothingMode.HighQuality;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                using (var brush = new SolidBrush(System.Drawing.Color.White))
                 {
-                    padding = 25f;
-                    scale = Math.Min(1, pbPreview.Image.Width / (GetMaxRadius(orbiter.Moons) + 250));
-                }
-                else
-                {
-                    padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
-                    scale = Math.Min(1, pbPreview.ClientSize.Width / (GetMaxRadius(orbiter.Moons) + 250));
-                }
-
-                // Render all objects from left to right, starting with the sun.
-                using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
-                {
-                    g.SmoothingMode = SmoothingMode.HighQuality;
-                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    using (var brush = new SolidBrush(System.Drawing.Color.White))
+                    if (planetFactory != null && planetFactory.Radius != null)
                     {
-                        if (planetFactory != null && planetFactory.Radius != null)
-                        {
-                            brush.Color = System.Drawing.Color.FromArgb(150, planetFactory.SurfaceTint.R,
-                                                                        planetFactory.SurfaceTint.G,
-                                                                        planetFactory.SurfaceTint.B);
-                            var diameter = scale * planetFactory.Radius.Low * 2;
-                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
-                                          diameter, diameter);
-                            diameter = scale * planetFactory.Radius.High * 2;
-                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
-                                          diameter, diameter);
-                        }
-
-                        RenderOrbit(orbiter.Moons, padding, scale, g, brush);
+                        brush.Color = System.Drawing.Color.FromArgb(150, planetFactory.SurfaceTint.R,
+                                                                    planetFactory.SurfaceTint.G,
+                                                                    planetFactory.SurfaceTint.B);
+                        var diameter = scale * planetFactory.Radius.Low * 2;
+                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
+                                      diameter, diameter);
+                        diameter = scale * planetFactory.Radius.High * 2;
+                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
+                                      diameter, diameter);
                     }
+
+                    RenderOrbit(orbiter.Moons, padding, scale, g, brush);
                 }
             }
         }
@@ -494,74 +500,77 @@ namespace Space.Tools.DataEditor
 
         private void RenderProjectilePreview(ProjectileFactory[] factories)
         {
+            if (!SetPreviews(PreviewType.Projectile, factories))
+            {
+                return;
+            }
             if (factories == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Projectile, factories))
+            _projectilePreview.Projectiles = factories;
+            if (pgProperties.SelectedObject is WeaponFactory)
             {
-                _projectilePreview.Projectiles = factories;
-                if (pgProperties.SelectedObject is WeaponFactory)
-                {
-                    _projectilePreview.TriggerSpeed = ((WeaponFactory)pgProperties.SelectedObject).Cooldown;
-                }
-                else
-                {
-                    _projectilePreview.TriggerSpeed = null;
-                }
+                _projectilePreview.TriggerSpeed = ((WeaponFactory)pgProperties.SelectedObject).Cooldown;
+            }
+            else
+            {
+                _projectilePreview.TriggerSpeed = null;
             }
         }
 
         private void RenderItemPreview(ItemFactory factory)
         {
+            if (!SetPreviews(PreviewType.Ingame, factory))
+            {
+                return;
+            }
             if (factory == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Ingame, factory))
+            var entity = factory.Sample(_ingamePreview.Manager, null);
+            if (entity > 0)
             {
-                var entity = factory.Sample(_ingamePreview.Manager, null);
-                if (entity > 0)
+                var renderer = (TextureRenderer)_ingamePreview.Manager.GetComponent(entity, TextureRenderer.TypeId);
+                if (renderer != null)
                 {
-                    var renderer = (TextureRenderer)_ingamePreview.Manager.GetComponent(entity, TextureRenderer.TypeId);
-                    if (renderer != null)
-                    {
-                        renderer.Enabled = true;
-                    }
-                    if (factory.ModelOffset != Vector2.Zero)
-                    {
-                        var transform = (Transform)_ingamePreview.Manager.GetComponent(entity, Transform.TypeId);
-                        if (transform != null)
-                        {
-                            FarPosition offset;
-                            offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.X);
-                            offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Y);
-                            transform.SetTranslation(offset);
-                        }
-                    }
-                    var item = (SpaceItem)_ingamePreview.Manager.GetComponent(entity, Item.TypeId);
-
-                    var dummy = _ingamePreview.Manager.AddEntity();
-                    _ingamePreview.Manager.AddComponent<ParticleEffects>(dummy);
-                    var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
-                    parentSlot.Item = entity;
+                    renderer.Enabled = true;
                 }
+                if (factory.ModelOffset != Vector2.Zero)
+                {
+                    var transform = (Transform)_ingamePreview.Manager.GetComponent(entity, Transform.TypeId);
+                    if (transform != null)
+                    {
+                        FarPosition offset;
+                        offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.X);
+                        offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Y);
+                        transform.SetTranslation(offset);
+                    }
+                }
+                var item = (SpaceItem)_ingamePreview.Manager.GetComponent(entity, Item.TypeId);
+
+                var dummy = _ingamePreview.Manager.AddEntity();
+                _ingamePreview.Manager.AddComponent<ParticleEffects>(dummy);
+                var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
+                parentSlot.Item = entity;
             }
         }
 
         private void RenderShipPreview(ShipFactory factory)
         {
+            if (!SetPreviews(PreviewType.Ingame, factory))
+            {
+                return;
+            }
             if (factory == null)
             {
                 return;
             }
 
-            if (SetPreviews(PreviewType.Ingame, factory))
-            {
-                factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
-            }
+            factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
         }
     }
 }

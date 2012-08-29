@@ -88,7 +88,7 @@
             this.pgProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pgProperties.Location = new System.Drawing.Point(8, 21);
             this.pgProperties.Name = "pgProperties";
-            this.pgProperties.Size = new System.Drawing.Size(437, 133);
+            this.pgProperties.Size = new System.Drawing.Size(261, 286);
             this.pgProperties.TabIndex = 0;
             this.pgProperties.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.PropertiesPropertyValueChanged);
             this.pgProperties.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.PropertiesSelectedGridItemChanged);
@@ -264,7 +264,7 @@
             this.gbProperties.Location = new System.Drawing.Point(5, 5);
             this.gbProperties.Name = "gbProperties";
             this.gbProperties.Padding = new System.Windows.Forms.Padding(8);
-            this.gbProperties.Size = new System.Drawing.Size(453, 162);
+            this.gbProperties.Size = new System.Drawing.Size(277, 315);
             this.gbProperties.TabIndex = 5;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Properties";
@@ -273,10 +273,10 @@
             // 
             this.gbPreview.Controls.Add(this.pbPreview);
             this.gbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gbPreview.Location = new System.Drawing.Point(5, 0);
+            this.gbPreview.Location = new System.Drawing.Point(5, 5);
             this.gbPreview.Name = "gbPreview";
             this.gbPreview.Padding = new System.Windows.Forms.Padding(8);
-            this.gbPreview.Size = new System.Drawing.Size(453, 144);
+            this.gbPreview.Size = new System.Drawing.Size(162, 315);
             this.gbPreview.TabIndex = 6;
             this.gbPreview.TabStop = false;
             this.gbPreview.Text = "Preview";
@@ -289,7 +289,7 @@
             this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbPreview.Location = new System.Drawing.Point(8, 21);
             this.pbPreview.Name = "pbPreview";
-            this.pbPreview.Size = new System.Drawing.Size(437, 115);
+            this.pbPreview.Size = new System.Drawing.Size(146, 286);
             this.pbPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbPreview.TabIndex = 0;
             this.pbPreview.TabStop = false;
@@ -321,18 +321,17 @@
             this.scInner.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
             this.scInner.Location = new System.Drawing.Point(0, 0);
             this.scInner.Name = "scInner";
-            this.scInner.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
             // scInner.Panel1
             // 
-            this.scInner.Panel1.Controls.Add(this.gbProperties);
+            this.scInner.Panel1.Controls.Add(this.gbPreview);
             this.scInner.Panel1.Padding = new System.Windows.Forms.Padding(5);
             this.scInner.Panel1MinSize = 40;
             // 
             // scInner.Panel2
             // 
-            this.scInner.Panel2.Controls.Add(this.gbPreview);
-            this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
+            this.scInner.Panel2.Controls.Add(this.gbProperties);
+            this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5);
             this.scInner.Panel2MinSize = 40;
             this.scInner.Size = new System.Drawing.Size(463, 325);
             this.scInner.SplitterDistance = 172;

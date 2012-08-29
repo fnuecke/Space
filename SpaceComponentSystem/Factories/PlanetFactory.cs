@@ -39,12 +39,42 @@ namespace Space.ComponentSystem.Factories
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
             "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [DefaultValue("Textures/Ships/default")]
-        [Category("Media")]
+        [Category("Surface")]
         [Description("The base image to represent the ship, without any equipment.")]
         public string Texture
         {
             get { return _texture; }
             set { _texture = value; }
+        }
+
+        /// <summary>
+        /// Texture to use for surface lights.
+        /// </summary>
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Surface")]
+        [Description("The texture with surface light information, for surface light in the 'night' area.")]
+        public string Lights
+        {
+            get { return _lights; }
+            set { _lights = value; }
+        }
+
+        /// <summary>
+        /// Texture to use for surface normals.
+        /// </summary>
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Surface")]
+        [Description("The texture with surface normal information, for surface structure based on light position.")]
+        public string Normals
+        {
+            get { return _normals; }
+            set { _normals = value; }
         }
 
         /// <summary>
@@ -55,7 +85,7 @@ namespace Space.ComponentSystem.Factories
         [TypeConverter(typeof(ColorConverter))]
         [ContentSerializer(Optional = true)]
         [DefaultValue(0xFFFFFFFF)]
-        [Category("Media")]
+        [Category("Surface")]
         [Description("The color tint to apply to the surface texture.")]
         public Color SurfaceTint
         {
@@ -71,7 +101,7 @@ namespace Space.ComponentSystem.Factories
         [TypeConverter(typeof(ColorConverter))]
         [ContentSerializer(Optional = true)]
         [DefaultValue(0x00000000)]
-        [Category("Media")]
+        [Category("Atmosphere")]
         [Description("The color tint to apply to the atmosphere.")]
         public Color AtmosphereTint
         {
@@ -80,9 +110,61 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
+        /// Relative inner atmosphere area.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(0.4f)]
+        [Category("Atmosphere")]
+        [Description("The relative inner area covered by the atmosphere.")]
+        public float AtmosphereInner
+        {
+            get { return _atmosphereInner; }
+            set { _atmosphereInner = value; }
+        }
+
+        /// <summary>
+        /// Relative outer atmosphere area.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(0.1f)]
+        [Category("Atmosphere")]
+        [Description("The relative outer area covered by the atmosphere.")]
+        public float AtmosphereOuter
+        {
+            get { return _atmosphereOuter; }
+            set { _atmosphereOuter = value; }
+        }
+
+        /// <summary>
+        /// Relative inner atmosphere alpha.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(0.85f)]
+        [Category("Atmosphere")]
+        [Description("The alpha multiplier for the inner atmosphere (surface visible underneath).")]
+        public float AtmosphereInnerAlpha
+        {
+            get { return _atmosphereInnerAlpha; }
+            set { _atmosphereInnerAlpha = value; }
+        }
+
+        /// <summary>
+        /// Relative outer atmosphere alpha.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(1f)]
+        [Category("Atmosphere")]
+        [Description("The alpha multiplier for the outer atmosphere (no surface visible underneath).")]
+        public float AtmosphereOuterAlpha
+        {
+            get { return _atmosphereOuterAlpha; }
+            set { _atmosphereOuterAlpha = value; }
+        }
+
+        /// <summary>
         /// The radius of generated planets.
         /// </summary>
-        [Category("Media")]
+        [Category("Logic")]
         [Description("The radius of the planet.")]
         public FloatInterval Radius
         {
@@ -106,7 +188,7 @@ namespace Space.ComponentSystem.Factories
         /// The rotation speed of generated planets.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        [Category("Media")]
+        [Category("Logic")]
         [Description("The speed with which the planet revolves around its own axis, in pixels per second.")]
         public FloatInterval RotationSpeed
         {
@@ -158,9 +240,21 @@ namespace Space.ComponentSystem.Factories
 
         private string _texture = "Textures/Planets/default";
 
+        private string _lights;
+
+        private string _normals;
+
         private Color _surfaceTint = Color.White;
 
         private Color _atmosphereTint = Color.Transparent;
+
+        private float _atmosphereInner = 0.4f;
+
+        private float _atmosphereOuter = 0.1f;
+
+        private float _atmosphereInnerAlpha = 0.85f;
+
+        private float _atmosphereOuterAlpha = 1f;
 
         private FloatInterval _radius = FloatInterval.Zero;
 
@@ -201,11 +295,7 @@ namespace Space.ComponentSystem.Factories
             var travelSpeed = SampleTravelSpeed(random);
             var periodOffet = (float)random.NextDouble();
 
-            Vector2 surfaceRotation;
-            surfaceRotation.X = (float)(random.NextDouble() - 0.5);
-            surfaceRotation.Y = (float)(random.NextDouble() - 0.5);
-            surfaceRotation.Normalize();
-            surfaceRotation *= rotationSpeed;
+            float surfaceRotation = (float)(random.NextDouble() - 0.5) * 2 * rotationSpeed;
 
             // Compute major radius and focus distance for an ellipse fitting
             // inside a unit circle with the focus point as its center.
@@ -247,7 +337,8 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
 
             // Make it visible.
-            manager.AddComponent<PlanetRenderer>(entity).Initialize(_texture, _surfaceTint, planetRadius, _atmosphereTint, surfaceRotation);
+            manager.AddComponent<PlanetRenderer>(entity).Initialize(_texture, _lights, _normals, _surfaceTint, planetRadius,
+                _atmosphereTint, _atmosphereInner, _atmosphereOuter, _atmosphereInnerAlpha, _atmosphereOuterAlpha, surfaceRotation);
 
             // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");

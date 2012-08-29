@@ -92,9 +92,20 @@ namespace Space.Tools.DataEditor
         {
             if (_factory != null)
             {
-                _planet.SurfaceRotation = new Vector2(_factory.RotationSpeed.High, _factory.RotationSpeed.Low);
+                if (_factory.RotationSpeed != null)
+                {
+                    _planet.SurfaceRotation = _factory.RotationSpeed.High;
+                }
+                else
+                {
+                    _planet.SurfaceRotation = 0f;
+                }
                 _planet.SurfaceTint = _factory.SurfaceTint;
                 _planet.AtmosphereTint = _factory.AtmosphereTint;
+                _planet.AtmosphereInner = _factory.AtmosphereInner;
+                _planet.AtmosphereOuter = _factory.AtmosphereOuter;
+                _planet.AtmosphereInnerAlpha = _factory.AtmosphereInnerAlpha;
+                _planet.AtmosphereOuterAlpha = _factory.AtmosphereOuterAlpha;
                 _planet.SetSize(_factory.Radius.Low * 2);
                 if (_circle != null)
                 {
@@ -109,6 +120,22 @@ namespace Space.Tools.DataEditor
                 try
                 {
                     _planet.SurfaceTexture = _content.Load<Texture2D>(_factory.Texture);
+                    if (!string.IsNullOrWhiteSpace(_factory.Lights))
+                    {
+                        _planet.SurfaceLights = _content.Load<Texture2D>(_factory.Lights);
+                    }
+                    else
+                    {
+                        _planet.SurfaceLights = null;
+                    }
+                    if (!string.IsNullOrWhiteSpace(_factory.Normals))
+                    {
+                        _planet.SurfaceNormals = _content.Load<Texture2D>(_factory.Normals);
+                    }
+                    else
+                    {
+                        _planet.SurfaceNormals = null;
+                    }
                     _timer.Enabled = true;
                 }
                 catch

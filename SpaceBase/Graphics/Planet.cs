@@ -22,6 +22,24 @@ namespace Space.Graphics
         }
 
         /// <summary>
+        /// Gets or sets the surface lights texture.
+        /// </summary>
+        public Texture2D SurfaceLights
+        {
+            get { return _lights; }
+            set { _lights = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the surface normals texture.
+        /// </summary>
+        public Texture2D SurfaceNormals
+        {
+            get { return _normals; }
+            set { _normals = value; }
+        }
+
+        /// <summary>
         /// The surface tint applied to the surface texture.
         /// </summary>
         public Color SurfaceTint
@@ -40,9 +58,45 @@ namespace Space.Graphics
         }
 
         /// <summary>
-        /// The rotational direction of the planet's surface.
+        /// Relative inner atmosphere area.
         /// </summary>
-        public Vector2 SurfaceRotation
+        public float AtmosphereInner
+        {
+            get { return _atmosphereInner; }
+            set { _atmosphereInner = value; }
+        }
+
+        /// <summary>
+        /// Relative outer atmosphere area.
+        /// </summary>
+        public float AtmosphereOuter
+        {
+            get { return _atmosphereOuter; }
+            set { _atmosphereOuter = value; }
+        }
+
+        /// <summary>
+        /// Relative inner atmosphere alpha.
+        /// </summary>
+        public float AtmosphereInnerAlpha
+        {
+            get { return _atmosphereInnerAlpha; }
+            set { _atmosphereInnerAlpha = value; }
+        }
+
+        /// <summary>
+        /// Relative outer atmosphere alpha.
+        /// </summary>
+        public float AtmosphereOuterAlpha
+        {
+            get { return _atmosphereOuterAlpha; }
+            set { _atmosphereOuterAlpha = value; }
+        }
+
+        /// <summary>
+        /// The rotational speed of the planet's surface along the x-axis.
+        /// </summary>
+        public float SurfaceRotation
         {
             get { return _surfaceRotation; }
             set { _surfaceRotation = value; }
@@ -78,9 +132,39 @@ namespace Space.Graphics
         private Texture2D _surface;
 
         /// <summary>
+        /// The surface lights texture.
+        /// </summary>
+        private Texture2D _lights;
+
+        /// <summary>
+        /// The surface normals texture.
+        /// </summary>
+        private Texture2D _normals;
+
+        /// <summary>
         /// The tint used for the atmosphere.
         /// </summary>
         private Color _atmosphereTint;
+
+        /// <summary>
+        /// Relative inner atmosphere area.
+        /// </summary>
+        private float _atmosphereInner = 0.4f;
+
+        /// <summary>
+        /// Relative outer atmosphere area.
+        /// </summary>
+        private float _atmosphereOuter = 0.1f;
+
+        /// <summary>
+        /// Relative inner atmosphere alpha.
+        /// </summary>
+        private float _atmosphereInnerAlpha = 0.85f;
+
+        /// <summary>
+        /// Relative outer atmosphere alpha.
+        /// </summary>
+        private float _atmosphereOuterAlpha = 1f;
 
         /// <summary>
         /// The direction the light's coming from (sun the planet orbits).
@@ -88,9 +172,9 @@ namespace Space.Graphics
         private Vector2 _lightDirection;
 
         /// <summary>
-        /// Rotation direction (and speed) of the base image.
+        /// Rotation speed of the base image along the x-axis.
         /// </summary>
-        private Vector2 _surfaceRotation;
+        private float _surfaceRotation;
 
         /// <summary>
         /// The current game time to base our rotation on.
@@ -120,19 +204,83 @@ namespace Space.Graphics
         /// </summary>
         protected override void AdjustParameters()
         {
-            Effect.Parameters["SurfaceTexture"].SetValue(_surface);
-            Effect.Parameters["SurfaceTint"].SetValue(Color.ToVector4());
-            Effect.Parameters["AtmosphereTint"].SetValue(_atmosphereTint.ToVector4());
-            Effect.Parameters["LightDirection"].SetValue(_lightDirection);
+            var value = Effect.Parameters["SurfaceTexture"];
+            if (value != null)
+            {
+                value.SetValue(_surface);
+            }
+            value = Effect.Parameters["SurfaceLights"];
+            if (value != null)
+            {
+                value.SetValue(_lights);
+                var flag = Effect.Parameters["HasLights"];
+                if (flag != null)
+                {
+                    flag.SetValue(_lights != null);
+                }
+            }
+            value = Effect.Parameters["SurfaceNormals"];
+            if (value != null)
+            {
+                value.SetValue(_normals);
+                var flag = Effect.Parameters["HasNormals"];
+                if (flag != null)
+                {
+                    flag.SetValue(_normals != null);
+                }
+            }
+            value = Effect.Parameters["SurfaceTint"];
+            if (value != null)
+            {
+                value.SetValue(Color.ToVector4());
+            }
 
-            Effect.Parameters["RenderRadius"].SetValue(Width / 2f);
-            Effect.Parameters["EmbossScale"].SetValue(1f / Width);
+            value = Effect.Parameters["AtmosphereTint"];
+            if (value != null)
+            {
+                value.SetValue(_atmosphereTint.ToVector4());
+            }
+            value = Effect.Parameters["AtmosphereInner"];
+            if (value != null)
+            {
+                value.SetValue(_atmosphereInner);
+            }
+            value = Effect.Parameters["AtmosphereOuter"];
+            if (value != null)
+            {
+                value.SetValue(_atmosphereOuter);
+            }
+            value = Effect.Parameters["AtmosphereInnerAlpha"];
+            if (value != null)
+            {
+                value.SetValue(_atmosphereInnerAlpha);
+            }
+            value = Effect.Parameters["AtmosphereOuterAlpha"];
+            if (value != null)
+            {
+                value.SetValue(_atmosphereOuterAlpha);
+            }
 
-            var offset = _surfaceRotation * _time / Width;
-            offset.X %= _surface.Width;
-            offset.Y %= _surface.Height;
-            Effect.Parameters["TextureOffset"].SetValue(offset);
-            Effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * Width));
+            value = Effect.Parameters["LightDirection"];
+            if (value != null)
+            {
+                value.SetValue(_lightDirection);
+            }
+            value = Effect.Parameters["TextureOffset"];
+            if (value != null)
+            {
+                value.SetValue((_surfaceRotation * _time / Width) % _surface.Width);
+            }
+            value = Effect.Parameters["RenderRadius"];
+            if (value != null)
+            {
+                value.SetValue(Width / 2f);
+            }
+            value = Effect.Parameters["HorizontalScale"];
+            if (value != null)
+            {
+                value.SetValue(_surface.Height / (float)_surface.Width);
+            }
         }
 
         #endregion

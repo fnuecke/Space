@@ -35,7 +35,7 @@ namespace Space.ComponentSystem.Components
         #region Properties
 
         /// <summary>
-        /// The name of the texture to use for rendering the physics object.
+        /// The name of the texture to use for rendering the planet surface.
         /// </summary>
         public string TextureName
         {
@@ -44,6 +44,32 @@ namespace Space.ComponentSystem.Components
             {
                 _textureName = value;
                 Texture = null;
+            }
+        }
+
+        /// <summary>
+        /// The name of the texture with surface lights.
+        /// </summary>
+        public string LightsName
+        {
+            get { return _lightsName; }
+            set
+            {
+                _lightsName = value;
+                Lights = null;
+            }
+        }
+
+        /// <summary>
+        /// The name of the texture with surface normals.
+        /// </summary>
+        public string NormalsName
+        {
+            get { return _normalsName; }
+            set
+            {
+                _normalsName = value;
+                Normals = null;
             }
         }
 
@@ -62,6 +88,16 @@ namespace Space.ComponentSystem.Components
         public Texture2D Texture;
 
         /// <summary>
+        /// The actual texture with the set name.
+        /// </summary>
+        public Texture2D Lights;
+
+        /// <summary>
+        /// The actual texture with the set name.
+        /// </summary>
+        public Texture2D Normals;
+
+        /// <summary>
         /// The color to use for tinting when rendering.
         /// </summary>
         public Color PlanetTint;
@@ -72,15 +108,45 @@ namespace Space.ComponentSystem.Components
         public Color AtmosphereTint;
 
         /// <summary>
+        /// Relative inner atmosphere area.
+        /// </summary>
+        public float AtmosphereInner;
+
+        /// <summary>
+        /// Relative outer atmosphere area.
+        /// </summary>
+        public float AtmosphereOuter;
+
+        /// <summary>
+        /// Relative inner atmosphere alpha.
+        /// </summary>
+        public float AtmosphereInnerAlpha;
+
+        /// <summary>
+        /// Relative outer atmosphere alpha.
+        /// </summary>
+        public float AtmosphereOuterAlpha;
+
+        /// <summary>
         /// The rotation direction of the planet's surface.
         /// </summary>
-        public Vector2 SurfaceRotation;
+        public float SurfaceRotation;
 
         /// <summary>
         /// Actual texture name. Setter is used to invalidate the actual texture reference,
         /// so we need to store this ourselves.
         /// </summary>
         private string _textureName;
+
+        /// <summary>
+        /// Name for lights texture.
+        /// </summary>
+        private string _lightsName;
+
+        /// <summary>
+        /// Name for normals texture.
+        /// </summary>
+        private string _normalsName;
 
         #endregion
 
@@ -101,6 +167,8 @@ namespace Space.ComponentSystem.Components
             AtmosphereTint = otherPlanet.AtmosphereTint;
             SurfaceRotation = otherPlanet.SurfaceRotation;
             TextureName = otherPlanet.TextureName;
+            LightsName = otherPlanet.LightsName;
+            NormalsName = otherPlanet.NormalsName;
 
             return this;
         }
@@ -109,18 +177,32 @@ namespace Space.ComponentSystem.Components
         /// Initialize with the specified parameters.
         /// </summary>
         /// <param name="planetTexture">The planet texture.</param>
+        /// <param name="lightsTexture">The lights texture.</param>
+        /// <param name="normalsTexture">The normals texture.</param>
         /// <param name="planetTint">The planet tint.</param>
         /// <param name="planetRadius">The planet radius.</param>
         /// <param name="atmosphereTint">The atmosphere tint.</param>
+        /// <param name="atmosphereInner">The atmosphere inner.</param>
+        /// <param name="atmosphereOuter">The atmosphere outer.</param>
+        /// <param name="atmosphereInnerAlpha">The atmosphere inner alpha.</param>
+        /// <param name="atmosphereOuterAlpha">The atmosphere outer alpha.</param>
         /// <param name="surfaceRotation">The rotation direction of the planet's surface</param>
-        public PlanetRenderer Initialize(string planetTexture, Color planetTint,
-            float planetRadius, Color atmosphereTint, Vector2 surfaceRotation)
+        /// <returns></returns>
+        public PlanetRenderer Initialize(string planetTexture, string lightsTexture, string normalsTexture, Color planetTint,
+            float planetRadius, Color atmosphereTint, float atmosphereInner, float atmosphereOuter,
+            float atmosphereInnerAlpha, float atmosphereOuterAlpha, float surfaceRotation)
         {
             Radius = planetRadius;
             PlanetTint = planetTint;
             AtmosphereTint = atmosphereTint;
+            AtmosphereInner = atmosphereInner;
+            AtmosphereOuter = atmosphereOuter;
+            AtmosphereInnerAlpha = atmosphereInnerAlpha;
+            AtmosphereOuterAlpha = atmosphereOuterAlpha;
             SurfaceRotation = surfaceRotation;
             TextureName = planetTexture;
+            LightsName = lightsTexture;
+            NormalsName = normalsTexture;
 
             return this;
         }
@@ -135,9 +217,18 @@ namespace Space.ComponentSystem.Components
 
             Radius = 0;
             Texture = null;
+            Lights = null;
+            Normals = null;
             PlanetTint = Color.White;
             AtmosphereTint = Color.Transparent;
-            SurfaceRotation = Vector2.Zero;
+            AtmosphereInner = 0;
+            AtmosphereOuter = 0;
+            AtmosphereInnerAlpha = 0;
+            AtmosphereOuterAlpha = 0;
+            SurfaceRotation = 0f;
+            _textureName = null;
+            _lightsName = null;
+            _normalsName = null;
         }
 
         #endregion
@@ -158,7 +249,9 @@ namespace Space.ComponentSystem.Components
                 .Write(PlanetTint)
                 .Write(AtmosphereTint)
                 .Write(SurfaceRotation)
-                .Write(TextureName);
+                .Write(TextureName)
+                .Write(LightsName)
+                .Write(NormalsName);
         }
 
         /// <summary>
@@ -172,8 +265,10 @@ namespace Space.ComponentSystem.Components
             Radius = packet.ReadSingle();
             PlanetTint = packet.ReadColor();
             AtmosphereTint = packet.ReadColor();
-            SurfaceRotation = packet.ReadVector2();
+            SurfaceRotation = packet.ReadSingle();
             TextureName = packet.ReadString();
+            LightsName = packet.ReadString();
+            NormalsName = packet.ReadString();
         }
 
         /// <summary>

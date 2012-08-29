@@ -122,9 +122,17 @@ namespace Space.ComponentSystem.Systems
         private void RenderPlanet(PlanetRenderer component, ref FarPosition translation)
         {
             // Load the texture if we don't have it yet.
-            if (component.Texture == null)
+            if (component.Texture == null && !string.IsNullOrWhiteSpace(component.TextureName))
             {
                 component.Texture = _content.Load<Texture2D>(component.TextureName);
+            }
+            if (component.Lights == null && !string.IsNullOrWhiteSpace(component.LightsName))
+            {
+                component.Lights = _content.Load<Texture2D>(component.LightsName);
+            }
+            if (component.Normals == null && !string.IsNullOrWhiteSpace(component.NormalsName))
+            {
+                component.Normals = _content.Load<Texture2D>(component.NormalsName);
             }
 
             // The position and orientation we're rendering at and in.
@@ -154,8 +162,14 @@ namespace Space.ComponentSystem.Systems
             _planet.Rotation = rotation;
             _planet.SetSize(component.Radius * 2);
             _planet.SurfaceTexture = component.Texture;
+            _planet.SurfaceLights = component.Lights;
+            _planet.SurfaceNormals = component.Normals;
             _planet.SurfaceTint = component.PlanetTint;
             _planet.AtmosphereTint = component.AtmosphereTint;
+            _planet.AtmosphereInner = component.AtmosphereInner;
+            _planet.AtmosphereOuter = component.AtmosphereOuter;
+            _planet.AtmosphereInnerAlpha = component.AtmosphereInnerAlpha;
+            _planet.AtmosphereOuterAlpha = component.AtmosphereOuterAlpha;
             _planet.SurfaceRotation = component.SurfaceRotation;
             _planet.LightDirection = toSun;
 
