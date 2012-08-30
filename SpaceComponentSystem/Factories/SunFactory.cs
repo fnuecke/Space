@@ -107,7 +107,7 @@ namespace Space.ComponentSystem.Factories
         /// <param name="cellCenter">The center of the cell the sun will be inserted in.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public int SampleSun(IManager manager, FarPosition cellCenter, IUniformRandom random)
+        public int Sample(IManager manager, FarPosition cellCenter, IUniformRandom random)
         {
             var entity = manager.AddEntity();
 
@@ -117,7 +117,7 @@ namespace Space.ComponentSystem.Factories
             var offset = SampleOffset(random);
             var mass = SampleMass(random);
 
-            var surfaceRotation = Vector2.Zero;
+            var surfaceRotation = -Vector2.UnitX;
             if (random != null)
             {
                 surfaceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
@@ -125,7 +125,7 @@ namespace Space.ComponentSystem.Factories
                 surfaceRotation.Normalize();
             }
 
-            var primaryTurbulenceRotation = Vector2.Zero;
+            var primaryTurbulenceRotation = Vector2.UnitX;
             if (random != null)
             {
                 primaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
@@ -133,7 +133,7 @@ namespace Space.ComponentSystem.Factories
                 primaryTurbulenceRotation.Normalize();
             }
 
-            var secondaryTurbulenceRotation = Vector2.Zero;
+            var secondaryTurbulenceRotation = Vector2.UnitY;
             if (random != null)
             {
                 secondaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;

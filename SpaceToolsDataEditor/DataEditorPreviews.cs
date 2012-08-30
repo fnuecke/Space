@@ -30,18 +30,6 @@ namespace Space.Tools.DataEditor
             Visible = false
         };
 
-        private readonly PlanetPreviewControl _planetPreview = new PlanetPreviewControl
-        {
-            Dock = DockStyle.Fill,
-            Visible = false
-        };
-
-        private readonly SunPreviewControl _sunPreview = new SunPreviewControl
-        {
-            Dock = DockStyle.Fill,
-            Visible = false
-        };
-
         private readonly ProjectilePreviewControl _projectilePreview = new ProjectilePreviewControl
         {
             Dock = DockStyle.Fill,
@@ -53,9 +41,7 @@ namespace Space.Tools.DataEditor
             Default,
             Ingame,
             Projectile,
-            Effect,
-            Planet,
-            Sun
+            Effect
         }
 
         private PreviewType _previewType;
@@ -82,16 +68,12 @@ namespace Space.Tools.DataEditor
                 // Clear / set other previews.
                 _ingamePreview.Clear();
                 _effectPreview.Effect = (string)(type == PreviewType.Effect ? target : null);
-                _planetPreview.Planet = (PlanetFactory)(type == PreviewType.Planet ? target : null);
-                _sunPreview.Sun = (SunFactory)(type == PreviewType.Sun ? target : null);
                 _projectilePreview.Projectiles = (ProjectileFactory[])(type == PreviewType.Projectile ? target : null);
 
                 // Adjust preview visibility.
                 pbPreview.Visible = type == PreviewType.Default;
                 _ingamePreview.Visible = type == PreviewType.Ingame;
                 _effectPreview.Visible = type == PreviewType.Effect;
-                _planetPreview.Visible = type == PreviewType.Planet;
-                _sunPreview.Visible = type == PreviewType.Sun;
                 _projectilePreview.Visible = type == PreviewType.Projectile;
 
                 pbPreview.Resize -= PreviewOnResize;
@@ -282,7 +264,7 @@ namespace Space.Tools.DataEditor
 
         private void RenderPlanetPreview(PlanetFactory factory)
         {
-            if (!SetPreviews(PreviewType.Planet, factory))
+            if (!SetPreviews(PreviewType.Ingame, factory))
             {
                 return;
             }
@@ -291,12 +273,17 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _planetPreview.Planet = factory;
+            var entity = factory.Sample(_ingamePreview.Manager, _ingamePreview.SunId, 0, 0, null);
+            if (entity > 0 && factory.Radius.Low != factory.Radius.High)
+            {
+                _ingamePreview.Manager.AddComponent<IngamePreviewControl.PlanetMaxBounds>(entity).MaxRadius =
+                    factory.Radius.High;
+            }
         }
 
         private void RenderSunPreview(SunFactory factory)
         {
-            if (!SetPreviews(PreviewType.Sun, factory))
+            if (!SetPreviews(PreviewType.Ingame, factory))
             {
                 return;
             }
@@ -305,7 +292,12 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            _sunPreview.Sun = factory;
+            var entity = factory.Sample(_ingamePreview.Manager, FarPosition.Zero, null);
+            if (entity > 0 && factory.Radius.Low != factory.Radius.High)
+            {
+                _ingamePreview.Manager.AddComponent<IngamePreviewControl.PlanetMaxBounds>(entity).MaxRadius =
+                    factory.Radius.High;
+            }
         }
 
         private void RenderSunSystemPreview(SunSystemFactory factory)

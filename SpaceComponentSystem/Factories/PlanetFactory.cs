@@ -281,21 +281,21 @@ namespace Space.ComponentSystem.Factories
         /// <param name="radius">The base orbiting radius this planet will have.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public int SamplePlanet(IManager manager, int center, float angle, float radius, IUniformRandom random)
+        public int Sample(IManager manager, int center, float angle, float radius, IUniformRandom random)
         {
             var entity = manager.AddEntity();
 
             // Sample all values in advance, to allow reshuffling component creation
             // order in case we need to, without influencing the 'random' results.
             var planetRadius = SampleRadius(random);
-            var rotationSpeed = SampleRotationSpeed(random) / Settings.TicksPerSecond;
+            var rotationSpeed = SampleRotationSpeed(random);
             var mass = SampleMass(random);
             var eccentricity = SampleEccentricity(random);
             var angleOffset = SampleAngleOffset(random);
             var travelSpeed = SampleTravelSpeed(random);
-            var periodOffet = (float)random.NextDouble();
+            var periodOffet = random != null ? (float)random.NextDouble() : 0;
 
-            float surfaceRotation = (float)(random.NextDouble() - 0.5) * 2 * rotationSpeed;
+            var surfaceRotation = random != null ? (Math.Sign(random.NextDouble() - 0.5) * rotationSpeed) : rotationSpeed;
 
             // Compute major radius and focus distance for an ellipse fitting
             // inside a unit circle with the focus point as its center.
@@ -319,13 +319,23 @@ namespace Space.ComponentSystem.Factories
             var period = circumference / travelSpeed * Settings.TicksPerSecond;
 
             // Give it a position and rotation.
-            manager.AddComponent<Transform>(entity).Initialize(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
+            if (center > 0)
+            {
+                manager.AddComponent<Transform>(entity).Initialize(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
+            }
+            else
+            {
+                manager.AddComponent<Transform>(entity);
+            }
 
             // Make it rotate.
-            manager.AddComponent<Spin>(entity).Initialize(rotationSpeed);
+            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / Settings.TicksPerSecond);
 
             // Make it move around its parent.
-            manager.AddComponent<EllipsePath>(entity).Initialize(center, a, b, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
+            if (center > 0)
+            {
+                manager.AddComponent<EllipsePath>(entity).Initialize(center, a, b, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
+            }
 
             // Make it attract stuff if it has mass.
             if (mass > 0)

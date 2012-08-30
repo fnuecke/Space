@@ -269,7 +269,7 @@ namespace Space.Graphics
             value = Effect.Parameters["TextureOffset"];
             if (value != null)
             {
-                value.SetValue((_surfaceRotation * _time / Width) % _surface.Width);
+                value.SetValue((_surfaceRotation / MathHelper.Pi * _time) % 2f);
             }
             value = Effect.Parameters["RenderRadius"];
             if (value != null)

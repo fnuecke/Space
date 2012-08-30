@@ -154,7 +154,7 @@ namespace Space.ComponentSystem.Factories
             var factory = Factories[name] as PlanetFactory;
             if (factory != null)
             {
-                return factory.SamplePlanet(manager, center, angle, radius, random);
+                return factory.Sample(manager, center, angle, radius, random);
             }
             return 0;
         }
@@ -178,7 +178,7 @@ namespace Space.ComponentSystem.Factories
             var factory = Factories[name] as SunFactory;
             if (factory != null)
             {
-                return factory.SampleSun(manager, cellCenter, random);
+                return factory.Sample(manager, cellCenter, random);
             }
             return 0;
         }

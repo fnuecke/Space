@@ -33,8 +33,6 @@ namespace Space.Tools.DataEditor
 
             pbPreview.Parent.Controls.Add(_ingamePreview);
             pbPreview.Parent.Controls.Add(_effectPreview);
-            pbPreview.Parent.Controls.Add(_planetPreview);
-            pbPreview.Parent.Controls.Add(_sunPreview);
             pbPreview.Parent.Controls.Add(_projectilePreview);
 
             lvIssues.ListViewItemSorter = new IssueComparer();
