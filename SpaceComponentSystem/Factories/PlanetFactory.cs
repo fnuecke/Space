@@ -48,6 +48,21 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
+        /// Texture to use for surface specularity.
+        /// </summary>
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Surface")]
+        [Description("The texture with surface specularity information, for specular reflections on the surface, e.g. for oceans.")]
+        public string Specular
+        {
+            get { return _specular; }
+            set { _specular = value; }
+        }
+
+        /// <summary>
         /// Texture to use for surface lights.
         /// </summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
@@ -91,6 +106,45 @@ namespace Space.ComponentSystem.Factories
         {
             get { return _surfaceTint; }
             set { _surfaceTint = value; }
+        }
+
+        /// <summary>
+        /// Specular lighting alpha.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(1f)]
+        [Category("Surface")]
+        [Description("The alpha (intensity) of the specular highlight.")]
+        public float SpecularAlpha
+        {
+            get { return _specularAlpha; }
+            set { _specularAlpha = value; }
+        }
+
+        /// <summary>
+        /// Specular lighting exponent.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(10f)]
+        [Category("Surface")]
+        [Description("The exponent used for specular lighting. Smaller values mean a smaller, brighter highlight.")]
+        public float SpecularExponent
+        {
+            get { return _specularExponent; }
+            set { _specularExponent = value; }
+        }
+
+        /// <summary>
+        /// Specular lighting exponent.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(1f)]
+        [Category("Surface")]
+        [Description("The offset used for specular lighting. Higher values result in a highlight closer to the center.")]
+        public float SpecularOffset
+        {
+            get { return _specularOffset; }
+            set { _specularOffset = value; }
         }
 
         /// <summary>
@@ -240,11 +294,19 @@ namespace Space.ComponentSystem.Factories
 
         private string _texture = "Textures/Planets/default";
 
+        private string _specular;
+
         private string _lights;
 
         private string _normals;
 
         private Color _surfaceTint = Color.White;
+
+        private float _specularAlpha = 1;
+
+        private float _specularExponent = 10;
+
+        private float _specularOffset = 1;
 
         private Color _atmosphereTint = Color.Transparent;
 
@@ -347,8 +409,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
 
             // Make it visible.
-            manager.AddComponent<PlanetRenderer>(entity).Initialize(_texture, _lights, _normals, _surfaceTint, planetRadius,
-                _atmosphereTint, _atmosphereInner, _atmosphereOuter, _atmosphereInnerAlpha, _atmosphereOuterAlpha, surfaceRotation);
+            manager.AddComponent<PlanetRenderer>(entity).Initialize(this, planetRadius, surfaceRotation);
 
             // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");

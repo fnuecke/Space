@@ -22,6 +22,15 @@ namespace Space.Graphics
         }
 
         /// <summary>
+        /// Gets or sets the surface specular texture.
+        /// </summary>
+        public Texture2D SurfaceSpecular
+        {
+            get { return _specular; }
+            set { _specular = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the surface lights texture.
         /// </summary>
         public Texture2D SurfaceLights
@@ -46,6 +55,33 @@ namespace Space.Graphics
         {
             get { return Color; }
             set { Color = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the alpha (intensity) of the specular highlight.
+        /// </summary>
+        public float SpecularAlpha
+        {
+            get { return _specularAlpha; }
+            set { _specularAlpha = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the exponent used in specular lighting (higher values mean smaller, brighter area).
+        /// </summary>
+        public float SpecularExponent
+        {
+            get { return _specularExponent; }
+            set { _specularExponent = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the offset used in specular lighting (higher values mean closer to planet center).
+        /// </summary>
+        public float SpecularOffset
+        {
+            get { return _specularOffset; }
+            set { _specularOffset = value; }
         }
 
         /// <summary>
@@ -132,6 +168,11 @@ namespace Space.Graphics
         private Texture2D _surface;
 
         /// <summary>
+        /// The surface specular texture.
+        /// </summary>
+        private Texture2D _specular;
+
+        /// <summary>
         /// The surface lights texture.
         /// </summary>
         private Texture2D _lights;
@@ -140,6 +181,21 @@ namespace Space.Graphics
         /// The surface normals texture.
         /// </summary>
         private Texture2D _normals;
+
+        /// <summary>
+        /// The specular alpha (intensity).
+        /// </summary>
+        private float _specularAlpha = 1;
+
+        /// <summary>
+        /// The specular exponent.
+        /// </summary>
+        private float _specularExponent = 10;
+
+        /// <summary>
+        /// The specular offset (light height).
+        /// </summary>
+        private float _specularOffset = 1;
 
         /// <summary>
         /// The tint used for the atmosphere.
@@ -209,6 +265,16 @@ namespace Space.Graphics
             {
                 value.SetValue(_surface);
             }
+            value = Effect.Parameters["SurfaceSpecular"];
+            if (value != null)
+            {
+                value.SetValue(_specular);
+                var flag = Effect.Parameters["HasSpecular"];
+                if (flag != null)
+                {
+                    flag.SetValue(_specular != null);
+                }
+            }
             value = Effect.Parameters["SurfaceLights"];
             if (value != null)
             {
@@ -233,6 +299,21 @@ namespace Space.Graphics
             if (value != null)
             {
                 value.SetValue(Color.ToVector4());
+            }
+            value = Effect.Parameters["SpecularAlpha"];
+            if (value != null)
+            {
+                value.SetValue(_specularAlpha);
+            }
+            value = Effect.Parameters["SpecularExponent"];
+            if (value != null)
+            {
+                value.SetValue(_specularExponent);
+            }
+            value = Effect.Parameters["SpecularOffset"];
+            if (value != null)
+            {
+                value.SetValue(_specularOffset);
             }
 
             value = Effect.Parameters["AtmosphereTint"];

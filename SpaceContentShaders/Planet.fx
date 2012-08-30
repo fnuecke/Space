@@ -1,7 +1,9 @@
 uniform extern texture SurfaceTexture;
+uniform extern texture SurfaceSpecular;
 uniform extern texture SurfaceNormals;
-uniform extern bool HasNormals = false;
 uniform extern texture SurfaceLights;
+uniform extern bool HasSpecular = false;
+uniform extern bool HasNormals = false;
 uniform extern bool HasLights = false;
 
 uniform extern float4 SurfaceTint = 1;
@@ -11,6 +13,9 @@ uniform extern float2 LightDirection = 0;
 uniform extern float TextureOffset = 0;
 uniform extern float RenderRadius = 1;
 uniform extern float HorizontalScale = 1;
+uniform extern float SpecularAlpha = 1;
+uniform extern float SpecularExponent = 10;
+uniform extern float SpecularOffset = 1;
 
 uniform extern float AtmosphereOuter = 0.1;
 uniform extern float AtmosphereInner = 0.4;
@@ -31,6 +36,17 @@ SamplerState textureSampler = sampler_state
     MagFilter = Anisotropic;
     MinFilter = Anisotropic;
     MaxAnisotropy = 16;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
+SamplerState specularSampler = sampler_state
+{
+    Texture = <SurfaceSpecular>;
+    MipFilter = Linear;
+    MagFilter = Linear;
+    MinFilter = Linear;
+    //MaxAnisotropy = 4;
     AddressU = Clamp;
     AddressV = Clamp;
 };
@@ -173,6 +189,50 @@ float4 SurfacePS(VSData input) : COLOR0
 
 // ------------------------------------------------------------------------- //
 
+// Renders specular highlight.
+float4 SpecularPS(VSData input) : COLOR0
+{
+    //if (!HasSpecular) {
+    //    discard;
+    //}
+    float2 pOuter, pInner;
+    float rInner, rOffset;
+    getOffsets(input.TextureCoordinate, pOuter, pInner, rInner, rOffset);
+
+    if (rInner > 1)
+    {
+        // Outside the sphere, do nothing.
+        discard;
+    }
+
+    // Compute the spherized coordinate of the pixel.
+    float f = (1 - sqrt(1 - rInner)) / rInner;
+    float2 uvSphere = (pInner * f + 1) / 2;
+
+    // Specular highlight.
+    float x = (uvSphere.x - 0.5);
+    float y = (uvSphere.y - 0.5);
+    float z = 1 - 2 * sqrt(x * x + y * y);
+    float3 uv3d = float3(2 * (uvSphere - 0.5), z);
+    uv3d = normalize(uv3d);
+    float3 l3d = float3(LightDirection, SpecularOffset);
+    l3d = normalize(l3d);
+
+    float specular = dot(uv3d, l3d);
+    if (specular <= 0) {
+        discard;
+    }
+
+    uvSphere.x = ((uvSphere.x + TextureOffset) * HorizontalScale) % 1;
+    uvSphere = wrap(uvSphere);
+    specular = pow(specular, SpecularExponent) * tex2D(specularSampler, uvSphere).r * SpecularAlpha;
+
+    float alpha = clamp(0.5 * (1 - rInner) * RenderRadius, 0, 1);
+    return float4(specular, specular, specular, alpha);
+}
+
+// ------------------------------------------------------------------------- //
+
 // Renders the atmosphere on top of the planet.
 float4 LightsPS(VSData input) : COLOR0
 {
@@ -202,7 +262,8 @@ float4 LightsPS(VSData input) : COLOR0
     // Show lights where there is shadow.
     color.rgb *= 1 - saturate(rOffset);
 
-    return color;
+    float alpha = clamp(0.5 * (1 - rInner) * RenderRadius, 0, 1);
+    return float4(color.rgb, alpha);
 }
 
 // ------------------------------------------------------------------------- //
@@ -236,7 +297,8 @@ float4 AtmospherePS(VSData input) : COLOR0
     // Screen with the opposite.
     color = 1 - ((1 - color) * (1 - saturate(rOffset * rOffset * rOffset) * 0.15));
 
-    return float4(color * AtmosphereTint.a * AtmosphereInnerAlpha, 1);
+    float alpha = clamp(0.5 * (1 - rInner) * RenderRadius, 0, 1);
+    return float4(color * AtmosphereTint.a * AtmosphereInnerAlpha, alpha);
 }
 
 // ------------------------------------------------------------------------- //
@@ -250,6 +312,13 @@ technique Planet
         SrcBlend = SrcAlpha;
         VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 SurfacePS();
+    }
+    pass Specular
+    {
+        AlphaBlendEnable = True;
+        DestBlend = One;
+        SrcBlend = One;
+        PixelShader = compile ps_2_0 SpecularPS();
     }
     pass Lights
     {

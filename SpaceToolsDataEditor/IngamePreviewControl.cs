@@ -168,6 +168,10 @@ namespace Space.Tools.DataEditor
         {
             GraphicsDevice.SetRenderTarget(_target);
             GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
+            if (_target == null)
+            {
+                return;
+            }
             try
             {
                 foreach (var component in _manager.Components)

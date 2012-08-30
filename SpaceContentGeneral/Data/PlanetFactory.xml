@@ -6,6 +6,9 @@
       <Texture>Textures/Planets/rock_07</Texture>
       <Normals>Textures/Planets/rock_07_normals</Normals>
       <SurfaceTint>FFAAB597</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>8087CEFA</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -22,6 +25,9 @@
       <Name>moon_tiny</Name>
       <Texture>Textures/Planets/rock_02</Texture>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -38,6 +44,9 @@
       <Name>moon_small</Name>
       <Texture>Textures/Planets/rock_02</Texture>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -54,6 +63,9 @@
       <Name>moon_medium</Name>
       <Texture>Textures/Planets/rock_02</Texture>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -70,6 +82,9 @@
       <Name>moon_large</Name>
       <Texture>Textures/Planets/rock_02</Texture>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -85,9 +100,13 @@
     <Item>
       <Name>earth</Name>
       <Texture>Textures/Planets/earthmap1k</Texture>
+      <Specular>Textures/Planets/earthspec1k</Specular>
       <Lights>Textures/Planets/earthlights1k</Lights>
       <Normals>Textures/Planets/earthbump1k</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>0.7</SpecularAlpha>
+      <SpecularExponent>20</SpecularExponent>
+      <SpecularOffset>0.8</SpecularOffset>
       <AtmosphereTint>64C0FFFF</AtmosphereTint>
       <AtmosphereInner>1.5</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -105,6 +124,9 @@
       <Texture>Textures/Planets/mars_1k_color</Texture>
       <Normals>Textures/Planets/mars_1k_normal</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>32969600</AtmosphereTint>
       <AtmosphereInner>0.5</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -122,6 +144,9 @@
       <Texture>Textures/Planets/neptunemap</Texture>
       <Normals>Textures/Planets/neptunemap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>19C0C0FF</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -139,6 +164,9 @@
       <Texture>Textures/Planets/venusmap</Texture>
       <Normals>Textures/Planets/venusmap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>32FFC080</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -156,6 +184,9 @@
       <Texture>Textures/Planets/plutomap1k</Texture>
       <Normals>Textures/Planets/plutomap1k_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -173,6 +204,9 @@
       <Texture>Textures/Planets/mercurymap</Texture>
       <Normals>Textures/Planets/mercurymap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -190,6 +224,9 @@
       <Texture>Textures/Planets/jupiter</Texture>
       <Normals>Textures/Planets/jupiter_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>37C0C000</AtmosphereTint>
       <AtmosphereInner>0.6</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -207,6 +244,9 @@
       <Texture>Textures/Planets/saturnmap</Texture>
       <Normals>Textures/Planets/saturnmap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
@@ -224,6 +264,9 @@
       <Texture>Textures/Planets/uranusmap</Texture>
       <Normals>Textures/Planets/uranusmap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
       <AtmosphereInner>0.4</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
