@@ -103,16 +103,16 @@
     </Item>
     <Item>
       <Name>earth</Name>
-      <Albedo>Textures/Planets/earthmap1k</Albedo>
-      <Normals>Textures/Planets/earthbump1k</Normals>
-      <Specular>Textures/Planets/earthspec1k</Specular>
-      <Lights>Textures/Planets/earthlights1k</Lights>
-      <Clouds>Textures/Planets/earthcloudmap</Clouds>
+      <Albedo>Textures/Planets/earthmap2k</Albedo>
+      <Normals>Textures/Planets/earthbump2k</Normals>
+      <Specular>Textures/Planets/earthspec2k</Specular>
+      <Lights>Textures/Planets/earthlights2k</Lights>
+      <Clouds>Textures/Planets/earthcloudmap2k</Clouds>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>0.7</SpecularAlpha>
       <SpecularExponent>20</SpecularExponent>
       <SpecularOffset>0.8</SpecularOffset>
-      <AtmosphereTint>64C0FFFF</AtmosphereTint>
+      <AtmosphereTint>78C0E6FF</AtmosphereTint>
       <AtmosphereInner>1.5</AtmosphereInner>
       <AtmosphereOuter>0.1</AtmosphereOuter>
       <AtmosphereInnerAlpha>1</AtmosphereInnerAlpha>

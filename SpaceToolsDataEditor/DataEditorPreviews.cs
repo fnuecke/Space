@@ -274,7 +274,7 @@ namespace Space.Tools.DataEditor
             }
 
             var entity = factory.Sample(_ingamePreview.Manager, _ingamePreview.SunId, 0, 0, null);
-            if (entity > 0 && factory.Radius.Low != factory.Radius.High)
+            if (entity > 0 && factory.Radius != null && factory.Radius.Low != factory.Radius.High)
             {
                 _ingamePreview.Manager.AddComponent<IngamePreviewControl.PlanetMaxBounds>(entity).MaxRadius =
                     factory.Radius.High;

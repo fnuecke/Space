@@ -191,7 +191,7 @@ float4 SurfacePS(VSData input) : COLOR0
     }
 
     // Get cloud shadow.
-    uvCloud += 1.5 * LightDirection / RenderRadius;
+    uvCloud += LightDirection / RenderRadius;
     uvCloud.x = ((uvCloud.x - TextureOffset) * HorizontalScale) % 1;
     uvCloud = wrap(uvCloud);
     float cloud = 1 - tex2D(cloudSampler, uvCloud).a;
