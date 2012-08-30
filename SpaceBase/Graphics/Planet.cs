@@ -327,6 +327,11 @@ namespace Space.Graphics
             if (value != null)
             {
                 value.SetValue(_clouds);
+                var flag = Effect.Parameters["HasClouds"];
+                if (flag != null)
+                {
+                    flag.SetValue(_clouds != null);
+                }
             }
             value = Effect.Parameters["SurfaceTint"];
             if (value != null)

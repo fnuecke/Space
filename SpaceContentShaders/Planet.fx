@@ -4,6 +4,7 @@ uniform extern texture SurfaceNormals;
 uniform extern texture SurfaceLights;
 uniform extern texture CloudTexture;
 uniform extern bool HasNormals = false;
+uniform extern bool HasClouds = false;
 
 uniform extern float4 SurfaceTint = 1;
 uniform extern float4 AtmosphereTint = 1;
@@ -191,10 +192,13 @@ float4 SurfacePS(VSData input) : COLOR0
     }
 
     // Get cloud shadow.
-    uvCloud += LightDirection / RenderRadius;
-    uvCloud.x = ((uvCloud.x - TextureOffset) * HorizontalScale) % 1;
-    uvCloud = wrap(uvCloud);
-    float cloud = 1 - tex2D(cloudSampler, uvCloud).a;
+    float cloud = 1;
+    if (HasClouds) {
+        uvCloud += LightDirection / RenderRadius;
+        uvCloud.x = ((uvCloud.x - TextureOffset) * HorizontalScale) % 1;
+        uvCloud = wrap(uvCloud);
+        cloud -= tex2D(cloudSampler, uvCloud).a;
+    }
 
     // Self-shadowing based on light source position.
     color.rgb *= saturate(rOffset) * cloud;
