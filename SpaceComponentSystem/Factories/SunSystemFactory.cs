@@ -1,11 +1,14 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.Common.Components;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
+using Space.Util;
 
 namespace Space.ComponentSystem.Factories
 {
@@ -80,7 +83,7 @@ namespace Space.ComponentSystem.Factories
 
             if (_planets != null)
             {
-                _planets.SampleOrbiters(manager, sun, random);
+                _planets.Sample(manager, sun, random);
             }
         }
 
@@ -123,7 +126,7 @@ namespace Space.ComponentSystem.Factories
 
             private Orbiter[] _orbiters = new Orbiter[0];
 
-            internal void SampleOrbiters(IManager manager, int center, IUniformRandom random)
+            internal void Sample(IManager manager, int center, IUniformRandom random)
             {
                 // Get the dominant angle.
                 var dominantAngle = SampleAngle(random);
@@ -131,17 +134,7 @@ namespace Space.ComponentSystem.Factories
                 // Create orbiters.
                 foreach (var orbiter in _orbiters)
                 {
-                    if (orbiter.ChanceToExist > random.NextDouble())
-                    {
-                        var entity = FactoryLibrary.SamplePlanet(manager, orbiter.Name, center, dominantAngle,
-                                                                    orbiter.SampleOrbitRadius(random), random);
-
-                        // Recurse.
-                        if (orbiter.Moons != null)
-                        {
-                            orbiter.Moons.SampleOrbiters(manager, entity, random);
-                        }
-                    }
+                    orbiter.Sample(manager, center, dominantAngle, random);
                 }
             }
 
@@ -192,6 +185,42 @@ namespace Space.ComponentSystem.Factories
             }
 
             /// <summary>
+            /// The eccentricity of generated planets' orbits. A value of
+            /// 0 means it's a circle, 1 means it's totally flat (a line).
+            /// </summary>
+            [Category("Orbit")]
+            [Description("The eccentricity of the planet's orbit ellipse. A value of 0 leads to a circle, a value of 1 to a line.")]
+            public FloatInterval Eccentricity
+            {
+                get { return _eccentricity; }
+                set { _eccentricity = value; }
+            }
+
+            /// <summary>
+            /// The offset from the base orbiting angle of the sun system.
+            /// </summary>
+            [ContentSerializer(Optional = true)]
+            [Category("Orbit")]
+            [Description("The offset from the general orbit axis of all orbits around the focus, in degrees.")]
+            public FloatInterval AngleOffset
+            {
+                get { return _angleOffset; }
+                set { _angleOffset = value; }
+            }
+
+            /// <summary>
+            /// The travel speed of generated planets' orbits. This will be used
+            /// to determine the period, based on the orbiting radius.
+            /// </summary>
+            [Category("Orbit")]
+            [Description("The speed at which the planet will travel along its orbit ellipse, in pixels per second.")]
+            public FloatInterval TravelSpeed
+            {
+                get { return _travelSpeed; }
+                set { _travelSpeed = value; }
+            }
+
+            /// <summary>
             /// The probability with which an actual instance is created in a system.
             /// </summary>
             [ContentSerializer(Optional = true)]
@@ -219,20 +248,159 @@ namespace Space.ComponentSystem.Factories
 
             private FloatInterval _orbitRadius = FloatInterval.Zero;
 
+            private FloatInterval _eccentricity = FloatInterval.Zero;
+
+            private FloatInterval _angleOffset = FloatInterval.Zero;
+
+            private FloatInterval _travelSpeed = FloatInterval.Zero;
+
             private float _chanceToExist = 1f;
 
             private Orbit _moons = new Orbit();
+
+            /// <summary>
+            /// Samples a new orbiter of this type.
+            /// </summary>
+            /// <param name="manager">The manager.</param>
+            /// <param name="center">The center.</param>
+            /// <param name="dominantAngle">The dominant angle.</param>
+            /// <param name="random">The random.</param>
+            /// <returns></returns>
+            internal void Sample(IManager manager, int center, float dominantAngle, IUniformRandom random)
+            {
+                if (random != null && ChanceToExist <= random.NextDouble())
+                {
+                    return;
+                }
+
+                var radius = SampleOrbitRadius(random);
+                var eccentricity = SampleEccentricity(random);
+                var angleOffset = SampleAngleOffset(random);
+                var travelSpeed = SampleTravelSpeed(random);
+                var periodOffet = random == null ? 0f : (float)random.NextDouble();
+
+                // Compute minor and major radius.
+                float a, b;
+                ComputeRadii(radius, eccentricity, out a, out b);
+
+                // Get period. Figure out circumference using Ramanujan's approximation.
+                var circumference = MathHelper.Pi * (3 * (a + b) - (float)Math.Sqrt((3 * a + b) * (a + 3 * b)));
+                var period = circumference / travelSpeed * Settings.TicksPerSecond;
+
+                var entity = FactoryLibrary.SamplePlanet(manager, Name, center, dominantAngle, radius, random);
+
+                // Make it move around its center.
+                manager.AddComponent<EllipsePath>(entity).Initialize(center, a, b, dominantAngle + angleOffset, period, MathHelper.TwoPi * periodOffet);
+
+                // Set initial position to center (to avoid generated instances shortly popping up
+                // at the origin).
+                ((Transform)manager.GetComponent(entity, Transform.TypeId))
+                    .SetTranslation(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
+
+                // Recurse.
+                if (Moons != null)
+                {
+                    Moons.Sample(manager, entity, random);
+                }
+            }
+
+            /// <summary>
+            /// Computes the radii for an ellipse, given the radius and eccentricity.
+            /// </summary>
+            /// <param name="radius">The radius.</param>
+            /// <param name="eccentricity">The eccentricity.</param>
+            /// <param name="minor">The minor radius.</param>
+            /// <param name="major">The major radius.</param>
+            public static void ComputeRadii(float radius, float eccentricity, out float minor, out float major)
+            {
+                // Compute major radius and focus distance for an ellipse fitting
+                // inside a unit circle with the focus point as its center.
+                // We know that e = f/a and because of the unit circle assumption
+                // with the focus as its center it must follow that a + f = 1.
+                minor = 1 / (1 + eccentricity);
+                var f = 1 - minor;
+
+                // We can the compute the minor radius for that very ellipse. We
+                // know that f = sqrt(a * a - b * b), which can be transformed to
+                // b = sqrt(a * a - f * f).
+                major = (float)Math.Sqrt(minor * minor - f * f);
+
+                // We then scale the minor and major radii to fit into our actual
+                // orbit radius.
+                minor *= radius;
+                major *= radius;
+            }
 
             /// <summary>
             /// Samples the angle of this planet's orbit.
             /// </summary>
             /// <param name="random">The randomizer to use.</param>
             /// <returns>The sampled angle.</returns>
-            internal float SampleOrbitRadius(IUniformRandom random)
+            private float SampleOrbitRadius(IUniformRandom random)
             {
                 return (random == null) ? _orbitRadius.Low : MathHelper.Lerp(_orbitRadius.Low, _orbitRadius.High, (float)random.NextDouble());
             }
 
+            /// <summary>
+            /// Samples the eccentricity of this planet's orbit.
+            /// </summary>
+            /// <param name="random">The randomizer to use.</param>
+            /// <returns>The sampled major radius.</returns>
+            private float SampleEccentricity(IUniformRandom random)
+            {
+                if (_eccentricity != null)
+                {
+                    return (random == null) ? _eccentricity.Low
+                        : MathHelper.Lerp(_eccentricity.Low, _eccentricity.High, (float)random.NextDouble());
+                }
+                else
+                {
+                    return 0f;
+                }
+            }
+
+            /// <summary>
+            /// Samples the travel speed of this planet.
+            /// </summary>
+            /// <param name="random">The randomizer to use.</param>
+            /// <returns>The sampled travel speed.</returns>
+            private float SampleTravelSpeed(IUniformRandom random)
+            {
+                if (_travelSpeed != null)
+                {
+                    return (random == null) ? _travelSpeed.Low
+                        : MathHelper.Lerp(_travelSpeed.Low, _travelSpeed.High, (float)random.NextDouble());
+                }
+                else
+                {
+                    return 0f;
+                }
+            }
+
+            /// <summary>
+            /// Samples the angle offset of this planet.
+            /// </summary>
+            /// <param name="random">The randomizer to use.</param>
+            /// <returns>The sampled angle offset.</returns>
+            private float SampleAngleOffset(IUniformRandom random)
+            {
+                if (_angleOffset != null)
+                {
+                    return MathHelper.ToRadians((random == null) ? _angleOffset.Low
+                        : MathHelper.Lerp(_angleOffset.Low, _angleOffset.High, (float)random.NextDouble()));
+                }
+                else
+                {
+                    return 0f;
+                }
+            }
+
+            /// <summary>
+            /// Returns a <see cref="System.String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="System.String"/> that represents this instance.
+            /// </returns>
             public override string ToString()
             {
                 return Name + (Moons != null && Moons.Orbiters.Length > 0 ? (" (" + Moons.Orbiters.Length + " moons)") : "");

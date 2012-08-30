@@ -16,48 +16,72 @@
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>6000 to 7000</OrbitRadius>
+          <Eccentricity>0.3 to 0.4</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>12500 to 13500</OrbitRadius>
+          <Eccentricity>0.3 to 0.4</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>19000 to 20000</OrbitRadius>
+          <Eccentricity>0.3 to 0.37</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>26000 to 27000</OrbitRadius>
+          <Eccentricity>0.3 to 0.34</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>33000 to 34000</OrbitRadius>
+          <Eccentricity>0.3 to 0.34</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>40000 to 41000</OrbitRadius>
+          <Eccentricity>0.3 to 0.33</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>47000 to 48000</OrbitRadius>
+          <Eccentricity>0.3 to 0.33</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
         <Orbiter>
           <Name>planet_1</Name>
           <OrbitRadius>54000 to 55000</OrbitRadius>
+          <Eccentricity>0.3 to 0.32</Eccentricity>
+          <AngleOffset>30</AngleOffset>
+          <TravelSpeed>8 to 12</TravelSpeed>
           <ChanceToExist>0.4</ChanceToExist>
           <Moons>#Resource1</Moons>
         </Orbiter>
@@ -71,54 +95,81 @@
         <Orbiter>
           <Name>mercury</Name>
           <OrbitRadius>8000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>9 to 11</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource2</Moons>
         </Orbiter>
         <Orbiter>
           <Name>venus</Name>
           <OrbitRadius>14000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>4 to 7</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource3</Moons>
         </Orbiter>
         <Orbiter>
           <Name>earth</Name>
           <OrbitRadius>20000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>9 to 12</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource4</Moons>
         </Orbiter>
         <Orbiter>
           <Name>mars</Name>
           <OrbitRadius>26000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>7 to 9</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource5</Moons>
         </Orbiter>
         <Orbiter>
           <Name>jupiter</Name>
           <OrbitRadius>32000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>6 to 7</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource6</Moons>
         </Orbiter>
         <Orbiter>
           <Name>saturn</Name>
           <OrbitRadius>38000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>4 to 7</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource7</Moons>
         </Orbiter>
         <Orbiter>
           <Name>uranus</Name>
           <OrbitRadius>46000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>5 to 8</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource8</Moons>
         </Orbiter>
         <Orbiter>
           <Name>neptune</Name>
           <OrbitRadius>54000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>7 to 8</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource9</Moons>
         </Orbiter>
         <Orbiter>
           <Name>pluto</Name>
           <OrbitRadius>62000</OrbitRadius>
+          <Eccentricity>0</Eccentricity>
+          <AngleOffset>0</AngleOffset>
+          <TravelSpeed>6 to 8</TravelSpeed>
           <ChanceToExist>1</ChanceToExist>
           <Moons>#Resource10</Moons>
         </Orbiter>
@@ -131,24 +182,36 @@
       <Orbiter>
         <Name>moon_tiny</Name>
         <OrbitRadius>900 to 1000</OrbitRadius>
+        <Eccentricity>0.2</Eccentricity>
+        <AngleOffset>30</AngleOffset>
+        <TravelSpeed>12 to 16</TravelSpeed>
         <ChanceToExist>0.3</ChanceToExist>
         <Moons>#Resource11</Moons>
       </Orbiter>
       <Orbiter>
         <Name>moon_small</Name>
         <OrbitRadius>1400 to 1500</OrbitRadius>
+        <Eccentricity>0.3 to 0.31</Eccentricity>
+        <AngleOffset>30</AngleOffset>
+        <TravelSpeed>8 to 12</TravelSpeed>
         <ChanceToExist>0.5</ChanceToExist>
         <Moons>#Resource12</Moons>
       </Orbiter>
       <Orbiter>
         <Name>moon_large</Name>
         <OrbitRadius>1800 to 1900</OrbitRadius>
+        <Eccentricity>0.3 to 0.33</Eccentricity>
+        <AngleOffset>30</AngleOffset>
+        <TravelSpeed>4 to 6</TravelSpeed>
         <ChanceToExist>0.6</ChanceToExist>
         <Moons>#Resource13</Moons>
       </Orbiter>
       <Orbiter>
         <Name>moon_medium</Name>
         <OrbitRadius>2300 to 2400</OrbitRadius>
+        <Eccentricity>0.3 to 0.33</Eccentricity>
+        <AngleOffset>30</AngleOffset>
+        <TravelSpeed>6 to 8</TravelSpeed>
         <ChanceToExist>0.4</ChanceToExist>
         <Moons>#Resource14</Moons>
       </Orbiter>
@@ -164,6 +227,9 @@
       <Orbiter>
         <Name>moon_small</Name>
         <OrbitRadius>800</OrbitRadius>
+        <Eccentricity>0.3 to 0.4</Eccentricity>
+        <AngleOffset>30</AngleOffset>
+        <TravelSpeed>8 to 12</TravelSpeed>
         <ChanceToExist>1</ChanceToExist>
         <Moons>#Resource15</Moons>
       </Orbiter>

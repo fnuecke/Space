@@ -17,9 +17,6 @@
       <Radius>250 to 550</Radius>
       <Mass>300000 to 400000</Mass>
       <RotationSpeed>2</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_tiny</Name>
@@ -37,9 +34,6 @@
       <Radius>30 to 40</Radius>
       <Mass>0</Mass>
       <RotationSpeed>1 to 2</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>12 to 16</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_small</Name>
@@ -57,9 +51,6 @@
       <Radius>40 to 60</Radius>
       <Mass>0</Mass>
       <RotationSpeed>2</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_medium</Name>
@@ -77,9 +68,6 @@
       <Radius>60 to 80</Radius>
       <Mass>0</Mass>
       <RotationSpeed>2 to 3</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>6 to 8</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_large</Name>
@@ -97,9 +85,6 @@
       <Radius>80 to 100</Radius>
       <Mass>0</Mass>
       <RotationSpeed>3 to 4</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>4 to 6</TravelSpeed>
     </Item>
     <Item>
       <Name>earth</Name>
@@ -120,9 +105,6 @@
       <Radius>250 to 300</Radius>
       <Mass>250000 to 300000</Mass>
       <RotationSpeed>1 to 2</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>9 to 12</TravelSpeed>
     </Item>
     <Item>
       <Name>mars</Name>
@@ -140,9 +122,6 @@
       <Radius>200 to 250</Radius>
       <Mass>200000 to 220000</Mass>
       <RotationSpeed>3</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>7 to 9</TravelSpeed>
     </Item>
     <Item>
       <Name>neptune</Name>
@@ -160,9 +139,6 @@
       <Radius>180 to 220</Radius>
       <Mass>190000 to 230000</Mass>
       <RotationSpeed>4 to 6</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>7 to 8</TravelSpeed>
     </Item>
     <Item>
       <Name>venus</Name>
@@ -180,9 +156,6 @@
       <Radius>240 to 300</Radius>
       <Mass>250000 to 300000</Mass>
       <RotationSpeed>4 to 5</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>4 to 7</TravelSpeed>
     </Item>
     <Item>
       <Name>pluto</Name>
@@ -200,9 +173,6 @@
       <Radius>100 to 150</Radius>
       <Mass>17000 to 20000</Mass>
       <RotationSpeed>2 to 3</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>6 to 8</TravelSpeed>
     </Item>
     <Item>
       <Name>mercury</Name>
@@ -220,9 +190,6 @@
       <Radius>150 to 200</Radius>
       <Mass>170000 to 200000</Mass>
       <RotationSpeed>3 to 4</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>9 to 11</TravelSpeed>
     </Item>
     <Item>
       <Name>jupiter</Name>
@@ -240,9 +207,6 @@
       <Radius>500 to 600</Radius>
       <Mass>500000 to 600000</Mass>
       <RotationSpeed>3 to 4</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>6 to 7</TravelSpeed>
     </Item>
     <Item>
       <Name>saturn</Name>
@@ -260,9 +224,6 @@
       <Radius>200 to 300</Radius>
       <Mass>250000 to 300000</Mass>
       <RotationSpeed>3 to 4</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>4 to 7</TravelSpeed>
     </Item>
     <Item>
       <Name>uranus</Name>
@@ -280,9 +241,6 @@
       <Radius>250 to 300</Radius>
       <Mass>250000 to 300000</Mass>
       <RotationSpeed>4 to 5</RotationSpeed>
-      <Eccentricity>0</Eccentricity>
-      <AngleOffset>0</AngleOffset>
-      <TravelSpeed>5 to 8</TravelSpeed>
     </Item>
   </Asset>
 </XnaContent>

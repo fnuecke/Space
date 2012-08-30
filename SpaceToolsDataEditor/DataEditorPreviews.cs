@@ -144,9 +144,11 @@ namespace Space.Tools.DataEditor
                         }
 
                         // Render next-best orbit system if possible.
-                        if (item.PropertyDescriptor.PropertyType == typeof(Orbiter))
+                        if (item.Parent != null && item.Parent.Parent != null &&
+                            item.Parent.Parent.PropertyDescriptor != null &&
+                            item.Parent.Parent.PropertyDescriptor.PropertyType == typeof(Orbiter))
                         {
-                            RenderOrbiterPreview(item.Value as Orbiter);
+                            RenderOrbiterPreview(item.Parent.Parent.Value as Orbiter);
                             return;
                         }
                         // Render next-best item system if possible.
@@ -273,11 +275,22 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            var entity = factory.Sample(_ingamePreview.Manager, _ingamePreview.SunId, 0, 0, null);
-            if (entity > 0 && factory.Radius != null && factory.Radius.Low != factory.Radius.High)
+            var manager = _ingamePreview.Manager;
+            var sun = _ingamePreview.SunId;
+
+            var entity = factory.Sample(manager, sun, 0, 0, null);
+            if (entity > 0)
             {
-                _ingamePreview.Manager.AddComponent<IngamePreviewControl.PlanetMaxBounds>(entity).MaxRadius =
-                    factory.Radius.High;
+                // Give it an ellipse path. This will not move the entity, but it'll allow
+                // lighting.
+                manager.AddComponent<EllipsePath>(entity).Initialize(sun, 0, 0, 0, 0, 0);
+
+                // If it has a radius, add the renderer indicating max bounds (if low and high differ).
+                if (factory.Radius != null && factory.Radius.Low != factory.Radius.High)
+                {
+                    _ingamePreview.Manager.AddComponent<IngamePreviewControl.PlanetMaxBounds>(entity)
+                        .MaxRadius = factory.Radius.High;
+                }
             }
         }
 
@@ -316,16 +329,7 @@ namespace Space.Tools.DataEditor
             // Get furthest out orbit to know how to scale.
             var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
             float padding, scale;
-            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
-            {
-                padding = 25f;
-                scale = Math.Min(1, pbPreview.Image.Width / (CellSystem.CellSize / 2f));
-            }
-            else
-            {
-                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
-                scale = Math.Min(1, pbPreview.ClientSize.Width / (CellSystem.CellSize / 2f));
-            }
+            ComputeScaleAndOffset(CellSystem.CellSize / 2f, out scale, out padding);
 
             // Render all objects from left to right, starting with the sun.
             using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
@@ -341,13 +345,11 @@ namespace Space.Tools.DataEditor
                             sunFactory.OffsetRadius != null ? 200 : 255, 255, 255, 224);
                         brush.Color = sunColor;
                         var diameter = scale * sunFactory.Radius.Low * 2;
-                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f,
-                                      diameter, diameter);
+                        g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
                         if (sunFactory.OffsetRadius != null)
                         {
                             diameter = scale * (sunFactory.Radius.High + sunFactory.OffsetRadius.High) * 2;
-                            g.FillEllipse(brush, padding - diameter / 2f,
-                                          pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
+                            g.FillEllipse(brush, padding - diameter / 2f, pbPreview.Image.Height / 2f - diameter / 2f, diameter, diameter);
                         }
                     }
                     RenderOrbit(factory.Planets, padding, scale, g, brush);
@@ -370,16 +372,7 @@ namespace Space.Tools.DataEditor
 
             var planetFactory = FactoryManager.GetFactory(orbiter.Name) as PlanetFactory;
             float padding, scale;
-            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
-            {
-                padding = 25f;
-                scale = Math.Min(1, pbPreview.Image.Width / (GetMaxRadius(orbiter.Moons) + 250));
-            }
-            else
-            {
-                padding = 25f + (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
-                scale = Math.Min(1, pbPreview.ClientSize.Width / (GetMaxRadius(orbiter.Moons) + 250));
-            }
+            ComputeScaleAndOffset(GetMaxRadius(orbiter.Moons), out scale, out padding);
 
             // Render all objects from left to right, starting with the sun.
             using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))
@@ -407,7 +400,24 @@ namespace Space.Tools.DataEditor
             }
         }
 
-        private void RenderOrbit(Orbit orbit, float origin, float scale, System.Drawing.Graphics graphics, SolidBrush brush)
+        private void ComputeScaleAndOffset(float maxWidth, out float scale, out float offset)
+        {
+            maxWidth += 200;
+            if (pbPreview.Image.Width < pbPreview.ClientSize.Width)
+            {
+                offset = 0;
+                scale = Math.Min(1, pbPreview.Image.Width / maxWidth);
+            }
+            else
+            {
+                offset = (pbPreview.Image.Width - pbPreview.ClientSize.Width) / 2f;
+                scale = Math.Min(1, pbPreview.ClientSize.Width / maxWidth);
+            }
+            scale *= 0.5f;
+            offset += scale * maxWidth;
+        }
+
+        private void RenderOrbit(Orbit orbit, float origin, float scale, System.Drawing.Graphics graphics, SolidBrush brush, int number = 0)
         {
             if (orbit == null)
             {
@@ -457,19 +467,41 @@ namespace Space.Tools.DataEditor
                         graphics.FillEllipse(brush, origin + scale * orbiter.OrbitRadius.Low + halfVariance - maxOrbit / 2f, pbPreview.Image.Height / 2f - maxOrbit / 2f, maxOrbit, maxOrbit);
 
                         // Draw own orbit.
-                        using (var p = new Pen(System.Drawing.Color.FromArgb(100, 224, 255, 255)))
+                        var color = OrbitColors[number % OrbitColors.Length];
+                        using (var p = new Pen(System.Drawing.Color.FromArgb(210, color.R, color.G, color.B)))
                         {
-                            graphics.DrawEllipse(p, origin - orbiter.OrbitRadius.High * scale, pbPreview.Image.Height / 2f - orbiter.OrbitRadius.High * scale, orbiter.OrbitRadius.High * 2 * scale, orbiter.OrbitRadius.High * 2 * scale);
-                            p.Color = System.Drawing.Color.FromArgb(40, 224, 255, 255);
-                            graphics.DrawEllipse(p, origin - orbiter.OrbitRadius.Low * scale, pbPreview.Image.Height / 2f - orbiter.OrbitRadius.Low * scale, orbiter.OrbitRadius.Low * 2 * scale, orbiter.OrbitRadius.Low * 2 * scale);
+                            float orbitX, orbitY;
+
+                            var eccentricity = orbiter.Eccentricity.Low;
+                            Orbiter.ComputeRadii(orbiter.OrbitRadius.High * scale, eccentricity, out orbitX, out orbitY);
+                            graphics.DrawEllipse(p, origin - orbitX + orbitX * eccentricity, pbPreview.Image.Height / 2f - orbitY, orbitX * 2, orbitY * 2);
+
+                            p.Color = System.Drawing.Color.FromArgb(110, color.R, color.G, color.B);
+
+                            eccentricity = orbiter.Eccentricity.High;
+                            Orbiter.ComputeRadii(orbiter.OrbitRadius.Low * scale, eccentricity, out orbitX, out orbitY);
+                            graphics.DrawEllipse(p, origin - orbitX + orbitX * eccentricity, pbPreview.Image.Height / 2f - orbitY, orbitX * 2, orbitY * 2);
                         }
                     }
 
                     // Render children.
-                    RenderOrbit(orbiter.Moons, localOrigin, scale, graphics, brush);
+                    RenderOrbit(orbiter.Moons, localOrigin, scale, graphics, brush, ++number);
                 }
             }
         }
+
+        private static readonly System.Drawing.Color[] OrbitColors = new[]
+        {
+            System.Drawing.Color.Aqua,
+            System.Drawing.Color.BurlyWood,
+            System.Drawing.Color.DarkTurquoise,
+            System.Drawing.Color.DarkKhaki,
+            System.Drawing.Color.Lavender,
+            System.Drawing.Color.Coral,
+            System.Drawing.Color.PaleTurquoise,
+            System.Drawing.Color.Gold,
+            System.Drawing.Color.DeepPink,
+        };
 
         private float GetMaxRadius(Orbit orbit)
         {

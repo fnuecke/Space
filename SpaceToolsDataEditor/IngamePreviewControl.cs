@@ -56,7 +56,7 @@ namespace Space.Tools.DataEditor
 
         private int _sunId;
 
-        private long _frame = 0;
+        private long _frame;
 
         public IngamePreviewControl()
         {
@@ -127,7 +127,7 @@ namespace Space.Tools.DataEditor
                     new CameraCenteredTextureRenderSystem(_content, _batch),
                     new CameraCenteredParticleEffectSystem(_content, (IGraphicsDeviceService)Services.GetService(typeof(IGraphicsDeviceService)), () => 20f),
                     
-                    new DebugSlotRenderSystem(_content, GraphicsDevice), 
+                    new DebugSlotRenderSystem(_content, GraphicsDevice)
                     
             });
             // Fix position to avoid querying unavailable services.
@@ -166,14 +166,20 @@ namespace Space.Tools.DataEditor
 
         protected override void Draw()
         {
-            GraphicsDevice.SetRenderTarget(_target);
-            GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
+            // Only do the actual rendering if we have our environment.
             if (_target == null)
             {
+                // Otherwise just clear the screen.
+                GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
                 return;
             }
+
+            // OK, set our custom render target and clear it.
+            GraphicsDevice.SetRenderTarget(_target);
+            GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
             try
             {
+                // Toggle systems depending on the check state in the context menu.
                 foreach (var component in _manager.Components)
                 {
                     if (component is ParticleEffects)
@@ -181,22 +187,20 @@ namespace Space.Tools.DataEditor
                         ((ParticleEffects)component).SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, ((ToolStripMenuItem)_contextMenu.Items["thrusterfx"]).Checked);
                     }
                 }
-
                 if (_collisionBounds != null)
                 {
                     _collisionBounds.IsEnabled = ((ToolStripMenuItem)_contextMenu.Items["collbounds"]).Checked;
                 }
-
                 if (_slots != null)
                 {
                     _slots.IsEnabled = ((ToolStripMenuItem)_contextMenu.Items["slots"]).Checked;
                 }
-
                 if (_maxBounds != null)
                 {
                     _maxBounds.IsEnabled = ((ToolStripMenuItem)_contextMenu.Items["maxbounds"]).Checked;
                 }
 
+                // Render the grid in the background.
                 if (_grid != null && ((ToolStripMenuItem)_contextMenu.Items["grid"]).Checked)
                 {
                     _grid.SetSize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
@@ -204,6 +208,8 @@ namespace Space.Tools.DataEditor
                     _grid.Draw();
                 }
 
+                // Render our light source, if it's set. This is for lighting of objects that
+                // support it (only planets for now).
                 if (_sunId > 0)
                 {
                     var mousePos = PointToClient(MousePosition);
@@ -215,12 +221,19 @@ namespace Space.Tools.DataEditor
                     t.ApplyTranslation();
                 }
 
+                // Draw our mini simulation.
                 _manager.Draw(_frame, _drawTimer.Interval);
             }
             catch (Exception ex)
             {
+                // Something went wrong, so we'll just clear the manager, hoping that'll at least
+                // keep the error from happening over and over again.
                 Clear();
+
+                Console.WriteLine(ex);
             }
+
+            // Switch back to main backbuffer and copy over our render target.
             GraphicsDevice.SetRenderTarget(null);
             _batch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
             _batch.Draw(_target, GraphicsDevice.PresentationParameters.Bounds, Color.White);

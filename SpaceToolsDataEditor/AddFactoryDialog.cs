@@ -31,7 +31,7 @@ namespace Space.Tools.DataEditor
 
         private void AddFactoryDialogLoad(object sender, EventArgs e)
         {
-            if (cbType.Items.Count > 0)
+            if (cbType.Items.Count > 0 && cbType.SelectedIndex < 0)
             {
                 cbType.SelectedIndex = 0;
             }
