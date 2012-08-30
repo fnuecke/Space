@@ -22,6 +22,15 @@ namespace Space.Graphics
         }
 
         /// <summary>
+        /// Gets or sets the surface normals texture.
+        /// </summary>
+        public Texture2D SurfaceNormals
+        {
+            get { return _normals; }
+            set { _normals = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the surface specular texture.
         /// </summary>
         public Texture2D SurfaceSpecular
@@ -40,12 +49,12 @@ namespace Space.Graphics
         }
 
         /// <summary>
-        /// Gets or sets the surface normals texture.
+        /// Gets or sets the cloud texture.
         /// </summary>
-        public Texture2D SurfaceNormals
+        public Texture2D Clouds
         {
-            get { return _normals; }
-            set { _normals = value; }
+            get { return _clouds; }
+            set { _clouds = value; }
         }
 
         /// <summary>
@@ -168,6 +177,11 @@ namespace Space.Graphics
         private Texture2D _surface;
 
         /// <summary>
+        /// The surface normals texture.
+        /// </summary>
+        private Texture2D _normals;
+
+        /// <summary>
         /// The surface specular texture.
         /// </summary>
         private Texture2D _specular;
@@ -178,9 +192,9 @@ namespace Space.Graphics
         private Texture2D _lights;
 
         /// <summary>
-        /// The surface normals texture.
+        /// The clouds texture.
         /// </summary>
-        private Texture2D _normals;
+        private Texture2D _clouds;
 
         /// <summary>
         /// The specular alpha (intensity).
@@ -256,6 +270,30 @@ namespace Space.Graphics
         #region Draw
 
         /// <summary>
+        /// Determines whether the pass with the specified name is enabled.
+        /// </summary>
+        /// <param name="name">The name of the pass.</param>
+        /// <returns>
+        ///   <c>true</c> if the pass is enabled; otherwise, <c>false</c>.
+        /// </returns>
+        protected override bool IsPassEnabled(string name)
+        {
+            if (name.Equals("Specular"))
+            {
+                return _specular != null;
+            }
+            if (name.Equals("Lights"))
+            {
+                return _lights != null;
+            }
+            if (name.Equals("Clouds"))
+            {
+                return _clouds != null;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Adjusts effect parameters prior to the draw call.
         /// </summary>
         protected override void AdjustParameters()
@@ -264,26 +302,6 @@ namespace Space.Graphics
             if (value != null)
             {
                 value.SetValue(_surface);
-            }
-            value = Effect.Parameters["SurfaceSpecular"];
-            if (value != null)
-            {
-                value.SetValue(_specular);
-                var flag = Effect.Parameters["HasSpecular"];
-                if (flag != null)
-                {
-                    flag.SetValue(_specular != null);
-                }
-            }
-            value = Effect.Parameters["SurfaceLights"];
-            if (value != null)
-            {
-                value.SetValue(_lights);
-                var flag = Effect.Parameters["HasLights"];
-                if (flag != null)
-                {
-                    flag.SetValue(_lights != null);
-                }
             }
             value = Effect.Parameters["SurfaceNormals"];
             if (value != null)
@@ -294,6 +312,21 @@ namespace Space.Graphics
                 {
                     flag.SetValue(_normals != null);
                 }
+            }
+            value = Effect.Parameters["SurfaceSpecular"];
+            if (value != null)
+            {
+                value.SetValue(_specular);
+            }
+            value = Effect.Parameters["SurfaceLights"];
+            if (value != null)
+            {
+                value.SetValue(_lights);
+            }
+            value = Effect.Parameters["CloudTexture"];
+            if (value != null)
+            {
+                value.SetValue(_clouds);
             }
             value = Effect.Parameters["SurfaceTint"];
             if (value != null)

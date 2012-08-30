@@ -3,7 +3,7 @@
   <Asset Type="Factories:PlanetFactory[]">
     <Item>
       <Name>planet_1</Name>
-      <Texture>Textures/Planets/rock_07</Texture>
+      <Albedo>Textures/Planets/rock_07</Albedo>
       <Normals>Textures/Planets/rock_07_normals</Normals>
       <SurfaceTint>FFAAB597</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -23,7 +23,8 @@
     </Item>
     <Item>
       <Name>moon_tiny</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
       <SpecularExponent>10</SpecularExponent>
@@ -42,7 +43,8 @@
     </Item>
     <Item>
       <Name>moon_small</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
       <SpecularExponent>10</SpecularExponent>
@@ -61,7 +63,8 @@
     </Item>
     <Item>
       <Name>moon_medium</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
       <SpecularExponent>10</SpecularExponent>
@@ -80,7 +83,8 @@
     </Item>
     <Item>
       <Name>moon_large</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
       <SpecularExponent>10</SpecularExponent>
@@ -99,10 +103,11 @@
     </Item>
     <Item>
       <Name>earth</Name>
-      <Texture>Textures/Planets/earthmap1k</Texture>
+      <Albedo>Textures/Planets/earthmap1k</Albedo>
+      <Normals>Textures/Planets/earthbump1k</Normals>
       <Specular>Textures/Planets/earthspec1k</Specular>
       <Lights>Textures/Planets/earthlights1k</Lights>
-      <Normals>Textures/Planets/earthbump1k</Normals>
+      <Clouds>Textures/Planets/earthcloudmap</Clouds>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>0.7</SpecularAlpha>
       <SpecularExponent>20</SpecularExponent>
@@ -114,14 +119,14 @@
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>250 to 300</Radius>
       <Mass>250000 to 300000</Mass>
-      <RotationSpeed>2 to 2.5</RotationSpeed>
+      <RotationSpeed>1 to 2</RotationSpeed>
       <Eccentricity>0</Eccentricity>
       <AngleOffset>0</AngleOffset>
       <TravelSpeed>9 to 12</TravelSpeed>
     </Item>
     <Item>
       <Name>mars</Name>
-      <Texture>Textures/Planets/mars_1k_color</Texture>
+      <Albedo>Textures/Planets/mars_1k_color</Albedo>
       <Normals>Textures/Planets/mars_1k_normal</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -141,7 +146,7 @@
     </Item>
     <Item>
       <Name>neptune</Name>
-      <Texture>Textures/Planets/neptunemap</Texture>
+      <Albedo>Textures/Planets/neptunemap</Albedo>
       <Normals>Textures/Planets/neptunemap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -161,7 +166,7 @@
     </Item>
     <Item>
       <Name>venus</Name>
-      <Texture>Textures/Planets/venusmap</Texture>
+      <Albedo>Textures/Planets/venusmap</Albedo>
       <Normals>Textures/Planets/venusmap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -181,7 +186,7 @@
     </Item>
     <Item>
       <Name>pluto</Name>
-      <Texture>Textures/Planets/plutomap1k</Texture>
+      <Albedo>Textures/Planets/plutomap1k</Albedo>
       <Normals>Textures/Planets/plutomap1k_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -201,7 +206,7 @@
     </Item>
     <Item>
       <Name>mercury</Name>
-      <Texture>Textures/Planets/mercurymap</Texture>
+      <Albedo>Textures/Planets/mercurymap</Albedo>
       <Normals>Textures/Planets/mercurymap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -221,7 +226,7 @@
     </Item>
     <Item>
       <Name>jupiter</Name>
-      <Texture>Textures/Planets/jupiter</Texture>
+      <Albedo>Textures/Planets/jupiter</Albedo>
       <Normals>Textures/Planets/jupiter_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -241,7 +246,7 @@
     </Item>
     <Item>
       <Name>saturn</Name>
-      <Texture>Textures/Planets/saturnmap</Texture>
+      <Albedo>Textures/Planets/saturnmap</Albedo>
       <Normals>Textures/Planets/saturnmap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>
@@ -261,7 +266,7 @@
     </Item>
     <Item>
       <Name>uranus</Name>
-      <Texture>Textures/Planets/uranusmap</Texture>
+      <Albedo>Textures/Planets/uranusmap</Albedo>
       <Normals>Textures/Planets/uranusmap_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
       <SpecularAlpha>1</SpecularAlpha>

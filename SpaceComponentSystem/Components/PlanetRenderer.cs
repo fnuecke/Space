@@ -51,7 +51,12 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
-        public Texture2D Texture;
+        public Texture2D Albedo;
+
+        /// <summary>
+        /// The actual texture with the set name.
+        /// </summary>
+        public Texture2D Normals;
 
         /// <summary>
         /// The actual texture with the set name.
@@ -66,7 +71,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
-        public Texture2D Normals;
+        public Texture2D Clouds;
 
         #endregion
 
@@ -84,10 +89,11 @@ namespace Space.ComponentSystem.Components
             Factory = otherPlanet.Factory;
             Radius = otherPlanet.Radius;
             SurfaceRotation = otherPlanet.SurfaceRotation;
-            Texture = otherPlanet.Texture;
+            Albedo = otherPlanet.Albedo;
+            Normals = otherPlanet.Normals;
             Specular = otherPlanet.Specular;
             Lights = otherPlanet.Lights;
-            Normals = otherPlanet.Normals;
+            Clouds = otherPlanet.Clouds;
 
             return this;
         }
@@ -119,10 +125,11 @@ namespace Space.ComponentSystem.Components
             Factory = null;
             Radius = 0;
             SurfaceRotation = 0f;
-            Texture = null;
+            Albedo = null;
+            Normals = null;
             Specular = null;
             Lights = null;
-            Normals = null;
+            Clouds = null;
         }
 
         #endregion
@@ -156,10 +163,11 @@ namespace Space.ComponentSystem.Components
             Radius = packet.ReadSingle();
             SurfaceRotation = packet.ReadSingle();
 
-            Texture = null;
+            Albedo = null;
+            Normals = null;
             Specular = null;
             Lights = null;
-            Normals = null;
+            Clouds = null;
         }
 
         /// <summary>

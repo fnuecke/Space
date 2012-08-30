@@ -18,6 +18,7 @@ namespace Space.Tools.DataEditor
         private void AddItemPoolDialogLoad(object sender, EventArgs e)
         {
             tbName.Text = string.Empty;
+            tbName.Focus();
         }
 
         private void OkClick(object sender, EventArgs e)

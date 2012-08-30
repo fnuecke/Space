@@ -307,9 +307,25 @@ namespace Engine.Graphics
             // Apply the effect and render our area.
             foreach (var pass in Effect.CurrentTechnique.Passes)
             {
-                pass.Apply();
-                Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
+                if (IsPassEnabled(pass.Name))
+                {
+                    pass.Apply();
+                    Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2,
+                                                     VertexDeclaration);
+                }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the pass with the specified name is enabled.
+        /// </summary>
+        /// <param name="name">The name of the pass.</param>
+        /// <returns>
+        ///   <c>true</c> if the pass is enabled; otherwise, <c>false</c>.
+        /// </returns>
+        protected virtual bool IsPassEnabled(string name)
+        {
+            return true;
         }
 
         /// <summary>

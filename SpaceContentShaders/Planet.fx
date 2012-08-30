@@ -2,9 +2,8 @@ uniform extern texture SurfaceTexture;
 uniform extern texture SurfaceSpecular;
 uniform extern texture SurfaceNormals;
 uniform extern texture SurfaceLights;
-uniform extern bool HasSpecular = false;
+uniform extern texture CloudTexture;
 uniform extern bool HasNormals = false;
-uniform extern bool HasLights = false;
 
 uniform extern float4 SurfaceTint = 1;
 uniform extern float4 AtmosphereTint = 1;
@@ -40,6 +39,17 @@ SamplerState textureSampler = sampler_state
     AddressV = Clamp;
 };
 
+SamplerState normalsSampler = sampler_state
+{
+    Texture = <SurfaceNormals>;
+    MipFilter = Linear;
+    MagFilter = Anisotropic;
+    MinFilter = Anisotropic;
+    MaxAnisotropy = 8;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
 SamplerState specularSampler = sampler_state
 {
     Texture = <SurfaceSpecular>;
@@ -62,9 +72,9 @@ SamplerState lightsSampler = sampler_state
     AddressV = Clamp;
 };
 
-SamplerState normalsSampler = sampler_state
+SamplerState cloudSampler = sampler_state
 {
-    Texture = <SurfaceNormals>;
+    Texture = <CloudTexture>;
     MipFilter = Linear;
     MagFilter = Anisotropic;
     MinFilter = Anisotropic;
@@ -170,6 +180,7 @@ float4 SurfacePS(VSData input) : COLOR0
     // Compute the spherized coordinate of the pixel.
     float f = (1 - sqrt(1 - rInner)) / rInner;
     float2 uvSphere = (pInner * f + 1) / 2;
+    float2 uvCloud = uvSphere;
     uvSphere.x = ((uvSphere.x + TextureOffset) * HorizontalScale) % 1;
     uvSphere = wrap(uvSphere);
 
@@ -179,8 +190,14 @@ float4 SurfacePS(VSData input) : COLOR0
         color.rgb *= 4 * dot((tex2D(normalsSampler, uvSphere) - 0.5), LightDirection) + 1;
     }
 
+    // Get cloud shadow.
+    uvCloud += 1.5 * LightDirection / RenderRadius;
+    uvCloud.x = ((uvCloud.x - TextureOffset) * HorizontalScale) % 1;
+    uvCloud = wrap(uvCloud);
+    float cloud = 1 - tex2D(cloudSampler, uvCloud).a;
+
     // Self-shadowing based on light source position.
-    color.rgb *= saturate(rOffset);
+    color.rgb *= saturate(rOffset) * cloud;
 
     // Alpha for smoother border.
     float alpha = clamp(0.5 * (1 - rInner) * RenderRadius, 0, 1);
@@ -192,9 +209,6 @@ float4 SurfacePS(VSData input) : COLOR0
 // Renders specular highlight.
 float4 SpecularPS(VSData input) : COLOR0
 {
-    //if (!HasSpecular) {
-    //    discard;
-    //}
     float2 pOuter, pInner;
     float rInner, rOffset;
     getOffsets(input.TextureCoordinate, pOuter, pInner, rInner, rOffset);
@@ -236,10 +250,6 @@ float4 SpecularPS(VSData input) : COLOR0
 // Renders the atmosphere on top of the planet.
 float4 LightsPS(VSData input) : COLOR0
 {
-    if (!HasNormals) {
-        discard;
-    }
-
     float2 pOuter, pInner;
     float rInner, rOffset;
     getOffsets(input.TextureCoordinate, pOuter, pInner, rInner, rOffset);
@@ -263,6 +273,39 @@ float4 LightsPS(VSData input) : COLOR0
     color.rgb *= 1 - saturate(rOffset);
 
     float alpha = clamp(0.5 * (1 - rInner) * RenderRadius, 0, 1);
+    return float4(color.rgb, alpha);
+}
+
+// ------------------------------------------------------------------------- //
+
+// Renders clouds.
+float4 CloudsPS(VSData input) : COLOR0
+{
+    float2 pOuter, pInner;
+    float rInner, rOffset;
+    getOffsets(input.TextureCoordinate, pOuter, pInner, rInner, rOffset);
+
+    if (rInner > 1)
+    {
+        // Outside the sphere, do nothing.
+        discard;
+    }
+
+    // Compute the spherized coordinate of the pixel.
+    float f = (1 - sqrt(1 - rInner)) / rInner;
+    float2 uvSphere = (pInner * f + 1) / 2;
+    uvSphere.x = ((uvSphere.x - TextureOffset) * HorizontalScale) % 1;
+    uvSphere = wrap(uvSphere);
+
+    // Actual color at position.
+    float4 color = tex2D(cloudSampler, uvSphere);
+
+    // Alpha for smoother border.
+    float alpha = clamp(0.5 * (1 - rInner) * RenderRadius, 0, 1) * color.a;
+
+    // Self-shadowing based on light source position.
+    color = 2 * color * saturate(rOffset);
+
     return float4(color.rgb, alpha);
 }
 
@@ -326,6 +369,13 @@ technique Planet
         DestBlend = One;
         SrcBlend = One;
         PixelShader = compile ps_2_0 LightsPS();
+    }
+    pass Clouds
+    {
+        AlphaBlendEnable = True;
+        DestBlend = InvSrcAlpha;
+        SrcBlend = SrcAlpha;
+        PixelShader = compile ps_2_0 CloudsPS();
     }
     pass Atmosphere
     {

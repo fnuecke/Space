@@ -129,9 +129,13 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Load the texture if we don't have it yet.
-            if (component.Texture == null && !string.IsNullOrWhiteSpace(factory.Texture))
+            if (component.Albedo == null && !string.IsNullOrWhiteSpace(factory.Albedo))
             {
-                component.Texture = _content.Load<Texture2D>(factory.Texture);
+                component.Albedo = _content.Load<Texture2D>(factory.Albedo);
+            }
+            if (component.Normals == null && !string.IsNullOrWhiteSpace(factory.Normals))
+            {
+                component.Normals = _content.Load<Texture2D>(factory.Normals);
             }
             if (component.Specular == null && !string.IsNullOrWhiteSpace(factory.Specular))
             {
@@ -141,9 +145,9 @@ namespace Space.ComponentSystem.Systems
             {
                 component.Lights = _content.Load<Texture2D>(factory.Lights);
             }
-            if (component.Normals == null && !string.IsNullOrWhiteSpace(factory.Normals))
-            {
-                component.Normals = _content.Load<Texture2D>(factory.Normals);
+            if (component.Clouds == null && !string.IsNullOrWhiteSpace(factory.Clouds))
+            {   
+                component.Clouds = _content.Load<Texture2D>(factory.Clouds);
             }
 
             // The position and orientation we're rendering at and in.
@@ -172,10 +176,11 @@ namespace Space.ComponentSystem.Systems
             // Set remaining parameters for draw.
             _planet.Rotation = rotation;
             _planet.SetSize(component.Radius * 2);
-            _planet.SurfaceTexture = component.Texture;
+            _planet.SurfaceTexture = component.Albedo;
+            _planet.SurfaceNormals = component.Normals;
             _planet.SurfaceSpecular = component.Specular;
             _planet.SurfaceLights = component.Lights;
-            _planet.SurfaceNormals = component.Normals;
+            _planet.Clouds = component.Clouds;
             _planet.SurfaceTint = factory.SurfaceTint;
             _planet.SpecularAlpha = factory.SpecularAlpha;
             _planet.SpecularExponent = factory.SpecularExponent;

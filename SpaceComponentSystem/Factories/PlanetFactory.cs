@@ -38,13 +38,28 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
             "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-        [DefaultValue("Textures/Ships/default")]
+        [DefaultValue("Textures/Planets/default")]
         [Category("Surface")]
-        [Description("The base image to represent the ship, without any equipment.")]
-        public string Texture
+        [Description("The base image to render the planet surface.")]
+        public string Albedo
         {
-            get { return _texture; }
-            set { _texture = value; }
+            get { return _albedo; }
+            set { _albedo = value; }
+        }
+
+        /// <summary>
+        /// Texture to use for surface normals.
+        /// </summary>
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Surface")]
+        [Description("The texture with surface normal information, for surface structure based on light position.")]
+        public string Normals
+        {
+            get { return _normals; }
+            set { _normals = value; }
         }
 
         /// <summary>
@@ -78,18 +93,18 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// Texture to use for surface normals.
+        /// Texture to use for clouds.
         /// </summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
             "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Surface")]
-        [Description("The texture with surface normal information, for surface structure based on light position.")]
-        public string Normals
+        [Description("The texture with clouds to render on top of the surface.")]
+        public string Clouds
         {
-            get { return _normals; }
-            set { _normals = value; }
+            get { return _clouds; }
+            set { _clouds = value; }
         }
 
         /// <summary>
@@ -292,13 +307,15 @@ namespace Space.ComponentSystem.Factories
 
         private string _name = "";
 
-        private string _texture = "Textures/Planets/default";
+        private string _albedo = "Textures/Planets/default";
+
+        private string _normals;
 
         private string _specular;
 
         private string _lights;
 
-        private string _normals;
+        private string _clouds;
 
         private Color _surfaceTint = Color.White;
 
