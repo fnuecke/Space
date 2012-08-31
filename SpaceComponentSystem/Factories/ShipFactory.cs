@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
@@ -23,6 +22,12 @@ namespace Space.ComponentSystem.Factories
     [DefaultProperty("Name")]
     public sealed class ShipFactory : IFactory
     {
+        #region Logger
+        
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region General
 
         /// <summary>
@@ -225,7 +230,7 @@ namespace Space.ComponentSystem.Factories
             // If we get here we couldn't find a slot to equip the item in.
             manager.RemoveEntity(itemId);
 
-            Debug.Assert(false, "Parent item did not have a slot for the requested child item.");
+            Logger.Warn("Parent item did not have a slot for the requested child item.");
         }
 
         /// <summary>

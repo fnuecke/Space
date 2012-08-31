@@ -293,6 +293,7 @@
     <None Include="Resources\305_Close_16x16_72.png" />
     <None Include="Resources\1385_Disable_16x16_72.png" />
     <None Include="Resources\DeleteHS.png" />
+    <None Include="Resources\112_ArrowReturnLeft_Blue_16x16_72.png" />
     <Content Include="Resources\mountpoint_armor.png" />
     <Content Include="Resources\mountpoint_fuselage.png" />
     <Content Include="Resources\mountpoint_reactor.png" />

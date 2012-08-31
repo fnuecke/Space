@@ -74,6 +74,13 @@ namespace Space.Tools.DataEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap _112_ArrowReturnLeft_Blue_16x16_72 {
+            get {
+                object obj = ResourceManager.GetObject("112_ArrowReturnLeft_Blue_16x16_72", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap _1385_Disable_16x16_72 {
             get {
                 object obj = ResourceManager.GetObject("1385_Disable_16x16_72", resourceCulture);

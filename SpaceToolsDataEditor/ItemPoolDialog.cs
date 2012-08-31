@@ -25,10 +25,11 @@ namespace Space.Tools.DataEditor
         {
             Debug.Assert(args.ChangedItem.PropertyDescriptor != null);
             var parent = args.ChangedItem.Parent;
-            while (parent.Value == null && parent.Parent != null)
+            while (parent.GridItemType != GridItemType.Property && parent.Parent != null)
             {
                 parent = parent.Parent;
             }
+            Debug.Assert(parent != null);
             args.ChangedItem.PropertyDescriptor.SetValue(parent.Value, args.OldValue);
         }
 

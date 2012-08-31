@@ -46,6 +46,7 @@
             this.separator2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miNewFactory = new System.Windows.Forms.ToolStripMenuItem();
             this.newItemPoolToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miDelete = new System.Windows.Forms.ToolStripMenuItem();
@@ -177,11 +178,10 @@
             // 
             // tsmiSave
             // 
-            this.tsmiSave.Enabled = false;
             this.tsmiSave.Image = global::Space.Tools.DataEditor.Properties.Resources.saveHS;
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.tsmiSave.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSave.Size = new System.Drawing.Size(152, 22);
             this.tsmiSave.Text = "&Save";
             this.tsmiSave.Click += new System.EventHandler(this.SaveClick);
             // 
@@ -190,46 +190,57 @@
             this.tsmiLoad.Image = global::Space.Tools.DataEditor.Properties.Resources._075b_UpFolder_16x16_72;
             this.tsmiLoad.Name = "tsmiLoad";
             this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.tsmiLoad.Size = new System.Drawing.Size(143, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(152, 22);
             this.tsmiLoad.Text = "L&oad";
             this.tsmiLoad.Click += new System.EventHandler(this.LoadClick);
             // 
             // separator0
             // 
             this.separator0.Name = "separator0";
-            this.separator0.Size = new System.Drawing.Size(140, 6);
+            this.separator0.Size = new System.Drawing.Size(149, 6);
             // 
             // tsmiSettings
             // 
             this.tsmiSettings.Image = global::Space.Tools.DataEditor.Properties.Resources._327_Options_16x16_72;
             this.tsmiSettings.Name = "tsmiSettings";
             this.tsmiSettings.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.tsmiSettings.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSettings.Size = new System.Drawing.Size(152, 22);
             this.tsmiSettings.Text = "S&ettings";
             this.tsmiSettings.Click += new System.EventHandler(this.SettingsClick);
             // 
             // separator2
             // 
             this.separator2.Name = "separator2";
-            this.separator2.Size = new System.Drawing.Size(140, 6);
+            this.separator2.Size = new System.Drawing.Size(149, 6);
             // 
             // tsmiExit
             // 
             this.tsmiExit.Name = "tsmiExit";
             this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.tsmiExit.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExit.Size = new System.Drawing.Size(152, 22);
             this.tsmiExit.Text = "E&xit";
             this.tsmiExit.Click += new System.EventHandler(this.ExitClick);
             // 
             // tsmiEdit
             // 
             this.tsmiEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoToolStripMenuItem,
             this.miNewFactory,
             this.newItemPoolToolStripMenuItem,
             this.miDelete});
             this.tsmiEdit.Name = "tsmiEdit";
             this.tsmiEdit.Size = new System.Drawing.Size(39, 20);
             this.tsmiEdit.Text = "&Edit";
+            // 
+            // undoToolStripMenuItem
+            // 
+            this.undoToolStripMenuItem.Enabled = false;
+            this.undoToolStripMenuItem.Image = global::Space.Tools.DataEditor.Properties.Resources._112_ArrowReturnLeft_Blue_16x16_72;
+            this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+            this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.undoToolStripMenuItem.Text = "&Undo";
+            this.undoToolStripMenuItem.Click += new System.EventHandler(this.UndoClick);
             // 
             // miNewFactory
             // 
@@ -497,6 +508,7 @@
         private System.Windows.Forms.ToolStripMenuItem miDelete;
         private System.Windows.Forms.ToolStripMenuItem tsmiAddItemPool;
         private System.Windows.Forms.ToolStripMenuItem newItemPoolToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
     }
 }
 
