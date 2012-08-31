@@ -27,7 +27,7 @@ namespace Space.Tools.DataEditor
 
         private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
         private readonly AddItemPoolDialog _itemPoolDialog = new AddItemPoolDialog();
-
+        private readonly AddAttributePoolDialog _attributePoolDialog = new AddAttributePoolDialog();
         private readonly Stack<Tuple<string, Func<bool>>> _undoCommands = new Stack<Tuple<string, Func<bool>>>();
 
         private int _changesSinceLastSave;
@@ -42,6 +42,8 @@ namespace Space.Tools.DataEditor
             pbPreview.Parent.Controls.Add(_projectilePreview);
 
             lvIssues.ListViewItemSorter = new IssueComparer();
+
+
 
             pbPreview.Image = new Bitmap(2048, 2048, PixelFormat.Format32bppArgb);
 
@@ -148,6 +150,7 @@ namespace Space.Tools.DataEditor
         {
             FactoryManager.Save();
             ItemPoolManager.Save();
+            AttributePoolManager.Save();
             _changesSinceLastSave = 0;
             UpdateUndoMenu();
         }
@@ -173,7 +176,8 @@ namespace Space.Tools.DataEditor
         private void DataSelected(object sender, TreeViewEventArgs e)
         {
             if (SelectFactory(e.Node.Tag as IFactory) ||
-                SelectItemPool(e.Node.Tag as ItemPool))
+                SelectItemPool(e.Node.Tag as ItemPool) ||
+                SelectAttributePool(e.Node.Tag as AttributePool))
             {
                 tsmiRemove.Enabled = true;
                 miDelete.Enabled = true;
@@ -323,7 +327,44 @@ namespace Space.Tools.DataEditor
                 }
             }
         }
+        private void AddAttributePoolClick(object sender, EventArgs e)
+        {
+            if (_attributePoolDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                var name = _attributePoolDialog.AttributePoolName;
 
+                try
+                {
+                    // Create a new instance.
+                    var instance = new AttributePool() { Name = name };
+
+                    // Register it.
+                    AttributePoolManager.Add(instance);
+
+                    // And select it.
+                    SelectAttributePool(instance);
+
+                    // Add undo command.
+                    PushUndo("add attribute pool", () =>
+                    {
+                        if (MessageBox.Show(this,
+                                            "Are you sure you wish to delete the attribute pool '" + instance.Name + "'?",
+                                            "Confirmation", MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            AttributePoolManager.Remove(instance);
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Failed creating new attribute pool:\n" + ex, "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
         private void RemoveClick(object sender, EventArgs e)
         {
             if (pgProperties.SelectedObject == null)
@@ -367,6 +408,25 @@ namespace Space.Tools.DataEditor
                         PushUndo("remove item pool", () =>
                         {
                             ItemPoolManager.Add(itemPool);
+                            return true;
+                        });
+                    }
+                }
+                else if (pgProperties.SelectedObject is AttributePool)
+                {
+                    var attributePool = (AttributePool)pgProperties.SelectedObject;
+                    if ((ModifierKeys & Keys.Shift) != 0 ||
+                        MessageBox.Show(this,
+                                        "Are you sure you wish to delete '" + attributePool.Name + "'?",
+                                        "Confirmation", MessageBoxButtons.YesNo,
+                                        MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        AttributePoolManager.Remove(attributePool);
+
+                        // Add undo command.
+                        PushUndo("remove attribute pool", () =>
+                        {
+                            AttributePoolManager.Add(attributePool);
                             return true;
                         });
                     }
@@ -501,6 +561,10 @@ namespace Space.Tools.DataEditor
                     {
                         ItemPoolManager.Rename(oldName, newName);
                     }
+                    else if (pgProperties.SelectedObject is AttributePool)
+                    {
+                        AttributePoolManager.Rename(oldName, newName);
+                    }
                 }
                 catch (ArgumentException ex)
                 {
@@ -512,6 +576,10 @@ namespace Space.Tools.DataEditor
                     else if (pgProperties.SelectedObject is ItemPool)
                     {
                         ((ItemPool)pgProperties.SelectedObject).Name = oldName;
+                    }
+                    else if (pgProperties.SelectedObject is AttributePool)
+                    {
+                        ((AttributePool)pgProperties.SelectedObject).Name = oldName;
                     }
 
                     // Tell the user why.

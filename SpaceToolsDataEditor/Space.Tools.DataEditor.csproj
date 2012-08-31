@@ -58,6 +58,7 @@
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.TextureImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.XImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="SlimDX.DirectInput, Version=4.0.10.43, Culture=neutral, PublicKeyToken=96bb577564343f16, processorArchitecture=x86" />
@@ -86,6 +87,46 @@
     <Compile Include="AddItemPoolDialog.Designer.cs">
       <DependentUpon>AddItemPoolDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="AttributePoolManager.cs" />
+    <Compile Include="AttributePoolDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AttributePoolDialog.Designer.cs">
+      <DependentUpon>AttributePoolDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddAttributePoolDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddAttributePoolDialog.Designer.cs">
+      <DependentUpon>AddAttributePoolDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AttributePoolChooserEditor.cs" />
+    <Compile Include="SoundAssetDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SoundAssetDialog.Designer.cs">
+      <DependentUpon>SoundAssetDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SoundAssetEditor.cs" />
+    <Compile Include="Parser\Category.cs" />
+    <Compile Include="Parser\CompressionPreset.cs" />
+    <Compile Include="Parser\Cue.cs" />
+    <Compile Include="Parser\Effect.cs" />
+    <Compile Include="Parser\Entity.cs" />
+    <Compile Include="Parser\Event.cs" />
+    <Compile Include="Parser\GlobalSettings.cs" />
+    <Compile Include="Parser\InstanceLimit.cs" />
+    <Compile Include="Parser\Parse.cs" />
+    <Compile Include="Parser\Project.cs" />
+    <Compile Include="Parser\Rpc.cs" />
+    <Compile Include="Parser\Sound.cs" />
+    <Compile Include="Parser\SoundBank.cs" />
+    <Compile Include="Parser\Variable.cs" />
+    <Compile Include="Parser\Variation.cs" />
+    <Compile Include="Parser\Wave.cs" />
+    <Compile Include="Parser\WaveBank.cs" />
+    <Compile Include="Parser\Workspace.cs" />
+    <Compile Include="SoundManager.cs" />
     <Compile Include="ItemPoolDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,6 +143,7 @@
     <Compile Include="DialogEditorIssues.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ResourceManager.cs" />
     <Compile Include="EffectAssetDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -176,6 +218,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddItemPoolDialog.resx">
       <DependentUpon>AddItemPoolDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AttributePoolDialog.resx">
+      <DependentUpon>AttributePoolDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddAttributePoolDialog.resx">
+      <DependentUpon>AddAttributePoolDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SoundAssetDialog.resx">
+      <DependentUpon>SoundAssetDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ItemPoolDialog.resx">
       <DependentUpon>ItemPoolDialog.cs</DependentUpon>

@@ -63,6 +63,7 @@
             this.chObject = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.chProperty = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ilIssueTypes = new System.Windows.Forms.ImageList(this.components);
+            this.tsmiAddAttributePool = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsFactories.SuspendLayout();
             this.gbData.SuspendLayout();
             this.msMain.SuspendLayout();
@@ -113,22 +114,23 @@
             this.cmsFactories.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiAddFactory,
             this.tsmiAddItemPool,
+            this.tsmiAddAttributePool,
             this.tsmiRemove});
             this.cmsFactories.Name = "cmsFactories";
-            this.cmsFactories.Size = new System.Drawing.Size(153, 70);
+            this.cmsFactories.Size = new System.Drawing.Size(176, 114);
             // 
             // tsmiAddFactory
             // 
             this.tsmiAddFactory.Image = global::Space.Tools.DataEditor.Properties.Resources._077_AddFile_16x16_72;
             this.tsmiAddFactory.Name = "tsmiAddFactory";
-            this.tsmiAddFactory.Size = new System.Drawing.Size(152, 22);
+            this.tsmiAddFactory.Size = new System.Drawing.Size(175, 22);
             this.tsmiAddFactory.Text = "New &Factory";
             this.tsmiAddFactory.Click += new System.EventHandler(this.AddFactoryClick);
             // 
             // tsmiAddItemPool
             // 
             this.tsmiAddItemPool.Name = "tsmiAddItemPool";
-            this.tsmiAddItemPool.Size = new System.Drawing.Size(152, 22);
+            this.tsmiAddItemPool.Size = new System.Drawing.Size(175, 22);
             this.tsmiAddItemPool.Text = "New Item Pool";
             this.tsmiAddItemPool.Click += new System.EventHandler(this.AddItemPoolClick);
             // 
@@ -137,7 +139,7 @@
             this.tsmiRemove.Enabled = false;
             this.tsmiRemove.Image = global::Space.Tools.DataEditor.Properties.Resources.DeleteHS;
             this.tsmiRemove.Name = "tsmiRemove";
-            this.tsmiRemove.Size = new System.Drawing.Size(152, 22);
+            this.tsmiRemove.Size = new System.Drawing.Size(175, 22);
             this.tsmiRemove.Text = "&Delete";
             this.tsmiRemove.Click += new System.EventHandler(this.RemoveClick);
             // 
@@ -433,6 +435,13 @@
             this.ilIssueTypes.Images.SetKeyName(2, "109_AllAnnotations_Warning_16x16_72.png");
             this.ilIssueTypes.Images.SetKeyName(3, "109_AllAnnotations_Error_16x16_72.png");
             // 
+            // tsmiAddAttributePool
+            // 
+            this.tsmiAddAttributePool.Name = "tsmiAddAttributePool";
+            this.tsmiAddAttributePool.Size = new System.Drawing.Size(175, 22);
+            this.tsmiAddAttributePool.Text = "New Attribute Pool";
+            this.tsmiAddAttributePool.Click += new System.EventHandler(this.AddAttributePoolClick);
+            // 
             // DataEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -508,6 +517,7 @@
         private System.Windows.Forms.ToolStripMenuItem miDelete;
         private System.Windows.Forms.ToolStripMenuItem tsmiAddItemPool;
         private System.Windows.Forms.ToolStripMenuItem newItemPoolToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAddAttributePool;
         private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
     }
 }

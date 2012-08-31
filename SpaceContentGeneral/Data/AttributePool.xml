@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:AttributePool[]">
+    <Item>
+      <Name>Additional Attributes Level 1 </Name>
+      <Attributes>
+        <Item>
+          <Attribute>10 to 15 Health</Attribute>
+          <Chance>0.1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>10 to 15 Energy</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>2 to 4 HealthRegeneration</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>3 to 6 EnergyRegeneration</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>10 to 15 Armor</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>1 to 5 AccelerationForce</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>1 to 3 RotationForce</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>10 to 15 ShieldEfficiency</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>100 to 150 SensorRange</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>1 to 3 WeaponDamage</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Armor Level 1 </Name>
+      <Attributes>
+        <Item>
+          <Attribute>10 to 15 Armor</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Armor Rare Level 1 </Name>
+      <Attributes>
+        <Item>
+          <Attribute>15 to 20 Armor</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Reactor Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>50 to 75 Energy</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>2 to 3 EnergyRegeneration</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Reactor Rare Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>60 to 85 Energy</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>2 to 4 HealthRegeneration</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Sensor Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>3000 SensorRange</Attribute>
+          <Chance>0</Chance>
+          <LevelScale>0</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Sensor Rare Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>3500 SensorRange</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Thruster Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>95 to 125 AccelerationForce</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>4.5 to 9 RotationForce</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>2.25 to 2.75 ThrusterEnergyConsumption</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Thruster Rare Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>110 to 140 AccelerationForce</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>6 to 10 RotationForce</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+        <Item>
+          <Attribute>2.5 to 3 ThrusterEnergyConsumption</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Weapon Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>5 to 15 WeaponDamage</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Weapon Rare Level 1</Name>
+      <Attributes>
+        <Item>
+          <Attribute>10 to 20 WeaponDamage</Attribute>
+          <Chance>1</Chance>
+          <LevelScale>0.1</LevelScale>
+        </Item>
+      </Attributes>
+    </Item>
+    <Item>
+      <Name>Shield Level 1</Name>
+      <Attributes Null="true" />
+    </Item>
+    <Item>
+      <Name>Shield Rare Level 1</Name>
+      <Attributes Null="true" />
+    </Item>
+  </Asset>
+</XnaContent>

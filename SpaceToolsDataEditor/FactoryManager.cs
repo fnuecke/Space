@@ -211,6 +211,10 @@ namespace Space.Tools.DataEditor
             Factories.Add(factory.Name, factory);
             var type = factory.GetType();
             FactoriesByType[type].Add(factory);
+            if(factory is SunSystemFactory)
+            {
+                ResourceManager.AddResource((SunSystemFactory)factory);
+            }
             OnFactoryAdded(factory);
         }
 
