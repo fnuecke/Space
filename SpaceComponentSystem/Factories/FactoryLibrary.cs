@@ -32,7 +32,6 @@ namespace Space.ComponentSystem.Factories
         {
             Factories.Clear();
 
-            Load("Data/ArmorFactory", content);
             Load("Data/FuselageFactory", content);
             Load("Data/ReactorFactory", content);
             Load("Data/SensorFactory", content);

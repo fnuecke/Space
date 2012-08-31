@@ -22,13 +22,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\ArmorFactory.xml">
-      <Name>ArmorFactory</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Data\ItemPool.xml">
       <SubType>Designer</SubType>
       <Name>ItemPool</Name>

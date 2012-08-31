@@ -106,7 +106,6 @@
     <Compile Include="Components\WeaponControl.cs" />
     <Compile Include="Components\Wing.cs" />
     <Compile Include="EntityFactory.cs" />
-    <Compile Include="Factories\ArmorFactory.cs" />
     <Compile Include="Factories\FactoryLibrary.cs" />
     <Compile Include="Factories\FuselageFactory.cs" />
     <Compile Include="Factories\IFactory.cs" />
@@ -155,7 +154,6 @@
     <Compile Include="Factories\ThrusterFactory.cs" />
     <Compile Include="Factories\WeaponFactory.cs" />
     <Compile Include="Factories\ProjectileFactory.cs" />
-    <Compile Include="Components\Armor.cs" />
     <Compile Include="Components\Reactor.cs" />
     <Compile Include="Components\Sensor.cs" />
     <Compile Include="Components\Shield.cs" />

@@ -5,22 +5,6 @@
       <Name>Starter</Name>
       <MaxDrops>3</MaxDrops>
       <Item>
-        <ItemName>PoorBasicArmor</ItemName>
-        <Probability>0.2</Probability>
-      </Item>
-      <Item>
-        <ItemName>BasicArmor</ItemName>
-        <Probability>0.05</Probability>
-      </Item>
-      <Item>
-        <ItemName>UncommonBasicArmor</ItemName>
-        <Probability>0.01</Probability>
-      </Item>
-      <Item>
-        <ItemName>RareBasicArmor</ItemName>
-        <Probability>0.001</Probability>
-      </Item>
-      <Item>
         <ItemName>PoorBasicWeapon</ItemName>
         <Probability>0.2</Probability>
       </Item>

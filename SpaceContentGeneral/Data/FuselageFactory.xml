@@ -22,10 +22,6 @@
           <Offset>-12 -35</Offset>
         </Item>
         <Item>
-          <Type>Armor</Type>
-          <Size>Small</Size>
-        </Item>
-        <Item>
           <Type>Shield</Type>
           <Size>Small</Size>
         </Item>
@@ -64,10 +60,6 @@
       <Slots>
         <Item>
           <Type>Weapon</Type>
-          <Size>Small</Size>
-        </Item>
-        <Item>
-          <Type>Armor</Type>
           <Size>Small</Size>
         </Item>
         <Item>

@@ -61,7 +61,6 @@ namespace Space.ComponentSystem.Systems
             _graphics = graphics;
             _spriteBatch = new SpriteBatch(graphics);
 
-            _textures.Add(Armor.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_armor"));
             _textures.Add(Fuselage.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_fuselage"));
             _textures.Add(Reactor.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_reactor"));
             _textures.Add(Sensor.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_sensor"));

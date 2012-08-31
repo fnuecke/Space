@@ -60,13 +60,6 @@ namespace Space.Tools.DataEditor {
             }
         }
         
-        internal static System.Drawing.Bitmap mountpoint_armor {
-            get {
-                object obj = ResourceManager.GetObject("mountpoint_armor", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
         internal static System.Drawing.Bitmap mountpoint_fuselage {
             get {
                 object obj = ResourceManager.GetObject("mountpoint_fuselage", resourceCulture);
