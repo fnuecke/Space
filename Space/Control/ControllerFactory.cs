@@ -144,7 +144,12 @@ namespace Space.Control
                     // which it updates damager cooldowns.
                     new CollisionDamageSystem(),
                     
-                    // Apply any status effects at this point, such as damagers.
+                    // Apply any status effects at this point. Shield system first, to
+                    // consume possibly regenerated energy -- so as not to block with
+                    // the tiny regenerated value (which would apply the full shield
+                    // armor rating...)
+                    new ShieldSystem(),
+                    // Apply damage after shield system update (after energy consumption).
                     new DamageSystem(),
 
                     // Remove expired status effects.

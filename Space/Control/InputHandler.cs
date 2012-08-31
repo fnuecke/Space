@@ -90,6 +90,11 @@ namespace Space.Control
         private bool _stabilizing;
 
         /// <summary>
+        /// Whether we're currently using our shield or not (avoid resends).
+        /// </summary>
+        private bool _shielding;
+
+        /// <summary>
         /// Whether we're currently shooting (avoid resends).
         /// </summary>
         private bool _shooting;
@@ -426,6 +431,15 @@ namespace Space.Control
                     }
                     break;
 
+                case GameCommand.Shield:
+                    // Enable shield if not toggling.
+                    if (!Settings.Instance.ShieldToggles && !_shielding)
+                    {
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShielding);
+                        _shielding = true;
+                    }
+                    break;
+
                 case GameCommand.ZoomIn:
                     // Zoom camera in.
                     if (IsConnected)
@@ -477,6 +491,7 @@ namespace Space.Control
                     break;
 
                 case GameCommand.ToggleGraphs:
+                    // Toggle performance and network graph display.
                     _game.GraphsVisible = !_game.GraphsVisible;
                     break;
 
@@ -532,6 +547,22 @@ namespace Space.Control
                         // Disable stabilizers if not toggling.
                         command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing);
                         _stabilizing = false;
+                    }
+                    break;
+
+                case GameCommand.Shield:
+                    // Stopped shielding, should we toggle?
+                    if (Settings.Instance.ShieldToggles)
+                    {
+                        // Toggle shields.
+                        command = new PlayerInputCommand(_shielding ? PlayerInputCommand.PlayerInputCommandType.BeginShielding : PlayerInputCommand.PlayerInputCommandType.StopShielding);
+                        _shielding = !_shielding;
+                    }
+                    else
+                    {
+                        // Disable shields if not toggling.
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShielding);
+                        _shielding = false;
                     }
                     break;
 

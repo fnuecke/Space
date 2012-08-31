@@ -1,8 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Factories;
-using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -80,12 +78,6 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Creates a new weapon with the specified parameters.
         /// </summary>
-        /// <param name="name">The logical base name of the item.</param>
-        /// <param name="iconName">The name of the icon used for the item.</param>
-        /// <param name="quality">The item's quality level.</param>
-        /// <param name="slotSize">Size of the slot.</param>
-        /// <param name="modelOffset">The model offset.</param>
-        /// <param name="drawBelowParent">Whether to draw below the parent item, when equipped.</param>
         /// <param name="sound">The sound to play when the weapon is fired.</param>
         /// <param name="cooldown">The cooldown in ticks betweens shots.</param>
         /// <param name="energyConsumption">The amount of energy consumed per
@@ -93,13 +85,9 @@ namespace Space.ComponentSystem.Components
         /// <param name="damage">The amount of damage a single projectile does.</param>
         /// <param name="projectiles">The info on projectiles being shot.</param>
         /// <returns></returns>
-        public Weapon Initialize(string name, string iconName, ItemQuality quality,
-            ItemSlotSize slotSize, Vector2 modelOffset, bool drawBelowParent,
-            string sound, float cooldown, float energyConsumption,
-            float damage, ProjectileFactory[] projectiles)
+        public Weapon Initialize(string sound, float cooldown, float energyConsumption,
+                                 float damage, ProjectileFactory[] projectiles)
         {
-            Initialize(name, iconName, quality, slotSize, modelOffset, drawBelowParent);
-
             Sound = sound;
             Cooldown = cooldown;
             EnergyConsumption = energyConsumption;

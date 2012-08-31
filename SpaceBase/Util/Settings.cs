@@ -162,13 +162,20 @@ namespace Space.Util
         /// while the key is pressed.
         /// </summary>
         [ScriptAccess("StabilizeToggles")]
-        public bool StabilizeToggles;
+        public bool StabilizeToggles = true;
+
+        /// <summary>
+        /// Whether to toggle shield functionality or keep it active only
+        /// while the key is pressed.
+        /// </summary>
+        [ScriptAccess("ShieldToggles")]
+        public bool ShieldToggles;
 
         /// <summary>
         /// Whether to use a game pad, if attached, for input.
         /// </summary>
         [ScriptAccess("UseGamepad")]
-        public bool EnableGamepad = true;
+        public bool EnableGamepad = false;
 
         /// <summary>
         /// Epsilon value below which to ignore axis values (to compensate for

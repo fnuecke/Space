@@ -28,6 +28,11 @@ namespace Space.Simulation.Commands
             Accelerate,
 
             /// <summary>
+            /// Rotate to a specified angle.
+            /// </summary>
+            Rotate,
+
+            /// <summary>
             /// Try to stabilize the position.
             /// </summary>
             BeginStabilizing,
@@ -38,11 +43,6 @@ namespace Space.Simulation.Commands
             StopStabilizing,
 
             /// <summary>
-            /// Rotate to a specified angle.
-            /// </summary>
-            Rotate,
-
-            /// <summary>
             /// Begin shooting.
             /// </summary>
             BeginShooting,
@@ -50,7 +50,17 @@ namespace Space.Simulation.Commands
             /// <summary>
             /// Stop shooting.
             /// </summary>
-            StopShooting
+            StopShooting,
+
+            /// <summary>
+            /// Enable ship's shields (if it has some).
+            /// </summary>
+            BeginShielding,
+
+            /// <summary>
+            /// Disable ship's shields.
+            /// </summary>
+            StopShielding
         }
 
         #endregion

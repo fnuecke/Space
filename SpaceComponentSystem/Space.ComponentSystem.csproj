@@ -83,6 +83,7 @@
     <Compile Include="Components\ExperiencePoints.cs" />
     <Compile Include="Components\Fuselage.cs" />
     <Compile Include="Components\ItemInfo.cs" />
+    <Compile Include="Components\ShieldEnergyStatusEffect.cs" />
     <Compile Include="Components\SpaceItemSlot.cs" />
     <Compile Include="Components\SpaceItem.cs" />
     <Compile Include="Components\AbstractRegeneratingValue.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="Systems\RadarRenderSystem.cs" />
     <Compile Include="Systems\RegeneratingValueSystem.cs" />
     <Compile Include="Systems\RespawnSystem.cs" />
+    <Compile Include="Systems\ShieldSystem.cs" />
     <Compile Include="Systems\ShipControlSystem.cs" />
     <Compile Include="Systems\ShipInfoSystem.cs" />
     <Compile Include="Systems\ShipSpawnSystem.cs" />
