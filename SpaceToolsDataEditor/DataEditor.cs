@@ -28,7 +28,7 @@ namespace Space.Tools.DataEditor
         private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
         private readonly AddItemPoolDialog _itemPoolDialog = new AddItemPoolDialog();
 
-        private readonly Stack<Tuple<string, Action>> _undoCommands = new Stack<Tuple<string, Action>>();
+        private readonly Stack<Tuple<string, Func<bool>>> _undoCommands = new Stack<Tuple<string, Func<bool>>>();
 
         private int _changesSinceLastSave;
 
@@ -262,6 +262,20 @@ namespace Space.Tools.DataEditor
 
                     // And select it.
                     SelectFactory(instance);
+
+                    // Add undo command.
+                    PushUndo("add factory", () =>
+                    {
+                        if (MessageBox.Show(this,
+                                            "Are you sure you wish to delete the factory '" + instance.Name + "'?",
+                                            "Confirmation", MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            FactoryManager.Remove(instance);
+                            return true;
+                        }
+                        return false;
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -287,6 +301,20 @@ namespace Space.Tools.DataEditor
 
                     // And select it.
                     SelectItemPool(instance);
+
+                    // Add undo command.
+                    PushUndo("add item pool", () =>
+                    {
+                        if (MessageBox.Show(this,
+                                            "Are you sure you wish to delete the item pool '" + instance.Name + "'?",
+                                            "Confirmation", MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            ItemPoolManager.Remove(instance);
+                            return true;
+                        }
+                        return false;
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -310,11 +338,18 @@ namespace Space.Tools.DataEditor
                     var factory = (IFactory)pgProperties.SelectedObject;
                     if ((ModifierKeys & Keys.Shift) != 0 ||
                         MessageBox.Show(this,
-                                        "Are you sure you wish to delete '" + factory.Name + "'?",
+                                        "Are you sure you wish to delete the factory '" + factory.Name + "'?",
                                         "Confirmation", MessageBoxButtons.YesNo,
                                         MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         FactoryManager.Remove(factory);
+
+                        // Add undo command.
+                        PushUndo("remove factory", () =>
+                        {
+                            FactoryManager.Add(factory);
+                            return true;
+                        });
                     }
                 }
                 else if (pgProperties.SelectedObject is ItemPool)
@@ -322,11 +357,18 @@ namespace Space.Tools.DataEditor
                     var itemPool = (ItemPool)pgProperties.SelectedObject;
                     if ((ModifierKeys & Keys.Shift) != 0 ||
                         MessageBox.Show(this,
-                                        "Are you sure you wish to delete '" + itemPool.Name + "'?",
+                                        "Are you sure you wish to delete the item pool '" + itemPool.Name + "'?",
                                         "Confirmation", MessageBoxButtons.YesNo,
                                         MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         ItemPoolManager.Remove(itemPool);
+
+                        // Add undo command.
+                        PushUndo("remove item pool", () =>
+                        {
+                            ItemPoolManager.Add(itemPool);
+                            return true;
+                        });
                     }
                 }
             }
@@ -426,6 +468,8 @@ namespace Space.Tools.DataEditor
 
                 // Update our preview.
                 UpdatePreview(true);
+
+                return true;
             });
 
             // Refresh the complete grid (sometimes parent cells would not update
@@ -586,7 +630,7 @@ namespace Space.Tools.DataEditor
             PopUndo();
         }
 
-        public void PushUndo(string menuTitle, Action action)
+        public void PushUndo(string menuTitle, Func<bool> action)
         {
             _undoCommands.Push(Tuple.Create(menuTitle, action));
             ++_changesSinceLastSave;
@@ -600,10 +644,17 @@ namespace Space.Tools.DataEditor
                 return;
             }
             var command = _undoCommands.Pop();
-            --_changesSinceLastSave;
-            UpdateUndoMenu();
-
-            command.Item2();
+            if (command.Item2())
+            {
+                // Undo was successful.
+                --_changesSinceLastSave;
+                UpdateUndoMenu();
+            }
+            else
+            {
+                // Undo was canceled (e.g. confirmation declined by user).
+                _undoCommands.Push(command);
+            }
         }
 
         private void ClearUndo()
