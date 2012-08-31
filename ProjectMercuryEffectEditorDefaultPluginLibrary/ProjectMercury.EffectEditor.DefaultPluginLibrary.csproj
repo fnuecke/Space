@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1DA69486-E7D0-46EF-A8A7-74E3CDFFB3FC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ProjectMercury.EffectEditor.DefaultPluginLibrary</RootNamespace>
+    <AssemblyName>ProjectMercury.EffectEditor.DefaultPluginLibrary</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\ProjectMercuryEffectEditor\Plugins\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\ProjectMercuryEffectEditor\Plugins\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553" />
+    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EmitterPlugins\CircleEmitterPlugin.cs" />
+    <Compile Include="EmitterPlugins\ConeEmitterPlugin.cs" />
+    <Compile Include="EmitterPlugins\EmitterPlugin.cs" />
+    <Compile Include="EmitterPlugins\LineEmitterPlugin.cs" />
+    <Compile Include="EmitterPlugins\MaskEmitterPlugin.cs" />
+    <Compile Include="EmitterPlugins\PolygonEmitterPlugin.cs" />
+    <Compile Include="EmitterPlugins\RectEmitterPlugin.cs" />
+    <Compile Include="Icons.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Icons.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ModifierPlugins\ColourInterpolatorPlugin.cs" />
+    <Compile Include="ModifierPlugins\ColourMergeModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\ColourModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\DampingModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\ForceInterpolatorModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\HueShiftModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\LinearGravityModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\OpacityFastFadeModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\OpacityInterpolatorPlugin.cs" />
+    <Compile Include="ModifierPlugins\OpacityModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\OpacityOscillatorPlugin.cs" />
+    <Compile Include="ModifierPlugins\RadialForceModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\RadialGravityModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\RectangleConstraintDeflectorPlugin.cs" />
+    <Compile Include="ModifierPlugins\RectangleForceModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\RotationModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\RotationRateModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\ScaleInterpolatorPlugin.cs" />
+    <Compile Include="ModifierPlugins\ScaleMergeModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\ScaleModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\ScaleOscillatorPlugin.cs" />
+    <Compile Include="ModifierPlugins\SineForceModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\TrajectoryRotationModifierPlugin.cs" />
+    <Compile Include="ModifierPlugins\VelocityClampModifierPlugin.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerializationPlugins\DefaultEffectSerializationPlugin.cs" />
+    <Compile Include="SerializationPlugins\Mercury3FormatImporter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Icons.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Icons.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Emitter.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Modifier.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ParticleEffect.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectMercuryContentPipeline\ProjectMercury.ContentPipeline.csproj">
+      <Project>{5B60FB65-704B-4D28-9117-AF0B25220484}</Project>
+      <Name>ProjectMercury.ContentPipeline</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProjectMercuryEffectEditorPluginInterfaces\ProjectMercury.EffectEditor.PluginInterfaces.csproj">
+      <Project>{657CDBDC-F36A-4495-A7F5-D28FBF0A2029}</Project>
+      <Name>ProjectMercury.EffectEditor.PluginInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProjectMercuryWindows\ProjectMercury.Windows.csproj">
+      <Project>{1E3FDDBD-A15F-42CF-A83E-754476079B30}</Project>
+      <Name>ProjectMercury.Windows</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

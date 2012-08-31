@@ -142,6 +142,10 @@
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
       <Name>Engine.Serialization.Writers</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProjectMercuryContentPipeline\ProjectMercury.ContentPipeline.csproj">
+      <Project>{5B60FB65-704B-4D28-9117-AF0B25220484}</Project>
+      <Name>ProjectMercury.ContentPipeline</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
       <Name>Space.ComponentSystem</Name>
@@ -154,9 +158,6 @@
   <ItemGroup>
     <Reference Include="Nuclex.Fonts.Content.TrueTypeImporter">
       <HintPath>..\Libraries\Nuclex.Fonts.Content.TrueTypeImporter.dll</HintPath>
-    </Reference>
-    <Reference Include="ProjectMercury.ContentPipeline">
-      <HintPath>..\Libraries\ProjectMercury.ContentPipeline.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

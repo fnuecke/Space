@@ -46,7 +46,7 @@
       <TriggerOffset>0 0</TriggerOffset>
       <MinimumTriggerPeriod>0.016</MinimumTriggerPeriod>
       <Direction>0</Direction>
-      <ConeAngle>0</ConeAngle>
+      <ConeAngle>0.1</ConeAngle>
     </Item>
     <Item Type="ProjectMercury.Emitters.ConeEmitter">
       <Name>Smoke 2</Name>
@@ -93,7 +93,7 @@
       <TriggerOffset>0 0</TriggerOffset>
       <MinimumTriggerPeriod>0.016</MinimumTriggerPeriod>
       <Direction>0</Direction>
-      <ConeAngle>0</ConeAngle>
+      <ConeAngle>0.1</ConeAngle>
     </Item>
     <Name>Thruster exhaust</Name>
     <Author>fnuecke</Author>

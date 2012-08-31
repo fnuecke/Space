@@ -60,9 +60,6 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
-    </Reference>
     <Reference Include="SlimDX.DirectInput, Version=4.0.10.43, Culture=neutral, PublicKeyToken=96bb577564343f16, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -271,6 +268,10 @@
     <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
       <Name>Engine.Serialization.Writers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProjectMercuryWindows\ProjectMercury.Windows.csproj">
+      <Project>{1E3FDDBD-A15F-42CF-A83E-754476079B30}</Project>
+      <Name>ProjectMercury.Windows</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
       <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>

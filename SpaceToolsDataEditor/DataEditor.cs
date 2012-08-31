@@ -390,20 +390,20 @@ namespace Space.Tools.DataEditor
         {
             public int Compare(ListViewItem x, ListViewItem y)
             {
-                var xMessage = x.SubItems[1].Text;
-                var xFactory = x.SubItems[2].Text;
-                var xProperty = x.SubItems[3].Text;
+                var xMessage = x.SubItems.Count > 1 ? x.SubItems[1].Text : null;
+                var xFactory = x.SubItems.Count > 2 ? x.SubItems[2].Text : null;
+                var xProperty = x.SubItems.Count > 3 ? x.SubItems[3].Text : null;
 
-                var yMessage = y.SubItems[1].Text;
-                var yFactory = y.SubItems[2].Text;
-                var yProperty = y.SubItems[3].Text;
+                var yMessage = y.SubItems.Count > 1 ? y.SubItems[1].Text : null;
+                var yFactory = y.SubItems.Count > 2 ? y.SubItems[2].Text : null;
+                var yProperty = y.SubItems.Count > 3 ? y.SubItems[3].Text : null;
 
-                if (!string.IsNullOrWhiteSpace(xFactory) && !string.IsNullOrWhiteSpace(yFactory) && !xFactory.Equals(yFactory))
+                if (!string.IsNullOrWhiteSpace(xFactory) && !string.IsNullOrWhiteSpace(yFactory) && !string.Equals(xFactory, yFactory))
                 {
                     // Sort by factory.
                     return string.CompareOrdinal(xFactory, yFactory);
                 }
-                if (!string.IsNullOrWhiteSpace(xProperty) && !string.IsNullOrWhiteSpace(yProperty) && !xProperty.Equals(yProperty))
+                if (!string.IsNullOrWhiteSpace(xProperty) && !string.IsNullOrWhiteSpace(yProperty) && !string.Equals(xProperty, yProperty))
                 {
                     // Sort by property.
                     return string.CompareOrdinal(xProperty, yProperty);
