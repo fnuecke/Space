@@ -253,15 +253,15 @@ namespace Space.Tools.DataEditor
                         // Prepend it with the base path.
                         assetPath = basePath + assetPath;
 
-                        
+
                         // Build our complete asset name.
                         if (!sound.Elements(ns + "Name").Any())
                         {
                             continue;
                         }
-                        
+
                         var proj = new Project();
-                        proj.Parse( File.ReadAllLines(assetPath.Trim()) );
+                        proj.Parse(File.ReadAllLines(assetPath.Trim()));
 
                         foreach (var soundbank in proj.m_soundBanks)
                         {

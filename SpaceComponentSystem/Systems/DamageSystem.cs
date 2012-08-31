@@ -32,33 +32,39 @@ namespace Space.ComponentSystem.Systems
                     var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
                     if (energy.Value > 0)
                     {
-                        // Got some, apply shield armor rating.
-                        damage -= character.GetValue(AttributeType.ShieldDamageReduction, character.GetBaseValue(AttributeType.ShieldDamageReduction));
-
-                        // Don't allow healing ;)
-                        if (damage <= 0)
+                        // See how much damage we can reduce.
+                        var reduction = character.GetValue(AttributeType.ShieldDamageReduction,
+                                                           character.GetBaseValue(AttributeType.ShieldDamageReduction));
+                        if (reduction > 0)
                         {
-                            return;
+                            // Got some, apply shield armor rating.
+                            damage -= reduction;
+
+                            // Don't allow healing ;)
+                            if (damage <= 0)
+                            {
+                                return;
+                            }
+
+                            // How much energy do we need to block one point of damage?
+                            var cost = character.GetValue(AttributeType.ShieldBlockCost,
+                                                          character.GetBaseValue(AttributeType.ShieldBlockCost));
+
+                            // Compute how much energy we need to block the remaining amount of damage.
+                            var actualCost = damage * cost;
+                            if (actualCost < energy.Value)
+                            {
+                                // We can block it all! Just subtract the energy and we're done.
+                                energy.SetValue(energy.Value - actualCost, component.Owner);
+                                return;
+                            }
+
+                            // See how much we *can* block, consume energy required for that and
+                            // subtract the blocked amount of damage.
+                            var blockable = energy.Value / cost;
+                            energy.SetValue(0, component.Owner);
+                            damage -= blockable; // <= 0 test is done below anyway
                         }
-
-                        // How much energy do we need to block one point of damage?
-                        var cost = character.GetValue(AttributeType.ShieldBlockCost,
-                                                      character.GetBaseValue(AttributeType.ShieldBlockCost));
-
-                        // Compute how much energy we need to block the remaining amount of damage.
-                        var actualCost = damage * cost;
-                        if (actualCost < energy.Value)
-                        {
-                            // We can block it all! Just subtract the energy and we're done.
-                            energy.SetValue(energy.Value - actualCost, component.Owner);
-                            return;
-                        }
-
-                        // See how much we *can* block, consume energy required for that and
-                        // subtract the blocked amount of damage.
-                        var blockable = energy.Value / cost;
-                        energy.SetValue(0, component.Owner);
-                        damage -= blockable; // <= 0 test is done below anyway
                     }
                 }
 

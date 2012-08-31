@@ -1,5 +1,23 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<XnaContent>
-  <Asset Type="Space.ComponentSystem.Factories.ShieldFactory[]">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Factories="Space.ComponentSystem.Factories">
+  <Asset Type="Factories:ShieldFactory[]">
+    <Item>
+      <Name>StarterShield</Name>
+      <Icon>Images/Icons/Buffs/default</Icon>
+      <Model>Textures/Items/default</Model>
+      <ModelOffset>0 0</ModelOffset>
+      <ModelBelowParent>false</ModelBelowParent>
+      <Effects />
+      <Quality>Common</Quality>
+      <RequiredSlotSize>Small</RequiredSlotSize>
+      <Slots />
+      <GuaranteedAttributes>
+        <Item>5 ShieldEnergyConsumption</Item>
+        <Item>2 ShieldDamageReduction</Item>
+        <Item>3 ShieldBlockCost</Item>
+      </GuaranteedAttributes>
+      <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <Coverage>0.5</Coverage>
+    </Item>
   </Asset>
 </XnaContent>

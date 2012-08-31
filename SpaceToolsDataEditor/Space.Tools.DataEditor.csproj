@@ -87,6 +87,7 @@
     <Compile Include="AddItemPoolDialog.Designer.cs">
       <DependentUpon>AddItemPoolDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="AttributePoolEditor.cs" />
     <Compile Include="AttributePoolManager.cs" />
     <Compile Include="AttributePoolDialog.cs">
       <SubType>Form</SubType>

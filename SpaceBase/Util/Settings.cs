@@ -231,7 +231,11 @@ namespace Space.Util
             GameBindings.Add(GameCommand.Shoot, Buttons.RightShoulder);
             GameBindings.Add(GameCommand.Use, Keys.E);
             GameBindings.Add(GameCommand.Use, Keys.Enter);
+            GameBindings.Add(GameCommand.Use, Buttons.A);
+            GameBindings.Add(GameCommand.Shield, Keys.Space);
+            GameBindings.Add(GameCommand.Shield, Buttons.B);
             GameBindings.Add(GameCommand.PickUp, Keys.F);
+            GameBindings.Add(GameCommand.PickUp, Buttons.X);
 
             GameBindings.Add(GameCommand.Back, Keys.Back);
             GameBindings.Add(GameCommand.Back, Keys.Escape);

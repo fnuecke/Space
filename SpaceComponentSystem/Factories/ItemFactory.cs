@@ -189,10 +189,16 @@ namespace Space.ComponentSystem.Factories
             get { return _additionalAttributeCount; }
             set { _additionalAttributeCount = value; }
         }
-         [Editor("Space.Tools.DataEditor.AttributePoolChooserEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-         [ContentSerializer(Optional = true)]
-        public string[] AttributePool { get; set; }
+
+        [ContentSerializer(Optional = true)]
+        [Category("Stats")]
+        [Description("The list of attribute pools to draw attributes from when sampling the item.")]
+        public string[] AttributePool
+        {
+            get { return _attributePools; }
+            set { _attributePools = value; }
+        }
+
         #endregion
 
         #region Backing fields
@@ -220,6 +226,8 @@ namespace Space.ComponentSystem.Factories
         private AttributeModifierConstraint<AttributeType>[] _additionalAttributes;
 
         private IntInterval _additionalAttributeCount = IntInterval.Zero;
+
+        private string[] _attributePools = new string[0];
 
         #endregion
 

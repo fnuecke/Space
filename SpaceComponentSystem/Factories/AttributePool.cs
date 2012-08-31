@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using Engine.ComponentSystem;
+﻿using System.ComponentModel;
 using Engine.ComponentSystem.RPG.Constraints;
-using Engine.FarMath;
-using Microsoft.Xna.Framework.Content;
-using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
 {
-     [DefaultProperty("Name")]
+    [DefaultProperty("Name")]
     public class AttributePool
     {
         #region Properties
@@ -24,29 +16,30 @@ namespace Space.ComponentSystem.Factories
         [Description("The name of the item pool, by which it may be referenced (e.g. in ships).")]
         public string Name { get; set; }
 
-         [Category("Attributes")]
+        [Category("Attributes")]
         public ItemAttributes[] Attributes
         {
-             get { return _attributes; }
+            get { return _attributes; }
             set { _attributes = value; }
         }
 
         private ItemAttributes[] _attributes;
+
         ///<summary>
         ///Describes an orbit system with a dominant axis.
         ///</summary>
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public sealed class ItemAttributes
         {
-
             ///<summary>
             ///A attribute modifier that can be applied to
             ///the generated item, just with random values.
             ///</summary>
-            
+
             [Category("Attribute")]
             [Description("Attribute bonuses that can be used to sample the item.")]
-            public AttributeModifierConstraint<AttributeType> Attribute {
+            public AttributeModifierConstraint<AttributeType> Attribute
+            {
                 get { return _attributes; }
                 set { _attributes = value; }
             }
@@ -63,7 +56,9 @@ namespace Space.ComponentSystem.Factories
             /// </summary>
             [DefaultValue(0f), Category("Stats"), Description("The scale for this attribute when gaining a new level ")]
             public float LevelScale { get; set; }
-            private AttributeModifierConstraint<AttributeType> _attributes = new AttributeModifierConstraint<AttributeType>();
+
+            private AttributeModifierConstraint<AttributeType> _attributes =
+                new AttributeModifierConstraint<AttributeType>();
 
             public override string ToString()
             {
@@ -72,10 +67,5 @@ namespace Space.ComponentSystem.Factories
         }
 
         #endregion
-        #region Attributes
-
-
-        #endregion
-
     }
 }

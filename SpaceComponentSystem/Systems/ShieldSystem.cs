@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -24,13 +25,14 @@ namespace Space.ComponentSystem.Systems
                 var control = (ShipControl)Manager.GetComponent(component.Entity, ShipControl.TypeId);
                 control.ShieldsActive = false;
                 Manager.RemoveComponent(component);
+                return;
             }
 
             // Got a shield, consume constant energy drain.
             var energy = (Energy)Manager.GetComponent(component.Entity, Energy.TypeId);
             var character = (Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId);
             var drain = character.GetValue(AttributeType.ShieldEnergyConsumption,
-                                           character.GetBaseValue(AttributeType.ShieldEnergyConsumption));
+                                           character.GetBaseValue(AttributeType.ShieldEnergyConsumption)) / Settings.TicksPerSecond;
             energy.SetValue(energy.Value - drain);
         }
 

@@ -466,7 +466,7 @@ namespace Engine.Math
                 }
                 else
                 {
-                    return null;
+                    throw new ArgumentException("Invalid interval format.");
                 }
             }
             return base.ConvertFrom(context, culture, value);

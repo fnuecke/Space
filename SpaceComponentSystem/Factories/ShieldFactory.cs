@@ -66,8 +66,15 @@ namespace Space.ComponentSystem.Factories
         /// <returns></returns>
         private float SampleCoverage(IUniformRandom random)
         {
-            return (random == null) ? _coverage.Low
-                : MathHelper.Lerp(_coverage.Low, _coverage.High, (float)random.NextDouble());
+            if (_coverage != null)
+            {
+                return (random == null) ? _coverage.Low
+                    : MathHelper.Lerp(_coverage.Low, _coverage.High, (float)random.NextDouble());
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         #endregion
