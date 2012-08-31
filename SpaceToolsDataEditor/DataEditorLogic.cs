@@ -29,11 +29,11 @@ namespace Space.Tools.DataEditor
             ItemPoolManager.ItemPoolRemoved += HandleItemPoolRemoved;
             ItemPoolManager.ItemPoolNameChanged += HandleItemPoolNameChanged;
             ItemPoolManager.ItemPoolCleared += HandleCleared;
+
             AttributePoolManager.AttributePoolAdded += HandleAttributePoolAdded;
             AttributePoolManager.AttributePoolRemoved += HandleAttributePoolRemoved;
             AttributePoolManager.AttributePoolNameChanged += HandleAttributePoolNameChanged;
             AttributePoolManager.AttributePoolCleared += HandleCleared;
-
         }
 
         /// <summary>
@@ -51,6 +51,7 @@ namespace Space.Tools.DataEditor
             FactoryManager.Load(path);
             ItemPoolManager.Load(path);
             AttributePoolManager.Load(path);
+
             // Reenable tree and validation.
             tvData.EndUpdate();
             --_isValidationEnabled;
@@ -137,7 +138,7 @@ namespace Space.Tools.DataEditor
 
         #endregion
 
-        #region attribute pool handlers
+        #region Attribute pool handlers
 
         private void HandleAttributePoolAdded(AttributePool pool)
         {
@@ -150,10 +151,10 @@ namespace Space.Tools.DataEditor
             ScanForIssues(pool);
         }
 
-        private void HandleAttributePoolRemoved(AttributePool AttributePool)
+        private void HandleAttributePoolRemoved(AttributePool attributePool)
         {
             // Find the corresponding node and remove it.
-            var node = tvData.Nodes.Find(AttributePool.Name, true).FirstOrDefault(n => IsAttributePool(n.Parent));
+            var node = tvData.Nodes.Find(attributePool.Name, true).FirstOrDefault(n => IsAttributePool(n.Parent));
             Debug.Assert(node != null);
             node.Remove();
 
@@ -174,6 +175,7 @@ namespace Space.Tools.DataEditor
         }
 
         #endregion
+
         #region Common handlers
 
         private void HandleCleared()
@@ -203,10 +205,10 @@ namespace Space.Tools.DataEditor
                 }
             }
 
-            // Create entry for item pools.
+            // Create entries for pools.
             tvData.Nodes.Add(typeof(ItemPool).AssemblyQualifiedName, typeof(ItemPool).Name);
-
             tvData.Nodes.Add(typeof(AttributePool).AssemblyQualifiedName, typeof(AttributePool).Name);
+
             // Re-add existing data.
             foreach (var factory in FactoryManager.GetFactories())
             {
@@ -255,7 +257,7 @@ namespace Space.Tools.DataEditor
         }
 
         /// <summary>
-        /// Selects the Itempool in our property grid if it exists, else selects
+        /// Selects the item pool in our property grid if it exists, else selects
         /// nothing (clears property grid).
         /// </summary>
         /// <param name="pool">The pool.</param>
@@ -274,8 +276,9 @@ namespace Space.Tools.DataEditor
             }
             return false;
         }
+
         /// <summary>
-        /// Selects the Itempool in our property grid if it exists, else selects
+        /// Selects the attribute pool in our property grid if it exists, else selects
         /// nothing (clears property grid).
         /// </summary>
         /// <param name="pool">The pool.</param>
@@ -294,6 +297,7 @@ namespace Space.Tools.DataEditor
             }
             return false;
         }
+
         /// <summary>
         /// Selects the property with the specified name.
         /// </summary>

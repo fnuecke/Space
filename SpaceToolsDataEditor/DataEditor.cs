@@ -28,6 +28,7 @@ namespace Space.Tools.DataEditor
         private readonly AddFactoryDialog _factoryDialog = new AddFactoryDialog();
         private readonly AddItemPoolDialog _itemPoolDialog = new AddItemPoolDialog();
         private readonly AddAttributePoolDialog _attributePoolDialog = new AddAttributePoolDialog();
+
         private readonly Stack<Tuple<string, Func<bool>>> _undoCommands = new Stack<Tuple<string, Func<bool>>>();
 
         private int _changesSinceLastSave;
@@ -42,8 +43,6 @@ namespace Space.Tools.DataEditor
             pbPreview.Parent.Controls.Add(_projectilePreview);
 
             lvIssues.ListViewItemSorter = new IssueComparer();
-
-
 
             pbPreview.Image = new Bitmap(2048, 2048, PixelFormat.Format32bppArgb);
 
@@ -151,6 +150,7 @@ namespace Space.Tools.DataEditor
             FactoryManager.Save();
             ItemPoolManager.Save();
             AttributePoolManager.Save();
+
             _changesSinceLastSave = 0;
             UpdateUndoMenu();
         }
@@ -327,6 +327,7 @@ namespace Space.Tools.DataEditor
                 }
             }
         }
+
         private void AddAttributePoolClick(object sender, EventArgs e)
         {
             if (_attributePoolDialog.ShowDialog(this) == DialogResult.OK)
@@ -336,7 +337,7 @@ namespace Space.Tools.DataEditor
                 try
                 {
                     // Create a new instance.
-                    var instance = new AttributePool() { Name = name };
+                    var instance = new AttributePool {Name = name};
 
                     // Register it.
                     AttributePoolManager.Add(instance);
@@ -365,6 +366,7 @@ namespace Space.Tools.DataEditor
                 }
             }
         }
+
         private void RemoveClick(object sender, EventArgs e)
         {
             if (pgProperties.SelectedObject == null)
@@ -417,7 +419,7 @@ namespace Space.Tools.DataEditor
                     var attributePool = (AttributePool)pgProperties.SelectedObject;
                     if ((ModifierKeys & Keys.Shift) != 0 ||
                         MessageBox.Show(this,
-                                        "Are you sure you wish to delete '" + attributePool.Name + "'?",
+                                        "Are you sure you wish to delete the attribute pool '" + attributePool.Name + "'?",
                                         "Confirmation", MessageBoxButtons.YesNo,
                                         MessageBoxIcon.Question) == DialogResult.Yes)
                     {
@@ -599,6 +601,10 @@ namespace Space.Tools.DataEditor
                 else if (pgProperties.SelectedObject is ItemPool)
                 {
                     SelectItemPool((ItemPool)pgProperties.SelectedObject);
+                }
+                else if (pgProperties.SelectedObject is AttributePool)
+                {
+                    SelectAttributePool((AttributePool)pgProperties.SelectedObject);
                 }
 
                 SelectProperty("Name");

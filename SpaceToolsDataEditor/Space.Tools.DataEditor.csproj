@@ -126,7 +126,6 @@
     <Compile Include="Parser\Wave.cs" />
     <Compile Include="Parser\WaveBank.cs" />
     <Compile Include="Parser\Workspace.cs" />
-    <Compile Include="SoundManager.cs" />
     <Compile Include="ItemPoolDialog.cs">
       <SubType>Form</SubType>
     </Compile>
