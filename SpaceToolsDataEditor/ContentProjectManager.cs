@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 using ProjectMercury;
+using Xap;
 
 namespace Space.Tools.DataEditor
 {
@@ -32,7 +33,7 @@ namespace Space.Tools.DataEditor
         /// <summary>
         /// All sound assets known from referenced content projects.
         /// </summary>
-        private static readonly Dictionary<string, string> SoundAssets = new Dictionary<string, string>();
+        private static readonly List<string> SoundAssets = new List<string>();
 
         /// <summary>
         /// Perform initial load when used.
@@ -49,7 +50,13 @@ namespace Space.Tools.DataEditor
         {
             get { return TextureAssets.Keys; }
         }
-
+        /// <summary>
+        /// Gets an enumerator over all known texture asset names.
+        /// </summary>
+        public static IEnumerable<string> SoundAssetNames
+        {
+            get { return SoundAssets.AsEnumerable(); }
+        }
         /// <summary>
         /// Gets an enumerator over all known effect asset names.
         /// </summary>
@@ -67,6 +74,7 @@ namespace Space.Tools.DataEditor
             TextureAssets.Clear();
             EffectAssets.Clear();
             ShaderAssets.Clear();
+            SoundAssets.Clear();
 
             // Get "final" content root, as used after compilation. We strip this from content
             // project's individual root paths.
@@ -245,15 +253,23 @@ namespace Space.Tools.DataEditor
                         // Prepend it with the base path.
                         assetPath = basePath + assetPath;
 
+                        
                         // Build our complete asset name.
                         if (!sound.Elements(ns + "Name").Any())
                         {
                             continue;
                         }
-                        var assetName = rootPath + relativeAssetPath + sound.Elements(ns + "Name").First().Value;
+                        
+                        var proj = new Project();
+                        proj.Parse( File.ReadAllLines(assetPath.Trim()) );
 
-                        // Store the asset in our lookup table.
-                        SoundAssets.Add(assetName.Trim(), assetPath.Trim());
+                        foreach (var soundbank in proj.m_soundBanks)
+                        {
+                            foreach (var cue in soundbank.m_cues)
+                            {
+                                SoundAssets.Add(cue.m_name);
+                            }
+                        }
                     }
                 }
                 catch (FileNotFoundException ex)
