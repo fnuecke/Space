@@ -18,6 +18,8 @@ namespace Space.ComponentSystem.Factories
         /// The sound this weapon emits when firing.
         /// </summary>
         [Category("Media")]
+        [Editor("Space.Tools.DataEditor.SoundAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [Description("The cue name of the sound to play when the weapon fires its projectiles.")]
         public string Sound
         {

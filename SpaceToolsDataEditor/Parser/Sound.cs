@@ -186,6 +186,10 @@ namespace Xap
 					m_volume = Parser.ParseInt( value, line );
 					break;
 
+                case "Use Filter":
+                    m_useFilter = Parser.ParseInt(value, line);
+                    break;
+
 				case "RPC Curve Entry":
 					RpcCurveEntry entry = new RpcCurveEntry();
 					entry.Parse( source, ref line, OwnerProject );
@@ -272,6 +276,8 @@ namespace Xap
 		#region Member variables
 
 		public int m_volume;
+
+        public int m_useFilter;
 
 		public List<RpcCurve> m_rpcCurves = new List<RpcCurve>();
 
