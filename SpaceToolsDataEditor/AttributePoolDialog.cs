@@ -96,7 +96,7 @@ namespace Space.Tools.DataEditor
             }
 
             // See if the item is valid.
-            var itemPool = ItemPoolManager.GetItemPool(e.Node.Name) ;
+            var itemPool = AttributePoolManager.GetAttributePool(e.Node.Name) ;
             if (itemPool == null)
             {
                 return;

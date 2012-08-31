@@ -58,6 +58,7 @@
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.TextureImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.XImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86">
@@ -103,6 +104,25 @@
       <DependentUpon>AddAttributePoolDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="AttributePoolChooserEditor.cs" />
+    <Compile Include="Parser\Category.cs" />
+    <Compile Include="Parser\CompressionPreset.cs" />
+    <Compile Include="Parser\Cue.cs" />
+    <Compile Include="Parser\Effect.cs" />
+    <Compile Include="Parser\Entity.cs" />
+    <Compile Include="Parser\Event.cs" />
+    <Compile Include="Parser\GlobalSettings.cs" />
+    <Compile Include="Parser\InstanceLimit.cs" />
+    <Compile Include="Parser\Parse.cs" />
+    <Compile Include="Parser\Project.cs" />
+    <Compile Include="Parser\Rpc.cs" />
+    <Compile Include="Parser\Sound.cs" />
+    <Compile Include="Parser\SoundBank.cs" />
+    <Compile Include="Parser\Variable.cs" />
+    <Compile Include="Parser\Variation.cs" />
+    <Compile Include="Parser\Wave.cs" />
+    <Compile Include="Parser\WaveBank.cs" />
+    <Compile Include="Parser\Workspace.cs" />
+    <Compile Include="SoundManager.cs" />
     <Compile Include="ItemPoolDialog.cs">
       <SubType>Form</SubType>
     </Compile>

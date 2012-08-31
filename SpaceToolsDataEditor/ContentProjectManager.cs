@@ -30,6 +30,11 @@ namespace Space.Tools.DataEditor
         private static readonly Dictionary<string, string> ShaderAssets = new Dictionary<string, string>();
 
         /// <summary>
+        /// All sound assets known from referenced content projects.
+        /// </summary>
+        private static readonly Dictionary<string, string> SoundAssets = new Dictionary<string, string>();
+
+        /// <summary>
         /// Perform initial load when used.
         /// </summary>
         static ContentProjectManager()
@@ -217,6 +222,38 @@ namespace Space.Tools.DataEditor
 
                         // Store the asset in our lookup table.
                         ShaderAssets.Add(assetName.Trim(), assetPath.Trim());
+                    }
+
+                    // Find all usable assets in the content project.
+                    foreach (var sound in from asset in xml.Elements(ns + "ItemGroup").Elements(ns + "Compile")
+                                            where
+                                                asset.Elements(ns + "Importer").Any() && asset.Elements(ns + "Importer").First().Value.Equals("XactImporter") &&
+                                                asset.Elements(ns + "Processor").Any() && asset.Elements(ns + "Processor").First().Value.Equals("XactProcessor")
+                                            select asset)
+                    {
+                        // Get path to asset on disk.
+                        var include = sound.Attribute("Include");
+                        if (include == null)
+                        {
+                            return;
+                        }
+                        var assetPath = include.Value.Replace('\\', '/');
+
+                        // Extract the relative path, which we need to prepend to the asset name.
+                        var relativeAssetPath = assetPath.Contains('/') ? assetPath.Substring(0, assetPath.LastIndexOf('/') + 1) : "";
+
+                        // Prepend it with the base path.
+                        assetPath = basePath + assetPath;
+
+                        // Build our complete asset name.
+                        if (!sound.Elements(ns + "Name").Any())
+                        {
+                            continue;
+                        }
+                        var assetName = rootPath + relativeAssetPath + sound.Elements(ns + "Name").First().Value;
+
+                        // Store the asset in our lookup table.
+                        SoundAssets.Add(assetName.Trim(), assetPath.Trim());
                     }
                 }
                 catch (FileNotFoundException ex)
