@@ -282,14 +282,24 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         private ParticleEffect GetEffect(string effectName)
         {
-            // Note: No need to lock the dictionary, because this only gets
-            // called from the rendering instance.
+            // See if the effect is already known.
             if (!_effects.ContainsKey(effectName))
             {
-                var effect = _content.Load<ParticleEffect>(effectName);
-                effect.LoadContent(_content);
-                effect.Initialise();
-                _effects.Add(effectName, effect);
+                // It isn't. Lock the dictionary (might be called from some reactionary
+                // systems, e.g. death triggering expliosions which run in parallel).
+                lock (_effects)
+                {
+                    // Check again (some other thread might have already added it
+                    // while we locked).
+                    if (!_effects.ContainsKey(effectName))
+                    {
+                        // Nope, really don't have it yet, load and init.
+                        var effect = _content.Load<ParticleEffect>(effectName);
+                        effect.LoadContent(_content);
+                        effect.Initialise();
+                        _effects.Add(effectName, effect);
+                    }
+                }
             }
             return _effects[effectName];
         }

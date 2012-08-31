@@ -79,6 +79,7 @@
     <Compile Include="Components\Behaviors\AttackMoveBehavior.cs" />
     <Compile Include="Components\ArtificialIntelligence.cs" />
     <Compile Include="Components\Behaviors\RoamBehavior.cs" />
+    <Compile Include="Components\DamagingStatusEffect.cs" />
     <Compile Include="Components\ExperiencePoints.cs" />
     <Compile Include="Components\Fuselage.cs" />
     <Compile Include="Components\ItemInfo.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionDamageSystem.cs" />
+    <Compile Include="Systems\DamageSystem.cs" />
     <Compile Include="Systems\DeathSystem.cs" />
     <Compile Include="Systems\DebugCollisionBoundsRenderSystem.cs" />
     <Compile Include="Systems\DebugEntityIdRenderSystem.cs" />

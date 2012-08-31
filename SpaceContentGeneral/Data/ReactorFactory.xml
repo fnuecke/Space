@@ -36,10 +36,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
@@ -64,10 +64,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
@@ -92,10 +92,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 2 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
@@ -120,10 +120,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 3 HealthRegeneration</Item>
         <Item>1 to 3 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>

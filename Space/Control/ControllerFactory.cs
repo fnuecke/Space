@@ -144,8 +144,10 @@ namespace Space.Control
                     // which it updates damager cooldowns.
                     new CollisionDamageSystem(),
                     
-                    // Apply any status effects at this point, such as damagers, as the
-                    // collision damage is handled as a (very short lived) debuff, too.
+                    // Apply any status effects at this point, such as damagers.
+                    new DamageSystem(),
+
+                    // Remove expired status effects.
                     new StatusEffectSystem(),
                     // This system is purely reactive, and will trigger on entity death
                     // from whatever cause (debuffs, normally).

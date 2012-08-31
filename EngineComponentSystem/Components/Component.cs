@@ -181,7 +181,9 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return "[Entity " + Entity + "]->" + GetType().Name + ": Id=" + Id + ", Enabled=" + Enabled;
+            var hasher = new Hasher();
+            Hash(hasher);
+            return "[Entity " + Entity + "]->" + GetType().Name + ": Id=" + Id + ", Hash=" + hasher.Value + ", Enabled=" + Enabled;
         }
 
         #endregion

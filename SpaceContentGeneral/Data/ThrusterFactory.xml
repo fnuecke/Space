@@ -54,10 +54,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 15 AccelerationForce</Item>
         <Item>5 to 15 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
@@ -91,10 +91,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 18 AccelerationForce</Item>
         <Item>8 to 15 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
@@ -128,10 +128,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 2 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 25 AccelerationForce</Item>
         <Item>3 to 9 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
@@ -165,10 +165,10 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 3 HealthRegeneration</Item>
         <Item>1 to 3 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 35 AccelerationForce</Item>
         <Item>5 to 15 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>

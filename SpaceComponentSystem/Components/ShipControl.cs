@@ -46,6 +46,11 @@ namespace Space.ComponentSystem.Components
         public bool Shooting;
 
         /// <summary>
+        /// Whether the ship's shields are up.
+        /// </summary>
+        public bool ShieldsActive;
+
+        /// <summary>
         /// The current acceleration of the ship.
         /// </summary>
         internal Vector2 DirectedAcceleration;
@@ -81,6 +86,7 @@ namespace Space.ComponentSystem.Components
             var otherControl = (ShipControl)other;
             Stabilizing = otherControl.Stabilizing;
             Shooting = otherControl.Shooting;
+            ShieldsActive = otherControl.ShieldsActive;
             DirectedAcceleration = otherControl.DirectedAcceleration;
             TargetRotation = otherControl.TargetRotation;
             TargetRotationChanged = otherControl.TargetRotationChanged;
@@ -99,6 +105,7 @@ namespace Space.ComponentSystem.Components
 
             Stabilizing = false;
             Shooting = false;
+            ShieldsActive = false;
             DirectedAcceleration = Vector2.Zero;
             TargetRotation = 0;
             TargetRotationChanged = false;
@@ -156,6 +163,7 @@ namespace Space.ComponentSystem.Components
             return base.Packetize(packet)
                 .Write(Stabilizing)
                 .Write(Shooting)
+                .Write(ShieldsActive)
                 .Write(DirectedAcceleration)
                 .Write(TargetRotation)
                 .Write(TargetRotationChanged)
@@ -172,6 +180,7 @@ namespace Space.ComponentSystem.Components
 
             Stabilizing = packet.ReadBoolean();
             Shooting = packet.ReadBoolean();
+            ShieldsActive = packet.ReadBoolean();
             DirectedAcceleration = packet.ReadVector2();
             TargetRotation = packet.ReadSingle();
             TargetRotationChanged = packet.ReadBoolean();
@@ -189,6 +198,7 @@ namespace Space.ComponentSystem.Components
 
             hasher.Put(Stabilizing);
             hasher.Put(Shooting);
+            hasher.Put(ShieldsActive);
             hasher.Put(DirectedAcceleration);
             hasher.Put(TargetRotation);
             hasher.Put(TargetRotationChanged);
@@ -207,7 +217,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Stabilizing=" + Stabilizing + ", Shooting=" + Shooting + ", DirectedAcceleration=" + DirectedAcceleration.X.ToString(CultureInfo.InvariantCulture) + ":" + DirectedAcceleration.Y.ToString(CultureInfo.InvariantCulture) + ", TargetRotation=" + TargetRotation.ToString(CultureInfo.InvariantCulture) + ", TargetRotationChanged=" + TargetRotationChanged + ", PreviousRotation=" + PreviousRotation.ToString(CultureInfo.InvariantCulture);
+            return base.ToString() + ", Stabilizing=" + Stabilizing + ", Shooting=" + Shooting + ", ShieldsActive=" + ShieldsActive + ", DirectedAcceleration=" + DirectedAcceleration.X.ToString(CultureInfo.InvariantCulture) + ":" + DirectedAcceleration.Y.ToString(CultureInfo.InvariantCulture) + ", TargetRotation=" + TargetRotation.ToString(CultureInfo.InvariantCulture) + ", TargetRotationChanged=" + TargetRotationChanged + ", PreviousRotation=" + PreviousRotation.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

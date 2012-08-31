@@ -29,16 +29,21 @@ namespace Space.Data
         /// Speed in units per tick with which an entities health replenishes.
         /// </summary>
         HealthRegeneration,
-        
+
         /// <summary>
         /// Speed in units per tick with which an entities energy replenishes.
         /// </summary>
         EnergyRegeneration,
 
         /// <summary>
-        /// Armor rating of a entity.
+        /// Armor rating of a entity, i.e. how much physical damage gets blocked.
         /// </summary>
-        Armor,
+        DamageReduction,
+
+        /// <summary>
+        /// Shield armor rating, i.e. how much physical damage gets blocked by the shield.
+        /// </summary>
+        ShieldDamageReduction,
 
         /// <summary>
         /// Mass of an entity, determines how well it accelerates / rotates.
@@ -71,9 +76,9 @@ namespace Space.Data
         WeaponEnergyConsumption,
 
         /// <summary>
-        /// Shield efficiency (damage to energy rate) for an entity.
+        /// Shield block cost, i.e. the energy it costs to block one damage.
         /// </summary>
-        ShieldEfficiency,
+        ShieldBlockCost,
 
         /// <summary>
         /// Weapon cooldown modifier for an entity.
@@ -94,23 +99,24 @@ namespace Space.Data
     public static class AttributeTypeExtension
     {
         #region Constants
-        
-        private static readonly Dictionary<AttributeType, float> ValueLookup = new Dictionary<AttributeType, float> {
-            { AttributeType.Health, 1 },
-            { AttributeType.Energy, 1 },
-            { AttributeType.HealthRegeneration, 50 },
-            { AttributeType.EnergyRegeneration, 50 },
-            { AttributeType.Armor, 1 },
-            { AttributeType.Mass, -0.1f },
-            { AttributeType.AccelerationForce, 50 },
-            { AttributeType.RotationForce, 50 },
-            { AttributeType.ThrusterEnergyConsumption, -50 },
-            { AttributeType.ShieldEnergyConsumption, -60 },
-            { AttributeType.WeaponEnergyConsumption, -70 },
-            { AttributeType.ShieldEfficiency, 5 },
-            { AttributeType.WeaponCooldown, -20 },
-            { AttributeType.SensorRange, 0.1f},
-            { AttributeType.WeaponDamage, 80 }
+
+        private static readonly Dictionary<AttributeType, float> ValueLookup = new Dictionary<AttributeType, float>
+        {
+            {AttributeType.Health, 1},
+            {AttributeType.Energy, 1},
+            {AttributeType.HealthRegeneration, 50},
+            {AttributeType.EnergyRegeneration, 50},
+            {AttributeType.DamageReduction, 1},
+            {AttributeType.Mass, -0.1f},
+            {AttributeType.AccelerationForce, 50},
+            {AttributeType.RotationForce, 50},
+            {AttributeType.ThrusterEnergyConsumption, -50},
+            {AttributeType.ShieldEnergyConsumption, -60},
+            {AttributeType.WeaponEnergyConsumption, -70},
+            {AttributeType.ShieldBlockCost, -5},
+            {AttributeType.WeaponCooldown, -20},
+            {AttributeType.SensorRange, 0.1f},
+            {AttributeType.WeaponDamage, 80}
         };
 
         #endregion
@@ -124,7 +130,7 @@ namespace Space.Data
         {
             var name = Enum.GetName(typeof(AttributeType), attributeType);
             return AttributeNames.ResourceManager.GetString(name)
-                ?? "!!AttributeNames:" + name + "!!";
+                   ?? "!!AttributeNames:" + name + "!!";
         }
 
         /// <summary>
@@ -136,7 +142,7 @@ namespace Space.Data
         {
             var name = Enum.GetName(typeof(AttributeType), attributeType);
             return AttributePrefixes.ResourceManager.GetString(name)
-                ?? "!!AttributePrefixes:" + name + "!!";
+                   ?? "!!AttributePrefixes:" + name + "!!";
         }
 
         /// <summary>
@@ -145,7 +151,7 @@ namespace Space.Data
         /// <param name="attributeType">The attribute type</param>
         /// <param name="value">The value of the Attribute</param>
         /// <returns>The calculated vale</returns>
-        public static float GetValue(this AttributeType attributeType,float value)//,AttributeComputationType modifier )
+        public static float GetValue(this AttributeType attributeType, float value)
         {
             return ValueLookup[attributeType] * value;
         }

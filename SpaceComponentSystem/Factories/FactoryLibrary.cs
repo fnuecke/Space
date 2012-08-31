@@ -32,18 +32,24 @@ namespace Space.ComponentSystem.Factories
         {
             Factories.Clear();
 
-            Load("Data/FuselageFactory", content);
-            Load("Data/ReactorFactory", content);
-            Load("Data/SensorFactory", content);
-            Load("Data/ShieldFactory", content);
-            Load("Data/ShipFactory", content);
-            Load("Data/ThrusterFactory", content);
-            Load("Data/WeaponFactory", content);
-            Load("Data/WingFactory", content);
+            foreach (var factory in new[]
+            {
+                "Data/FuselageFactory",
+                "Data/ReactorFactory",
+                "Data/SensorFactory",
+                "Data/ShieldFactory",
+                "Data/ShipFactory",
+                "Data/ThrusterFactory",
+                "Data/WeaponFactory",
+                "Data/WingFactory",
 
-            Load("Data/PlanetFactory", content);
-            Load("Data/SunFactory", content);
-            Load("Data/SunSystemFactory", content);
+                "Data/PlanetFactory",
+                "Data/SunFactory",
+                "Data/SunSystemFactory"
+            })
+            {
+                Load(factory, content);
+            }
         }
 
         /// <summary>
