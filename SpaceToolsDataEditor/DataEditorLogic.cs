@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
@@ -21,9 +20,6 @@ namespace Space.Tools.DataEditor
         {
             tvData.Sorted = true;
 
-            // Rescan for issues when a property changes.
-            pgProperties.PropertyValueChanged += HandlePropertyValueChanged;
-
             FactoryManager.FactoryAdded += HandleFactoryAdded;
             FactoryManager.FactoryRemoved += HandleFactoryRemoved;
             FactoryManager.FactoryNameChanged += HandleFactoryNameChanged;
@@ -33,7 +29,6 @@ namespace Space.Tools.DataEditor
             ItemPoolManager.ItemPoolRemoved += HandleItemPoolRemoved;
             ItemPoolManager.ItemPoolNameChanged += HandleItemPoolNameChanged;
             ItemPoolManager.ItemPoolCleared += HandleCleared;
-
             AttributePoolManager.AttributePoolAdded += HandleAttributePoolAdded;
             AttributePoolManager.AttributePoolRemoved += HandleAttributePoolRemoved;
             AttributePoolManager.AttributePoolNameChanged += HandleAttributePoolNameChanged;
@@ -232,137 +227,6 @@ namespace Space.Tools.DataEditor
 
             // Rescan.
             ScanForIssues();
-        }
-
-        private void HandlePropertyValueChanged(object o, PropertyValueChangedEventArgs args)
-        {
-            if (pgProperties.SelectedObject is IFactory)
-            {
-                var factory = (IFactory)pgProperties.SelectedObject;
-                // See if what we changed is the name of the factory.
-                if (ReferenceEquals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(factory)["Name"]))
-                {
-                    // Yes, get old and new value.
-                    var oldName = args.OldValue as string;
-                    var newName = args.ChangedItem.Value as string;
-                    // Adjust factory manager layout, this will throw as necessary.
-                    tvData.BeginUpdate();
-                    try
-                    {
-                        FactoryManager.Rename(oldName, newName);
-                        tvData.EndUpdate();
-
-                        SelectFactory(factory);
-                        SelectProperty("Name");
-
-                        // Do a full scan as this factory may have been referenced somewhere.
-                        ScanForIssues();
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        tvData.EndUpdate();
-
-                        // Tell the user why.
-                        MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    // Rescan for issues related to this property.
-                    if (args.ChangedItem.PropertyDescriptor == null || args.ChangedItem.PropertyDescriptor.Attributes[typeof(TriggersFullValidationAttribute)] != null)
-                    {
-                        ScanForIssues();
-                    }
-                    else
-                    {
-                        ScanForIssues(factory);
-                    }
-                }
-            }
-            else if(pgProperties.SelectedObject is ItemPool)
-            {
-                var itemPool = (ItemPool) pgProperties.SelectedObject;
-                if(ReferenceEquals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(itemPool)["Name"]))
-                {
-                    // Yes, get old and new value.
-                    var oldName = args.OldValue as string;
-                    var newName = args.ChangedItem.Value as string;
-                    // Adjust item pool manager layout, this will throw as necessary.
-                    tvData.BeginUpdate();
-                    try
-                    {
-                        ItemPoolManager.Rename(oldName, newName);
-                        tvData.EndUpdate();
-
-                        SelectItemPool(itemPool);
-                        SelectProperty("Name");
-
-                        // Do a full scan as this factory may have been referenced somewhere.
-                        ScanForIssues();
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        tvData.EndUpdate();
-
-                        // Tell the user why.
-                        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    // Rescan of issues related to this property.
-                    if (args.ChangedItem.PropertyDescriptor == null || args.ChangedItem.PropertyDescriptor.Attributes[typeof(TriggersFullValidationAttribute)] != null)
-                    {
-                        ScanForIssues();
-                    }
-                    else
-                    {
-                        ScanForIssues(itemPool);
-                    }
-                }
-            }
-            else if (pgProperties.SelectedObject is AttributePool)
-            {
-                var attributePool = (AttributePool)pgProperties.SelectedObject;
-                if (ReferenceEquals(args.ChangedItem.PropertyDescriptor, TypeDescriptor.GetProperties(attributePool)["Name"]))
-                {
-                    // Yes, get old and new value.
-                    var oldName = args.OldValue as string;
-                    var newName = args.ChangedItem.Value as string;
-                    // Adjust item pool manager layout, this will throw as necessary.
-                    tvData.BeginUpdate();
-                    try
-                    {
-                        AttributePoolManager.Rename(oldName, newName);
-                        tvData.EndUpdate();
-
-                        SelectAttributePool(attributePool);
-                        SelectProperty("Name");
-
-                        // Do a full scan as this factory may have been referenced somewhere.
-                        ScanForIssues();
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        tvData.EndUpdate();
-
-                        // Tell the user why.
-                        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    // Rescan of issues related to this property.
-                    if (args.ChangedItem.PropertyDescriptor == null || args.ChangedItem.PropertyDescriptor.Attributes[typeof(TriggersFullValidationAttribute)] != null)
-                    {
-                        ScanForIssues();
-                    }
-                    else
-                    {
-                        ScanForIssues(attributePool);
-                    }
-                }
-            }
         }
 
         #endregion

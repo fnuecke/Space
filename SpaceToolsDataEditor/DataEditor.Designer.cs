@@ -46,6 +46,7 @@
             this.separator2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miNewFactory = new System.Windows.Forms.ToolStripMenuItem();
             this.newItemPoolToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miDelete = new System.Windows.Forms.ToolStripMenuItem();
@@ -89,7 +90,7 @@
             this.pgProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pgProperties.Location = new System.Drawing.Point(8, 21);
             this.pgProperties.Name = "pgProperties";
-            this.pgProperties.Size = new System.Drawing.Size(437, 133);
+            this.pgProperties.Size = new System.Drawing.Size(261, 484);
             this.pgProperties.TabIndex = 0;
             this.pgProperties.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.PropertiesPropertyValueChanged);
             this.pgProperties.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.PropertiesSelectedGridItemChanged);
@@ -104,7 +105,7 @@
             this.tvData.Location = new System.Drawing.Point(8, 21);
             this.tvData.Name = "tvData";
             this.tvData.PathSeparator = "/";
-            this.tvData.Size = new System.Drawing.Size(214, 286);
+            this.tvData.Size = new System.Drawing.Size(214, 484);
             this.tvData.TabIndex = 1;
             this.tvData.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.DataSelected);
             // 
@@ -149,7 +150,7 @@
             this.gbData.Location = new System.Drawing.Point(5, 5);
             this.gbData.Name = "gbData";
             this.gbData.Padding = new System.Windows.Forms.Padding(8);
-            this.gbData.Size = new System.Drawing.Size(230, 315);
+            this.gbData.Size = new System.Drawing.Size(230, 513);
             this.gbData.TabIndex = 2;
             this.gbData.TabStop = false;
             this.gbData.Text = "Data";
@@ -161,7 +162,7 @@
             this.tsmiEdit});
             this.msMain.Location = new System.Drawing.Point(0, 0);
             this.msMain.Name = "msMain";
-            this.msMain.Size = new System.Drawing.Size(707, 24);
+            this.msMain.Size = new System.Drawing.Size(1008, 24);
             this.msMain.TabIndex = 3;
             // 
             // tsmiFile
@@ -179,11 +180,10 @@
             // 
             // tsmiSave
             // 
-            this.tsmiSave.Enabled = false;
             this.tsmiSave.Image = global::Space.Tools.DataEditor.Properties.Resources.saveHS;
             this.tsmiSave.Name = "tsmiSave";
             this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.tsmiSave.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSave.Size = new System.Drawing.Size(152, 22);
             this.tsmiSave.Text = "&Save";
             this.tsmiSave.Click += new System.EventHandler(this.SaveClick);
             // 
@@ -192,46 +192,57 @@
             this.tsmiLoad.Image = global::Space.Tools.DataEditor.Properties.Resources._075b_UpFolder_16x16_72;
             this.tsmiLoad.Name = "tsmiLoad";
             this.tsmiLoad.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.tsmiLoad.Size = new System.Drawing.Size(143, 22);
+            this.tsmiLoad.Size = new System.Drawing.Size(152, 22);
             this.tsmiLoad.Text = "L&oad";
             this.tsmiLoad.Click += new System.EventHandler(this.LoadClick);
             // 
             // separator0
             // 
             this.separator0.Name = "separator0";
-            this.separator0.Size = new System.Drawing.Size(140, 6);
+            this.separator0.Size = new System.Drawing.Size(149, 6);
             // 
             // tsmiSettings
             // 
             this.tsmiSettings.Image = global::Space.Tools.DataEditor.Properties.Resources._327_Options_16x16_72;
             this.tsmiSettings.Name = "tsmiSettings";
             this.tsmiSettings.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.tsmiSettings.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSettings.Size = new System.Drawing.Size(152, 22);
             this.tsmiSettings.Text = "S&ettings";
             this.tsmiSettings.Click += new System.EventHandler(this.SettingsClick);
             // 
             // separator2
             // 
             this.separator2.Name = "separator2";
-            this.separator2.Size = new System.Drawing.Size(140, 6);
+            this.separator2.Size = new System.Drawing.Size(149, 6);
             // 
             // tsmiExit
             // 
             this.tsmiExit.Name = "tsmiExit";
             this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.tsmiExit.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExit.Size = new System.Drawing.Size(152, 22);
             this.tsmiExit.Text = "E&xit";
             this.tsmiExit.Click += new System.EventHandler(this.ExitClick);
             // 
             // tsmiEdit
             // 
             this.tsmiEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoToolStripMenuItem,
             this.miNewFactory,
             this.newItemPoolToolStripMenuItem,
             this.miDelete});
             this.tsmiEdit.Name = "tsmiEdit";
             this.tsmiEdit.Size = new System.Drawing.Size(39, 20);
             this.tsmiEdit.Text = "&Edit";
+            // 
+            // undoToolStripMenuItem
+            // 
+            this.undoToolStripMenuItem.Enabled = false;
+            this.undoToolStripMenuItem.Image = global::Space.Tools.DataEditor.Properties.Resources._112_ArrowReturnLeft_Blue_16x16_72;
+            this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+            this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.undoToolStripMenuItem.Text = "&Undo";
+            this.undoToolStripMenuItem.Click += new System.EventHandler(this.UndoClick);
             // 
             // miNewFactory
             // 
@@ -266,7 +277,7 @@
             this.gbProperties.Location = new System.Drawing.Point(5, 5);
             this.gbProperties.Name = "gbProperties";
             this.gbProperties.Padding = new System.Windows.Forms.Padding(8);
-            this.gbProperties.Size = new System.Drawing.Size(453, 162);
+            this.gbProperties.Size = new System.Drawing.Size(277, 513);
             this.gbProperties.TabIndex = 5;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Properties";
@@ -275,10 +286,10 @@
             // 
             this.gbPreview.Controls.Add(this.pbPreview);
             this.gbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gbPreview.Location = new System.Drawing.Point(5, 0);
+            this.gbPreview.Location = new System.Drawing.Point(5, 5);
             this.gbPreview.Name = "gbPreview";
             this.gbPreview.Padding = new System.Windows.Forms.Padding(8);
-            this.gbPreview.Size = new System.Drawing.Size(453, 144);
+            this.gbPreview.Size = new System.Drawing.Size(463, 513);
             this.gbPreview.TabIndex = 6;
             this.gbPreview.TabStop = false;
             this.gbPreview.Text = "Preview";
@@ -291,7 +302,7 @@
             this.pbPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbPreview.Location = new System.Drawing.Point(8, 21);
             this.pbPreview.Name = "pbPreview";
-            this.pbPreview.Size = new System.Drawing.Size(437, 115);
+            this.pbPreview.Size = new System.Drawing.Size(447, 484);
             this.pbPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbPreview.TabIndex = 0;
             this.pbPreview.TabStop = false;
@@ -313,7 +324,7 @@
             // 
             this.scOuter.Panel2.Controls.Add(this.scInner);
             this.scOuter.Panel2MinSize = 40;
-            this.scOuter.Size = new System.Drawing.Size(707, 325);
+            this.scOuter.Size = new System.Drawing.Size(1008, 523);
             this.scOuter.SplitterDistance = 240;
             this.scOuter.TabIndex = 7;
             // 
@@ -323,21 +334,20 @@
             this.scInner.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
             this.scInner.Location = new System.Drawing.Point(0, 0);
             this.scInner.Name = "scInner";
-            this.scInner.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
             // scInner.Panel1
             // 
-            this.scInner.Panel1.Controls.Add(this.gbProperties);
+            this.scInner.Panel1.Controls.Add(this.gbPreview);
             this.scInner.Panel1.Padding = new System.Windows.Forms.Padding(5);
             this.scInner.Panel1MinSize = 40;
             // 
             // scInner.Panel2
             // 
-            this.scInner.Panel2.Controls.Add(this.gbPreview);
-            this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
+            this.scInner.Panel2.Controls.Add(this.gbProperties);
+            this.scInner.Panel2.Padding = new System.Windows.Forms.Padding(5);
             this.scInner.Panel2MinSize = 40;
-            this.scInner.Size = new System.Drawing.Size(463, 325);
-            this.scInner.SplitterDistance = 172;
+            this.scInner.Size = new System.Drawing.Size(764, 523);
+            this.scInner.SplitterDistance = 473;
             this.scInner.TabIndex = 0;
             // 
             // scMain
@@ -358,8 +368,8 @@
             this.scMain.Panel2.Controls.Add(this.gbIssues);
             this.scMain.Panel2.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
             this.scMain.Panel2MinSize = 40;
-            this.scMain.Size = new System.Drawing.Size(707, 508);
-            this.scMain.SplitterDistance = 325;
+            this.scMain.Size = new System.Drawing.Size(1008, 706);
+            this.scMain.SplitterDistance = 523;
             this.scMain.TabIndex = 8;
             // 
             // gbIssues
@@ -369,7 +379,7 @@
             this.gbIssues.Location = new System.Drawing.Point(5, 0);
             this.gbIssues.Name = "gbIssues";
             this.gbIssues.Padding = new System.Windows.Forms.Padding(8);
-            this.gbIssues.Size = new System.Drawing.Size(697, 174);
+            this.gbIssues.Size = new System.Drawing.Size(998, 174);
             this.gbIssues.TabIndex = 0;
             this.gbIssues.TabStop = false;
             this.gbIssues.Text = "Issues";
@@ -389,7 +399,7 @@
             this.lvIssues.Location = new System.Drawing.Point(8, 21);
             this.lvIssues.MultiSelect = false;
             this.lvIssues.Name = "lvIssues";
-            this.lvIssues.Size = new System.Drawing.Size(681, 145);
+            this.lvIssues.Size = new System.Drawing.Size(982, 145);
             this.lvIssues.SmallImageList = this.ilIssueTypes;
             this.lvIssues.TabIndex = 0;
             this.lvIssues.UseCompatibleStateImageBehavior = false;
@@ -436,7 +446,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(707, 532);
+            this.ClientSize = new System.Drawing.Size(1008, 730);
             this.Controls.Add(this.scMain);
             this.Controls.Add(this.msMain);
             this.DoubleBuffered = true;
@@ -508,6 +518,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiAddItemPool;
         private System.Windows.Forms.ToolStripMenuItem newItemPoolToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tsmiAddAttributePool;
+        private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
     }
 }
 

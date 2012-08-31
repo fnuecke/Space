@@ -78,7 +78,7 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>
-        /// Creates a new armor with the specified parameters.
+        /// Creates a new weapon with the specified parameters.
         /// </summary>
         /// <param name="name">The logical base name of the item.</param>
         /// <param name="iconName">The name of the icon used for the item.</param>

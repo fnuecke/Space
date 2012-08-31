@@ -121,10 +121,33 @@ namespace Space.ComponentSystem.Systems
         /// <param name="translation">The translation.</param>
         private void RenderPlanet(PlanetRenderer component, ref FarPosition translation)
         {
-            // Load the texture if we don't have it yet.
-            if (component.Texture == null)
+            // Get factory, skip if none known.
+            var factory = component.Factory;
+            if (factory == null)
             {
-                component.Texture = _content.Load<Texture2D>(component.TextureName);
+                return;
+            }
+
+            // Load the texture if we don't have it yet.
+            if (component.Albedo == null && !string.IsNullOrWhiteSpace(factory.Albedo))
+            {
+                component.Albedo = _content.Load<Texture2D>(factory.Albedo);
+            }
+            if (component.Normals == null && !string.IsNullOrWhiteSpace(factory.Normals))
+            {
+                component.Normals = _content.Load<Texture2D>(factory.Normals);
+            }
+            if (component.Specular == null && !string.IsNullOrWhiteSpace(factory.Specular))
+            {
+                component.Specular = _content.Load<Texture2D>(factory.Specular);
+            }
+            if (component.Lights == null && !string.IsNullOrWhiteSpace(factory.Lights))
+            {
+                component.Lights = _content.Load<Texture2D>(factory.Lights);
+            }
+            if (component.Clouds == null && !string.IsNullOrWhiteSpace(factory.Clouds))
+            {   
+                component.Clouds = _content.Load<Texture2D>(factory.Clouds);
             }
 
             // The position and orientation we're rendering at and in.
@@ -153,9 +176,20 @@ namespace Space.ComponentSystem.Systems
             // Set remaining parameters for draw.
             _planet.Rotation = rotation;
             _planet.SetSize(component.Radius * 2);
-            _planet.SurfaceTexture = component.Texture;
-            _planet.SurfaceTint = component.PlanetTint;
-            _planet.AtmosphereTint = component.AtmosphereTint;
+            _planet.SurfaceTexture = component.Albedo;
+            _planet.SurfaceNormals = component.Normals;
+            _planet.SurfaceSpecular = component.Specular;
+            _planet.SurfaceLights = component.Lights;
+            _planet.Clouds = component.Clouds;
+            _planet.SurfaceTint = factory.SurfaceTint;
+            _planet.SpecularAlpha = factory.SpecularAlpha;
+            _planet.SpecularExponent = factory.SpecularExponent;
+            _planet.SpecularOffset = factory.SpecularOffset;
+            _planet.AtmosphereTint = factory.AtmosphereTint;
+            _planet.AtmosphereInner = factory.AtmosphereInner;
+            _planet.AtmosphereOuter = factory.AtmosphereOuter;
+            _planet.AtmosphereInnerAlpha = factory.AtmosphereInnerAlpha;
+            _planet.AtmosphereOuterAlpha = factory.AtmosphereOuterAlpha;
             _planet.SurfaceRotation = component.SurfaceRotation;
             _planet.LightDirection = toSun;
 

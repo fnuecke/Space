@@ -3,63 +3,244 @@
   <Asset Type="Factories:PlanetFactory[]">
     <Item>
       <Name>planet_1</Name>
-      <Texture>Textures/Planets/rock_07</Texture>
+      <Albedo>Textures/Planets/rock_07</Albedo>
+      <Normals>Textures/Planets/rock_07_normals</Normals>
       <SurfaceTint>FFAAB597</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>8087CEFA</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>250 to 550</Radius>
       <Mass>300000 to 400000</Mass>
       <RotationSpeed>2</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_tiny</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>30 to 40</Radius>
       <Mass>0</Mass>
-      <RotationSpeed>1</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>12 to 16</TravelSpeed>
+      <RotationSpeed>1 to 2</RotationSpeed>
     </Item>
     <Item>
       <Name>moon_small</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>40 to 60</Radius>
       <Mass>0</Mass>
-      <RotationSpeed>1</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>8 to 12</TravelSpeed>
+      <RotationSpeed>2</RotationSpeed>
     </Item>
     <Item>
       <Name>moon_medium</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>60 to 80</Radius>
       <Mass>0</Mass>
-      <RotationSpeed>1</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>6 to 8</TravelSpeed>
+      <RotationSpeed>2 to 3</RotationSpeed>
     </Item>
     <Item>
       <Name>moon_large</Name>
-      <Texture>Textures/Planets/rock_02</Texture>
+      <Albedo>Textures/Planets/rock_02</Albedo>
+      <Normals>Textures/Planets/rock_02_normals</Normals>
       <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
       <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>80 to 100</Radius>
       <Mass>0</Mass>
-      <RotationSpeed>1</RotationSpeed>
-      <Eccentricity>0.3 to 0.4</Eccentricity>
-      <AngleOffset>30</AngleOffset>
-      <TravelSpeed>4 to 6</TravelSpeed>
+      <RotationSpeed>3 to 4</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>earth</Name>
+      <Albedo>Textures/Planets/earthmap2k</Albedo>
+      <Normals>Textures/Planets/earthbump2k</Normals>
+      <Specular>Textures/Planets/earthspec2k</Specular>
+      <Lights>Textures/Planets/earthlights2k</Lights>
+      <Clouds>Textures/Planets/earthcloudmap2k</Clouds>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>0.7</SpecularAlpha>
+      <SpecularExponent>20</SpecularExponent>
+      <SpecularOffset>0.8</SpecularOffset>
+      <AtmosphereTint>78C0E6FF</AtmosphereTint>
+      <AtmosphereInner>1.5</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>1</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>250 to 300</Radius>
+      <Mass>250000 to 300000</Mass>
+      <RotationSpeed>1 to 2</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>mars</Name>
+      <Albedo>Textures/Planets/mars_1k_color</Albedo>
+      <Normals>Textures/Planets/mars_1k_normal</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>32969600</AtmosphereTint>
+      <AtmosphereInner>0.5</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>2</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>200 to 250</Radius>
+      <Mass>200000 to 220000</Mass>
+      <RotationSpeed>3</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>neptune</Name>
+      <Albedo>Textures/Planets/neptunemap</Albedo>
+      <Normals>Textures/Planets/neptunemap_normals</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>19C0C0FF</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>180 to 220</Radius>
+      <Mass>190000 to 230000</Mass>
+      <RotationSpeed>4 to 6</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>venus</Name>
+      <Albedo>Textures/Planets/venusmap</Albedo>
+      <Normals>Textures/Planets/venusmap_normals</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>32FFC080</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>240 to 300</Radius>
+      <Mass>250000 to 300000</Mass>
+      <RotationSpeed>4 to 5</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>pluto</Name>
+      <Albedo>Textures/Planets/plutomap1k</Albedo>
+      <Normals>Textures/Planets/plutomap1k_normals</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>100 to 150</Radius>
+      <Mass>17000 to 20000</Mass>
+      <RotationSpeed>2 to 3</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>mercury</Name>
+      <Albedo>Textures/Planets/mercurymap</Albedo>
+      <Normals>Textures/Planets/mercurymap_normals</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>150 to 200</Radius>
+      <Mass>170000 to 200000</Mass>
+      <RotationSpeed>3 to 4</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>jupiter</Name>
+      <Albedo>Textures/Planets/jupiter</Albedo>
+      <Normals>Textures/Planets/jupiter_normals</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>37C0C000</AtmosphereTint>
+      <AtmosphereInner>0.6</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.55</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>0.15</AtmosphereOuterAlpha>
+      <Radius>500 to 600</Radius>
+      <Mass>500000 to 600000</Mass>
+      <RotationSpeed>3 to 4</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>saturn</Name>
+      <Albedo>Textures/Planets/saturnmap</Albedo>
+      <Normals>Textures/Planets/saturnmap_normals</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>200 to 300</Radius>
+      <Mass>250000 to 300000</Mass>
+      <RotationSpeed>3 to 4</RotationSpeed>
+    </Item>
+    <Item>
+      <Name>uranus</Name>
+      <Albedo>Textures/Planets/uranusmap</Albedo>
+      <Normals>Textures/Planets/uranusmap_normals</Normals>
+      <SurfaceTint>FFFFFFFF</SurfaceTint>
+      <SpecularAlpha>1</SpecularAlpha>
+      <SpecularExponent>10</SpecularExponent>
+      <SpecularOffset>1</SpecularOffset>
+      <AtmosphereTint>00000000</AtmosphereTint>
+      <AtmosphereInner>0.4</AtmosphereInner>
+      <AtmosphereOuter>0.1</AtmosphereOuter>
+      <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
+      <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
+      <Radius>250 to 300</Radius>
+      <Mass>250000 to 300000</Mass>
+      <RotationSpeed>4 to 5</RotationSpeed>
     </Item>
   </Asset>
 </XnaContent>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -18,6 +19,36 @@ namespace Space.Tools.DataEditor
         public TextureAssetDialog()
         {
             InitializeComponent();
+
+            tvTextures.TreeViewNodeSorter = new AssetSorter();
+            tvTextures.Sorted = true;
+        }
+
+        public class AssetSorter : IComparer
+        {
+            public int Compare(object x, object y)
+            {
+                var tx = x as TreeNode;
+                var ty = y as TreeNode;
+
+                if (tx == null || ty == null)
+                {
+                    return 1;
+                }
+
+                if (tx.Text.Equals("None"))
+                {
+                    return -1;
+                }
+                else if (ty.Text.Equals("None"))
+                {
+                    return 1;
+                }
+                else
+                {
+                    return StringComparer.Ordinal.Compare(tx.Text, ty.Text);
+                }
+            }
         }
 
         private void TextureAssetDialogLoad(object sender, EventArgs e)
@@ -73,6 +104,8 @@ namespace Space.Tools.DataEditor
                     oldImage.Dispose();
                 }
             }
+
+            tvTextures.Focus();
         }
 
         private void TexturesAfterSelect(object sender, TreeViewEventArgs e)

@@ -127,7 +127,7 @@ namespace Space.ComponentSystem.Systems
                     {
                         // It is, use a predefined number of planets and moons,
                         // and make sure it's a solar system.
-                        FactoryLibrary.SampleSunSystem(Manager, "home_system", center, random);
+                        FactoryLibrary.SampleSunSystem(Manager, "solar_system", center, random);
                     }
                     else
                     {

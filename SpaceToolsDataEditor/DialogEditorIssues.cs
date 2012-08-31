@@ -342,12 +342,6 @@ namespace Space.Tools.DataEditor
             {
                 AddIssue("Planet radius should be larger then zero.", factory, "Radius", IssueType.Warning);
             }
-            if (factory.Eccentricity != null &&
-                (factory.Eccentricity.Low < 0 || factory.Eccentricity.High < 0 ||
-                 factory.Eccentricity.Low > 1 || factory.Eccentricity.High > 1))
-            {
-                AddIssue("Planet orbit ellipse eccentricity is in invalid value-range (should be in [0, 1]).", factory, "Eccentricity", IssueType.Warning);
-            }
         }
 
         /// <summary>
@@ -410,6 +404,13 @@ namespace Space.Tools.DataEditor
                     if (orbiter.ChanceToExist <= 0)
                     {
                         AddIssue("Planet will never be generated (probability <= 0).", factory, localPrefix + "ChanceToExist", IssueType.Information);
+                    }
+
+                    if (orbiter.Eccentricity != null &&
+                        (orbiter.Eccentricity.Low < 0 || orbiter.Eccentricity.High < 0 ||
+                         orbiter.Eccentricity.Low > 1 || orbiter.Eccentricity.High > 1))
+                    {
+                        AddIssue("Planet orbit ellipse eccentricity is in invalid value-range (should be in [0, 1]).", factory, localPrefix + "Eccentricity", IssueType.Warning);
                     }
 
                     if (orbiter.OrbitRadius == null)

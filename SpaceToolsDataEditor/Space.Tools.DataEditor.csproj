@@ -61,9 +61,6 @@
     <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
-    </Reference>
     <Reference Include="SlimDX.DirectInput, Version=4.0.10.43, Culture=neutral, PublicKeyToken=96bb577564343f16, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -140,9 +137,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ResourceManager.cs" />
-    <Compile Include="SunPreviewControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="EffectAssetDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -159,9 +153,6 @@
     </Compile>
     <Compile Include="GraphicsDeviceService.cs" />
     <Compile Include="ItemPoolEditor.cs" />
-    <Compile Include="PlanetPreviewControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="PlainContentManager.cs" />
     <Compile Include="PlanetEditor.cs" />
     <Compile Include="DataEditor.cs">
@@ -319,6 +310,10 @@
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
       <Name>Engine.Serialization.Writers</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProjectMercuryWindows\ProjectMercury.Windows.csproj">
+      <Project>{1E3FDDBD-A15F-42CF-A83E-754476079B30}</Project>
+      <Name>ProjectMercury.Windows</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
       <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
       <Name>Space.Base</Name>
@@ -339,6 +334,7 @@
     <None Include="Resources\305_Close_16x16_72.png" />
     <None Include="Resources\1385_Disable_16x16_72.png" />
     <None Include="Resources\DeleteHS.png" />
+    <None Include="Resources\112_ArrowReturnLeft_Blue_16x16_72.png" />
     <Content Include="Resources\mountpoint_armor.png" />
     <Content Include="Resources\mountpoint_fuselage.png" />
     <Content Include="Resources\mountpoint_reactor.png" />

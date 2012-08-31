@@ -58,13 +58,10 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="Nuclex.Input, Version=4.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\Nuclex.Input.dll</HintPath>
-    </Reference>
-    <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
@@ -109,7 +106,6 @@
     <Compile Include="Components\WeaponControl.cs" />
     <Compile Include="Components\Wing.cs" />
     <Compile Include="EntityFactory.cs" />
-    <Compile Include="Factories\ArmorFactory.cs" />
     <Compile Include="Factories\FactoryLibrary.cs" />
     <Compile Include="Factories\FuselageFactory.cs" />
     <Compile Include="Factories\IFactory.cs" />
@@ -159,7 +155,6 @@
     <Compile Include="Factories\ThrusterFactory.cs" />
     <Compile Include="Factories\WeaponFactory.cs" />
     <Compile Include="Factories\ProjectileFactory.cs" />
-    <Compile Include="Components\Armor.cs" />
     <Compile Include="Components\Reactor.cs" />
     <Compile Include="Components\Sensor.cs" />
     <Compile Include="Components\Shield.cs" />
@@ -221,6 +216,10 @@
     <ProjectReference Include="..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
       <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
       <Name>Engine.XnaExtensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProjectMercuryWindows\ProjectMercury.Windows.csproj">
+      <Project>{1E3FDDBD-A15F-42CF-A83E-754476079B30}</Project>
+      <Name>ProjectMercury.Windows</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
       <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>

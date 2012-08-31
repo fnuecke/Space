@@ -32,7 +32,6 @@ namespace Space.ComponentSystem.Factories
         {
             Factories.Clear();
 
-            Load("Data/ArmorFactory", content);
             Load("Data/FuselageFactory", content);
             Load("Data/ReactorFactory", content);
             Load("Data/SensorFactory", content);
@@ -63,6 +62,18 @@ namespace Space.ComponentSystem.Factories
         #region Accessors
 
         /// <summary>
+        /// Gets the factory with the specified name, or null if no such factory exists.
+        /// </summary>
+        /// <param name="name">The name of the factory.</param>
+        /// <returns>The factory with that name, or null.</returns>
+        public static IFactory GetFactory(string name)
+        {
+            IFactory factory;
+            Factories.TryGetValue(name, out factory);
+            return factory;
+        }
+
+        /// <summary>
         /// Samples a new item with the specified name.
         /// </summary>
         /// <param name="manager">The manager.</param>
@@ -73,6 +84,10 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public static int SampleItem(IManager manager, string name, IUniformRandom random)
         {
+            if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
+            {
+                return 0;
+            }
             var factory = Factories[name] as ItemFactory;
             if (factory != null)
             {
@@ -154,7 +169,7 @@ namespace Space.ComponentSystem.Factories
             var factory = Factories[name] as PlanetFactory;
             if (factory != null)
             {
-                return factory.SamplePlanet(manager, center, angle, radius, random);
+                return factory.Sample(manager, center, angle, radius, random);
             }
             return 0;
         }
@@ -178,7 +193,7 @@ namespace Space.ComponentSystem.Factories
             var factory = Factories[name] as SunFactory;
             if (factory != null)
             {
-                return factory.SampleSun(manager, cellCenter, random);
+                return factory.Sample(manager, cellCenter, random);
             }
             return 0;
         }

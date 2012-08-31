@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// The distance enemy units must get closer than for us to attack
         /// them.
         /// </summary>
-        private const float AggroRange = 2500;
+        private const float DefaultAggroRange = 2500;
 
         #endregion
 
@@ -51,8 +51,10 @@ namespace Space.ComponentSystem.Components.Behaviors
             var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
+            var shipInfo = (ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
+            var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, AggroRange, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, sensorRange > 0 ? sensorRange : DefaultAggroRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // See if it has health. Otherwise don't bother attacking.

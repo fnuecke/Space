@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{87B7CA30-F7DE-41EE-BA60-4337DFEE1735}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ProjectMercury.Design</RootNamespace>
+    <AssemblyName>ProjectMercury.Design</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Emitters\CircleEmitterTypeConverter.cs" />
+    <Compile Include="Emitters\ConeEmitterTypeConverter.cs" />
+    <Compile Include="Emitters\MaskEmitterTypeConverter.cs" />
+    <Compile Include="Emitters\EmitterTypeConverter.cs" />
+    <Compile Include="Emitters\LineEmitterTypeConverter.cs" />
+    <Compile Include="Emitters\PolygonEmitterTypeConverter.cs" />
+    <Compile Include="Emitters\PolygonPointCollectionEditor.cs" />
+    <Compile Include="Emitters\RectEmitterTypeConverter.cs" />
+    <Compile Include="Modifiers\ColourInterpolatorModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\ColourMergeModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\ColourModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\DampingModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\ForceInterpolatorModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\HueShiftModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\OpacityInterpolatorModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\OpacityOscillatorTypeConverter.cs" />
+    <Compile Include="Modifiers\RadialForceModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\RectangleConstraintDeflectorTypeConverter.cs" />
+    <Compile Include="Modifiers\RectangleForceModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\RotationRateModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\ScaleInterpolatorModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\ScaleMergeModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\ScaleOscillatorTypeConverter.cs" />
+    <Compile Include="Modifiers\SineForceTypeConverter.cs" />
+    <Compile Include="Modifiers\LinearGravityModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\OpacityModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\RadialGravityModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\RotationModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\ScaleModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\TrajectoryRotationModifierTypeConverter.cs" />
+    <Compile Include="Modifiers\VelocityClampModifierTypeConverter.cs" />
+    <Compile Include="ParticleEffectTypeConverter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SmartMemberDescriptor.cs" />
+    <Compile Include="UITypeEditors\AngleEditor.cs">
+    </Compile>
+    <Compile Include="UITypeEditors\MaskEditor.cs" />
+    <Compile Include="UITypeEditors\PercentEditor.cs" />
+    <Compile Include="UITypeEditors\VariableColourEditor.cs" />
+    <Compile Include="UITypeEditors\VectorColourEditor.cs" />
+    <Compile Include="VariableFloat3TypeConverter.cs" />
+    <Compile Include="VariableFloatTypeConverter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectMercuryWindows\ProjectMercury.Windows.csproj">
+      <Project>{1E3FDDBD-A15F-42CF-A83E-754476079B30}</Project>
+      <Name>ProjectMercury.Windows</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

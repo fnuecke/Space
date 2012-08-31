@@ -1,8 +1,7 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
-using Engine.XnaExtensions;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Factories;
 
 namespace Space.ComponentSystem.Components
 {
@@ -32,24 +31,12 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Properties
+        #region Fields
 
         /// <summary>
-        /// The name of the texture to use for rendering the physics object.
+        /// The factory of this planet, it's "type".
         /// </summary>
-        public string TextureName
-        {
-            get { return _textureName; }
-            set
-            {
-                _textureName = value;
-                Texture = null;
-            }
-        }
-
-        #endregion
-
-        #region Fields
+        public PlanetFactory Factory;
 
         /// <summary>
         /// The scale at which to render the texture.
@@ -57,30 +44,34 @@ namespace Space.ComponentSystem.Components
         public float Radius;
 
         /// <summary>
-        /// The actual texture with the set name.
-        /// </summary>
-        public Texture2D Texture;
-
-        /// <summary>
-        /// The color to use for tinting when rendering.
-        /// </summary>
-        public Color PlanetTint;
-
-        /// <summary>
-        /// The color tint of this planet's atmosphere.
-        /// </summary>
-        public Color AtmosphereTint;
-
-        /// <summary>
         /// The rotation direction of the planet's surface.
         /// </summary>
-        public Vector2 SurfaceRotation;
+        public float SurfaceRotation;
 
         /// <summary>
-        /// Actual texture name. Setter is used to invalidate the actual texture reference,
-        /// so we need to store this ourselves.
+        /// The actual texture with the set name.
         /// </summary>
-        private string _textureName;
+        public Texture2D Albedo;
+
+        /// <summary>
+        /// The actual texture with the set name.
+        /// </summary>
+        public Texture2D Normals;
+
+        /// <summary>
+        /// The actual texture with the set name.
+        /// </summary>
+        public Texture2D Specular;
+
+        /// <summary>
+        /// The actual texture with the set name.
+        /// </summary>
+        public Texture2D Lights;
+
+        /// <summary>
+        /// The actual texture with the set name.
+        /// </summary>
+        public Texture2D Clouds;
 
         #endregion
 
@@ -95,12 +86,14 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherPlanet = (PlanetRenderer)other;
+            Factory = otherPlanet.Factory;
             Radius = otherPlanet.Radius;
-            Texture = otherPlanet.Texture;
-            PlanetTint = otherPlanet.PlanetTint;
-            AtmosphereTint = otherPlanet.AtmosphereTint;
             SurfaceRotation = otherPlanet.SurfaceRotation;
-            TextureName = otherPlanet.TextureName;
+            Albedo = otherPlanet.Albedo;
+            Normals = otherPlanet.Normals;
+            Specular = otherPlanet.Specular;
+            Lights = otherPlanet.Lights;
+            Clouds = otherPlanet.Clouds;
 
             return this;
         }
@@ -108,19 +101,15 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Initialize with the specified parameters.
         /// </summary>
-        /// <param name="planetTexture">The planet texture.</param>
-        /// <param name="planetTint">The planet tint.</param>
+        /// <param name="factory">The factory.</param>
         /// <param name="planetRadius">The planet radius.</param>
-        /// <param name="atmosphereTint">The atmosphere tint.</param>
         /// <param name="surfaceRotation">The rotation direction of the planet's surface</param>
-        public PlanetRenderer Initialize(string planetTexture, Color planetTint,
-            float planetRadius, Color atmosphereTint, Vector2 surfaceRotation)
+        /// <returns></returns>
+        public PlanetRenderer Initialize(PlanetFactory factory, float planetRadius, float surfaceRotation)
         {
+            Factory = factory;
             Radius = planetRadius;
-            PlanetTint = planetTint;
-            AtmosphereTint = atmosphereTint;
             SurfaceRotation = surfaceRotation;
-            TextureName = planetTexture;
 
             return this;
         }
@@ -133,11 +122,14 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
+            Factory = null;
             Radius = 0;
-            Texture = null;
-            PlanetTint = Color.White;
-            AtmosphereTint = Color.Transparent;
-            SurfaceRotation = Vector2.Zero;
+            SurfaceRotation = 0f;
+            Albedo = null;
+            Normals = null;
+            Specular = null;
+            Lights = null;
+            Clouds = null;
         }
 
         #endregion
@@ -154,11 +146,9 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
+                .Write(Factory.Name)
                 .Write(Radius)
-                .Write(PlanetTint)
-                .Write(AtmosphereTint)
-                .Write(SurfaceRotation)
-                .Write(TextureName);
+                .Write(SurfaceRotation);
         }
 
         /// <summary>
@@ -169,11 +159,15 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
+            Factory = FactoryLibrary.GetFactory(packet.ReadString()) as PlanetFactory;
             Radius = packet.ReadSingle();
-            PlanetTint = packet.ReadColor();
-            AtmosphereTint = packet.ReadColor();
-            SurfaceRotation = packet.ReadVector2();
-            TextureName = packet.ReadString();
+            SurfaceRotation = packet.ReadSingle();
+
+            Albedo = null;
+            Normals = null;
+            Specular = null;
+            Lights = null;
+            Clouds = null;
         }
 
         /// <summary>
@@ -197,7 +191,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", TextureName=" + TextureName;
+            return base.ToString() + ", Factory=" + Factory.Name;
         }
 
         #endregion

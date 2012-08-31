@@ -19,6 +19,8 @@ namespace Space.Tools.DataEditor
         {
             InitializeComponent();
 
+            cbType.DisplayMember = "Name";
+
             cbType.BeginUpdate();
             foreach (var type in FactoryManager.GetFactoryTypes())
             {
@@ -29,11 +31,13 @@ namespace Space.Tools.DataEditor
 
         private void AddFactoryDialogLoad(object sender, EventArgs e)
         {
-            if (cbType.Items.Count > 0)
+            if (cbType.Items.Count > 0 && cbType.SelectedIndex < 0)
             {
                 cbType.SelectedIndex = 0;
             }
             tbName.Text = string.Empty;
+
+            cbType.Focus();
         }
 
         private void OkClick(object sender, EventArgs e)

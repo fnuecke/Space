@@ -33,9 +33,6 @@
           <Name>StarterReactor</Name>
         </Item>
         <Item>
-          <Name>StarterArmor</Name>
-        </Item>
-        <Item>
           <Name>StarterSensor</Name>
         </Item>
         <Item>
@@ -65,9 +62,6 @@
         </Item>
         <Item>
           <Name>L1_AI_Reactor</Name>
-        </Item>
-        <Item>
-          <Name>L1_AI_Armor</Name>
         </Item>
         <Item>
           <Name>L1_AI_Thruster</Name>
