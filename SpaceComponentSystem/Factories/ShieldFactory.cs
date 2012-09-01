@@ -3,6 +3,8 @@ using Engine.ComponentSystem;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Design;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Factories
@@ -17,15 +19,43 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Gets or sets the coverage of the shield.
         /// </summary>
-        /// <value>
-        /// The coverage.
-        /// </value>
         [Category("Logic")]
-        [Description("The coverage of this shield, as a percentage. A value of 0 means the shield will cover zero degrees, 1 means it'll cover 360 degrees.")]
+        [Description("The coverage of the shield, as a percentage. 0 means the shield covers nothing, 1 means it covers 360 degrees.")]
         public FloatInterval Coverage
         {
             get { return _coverage; }
             set { _coverage = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the structure texture.
+        /// </summary>
+        [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [DefaultValue(null)]
+        [ContentSerializer(Optional = true)]
+        [Category("Media")]
+        [Description("The texture to use as a structure for the shield's shader.")]
+        public string Structure
+        {
+            get { return _structure; }
+            set { _structure = value; }
+        }
+
+        /// <summary>
+        /// The color tint for generated shields.
+        /// </summary>
+        [Editor("Space.Tools.DataEditor.XnaColorEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [TypeConverter(typeof(ColorConverter))]
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(0xFFFFFFFF)]
+        [Category("Media")]
+        [Description("The color tint to apply to the shader.")]
+        public Color Tint
+        {
+            get { return _tint; }
+            set { _tint = value; }
         }
 
         #endregion
@@ -33,6 +63,10 @@ namespace Space.ComponentSystem.Factories
         #region Backing fields
 
         private FloatInterval _coverage = FloatInterval.Zero;
+
+        private string _structure;
+
+        private Color _tint = Color.White;
 
         #endregion
 
@@ -53,17 +87,17 @@ namespace Space.ComponentSystem.Factories
             var coverage = SampleCoverage(random);
 
             manager.AddComponent<Shield>(entity)
-                .Initialize(coverage)
+                .Initialize(this, coverage)
                 .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
             return SampleAttributes(manager, entity, random);
         }
 
         /// <summary>
-        /// Samples the coverage.
+        /// Samples the coverage of this shield.
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns></returns>
+        /// <returns>The sampled coverage.</returns>
         private float SampleCoverage(IUniformRandom random)
         {
             if (_coverage != null)

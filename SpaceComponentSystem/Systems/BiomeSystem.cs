@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Systems
         /// <value>
         /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
-        public bool IsEnabled { get; set; }
+        public bool Enabled { get; set; }
 
         #endregion
 
@@ -51,7 +51,7 @@ namespace Space.ComponentSystem.Systems
         {
             _session = session;
 
-            IsEnabled = true;
+            Enabled = true;
         }
 
         #endregion

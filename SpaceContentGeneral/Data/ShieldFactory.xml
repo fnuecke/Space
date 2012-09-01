@@ -17,7 +17,10 @@
         <Item>3 ShieldBlockCost</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
       <Coverage>0.5</Coverage>
+      <Structure>Textures/Effects/Shield</Structure>
+      <Tint>7880FFFF</Tint>
     </Item>
   </Asset>
 </XnaContent>

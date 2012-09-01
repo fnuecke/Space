@@ -86,6 +86,7 @@
     <Compile Include="Data\PlayerClassType.cs" />
     <Compile Include="Data\UsableResponse.cs" />
     <Compile Include="Graphics\Planet.cs" />
+    <Compile Include="Graphics\Shield.cs" />
     <Compile Include="Graphics\Sun.cs" />
     <Compile Include="Input\GamePadHelper.cs" />
     <Compile Include="Data\ItemQuality.cs" />

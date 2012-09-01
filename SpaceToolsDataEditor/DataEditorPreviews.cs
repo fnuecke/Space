@@ -555,17 +555,18 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            var entity = factory.Sample(_ingamePreview.Manager, null);
+            var manager = _ingamePreview.Manager;
+            var entity = factory.Sample(manager, null);
             if (entity > 0)
             {
-                var renderer = (TextureRenderer)_ingamePreview.Manager.GetComponent(entity, TextureRenderer.TypeId);
+                var renderer = (TextureRenderer)manager.GetComponent(entity, TextureRenderer.TypeId);
                 if (renderer != null)
                 {
                     renderer.Enabled = true;
                 }
                 if (factory.ModelOffset != Vector2.Zero)
                 {
-                    var transform = (Transform)_ingamePreview.Manager.GetComponent(entity, Transform.TypeId);
+                    var transform = (Transform)manager.GetComponent(entity, Transform.TypeId);
                     if (transform != null)
                     {
                         FarPosition offset;
@@ -574,12 +575,21 @@ namespace Space.Tools.DataEditor
                         transform.SetTranslation(offset);
                     }
                 }
-                var item = (SpaceItem)_ingamePreview.Manager.GetComponent(entity, Item.TypeId);
+                var item = (SpaceItem)manager.GetComponent(entity, Item.TypeId);
 
-                var dummy = _ingamePreview.Manager.AddEntity();
-                _ingamePreview.Manager.AddComponent<ParticleEffects>(dummy);
-                var parentSlot = _ingamePreview.Manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
+                // Add a dummy owner for the item, to apply offset.
+                var dummy = manager.AddEntity();
+                manager.AddComponent<Transform>(dummy);
+                manager.AddComponent<ParticleEffects>(dummy);
+                var parentSlot = manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
                 parentSlot.Item = entity;
+
+                if (factory is ShieldFactory)
+                {
+                    // Add shield preview.
+                    manager.AddComponent<CollidableSphere>(dummy).Initialize(100, 0);
+                    manager.AddComponent<ShieldEnergyStatusEffect>(dummy);
+                }
             }
         }
 
@@ -594,7 +604,12 @@ namespace Space.Tools.DataEditor
                 return;
             }
 
-            factory.Sample(_ingamePreview.Manager, Factions.Player1, FarPosition.Zero, null);
+            var manager = _ingamePreview.Manager;
+            var entity = factory.Sample(manager, Factions.Player1, FarPosition.Zero, null);
+            if (entity > 0)
+            {
+                manager.AddComponent<ShieldEnergyStatusEffect>(entity);
+            }
         }
     }
 }

@@ -15,6 +15,7 @@
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>PoorBasicSensor</Name>
@@ -42,6 +43,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>BasicSensor</Name>
@@ -69,6 +71,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>UncommonBasicSensor</Name>
@@ -96,6 +99,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>RareBasicSensor</Name>
@@ -123,6 +127,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>L1_AI_Sensor</Name>
@@ -138,6 +143,7 @@
         <Item>2000 SensorRange</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
   </Asset>
 </XnaContent>

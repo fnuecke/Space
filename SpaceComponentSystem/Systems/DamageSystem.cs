@@ -37,6 +37,15 @@ namespace Space.ComponentSystem.Systems
                                                            character.GetBaseValue(AttributeType.ShieldDamageReduction));
                         if (reduction > 0)
                         {
+                            // Got some, determine coverage to see if we have a multiplicator.
+                            var coverage = character.GetValue(AttributeType.ShieldCoverage,
+                                                              character.GetBaseValue(AttributeType.ShieldCoverage));
+                            if (coverage > 1f)
+                            {
+                                // Got a surplus, act as damage reduction multiplier.
+                                reduction *= coverage;
+                            }
+
                             // Got some, apply shield armor rating.
                             damage -= reduction;
 

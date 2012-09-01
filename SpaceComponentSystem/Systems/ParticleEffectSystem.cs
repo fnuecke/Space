@@ -36,7 +36,7 @@ namespace Space.ComponentSystem.Systems
         /// Determines whether this system is enabled, i.e. whether it should perform
         /// updates and react to events.
         /// </summary>
-        public bool IsEnabled { get; set; }
+        public bool Enabled { get; set; }
 
         #endregion
 
@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Systems
             _renderer.LoadContent(content);
             _simulationFps = simulationFps;
 
-            IsEnabled = true;
+            Enabled = true;
         }
 
         #endregion

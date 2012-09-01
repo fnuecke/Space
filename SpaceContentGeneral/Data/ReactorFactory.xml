@@ -16,6 +16,7 @@
         <Item>2.5 EnergyRegeneration</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>PoorBasicReactor</Name>
@@ -44,6 +45,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>BasicReactor</Name>
@@ -72,6 +74,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>UncommonBasicReactor</Name>
@@ -100,6 +103,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>RareBasicReactor</Name>
@@ -128,6 +132,7 @@
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>L1_AI_Reactor</Name>
@@ -144,6 +149,7 @@
         <Item>2 to 3 EnergyRegeneration</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
   </Asset>
 </XnaContent>

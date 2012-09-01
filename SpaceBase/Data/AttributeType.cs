@@ -81,6 +81,11 @@ namespace Space.Data
         ShieldBlockCost,
 
         /// <summary>
+        /// Shield coverage angle, i.e. the percentage of the ship covered by the shield.
+        /// </summary>
+        ShieldCoverage,
+
+        /// <summary>
         /// Weapon cooldown modifier for an entity.
         /// </summary>
         WeaponCooldown,

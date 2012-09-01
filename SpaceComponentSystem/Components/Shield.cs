@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Factories;
 
 namespace Space.ComponentSystem.Components
 {
@@ -27,9 +28,19 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// Percentage this shield covers (0 = nothing, 1 = 360 degrees).
+        /// The factory that created this shield.
+        /// </summary>
+        public ShieldFactory Factory;
+
+        /// <summary>
+        /// The shields coverage, as a percentage.
         /// </summary>
         public float Coverage;
+
+        /// <summary>
+        /// The texture to use as a structure for the shield.
+        /// </summary>
+        public Texture2D Structure;
 
         #endregion
 
@@ -44,18 +55,22 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            Coverage = ((Shield)other).Coverage;
+            var otherShield = (Shield)other;
+            Factory = otherShield.Factory;
+            Coverage = otherShield.Coverage;
+            Structure = otherShield.Structure;
 
             return this;
         }
 
         /// <summary>
-        /// Initializes the shield with the specified coverage.
+        /// Initializes the shield with the specified factory.
         /// </summary>
-        /// <param name="coverage">The coverage.</param>
+        /// <param name="factory">The factory.</param>
         /// <returns></returns>
-        public Shield Initialize(float coverage)
+        public Shield Initialize(ShieldFactory factory, float coverage)
         {
+            Factory = factory;
             Coverage = coverage;
 
             return this;
@@ -69,7 +84,9 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
+            Factory = null;
             Coverage = 0f;
+            Structure = null;
         }
 
         #endregion
@@ -86,6 +103,7 @@ namespace Space.ComponentSystem.Components
         public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
         {
             return base.Packetize(packet)
+                .Write(Factory.Name)
                 .Write(Coverage);
         }
 
@@ -97,34 +115,8 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
+            Factory = (ShieldFactory)FactoryLibrary.GetFactory(packet.ReadString());
             Coverage = packet.ReadSingle();
-        }
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Engine.Serialization.Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(Coverage);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Coverage=" + Coverage.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

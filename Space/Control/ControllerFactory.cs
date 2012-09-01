@@ -256,6 +256,7 @@ namespace Space.Control
                     new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
                     new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
                     new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
+                    new ShieldRenderSystem(game.Content, game.GraphicsDevice),
                     new RadarRenderSystem(game.Content, spriteBatch, session)
                 });
 

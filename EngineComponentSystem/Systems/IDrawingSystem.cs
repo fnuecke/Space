@@ -11,7 +11,7 @@
         /// <value>
         /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
-        bool IsEnabled { get; set; }
+        bool Enabled { get; set; }
 
         /// <summary>
         /// Draws the system.
