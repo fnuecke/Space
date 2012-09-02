@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Engine.Serialization;
 
 namespace Engine.FarMath
@@ -35,9 +36,25 @@ namespace Engine.FarMath
         }
 
         /// <summary>
-        /// Keep as private field to avoid manipulation.
+        /// Gets the minimal value that can be represented by a <see cref="FarValue"/>.
         /// </summary>
+        public static FarValue MinValue
+        {
+            get { return ConstMinValue; }
+        }
+
+        /// <summary>
+        /// Gets the maximal value that can be represented by a <see cref="FarValue"/>.
+        /// </summary>
+        public static FarValue MaxValue
+        {
+            get { return ConstMaxValue; }
+        }
+
+        // Keep as private fields to avoid manipulation.
         private static readonly FarValue ConstZero = new FarValue(0);
+        private static readonly FarValue ConstMinValue = new FarValue { _segment = int.MinValue, _offset = -SegmentSize / 2f };
+        private static readonly FarValue ConstMaxValue = new FarValue { _segment = int.MaxValue, _offset = SegmentSize / 2f };
 
         #endregion
 
@@ -46,7 +63,18 @@ namespace Engine.FarMath
         /// <summary>
         /// Returns the segment of this <see cref="FarValue"/>.
         /// </summary>
-        public int Segment { get { return _segment; } }
+        public int Segment
+        {
+            get { return _segment; }
+        }
+
+        /// <summary>
+        /// Gets the offset of the value inside its current segment.
+        /// </summary>
+        public float Offset
+        {
+            get { return _offset; }
+        }
 
         #endregion
 
@@ -85,6 +113,18 @@ namespace Engine.FarMath
         {
             _segment = value / SegmentSize;
             _offset = value % SegmentSize;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FarValue"/> struct.
+        /// </summary>
+        /// <param name="segment">The segment.</param>
+        /// <param name="offset">The offset.</param>
+        public FarValue(int segment, float offset)
+        {
+            _segment = segment;
+            _offset = offset;
+            Normalize();
         }
 
         /// <summary>
@@ -292,6 +332,31 @@ namespace Engine.FarMath
             result = value1 + (value2 - value1) * amount;
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the specified number evaluates to not a number (System.Single.NaN).
+        /// </summary>
+        /// <param name="f">A single-precision floating-point number.</param>
+        /// <returns>
+        ///   <c>true</c> if f evaluates to not a number (System.Single.NaN); otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNaN(FarValue f)
+        {
+            return float.IsNaN(f._offset);
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the specified number evaluates to negative or positive infinity.
+        /// </summary>
+        /// <param name="f">A single-precision floating-point number.</param>
+        /// <returns>
+        ///   <c>true</c> if f evaluates to System.Single.PositiveInfinity or System.Single.NegativeInfinity;
+        //     otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsInfinity(FarValue f)
+        {
+            return float.IsInfinity(f._offset);
+        }
+
         #endregion
 
         #region Operators
@@ -469,6 +534,17 @@ namespace Engine.FarMath
         }
 
         /// <summary>
+        /// Multiplies the specified <see cref="FarValue"/> with the specified <see cref="float"/>.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>The result of the multiplication.</returns>
+        public static FarValue operator *(float value1, FarValue value2)
+        {
+            return value2 * value1;
+        }
+
+        /// <summary>
         /// Multiplies the specified <see cref="FarValue"/> with the specified <see cref="int"/>.
         /// </summary>
         /// <param name="value1">The first value.</param>
@@ -481,6 +557,17 @@ namespace Engine.FarMath
             result._offset = value1._offset * value2;
             result.Normalize();
             return result;
+        }
+
+        /// <summary>
+        /// Multiplies the specified <see cref="FarValue"/> with the specified <see cref="int"/>.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>The result of the multiplication.</returns>
+        public static FarValue operator *(int value1, FarValue value2)
+        {
+            return value2 * value1;
         }
 
         /// <summary>
@@ -759,6 +846,7 @@ namespace Engine.FarMath
         /// </remarks>
         public static explicit operator float(FarValue value)
         {
+            Debug.Assert(value._segment < 16, "Loss of precision when casting large value to float.");
             return value._segment * SegmentSize + value._offset;
         }
 
@@ -774,6 +862,7 @@ namespace Engine.FarMath
         /// </remarks>
         public static explicit operator double(FarValue value)
         {
+            Debug.Assert(value._segment < 16, "Loss of precision when casting large value to double.");
             // Cast offset to double for best possible precision.
             return value._segment * SegmentSize + (double)value._offset;
         }
@@ -881,7 +970,7 @@ namespace Engine.FarMath
         /// </returns>
         public override string ToString()
         {
-            return ((float)this).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return ((decimal)_segment * SegmentSize + (decimal)_offset).ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>

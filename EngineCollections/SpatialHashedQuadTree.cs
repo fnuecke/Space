@@ -20,22 +20,6 @@ namespace Engine.Collections
     /// <typeparam name="T">The type to store in the index.</typeparam>
     public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
-        #region Constants
-
-        /// <summary>
-        /// Amount by which to oversize entry bounds to allow for small movement
-        /// the item without having to update the tree. Idea taken from Box2D.
-        /// </summary>
-        private const int BoundExtension = 10;
-
-        /// <summary>
-        /// Amount by which to oversize entry bounds in the direction they moved
-        /// during an update, to predict future movement. Idea taken from Box2D.
-        /// </summary>
-        private const int MovingBoundMultiplier = 2;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -61,6 +45,18 @@ namespace Engine.Collections
         private readonly int _minNodeBounds;
 
         /// <summary>
+        /// Amount by which to oversize entry bounds to allow for small movement
+        /// the item without having to update the tree. Idea taken from Box2D.
+        /// </summary>
+        private readonly float _boundExtension;
+
+        /// <summary>
+        /// Amount by which to oversize entry bounds in the direction they moved
+        /// during an update, to predict future movement. Idea taken from Box2D.
+        /// </summary>
+        private readonly float _movingBoundMultiplier;
+
+        /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
         private readonly Dictionary<ulong, QuadTree<T>> _entries = new Dictionary<ulong, QuadTree<T>>();
@@ -79,10 +75,14 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="maxEntriesPerNode">The max entries per node in quad trees.</param>
         /// <param name="minNodeBounds">The min node bounds for nodes in quad trees.</param>
-        public SpatialHashedQuadTree(int maxEntriesPerNode, int minNodeBounds)
+        /// <param name="boundExtension">The amount by which to fatten bounds.</param>
+        /// <param name="movingBoundMultiplier">The amount with which to multiply movement delta for fattening.</param>
+        public SpatialHashedQuadTree(int maxEntriesPerNode, int minNodeBounds, float boundExtension = 10, float movingBoundMultiplier = 2)
         {
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
+            _boundExtension = boundExtension;
+            _movingBoundMultiplier = movingBoundMultiplier;
         }
 
         #endregion
@@ -105,7 +105,7 @@ namespace Engine.Collections
             }
 
             // Extend bounds.
-            bounds.Inflate(BoundExtension, BoundExtension);
+            bounds.Inflate(_boundExtension, _boundExtension);
 
             // Add to each cell the element's bounds intersect with.
             foreach (var cell in ComputeCells(bounds))
@@ -152,13 +152,13 @@ namespace Engine.Collections
             // Nothing to do if our approximation in the tree still contains the item.
             if (oldBounds.Contains(newBounds))
             {
-                return true;
+                return false;
             }
 
             // Estimate movement by bounds delta to predict position and
             // extend the bounds accordingly, to avoid tree updates.
-            delta.X *= MovingBoundMultiplier;
-            delta.Y *= MovingBoundMultiplier;
+            delta.X *= _movingBoundMultiplier;
+            delta.Y *= _movingBoundMultiplier;
             var absDeltaX = delta.X < 0 ? -delta.X : delta.X;
             var absDeltaY = delta.Y < 0 ? -delta.Y : delta.Y;
             newBounds.Width += (int)absDeltaX;
@@ -173,7 +173,7 @@ namespace Engine.Collections
             }
 
             // Extend bounds.
-            newBounds.Inflate(BoundExtension, BoundExtension);
+            newBounds.Inflate(_boundExtension, _boundExtension);
 
             // Figure out what changed (the delta in cells).
             var oldCells = new HashSet<Tuple<ulong, TPoint>>(ComputeCells(oldBounds));

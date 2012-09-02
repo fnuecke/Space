@@ -127,7 +127,7 @@ namespace Space.ComponentSystem.Systems
                     if (effect.Enabled && effect.Scale * effect.Intensity > 0.1f)
                     {
                         // Check if it's in bounds, i.e. whether we have to trigger it at all.
-                        Vector2 translation;
+                        FarPosition translation;
                         FarPosition.Transform(ref position, ref transform, out translation);
                         var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
                         bounds.Inflate(256, 256);
@@ -198,7 +198,7 @@ namespace Space.ComponentSystem.Systems
         {
             // Get position of the effect relative to view port.
             var transform = GetTransform();
-            Vector2 translation;
+            FarPosition translation;
             FarPosition.Transform(ref position, ref transform, out translation);
 
             // Check if it's in bounds, i.e. whether we have to render it at all.
