@@ -225,7 +225,8 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(byte[] data)
         {
-            return data == null ? Write(-1) : Write(data, data.Length);
+            // Doing null check here to avoid nullpointer reading length.
+            return data == null ? Write(-1) : Write(data, 0, data.Length);
         }
 
         /// <summary>
@@ -235,11 +236,12 @@ namespace Engine.Serialization
         /// </para>
         /// </summary>
         /// <param name="data">The value to write.</param>
+        /// <param name="offset">The offset at which to start reading.</param>
         /// <param name="length">The number of bytes to write.</param>
         /// <returns>
         /// This packet, for call chaining.
         /// </returns>
-        public Packet Write(byte[] data, int length)
+        public Packet Write(byte[] data, int offset, int length)
         {
             if (data == null)
             {
@@ -248,7 +250,7 @@ namespace Engine.Serialization
             else
             {
                 Write(length);
-                _stream.Write(data, 0, length);
+                _stream.Write(data, offset, length);
                 return this;
             }
         }
@@ -611,12 +613,31 @@ namespace Engine.Serialization
             {
                 return null;
             }
-            else
+
+            var bytes = new byte[length];
+            _stream.Read(bytes, 0, bytes.Length);
+            return bytes;
+        }
+
+        /// <summary>
+        /// Reads a byte array.
+        /// </summary>
+        /// <param name="buffer">The buffer to write to.</param>
+        /// <param name="offset">The offset to start writing at.</param>
+        /// <param name="count">The number of bytes to read.</param>
+        /// <returns>The number of bytes read.</returns>
+        public int ReadByteArray(byte[] buffer, int offset, int count)
+        {
+            if (!HasByteArray())
             {
-                var bytes = new byte[length];
-                _stream.Read(bytes, 0, bytes.Length);
-                return bytes;
+                throw new PacketException("Cannot read byte[].");
             }
+            var length = ReadInt32();
+            if (length != count)
+            {
+                throw new PacketException("Read array size does not match written array's size.");
+            }
+            return _stream.Read(buffer, offset, count);
         }
 
         /// <summary>
