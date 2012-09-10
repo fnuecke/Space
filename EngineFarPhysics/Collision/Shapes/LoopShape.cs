@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -24,9 +24,10 @@
 */
 
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision.Shapes
 {
@@ -115,7 +116,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref FarPosition point)
+        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
             return false;
         }
@@ -163,11 +164,11 @@ namespace FarseerPhysics.Collision.Shapes
                 i2 = 0;
             }
 
-            FarPosition v1 = MathUtils.Multiply(ref transform, Vertices[i1]);
-            FarPosition v2 = MathUtils.Multiply(ref transform, Vertices[i2]);
+            WorldVector2 v1 = MathUtils.Multiply(ref transform, Vertices[i1]);
+            WorldVector2 v2 = MathUtils.Multiply(ref transform, Vertices[i2]);
 
-            aabb.LowerBound = FarPosition.Min(v1, v2);
-            aabb.UpperBound = FarPosition.Max(v1, v2);
+            aabb.LowerBound = WorldVector2.Min(v1, v2);
+            aabb.UpperBound = WorldVector2.Max(v1, v2);
         }
 
         /// <summary>
@@ -178,9 +179,9 @@ namespace FarseerPhysics.Collision.Shapes
             //Does nothing. Loop shapes don't have properties.
         }
 
-        public override float ComputeSubmergedArea(Vector2 normal, FarValue offset, Transform xf, out FarPosition sc)
+        public override float ComputeSubmergedArea(Vector2 normal, WorldSingle offset, Transform xf, out WorldVector2 sc)
         {
-            sc = FarPosition.Zero;
+            sc = WorldVector2.Zero;
             return 0;
         }
     }

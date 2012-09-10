@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -316,12 +316,6 @@ namespace FarseerPhysics.Dynamics
                     if (b.BodyType == BodyType.Static)
                     {
                         continue;
-                    }
-
-                    if ((b.Flags & BodyFlags.AutoSleep) == 0)
-                    {
-                        b.SleepTime = 0.0f;
-                        minSleepTime = 0.0f;
                     }
 
                     if ((b.Flags & BodyFlags.AutoSleep) == 0 ||

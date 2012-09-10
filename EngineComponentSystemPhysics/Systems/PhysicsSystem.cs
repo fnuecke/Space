@@ -1,7 +1,4 @@
 ﻿using Engine.ComponentSystem.Systems;
-using Engine.FarMath;
-using Engine.IO;
-using Engine.XnaExtensions;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 
@@ -87,10 +84,6 @@ namespace Engine.ComponentSystem.FarseerPhysics.Systems
             base.Packetize(packet);
 
             // TODO implement binary serialization for world
-            using (var stream = new PacketStream(packet))
-            {
-                new global::FarseerPhysics.Common.WorldXmlSerializer().Serialize(World, stream);
-            }
 
             return packet;
         }
@@ -104,10 +97,6 @@ namespace Engine.ComponentSystem.FarseerPhysics.Systems
             base.Depacketize(packet);
 
             // TODO implement binary serialization for world
-            using (var stream = new PacketStream(packet))
-            {
-                _world = new global::FarseerPhysics.Common.WorldXmlDeserializer().Deserialize(stream);
-            }
         }
 
         /// <summary>
@@ -119,13 +108,7 @@ namespace Engine.ComponentSystem.FarseerPhysics.Systems
         {
             base.Hash(hasher);
 
-            foreach (var body in _world.BodyList)
-            {
-                hasher.Put(body.Position);
-                hasher.Put(body.Rotation);
-                hasher.Put(body.LinearVelocity);
-                hasher.Put(body.AngularVelocity);
-            }
+            // TODO implement hashing in world
         }
 
         #endregion

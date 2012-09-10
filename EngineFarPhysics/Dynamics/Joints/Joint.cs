@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,8 +25,9 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
+using WorldSingle = Engine.FarMath.FarValue;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -185,13 +186,13 @@ namespace FarseerPhysics.Dynamics.Joints
         /// Get the anchor point on body1 in world coordinates.
         /// </summary>
         /// <value></value>
-        public abstract FarPosition WorldAnchorA { get; }
+        public abstract WorldVector2 WorldAnchorA { get; }
 
         /// <summary>
         /// Get the anchor point on body2 in world coordinates.
         /// </summary>
         /// <value></value>
-        public abstract FarPosition WorldAnchorB { get; set; }
+        public abstract WorldVector2 WorldAnchorB { get; set; }
 
         /// <summary>
         /// Set the user data pointer.

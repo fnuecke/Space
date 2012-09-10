@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -26,9 +26,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision
 {
@@ -192,42 +192,6 @@ namespace FarseerPhysics.Collision
         }
 
         /// <summary>
-        /// Perform some iterations to re-balance the tree.
-        /// </summary>
-        /// <param name="iterations">The iterations.</param>
-        public void Rebalance(int iterations)
-        {
-            if (_root == NullNode)
-            {
-                return;
-            }
-
-            // Rebalance the tree by removing and re-inserting leaves.
-            for (int i = 0; i < iterations; ++i)
-            {
-                int node = _root;
-
-                int bit = 0;
-                while (_nodes[node].IsLeaf() == false)
-                {
-                    // Child selector based on a bit in the path
-                    int selector = (_path >> bit) & 1;
-
-                    // Select the child nod
-                    node = (selector == 0) ? _nodes[node].Child1 : _nodes[node].Child2;
-
-                    // Keep bit between 0 and 31 because _path has 32 bits
-                    // bit = (bit + 1) % 31
-                    bit = (bit + 1) & 0x1F;
-                }
-                ++_path;
-
-                RemoveLeaf(node);
-                InsertLeaf(node);
-            }
-        }
-
-        /// <summary>
         /// Get proxy user data.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -311,8 +275,8 @@ namespace FarseerPhysics.Collision
         /// <param name="input">The ray-cast input data. The ray extends from p1 to p1 + maxFraction * (p2 - p1).</param>
         public void RayCast(Func<RayCastInput, int, float> callback, ref RayCastInput input)
         {
-            FarPosition p1 = input.Point1;
-            FarPosition p2 = input.Point2;
+            WorldVector2 p1 = input.Point1;
+            WorldVector2 p2 = input.Point2;
             Vector2 r = (Vector2)(p2 - p1);
             Debug.Assert(r.LengthSquared() > 0.0f);
             r.Normalize();
@@ -328,9 +292,9 @@ namespace FarseerPhysics.Collision
             // Build a bounding box for the segment.
             AABB segmentAABB = new AABB();
             {
-                FarPosition t = p1 + maxFraction * (p2 - p1);
-                FarPosition.Min(ref p1, ref t, out segmentAABB.LowerBound);
-                FarPosition.Max(ref p1, ref t, out segmentAABB.UpperBound);
+                WorldVector2 t = p1 + maxFraction * (Vector2)(p2 - p1);
+                WorldVector2.Min(ref p1, ref t, out segmentAABB.LowerBound);
+                WorldVector2.Max(ref p1, ref t, out segmentAABB.UpperBound);
             }
 
             _stack.Clear();
@@ -353,7 +317,7 @@ namespace FarseerPhysics.Collision
 
                 // Separating axis for segment (Gino, p80).
                 // |dot(v, p1 - c)| > dot(|v|, h)
-                FarPosition c = node.AABB.Center;
+                WorldVector2 c = node.AABB.Center;
                 Vector2 h = node.AABB.Extents;
                 float separation = Math.Abs(Vector2.Dot(new Vector2(-r.Y, r.X), (Vector2)(p1 - c))) - Vector2.Dot(absV, h);
                 if (separation > 0.0f)
@@ -380,9 +344,9 @@ namespace FarseerPhysics.Collision
                     {
                         // Update segment bounding box.
                         maxFraction = value;
-                        FarPosition t = p1 + maxFraction * (p2 - p1);
-                        segmentAABB.LowerBound = FarPosition.Min(p1, t);
-                        segmentAABB.UpperBound = FarPosition.Max(p1, t);
+                        WorldVector2 t = p1 + maxFraction * (Vector2)(p2 - p1);
+                        segmentAABB.LowerBound = WorldVector2.Min(p1, t);
+                        segmentAABB.UpperBound = WorldVector2.Max(p1, t);
                     }
                 }
                 else

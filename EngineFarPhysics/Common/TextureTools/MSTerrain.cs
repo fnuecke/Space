@@ -126,7 +126,7 @@ namespace FarseerPhysics.Common
             _bodyMap = new List<Body>[_xnum, _ynum];
 
             // make sure to mark the dirty area to an infinitely small box
-            _dirtyArea = new AABB(new FarPosition(float.MaxValue, float.MaxValue), new FarPosition(float.MinValue, float.MinValue));
+            _dirtyArea = new AABB((FarPosition)new Vector2(float.MaxValue, float.MaxValue), (FarPosition)new Vector2(float.MinValue, float.MinValue));
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace FarseerPhysics.Common
                 }
             }
 
-            _dirtyArea = new AABB(new FarPosition(float.MaxValue, float.MaxValue), new FarPosition(float.MinValue, float.MinValue));
+            _dirtyArea = new AABB((FarPosition)new Vector2(float.MaxValue, float.MaxValue), (FarPosition)new Vector2(float.MinValue, float.MinValue));
         }
 
         private void GenerateTerrain(int gx, int gy)
@@ -318,7 +318,7 @@ namespace FarseerPhysics.Common
             float ax = gx * CellSize;
             float ay = gy * CellSize;
 
-            List<Vertices> polys = MarchingSquares.DetectSquares(new AABB(new FarPosition(ax, ay), new FarPosition(ax + CellSize, ay + CellSize)), SubCellSize, SubCellSize, _terrainMap, Iterations, true);
+            List<Vertices> polys = MarchingSquares.DetectSquares(new AABB((FarPosition)new Vector2(ax, ay), (FarPosition)new Vector2(ax + CellSize, ay + CellSize)), SubCellSize, SubCellSize, _terrainMap, Iterations, true);
             if (polys.Count == 0) return;
 
             _bodyMap[gx, gy] = new List<Body>();

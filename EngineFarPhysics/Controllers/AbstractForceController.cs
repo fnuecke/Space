@@ -1,7 +1,7 @@
 ﻿using System;
-using Engine.FarMath;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Controllers
 {
@@ -91,7 +91,7 @@ namespace FarseerPhysics.Controllers
             Enabled = true;
 
             Strength = 1.0f;
-            Position = new FarPosition(0, 0);
+            Position = WorldVector2.Zero;
             MaximumSpeed = 100.0f;
             TimingMode = TimingModes.Switched;
             ImpulseTime = 0.0f;
@@ -142,7 +142,7 @@ namespace FarseerPhysics.Controllers
         /// Position of the Force. Can be ignored (left at (0,0) for forces
         /// that are not position-dependent
         /// </summary>
-        public FarPosition Position { get; set; }
+        public WorldVector2 Position { get; set; }
 
         /// <summary>
         /// Maximum speed of the bodies. Bodies that are travelling faster are

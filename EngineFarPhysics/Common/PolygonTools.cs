@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.FarMath;
 using Microsoft.Xna.Framework;
 
 namespace FarseerPhysics.Common
@@ -35,14 +34,17 @@ namespace FarseerPhysics.Common
         {
             Vertices vertices = CreateRectangle(hx, hy);
 
-            Transform xf = new Transform();
-            xf.Position = (FarPosition)center;
-            xf.R.Set(angle);
+            //Transform xf = new Transform();
+            //xf.Position = center;
+            //xf.R.Set(angle);
+            float c = (float)Math.Cos(angle), s = (float)Math.Sin(angle);
 
             // Transform vertices
             for (int i = 0; i < 4; ++i)
             {
-                vertices[i] = (Vector2)MathUtils.Multiply(ref xf, vertices[i]);
+                //MathUtils.Multiply(ref xf, vertices[i]);
+                vertices[i] = new Vector2(center.X + c * vertices[i].X - s * vertices[i].Y,
+                                          center.Y + s * vertices[i].X + c * vertices[i].Y);
             }
 
             return vertices;

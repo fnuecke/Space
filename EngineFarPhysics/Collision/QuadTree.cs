@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 public class Element<T>
 {
@@ -140,30 +141,30 @@ public class QuadTree<T>
     /// </summary>
     /// <param name="aabb"></param>
     /// <returns></returns>
-    public static bool RayCastAABB(AABB aabb, FarPosition p1, FarPosition p2)
+    public static bool RayCastAABB(AABB aabb, WorldVector2 p1, WorldVector2 p2)
     {
         AABB segmentAABB = new AABB();
         {
-            FarPosition.Min(ref p1, ref p2, out segmentAABB.LowerBound);
-            FarPosition.Max(ref p1, ref p2, out segmentAABB.UpperBound);
+            WorldVector2.Min(ref p1, ref p2, out segmentAABB.LowerBound);
+            WorldVector2.Max(ref p1, ref p2, out segmentAABB.UpperBound);
         }
         if (!AABB.TestOverlap(aabb, segmentAABB)) return false;
 
         Vector2 rayDir = (Vector2)(p2 - p1);
-        FarPosition rayPos = p1;
+        WorldVector2 rayPos = p1;
 
         Vector2 norm = new Vector2(-rayDir.Y, rayDir.X); //normal to ray
         if (norm.Length() == 0.0)
             return true; //if ray is just a point, return true (iff point is within aabb, as tested earlier)
         norm.Normalize();
 
-        FarValue dPos = FarPosition.Dot(rayPos, norm);
+        WorldSingle dPos = WorldVector2.Dot(rayPos, norm);
 
-        FarPosition[] verts = aabb.GetVertices();
-        float d0 = (float)(FarPosition.Dot(verts[0], norm) - dPos);
+        WorldVector2[] verts = aabb.GetVertices();
+        float d0 = (float)(WorldVector2.Dot(verts[0], norm) - dPos);
         for (int i = 1; i < 4; i++)
         {
-            float d = (float)(FarPosition.Dot(verts[i], norm) - dPos);
+            float d = (float)(WorldVector2.Dot(verts[i], norm) - dPos);
             if (Math.Sign(d) != Math.Sign(d0))
                 //return true if the ray splits the vertices (ie: sign of dot products with normal are not all same)
                 return true;
@@ -201,8 +202,8 @@ public class QuadTree<T>
         stack.Push(this);
 
         float maxFraction = input.MaxFraction;
-        FarPosition p1 = input.Point1;
-        FarPosition p2 = p1 + (input.Point2 - input.Point1) * maxFraction;
+        WorldVector2 p1 = input.Point1;
+        WorldVector2 p2 = p1 + (Vector2)(input.Point2 - input.Point1) * maxFraction;
 
         while (stack.Count > 0)
         {
@@ -229,7 +230,7 @@ public class QuadTree<T>
                     continue;
 
                 maxFraction = value;
-                p2 = p1 + (input.Point2 - input.Point1) * maxFraction; //update segment endpoint
+                p2 = p1 + (Vector2)(input.Point2 - input.Point1) * maxFraction; //update segment endpoint
             }
             if (IsPartitioned)
                 foreach (QuadTree<T> st in qt.SubTrees)

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -24,9 +24,10 @@
 */
 
 using System;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision.Shapes
 {
@@ -177,7 +178,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public abstract bool TestPoint(ref Transform transform, ref FarPosition point);
+        public abstract bool TestPoint(ref Transform transform, ref WorldVector2 point);
 
         /// <summary>
         /// Cast a ray against a child shape.
@@ -218,6 +219,6 @@ namespace FarseerPhysics.Collision.Shapes
             return false;
         }
 
-        public abstract float ComputeSubmergedArea(Vector2 normal, FarValue offset, Transform xf, out FarPosition sc);
+        public abstract float ComputeSubmergedArea(Vector2 normal, WorldSingle offset, Transform xf, out WorldVector2 sc);
     }
 }

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,10 +25,10 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision
 {
@@ -198,12 +198,12 @@ namespace FarseerPhysics.Collision
         /// <summary>
         /// Closest point on shapeA
         /// </summary>
-        public FarPosition PointA;
+        public WorldVector2 PointA;
 
         /// <summary>
         /// Closest point on shapeB
         /// </summary>
-        public FarPosition PointB;
+        public WorldVector2 PointB;
     }
 
     internal struct SimplexVertex
@@ -231,12 +231,12 @@ namespace FarseerPhysics.Collision
         /// <summary>
         /// Support point in proxyA
         /// </summary>
-        public FarPosition WA;
+        public WorldVector2 WA;
 
         /// <summary>
         /// Support point in proxyB
         /// </summary>
-        public FarPosition WB;
+        public WorldVector2 WB;
     }
 
     internal struct Simplex
@@ -358,13 +358,13 @@ namespace FarseerPhysics.Collision
             }
         }
 
-        internal void GetWitnessPoints(out FarPosition pA, out FarPosition pB)
+        internal void GetWitnessPoints(out WorldVector2 pA, out WorldVector2 pB)
         {
             switch (Count)
             {
                 case 0:
-                    pA = FarPosition.Zero;
-                    pB = FarPosition.Zero;
+                    pA = WorldVector2.Zero;
+                    pB = WorldVector2.Zero;
                     Debug.Assert(false);
                     break;
 
@@ -376,10 +376,13 @@ namespace FarseerPhysics.Collision
                 case 2:
                     pA = V[0].A * V[0].WA + V[1].A * V[1].WA;
                     pB = V[0].A * V[0].WB + V[1].A * V[1].WB;
+                    //pA = V[0].WA + V[1].A * (Vector2)(V[1].WA - V[0].WA);
+                    //pB = V[0].WB + V[1].A * (Vector2)(V[1].WB - V[0].WB);
                     break;
 
                 case 3:
                     pA = V[0].A * V[0].WA + V[1].A * V[1].WA + V[2].A * V[2].WA;
+                    //pA = V[0].WA + V[1].A * (Vector2)(V[1].WA - V[0].WA) + V[2].A * (Vector2)(V[2].WA - V[0].WA);
                     pB = pA;
                     break;
 
@@ -770,7 +773,7 @@ namespace FarseerPhysics.Collision
                 {
                     // Shapes are overlapped when radii are considered.
                     // Move the witness points to the middle.
-                    FarPosition p = 0.5f * (output.PointA + output.PointB);
+                    WorldVector2 p = output.PointA + 0.5f * (Vector2)(output.PointB - output.PointA);
                     output.PointA = p;
                     output.PointB = p;
                     output.Distance = 0.0f;

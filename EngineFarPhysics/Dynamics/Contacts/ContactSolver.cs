@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,11 +25,11 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Contacts
 {
@@ -122,7 +122,7 @@ namespace FarseerPhysics.Dynamics.Contacts
                 cc.PointCount = manifold.PointCount;
 
                 cc.LocalNormal = manifold.LocalNormal;
-                cc.LocalPoint = (Vector2)manifold.LocalPoint;
+                cc.LocalPoint = manifold.LocalPoint;
                 cc.RadiusA = radiusA;
                 cc.RadiusB = radiusB;
                 cc.Type = manifold.Type;
@@ -174,7 +174,7 @@ namespace FarseerPhysics.Dynamics.Contacts
                 float wB = bodyB.AngularVelocity;
 
                 Debug.Assert(manifold.PointCount > 0);
-                FixedArray2<FarPosition> points;
+                FixedArray2<WorldVector2> points;
 
                 Collision.Collision.GetWorldManifold(ref manifold, ref bodyA.Xf, radiusA, ref bodyB.Xf, radiusB,
                                                      out cc.Normal, out points);
@@ -238,7 +238,7 @@ namespace FarseerPhysics.Dynamics.Contacts
                     float k12 = invMassA + invMassB + invIA * rn1A * rn2A + invIB * rn1B * rn2B;
 
                     // Ensure a reasonable condition number.
-                    const float k_maxConditionNumber = 100.0f;
+                    const float k_maxConditionNumber = 1000.0f;
                     if (k11 * k11 < k_maxConditionNumber * (k11 * k22 - k12 * k12))
                     {
                         // K is safe to invert.
@@ -466,18 +466,18 @@ namespace FarseerPhysics.Dynamics.Contacts
 
 #if B2_DEBUG_SOLVER 
                             
-                            float k_errorTol = 1e-3f;
+			                float k_errorTol = 1e-3f;
 
-                            // Postconditions
-                            dv1 = vB + MathUtils.Cross(wB, cp1.rB) - vA - MathUtils.Cross(wA, cp1.rA);
-                            dv2 = vB + MathUtils.Cross(wB, cp2.rB) - vA - MathUtils.Cross(wA, cp2.rA);
+					        // Postconditions
+					        dv1 = vB + MathUtils.Cross(wB, cp1.rB) - vA - MathUtils.Cross(wA, cp1.rA);
+					        dv2 = vB + MathUtils.Cross(wB, cp2.rB) - vA - MathUtils.Cross(wA, cp2.rA);
 
-                            // Compute normal velocity
-                            vn1 = Vector2.Dot(dv1, normal);
-                            vn2 = Vector2.Dot(dv2, normal);
+					        // Compute normal velocity
+					        vn1 = Vector2.Dot(dv1, normal);
+					        vn2 = Vector2.Dot(dv2, normal);
 
-                            Debug.Assert(MathUtils.Abs(vn1 - cp1.velocityBias) < k_errorTol);
-                            Debug.Assert(MathUtils.Abs(vn2 - cp2.velocityBias) < k_errorTol);
+					        Debug.Assert(MathUtils.Abs(vn1 - cp1.velocityBias) < k_errorTol);
+					        Debug.Assert(MathUtils.Abs(vn2 - cp2.velocityBias) < k_errorTol);
 #endif
                             break;
                         }
@@ -523,12 +523,12 @@ namespace FarseerPhysics.Dynamics.Contacts
 
 #if B2_DEBUG_SOLVER 
     // Postconditions
-                            dv1 = vB + MathUtils.Cross(wB, cp1.rB) - vA - MathUtils.Cross(wA, cp1.rA);
+					        dv1 = vB + MathUtils.Cross(wB, cp1.rB) - vA - MathUtils.Cross(wA, cp1.rA);
 
-                            // Compute normal velocity
-                            vn1 = Vector2.Dot(dv1, normal);
+					        // Compute normal velocity
+					        vn1 = Vector2.Dot(dv1, normal);
 
-                            Debug.Assert(MathUtils.Abs(vn1 - cp1.velocityBias) < k_errorTol);
+					        Debug.Assert(MathUtils.Abs(vn1 - cp1.velocityBias) < k_errorTol);
 #endif
                             break;
                         }
@@ -575,12 +575,12 @@ namespace FarseerPhysics.Dynamics.Contacts
 
 #if B2_DEBUG_SOLVER 
     // Postconditions
-                            dv2 = vB + MathUtils.Cross(wB, cp2.rB) - vA - MathUtils.Cross(wA, cp2.rA);
+					        dv2 = vB + MathUtils.Cross(wB, cp2.rB) - vA - MathUtils.Cross(wA, cp2.rA);
 
-                            // Compute normal velocity
-                            vn2 = Vector2.Dot(dv2, normal);
+					        // Compute normal velocity
+					        vn2 = Vector2.Dot(dv2, normal);
 
-                            Debug.Assert(MathUtils.Abs(vn2 - cp2.velocityBias) < k_errorTol);
+					        Debug.Assert(MathUtils.Abs(vn2 - cp2.velocityBias) < k_errorTol);
 #endif
                             break;
                         }
@@ -679,7 +679,7 @@ namespace FarseerPhysics.Dynamics.Contacts
                 for (int j = 0; j < c.PointCount; ++j)
                 {
                     Vector2 normal;
-                    FarPosition point;
+                    WorldVector2 point;
                     float separation;
 
                     Solve(c, j, out normal, out point, out separation);
@@ -726,7 +726,7 @@ namespace FarseerPhysics.Dynamics.Contacts
             return minSeparation >= -1.5f * Settings.LinearSlop;
         }
 
-        private static void Solve(ContactConstraint cc, int index, out Vector2 normal, out FarPosition point,
+        private static void Solve(ContactConstraint cc, int index, out Vector2 normal, out WorldVector2 point,
                                   out float separation)
         {
             Debug.Assert(cc.PointCount > 0);
@@ -737,8 +737,8 @@ namespace FarseerPhysics.Dynamics.Contacts
             {
                 case ManifoldType.Circles:
                     {
-                        FarPosition pointA = cc.BodyA.GetWorldPoint(ref cc.LocalPoint);
-                        FarPosition pointB = cc.BodyB.GetWorldPoint(ref cc.Points[0].LocalPoint);
+                        WorldVector2 pointA = cc.BodyA.GetWorldPoint(ref cc.LocalPoint);
+                        WorldVector2 pointB = cc.BodyB.GetWorldPoint(ref cc.Points[0].LocalPoint);
                         float a = (float)(pointA.X - pointB.X) * (float)(pointA.X - pointB.X) +
                                   (float)(pointA.Y - pointB.Y) * (float)(pointA.Y - pointB.Y);
                         if (a > Settings.Epsilon * Settings.Epsilon)
@@ -754,19 +754,18 @@ namespace FarseerPhysics.Dynamics.Contacts
                             normal.Y = 0;
                         }
 
-                        point = 0.5f * (pointA + pointB);
-                        separation = (float)(pointB.X - pointA.X) * normal.X + (float)(pointB.Y - pointA.Y) * normal.Y - cc.RadiusA -
-                                     cc.RadiusB;
+                        //point = 0.5f * (pointA + pointB);
+                        point = pointA + (Vector2)(pointB - pointA) * 0.5f;
+                        separation = (float)(pointB.X - pointA.X) * normal.X + (float)(pointB.Y - pointA.Y) * normal.Y - cc.RadiusA - cc.RadiusB;
                     }
                     break;
 
                 case ManifoldType.FaceA:
                     {
                         normal = cc.BodyA.GetWorldVector(ref cc.LocalNormal);
-                        FarPosition planePoint = cc.BodyA.GetWorldPoint(ref cc.LocalPoint);
-                        FarPosition clipPoint = cc.BodyB.GetWorldPoint(ref cc.Points[index].LocalPoint);
-                        separation = (float)(clipPoint.X - planePoint.X) * normal.X + (float)(clipPoint.Y - planePoint.Y) * normal.Y -
-                                     cc.RadiusA - cc.RadiusB;
+                        WorldVector2 planePoint = cc.BodyA.GetWorldPoint(ref cc.LocalPoint);
+                        WorldVector2 clipPoint = cc.BodyB.GetWorldPoint(ref cc.Points[index].LocalPoint);
+                        separation = (float)(clipPoint.X - planePoint.X) * normal.X + (float)(clipPoint.Y - planePoint.Y) * normal.Y - cc.RadiusA - cc.RadiusB;
                         point = clipPoint;
                     }
                     break;
@@ -774,11 +773,10 @@ namespace FarseerPhysics.Dynamics.Contacts
                 case ManifoldType.FaceB:
                     {
                         normal = cc.BodyB.GetWorldVector(ref cc.LocalNormal);
-                        FarPosition planePoint = cc.BodyB.GetWorldPoint(ref cc.LocalPoint);
+                        WorldVector2 planePoint = cc.BodyB.GetWorldPoint(ref cc.LocalPoint);
 
-                        FarPosition clipPoint = cc.BodyA.GetWorldPoint(ref cc.Points[index].LocalPoint);
-                        separation = (float)(clipPoint.X - planePoint.X) * normal.X + (float)(clipPoint.Y - planePoint.Y) * normal.Y -
-                                     cc.RadiusA - cc.RadiusB;
+                        WorldVector2 clipPoint = cc.BodyA.GetWorldPoint(ref cc.Points[index].LocalPoint);
+                        separation = (float)(clipPoint.X - planePoint.X) * normal.X + (float)(clipPoint.Y - planePoint.Y) * normal.Y - cc.RadiusA - cc.RadiusB;
                         point = clipPoint;
 
                         // Ensure normal points from A to B
@@ -786,7 +784,7 @@ namespace FarseerPhysics.Dynamics.Contacts
                     }
                     break;
                 default:
-                    point = FarPosition.Zero;
+                    point = WorldVector2.Zero;
                     separation = 0.0f;
                     break;
             }

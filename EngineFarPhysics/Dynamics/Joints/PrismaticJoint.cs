@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,9 +25,9 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -157,12 +157,12 @@ namespace FarseerPhysics.Dynamics.Joints
             _limitState = LimitState.Inactive;
         }
 
-        public override FarPosition WorldAnchorA
+        public override WorldVector2 WorldAnchorA
         {
             get { return BodyA.GetWorldPoint(LocalAnchorA); }
         }
 
-        public override FarPosition WorldAnchorB
+        public override WorldVector2 WorldAnchorB
         {
             get { return BodyB.GetWorldPoint(LocalAnchorB); }
             set { Debug.Assert(false, "You can't set the world anchor on this joint type."); }
@@ -197,9 +197,9 @@ namespace FarseerPhysics.Dynamics.Joints
 
                 Vector2 r1 = MathUtils.Multiply(ref xf1.R, LocalAnchorA - BodyA.LocalCenter);
                 Vector2 r2 = MathUtils.Multiply(ref xf2.R, LocalAnchorB - BodyB.LocalCenter);
-                FarPosition p1 = BodyA.Sweep.C + r1;
-                FarPosition p2 = BodyB.Sweep.C + r2;
-                Vector2 d = (Vector2)(p2 - p1);
+                WorldVector2 p1 = BodyA.Sweep.C;
+                WorldVector2 p2 = BodyB.Sweep.C;
+                Vector2 d = (Vector2)(p2 - p1) + r2 - r1;
                 Vector2 axis = BodyA.GetWorldVector(ref _localXAxis1);
 
                 Vector2 v1 = BodyA.LinearVelocityInternal;
@@ -225,8 +225,12 @@ namespace FarseerPhysics.Dynamics.Joints
                 Debug.Assert(BodyA.FixedRotation == false || BodyB.FixedRotation == false,
                              "Warning: limits does currently not work with fixed rotation");
 
-                WakeBodies();
-                _enableLimit = value;
+				if (value != _enableLimit)
+				{
+					WakeBodies();
+					_enableLimit = value;
+					_impulse.Z = 0;
+				}
             }
         }
 
@@ -239,8 +243,12 @@ namespace FarseerPhysics.Dynamics.Joints
             get { return _lowerTranslation; }
             set
             {
-                WakeBodies();
-                _lowerTranslation = value;
+				if (value != _lowerTranslation)
+				{
+					WakeBodies();
+					_lowerTranslation = value;
+					_impulse.Z = 0.0f;
+				}
             }
         }
 
@@ -253,10 +261,30 @@ namespace FarseerPhysics.Dynamics.Joints
             get { return _upperTranslation; }
             set
             {
-                WakeBodies();
-                _upperTranslation = value;
+				if (value != _upperTranslation)
+				{
+					WakeBodies();
+					_upperTranslation = value;
+					_impulse.Z = 0.0f;
+				}
             }
         }
+
+		/// <summary>
+		/// Set the joint limits, usually in meters.
+		/// </summary>
+		/// <param name="lower"></param>
+		/// <param name="upper"></param>
+		public void SetLimits(float lower, float upper)
+		{
+			if (upper != _upperTranslation || lower != _lowerTranslation)
+			{
+				WakeBodies();
+				_upperTranslation = upper;
+				_lowerTranslation = lower;
+				_impulse.Z = 0.0f;
+			}
+		}
 
         /// <summary>
         /// Is the joint motor enabled?
@@ -301,14 +329,19 @@ namespace FarseerPhysics.Dynamics.Joints
         }
 
         /// <summary>
-        /// Get the current motor force, usually in N.
+        /// Get the current motor impulse, usually in N.
         /// </summary>
         /// <value></value>
-        public float MotorForce
+        public float MotorImpulse
         {
             get { return _motorImpulse; }
             set { _motorImpulse = value; }
         }
+
+		public float GetMotorForce(float inv_dt)
+		{
+			return inv_dt * _motorImpulse;
+		}
 
         public Vector2 LocalXAxis1
         {
@@ -556,10 +589,10 @@ namespace FarseerPhysics.Dynamics.Joints
             Body b1 = BodyA;
             Body b2 = BodyB;
 
-            FarPosition c1 = b1.Sweep.C;
+            WorldVector2 c1 = b1.Sweep.C;
             float a1 = b1.Sweep.A;
 
-            FarPosition c2 = b2.Sweep.C;
+            WorldVector2 c2 = b2.Sweep.C;
             float a2 = b2.Sweep.A;
 
             // Solve linear limit constraint.

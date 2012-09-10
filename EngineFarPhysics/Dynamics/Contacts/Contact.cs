@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -22,15 +22,16 @@
 * misrepresented as being the original software. 
 * 3. This notice may not be removed or altered from any source distribution. 
 */
+#define USE_ACTIVE_CONTACT_SET
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Contacts
 {
@@ -162,6 +163,9 @@ namespace FarseerPhysics.Dynamics.Contacts
         /// Enable/disable this contact. This can be used inside the pre-solve
         /// contact listener. The contact is only disabled for the current
         /// time step (or sub-step in continuous collisions).
+		/// NOTE: If you are setting Enabled to a constant true or false,
+		/// use the explicit Enable() or Disable() functions instead to 
+		/// save the CPU from doing a branch operation.
         public bool Enabled
         {
             set
@@ -178,6 +182,22 @@ namespace FarseerPhysics.Dynamics.Contacts
 
             get { return (Flags & ContactFlags.Enabled) == ContactFlags.Enabled; }
         }
+
+		/// <summary>
+		/// Enable this contact.
+		/// </summary>
+		public void Enable()
+		{
+			Flags |= ContactFlags.Enabled;
+		}
+
+		/// <summary>
+		/// Disable this contact.
+		/// </summary>
+		public void Disable()
+		{
+			Flags &= ~ContactFlags.Enabled;
+		}
 
         /// <summary>
         /// Get the child primitive index for fixture A.
@@ -204,7 +224,7 @@ namespace FarseerPhysics.Dynamics.Contacts
         /// <summary>
         /// Gets the world manifold.
         /// </summary>
-        public void GetWorldManifold(out Vector2 normal, out FixedArray2<FarPosition> points)
+        public void GetWorldManifold(out Vector2 normal, out FixedArray2<WorldVector2> points)
         {
             Body bodyA = FixtureA.Body;
             Body bodyB = FixtureB.Body;
@@ -341,41 +361,94 @@ namespace FarseerPhysics.Dynamics.Contacts
                 Flags &= ~ContactFlags.Touching;
             }
 
-            if (wasTouching == false && touching)
-            {
-                //Report the collision to both participants:
-                if (FixtureA.OnCollision != null)
-                    Enabled = FixtureA.OnCollision(FixtureA, FixtureB, this);
+			if (wasTouching == false)
+			{
+				if (touching)
+				{
+#if true
+					bool enabledA, enabledB;
 
-                //Reverse the order of the reported fixtures. The first fixture is always the one that the
-                //user subscribed to.
-                if (FixtureB.OnCollision != null)
-                    Enabled = FixtureB.OnCollision(FixtureB, FixtureA, this);
+                    // Keep these, in case they're unset in event handlers.
+				    Fixture fixtureA = FixtureA;
+                    Fixture fixtureB = FixtureB;
 
-                //BeginContact can also return false and disable the contact
-                if (contactManager.BeginContact != null)
-                    Enabled = contactManager.BeginContact(this);
+					// Report the collision to both participants. Track which ones returned true so we can
+					// later call OnSeparation if the contact is disabled for a different reason.
+					if (fixtureA.OnCollision != null)
+						enabledA = fixtureA.OnCollision(fixtureA, fixtureB, this);
+					else
+						enabledA = true;
 
-                //if the user disabled the contact (needed to exclude it in TOI solver), we also need to mark
-                //it as not touching.
-                if (Enabled == false)
-                    Flags &= ~ContactFlags.Touching;
-            }
+					// Reverse the order of the reported fixtures. The first fixture is always the one that the
+					// user subscribed to.
+					if (fixtureB.OnCollision != null)
+						enabledB = fixtureB.OnCollision(fixtureB, fixtureA, this);
+					else
+						enabledB = true;
 
-            if (wasTouching && touching == false)
-            {
-                //Report the separation to both participants:
-                if (FixtureA != null && FixtureA.OnSeparation != null)
-                    FixtureA.OnSeparation(FixtureA, FixtureB);
+					Enabled = enabledA && enabledB;
 
-                //Reverse the order of the reported fixtures. The first fixture is always the one that the
-                //user subscribed to.
-                if (FixtureB != null && FixtureB.OnSeparation != null)
-                    FixtureB.OnSeparation(FixtureB, FixtureA);
+					// BeginContact can also return false and disable the contact
+					if (enabledA && enabledB && contactManager.BeginContact != null)
+					{
+						Enabled = contactManager.BeginContact(this);
+					}
 
-                if (contactManager.EndContact != null)
-                    contactManager.EndContact(this);
-            }
+					// If the user disabled the contact (needed to exclude it in TOI solver) at any point by
+					// any of the callbacks, we need to mark it as not touching and call any separation
+					// callbacks for fixtures that didn't explicitly disable the collision.
+					if(!Enabled)
+					{
+						Flags &= ~ContactFlags.Touching;
+
+                        if (enabledA && fixtureA.OnSeparation != null)
+						{
+							fixtureA.OnSeparation(fixtureA, fixtureB);
+						}
+						if (enabledB && fixtureB.OnSeparation != null)
+						{
+							fixtureB.OnSeparation(fixtureB, fixtureA);
+						}
+					}
+
+#else
+					//Report the collision to both participants:
+					if (FixtureA.OnCollision != null)
+						Enabled = FixtureA.OnCollision(FixtureA, FixtureB, this);
+
+					//Reverse the order of the reported fixtures. The first fixture is always the one that the
+					//user subscribed to.
+					if (FixtureB.OnCollision != null)
+						Enabled = FixtureB.OnCollision(FixtureB, FixtureA, this);
+
+					//BeginContact can also return false and disable the contact
+					if (contactManager.BeginContact != null)
+						Enabled = contactManager.BeginContact(this);
+
+					//if the user disabled the contact (needed to exclude it in TOI solver), we also need to mark
+					//it as not touching.
+					if (Enabled == false)
+						Flags &= ~ContactFlags.Touching;
+#endif
+				}
+			}
+			else
+			{
+				if (touching == false)
+				{
+					//Report the separation to both participants:
+					if (FixtureA != null && FixtureA.OnSeparation != null)
+						FixtureA.OnSeparation(FixtureA, FixtureB);
+
+					//Reverse the order of the reported fixtures. The first fixture is always the one that the
+					//user subscribed to.
+					if (FixtureB != null && FixtureB.OnSeparation != null)
+						FixtureB.OnSeparation(FixtureB, FixtureA);
+
+					if (contactManager.EndContact != null)
+						contactManager.EndContact(this);
+				}
+			}
 
             if (sensor)
                 return;
@@ -479,7 +552,10 @@ namespace FarseerPhysics.Dynamics.Contacts
         }
 
         internal void Destroy()
-        {
+       {
+#if USE_ACTIVE_CONTACT_SET
+			FixtureA.Body.World.ContactManager.RemoveActiveContact(this);
+#endif
             FixtureA.Body.World.ContactPool.Enqueue(this);
             Reset(null, 0, null, 0);
         }

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -24,9 +24,9 @@
 */
 
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -116,8 +116,7 @@ namespace FarseerPhysics.Dynamics.Joints
                 case JointType.FixedPrismatic:
                     BodyA = jointA.BodyA;
                     _fixedPrismatic1 = (FixedPrismaticJoint)jointA;
-                    //LocalAnchor1 = _fixedPrismatic1.LocalAnchorA;
-                    LocalAnchor1 = BodyA.GetLocalPoint(_fixedPrismatic1.WorldAnchorA);
+                    LocalAnchor1 = BodyA.GetLocalPoint(_fixedPrismatic1.LocalAnchorA);
                     coordinate1 = _fixedPrismatic1.JointTranslation;
                     break;
             }
@@ -145,8 +144,7 @@ namespace FarseerPhysics.Dynamics.Joints
                 case JointType.FixedPrismatic:
                     BodyB = jointB.BodyA;
                     _fixedPrismatic2 = (FixedPrismaticJoint)jointB;
-                    //LocalAnchor2 = _fixedPrismatic2.LocalAnchorA;
-                    LocalAnchor2 = BodyA.GetLocalPoint(_fixedPrismatic2.WorldAnchorA);
+                    LocalAnchor2 = BodyB.GetLocalPoint(_fixedPrismatic2.LocalAnchorA);
                     coordinate2 = _fixedPrismatic2.JointTranslation;
                     break;
             }
@@ -154,12 +152,12 @@ namespace FarseerPhysics.Dynamics.Joints
             _ant = coordinate1 + Ratio * coordinate2;
         }
 
-        public override FarPosition WorldAnchorA
+        public override WorldVector2 WorldAnchorA
         {
             get { return BodyA.GetWorldPoint(LocalAnchor1); }
         }
 
-        public override FarPosition WorldAnchorB
+        public override WorldVector2 WorldAnchorB
         {
             get { return BodyB.GetWorldPoint(LocalAnchor2); }
             set { Debug.Assert(false, "You can't set the world anchor on this joint type."); }

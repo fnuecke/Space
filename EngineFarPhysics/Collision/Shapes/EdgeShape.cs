@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -23,9 +23,10 @@
 * 3. This notice may not be removed or altered from any source distribution. 
 */
 
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision.Shapes
 {
@@ -140,7 +141,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref FarPosition point)
+        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
             return false;
         }
@@ -228,11 +229,11 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="childIndex">The child shape index.</param>
         public override void ComputeAABB(out AABB aabb, ref Transform transform, int childIndex)
         {
-            FarPosition v1 = MathUtils.Multiply(ref transform, _vertex1);
-            FarPosition v2 = MathUtils.Multiply(ref transform, _vertex2);
+            WorldVector2 v1 = MathUtils.Multiply(ref transform, _vertex1);
+            WorldVector2 v2 = MathUtils.Multiply(ref transform, _vertex2);
 
-            FarPosition lower = FarPosition.Min(v1, v2);
-            FarPosition upper = FarPosition.Max(v1, v2);
+            WorldVector2 lower = WorldVector2.Min(v1, v2);
+            WorldVector2 upper = WorldVector2.Max(v1, v2);
 
             Vector2 r = new Vector2(Radius, Radius);
             aabb.LowerBound = lower - r;
@@ -248,9 +249,9 @@ namespace FarseerPhysics.Collision.Shapes
             MassData.Centroid = 0.5f * (_vertex1 + _vertex2);
         }
 
-        public override float ComputeSubmergedArea(Vector2 normal, FarValue offset, Transform xf, out FarPosition sc)
+        public override float ComputeSubmergedArea(Vector2 normal, WorldSingle offset, Transform xf, out WorldVector2 sc)
         {
-            sc = FarPosition.Zero;
+            sc = WorldVector2.Zero;
             return 0;
         }
 

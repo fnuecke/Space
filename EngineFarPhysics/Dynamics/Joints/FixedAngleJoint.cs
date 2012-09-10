@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -38,12 +38,12 @@ namespace FarseerPhysics.Dynamics.Joints
             }
         }
 
-        public override FarPosition WorldAnchorA
+        public override WorldVector2 WorldAnchorA
         {
             get { return BodyA.Position; }
         }
 
-        public override FarPosition WorldAnchorB
+        public override WorldVector2 WorldAnchorB
         {
             get { return BodyA.Position; }
             set { Debug.Assert(false, "You can't set the world anchor on this joint type."); }

@@ -14,12 +14,12 @@ namespace FarseerPhysics.Common
     provided that the following conditions are met:
 
         * Redistributions of source code must retain the above copyright notice, this list of conditions
-          and the following disclaimer.
+	      and the following disclaimer.
         * Redistributions in binary form must reproduce the above copyright notice, this list of
-          conditions and the following disclaimer in the documentation and/or other materials provided
-          with the distribution.
+	      conditions and the following disclaimer in the documentation and/or other materials provided
+	      with the distribution.
         * Neither the name of the nape project nor the names of its contributors may be used to endorse
-         or promote products derived from this software without specific prior written permission.
+	     or promote products derived from this software without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
@@ -87,14 +87,14 @@ namespace FarseerPhysics.Common
             //generate sub-polys and combine to scan lines
             for (int y = 0; y < yn; y++)
             {
-                float y0 = y * cellHeight + (float)domain.LowerBound.Y;
+                float y0 = (float)(y * cellHeight + domain.LowerBound.Y);
                 float y1;
                 if (y == yn - 1) y1 = (float)domain.UpperBound.Y;
                 else y1 = y0 + cellHeight;
                 GeomPoly pre = null;
                 for (int x = 0; x < xn; x++)
                 {
-                    float x0 = x * cellWidth + (float)domain.LowerBound.X;
+                    float x0 = (float)(x * cellWidth + domain.LowerBound.X);
                     float x1;
                     if (x == xn - 1) x1 = (float)domain.UpperBound.X;
                     else x1 = x0 + cellWidth;
@@ -167,8 +167,8 @@ namespace FarseerPhysics.Common
                         continue;
                     }
 
-                    float ax = x * cellWidth + (float)domain.LowerBound.X;
-                    float ay = y * cellHeight + (float)domain.LowerBound.Y;
+                    float ax = (float)(x * cellWidth + domain.LowerBound.X);
+                    float ay = (float)(y * cellHeight + domain.LowerBound.Y);
 
                     CxFastList<Vector2> bp = p.GeomP.Points;
                     CxFastList<Vector2> ap = u.GeomP.Points;

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,9 +25,9 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -45,13 +45,13 @@ namespace FarseerPhysics.Dynamics.Joints
         /// Get the first ground anchor.
         /// </summary>
         /// <value></value>
-        public FarPosition GroundAnchorA;
+        public WorldVector2 GroundAnchorA;
 
         /// <summary>
         /// Get the second ground anchor.
         /// </summary>
         /// <value></value>
-        public FarPosition GroundAnchorB;
+        public WorldVector2 GroundAnchorB;
 
         public Vector2 LocalAnchorA;
         public Vector2 LocalAnchorB;
@@ -95,7 +95,7 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="localAnchorB">The second body anchor.</param>
         /// <param name="ratio">The ratio.</param>
         public PulleyJoint(Body bodyA, Body bodyB,
-                           FarPosition groundAnchorA, FarPosition groundAnchorB,
+                           WorldVector2 groundAnchorA, WorldVector2 groundAnchorB,
                            Vector2 localAnchorA, Vector2 localAnchorB,
                            float ratio)
             : base(bodyA, bodyB)
@@ -132,12 +132,12 @@ namespace FarseerPhysics.Dynamics.Joints
             _limitImpulse2 = 0.0f;
         }
 
-        public override FarPosition WorldAnchorA
+        public override WorldVector2 WorldAnchorA
         {
             get { return BodyA.GetWorldPoint(LocalAnchorA); }
         }
 
-        public override FarPosition WorldAnchorB
+        public override WorldVector2 WorldAnchorB
         {
             get { return BodyB.GetWorldPoint(LocalAnchorB); }
             set { Debug.Assert(false, "You can't set the world anchor on this joint type."); }
@@ -212,15 +212,15 @@ namespace FarseerPhysics.Dynamics.Joints
             Vector2 r1 = MathUtils.Multiply(ref xf1.R, LocalAnchorA - b1.LocalCenter);
             Vector2 r2 = MathUtils.Multiply(ref xf2.R, LocalAnchorB - b2.LocalCenter);
 
-            FarPosition p1 = b1.Sweep.C + r1;
-            FarPosition p2 = b2.Sweep.C + r2;
+            WorldVector2 p1 = b1.Sweep.C;
+            WorldVector2 p2 = b2.Sweep.C;
 
-            FarPosition s1 = GroundAnchorA;
-            FarPosition s2 = GroundAnchorB;
+            WorldVector2 s1 = GroundAnchorA;
+            WorldVector2 s2 = GroundAnchorB;
 
             // Get the pulley axes.
-            _u1 = (Vector2)(p1 - s1);
-            _u2 = (Vector2)(p2 - s2);
+            _u1 = (Vector2)(p1 - s1) + r1;
+            _u2 = (Vector2)(p2 - s2) + r2;
 
             float length1 = _u1.Length();
             float length2 = _u2.Length();
@@ -378,8 +378,8 @@ namespace FarseerPhysics.Dynamics.Joints
             Body b1 = BodyA;
             Body b2 = BodyB;
 
-            FarPosition s1 = GroundAnchorA;
-            FarPosition s2 = GroundAnchorB;
+            WorldVector2 s1 = GroundAnchorA;
+            WorldVector2 s2 = GroundAnchorB;
 
             float linearError = 0.0f;
 
@@ -392,12 +392,12 @@ namespace FarseerPhysics.Dynamics.Joints
                 Vector2 r1 = MathUtils.Multiply(ref xf1.R, LocalAnchorA - b1.LocalCenter);
                 Vector2 r2 = MathUtils.Multiply(ref xf2.R, LocalAnchorB - b2.LocalCenter);
 
-                FarPosition p1 = b1.Sweep.C + r1;
-                FarPosition p2 = b2.Sweep.C + r2;
+                WorldVector2 p1 = b1.Sweep.C;
+                WorldVector2 p2 = b2.Sweep.C;
 
                 // Get the pulley axes.
-                _u1 = (Vector2)(p1 - s1);
-                _u2 = (Vector2)(p2 - s2);
+                _u1 = (Vector2)(p1 - s1) + r1;
+                _u2 = (Vector2)(p2 - s2) + r2;
 
                 float length1 = _u1.Length();
                 float length2 = _u2.Length();
@@ -444,9 +444,9 @@ namespace FarseerPhysics.Dynamics.Joints
                 b1.GetTransform(out xf1);
 
                 Vector2 r1 = MathUtils.Multiply(ref xf1.R, LocalAnchorA - b1.LocalCenter);
-                FarPosition p1 = b1.Sweep.C + r1;
+                WorldVector2 p1 = b1.Sweep.C;
 
-                _u1 = (Vector2)(p1 - s1);
+                _u1 = (Vector2)(p1 - s1) + r1;
                 float length1 = _u1.Length();
 
                 if (length1 > Settings.LinearSlop)
@@ -476,9 +476,9 @@ namespace FarseerPhysics.Dynamics.Joints
                 b2.GetTransform(out xf2);
 
                 Vector2 r2 = MathUtils.Multiply(ref xf2.R, LocalAnchorB - b2.LocalCenter);
-                FarPosition p2 = b2.Sweep.C + r2;
+                WorldVector2 p2 = b2.Sweep.C;
 
-                _u2 = (Vector2)(p2 - s2);
+                _u2 = (Vector2)(p2 - s2) + r2;
                 float length2 = _u2.Length();
 
                 if (length2 > Settings.LinearSlop)

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -24,9 +24,9 @@
 */
 
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -48,7 +48,7 @@ namespace FarseerPhysics.Dynamics.Joints
         private Vector2 _impulse;
         private Mat22 _mass; // effective mass for point-to-point constraint.
 
-        private FarPosition _worldAnchor;
+        private WorldVector2 _worldAnchor;
 
         /// <summary>
         /// This requires a world target point,
@@ -56,7 +56,7 @@ namespace FarseerPhysics.Dynamics.Joints
         /// </summary>
         /// <param name="body">The body.</param>
         /// <param name="worldAnchor">The target.</param>
-        public FixedMouseJoint(Body body, FarPosition worldAnchor)
+        public FixedMouseJoint(Body body, WorldVector2 worldAnchor)
             : base(body)
         {
             JointType = JointType.FixedMouse;
@@ -72,12 +72,12 @@ namespace FarseerPhysics.Dynamics.Joints
             LocalAnchorA = BodyA.GetLocalPoint(worldAnchor);
         }
 
-        public override FarPosition WorldAnchorA
+        public override WorldVector2 WorldAnchorA
         {
             get { return BodyA.GetWorldPoint(LocalAnchorA); }
         }
 
-        public override FarPosition WorldAnchorB
+        public override WorldVector2 WorldAnchorB
         {
             get { return _worldAnchor; }
             set

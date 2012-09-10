@@ -70,8 +70,8 @@
     <Compile Include="IIndex.cs" />
     <Compile Include="IndexPointExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QuadTree.cs" />
-    <Compile Include="QuadTreeRenderExtensions.cs" />
+    <Compile Include="DynamicQuadTree.cs" />
+    <Compile Include="DynamicQuadTreeRenderExtensions.cs" />
     <Compile Include="SparseArray.cs" />
     <Compile Include="SpatialHashedQuadTree.cs" />
   </ItemGroup>

@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
-using Engine.FarCollections;
-using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -13,7 +11,8 @@ using Space.ComponentSystem.Systems;
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
 #if FARMATH
-using Engine.Collections;
+using Engine.FarCollections;
+using Engine.FarMath;
 using TPoint = Engine.FarMath.FarPosition;
 using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
@@ -64,7 +63,7 @@ namespace Tests
         /// The maximum radius of a range query, and half the maximum
         /// extent of an area query.
         /// </summary>
-        private const int MaxQueryRange = 512;//CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
+        private const int MaxQueryRange = CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
 
         /// <summary>
         /// The minimum query range, and half the minimum extent of an

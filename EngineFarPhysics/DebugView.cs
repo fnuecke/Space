@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -27,6 +27,7 @@ using System;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics
 {
@@ -132,7 +133,7 @@ namespace FarseerPhysics
         /// <param name="red">The red value.</param>
         /// <param name="blue">The blue value.</param>
         /// <param name="green">The green value.</param>
-        public abstract void DrawPolygon(Vector2[] vertices, int count, float red, float blue, float green);
+        public abstract void DrawPolygon(WorldVector2[] vertices, int count, float red, float blue, float green);
 
         /// <summary>
         /// Draw a solid closed polygon provided in CCW order.
@@ -142,7 +143,7 @@ namespace FarseerPhysics
         /// <param name="red">The red value.</param>
         /// <param name="blue">The blue value.</param>
         /// <param name="green">The green value.</param>
-        public abstract void DrawSolidPolygon(Vector2[] vertices, int count, float red, float blue, float green);
+        public abstract void DrawSolidPolygon(WorldVector2[] vertices, int count, float red, float blue, float green);
 
         /// <summary>
         /// Draw a circle.
@@ -152,7 +153,7 @@ namespace FarseerPhysics
         /// <param name="red">The red value.</param>
         /// <param name="blue">The blue value.</param>
         /// <param name="green">The green value.</param>
-        public abstract void DrawCircle(Vector2 center, float radius, float red, float blue, float green);
+        public abstract void DrawCircle(WorldVector2 center, float radius, float red, float blue, float green);
 
         /// <summary>
         /// Draw a solid circle.
@@ -163,8 +164,7 @@ namespace FarseerPhysics
         /// <param name="red">The red value.</param>
         /// <param name="blue">The blue value.</param>
         /// <param name="green">The green value.</param>
-        public abstract void DrawSolidCircle(Vector2 center, float radius, Vector2 axis, float red, float blue,
-                                             float green);
+        public abstract void DrawSolidCircle(WorldVector2 center, float radius, Vector2 axis, float red, float blue, float green);
 
         /// <summary>
         /// Draw a line segment.
@@ -174,7 +174,7 @@ namespace FarseerPhysics
         /// <param name="red">The red value.</param>
         /// <param name="blue">The blue value.</param>
         /// <param name="green">The green value.</param>
-        public abstract void DrawSegment(Vector2 start, Vector2 end, float red, float blue, float green);
+        public abstract void DrawSegment(WorldVector2 start, WorldVector2 end, float red, float blue, float green);
 
         /// <summary>
         /// Draw a transform. Choose your own length scale.

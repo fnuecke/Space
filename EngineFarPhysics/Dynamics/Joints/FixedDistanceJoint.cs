@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,9 +25,9 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -63,7 +63,7 @@ namespace FarseerPhysics.Dynamics.Joints
         private float _impulse;
         private float _mass;
         private Vector2 _u;
-        private FarPosition _worldAnchorB;
+        private WorldVector2 _worldAnchorB;
 
         /// <summary>
         /// This requires defining an
@@ -76,7 +76,7 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="body">The body.</param>
         /// <param name="bodyAnchor">The body anchor.</param>
         /// <param name="worldAnchor">The world anchor.</param>
-        public FixedDistanceJoint(Body body, Vector2 bodyAnchor, FarPosition worldAnchor)
+        public FixedDistanceJoint(Body body, Vector2 bodyAnchor, WorldVector2 worldAnchor)
             : base(body)
         {
             JointType = JointType.FixedDistance;
@@ -105,12 +105,12 @@ namespace FarseerPhysics.Dynamics.Joints
         /// </summary>
         public float DampingRatio { get; set; }
 
-        public override sealed FarPosition WorldAnchorA
+        public override sealed WorldVector2 WorldAnchorA
         {
             get { return BodyA.GetWorldPoint(LocalAnchorA); }
         }
 
-        public override sealed FarPosition WorldAnchorB
+        public override sealed WorldVector2 WorldAnchorB
         {
             get { return _worldAnchorB; }
             set { _worldAnchorB = value; }
@@ -135,8 +135,8 @@ namespace FarseerPhysics.Dynamics.Joints
 
             // Compute the effective mass matrix.
             Vector2 r1 = MathUtils.Multiply(ref xf1.R, LocalAnchorA - b1.LocalCenter);
-            //Vector2 r2 = _worldAnchorB;
-            _u = (Vector2)(_worldAnchorB - b1.Sweep.C) - r1;
+            WorldVector2 r2 = _worldAnchorB;
+            _u = (Vector2)(r2 - b1.Sweep.C) - r1;
 
             // Handle singularity.
             float length = _u.Length();
@@ -228,9 +228,9 @@ namespace FarseerPhysics.Dynamics.Joints
             b1.GetTransform(out xf1);
 
             Vector2 r1 = MathUtils.Multiply(ref xf1.R, LocalAnchorA - b1.LocalCenter);
-            //Vector2 r2 = _worldAnchorB;
+            WorldVector2 r2 = _worldAnchorB;
 
-            Vector2 d = (Vector2)(_worldAnchorB - b1.Sweep.C) - r1;
+            Vector2 d = (Vector2)(r2 - b1.Sweep.C) - r1;
 
             float length = d.Length();
 

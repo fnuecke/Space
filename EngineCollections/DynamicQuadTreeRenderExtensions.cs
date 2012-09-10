@@ -23,20 +23,20 @@ namespace Engine.Collections
     /// Add extension methods for a QuadTree to allow rendering its nodes
     /// and entries.
     /// </summary>
-    public static class QuadTreeRenderExtensions
+    public static class DynamicQuadTreeRenderExtensions
     {
         /// <summary>
         /// Renders a graphical representation of this tree's cells using the
         /// specified shape renderer.
         /// </summary>
-        /// <param name="quadTree">The tree to render.</param>
+        /// <param name="tree">The tree to render.</param>
         /// <param name="shape">The shape renderer to paint with.</param>
         /// <param name="translation">The translation to apply to all draw
         /// operation.</param>
-        public static void Draw<T>(this QuadTree<T> quadTree, AbstractShape shape, TPoint translation)
+        public static void Draw<T>(this DynamicQuadTree<T> tree, AbstractShape shape, TPoint translation)
         {
             var screenBounds = new TRectangle(-5000, -5000, 10000, 10000);
-            foreach (var node in quadTree.GetNodeEnumerable())
+            foreach (var node in tree.GetNodeEnumerable())
             {
                 var bounds = node.Item1;
                 bounds.Offset(translation);
@@ -53,7 +53,7 @@ namespace Engine.Collections
                 // Check entries.
                 foreach (var entry in node.Item2)
                 {
-                    bounds = quadTree[entry];
+                    bounds = tree[entry];
                     bounds.Offset(translation);
                     center = (Vector2)bounds.Center;
 

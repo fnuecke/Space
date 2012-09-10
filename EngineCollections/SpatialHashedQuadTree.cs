@@ -86,7 +86,7 @@ namespace Engine.Collections
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
-        private readonly Dictionary<ulong, Collections.QuadTree<T>> _entries = new Dictionary<ulong, Collections.QuadTree<T>>();
+        private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries = new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
 
         /// <summary>
         /// Maps entries back to their bounds, for removal.
@@ -141,7 +141,7 @@ namespace Engine.Collections
                 if (!_entries.ContainsKey(cell.Item1))
                 {
                     // No need to extend again, we already did.
-                    _entries.Add(cell.Item1, new Collections.QuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
+                    _entries.Add(cell.Item1, new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
                 }
 
                 // Convert the item bounds to the tree's local coordinate space.
@@ -715,7 +715,7 @@ namespace Engine.Collections
         /// This is mainly intended for debugging purposes, to allow rendering
         /// the tree bounds.
         /// </remarks>
-        public IEnumerable<Tuple<TPoint, Collections.QuadTree<T>>> GetTreeEnumerable()
+        public IEnumerable<Tuple<TPoint, Collections.DynamicQuadTree<T>>> GetTreeEnumerable()
         {
             foreach (var entry in _entries)
             {

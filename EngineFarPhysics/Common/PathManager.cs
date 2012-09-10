@@ -98,7 +98,7 @@ namespace FarseerPhysics.Factories
 
                 // copy the type from original body
                 b.BodyType = type;
-                b.Position = new FarPosition(centers[i].X, centers[i].Y);
+                b.Position = (FarPosition)new Vector2(centers[i].X, centers[i].Y);
                 b.Rotation = centers[i].Z;
 
                 foreach (Shape shape in shapes)
@@ -156,6 +156,7 @@ namespace FarseerPhysics.Factories
         public static void MoveBodyOnPath(Path path, Body body, float time, float strength, float timeStep)
         {
             Vector2 destination = path.GetPosition(time);
+            // TODO this is NOT OK when far away from the origin; make paths use WorldVector2
             Vector2 positionDelta = (Vector2)(body.Position - destination);
             Vector2 velocity = (positionDelta / timeStep) * strength;
 

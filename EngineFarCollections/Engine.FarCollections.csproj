@@ -61,17 +61,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\EngineCollections\DynamicQuadTree.cs">
+      <Link>DynamicQuadTree.cs</Link>
+    </Compile>
+    <Compile Include="..\EngineCollections\DynamicQuadTreeRenderExtensions.cs">
+      <Link>DynamicQuadTreeRenderExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\EngineCollections\IndexPointExtensions.cs">
       <Link>IndexPointExtensions.cs</Link>
     </Compile>
     <Compile Include="..\EngineCollections\IntersectionExtensions.cs">
       <Link>IntersectionExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineCollections\QuadTree.cs">
-      <Link>QuadTree.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineCollections\QuadTreeRenderExtensions.cs">
-      <Link>QuadTreeRenderExtensions.cs</Link>
     </Compile>
     <Compile Include="..\EngineCollections\SpatialHashedQuadTree.cs">
       <Link>SpatialHashedQuadTree.cs</Link>

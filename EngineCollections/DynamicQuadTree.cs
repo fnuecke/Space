@@ -56,7 +56,7 @@ namespace Engine.Collections
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class QuadTree<T> : IIndex<T, TRectangle, TPoint>
+    public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
         #region Properties
 
@@ -132,7 +132,7 @@ namespace Engine.Collections
         /// One or both of the specified parameters are invalid (must be larger
         /// than zero).
         ///   </exception>
-        public QuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
+        public DynamicQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
         {
             if (maxEntriesPerNode < 1)
             {

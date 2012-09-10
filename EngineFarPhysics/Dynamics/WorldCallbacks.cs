@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -23,12 +23,12 @@
 * 3. This notice may not be removed or altered from any source distribution. 
 */
 
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Controllers;
 using FarseerPhysics.Dynamics.Contacts;
 using FarseerPhysics.Dynamics.Joints;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics
 {
@@ -37,7 +37,7 @@ namespace FarseerPhysics.Dynamics
     /// proceeds by returning a float:
     /// <returns>-1 to filter, 0 to terminate, fraction to clip the ray for closest hit, 1 to continue</returns>
     /// </summary>
-    public delegate float RayCastCallback(Fixture fixture, FarPosition point, Vector2 normal, float fraction);
+    public delegate float RayCastCallback(Fixture fixture, WorldVector2 point, Vector2 normal, float fraction);
 
     /// <summary>
     /// This delegate is called when a contact is deleted

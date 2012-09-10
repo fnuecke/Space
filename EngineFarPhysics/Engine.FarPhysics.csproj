@@ -149,6 +149,7 @@
   <ItemGroup>
     <Compile Include="Collision\Collision.cs" />
     <Compile Include="Collision\Distance.cs" />
+    <Compile Include="Collision\DynamicQuadTreeBroadPhase.cs" />
     <Compile Include="Collision\DynamicTree.cs" />
     <Compile Include="Collision\DynamicTreeBroadPhase.cs" />
     <Compile Include="Collision\IBroadPhase.cs" />
@@ -159,11 +160,13 @@
     <Compile Include="Collision\Shapes\LoopShape.cs" />
     <Compile Include="Collision\Shapes\PolygonShape.cs" />
     <Compile Include="Collision\Shapes\Shape.cs" />
-    <Compile Include="Collision\SpatialHashedQuadTreeBroadPhase.cs" />
     <Compile Include="Collision\TimeOfImpact.cs" />
     <Compile Include="Common\ConvexHull\ChainHull.cs" />
     <Compile Include="Common\ConvexHull\GiftWrap.cs" />
     <Compile Include="Common\ConvexHull\Melkman.cs" />
+    <Compile Include="Common\Curve.cs" />
+    <Compile Include="Common\CurveKey.cs" />
+    <Compile Include="Common\CurveKeyCollection.cs" />
     <Compile Include="Common\Decomposition\BayazitDecomposer.cs" />
     <Compile Include="Common\Decomposition\CDTDecomposer.cs" />
     <Compile Include="Common\Decomposition\CDT\Delaunay\DelaunayTriangle.cs" />
@@ -197,6 +200,8 @@
     <Compile Include="Common\HashSet.cs" />
     <Compile Include="Common\LineTools.cs" />
     <Compile Include="Common\Math.cs" />
+    <Compile Include="Common\MathHelper.cs" />
+    <Compile Include="Common\Matrix.cs" />
     <Compile Include="Common\Path.cs" />
     <Compile Include="Common\PathManager.cs" />
     <Compile Include="Common\PhysicsLogic\Explosion.cs" />
@@ -209,6 +214,8 @@
     <Compile Include="Common\TextureTools\MarchingSquares.cs" />
     <Compile Include="Common\TextureTools\MSTerrain.cs" />
     <Compile Include="Common\TextureTools\TextureConverter.cs" />
+    <Compile Include="Common\Vector2.cs" />
+    <Compile Include="Common\Vector3.cs" />
     <Compile Include="Common\Vertices.cs" />
     <Compile Include="Controllers\AbstractForceController.cs" />
     <Compile Include="Controllers\BuoyancyController.cs" />
@@ -258,6 +265,10 @@
       <Project>{D73BAEF1-9B31-4548-A982-E19D68745757}</Project>
       <Name>Engine.Collections</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineFarCollections\Engine.FarCollections.csproj">
+      <Project>{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}</Project>
+      <Name>Engine.FarCollections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
       <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
       <Name>Engine.FarMath</Name>
@@ -269,6 +280,10 @@
     <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
+      <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
+      <Name>Engine.XnaExtensions</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

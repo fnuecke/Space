@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Factories;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Common.PolygonManipulation
 {
@@ -21,7 +21,7 @@ namespace FarseerPhysics.Common.PolygonManipulation
         /// <param name="splitSize">The size of the split. Think of this as the laser-width</param>
         /// <param name="first">The first collection of vertexes</param>
         /// <param name="second">The second collection of vertexes</param>
-        public static void SplitShape(Fixture fixture, FarPosition entryPoint, FarPosition exitPoint, float splitSize,
+        public static void SplitShape(Fixture fixture, WorldVector2 entryPoint, WorldVector2 exitPoint, float splitSize,
                                       out Vertices first, out Vertices second)
         {
             Vector2 localEntryPoint = fixture.Body.GetLocalPoint(ref entryPoint);
@@ -132,11 +132,11 @@ namespace FarseerPhysics.Common.PolygonManipulation
         /// <param name="start">The startpoint.</param>
         /// <param name="end">The endpoint.</param>
         /// <param name="thickness">The thickness of the cut</param>
-        public static void Cut(World world, FarPosition start, FarPosition end, float thickness)
+        public static void Cut(World world, WorldVector2 start, WorldVector2 end, float thickness)
         {
             List<Fixture> fixtures = new List<Fixture>();
-            List<FarPosition> entryPoints = new List<FarPosition>();
-            List<FarPosition> exitPoints = new List<FarPosition>();
+            List<WorldVector2> entryPoints = new List<WorldVector2>();
+            List<WorldVector2> exitPoints = new List<WorldVector2>();
 
             //We don't support cutting when the start or end is inside a shape.
             if (world.TestPoint(start) != null || world.TestPoint(end) != null)

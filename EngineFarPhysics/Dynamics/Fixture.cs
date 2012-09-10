@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -22,16 +22,17 @@
 * misrepresented as being the original software. 
 * 3. This notice may not be removed or altered from any source distribution. 
 */
+#define USE_IGNORE_CCD_CATEGORIES
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics.Contacts;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics
 {
@@ -124,7 +125,11 @@ namespace FarseerPhysics.Dynamics
         internal Category _collisionCategories;
         internal short _collisionGroup;
         internal Dictionary<int, bool> _collisionIgnores;
-        private float _friction;
+
+#if USE_IGNORE_CCD_CATEGORIES
+		public Category IgnoreCCDWith;
+#endif
+		private float _friction;
         private float _restitution;
 
         internal Fixture()
@@ -138,13 +143,13 @@ namespace FarseerPhysics.Dynamics
 
         public Fixture(Body body, Shape shape, object userData)
         {
-            if (Settings.UseFPECollisionCategories)
-                _collisionCategories = Category.All;
-            else
-                _collisionCategories = Category.Cat1;
-
-            _collidesWith = Category.All;
+			_collisionCategories = Settings.DefaultFixtureCollisionCategories;
+			_collidesWith = Settings.DefaultFixtureCollidesWith;
             _collisionGroup = 0;
+
+#if USE_IGNORE_CCD_CATEGORIES
+			IgnoreCCDWith = Settings.DefaultFixtureIgnoreCCDWith;
+#endif
 
             //Fixture defaults
             Friction = 0.2f;
@@ -264,6 +269,12 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <value>The user data.</value>
         public object UserData { get; set; }
+
+        /// <summary>
+        /// User bits. Use this to store application flags or values specific to this fixture.
+        /// </summary>
+        /// <value>The user data.</value>
+        public long UserBits { get; set; }
 
         /// <summary>
         /// Get or set the coefficient of friction.
@@ -442,7 +453,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="point">A point in world coordinates.</param>
         /// <returns></returns>
-        public bool TestPoint(ref FarPosition point)
+        public bool TestPoint(ref WorldVector2 point)
         {
             return Shape.TestPoint(ref Body.Xf, ref point);
         }
@@ -483,6 +494,7 @@ namespace FarseerPhysics.Dynamics
                 fixture.Shape = Shape.Clone();
 
             fixture.UserData = UserData;
+            fixture.UserBits = UserBits;
             fixture.Restitution = Restitution;
             fixture.Friction = Friction;
             fixture.IsSensor = IsSensor;
@@ -602,7 +614,8 @@ namespace FarseerPhysics.Dynamics
                        IsSensor == fixture.IsSensor &&
                        Restitution == fixture.Restitution &&
                        Shape.CompareTo(fixture.Shape) &&
-                       UserData == fixture.UserData);
+                       UserData == fixture.UserData &&
+                       UserBits == fixture.UserBits);
         }
     }
 }

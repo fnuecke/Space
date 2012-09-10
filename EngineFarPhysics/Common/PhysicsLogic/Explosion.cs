@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Common.PhysicsLogic
 {
@@ -124,13 +124,13 @@ namespace FarseerPhysics.Common.PhysicsLogic
         /// A dictionnary containing all the "exploded" fixtures
         /// with a list of the applied impulses
         /// </returns>
-        public Dictionary<Fixture, List<Vector2>> Activate(FarPosition pos, float radius, float maxForce)
+        public Dictionary<Fixture, List<Vector2>> Activate(WorldVector2 pos, float radius, float maxForce)
         {
             _exploded.Clear();
 
             AABB aabb;
-            aabb.LowerBound = pos + new FarPosition(-radius, -radius);
-            aabb.UpperBound = pos + new FarPosition(radius, radius);
+            aabb.LowerBound = pos + new Vector2(-radius, -radius);
+            aabb.UpperBound = pos + new Vector2(radius, radius);
             Fixture[] shapes = new Fixture[MaxShapes];
 
             // More than 5 shapes in an explosion could be possible, but still strange.
@@ -260,9 +260,9 @@ namespace FarseerPhysics.Common.PhysicsLogic
 
                 midpt = midpt / 2;
 
-                FarPosition p1 = pos;
-                FarPosition p2 = radius * new Vector2((float)Math.Cos(midpt),
-                                                      (float)Math.Sin(midpt)) + pos;
+                WorldVector2 p1 = pos;
+                WorldVector2 p2 = radius * new Vector2((float)Math.Cos(midpt),
+                                                       (float)Math.Sin(midpt)) + pos;
 
                 // RaycastOne
                 bool hitClosest = false;
@@ -361,9 +361,9 @@ namespace FarseerPhysics.Common.PhysicsLogic
                      j < _data[i].Max || MathUtils.FloatEquals(j, _data[i].Max, 0.0001f);
                      j += offset)
                 {
-                    FarPosition p1 = pos;
-                    FarPosition p2 = pos + radius * new Vector2((float)Math.Cos(j), (float)Math.Sin(j));
-                    FarPosition hitpoint = FarPosition.Zero;
+                    WorldVector2 p1 = pos;
+                    WorldVector2 p2 = pos + radius * new Vector2((float)Math.Cos(j), (float)Math.Sin(j));
+                    WorldVector2 hitpoint = WorldVector2.Zero;
                     float minlambda = float.MaxValue;
 
                     List<Fixture> fl = _data[i].Body.FixtureList;
@@ -381,7 +381,8 @@ namespace FarseerPhysics.Common.PhysicsLogic
                             if (minlambda > ro.Fraction)
                             {
                                 minlambda = ro.Fraction;
-                                hitpoint = ro.Fraction * p2 + (1 - ro.Fraction) * p1;
+                                //hitpoint = ro.Fraction * p2 + (1 - ro.Fraction) * p1;
+                                hitpoint = p1 + ro.Fraction * (Vector2)(p2 - p1);
                             }
                         }
 
@@ -435,7 +436,7 @@ namespace FarseerPhysics.Common.PhysicsLogic
                     continue;
 
                 float impulse = MinRays * maxForce * 180.0f / MathHelper.Pi;
-                FarPosition hitPoint;
+                WorldVector2 hitPoint;
 
                 CircleShape circShape = fix.Shape as CircleShape;
                 if (circShape != null)

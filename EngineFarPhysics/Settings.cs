@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -24,6 +24,7 @@
 */
 
 using System;
+using FarseerPhysics.Dynamics;
 
 namespace FarseerPhysics
 {
@@ -92,9 +93,30 @@ namespace FarseerPhysics
         /// <summary>
         /// Farseer Physics Engine has a different way of filtering fixtures than Box2d.
         /// We have both FPE and Box2D filtering in the engine. If you are upgrading
-        /// from earlier versions of FPE, set this to true.
+        /// from earlier versions of FPE, set this to true and DefaultFixtureCollisionCategories
+        /// to Category.All.
         /// </summary>
         public static bool UseFPECollisionCategories;
+
+        /// <summary>
+        /// This is used by the Fixture constructor as the default value 
+        /// for Fixture.CollisionCategories member. Note that you may need to change this depending
+        /// on the setting of UseFPECollisionCategories, above.
+        /// </summary>
+        public static Category DefaultFixtureCollisionCategories = Category.Cat1;
+
+        /// <summary>
+        /// This is used by the Fixture constructor as the default value 
+        /// for Fixture.CollidesWith member.
+        /// </summary>
+        public static Category DefaultFixtureCollidesWith = Category.All;
+
+
+        /// <summary>
+        /// This is used by the Fixture constructor as the default value 
+        /// for Fixture.IgnoreCCDWith member.
+        /// </summary>
+        public static Category DefaultFixtureIgnoreCCDWith = Category.None;
 
         /// <summary>
         /// Conserve memory makes sure that objects are used by reference instead of cloned.

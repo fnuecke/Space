@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -24,10 +24,11 @@
 */
 
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using FarseerPhysics.Common.Decomposition;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision.Shapes
 {
@@ -207,11 +208,11 @@ namespace FarseerPhysics.Collision.Shapes
 
 #if false
     // This code would put the reference point inside the polygon.
-            for (int i = 0; i < count; ++i)
-            {
-                pRef += vs[i];
-            }
-            pRef *= 1.0f / count;
+	        for (int i = 0; i < count; ++i)
+	        {
+		        pRef += vs[i];
+	        }
+	        pRef *= 1.0f / count;
 #endif
 
             const float inv3 = 1.0f / 3.0f;
@@ -292,7 +293,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref FarPosition point)
+        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
             Vector2 pLocal = MathUtils.MultiplyT(ref transform.R, (Vector2)(point - transform.Position));
 
@@ -396,14 +397,14 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="childIndex">The child shape index.</param>
         public override void ComputeAABB(out AABB aabb, ref Transform transform, int childIndex)
         {
-            FarPosition lower = MathUtils.Multiply(ref transform, Vertices[0]);
-            FarPosition upper = lower;
+            WorldVector2 lower = MathUtils.Multiply(ref transform, Vertices[0]);
+            WorldVector2 upper = lower;
 
             for (int i = 1; i < Vertices.Count; ++i)
             {
-                FarPosition v = MathUtils.Multiply(ref transform, Vertices[i]);
-                lower = FarPosition.Min(lower, v);
-                upper = FarPosition.Max(upper, v);
+                WorldVector2 v = MathUtils.Multiply(ref transform, Vertices[i]);
+                lower = WorldVector2.Min(lower, v);
+                upper = WorldVector2.Max(upper, v);
             }
 
             Vector2 r = new Vector2(Radius, Radius);
@@ -426,13 +427,13 @@ namespace FarseerPhysics.Collision.Shapes
                     MassData == shape.MassData);
         }
 
-        public override float ComputeSubmergedArea(Vector2 normal, FarValue offset, Transform xf, out FarPosition sc)
+        public override float ComputeSubmergedArea(Vector2 normal, WorldSingle offset, Transform xf, out WorldVector2 sc)
         {
-            sc = FarPosition.Zero;
+            sc = WorldVector2.Zero;
 
             //Transform plane into shape co-ordinates
             Vector2 normalL = MathUtils.MultiplyT(ref xf.R, normal);
-            float offsetL = (float)(offset - FarPosition.Dot(normal, xf.Position));
+            float offsetL = (float)(offset - WorldVector2.Dot(normal, xf.Position));
 
             float[] depths = new float[Settings.MaxPolygonVertices];
             int diveCount = 0;

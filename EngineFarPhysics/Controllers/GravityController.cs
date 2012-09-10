@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.FarMath;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Controllers
 {
@@ -15,7 +15,7 @@ namespace FarseerPhysics.Controllers
     public class GravityController : Controller
     {
         public List<Body> Bodies = new List<Body>();
-        public List<FarPosition> Points = new List<FarPosition>();
+        public List<WorldVector2> Points = new List<WorldVector2>();
 
         public GravityController(float strength)
             : base(ControllerType.GravityController)
@@ -77,7 +77,7 @@ namespace FarseerPhysics.Controllers
                     body2.ApplyForce(ref f);
                 }
 
-                foreach (FarPosition point in Points)
+                foreach (WorldVector2 point in Points)
                 {
                     Vector2 d = (Vector2)(point - body1.Position);
                     float r2 = d.LengthSquared();
@@ -110,7 +110,7 @@ namespace FarseerPhysics.Controllers
             Bodies.Add(body);
         }
 
-        public void AddPoint(FarPosition point)
+        public void AddPoint(WorldVector2 point)
         {
             Points.Add(point);
         }

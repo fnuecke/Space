@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Engine.FarMath;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Dynamics.Joints;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Common
 {
@@ -321,7 +322,7 @@ namespace FarseerPhysics.Common
             _writer.WriteElementString(name, vec.X + " " + vec.Y);
         }
 
-        private void WriteElement(string name, FarPosition vec)
+        private void WriteElement(string name, WorldVector2 vec)
         {
             _writer.WriteElementString(name, vec.X.Segment + " " + vec.X.Offset + " " + vec.Y.Segment + " " + vec.Y.Offset);
         }
@@ -686,7 +687,7 @@ namespace FarseerPhysics.Common
                                     break;
                                 case "angle":
                                     {
-                                        FarPosition position = body.Position;
+                                        WorldVector2 position = body.Position;
                                         body.SetTransformIgnoreContacts(ref position, float.Parse(sn.Value));
                                     }
                                     break;
@@ -714,7 +715,7 @@ namespace FarseerPhysics.Common
                                 case "position":
                                     {
                                         float rotation = body.Rotation;
-                                        FarPosition position = ReadFarPosition(sn);
+                                        WorldVector2 position = ReadWorldVector2(sn);
                                         body.SetTransformIgnoreContacts(ref position, rotation);
                                     }
                                     break;
@@ -947,10 +948,10 @@ namespace FarseerPhysics.Common
                                         switch (sn.Name.ToLower())
                                         {
                                             case "groundanchora":
-                                                ((PulleyJoint)joint).GroundAnchorA = ReadFarPosition(sn);
+                                                ((PulleyJoint)joint).GroundAnchorA = ReadWorldVector2(sn);
                                                 break;
                                             case "groundanchorb":
-                                                ((PulleyJoint)joint).GroundAnchorB = ReadFarPosition(sn);
+                                                ((PulleyJoint)joint).GroundAnchorB = ReadWorldVector2(sn);
                                                 break;
                                             case "lengtha":
                                                 ((PulleyJoint)joint).LengthA = float.Parse(sn.Value);
@@ -1098,10 +1099,10 @@ namespace FarseerPhysics.Common
             return new Vector2(float.Parse(values[0]), float.Parse(values[1]));
         }
 
-        private FarPosition ReadFarPosition(XMLFragmentElement node)
+        private WorldVector2 ReadWorldVector2(XMLFragmentElement node)
         {
             string[] values = node.Value.Split(' ');
-            return new FarPosition(new FarValue(int.Parse(values[0]), float.Parse(values[1])), new FarValue(int.Parse(values[2]), float.Parse(values[3])));
+            return new WorldVector2(new WorldSingle(int.Parse(values[0]), float.Parse(values[1])), new WorldSingle(int.Parse(values[2]), float.Parse(values[3])));
         }
 
         private object ReadSimpleType(XMLFragmentElement node, Type type, bool outer)

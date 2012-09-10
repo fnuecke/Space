@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using Engine.FarMath;
-using FarseerPhysics.Collision;
 using Microsoft.Xna.Framework;
 
 namespace FarseerPhysics.Common
@@ -172,11 +170,10 @@ namespace FarseerPhysics.Common
         /// Returns an AABB for vertex.
         /// </summary>
         /// <returns></returns>
-        public AABB GetCollisionBox()
+        public void GetCollisionBox(out Vector2 lowerBound, out Vector2 upperBound)
         {
-            AABB aabb;
-            FarPosition lowerBound = new FarPosition(FarValue.MaxValue, FarValue.MaxValue);
-            FarPosition upperBound = new FarPosition(FarValue.MinValue, FarValue.MinValue);
+            lowerBound = new Vector2(float.MaxValue, float.MaxValue);
+            upperBound = new Vector2(float.MinValue, float.MinValue);
 
             for (int i = 0; i < Count; ++i)
             {
@@ -198,11 +195,6 @@ namespace FarseerPhysics.Common
                     upperBound.Y = this[i].Y;
                 }
             }
-
-            aabb.LowerBound = lowerBound;
-            aabb.UpperBound = upperBound;
-
-            return aabb;
         }
 
         public void Translate(Vector2 vector)
@@ -392,9 +384,11 @@ namespace FarseerPhysics.Common
         /// other tools in this section are used.
         /// </summary>
         /// <returns></returns>
-        public bool CheckPolygon()
+        public bool CheckPolygon(out int error, out string errorMessage)
         {
-            int error = -1;
+            error = -1;
+			errorMessage = null;
+
             if (Count < 3 || Count > Settings.MaxPolygonVertices)
             {
                 error = 0;
@@ -474,38 +468,49 @@ namespace FarseerPhysics.Common
 
             if (error != -1)
             {
-                Debug.WriteLine("Found invalid polygon, ");
                 switch (error)
                 {
                     case 0:
-                        Debug.WriteLine(string.Format("must have between 3 and {0} vertices.\n",
-                                                      Settings.MaxPolygonVertices));
+                        errorMessage = string.Format("Polygon error: must have between 3 and {0} vertices.",
+                                                      Settings.MaxPolygonVertices);
                         break;
                     case 1:
-                        Debug.WriteLine("must be convex.\n");
+                        errorMessage = "Polygon error: must be convex.";
                         break;
                     case 2:
-                        Debug.WriteLine("must be simple (cannot intersect itself).\n");
+                        errorMessage = "Polygon error: must be simple (cannot intersect itself).";
                         break;
                     case 3:
-                        Debug.WriteLine("area is too small.\n");
+                        errorMessage = "Polygon error: area is too small.";
                         break;
                     case 4:
-                        Debug.WriteLine("sides are too close to parallel.\n");
+                        errorMessage = "Polygon error: sides are too close to parallel.";
                         break;
                     case 5:
-                        Debug.WriteLine("polygon is too thin.\n");
+                        errorMessage = "Polygon error: polygon is too thin.";
                         break;
                     case 6:
-                        Debug.WriteLine("core shape generation would move edge past centroid (too thin).\n");
+                        errorMessage = "Polygon error: core shape generation would move edge past centroid (too thin).";
                         break;
                     default:
-                        Debug.WriteLine("don't know why.\n");
+                        errorMessage = "Polygon error: error " + error.ToString();
                         break;
                 }
             }
             return error != -1;
         }
+
+        public bool CheckPolygon()
+        {
+			string errorMessage;
+			int errorCode;
+			var result = CheckPolygon(out errorCode, out errorMessage);
+			if(!result && errorMessage != null)
+			{
+				Debug.WriteLine(errorMessage);
+			}
+			return result;
+		}
 
         // From Eric Jordan's convex decomposition library
 
@@ -707,6 +712,56 @@ namespace FarseerPhysics.Common
             }
 
             return new Vertices();
+        }
+
+        // Split up a vertices object with holes returned from the texture trace into
+        // several vertices objects (one for the outline and one for each hole
+        // outline and holes should have opposing winding orders (not fully tested, not efficient)
+        public List<Vertices> SplitAtHoles()
+        {
+            List<Vertices> result = new List<Vertices>();
+            List<Vector2> duplicate = new List<Vector2>();
+            int holeCount = 0;
+            int index = 0;
+            bool ignoreNext = false;
+
+            result.Add(new Vertices());
+
+            // search for duplicate points and trace the polygon
+            // point by point
+            for (int i = 0; i < Count; ++i)
+            {
+                for (int j = i + 1; j < Count; ++j)
+                {
+                    if (this[i] == this[j])
+                    {
+                        duplicate.Add(this[i]);
+                    }
+                }
+                if (ignoreNext)
+                {
+                    ignoreNext = false;
+                }
+                else
+                {
+                    result[index].Add(this[i]);
+                    if (duplicate.Contains(this[i]))
+                    {
+                        if (index == 0) // jump to new shape
+                        {
+                            holeCount++;
+                            index = holeCount;
+                            result.Add(new Vertices());
+                        }
+                        else // jump back to starting shape
+                        {
+                            index = 0;
+                        }
+                        ignoreNext = true;
+                    }
+                }
+            }
+            return result;
         }
 
         private class PolyNode

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,9 +25,9 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision
 {
@@ -97,8 +97,8 @@ namespace FarseerPhysics.Collision
                 _type = SeparationFunctionType.Points;
                 Vector2 localPointA = _proxyA.Vertices[cache.IndexA[0]];
                 Vector2 localPointB = _proxyB.Vertices[cache.IndexB[0]];
-                FarPosition pointA = MathUtils.Multiply(ref xfA, localPointA);
-                FarPosition pointB = MathUtils.Multiply(ref xfB, localPointB);
+                WorldVector2 pointA = MathUtils.Multiply(ref xfA, localPointA);
+                WorldVector2 pointB = MathUtils.Multiply(ref xfB, localPointB);
                 _axis = (Vector2)(pointB - pointA);
                 _axis.Normalize();
                 return;
@@ -116,10 +116,10 @@ namespace FarseerPhysics.Collision
                 Vector2 normal = MathUtils.Multiply(ref xfB.R, _axis);
 
                 _localPoint = 0.5f * (localPointB1 + localPointB2);
-                FarPosition pointB = MathUtils.Multiply(ref xfB, _localPoint);
+                WorldVector2 pointB = MathUtils.Multiply(ref xfB, _localPoint);
 
                 Vector2 localPointA = proxyA.Vertices[cache.IndexA[0]];
-                FarPosition pointA = MathUtils.Multiply(ref xfA, localPointA);
+                WorldVector2 pointA = MathUtils.Multiply(ref xfA, localPointA);
 
                 float s = Vector2.Dot((Vector2)(pointA - pointB), normal);
                 if (s < 0.0f)
@@ -142,10 +142,10 @@ namespace FarseerPhysics.Collision
                 Vector2 normal = MathUtils.Multiply(ref xfA.R, _axis);
 
                 _localPoint = 0.5f * (localPointA1 + localPointA2);
-                FarPosition pointA = MathUtils.Multiply(ref xfA, _localPoint);
+                WorldVector2 pointA = MathUtils.Multiply(ref xfA, _localPoint);
 
                 Vector2 localPointB = _proxyB.Vertices[cache.IndexB[0]];
-                FarPosition pointB = MathUtils.Multiply(ref xfB, localPointB);
+                WorldVector2 pointB = MathUtils.Multiply(ref xfB, localPointB);
 
                 float s = Vector2.Dot((Vector2)(pointB - pointA), normal);
                 if (s < 0.0f)
@@ -176,8 +176,8 @@ namespace FarseerPhysics.Collision
                         Vector2 localPointA = _proxyA.Vertices[indexA];
                         Vector2 localPointB = _proxyB.Vertices[indexB];
 
-                        FarPosition pointA = MathUtils.Multiply(ref xfA, localPointA);
-                        FarPosition pointB = MathUtils.Multiply(ref xfB, localPointB);
+                        WorldVector2 pointA = MathUtils.Multiply(ref xfA, localPointA);
+                        WorldVector2 pointB = MathUtils.Multiply(ref xfB, localPointB);
 
                         float separation = Vector2.Dot((Vector2)(pointB - pointA), _axis);
                         return separation;
@@ -186,7 +186,7 @@ namespace FarseerPhysics.Collision
                 case SeparationFunctionType.FaceA:
                     {
                         Vector2 normal = MathUtils.Multiply(ref xfA.R, _axis);
-                        FarPosition pointA = MathUtils.Multiply(ref xfA, _localPoint);
+                        WorldVector2 pointA = MathUtils.Multiply(ref xfA, _localPoint);
 
                         Vector2 axisB = MathUtils.MultiplyT(ref xfB.R, -normal);
 
@@ -194,7 +194,7 @@ namespace FarseerPhysics.Collision
                         indexB = _proxyB.GetSupport(axisB);
 
                         Vector2 localPointB = _proxyB.Vertices[indexB];
-                        FarPosition pointB = MathUtils.Multiply(ref xfB, localPointB);
+                        WorldVector2 pointB = MathUtils.Multiply(ref xfB, localPointB);
 
                         float separation = Vector2.Dot((Vector2)(pointB - pointA), normal);
                         return separation;
@@ -203,7 +203,7 @@ namespace FarseerPhysics.Collision
                 case SeparationFunctionType.FaceB:
                     {
                         Vector2 normal = MathUtils.Multiply(ref xfB.R, _axis);
-                        FarPosition pointB = MathUtils.Multiply(ref xfB, _localPoint);
+                        WorldVector2 pointB = MathUtils.Multiply(ref xfB, _localPoint);
 
                         Vector2 axisA = MathUtils.MultiplyT(ref xfA.R, -normal);
 
@@ -211,7 +211,7 @@ namespace FarseerPhysics.Collision
                         indexA = _proxyA.GetSupport(axisA);
 
                         Vector2 localPointA = _proxyA.Vertices[indexA];
-                        FarPosition pointA = MathUtils.Multiply(ref xfA, localPointA);
+                        WorldVector2 pointA = MathUtils.Multiply(ref xfA, localPointA);
 
                         float separation = Vector2.Dot((Vector2)(pointA - pointB), normal);
                         return separation;
@@ -241,8 +241,8 @@ namespace FarseerPhysics.Collision
                         Vector2 localPointA = _proxyA.Vertices[indexA];
                         Vector2 localPointB = _proxyB.Vertices[indexB];
 
-                        FarPosition pointA = MathUtils.Multiply(ref xfA, localPointA);
-                        FarPosition pointB = MathUtils.Multiply(ref xfB, localPointB);
+                        WorldVector2 pointA = MathUtils.Multiply(ref xfA, localPointA);
+                        WorldVector2 pointB = MathUtils.Multiply(ref xfB, localPointB);
                         float separation = Vector2.Dot((Vector2)(pointB - pointA), _axis);
 
                         return separation;
@@ -251,12 +251,12 @@ namespace FarseerPhysics.Collision
                 case SeparationFunctionType.FaceA:
                     {
                         Vector2 normal = MathUtils.Multiply(ref xfA.R, _axis);
-                        FarPosition pointA = MathUtils.Multiply(ref xfA, _localPoint);
+                        WorldVector2 pointA = MathUtils.Multiply(ref xfA, _localPoint);
 
                         Vector2 axisB = MathUtils.MultiplyT(ref xfB.R, -normal);
 
                         Vector2 localPointB = _proxyB.Vertices[indexB];
-                        FarPosition pointB = MathUtils.Multiply(ref xfB, localPointB);
+                        WorldVector2 pointB = MathUtils.Multiply(ref xfB, localPointB);
 
                         float separation = Vector2.Dot((Vector2)(pointB - pointA), normal);
                         return separation;
@@ -265,12 +265,12 @@ namespace FarseerPhysics.Collision
                 case SeparationFunctionType.FaceB:
                     {
                         Vector2 normal = MathUtils.Multiply(ref xfB.R, _axis);
-                        FarPosition pointB = MathUtils.Multiply(ref xfB, _localPoint);
+                        WorldVector2 pointB = MathUtils.Multiply(ref xfB, _localPoint);
 
                         Vector2 axisA = MathUtils.MultiplyT(ref xfA.R, -normal);
 
                         Vector2 localPointA = _proxyA.Vertices[indexA];
-                        FarPosition pointA = MathUtils.Multiply(ref xfA, localPointA);
+                        WorldVector2 pointA = MathUtils.Multiply(ref xfA, localPointA);
 
                         float separation = Vector2.Dot((Vector2)(pointA - pointB), normal);
                         return separation;
@@ -438,7 +438,13 @@ namespace FarseerPhysics.Collision
                             t = 0.5f * (a1 + a2);
                         }
 
+						// Bad inputs can cause t to become NaN at some point. Detect it here instead of dealing with
+						// the infinite loops the NaN will cause.
+						Debug.Assert(!float.IsNaN(t));
+
                         float s = SeparationFunction.Evaluate(indexA, indexB, t);
+
+						Debug.Assert(!float.IsNaN(s));
 
                         if (Math.Abs(s - target) < tolerance)
                         {

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -24,9 +24,10 @@
 */
 
 using System;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Collision.Shapes
 {
@@ -83,9 +84,9 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref FarPosition point)
+        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
-            FarPosition center = transform.Position + MathUtils.Multiply(ref transform.R, Position);
+            WorldVector2 center = transform.Position + MathUtils.Multiply(ref transform.R, Position);
             Vector2 d = (Vector2)(point - center);
             return Vector2.Dot(d, d) <= Radius * Radius;
         }
@@ -108,7 +109,7 @@ namespace FarseerPhysics.Collision.Shapes
 
             output = new RayCastOutput();
 
-            FarPosition position = transform.Position + MathUtils.Multiply(ref transform.R, Position);
+            WorldVector2 position = transform.Position + MathUtils.Multiply(ref transform.R, Position);
             Vector2 s = (Vector2)(input.Point1 - position);
             float b = Vector2.Dot(s, s) - Radius * Radius;
 
@@ -149,9 +150,11 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="childIndex">The child shape index.</param>
         public override void ComputeAABB(out AABB aabb, ref Transform transform, int childIndex)
         {
-            FarPosition p = transform.Position + MathUtils.Multiply(ref transform.R, Position);
-            aabb.LowerBound = new FarPosition(p.X - Radius, p.Y - Radius);
-            aabb.UpperBound = new FarPosition(p.X + Radius, p.Y + Radius);
+            WorldVector2 p = transform.Position + MathUtils.Multiply(ref transform.R, Position);
+            aabb.LowerBound.X = p.X - Radius;
+            aabb.LowerBound.Y = p.Y - Radius;
+            aabb.UpperBound.X = p.X + Radius;
+            aabb.UpperBound.Y = p.Y + Radius;
         }
 
         /// <summary>
@@ -175,12 +178,12 @@ namespace FarseerPhysics.Collision.Shapes
                     Position == shape.Position);
         }
 
-        public override float ComputeSubmergedArea(Vector2 normal, FarValue offset, Transform xf, out FarPosition sc)
+        public override float ComputeSubmergedArea(Vector2 normal, WorldSingle offset, Transform xf, out WorldVector2 sc)
         {
-            sc = FarPosition.Zero;
+            sc = WorldVector2.Zero;
 
-            FarPosition p = MathUtils.Multiply(ref xf, Position);
-            float l = -(float)(FarPosition.Dot(normal, p) - offset);
+            WorldVector2 p = MathUtils.Multiply(ref xf, Position);
+            float l = -(float)(WorldVector2.Dot(normal, p) - offset);
             if (l < -Radius + Settings.Epsilon)
             {
                 //Completely dry

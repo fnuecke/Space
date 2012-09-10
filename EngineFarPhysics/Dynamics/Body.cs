@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -22,11 +22,11 @@
 * misrepresented as being the original software. 
 * 3. This notice may not be removed or altered from any source distribution. 
 */
+//#define USE_AWAKE_BODY_SET
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
@@ -35,6 +35,8 @@ using FarseerPhysics.Controllers;
 using FarseerPhysics.Dynamics.Contacts;
 using FarseerPhysics.Dynamics.Joints;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics
 {
@@ -68,7 +70,7 @@ namespace FarseerPhysics.Dynamics
         FixedRotation = (1 << 4),
         Enabled = (1 << 5),
         IgnoreGravity = (1 << 6),
-        IgnoreCCD = (1 << 7),
+		IgnoreCCD = (1 << 7),
     }
 
     public class Body : IDisposable
@@ -115,7 +117,9 @@ namespace FarseerPhysics.Dynamics
             FixedRotation = false;
             IsBullet = false;
             SleepingAllowed = true;
+#if !USE_AWAKE_BODY_SET
             Awake = true;
+#endif
             BodyType = BodyType.Static;
             Enabled = true;
 
@@ -153,11 +157,14 @@ namespace FarseerPhysics.Dynamics
 
                 if (_bodyType == BodyType.Static)
                 {
+					Awake = false;
                     LinearVelocityInternal = Vector2.Zero;
                     AngularVelocityInternal = 0.0f;
                 }
-
-                Awake = true;
+				else
+				{
+					Awake = true;
+				}
 
                 Force = Vector2.Zero;
                 Torque = 0.0f;
@@ -300,19 +307,36 @@ namespace FarseerPhysics.Dynamics
                     {
                         Flags |= BodyFlags.Awake;
                         SleepTime = 0.0f;
-                    }
+						World.ContactManager.UpdateContacts(ContactList, true);
+#if USE_AWAKE_BODY_SET
+						if (InWorld && !World.AwakeBodySet.Contains(this))
+						{
+							World.AwakeBodySet.Add(this);
+						}
+#endif
+					}
                 }
                 else
                 {
+#if USE_AWAKE_BODY_SET
+					// Check even for BodyType.Static because if this body had just been changed to Static it will have
+					// set Awake = false in the process.
+					if (InWorld && World.AwakeBodySet.Contains(this))
+					{
+						World.AwakeBodySet.Remove(this);
+					}
+#endif
                     Flags &= ~BodyFlags.Awake;
                     SleepTime = 0.0f;
                     LinearVelocityInternal = Vector2.Zero;
                     AngularVelocityInternal = 0.0f;
                     Force = Vector2.Zero;
                     Torque = 0.0f;
+ 					World.ContactManager.UpdateContacts(ContactList, false);
+
                 }
-            }
-            get { return (Flags & BodyFlags.Awake) == BodyFlags.Awake; }
+           }
+            get { return (BodyType != Dynamics.BodyType.Static) && (Flags & BodyFlags.Awake) == BodyFlags.Awake; }
         }
 
         /// <summary>
@@ -402,6 +426,8 @@ namespace FarseerPhysics.Dynamics
             get { return (Flags & BodyFlags.FixedRotation) == BodyFlags.FixedRotation; }
         }
 
+		public bool InWorld { get; internal set; }
+
         /// <summary>
         /// Gets all the fixtures attached to this body.
         /// </summary>
@@ -432,12 +458,12 @@ namespace FarseerPhysics.Dynamics
         /// Get the world body origin position.
         /// </summary>
         /// <returns>Return the world position of the body's origin.</returns>
-        public FarPosition Position
+        public WorldVector2 Position
         {
             get { return Xf.Position; }
             set
             {
-                //Debug.Assert(!float.IsNaN(value.X) && !float.IsNaN(value.Y));
+                Debug.Assert(!WorldSingle.IsNaN(value.X) && !WorldSingle.IsNaN(value.Y));
 
                 SetTransform(ref value, Rotation);
             }
@@ -494,7 +520,7 @@ namespace FarseerPhysics.Dynamics
         /// Get the world position of the center of mass.
         /// </summary>
         /// <value>The world position.</value>
-        public FarPosition WorldCenter
+        public WorldVector2 WorldCenter
         {
             get { return Sweep.C; }
         }
@@ -512,7 +538,7 @@ namespace FarseerPhysics.Dynamics
                     return;
 
                 // Move center of mass.
-                FarPosition oldCenter = Sweep.C;
+                WorldVector2 oldCenter = Sweep.C;
                 Sweep.LocalCenter = value;
                 Sweep.C0 = Sweep.C = MathUtils.Multiply(ref Xf, ref Sweep.LocalCenter);
 
@@ -640,6 +666,24 @@ namespace FarseerPhysics.Dynamics
             }
         }
 
+		/// <summary>
+		/// Body objects can define which categories of bodies they wish to ignore CCD with. 
+		/// This allows certain bodies to be configured to ignore CCD with objects that
+		/// aren't a penetration problem due to the way content has been prepared.
+		/// This is compared against the other Body's fixture CollisionCategories within World.SolveTOI().
+		/// </summary>
+		public Category IgnoreCCDWith
+		{
+            set
+            {
+                for (int i = 0; i < FixtureList.Count; i++)
+                {
+                    Fixture f = FixtureList[i];
+					f.IgnoreCCDWith = value;
+                }
+            }
+		}
+
         public short CollisionGroup
         {
             set
@@ -675,7 +719,6 @@ namespace FarseerPhysics.Dynamics
                     Flags &= ~BodyFlags.IgnoreCCD;
             }
         }
-
         #region IDisposable Members
 
         public bool IsDisposed { get; set; }
@@ -789,7 +832,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="position">The world position of the body's local origin.</param>
         /// <param name="rotation">The world rotation in radians.</param>
-        public void SetTransform(ref FarPosition position, float rotation)
+        public void SetTransform(ref WorldVector2 position, float rotation)
         {
             SetTransformIgnoreContacts(ref position, rotation);
 
@@ -803,7 +846,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="position">The world position of the body's local origin.</param>
         /// <param name="rotation">The world rotation in radians.</param>
-        public void SetTransform(FarPosition position, float rotation)
+        public void SetTransform(WorldVector2 position, float rotation)
         {
             SetTransform(ref position, rotation);
         }
@@ -813,15 +856,13 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="position">The position.</param>
         /// <param name="angle">The angle.</param>
-        public void SetTransformIgnoreContacts(ref FarPosition position, float angle)
+        public void SetTransformIgnoreContacts(ref WorldVector2 position, float angle)
         {
             Xf.R.Set(angle);
             Xf.Position = position;
 
-            Sweep.C0 =
-                Sweep.C =
-                new FarPosition(Xf.Position.X + Xf.R.Col1.X * Sweep.LocalCenter.X + Xf.R.Col2.X * Sweep.LocalCenter.Y,
-                                Xf.Position.Y + Xf.R.Col1.Y * Sweep.LocalCenter.X + Xf.R.Col2.Y * Sweep.LocalCenter.Y);
+            Sweep.C0.X = Sweep.C.X = Xf.Position.X + (Xf.R.Col1.X * Sweep.LocalCenter.X + Xf.R.Col2.X * Sweep.LocalCenter.Y);
+            Sweep.C0.Y = Sweep.C.Y = Xf.Position.Y + (Xf.R.Col1.Y * Sweep.LocalCenter.X + Xf.R.Col2.Y * Sweep.LocalCenter.Y);
             Sweep.A0 = Sweep.A = angle;
 
             IBroadPhase broadPhase = World.ContactManager.BroadPhase;
@@ -847,7 +888,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="force">The world force vector, usually in Newtons (N).</param>
         /// <param name="point">The world position of the point of application.</param>
-        public void ApplyForce(Vector2 force, FarPosition point)
+        public void ApplyForce(Vector2 force, WorldVector2 point)
         {
             ApplyForce(ref force, ref point);
         }
@@ -877,12 +918,12 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="force">The world force vector, usually in Newtons (N).</param>
         /// <param name="point">The world position of the point of application.</param>
-        public void ApplyForce(ref Vector2 force, ref FarPosition point)
+        public void ApplyForce(ref Vector2 force, ref WorldVector2 point)
         {
             Debug.Assert(!float.IsNaN(force.X));
             Debug.Assert(!float.IsNaN(force.Y));
-            //Debug.Assert(!float.IsNaN(point.X));
-            //Debug.Assert(!float.IsNaN(point.Y));
+            Debug.Assert(!WorldSingle.IsNaN(point.X));
+            Debug.Assert(!WorldSingle.IsNaN(point.Y));
 
             if (_bodyType == BodyType.Dynamic)
             {
@@ -935,7 +976,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="impulse">The world impulse vector, usually in N-seconds or kg-m/s.</param>
         /// <param name="point">The world position of the point of application.</param>
-        public void ApplyLinearImpulse(Vector2 impulse, FarPosition point)
+        public void ApplyLinearImpulse(Vector2 impulse, WorldVector2 point)
         {
             ApplyLinearImpulse(ref impulse, ref point);
         }
@@ -966,7 +1007,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="impulse">The world impulse vector, usually in N-seconds or kg-m/s.</param>
         /// <param name="point">The world position of the point of application.</param>
-        public void ApplyLinearImpulse(ref Vector2 impulse, ref FarPosition point)
+        public void ApplyLinearImpulse(ref Vector2 impulse, ref WorldVector2 point)
         {
             if (_bodyType != BodyType.Dynamic)
                 return;
@@ -1070,7 +1111,7 @@ namespace FarseerPhysics.Dynamics
             }
 
             // Move center of mass.
-            FarPosition oldCenter = Sweep.C;
+            WorldVector2 oldCenter = Sweep.C;
             Sweep.LocalCenter = center;
             Sweep.C0 = Sweep.C = MathUtils.Multiply(ref Xf, ref Sweep.LocalCenter);
 
@@ -1084,10 +1125,12 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="localPoint">A point on the body measured relative the the body's origin.</param>
         /// <returns>The same point expressed in world coordinates.</returns>
-        public FarPosition GetWorldPoint(ref Vector2 localPoint)
+        public WorldVector2 GetWorldPoint(ref Vector2 localPoint)
         {
-            return new FarPosition(Xf.Position.X + Xf.R.Col1.X * localPoint.X + Xf.R.Col2.X * localPoint.Y,
-                                   Xf.Position.Y + Xf.R.Col1.Y * localPoint.X + Xf.R.Col2.Y * localPoint.Y);
+            WorldVector2 v;
+            v.X = Xf.Position.X + (Xf.R.Col1.X * localPoint.X + Xf.R.Col2.X * localPoint.Y);
+            v.Y = Xf.Position.Y + (Xf.R.Col1.Y * localPoint.X + Xf.R.Col2.Y * localPoint.Y);
+            return v;
         }
 
         /// <summary>
@@ -1095,7 +1138,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="localPoint">A point on the body measured relative the the body's origin.</param>
         /// <returns>The same point expressed in world coordinates.</returns>
-        public FarPosition GetWorldPoint(Vector2 localPoint)
+        public WorldVector2 GetWorldPoint(Vector2 localPoint)
         {
             return GetWorldPoint(ref localPoint);
         }
@@ -1128,7 +1171,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="worldPoint">A point in world coordinates.</param>
         /// <returns>The corresponding local point relative to the body's origin.</returns>
-        public Vector2 GetLocalPoint(ref FarPosition worldPoint)
+        public Vector2 GetLocalPoint(ref WorldVector2 worldPoint)
         {
             return
                 new Vector2((float)(worldPoint.X - Xf.Position.X) * Xf.R.Col1.X + (float)(worldPoint.Y - Xf.Position.Y) * Xf.R.Col1.Y,
@@ -1140,7 +1183,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="worldPoint">A point in world coordinates.</param>
         /// <returns>The corresponding local point relative to the body's origin.</returns>
-        public Vector2 GetLocalPoint(FarPosition worldPoint)
+        public Vector2 GetLocalPoint(WorldVector2 worldPoint)
         {
             return GetLocalPoint(ref worldPoint);
         }
@@ -1173,7 +1216,7 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="worldPoint">A point in world coordinates.</param>
         /// <returns>The world velocity of a point.</returns>
-        public Vector2 GetLinearVelocityFromWorldPoint(FarPosition worldPoint)
+        public Vector2 GetLinearVelocityFromWorldPoint(WorldVector2 worldPoint)
         {
             return GetLinearVelocityFromWorldPoint(ref worldPoint);
         }
@@ -1183,11 +1226,11 @@ namespace FarseerPhysics.Dynamics
         /// </summary>
         /// <param name="worldPoint">A point in world coordinates.</param>
         /// <returns>The world velocity of a point.</returns>
-        public Vector2 GetLinearVelocityFromWorldPoint(ref FarPosition worldPoint)
+        public Vector2 GetLinearVelocityFromWorldPoint(ref WorldVector2 worldPoint)
         {
             return LinearVelocityInternal +
                    new Vector2(-AngularVelocityInternal * (float)(worldPoint.Y - Sweep.C.Y),
-                                AngularVelocityInternal * (float)(worldPoint.X - Sweep.C.X));
+                               AngularVelocityInternal * (float)(worldPoint.X - Sweep.C.X));
         }
 
         /// <summary>

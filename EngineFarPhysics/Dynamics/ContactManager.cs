@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -22,6 +22,7 @@
 * misrepresented as being the original software. 
 * 3. This notice may not be removed or altered from any source distribution. 
 */
+#define USE_ACTIVE_CONTACT_SET
 
 using System.Collections.Generic;
 using FarseerPhysics.Collision;
@@ -44,6 +45,20 @@ namespace FarseerPhysics.Dynamics
         public CollisionFilterDelegate ContactFilter;
 
         public List<Contact> ContactList = new List<Contact>(128);
+
+#if USE_ACTIVE_CONTACT_SET
+        /// <summary>
+        /// The set of active contacts.
+        /// </summary>
+        public HashSet<Contact> ActiveContacts = new HashSet<Contact>();
+
+        /// <summary>
+        /// A temporary copy of active contacts that is used during updates so
+        /// the hash set can have members added/removed during the update.
+        /// This list is cleared after every update.
+        /// </summary>
+        List<Contact> ActiveList = new List<Contact>();
+#endif
 
         /// <summary>
         /// Fires when a contact is deleted
@@ -146,6 +161,9 @@ namespace FarseerPhysics.Dynamics
             // Insert into the world.
             ContactList.Add(c);
 
+#if USE_ACTIVE_CONTACT_SET
+            ActiveContacts.Add(c);
+#endif
             // Connect to island graph.
 
             // Connect to body A
@@ -225,24 +243,56 @@ namespace FarseerPhysics.Dynamics
                 bodyB.ContactList = contact.NodeB.Next;
             }
 
+#if USE_ACTIVE_CONTACT_SET
+            if (ActiveContacts.Contains(contact))
+            {
+                ActiveContacts.Remove(contact);
+            }
+            if (ActiveList.Contains(contact))
+            {
+                ActiveList.Remove(contact);
+            }
+#endif
             contact.Destroy();
         }
 
         internal void Collide()
         {
             // Update awake contacts.
+#if USE_ACTIVE_CONTACT_SET
+            ActiveList.AddRange(ActiveContacts);
+
+            // Iterate backwards so that removed contacts don't disturb the
+            // iteration, but also bound the value to the list value because
+            // it might be cleared / more than one contact may be removed in
+            // the meantime.
+            for (int i = ActiveList.Count - 1; i >= 0; i = System.Math.Min(i - 1, ActiveList.Count - 1))
+            {
+                Contact c = ActiveList[i];
+#else
             for (int i = 0; i < ContactList.Count; i++)
             {
                 Contact c = ContactList[i];
+#endif
                 Fixture fixtureA = c.FixtureA;
                 Fixture fixtureB = c.FixtureB;
                 int indexA = c.ChildIndexA;
                 int indexB = c.ChildIndexB;
+
+                //if (fixtureA == null || fixtureB == null)
+                //{
+                //    ActiveContacts.Remove(c);
+                //    continue;
+                //}
+
                 Body bodyA = fixtureA.Body;
                 Body bodyB = fixtureB.Body;
 
                 if (bodyA.Awake == false && bodyB.Awake == false)
                 {
+#if USE_ACTIVE_CONTACT_SET
+                    ActiveContacts.Remove(c);
+#endif
                     continue;
                 }
 
@@ -293,6 +343,10 @@ namespace FarseerPhysics.Dynamics
                 // The contact persists.
                 c.Update(this);
             }
+
+#if USE_ACTIVE_CONTACT_SET
+            ActiveList.Clear();
+#endif
         }
 
         private static bool ShouldCollide(Fixture fixtureA, Fixture fixtureB)
@@ -336,5 +390,46 @@ namespace FarseerPhysics.Dynamics
 
             return collide;
         }
+
+        internal void UpdateContacts(ContactEdge contactEdge, bool value)
+        {
+#if USE_ACTIVE_CONTACT_SET
+            if(value)
+            {
+                while(contactEdge != null)
+                {
+                    var c = contactEdge.Contact;
+                    if (!ActiveContacts.Contains(c))
+                    {
+                        ActiveContacts.Add(c);
+                    }
+                    contactEdge = contactEdge.Next;
+                }
+            }
+            else
+            {
+                while (contactEdge != null)
+                {
+                    var c = contactEdge.Contact;
+                    if (!contactEdge.Other.Awake)
+                    {
+                        if (ActiveContacts.Contains(c))
+                        {
+                            ActiveContacts.Remove(c);
+                        }
+                    }
+                    contactEdge = contactEdge.Next;
+                }
+            }
+#endif
+        }
+
+#if USE_ACTIVE_CONTACT_SET
+        internal void RemoveActiveContact(Contact contact)
+        {
+            if (ActiveContacts.Contains(contact))
+                ActiveContacts.Remove(contact);
+        }
+#endif
     }
 }

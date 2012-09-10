@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,9 +25,9 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -116,23 +116,34 @@ namespace FarseerPhysics.Dynamics.Joints
         /// </summary>
         public float DampingRatio { get; set; }
 
-        public override sealed FarPosition WorldAnchorA
+        public override sealed WorldVector2 WorldAnchorA
         {
             get { return BodyA.GetWorldPoint(LocalAnchorA); }
         }
 
-        public override sealed FarPosition WorldAnchorB
+        public override sealed WorldVector2 WorldAnchorB
         {
             get { return BodyB.GetWorldPoint(LocalAnchorB); }
             set { Debug.Assert(false, "You can't set the world anchor on this joint type."); }
         }
 
+		/// <summary>
+		/// Get the reaction force given the inverse time step. Unit is N.
+		/// </summary>
+		/// <param name="inv_dt"></param>
+		/// <returns></returns>
         public override Vector2 GetReactionForce(float inv_dt)
         {
             Vector2 F = (inv_dt * _impulse) * _u;
             return F;
         }
 
+		/// <summary>
+		/// Get the reaction torque given the inverse time step.
+		/// Unit is N*m. This is always zero for a distance joint.
+		/// </summary>
+		/// <param name="inv_dt"></param>
+		/// <returns></returns>
         public override float GetReactionTorque(float inv_dt)
         {
             return 0.0f;

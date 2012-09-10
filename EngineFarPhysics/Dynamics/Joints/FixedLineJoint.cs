@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -25,9 +25,9 @@
 
 using System;
 using System.Diagnostics;
-using Engine.FarMath;
 using FarseerPhysics.Common;
 using Microsoft.Xna.Framework;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics.Joints
 {
@@ -46,15 +46,13 @@ namespace FarseerPhysics.Dynamics.Joints
         private float _motorMass;
         private float _motorSpeed;
 
-        private float _sAx;
-        private float _sAy;
+        //private float _sAx;
+        //private float _sAy;
         private float _sBx;
         private float _sBy;
 
         private float _springImpulse;
         private float _springMass;
-
-        private FarPosition _worldAnchorA;
 
         // Linear constraint (point-to-line)
         // d = pB - pA = xB + rB - xA - rA
@@ -74,29 +72,28 @@ namespace FarseerPhysics.Dynamics.Joints
 
         internal FixedLineJoint() { JointType = JointType.FixedLine; }
 
-        public FixedLineJoint(Body body, FarPosition worldAnchor, Vector2 axis)
+        public FixedLineJoint(Body body, WorldVector2 worldAnchor, Vector2 axis)
             : base(body)
         {
             JointType = JointType.FixedLine;
 
             BodyB = BodyA;
 
-            //LocalAnchorA = worldAnchor;
-            _worldAnchorA = worldAnchor;
+            LocalAnchorA = worldAnchor;
             LocalAnchorB = BodyB.GetLocalPoint(worldAnchor);
             LocalXAxis = axis;
         }
 
-        //public Vector2 LocalAnchorA { get; set; }
+        public WorldVector2 /* Not so */ LocalAnchorA { get; set; }
 
         public Vector2 LocalAnchorB { get; set; }
 
-        public override FarPosition WorldAnchorA
+        public override WorldVector2 WorldAnchorA
         {
-            get { return _worldAnchorA; }
+            get { return LocalAnchorA; }
         }
 
-        public override FarPosition WorldAnchorB
+        public override WorldVector2 WorldAnchorB
         {
             get { return BodyA.GetWorldPoint(LocalAnchorB); }
             set { Debug.Assert(false, "You can't set the world anchor on this joint type."); }
@@ -109,8 +106,8 @@ namespace FarseerPhysics.Dynamics.Joints
                 Body bA = BodyA;
                 Body bB = BodyB;
 
-                FarPosition pA = WorldAnchorA; // bA.GetWorldPoint(LocalAnchorA);
-                FarPosition pB = bB.GetWorldPoint(LocalAnchorB);
+                WorldVector2 pA = /* bA.GetWorldPoint( */ LocalAnchorA /* ) */;
+                WorldVector2 pB = bB.GetWorldPoint(LocalAnchorB);
                 Vector2 d = (Vector2)(pB - pA);
                 Vector2 axis = bA.GetWorldVector(LocalXAxis);
 
@@ -197,12 +194,14 @@ namespace FarseerPhysics.Dynamics.Joints
             bB.GetTransform(out xfB);
 
             // Compute the effective masses.
-            FarPosition rA = WorldAnchorA; // LocalAnchorA;
+            WorldVector2 rA = LocalAnchorA;
             Vector2 rB = MathUtils.Multiply(ref xfB.R, LocalAnchorB - LocalCenterB);
-            Vector2 d = (Vector2)(bB.Sweep.C + rB - rA);
+            Vector2 d = (Vector2)(bB.Sweep.C - rA) + rB;
 
-            InvMassA = 0.0f;
-            InvIA = 0.0f;
+            //InvMassA = 0.0f;
+            //InvIA = 0.0f;
+            Debug.Assert(InvMassA == 0f);
+            Debug.Assert(InvIA == 0f);
             InvMassB = bB.InvMass;
             InvIB = bB.InvI;
 
@@ -210,10 +209,9 @@ namespace FarseerPhysics.Dynamics.Joints
             {
                 _ay = _localYAxisA;
                 //_sAy = MathUtils.Cross(d + rA, _ay);
-                _sAy = MathUtils.Cross((Vector2)(bB.Sweep.C + rB), _ay);
                 _sBy = MathUtils.Cross(rB, _ay);
 
-                _mass = InvMassA + InvMassB + InvIA * _sAy * _sAy + InvIB * _sBy * _sBy;
+                _mass = /* InvMassA + */ InvMassB /* + InvIA * _sAy * _sAy */ + InvIB * _sBy * _sBy;
 
                 if (_mass > 0.0f)
                 {
@@ -227,10 +225,9 @@ namespace FarseerPhysics.Dynamics.Joints
             {
                 _ax = LocalXAxis;
                 //_sAx = MathUtils.Cross(d + rA, _ax);
-                _sAx = MathUtils.Cross((Vector2)(bB.Sweep.C + rB), _ax);
                 _sBx = MathUtils.Cross(rB, _ax);
 
-                float invMass = InvMassA + InvMassB + InvIA * _sAx * _sAx + InvIB * _sBx * _sBx;
+                float invMass = /* InvMassA + */ InvMassB /* + InvIA * _sAx * _sAx */ + InvIB * _sBx * _sBx;
 
                 if (invMass > 0.0f)
                 {
@@ -272,7 +269,7 @@ namespace FarseerPhysics.Dynamics.Joints
             // Rotational motor
             if (_enableMotor)
             {
-                _motorMass = InvIA + InvIB;
+                _motorMass = /* InvIA + */ InvIB;
                 if (_motorMass > 0.0f)
                 {
                     _motorMass = 1.0f / _motorMass;
@@ -309,23 +306,26 @@ namespace FarseerPhysics.Dynamics.Joints
         {
             Body bB = BodyB;
 
-            Vector2 vA = Vector2.Zero;
-            float wA = 0.0f;
+            Debug.Assert(InvMassA == 0f);
+            Debug.Assert(InvIA == 0f);
+
+            //Vector2 vA = Vector2.Zero;
+            //float wA = 0.0f;
             Vector2 vB = bB.LinearVelocityInternal;
             float wB = bB.AngularVelocityInternal;
 
             // Solve spring constraint
             {
-                float Cdot = Vector2.Dot(_ax, vB - vA) + _sBx * wB - _sAx * wA;
+                float Cdot = Vector2.Dot(_ax, vB /* - vA */) + _sBx * wB /* - _sAx * wA */;
                 float impulse = -_springMass * (Cdot + _bias + _gamma * _springImpulse);
                 _springImpulse += impulse;
 
                 Vector2 P = impulse * _ax;
-                float LA = impulse * _sAx;
+                //float LA = impulse * _sAx;
                 float LB = impulse * _sBx;
 
-                vA -= InvMassA * P;
-                wA -= InvIA * LA;
+                //vA -= InvMassA * P;
+                //wA -= InvIA * LA;
 
                 vB += InvMassB * P;
                 wB += InvIB * LB;
@@ -333,7 +333,7 @@ namespace FarseerPhysics.Dynamics.Joints
 
             // Solve rotational motor constraint
             {
-                float Cdot = wB - wA - _motorSpeed;
+                float Cdot = wB /* - wA */ - _motorSpeed;
                 float impulse = -_motorMass * Cdot;
 
                 float oldImpulse = _motorImpulse;
@@ -341,13 +341,13 @@ namespace FarseerPhysics.Dynamics.Joints
                 _motorImpulse = MathUtils.Clamp(_motorImpulse + impulse, -maxImpulse, maxImpulse);
                 impulse = _motorImpulse - oldImpulse;
 
-                wA -= InvIA * impulse;
+                //wA -= InvIA * impulse;
                 wB += InvIB * impulse;
             }
 
             // Solve point to line constraint
             {
-                float Cdot = Vector2.Dot(_ay, vB - vA) + _sBy * wB - _sAy * wA;
+                float Cdot = Vector2.Dot(_ay, vB /* - vA */) + _sBy * wB /* - _sAy * wA */;
                 float impulse = _mass * (-Cdot);
                 _impulse += impulse;
 
@@ -366,27 +366,29 @@ namespace FarseerPhysics.Dynamics.Joints
         {
             Body bB = BodyB;
 
-            Vector2 xA = Vector2.Zero;
-            const float angleA = 0.0f;
+            Debug.Assert(InvMassA == 0f);
+            Debug.Assert(InvIA == 0f);
 
-            FarPosition xB = bB.Sweep.C;
+            //Vector2 xA = Vector2.Zero;
+            //const float angleA = 0.0f;
+
+            WorldVector2 xB = bB.Sweep.C;
             float angleB = bB.Sweep.A;
 
-            Mat22 RA = new Mat22(angleA);
+            //Mat22 RA = new Mat22(angleA);
             Mat22 RB = new Mat22(angleB);
 
-            //Vector2 rA = MathUtils.Multiply(ref RA, LocalAnchorA - LocalCenterA);
-            Vector2 rA = MathUtils.Multiply(ref RA, (Vector2)(WorldAnchorA - LocalCenterA));
+            WorldVector2 rA = /* MathUtils.Multiply(ref RA, */ LocalAnchorA - LocalCenterA /* ) */;
             Vector2 rB = MathUtils.Multiply(ref RB, LocalAnchorB - LocalCenterB);
-            Vector2 d = (Vector2)(xB - xA + rB - rA);
+            Vector2 d = (Vector2)(xB /* - xA */ - rA) + rB;
 
-            Vector2 ay = MathUtils.Multiply(ref RA, _localYAxisA);
+            Vector2 ay = /* MathUtils.Multiply(ref RA, */ _localYAxisA /* ) */;
 
             float sBy = MathUtils.Cross(rB, ay);
 
             float C = Vector2.Dot(d, ay);
 
-            float k = InvMassA + InvMassB + InvIA * _sAy * _sAy + InvIB * _sBy * _sBy;
+            float k = /* InvMassA + */ InvMassB /* + InvIA * _sAy * _sAy */ + InvIB * _sBy * _sBy;
 
             float impulse;
             if (k != 0.0f)

@@ -6,7 +6,7 @@
 * Copyright (c) 2009 Brandon Furtwangler, Nathan Furtwangler
 *
 * Original source Box2D:
-* Copyright (c) 2006-2009 Erin Catto http://www.gphysics.com 
+* Copyright (c) 2006-2009 Erin Catto http://www.box2d.org 
 * 
 * This software is provided 'as-is', without any express or implied 
 * warranty.  In no event will the authors be held liable for any damages 
@@ -26,8 +26,9 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Engine.FarMath;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Common
 {
@@ -58,12 +59,30 @@ namespace FarseerPhysics.Common
             return Multiply(ref A, ref v);
         }
 
+        public static WorldVector2 Multiply(ref Mat22 A, WorldVector2 v)
+        {
+            return Multiply(ref A, ref v);
+        }
+
         public static Vector2 Multiply(ref Mat22 A, ref Vector2 v)
         {
             return new Vector2(A.Col1.X * v.X + A.Col2.X * v.Y, A.Col1.Y * v.X + A.Col2.Y * v.Y);
         }
 
+        public static WorldVector2 Multiply(ref Mat22 A, ref WorldVector2 v)
+        {
+            WorldVector2 result;
+            result.X = A.Col1.X * v.X + A.Col2.X * v.Y;
+            result.Y = A.Col1.Y * v.X + A.Col2.Y * v.Y;
+            return result;
+        }
+
         public static Vector2 MultiplyT(ref Mat22 A, Vector2 v)
+        {
+            return MultiplyT(ref A, ref v);
+        }
+
+        public static WorldVector2 MultiplyT(ref Mat22 A, WorldVector2 v)
         {
             return MultiplyT(ref A, ref v);
         }
@@ -73,61 +92,61 @@ namespace FarseerPhysics.Common
             return new Vector2(v.X * A.Col1.X + v.Y * A.Col1.Y, v.X * A.Col2.X + v.Y * A.Col2.Y);
         }
 
-        public static FarPosition MultiplyT(ref Mat22 A, FarPosition v)
+        public static WorldVector2 MultiplyT(ref Mat22 A, ref WorldVector2 v)
         {
-            return MultiplyT(ref A, ref v);
+            WorldVector2 result;
+            result.X = v.X * A.Col1.X + v.Y * A.Col1.Y;
+            result.Y = v.X * A.Col2.X + v.Y * A.Col2.Y;
+            return result;
         }
 
-        public static FarPosition MultiplyT(ref Mat22 A, ref FarPosition v)
-        {
-            return new FarPosition(v.X * A.Col1.X + v.Y * A.Col1.Y, v.X * A.Col2.X + v.Y * A.Col2.Y);
-        }
-
-        public static FarPosition Multiply(ref Transform T, Vector2 v)
+        public static WorldVector2 Multiply(ref Transform T, Vector2 v)
         {
             return Multiply(ref T, ref v);
         }
 
-        public static FarPosition Multiply(ref Transform T, ref Vector2 v)
+        public static WorldVector2 Multiply(ref Transform T, ref Vector2 v)
         {
-            return new FarPosition(T.Position.X + T.R.Col1.X * v.X + T.R.Col2.X * v.Y,
-                                   T.Position.Y + T.R.Col1.Y * v.X + T.R.Col2.Y * v.Y);
+            WorldVector2 result;
+            result.X = T.Position.X + (T.R.Col1.X * v.X + T.R.Col2.X * v.Y);
+            result.Y = T.Position.Y + (T.R.Col1.Y * v.X + T.R.Col2.Y * v.Y);
+            return result;
         }
 
-        public static FarPosition Multiply(ref Transform T, FarPosition v)
-        {
-            return Multiply(ref T, ref v);
-        }
-
-        public static FarPosition Multiply(ref Transform T, ref FarPosition v)
-        {
-            return new FarPosition(T.Position.X + T.R.Col1.X * v.X + T.R.Col2.X * v.Y,
-                                   T.Position.Y + T.R.Col1.Y * v.X + T.R.Col2.Y * v.Y);
-        }
-
-        public static Vector2 MultiplyT(ref Transform T, Vector2 v)
+        public static WorldVector2 MultiplyT(ref Transform T, Vector2 v)
         {
             return MultiplyT(ref T, ref v);
         }
 
-        public static Vector2 MultiplyT(ref Transform T, ref Vector2 v)
+        public static WorldVector2 MultiplyT(ref Transform T, ref Vector2 v)
         {
-            Vector2 tmp;
-            tmp.X = (float)(v.X - T.Position.X);
-            tmp.Y = (float)(v.Y - T.Position.Y);
+            WorldVector2 tmp = WorldVector2.Zero;
+            tmp.X = v.X - T.Position.X;
+            tmp.Y = v.Y - T.Position.Y;
             return MultiplyT(ref T.R, ref tmp);
         }
 
-        public static FarPosition MultiplyT(ref Transform T, FarPosition v)
+        public static Vector2 Multiply(ref Transform T, WorldVector2 v)
+        {
+            return Multiply(ref T, ref v);
+        }
+
+        public static Vector2 Multiply(ref Transform T, ref WorldVector2 v)
+        {
+            return new Vector2((float)(T.Position.X + T.R.Col1.X * v.X + T.R.Col2.X * v.Y),
+                               (float)(T.Position.Y + T.R.Col1.Y * v.X + T.R.Col2.Y * v.Y));
+        }
+
+        public static Vector2 MultiplyT(ref Transform T, WorldVector2 v)
         {
             return MultiplyT(ref T, ref v);
         }
 
-        public static FarPosition MultiplyT(ref Transform T, ref FarPosition v)
+        public static Vector2 MultiplyT(ref Transform T, ref WorldVector2 v)
         {
-            FarPosition tmp;
-            tmp.X = v.X - T.Position.X;
-            tmp.Y = v.Y - T.Position.Y;
+            Vector2 tmp = Vector2.Zero;
+            tmp.X = (float)(v.X - T.Position.X);
+            tmp.Y = (float)(v.Y - T.Position.Y);
             return MultiplyT(ref T.R, ref tmp);
         }
 
@@ -184,15 +203,15 @@ namespace FarseerPhysics.Common
         /// <returns>
         /// 	<c>true</c> if the specified x is valid; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsValid(FarValue x)
+        public static bool IsValid(WorldSingle x)
         {
-            if (FarValue.IsNaN(x))
+            if (WorldSingle.IsNaN(x))
             {
                 // NaN.
                 return false;
             }
 
-            return !FarValue.IsInfinity(x);
+            return !WorldSingle.IsInfinity(x);
         }
 
         public static bool IsValid(this Vector2 x)
@@ -200,7 +219,7 @@ namespace FarseerPhysics.Common
             return IsValid(x.X) && IsValid(x.Y);
         }
 
-        public static bool IsValid(this FarPosition x)
+        public static bool IsValid(this WorldVector2 x)
         {
             return IsValid(x.X) && IsValid(x.Y);
         }
@@ -576,7 +595,7 @@ namespace FarseerPhysics.Common
     /// </summary>
     public struct Transform
     {
-        public FarPosition Position;
+        public WorldVector2 Position;
         public Mat22 R;
 
         /// <summary>
@@ -584,7 +603,7 @@ namespace FarseerPhysics.Common
         /// </summary>
         /// <param name="position">The position.</param>
         /// <param name="r">The r.</param>
-        public Transform(ref FarPosition position, ref Mat22 r)
+        public Transform(ref WorldVector2 position, ref Mat22 r)
         {
             Position = position;
             R = r;
@@ -604,7 +623,7 @@ namespace FarseerPhysics.Common
         /// </summary>
         public void SetIdentity()
         {
-            Position = FarPosition.Zero;
+            Position = WorldVector2.Zero;
             R.SetIdentity();
         }
 
@@ -613,7 +632,7 @@ namespace FarseerPhysics.Common
         /// </summary>
         /// <param name="position">The position.</param>
         /// <param name="angle">The angle.</param>
-        public void Set(FarPosition position, float angle)
+        public void Set(WorldVector2 position, float angle)
         {
             Position = position;
             R.Set(angle);
@@ -644,9 +663,9 @@ namespace FarseerPhysics.Common
         /// <summary>
         /// Center world positions
         /// </summary>
-        public FarPosition C;
+        public WorldVector2 C;
 
-        public FarPosition C0;
+        public WorldVector2 C0;
 
         /// <summary>
         /// Local center of mass position
@@ -661,8 +680,9 @@ namespace FarseerPhysics.Common
         public void GetTransform(out Transform xf, float beta)
         {
             xf = new Transform();
-            xf.Position.X = (1.0f - beta) * C0.X + beta * C.X;
-            xf.Position.Y = (1.0f - beta) * C0.Y + beta * C.Y;
+            xf.Position = C0 + (beta * (Vector2)(C - C0));
+            //xf.Position.X = (1.0f - beta) * C0.X + beta * C.X;
+            //xf.Position.Y = (1.0f - beta) * C0.Y + beta * C.Y;
             float angle = (1.0f - beta) * A0 + beta * A;
             xf.R.Set(angle);
 

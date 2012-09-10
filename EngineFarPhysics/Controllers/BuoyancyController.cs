@@ -1,9 +1,10 @@
 using System.Collections.Generic;
-using Engine.FarMath;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
+using WorldSingle = Engine.FarMath.FarValue;
+using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Controllers
 {
@@ -35,7 +36,7 @@ namespace FarseerPhysics.Controllers
 
         private Vector2 _gravity;
         private Vector2 _normal;
-        private FarValue _offset;
+        private WorldSingle _offset;
         private Dictionary<int, Body> _uniqueBodies = new Dictionary<int, Body>();
 
         /// <summary>
@@ -86,8 +87,8 @@ namespace FarseerPhysics.Controllers
             {
                 Body body = kv.Value;
 
-                FarPosition areac = FarPosition.Zero;
-                FarPosition massc = FarPosition.Zero;
+                WorldVector2 areac = WorldVector2.Zero;
+                WorldVector2 massc = WorldVector2.Zero;
                 float area = 0;
                 float mass = 0;
 
@@ -100,7 +101,7 @@ namespace FarseerPhysics.Controllers
 
                     Shape shape = fixture.Shape;
 
-                    FarPosition sc;
+                    WorldVector2 sc;
                     float sarea = shape.ComputeSubmergedArea(_normal, _offset, body.Xf, out sc);
                     area += sarea;
                     areac.X += sarea * sc.X;
