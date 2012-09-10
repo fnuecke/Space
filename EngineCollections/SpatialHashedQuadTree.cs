@@ -268,17 +268,27 @@ namespace Engine.Collections
             // Remove from old cells.
             foreach (var cell in ComputeCells(oldBounds))
             {
-                _entries[cell.Item1].Remove(item);
+                Collections.DynamicQuadTree<T> tree;
+                _entries.TryGetValue(cell.Item1, out tree);
+                if (tree != null)
+                {
+                    tree.Remove(item);
+                }
             }
 
             // Add to new cells.
             foreach (var cell in ComputeCells(newBounds))
             {
-                // Convert the item bounds to the tree's local coordinate space.
-                var relativeBounds = newBounds;
-                relativeBounds.Offset(cell.Item2);
+                Collections.DynamicQuadTree<T> tree;
+                _entries.TryGetValue(cell.Item1, out tree);
+                if (tree != null)
+                {
+                    // Convert the item bounds to the tree's local coordinate space.
+                    var relativeBounds = newBounds;
+                    relativeBounds.Offset(cell.Item2);
 
-                _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+                    tree.Add((Math.RectangleF)relativeBounds, item);
+                }
             }
 
             //*/

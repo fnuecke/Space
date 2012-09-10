@@ -683,7 +683,7 @@ namespace Tests
             return rect;
         }
 #else
-        public static Vector2 NextVector(this IUniformRandom random, int area)
+        public static Vector2 NextVector(this IUniformRandom random, float area)
         {
             return new Vector2((float)(random.NextDouble() * area - area / 2.0),
                                (float)(random.NextDouble() * area - area / 2.0));
