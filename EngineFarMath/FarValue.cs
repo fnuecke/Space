@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Engine.Serialization;
 
 namespace Engine.FarMath
@@ -21,11 +20,20 @@ namespace Engine.FarMath
         #region Constants
 
         /// <summary>
-        /// Size of a single segment. 2^16 allows us to cover the area we can
-        /// describe with an int32. Adjust as necessary for the context this
-        /// is used in.
+        /// Size of a single segment.
         /// </summary>
-        public const int SegmentSize = (1 << 16);
+        public const int SegmentSize = 1 << SegmentSizeShift;
+
+        /// <summary>
+        /// Half the size of a single segment.
+        /// </summary>
+        public const int SegmentSizeHalf = SegmentSize >> 1;
+
+        /// <summary>
+        /// The bit shift to use for getting the actual segment size.
+        /// Adjust as necessary for the context this is used in.
+        /// </summary>
+        private const int SegmentSizeShift = 16;
 
         /// <summary>
         /// Represents the origin, equivalent to a floating point zero.
@@ -52,9 +60,9 @@ namespace Engine.FarMath
         }
 
         // Keep as private fields to avoid manipulation.
-        private static readonly FarValue ConstZero = new FarValue(0);
-        private static readonly FarValue ConstMinValue = new FarValue { _segment = int.MinValue, _offset = -SegmentSize / 2f };
-        private static readonly FarValue ConstMaxValue = new FarValue { _segment = int.MaxValue, _offset = SegmentSize / 2f };
+        private static readonly FarValue ConstZero = new FarValue {_segment = 0, _offset = 0f};
+        private static readonly FarValue ConstMinValue = new FarValue {_segment = int.MinValue, _offset = -SegmentSizeHalf};
+        private static readonly FarValue ConstMaxValue = new FarValue{_segment = int.MaxValue, _offset = SegmentSizeHalf};
 
         #endregion
 
@@ -97,65 +105,34 @@ namespace Engine.FarMath
         /// <summary>
         /// Initializes a new instance of the <see cref="FarValue"/> struct.
         /// </summary>
-        /// <param name="value">The initial value.</param>
-        public FarValue(float value)
-        {
-            _segment = 0;
-            _offset = value;
-            Normalize();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FarValue"/> struct.
-        /// </summary>
-        /// <param name="value">The initial value.</param>
-        public FarValue(int value)
-        {
-            _segment = value / SegmentSize;
-            _offset = value % SegmentSize;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FarValue"/> struct.
-        /// </summary>
         /// <param name="segment">The segment.</param>
         /// <param name="offset">The offset.</param>
         public FarValue(int segment, float offset)
         {
             _segment = segment;
             _offset = offset;
+#if FARMATH_AUTO_NORMALIZE
             Normalize();
+#endif
         }
 
         /// <summary>
         /// Normalizes this <see cref="FarValue"/> by ensuring the local offset
-        /// is within bounds of the current segment. Note that this implementation
-        /// differs from the one given in Game Programming Gems: it only allows
-        /// the offset to fit into the very segment we're in. In Freese's sample
-        /// code the normalization allowed the offset to also point into the
-        /// below segment (as it was a vector, actually 3 other segments). This
-        /// is because that implementation used an abs(offset) check, so negative
-        /// values were treated the same as positive ones.
+        /// is within bounds of the current segment.
         /// </summary>
-        private void Normalize()
+        public void Normalize()
         {
-            if (_offset >= SegmentSize)
+            if (_offset >= SegmentSizeHalf)
             {
-                _segment += (int)(_offset / SegmentSize);
-                _offset = _offset % SegmentSize;
+                var segment = (int)System.Math.Round(_offset / SegmentSize, MidpointRounding.AwayFromZero);
+                _segment += segment;
+                _offset = _offset - segment * SegmentSize;
             }
-            else if (_offset < 0f)
+            else if (_offset < -SegmentSizeHalf)
             {
-                // Round the result of the division to the next lowest value, to
-                // make sure we get into the next lower segment...
-                _segment += (int)Math.Floor(_offset / SegmentSize);
-                // ... compensate this by adding one segment size to the remaining
-                // offset, to make sure it's positive afterwards.
-                _offset = _offset % SegmentSize;
-                if (_offset < 0)
-                {
-                    _offset += SegmentSize;
-                }
+                var segment = (int)System.Math.Round(_offset / SegmentSize + 1.192092896e-07f);
+                _segment += segment;
+                _offset = _offset - segment * SegmentSize;
             }
         }
 
@@ -279,7 +256,7 @@ namespace Engine.FarMath
         public static FarValue Lerp(FarValue value1, FarValue value2, float amount)
         {
             // Build new value at the interpolated value.
-            return value1 + (value2 - value1) * amount;
+            return value1 + (float)(value2 - value1) * amount;
         }
 
         /// <summary>
@@ -292,7 +269,7 @@ namespace Engine.FarMath
         public static void Lerp(ref FarValue value1, ref FarValue value2, float amount, out FarValue result)
         {
             // Build new value at the interpolated value.
-            result = value1 + (value2 - value1) * amount;
+            result = value1 + (float)(value2 - value1) * amount;
         }
 
         /// <summary>
@@ -310,7 +287,7 @@ namespace Engine.FarMath
             // Evaluate polynomial.
             amount = amount * amount * (3f - 2f * amount);
             // Scale and add.
-            return value1 + (value2 - value1) * amount;
+            return value1 + (float)(value2 - value1) * amount;
 
         }
 
@@ -329,7 +306,7 @@ namespace Engine.FarMath
             // Evaluate polynomial.
             amount = amount * amount * (3f - 2f * amount);
             // Scale and add.
-            result = value1 + (value2 - value1) * amount;
+            result = value1 + (float)(value2 - value1) * amount;
         }
 
         /// <summary>
@@ -374,7 +351,9 @@ namespace Engine.FarMath
             FarValue result;
             result._segment = -value._segment;
             result._offset = -value._offset;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -391,7 +370,9 @@ namespace Engine.FarMath
             var result = value1;
             result._segment += value2._segment;
             result._offset += value2._offset;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -407,7 +388,9 @@ namespace Engine.FarMath
         {
             var result = value1;
             result._offset += value2;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -423,7 +406,9 @@ namespace Engine.FarMath
         {
             var result = value2;
             result._offset += value1;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -472,7 +457,9 @@ namespace Engine.FarMath
             var result = value1;
             result._segment -= value2._segment;
             result._offset -= value2._offset;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -492,7 +479,9 @@ namespace Engine.FarMath
         {
             var result = value1;
             result._offset -= value2;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -513,7 +502,9 @@ namespace Engine.FarMath
             var result = value1;
             result._segment -= value2 / SegmentSize;
             result._offset -= value2 % SegmentSize;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -529,7 +520,9 @@ namespace Engine.FarMath
             var segment = value1._segment * value2;
             result._segment = (int)segment;
             result._offset = value1._offset * value2 + (segment - result._segment) * SegmentSize;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -555,7 +548,9 @@ namespace Engine.FarMath
             FarValue result;
             result._segment = value1._segment * value2;
             result._offset = value1._offset * value2;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -584,7 +579,9 @@ namespace Engine.FarMath
             var segment = value1._segment / value2;
             result._segment = (int)segment;
             result._offset = value1._offset / value2 + (segment - result._segment) * SegmentSize;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result;
         }
 
@@ -598,14 +595,24 @@ namespace Engine.FarMath
         public static FarValue operator %(FarValue value1, int value2)
         {
             // Make sure all our values are positive, but remember the sign of the input value.
-            var sign = value1 < 0 ? -1 : 1;
-            value1 = value1 < 0 ? -value1 : value1;
+            var sign = value1 < Zero ? -1 : 1;
+            value1 = value1 < Zero ? -value1 : value1;
             value2 = value2 < 0 ? -value2 : value2;
+
+            var segment = value1._segment;
+            var offset = value1._offset;
+            if (offset < 0)
+            {
+                segment -= 1;
+                offset += SegmentSize;
+            }
 
             FarValue result;
             result._segment = 0;
-            result._offset = ((value1._offset % value2) + (((value1._segment % value2) * (SegmentSize % value2)) % value2)) % value2;
+            result._offset = ((offset % value2) + (((segment % value2) * (SegmentSize % value2)) % value2)) % value2;
+#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+#endif
             return result * sign;
         }
 
@@ -619,6 +626,7 @@ namespace Engine.FarMath
         /// </returns>
         public static bool operator <(FarValue value1, FarValue value2)
         {
+#if FARMATH_AUTO_NORMALIZE
             if (value1._segment < value2._segment)
             {
                 return true;
@@ -628,6 +636,9 @@ namespace Engine.FarMath
                 return false;
             }
             return value1._offset < value2._offset;
+#else
+            return (float)(value1 - value2) < 0f;     
+#endif
         }
 
         /// <summary>
@@ -640,6 +651,7 @@ namespace Engine.FarMath
         /// </returns>
         public static bool operator >(FarValue value1, FarValue value2)
         {
+#if FARMATH_AUTO_NORMALIZE
             if (value1._segment > value2._segment)
             {
                 return true;
@@ -649,6 +661,9 @@ namespace Engine.FarMath
                 return false;
             }
             return value1._offset > value2._offset;
+#else
+            return (float)(value1 - value2) > 0f;
+#endif
         }
 
         /// <summary>
@@ -661,7 +676,11 @@ namespace Engine.FarMath
         /// </returns>
         public static bool operator <=(FarValue value1, FarValue value2)
         {
+#if FARMATH_AUTO_NORMALIZE
             return value1 == value2 || value1 < value2;
+#else
+            return (float)(value1 - value2) <= 0f;
+#endif
         }
 
         /// <summary>
@@ -674,7 +693,11 @@ namespace Engine.FarMath
         /// </returns>
         public static bool operator >=(FarValue value1, FarValue value2)
         {
+#if FARMATH_AUTO_NORMALIZE
             return value1 == value2 || value1 > value2;
+#else
+            return (float)(value1 - value2) >= 0f;
+#endif
         }
 
         /// <summary>
@@ -736,7 +759,9 @@ namespace Engine.FarMath
             FarValue result;
             result._segment = 0;
             result._offset = value;
+//#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+//#endif
             return result;
         }
 
@@ -757,7 +782,9 @@ namespace Engine.FarMath
             FarValue result;
             result._segment = value / SegmentSize;
             result._offset = value % SegmentSize;
+//#if FARMATH_AUTO_NORMALIZE
             result.Normalize();
+//#endif
             return result;
         }
 
@@ -831,7 +858,7 @@ namespace Engine.FarMath
         /// </returns>
         public static explicit operator int(FarValue value)
         {
-            return (int)(value._segment * SegmentSize + value._offset);
+            return value._segment * SegmentSize + (int)value._offset;
         }
 
         /// <summary>
@@ -846,7 +873,7 @@ namespace Engine.FarMath
         /// </remarks>
         public static explicit operator float(FarValue value)
         {
-            Debug.Assert(value._segment < 16, "Loss of precision when casting large value to float.");
+            System.Diagnostics.Debug.Assert(value._segment >> SegmentSizeShift <= (1 << 16), "Significant loss of precision when casting large farvalue to float.");
             return value._segment * SegmentSize + value._offset;
         }
 
@@ -862,7 +889,7 @@ namespace Engine.FarMath
         /// </remarks>
         public static explicit operator double(FarValue value)
         {
-            Debug.Assert(value._segment < 16, "Loss of precision when casting large value to double.");
+            System.Diagnostics.Debug.Assert(value._segment >> SegmentSizeShift <= (1 << 16), "Significant loss of precision when casting large farvalue to double.");
             // Cast offset to double for best possible precision.
             return value._segment * SegmentSize + (double)value._offset;
         }

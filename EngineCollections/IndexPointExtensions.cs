@@ -3,10 +3,22 @@ using Microsoft.Xna.Framework;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
+#if FARMATH
+using Engine.Collections;
 using TPoint = Engine.FarMath.FarPosition;
+using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
+#else
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TSingle = System.Single;
+using TRectangle = Engine.Math.RectangleF;
+#endif
 
+#if FARMATH
+namespace Engine.FarCollections
+#else
 namespace Engine.Collections
+#endif
 {
     /// <summary>
     /// Seamless integration for point data.

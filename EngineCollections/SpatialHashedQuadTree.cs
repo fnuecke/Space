@@ -5,10 +5,24 @@ using Engine.FarMath;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
+// Adjust these as necessary, they just have to share a compatible
+// interface with the XNA types.
+#if FARMATH
+using Engine.Collections;
 using TPoint = Engine.FarMath.FarPosition;
+using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
+#else
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TSingle = System.Single;
+using TRectangle = Engine.Math.RectangleF;
+#endif
 
+#if FARMATH
+namespace Engine.FarCollections
+#else
 namespace Engine.Collections
+#endif
 {
     /// <summary>
     /// This is a two level index structure, using a spatial hash as the primary
@@ -20,6 +34,19 @@ namespace Engine.Collections
     /// <typeparam name="T">The type to store in the index.</typeparam>
     public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
+        #region Constants
+
+        /// <summary>
+        /// The size of a single hashed cell in this index (i.e. bounds of a quadtree).
+        /// </summary>
+#if FARMATH
+        private static readonly int CellSize = FarValue.SegmentSize;
+#else
+        private static readonly int CellSize = 65536;
+#endif
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -42,7 +69,7 @@ namespace Engine.Collections
         /// <summary>
         /// The min node bounds for nodes in quad trees.
         /// </summary>
-        private readonly int _minNodeBounds;
+        private readonly float _minNodeBounds;
 
         /// <summary>
         /// Amount by which to oversize entry bounds to allow for small movement
@@ -59,7 +86,7 @@ namespace Engine.Collections
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
-        private readonly Dictionary<ulong, QuadTree<T>> _entries = new Dictionary<ulong, QuadTree<T>>();
+        private readonly Dictionary<ulong, Collections.QuadTree<T>> _entries = new Dictionary<ulong, Collections.QuadTree<T>>();
 
         /// <summary>
         /// Maps entries back to their bounds, for removal.
@@ -71,13 +98,13 @@ namespace Engine.Collections
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SpatialHash&lt;T&gt;"/> class.
+        /// Initializes a new instance of the <see cref="SpatialHashedQuadTree{T}"/> class.
         /// </summary>
         /// <param name="maxEntriesPerNode">The max entries per node in quad trees.</param>
         /// <param name="minNodeBounds">The min node bounds for nodes in quad trees.</param>
         /// <param name="boundExtension">The amount by which to fatten bounds.</param>
         /// <param name="movingBoundMultiplier">The amount with which to multiply movement delta for fattening.</param>
-        public SpatialHashedQuadTree(int maxEntriesPerNode, int minNodeBounds, float boundExtension = 10, float movingBoundMultiplier = 2)
+        public SpatialHashedQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
         {
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
@@ -97,7 +124,7 @@ namespace Engine.Collections
         /// <exception cref="T:System.ArgumentException">
         /// The item is already stored in the index.
         /// </exception>
-        public void Add(FarRectangle bounds, T item)
+        public void Add(TRectangle bounds, T item)
         {
             if (Contains(item))
             {
@@ -113,7 +140,8 @@ namespace Engine.Collections
                 // Create the quad tree for that cell if it doesn't yet exist.
                 if (!_entries.ContainsKey(cell.Item1))
                 {
-                    _entries.Add(cell.Item1, new QuadTree<T>(_maxEntriesPerNode, _minNodeBounds, false));
+                    // No need to extend again, we already did.
+                    _entries.Add(cell.Item1, new Collections.QuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
                 }
 
                 // Convert the item bounds to the tree's local coordinate space.
@@ -121,7 +149,7 @@ namespace Engine.Collections
                 relativeBounds.Offset(cell.Item2);
 
                 // And add the item to the tree.
-                _entries[cell.Item1].Add((Rectangle)relativeBounds, item);
+                _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
             }
 
             // Store element itself for future retrieval (removals, item lookup).
@@ -138,7 +166,7 @@ namespace Engine.Collections
         /// <returns>
         ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
         /// </returns>
-        public bool Update(FarRectangle newBounds, Vector2 delta, T item)
+        public bool Update(TRectangle newBounds, Vector2 delta, T item)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(item))
@@ -176,6 +204,14 @@ namespace Engine.Collections
             newBounds.Inflate(_boundExtension, _boundExtension);
 
             // Figure out what changed (the delta in cells).
+
+            // Because we already did the bound extensions the update method in the
+            // related quad trees would just do superfluous work, so instead we can
+            // just remove and re-insert the entries where necessary. This also makes
+            // this function a lot simpler.
+
+            /*
+            
             var oldCells = new HashSet<Tuple<ulong, TPoint>>(ComputeCells(oldBounds));
             var newCells = new HashSet<Tuple<ulong, TPoint>>(ComputeCells(newBounds));
 
@@ -202,7 +238,8 @@ namespace Engine.Collections
                 // Create the quad tree for that cell if it doesn't yet exist.
                 if (!_entries.ContainsKey(cell.Item1))
                 {
-                    _entries.Add(cell.Item1, new QuadTree<T>(_maxEntriesPerNode, _minNodeBounds, false));
+                    // No need to extend again, we already did.
+                    _entries.Add(cell.Item1, new Collections.QuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
                 }
 
                 // Convert the item bounds to the tree's local coordinate space.
@@ -210,7 +247,7 @@ namespace Engine.Collections
                 relativeBounds.Offset(cell.Item2);
 
                 // And add the item to the tree.
-                _entries[cell.Item1].Add((Rectangle)relativeBounds, item);
+                _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
             }
 
             // Get all cells the entry still is in.
@@ -223,13 +260,38 @@ namespace Engine.Collections
                 relativeBounds.Offset(cell.Item2);
 
                 // And update the item to the tree.
-                _entries[cell.Item1].Update((Rectangle)relativeBounds, Vector2.Zero, item);
+                _entries[cell.Item1].Update((Math.RectangleF)relativeBounds, Vector2.Zero, item);
             }
+            
+            /*/
+
+            // Remove from old cells.
+            foreach (var cell in ComputeCells(oldBounds))
+            {
+                _entries[cell.Item1].Remove(item);
+            }
+
+            // Add to new cells.
+            foreach (var cell in ComputeCells(newBounds))
+            {
+                // Convert the item bounds to the tree's local coordinate space.
+                var relativeBounds = newBounds;
+                relativeBounds.Offset(cell.Item2);
+
+                _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+            }
+
+            //*/
 
             // Store the new item bounds.
             _entryBounds[item] = newBounds;
 
             return true;
+        }
+
+        private static int CellComparator(Tuple<ulong, TPoint> a, Tuple<ulong, TPoint> b)
+        {
+            return (int)(a.Item1 - b.Item1);
         }
 
         /// <summary>
@@ -292,7 +354,7 @@ namespace Engine.Collections
         /// <summary>
         /// Get the bounds at which the specified item is currently stored.
         /// </summary>
-        public FarRectangle this[T item]
+        public TRectangle this[T item]
         {
             get { return _entryBounds[item]; }
         }
@@ -302,8 +364,8 @@ namespace Engine.Collections
         /// in the index that are in the specified range of the specified point,
         /// using the euclidean distance function (i.e. <c>sqrt(x*x+y*y)</c>).
         /// </summary>
-        /// <param name="point">The query point near which to get entries.</param>
-        /// <param name="range">The maximum distance an entry may be away
+        /// <param name="center">The query point near which to get entries.</param>
+        /// <param name="radius">The maximum distance an entry may be away
         ///   from the query point to be returned.</param>
         /// <param name="results"> </param>
         /// <remarks>
@@ -311,27 +373,104 @@ namespace Engine.Collections
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(FarPosition point, float range, ref ISet<T> results)
+        public void Find(TPoint center, float radius, ref ISet<T> results)
         {
             // Compute the area bounds for that query to get the involved trees.
-            var bounds = new TRectangle
-            {
-                X = point.X - range,
-                Y = point.Y - range,
-                Width = range + range,
-                Height = range + range
-            };
-
-            foreach (var cell in ComputeCells(bounds))
+            var queryBounds = IntersectionExtensions.BoundsFor(center, radius);
+            foreach (var cell in ComputeCells(queryBounds))
             {
                 // Only if the cell exists.
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
-                    var relativePoint = (Vector2)(point + cell.Item2);
+                    var relativePoint = (Vector2)(center + cell.Item2);
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativePoint, range, ref results);
+                    _entries[cell.Item1].Find(relativePoint, radius, ref results);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Perform a circular query on this index. This will return all entries
+        /// in the index that are in the specified range of the specified point,
+        /// using the euclidean distance function (i.e. <c>sqrt(x*x+y*y)</c>).
+        /// </summary>
+        /// <param name="center">The query point near which to get entries.</param>
+        /// <param name="radius">The maximum distance an entry may be away
+        /// from the query point to be returned.</param>
+        /// <param name="callback">The method to call for each found hit.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This checks for intersections of the query circle and the bounds of
+        /// the entries in the index. Intersections (i.e. bounds not fully contained
+        /// in the circle) will be returned, too.
+        /// </remarks>
+        public bool Find(TPoint center, float radius, SimpleQueryCallback<T> callback)
+        {
+            // Getting the full list and then iterating it seems to actually be faster
+            // than injecting a delegate...
+            /*
+
+            // Hashset we might use for filtering duplicate results. We initialize it lazily.
+            HashSet<T> filter = null;
+
+            // Compute the area bounds for that query to get the involved trees.
+            var queryBounds = IntersectionExtensions.BoundsFor(ref center, radius);
+            foreach (var cell in ComputeCells(queryBounds))
+            {
+                // Only if the cell exists.
+                if (_entries.ContainsKey(cell.Item1))
+                {
+                    // Convert the query to the tree's local coordinate space.
+                    var relativePoint = (Vector2)(center + cell.Item2);
+
+                    // And do the query.
+                    if (!_entries[cell.Item1].Find(relativePoint, radius,
+                        value => !Filter(value, ref filter) || callback(value)))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            /*/
+            
+            ISet<T> results = new HashSet<T>();
+            Find(center, radius, ref results);
+            foreach (var result in results)
+            {
+                if (!callback(result))
+                {
+                    return false;
+                }
+            }
+            
+            //*/
+
+            return true;
+        }
+
+        /// <summary>
+        /// Perform an area query on this index. This will return all entries
+        /// in the tree that are contained in or intersecting with the specified
+        /// query rectangle.
+        /// </summary>
+        /// <param name="rectangle">The query rectangle.</param>
+        /// <param name="results">The results.</param>
+        public void Find(TRectangle rectangle, ref ISet<T> results)
+        {
+            foreach (var cell in ComputeCells(rectangle))
+            {
+                if (_entries.ContainsKey(cell.Item1))
+                {
+                    // Convert the query to the tree's local coordinate space.
+                    var relativeFarBounds = rectangle;
+                    relativeFarBounds.Offset(cell.Item2);
+
+                    // And do the query.
+                    var relativeBounds = (Math.RectangleF)relativeFarBounds;
+                    _entries[cell.Item1].Find(relativeBounds, ref results);
                 }
             }
         }
@@ -342,9 +481,17 @@ namespace Engine.Collections
         /// query rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="results"> </param>
-        public void Find(ref FarRectangle rectangle, ref ISet<T> results)
+        /// <param name="callback">The method to call for each found hit.</param>
+        /// <returns></returns>
+        public bool Find(TRectangle rectangle, SimpleQueryCallback<T> callback)
         {
+            // Getting the full list and then iterating it seems to actually be faster
+            // than injecting a delegate...
+            /*
+
+            // Hashset we might use for filtering duplicate results. We initialize it lazily.
+            HashSet<T> filter = null;
+
             foreach (var cell in ComputeCells(rectangle))
             {
                 if (_entries.ContainsKey(cell.Item1))
@@ -354,15 +501,146 @@ namespace Engine.Collections
                     relativeFarBounds.Offset(cell.Item2);
 
                     // And do the query.
-                    var relativeBounds = (Rectangle)relativeFarBounds;
-                    _entries[cell.Item1].Find(ref relativeBounds, ref results);
+                    var relativeBounds = (Math.RectangleF)relativeFarBounds;
+                    if (!_entries[cell.Item1].Find(relativeBounds,
+                        value => !Filter(value, ref filter) || callback(value)))
+                    {
+                        return false;
+                    }
                 }
             }
+
+            /*/
+            
+            ISet<T> results = new HashSet<T>();
+            Find(rectangle, ref results);
+            foreach (var result in results)
+            {
+                if (!callback(result))
+                {
+                    return false;
+                }
+            }
+            
+            //*/
+
+            return true;
+        }
+
+        /// <summary>
+        /// Perform a line query on this index. This will return all entries
+        /// in the index that are intersecting with the specified query line.
+        /// </summary>
+        /// <param name="start">The start point.</param>
+        /// <param name="end">The end point.</param>
+        /// <param name="t">The fraction along the line to consider.</param>
+        /// <param name="results">The list to put the results into.</param>
+        /// <returns></returns>
+        public void Find(TPoint start, TPoint end, float t, ref ISet<T> results)
+        {
+            foreach (var cell in ComputeCells(IntersectionExtensions.BoundsFor(start, end, t)))
+            {
+                if (_entries.ContainsKey(cell.Item1))
+                {
+                    // Convert the query to the tree's local coordinate space.
+                    var relativeStart = (Vector2)(start + cell.Item2);
+                    var relativeEnd = (Vector2)(end + cell.Item2);
+
+                    // And do the query.
+                    _entries[cell.Item1].Find(relativeStart, relativeEnd, t, ref results);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Perform a line query on this index. This will return all entries
+        /// in the index that are intersecting with the specified query line.
+        /// <para>
+        /// Note that the callback will be passed the fraction along the line
+        /// that the hit occurred at, and may return the new maximum fraction
+        /// up to which the search will run. If the returned fraction is exactly
+        /// zero the search will be stopped. If the returned fraction is negative
+        /// the hit will be ignored, that is the max fraction will not change.
+        /// </para>
+        /// </summary>
+        /// <param name="start">The start of the line.</param>
+        /// <param name="end">The end of the line.</param>
+        /// <param name="t">The fraction along the line to consider.</param>
+        /// <param name="callback">The method to call for each found hit.</param>
+        /// <returns></returns>
+        public bool Find(TPoint start, TPoint end, float t, LineQueryCallback<T> callback)
+        {
+            // Hashset we might use for filtering duplicate results. We initialize it lazily.
+            HashSet<T> filter = null;
+
+            foreach (var cell in ComputeCells(IntersectionExtensions.BoundsFor(start, end, t)))
+            {
+                if (_entries.ContainsKey(cell.Item1))
+                {
+                    // Convert the query to the tree's local coordinate space.
+                    var relativeStart = (Vector2)(start + cell.Item2);
+                    var relativeEnd = (Vector2)(end + cell.Item2);
+
+                    // And do the query.
+                    if (!_entries[cell.Item1].Find(relativeStart, relativeEnd, t,
+                        (value, fraction) =>
+                        {
+                            if (!Filter(value, ref filter))
+                            {
+                                return -1f;
+                            }
+                            return t = callback(value, fraction);
+                        }))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         #endregion
 
         #region Utility methods
+
+        /// <summary>
+        /// Checks if the specified value need filtering, returns true if the value
+        /// should be processed, otherwise (if it is filtered) it should be skipped.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="filter">The filter set.</param>
+        /// <returns></returns>
+        private bool Filter(T value, ref HashSet<T> filter)
+        {
+            // We want to check if we really need to check this value -- this is only
+            // necessary if it's on the border between two or more cells. This way we
+            // can keep our hashset as small as possible, making it much faster.
+#if FARMATH
+            var left = _entryBounds[value].X.Segment;
+            var right = _entryBounds[value].Right.Segment;
+            var top = _entryBounds[value].Y.Segment;
+            var bottom = _entryBounds[value].Bottom.Segment;
+#else
+            var left = (int)(_entryBounds[value].X / CellSize);
+            var right = (int)(_entryBounds[value].Right / CellSize);
+            var top = (int)(_entryBounds[value].Y / CellSize);
+            var bottom = (int)(_entryBounds[value].Bottom / CellSize);
+#endif
+            // All corners in one cell?
+            if (left == right && top == bottom)
+            {
+                // Yes, we can safely process the cell and do not need to store it.
+                return true;
+            }
+
+            // We need to filter, create our hashset if necessary, then store the value.
+            if (filter == null)
+            {
+                filter = new HashSet<T>();
+            }
+            return filter.Add(value);
+        }
 
         /// <summary>
         /// Computes the cells the specified rectangle falls into.
@@ -371,18 +649,25 @@ namespace Engine.Collections
         /// <returns>The cells the rectangle intersects with.</returns>
         private static IEnumerable<Tuple<ulong, TPoint>> ComputeCells(TRectangle rectangle)
         {
+#if FARMATH
             var left = rectangle.X.Segment;
             var right = rectangle.Right.Segment;
             var top = rectangle.Y.Segment;
             var bottom = rectangle.Bottom.Segment;
+#else
+            var left = (int)(rectangle.X / CellSize);
+            var right = (int)(rectangle.Right / CellSize);
+            var top = (int)(rectangle.Y / CellSize);
+            var bottom = (int)(rectangle.Bottom / CellSize);
+#endif
 
             TPoint center;
             for (var x = left; x <= right; x++)
             {
-                center.X = -x * FarValue.SegmentSize;
+                center.X = -x * CellSize;
                 for (var y = top; y <= bottom; y++)
                 {
-                    center.Y = -y * FarValue.SegmentSize;
+                    center.Y = -y * CellSize;
                     yield return Tuple.Create(BitwiseMagic.Pack(x, y), center);
                 }
             }
@@ -399,7 +684,7 @@ namespace Engine.Collections
         /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>1</filterpriority>
-        public IEnumerator<Tuple<FarRectangle, T>> GetEnumerator()
+        public IEnumerator<Tuple<TRectangle, T>> GetEnumerator()
         {
             foreach (var entry in _entryBounds)
             {
@@ -430,16 +715,16 @@ namespace Engine.Collections
         /// This is mainly intended for debugging purposes, to allow rendering
         /// the tree bounds.
         /// </remarks>
-        public IEnumerable<Tuple<TPoint, QuadTree<T>>> GetTreeEnumerable()
+        public IEnumerable<Tuple<TPoint, Collections.QuadTree<T>>> GetTreeEnumerable()
         {
             foreach (var entry in _entries)
             {
                 int segmentX, segmentY;
                 BitwiseMagic.Unpack(entry.Key, out segmentX, out segmentY);
 
-                FarPosition center;
-                center.X = segmentX * FarValue.SegmentSize;
-                center.Y = segmentY * FarValue.SegmentSize;
+                TPoint center;
+                center.X = segmentX * CellSize;
+                center.Y = segmentY * CellSize;
                 yield return Tuple.Create(center, entry.Value);
             }
         }

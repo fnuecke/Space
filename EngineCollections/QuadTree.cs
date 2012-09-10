@@ -5,10 +5,22 @@ using System.Diagnostics;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
+#if FARMATH
+using Engine.Collections;
+using TPoint = Engine.FarMath.FarPosition;
+using TSingle = Engine.FarMath.FarValue;
+using TRectangle = Engine.FarMath.FarRectangle;
+#else
 using TPoint = Microsoft.Xna.Framework.Vector2;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TSingle = System.Single;
+using TRectangle = Engine.Math.RectangleF;
+#endif
 
+#if FARMATH
+namespace Engine.FarCollections
+#else
 namespace Engine.Collections
+#endif
 {
     /// <summary>
     /// A <see href="http://en.wikipedia.org/wiki/Quadtree">QuadTree</see> that
@@ -46,22 +58,6 @@ namespace Engine.Collections
     [DebuggerDisplay("Count = {Count}")]
     public sealed class QuadTree<T> : IIndex<T, TRectangle, TPoint>
     {
-        #region Constants
-
-        /// <summary>
-        /// Amount by which to oversize entry bounds to allow for small movement
-        /// the item without having to update the tree. Idea taken from Box2D.
-        /// </summary>
-        private const int BoundExtension = 4;
-
-        /// <summary>
-        /// Amount by which to oversize entry bounds in the direction they moved
-        /// during an update, to predict future movement. Idea taken from Box2D.
-        /// </summary>
-        private const int MovingBoundMultiplier = 2;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -85,12 +81,19 @@ namespace Engine.Collections
         /// The minimum bounds size of a node along an axis, used to stop splitting
         /// at a defined accuracy.
         /// </summary>
-        private readonly int _minNodeBounds;
+        private readonly float _minNodeBounds;
 
         /// <summary>
-        /// Whether to use movement predicting approximate bounds to avoid tree updates.
+        /// Amount by which to oversize entry bounds to allow for small movement
+        /// the item without having to update the tree. Idea taken from Box2D.
         /// </summary>
-        private readonly bool _approximateBounds;
+        private readonly float _boundExtension;
+
+        /// <summary>
+        /// Amount by which to oversize entry bounds in the direction they moved
+        /// during an update, to predict future movement. Idea taken from Box2D.
+        /// </summary>
+        private readonly float _movingBoundMultiplier;
 
         /// <summary>
         /// The current bounds of the tree. This is a dynamic value, adjusted
@@ -122,25 +125,27 @@ namespace Engine.Collections
         /// <param name="minNodeBounds">The minimum bounds size of a node, i.e.
         /// nodes of this size or smaller won't be split regardless of the
         /// number of entries in them. See class remarks.</param>
-        /// <param name="approximateBounds">Whether to use approximate bounds,
-        /// anticipating object movement, or not.</param>
+        /// <param name="boundExtension">The amount by which to inflate bounds.</param>
+        /// <param name="movingBoundMultiplier">The multiplier for moving bound
+        /// displacement used for predictive bound inflation.</param>
         /// <exception cref="T:System.ArgumentException">
         /// One or both of the specified parameters are invalid (must be larger
         /// than zero).
         ///   </exception>
-        public QuadTree(int maxEntriesPerNode, int minNodeBounds, bool approximateBounds)
+        public QuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
         {
             if (maxEntriesPerNode < 1)
             {
                 throw new ArgumentException("Split count must be larger than zero.", "maxEntriesPerNode");
             }
-            if (minNodeBounds < 1)
+            if (minNodeBounds <= 0f)
             {
                 throw new ArgumentException("Bucket size must be larger than zero.", "minNodeBounds");
             }
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
-            _approximateBounds = approximateBounds;
+            _boundExtension = boundExtension;
+            _movingBoundMultiplier = movingBoundMultiplier;
 
             Clear();
         }
@@ -164,12 +169,9 @@ namespace Engine.Collections
                 throw new ArgumentException("Item is already in the index.", "item");
             }
 
-            if (_approximateBounds)
-            {
-                // Extend bounds.
-                bounds.Inflate(BoundExtension, BoundExtension);
-            }
-
+            // Extend bounds.
+            bounds.Inflate(_boundExtension, _boundExtension);
+            
             // Create the entry to add.
             var entry = new Entry {Bounds = bounds, Value = item};
 
@@ -197,7 +199,7 @@ namespace Engine.Collections
         /// <returns>
         ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
         /// </returns>
-        public bool Update(TRectangle newBounds, TPoint delta, T item)
+        public bool Update(TRectangle newBounds, Microsoft.Xna.Framework.Vector2 delta, T item)
         {
             // Check if we have that item.
             if (!Contains(item))
@@ -212,32 +214,29 @@ namespace Engine.Collections
             // Nothing to do if our approximation in the tree still contains the item.
             if (entry.Bounds.Contains(newBounds))
             {
-                return true;
+                return false;
             }
 
-            if (_approximateBounds)
+            // Estimate movement by bounds delta to predict position and
+            // extend the bounds accordingly, to avoid tree updates.
+            delta.X *= _movingBoundMultiplier;
+            delta.Y *= _movingBoundMultiplier;
+            var absDeltaX = delta.X < 0 ? -delta.X : delta.X;
+            var absDeltaY = delta.Y < 0 ? -delta.Y : delta.Y;
+            newBounds.Width += (int)absDeltaX;
+            if (delta.X < 0)
             {
-                // Estimate movement by bounds delta to predict position and
-                // extend the bounds accordingly, to avoid tree updates.
-                delta.X *= MovingBoundMultiplier;
-                delta.Y *= MovingBoundMultiplier;
-                var absDeltaX = delta.X < 0 ? -delta.X : delta.X;
-                var absDeltaY = delta.Y < 0 ? -delta.Y : delta.Y;
-                newBounds.Width += (int)absDeltaX;
-                if (delta.X < 0)
-                {
-                    newBounds.X += (int)delta.X;
-                }
-                newBounds.Height += (int)absDeltaY;
-                if (delta.Y < 0)
-                {
-                    newBounds.Y += (int)delta.Y;
-                }
-
-                // Extend bounds.
-                newBounds.Inflate(BoundExtension, BoundExtension);
+                newBounds.X += (int)delta.X;
+            }
+            newBounds.Height += (int)absDeltaY;
+            if (delta.Y < 0)
+            {
+                newBounds.Y += (int)delta.Y;
             }
 
+            // Extend bounds.
+            newBounds.Inflate(_boundExtension, _boundExtension);
+            
             // Update tree.
             UpdateBounds(ref newBounds, entry);
 
@@ -278,7 +277,7 @@ namespace Engine.Collections
             if (Count == 0)
             {
                 _bounds.X = _bounds.Y = -_minNodeBounds;
-                _bounds.Width = _bounds.Height = _minNodeBounds << 1;
+                _bounds.Width = _bounds.Height = _minNodeBounds + _minNodeBounds;
             }
 
             // We had the entry, so return true.
@@ -308,7 +307,7 @@ namespace Engine.Collections
 
             // And the bounds.
             _bounds.X = _bounds.Y = -_minNodeBounds;
-            _bounds.Width = _bounds.Height = _minNodeBounds << 1;
+            _bounds.Width = _bounds.Height = _minNodeBounds + _minNodeBounds;
 
             // And clear the reverse look up.
             _values.Clear();
@@ -324,8 +323,8 @@ namespace Engine.Collections
         /// in the index that are in the specified range of the specified point,
         /// using the euclidean distance function (i.e. <c>sqrt(x*x+y*y)</c>).
         /// </summary>
-        /// <param name="point">The query point near which to get entries.</param>
-        /// <param name="range">The maximum distance an entry may be away
+        /// <param name="center">The query point near which to get entries.</param>
+        /// <param name="radius">The maximum distance an entry may be away
         ///   from the query point to be returned.</param>
         /// <param name="results"> </param>
         /// <remarks>
@@ -333,23 +332,33 @@ namespace Engine.Collections
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(TPoint point, float range, ref ISet<T> results)
+        public void Find(TPoint center, float radius, ref ISet<T> results)
         {
-            // Skip if the tree is empty.
-            if (Count > 0)
-            {
-                // Build the minimal bounding rectangle around the circle query
-                // so that we can use it to check against nodes, which is way
-                // faster than doing circle/box checks all the time.
-                TRectangle bounds;
-                bounds.X = (int)(point.X - range);
-                bounds.Y = (int)(point.Y - range);
-                bounds.Width = bounds.Height = (int)Math.Ceiling(range + range);
+            Accumulate(_root, _bounds,
+                IntersectionExtensions.BoundsFor(center, radius),
+                center, radius, results);
+        }
 
-                // Recurse through the tree, starting at the root node, to find
-                // nodes intersecting with the range query.
-                Accumulate(_root, ref _bounds, ref bounds, ref point, range, ref results);
-            }
+        /// <summary>
+        /// Perform a circular query on this index. This will return all entries
+        /// in the index that are in the specified range of the specified point,
+        /// using the euclidean distance function (i.e. <c>sqrt(x*x+y*y)</c>).
+        /// </summary>
+        /// <param name="center">The query point near which to get entries.</param>
+        /// <param name="radius">The maximum distance an entry may be away
+        /// from the query point to be returned.</param>
+        /// <param name="callback">The method to call for each found hit.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This checks for intersections of the query circle and the bounds of
+        /// the entries in the index. Intersections (i.e. bounds not fully contained
+        /// in the circle) will be returned, too.
+        /// </remarks>
+        public bool Find(TPoint center, float radius, SimpleQueryCallback<T> callback)
+        {
+            return Accumulate(_root, _bounds,
+                IntersectionExtensions.BoundsFor(center, radius),
+                center, radius, callback);
         }
 
         /// <summary>
@@ -359,15 +368,61 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results"> </param>
-        public void Find(ref TRectangle rectangle, ref ISet<T> results)
+        public void Find(TRectangle rectangle, ref ISet<T> results)
         {
-            // Skip if the tree is empty.
-            if (Count > 0)
-            {
-                // Recurse through the tree, starting at the root node, to find
-                // nodes intersecting with the area query.
-                Accumulate(_root, ref _bounds, ref rectangle, ref results);
-            }
+            Accumulate(_root, _bounds, rectangle, results);
+        }
+
+        /// <summary>
+        /// Perform an area query on this index. This will return all entries
+        /// in the tree that are contained in or intersecting with the specified
+        /// query rectangle.
+        /// </summary>
+        /// <param name="rectangle">The query rectangle.</param>
+        /// <param name="callback">The method to call for each found hit.</param>
+        /// <returns></returns>
+        public bool Find(TRectangle rectangle, SimpleQueryCallback<T> callback)
+        {
+            return Accumulate(_root, _bounds, rectangle, callback);
+        }
+
+        /// <summary>
+        /// Perform a line query on this index. This will return all entries
+        /// in the index that are intersecting with the specified query line.
+        /// </summary>
+        /// <param name="start">The start point.</param>
+        /// <param name="end">The end point.</param>
+        /// <param name="t">The fraction along the line to consider.</param>
+        /// <param name="results">The list to put the results into.</param>
+        /// <returns></returns>
+        public void Find(TPoint start, TPoint end, float t, ref ISet<T> results)
+        {
+            Accumulate(_root, _bounds,
+                IntersectionExtensions.BoundsFor(start, end, t),
+                start, end, t, results);
+        }
+
+        /// <summary>
+        /// Perform a line query on this index. This will return all entries
+        /// in the index that are intersecting with the specified query line.
+        /// <para>
+        /// Note that the callback will be passed the fraction along the line
+        /// that the hit occurred at, and may return the new maximum fraction
+        /// up to which the search will run. If the returned fraction is exactly
+        /// zero the search will be stopped. If the returned fraction is negative
+        /// the hit will be ignored, that is the max fraction will not change.
+        /// </para>
+        /// </summary>
+        /// <param name="start">The start of the line.</param>
+        /// <param name="end">The end of the line.</param>
+        /// <param name="t">The fraction along the line to consider.</param>
+        /// <param name="callback">The method to call for each found hit.</param>
+        /// <returns></returns>
+        public bool Find(TPoint start, TPoint end, float t, LineQueryCallback<T> callback)
+        {
+            // Pass bounds and t as ref because they may change during the query.
+            var queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
+            return Accumulate(_root, _bounds, ref queryBounds, start, end, ref t, callback);
         }
 
         #endregion
@@ -1180,147 +1235,721 @@ namespace Engine.Collections
             return node;
         }
 
-        /// <summary>
-        /// Accumulate all entries in the specified circle into the specified list.
-        /// This recurses the tree down inner nodes that intersect the query, until
-        /// it finds a leaf node. Then adds all entries in the leaf that are in range.
-        /// On the way, it adds all entries kept in inner nodes that intersect the
-        /// query.
-        /// </summary>
-        /// <param name="node">The current node.</param>
-        /// <param name="nodeBounds">The bounds of the current node.</param>
-        /// <param name="rectangle">The minimal bounding box around the circle query.</param>
-        /// <param name="point">The query point.</param>
-        /// <param name="range">The query range.</param>
-        /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref TPoint point, float range, ref ISet<T> list)
+        #region Queries
+
+        // --------------------------------------------------------------------
+        // IMPORTANT: the following contains a lot of "duplicate code", which
+        // isn't very nice from a design perspective. But the performance boost
+        // beats design to a pulp, so that's how it is.
+        //
+        // ALSO: all of the following queries are implemented recursively.
+        // This is faster than using an iterative approach (customly stacking
+        // child nodes and processing them one after the other).
+        // --------------------------------------------------------------------
+
+        private static void Accumulate(Node node, TRectangle nodeBounds, TRectangle queryBounds, TPoint center, float radius, ISet<T> results)
         {
             // Check how to proceed.
-            switch (ComputeIntersection(ref rectangle, ref nodeBounds))
+            switch (ComputeIntersection(queryBounds, nodeBounds))
             {
                 case IntersectionType.Contains:
                 {
-                    // Node completely contained in query, return all entries in it,
-                    // no need to recurse further.
-                    node.AddOwnEntries(ref list);
-                    node.AddChildEntries(ref list);
+                    // Node completely contained in query, return all entries in it that
+                    // intersect with the query no need to recurse further.
+
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        var entry = node.LocalCache[i];
+                        if (entry.Bounds.Intersects(center, radius))
+                        {
+                            results.Add(entry.Value);
+                        }
+                    }
+
+                    // Rebuild entry cache if necessary.
+                    if (node.ChildCache == null)
+                    {
+                        node.RebuildChildCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.ChildCache.Length; i < count; i++)
+                    {
+                        var entry = node.ChildCache[i];
+                        if (entry.Bounds.Intersects(center, radius))
+                        {
+                            results.Add(entry.Value);
+                        }
+                    }
+
                     break;
                 }
                 case IntersectionType.Intersects:
                 {
                     // Add all local entries in this node that are in range, regardless
                     // of whether this is an inner or a leaf node.
-                    node.AddOwnEntries(ref point, range, ref list);
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        var entry = node.LocalCache[i];
+                        if (entry.Bounds.Intersects(center, radius))
+                        {
+                            results.Add(entry.Value);
+                        }
+                    }
 
                     // If it's not a leaf recurse into child nodes.
                     if (!node.IsLeaf)
                     {
                         // Build the bounds for each child in the following.
                         var childBounds = new TRectangle
-                                          {
-                                              Width = nodeBounds.Width / 2,
-                                              Height = nodeBounds.Height / 2
-                                          };
+                        {
+                            Width = nodeBounds.Width / 2,
+                            Height = nodeBounds.Height / 2
+                        };
 
                         // Unrolled loop.
                         if (node.Children[0] != null)
                         {
                             childBounds.X = nodeBounds.X;
                             childBounds.Y = nodeBounds.Y;
-                            Accumulate(node.Children[0], ref childBounds, ref rectangle, ref point, range, ref list);
+                            Accumulate(node.Children[0], childBounds, queryBounds, center, radius, results);
                         }
                         if (node.Children[1] != null)
                         {
                             childBounds.X = nodeBounds.X + childBounds.Width;
                             childBounds.Y = nodeBounds.Y;
-                            Accumulate(node.Children[1], ref childBounds, ref rectangle, ref point, range, ref list);
+                            Accumulate(node.Children[1], childBounds, queryBounds, center, radius, results);
                         }
                         if (node.Children[2] != null)
                         {
                             childBounds.X = nodeBounds.X;
                             childBounds.Y = nodeBounds.Y + childBounds.Height;
-                            Accumulate(node.Children[2], ref childBounds, ref rectangle, ref point, range, ref list);
+                            Accumulate(node.Children[2], childBounds, queryBounds, center, radius, results);
                         }
                         if (node.Children[3] != null)
                         {
                             childBounds.X = nodeBounds.X + childBounds.Width;
                             childBounds.Y = nodeBounds.Y + childBounds.Height;
-                            Accumulate(node.Children[3], ref childBounds, ref rectangle, ref point, range, ref list);
+                            Accumulate(node.Children[3], childBounds, queryBounds, center, radius, results);
                         }
                     }
+
                     break;
                 }
             }
         }
 
-        /// <summary>
-        /// Accumulate all entries in range of a rectangular range query to the
-        /// given list. This recurses the tree down inner nodes that intersect
-        /// the query, until it finds a leaf node. Then adds all entries in the
-        /// leaf that are in range.
-        /// </summary>
-        /// <param name="node">The current node.</param>
-        /// <param name="nodeBounds">The bounds of the current node.</param>
-        /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref ISet<T> list)
+        private static bool Accumulate(Node node, TRectangle nodeBounds, TRectangle queryBounds, TPoint center, float radius, SimpleQueryCallback<T> callback)
         {
             // Check how to proceed.
-            switch (ComputeIntersection(ref rectangle, ref nodeBounds))
+            switch (ComputeIntersection(queryBounds, nodeBounds))
             {
                 case IntersectionType.Contains:
                 {
-                    // Node completely contained in query, return all entries in it,
-                    // no need to recurse further.
-                    node.AddOwnEntries(ref list);
-                    node.AddChildEntries(ref list);
+                    // Node completely contained in query, return all entries in it that
+                    // intersect with the query no need to recurse further.
+
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        var entry = node.LocalCache[i];
+                        if (entry.Bounds.Intersects(center, radius) && !callback(entry.Value))
+                        {
+                            return false;
+                        }
+                    }
+
+                    // Rebuild entry cache if necessary.
+                    if (node.ChildCache == null)
+                    {
+                        node.RebuildChildCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.ChildCache.Length; i < count; i++)
+                    {
+                        var entry = node.ChildCache[i];
+                        if (entry.Bounds.Intersects(center, radius) && !callback(entry.Value))
+                        {
+                            return false;
+                        }
+                    }
+
+                    break;
+                }
+                case IntersectionType.Intersects:
+                {
+                    // Add all local entries in this node that are in range, regardless
+                    // of whether this is an inner or a leaf node.
+
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        var entry = node.LocalCache[i];
+                        if (entry.Bounds.Intersects(center, radius))
+                        {
+                            if (!callback(entry.Value))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    // If it's not a leaf recurse into child nodes.
+                    if (!node.IsLeaf)
+                    {
+                        // Build the bounds for each child in the following.
+                        var childBounds = new TRectangle
+                        {
+                            Width = nodeBounds.Width / 2,
+                            Height = nodeBounds.Height / 2
+                        };
+
+                        // Unrolled loop.
+                        if (node.Children[0] != null)
+                        {
+                            childBounds.X = nodeBounds.X;
+                            childBounds.Y = nodeBounds.Y;
+                            if (!Accumulate(node.Children[0], childBounds, queryBounds, center, radius, callback))
+                            {
+                                return false;
+                            }
+                        }
+                        if (node.Children[1] != null)
+                        {
+                            childBounds.X = nodeBounds.X + childBounds.Width;
+                            childBounds.Y = nodeBounds.Y;
+                            if (!Accumulate(node.Children[1], childBounds, queryBounds, center, radius, callback))
+                            {
+                                return false;
+                            }
+                        }
+                        if (node.Children[2] != null)
+                        {
+                            childBounds.X = nodeBounds.X;
+                            childBounds.Y = nodeBounds.Y + childBounds.Height;
+                            if (!Accumulate(node.Children[2], childBounds, queryBounds, center, radius, callback))
+                            {
+                                return false;
+                            }
+                        }
+                        if (node.Children[3] != null)
+                        {
+                            childBounds.X = nodeBounds.X + childBounds.Width;
+                            childBounds.Y = nodeBounds.Y + childBounds.Height;
+                            if (!Accumulate(node.Children[3], childBounds, queryBounds, center, radius, callback))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            return true;
+        }
+
+        private static void Accumulate(Node node, TRectangle nodeBounds, TRectangle queryBounds, ISet<T> results)
+        {
+            // Check how to proceed.
+            switch (ComputeIntersection(queryBounds, nodeBounds))
+            {
+                case IntersectionType.Contains:
+                {
+                    // Node completely contained in query, return all entries in it that
+                    // intersect with the query no need to recurse further. In this case
+                    // where we're dealing with rectangles, that will simply be all entries.
+
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        results.Add(node.LocalCache[i].Value);
+                    }
+
+                    // Rebuild entry cache if necessary.
+                    if (node.ChildCache == null)
+                    {
+                        node.RebuildChildCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.ChildCache.Length; i < count; i++)
+                    {
+                        results.Add(node.ChildCache[i].Value);
+                    }
+
                     break;
                 }
                 case IntersectionType.Intersects:
                 {
                     // Add all local entries in this node that are in range, regardless of
                     // whether this is an inner or a leaf node.
-                    node.AddOwnEntries(ref rectangle, ref list);
+
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        var entry = node.LocalCache[i];
+                        if (IntersectionExtensions.Intersects(entry.Bounds, queryBounds))
+                        {
+                            results.Add(entry.Value);
+                        }
+                    }
 
                     if (!node.IsLeaf)
                     {
                         // Recurse into child nodes.
                         var childBounds = new TRectangle
-                                          {
-                                              Width = nodeBounds.Width / 2,
-                                              Height = nodeBounds.Height / 2
-                                          };
+                        {
+                            Width = nodeBounds.Width / 2,
+                            Height = nodeBounds.Height / 2
+                        };
 
                         // Unrolled loop.
                         if (node.Children[0] != null)
                         {
                             childBounds.X = nodeBounds.X;
                             childBounds.Y = nodeBounds.Y;
-                            Accumulate(node.Children[0], ref childBounds, ref rectangle, ref list);
+                            Accumulate(node.Children[0], childBounds, queryBounds, results);
                         }
                         if (node.Children[1] != null)
                         {
                             childBounds.X = nodeBounds.X + childBounds.Width;
                             childBounds.Y = nodeBounds.Y;
-                            Accumulate(node.Children[1], ref childBounds, ref rectangle, ref list);
+                            Accumulate(node.Children[1], childBounds, queryBounds, results);
                         }
                         if (node.Children[2] != null)
                         {
                             childBounds.X = nodeBounds.X;
                             childBounds.Y = nodeBounds.Y + childBounds.Height;
-                            Accumulate(node.Children[2], ref childBounds, ref rectangle, ref list);
+                            Accumulate(node.Children[2], childBounds, queryBounds, results);
                         }
                         if (node.Children[3] != null)
                         {
                             childBounds.X = nodeBounds.X + childBounds.Width;
                             childBounds.Y = nodeBounds.Y + childBounds.Height;
-                            Accumulate(node.Children[3], ref childBounds, ref rectangle, ref list);
+                            Accumulate(node.Children[3], childBounds, queryBounds, results);
                         }
                     }
+
                     break;
                 }
             }
         }
+
+        private static bool Accumulate(Node node, TRectangle nodeBounds, TRectangle queryBounds, SimpleQueryCallback<T> callback)
+        {
+            // Check how to proceed.
+            switch (ComputeIntersection(queryBounds, nodeBounds))
+            {
+                case IntersectionType.Contains:
+                {
+                    // Node completely contained in query, return all entries in it that
+                    // intersect with the query no need to recurse further. In this case
+                    // where we're dealing with rectangles, that will simply be all entries.
+
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        if (!callback(node.LocalCache[i].Value))
+                        {
+                            return false;
+                        }
+                    }
+
+                    // Rebuild entry cache if necessary.
+                    if (node.ChildCache == null)
+                    {
+                        node.RebuildChildCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i1 = 0, count = node.ChildCache.Length; i1 < count; i1++)
+                    {
+                        if (!callback(node.ChildCache[i1].Value))
+                        {
+                            return false;
+                        }
+                    }
+
+                    break;
+                }
+                case IntersectionType.Intersects:
+                {
+                    // Add all local entries in this node that are in range, regardless of
+                    // whether this is an inner or a leaf node.
+
+                    // Rebuild entry cache if necessary.
+                    if (node.LocalCache == null)
+                    {
+                        node.RebuildLocalCache();
+                    }
+
+                    // Add all entries to the collection.
+                    for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                    {
+                        var entry = node.LocalCache[i];
+                        if (IntersectionExtensions.Intersects(entry.Bounds, queryBounds))
+                        {
+                            if (!callback(entry.Value))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    if (!node.IsLeaf)
+                    {
+                        // Recurse into child nodes.
+                        var childBounds = new TRectangle
+                        {
+                            Width = nodeBounds.Width / 2,
+                            Height = nodeBounds.Height / 2
+                        };
+
+                        // Unrolled loop.
+                        if (node.Children[0] != null)
+                        {
+                            childBounds.X = nodeBounds.X;
+                            childBounds.Y = nodeBounds.Y;
+                            if (!Accumulate(node.Children[0], childBounds, queryBounds, callback))
+                            {
+                                return false;
+                            }
+                        }
+                        if (node.Children[1] != null)
+                        {
+                            childBounds.X = nodeBounds.X + childBounds.Width;
+                            childBounds.Y = nodeBounds.Y;
+                            if (!Accumulate(node.Children[1], childBounds, queryBounds, callback))
+                            {
+                                return false;
+                            }
+                        }
+                        if (node.Children[2] != null)
+                        {
+                            childBounds.X = nodeBounds.X;
+                            childBounds.Y = nodeBounds.Y + childBounds.Height;
+                            if (!Accumulate(node.Children[2], childBounds, queryBounds, callback))
+                            {
+                                return false;
+                            }
+                        }
+                        if (node.Children[3] != null)
+                        {
+                            childBounds.X = nodeBounds.X + childBounds.Width;
+                            childBounds.Y = nodeBounds.Y + childBounds.Height;
+                            if (!Accumulate(node.Children[3], childBounds, queryBounds, callback))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            return true;
+        }
+
+        private static void Accumulate(Node node, TRectangle nodeBounds, TRectangle queryBounds, TPoint start, TPoint end, float t, ISet<T> results)
+        {
+            // Check how to proceed.
+            switch (ComputeIntersection(queryBounds, nodeBounds))
+            {
+                case IntersectionType.Contains:
+                    {
+                        // Node completely contained in query, return all entries in it,
+                        // no need to recurse further.
+
+                        // Rebuild entry cache if necessary.
+                        if (node.LocalCache == null)
+                        {
+                            node.RebuildLocalCache();
+                        }
+
+                        // Add all entries to the collection.
+                        for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                        {
+                            results.Add(node.LocalCache[i].Value);
+                        }
+
+                        // Rebuild entry cache if necessary.
+                        if (node.ChildCache == null)
+                        {
+                            node.RebuildChildCache();
+                        }
+
+                        // Add all entries to the collection.
+                        for (int i = 0, count = node.ChildCache.Length; i < count; i++)
+                        {
+                            results.Add(node.ChildCache[i].Value);
+                        }
+
+                        break;
+                    }
+                case IntersectionType.Intersects:
+                    {
+                        // Add all local entries in this node that are in range, regardless
+                        // of whether this is an inner or a leaf node.
+
+                        // Rebuild entry cache if necessary.
+                        if (node.LocalCache == null)
+                        {
+                            node.RebuildLocalCache();
+                        }
+
+                        // Add all entries to the collection.
+                        for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                        {
+                            var entry = node.LocalCache[i];
+                            float fraction;
+                            if (entry.Bounds.Intersects(start, end, t, out fraction))
+                            {
+                                results.Add(entry.Value);
+                            }
+                        }
+
+                        // If it's not a leaf recurse into child nodes.
+                        if (!node.IsLeaf)
+                        {
+                            // Build the bounds for each child in the following.
+                            var childBounds = new TRectangle
+                            {
+                                Width = nodeBounds.Width / 2,
+                                Height = nodeBounds.Height / 2
+                            };
+
+                            // Unrolled loop.
+                            if (node.Children[0] != null)
+                            {
+                                childBounds.X = nodeBounds.X;
+                                childBounds.Y = nodeBounds.Y;
+                                Accumulate(node.Children[0], childBounds, queryBounds, start, end, t, results);
+                            }
+                            if (node.Children[1] != null)
+                            {
+                                childBounds.X = nodeBounds.X + childBounds.Width;
+                                childBounds.Y = nodeBounds.Y;
+                                Accumulate(node.Children[1], childBounds, queryBounds, start, end, t, results);
+                            }
+                            if (node.Children[2] != null)
+                            {
+                                childBounds.X = nodeBounds.X;
+                                childBounds.Y = nodeBounds.Y + childBounds.Height;
+                                Accumulate(node.Children[2], childBounds, queryBounds, start, end, t, results);
+                            }
+                            if (node.Children[3] != null)
+                            {
+                                childBounds.X = nodeBounds.X + childBounds.Width;
+                                childBounds.Y = nodeBounds.Y + childBounds.Height;
+                                Accumulate(node.Children[3], childBounds, queryBounds, start, end, t, results);
+                            }
+                        }
+
+                        break;
+                    }
+            }
+        }
+
+        private static bool Accumulate(Node node, TRectangle nodeBounds, ref TRectangle queryBounds, TPoint start, TPoint end, ref float t, LineQueryCallback<T> callback)
+        {
+            // Check how to proceed.
+            switch (ComputeIntersection(queryBounds, nodeBounds))
+            {
+                case IntersectionType.Contains:
+                    {
+                        // Node completely contained in query, return all entries in it,
+                        // no need to recurse further.
+
+                        // Rebuild entry cache if necessary.
+                        if (node.LocalCache == null)
+                        {
+                            node.RebuildLocalCache();
+                        }
+
+                        // Add all entries to the collection.
+                        for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                        {
+                            var entry = node.LocalCache[i];
+                            float fraction;
+                            if (entry.Bounds.Intersects(start, end, t, out fraction))
+                            {
+                                fraction = callback(entry.Value, fraction);
+                                if (fraction > 0f)
+                                {
+                                    t = fraction;
+                                    queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
+                                }
+                                else if (fraction == 0f) // Intentional, must be set to zero to trigger.
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        // Rebuild entry cache if necessary.
+                        if (node.ChildCache == null)
+                        {
+                            node.RebuildChildCache();
+                        }
+
+                        // Add all entries to the collection.
+                        for (int i = 0, count = node.ChildCache.Length; i < count; i++)
+                        {
+                            var entry = node.ChildCache[i];
+                            float fraction;
+                            if (entry.Bounds.Intersects(start, end, t, out fraction))
+                            {
+                                fraction = callback(entry.Value, fraction);
+                                if (fraction > 0f)
+                                {
+                                    t = fraction;
+                                    queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
+                                }
+                                else if (fraction == 0f) // Intentional, must be set to zero to trigger.
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                case IntersectionType.Intersects:
+                    {
+                        // Add all local entries in this node that are in range, regardless
+                        // of whether this is an inner or a leaf node.
+
+                        // Rebuild entry cache if necessary.
+                        if (node.LocalCache == null)
+                        {
+                            node.RebuildLocalCache();
+                        }
+
+                        // Add all entries to the collection.
+                        for (int i = 0, count = node.LocalCache.Length; i < count; i++)
+                        {
+                            var entry = node.LocalCache[i];
+                            float fraction;
+                            if (entry.Bounds.Intersects(start, end, t, out fraction))
+                            {
+                                fraction = callback(entry.Value, fraction);
+                                if (fraction > 0f)
+                                {
+                                    t = fraction;
+                                    queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
+                                }
+                                else if (fraction == 0f) // Intentional, must be set to zero to trigger.
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        // If it's not a leaf recurse into child nodes.
+                        if (!node.IsLeaf)
+                        {
+                            // Build the bounds for each child in the following.
+                            var childBounds = new TRectangle
+                            {
+                                Width = nodeBounds.Width / 2,
+                                Height = nodeBounds.Height / 2
+                            };
+
+                            // Unrolled loop.
+                            if (node.Children[0] != null)
+                            {
+                                childBounds.X = nodeBounds.X;
+                                childBounds.Y = nodeBounds.Y;
+                                if (!Accumulate(node.Children[0], childBounds, ref queryBounds, start, end, ref t, callback))
+                                {
+                                    return false;
+                                }
+                            }
+                            if (node.Children[1] != null)
+                            {
+                                childBounds.X = nodeBounds.X + childBounds.Width;
+                                childBounds.Y = nodeBounds.Y;
+                                if (!Accumulate(node.Children[1], childBounds, ref queryBounds, start, end, ref t, callback))
+                                {
+                                    return false;
+                                }
+                            }
+                            if (node.Children[2] != null)
+                            {
+                                childBounds.X = nodeBounds.X;
+                                childBounds.Y = nodeBounds.Y + childBounds.Height;
+                                if (!Accumulate(node.Children[2], childBounds, ref queryBounds, start, end, ref t, callback))
+                                {
+                                    return false;
+                                }
+                            }
+                            if (node.Children[3] != null)
+                            {
+                                childBounds.X = nodeBounds.X + childBounds.Width;
+                                childBounds.Y = nodeBounds.Y + childBounds.Height;
+                                if (!Accumulate(node.Children[3], childBounds, ref queryBounds, start, end, ref t, callback))
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+            }
+
+            return true;
+        }
+
+        #endregion
 
         #endregion
 
@@ -1348,68 +1977,6 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Circle / Box intersection test.
-        /// </summary>
-        /// <param name="center">The center of the circle.</param>
-        /// <param name="radius">The radius of the circle.</param>
-        /// <param name="bounds">The box.</param>
-        /// <returns>
-        /// How the two intersect.
-        /// </returns>
-        private static IntersectionType ComputeIntersection(ref TPoint center, float radius, ref TRectangle bounds)
-        {
-            // Check for axis aligned separation.
-            if (bounds.X + bounds.Width < center.X - radius ||
-                bounds.Y + bounds.Height < center.Y - radius ||
-                bounds.X > center.X + radius ||
-                bounds.Y > center.Y + radius)
-            {
-                return IntersectionType.Disjoint;
-            }
-
-            // Check for unaligned separation.
-            var right = bounds.X + bounds.Width;
-            var bottom = bounds.Y + bounds.Height;
-            var closest = center;
-            if (center.X < bounds.X)
-            {
-                closest.X = bounds.X;
-            }
-            else
-            {
-                if (center.X > right)
-                {
-                    closest.X = right;
-                }
-            }
-            if (center.Y < bounds.Y)
-            {
-                closest.Y = bounds.Y;
-            }
-            else
-            {
-                if (center.Y > bottom)
-                {
-                    closest.Y = bottom;
-                }
-            }
-            var distanceX = closest.X - center.X;
-            var distanceY = closest.Y - center.Y;
-            var radiusSquared = radius * radius;
-            if ((distanceX * distanceX + distanceY * distanceY) > radiusSquared)
-            {
-                return IntersectionType.Disjoint;
-            }
-
-            // At least intersection, check furthest point to check if the
-            // box is contained within the circle.
-            distanceX = Math.Max(Math.Abs((int)(center.X - bounds.X)), Math.Abs((int)(center.X - right)));
-            distanceY = Math.Max(Math.Abs((int)(center.Y - bounds.Y)), Math.Abs((int)(center.Y - bottom)));
-            var outside = (distanceX * distanceX + distanceY * distanceY) > radiusSquared;
-            return outside ? IntersectionType.Intersects : IntersectionType.Contains;
-        }
-
-        /// <summary>
         /// Box / Box intersection test.
         /// </summary>
         /// <param name="rectangle">The first box.</param>
@@ -1417,7 +1984,7 @@ namespace Engine.Collections
         /// <returns>
         /// How the two intersect.
         /// </returns>
-        private static IntersectionType ComputeIntersection(ref TRectangle rectangle, ref TRectangle bounds)
+        private static IntersectionType ComputeIntersection(TRectangle rectangle, TRectangle bounds)
         {
             var rr = rectangle.X + rectangle.Width;
             var rb = rectangle.Y + rectangle.Height;
@@ -1543,12 +2110,12 @@ namespace Engine.Collections
 
             #endregion
 
-            #region Entry Accumulator
+            #region Cache rebuilding
 
             /// <summary>
             /// Rebuilds the local cache.
             /// </summary>
-            private void RebuildLocalCache()
+            public void RebuildLocalCache()
             {
                 lock (_localCacheLock)
                 {
@@ -1592,7 +2159,7 @@ namespace Engine.Collections
             /// <summary>
             /// Rebuilds the child cache.
             /// </summary>
-            private void RebuildChildCache()
+            public void RebuildChildCache()
             {
                 lock (_childCacheLock)
                 {
@@ -1630,99 +2197,6 @@ namespace Engine.Collections
                         // try to rebuild it over and over.
                         ChildCache = new Entry[0];
                     }
-                }
-            }
-
-            /// <summary>
-            /// Adds all entries stored in this node to the specified list.
-            /// </summary>
-            /// <param name="list">The list.</param>
-            public void AddOwnEntries(ref ISet<T> list)
-            {
-                // Rebuild entry cache if necessary.
-                if (LocalCache == null)
-                {
-                    RebuildLocalCache();
-                    Debug.Assert(LocalCache != null);
-                }
-
-                // Add all entries to the collection.
-                for (int i = 0, j = LocalCache.Length; i < j; i++)
-                {
-                    list.Add(LocalCache[i].Value);
-                }
-            }
-
-            /// <summary>
-            /// Adds all entries stored in this node to the specified list if
-            /// they intersect with the specified circle.
-            /// </summary>
-            /// <param name="point">The center of the circle.</param>
-            /// <param name="range">The radius of the circle.</param>
-            /// <param name="list">The list.</param>
-            public void AddOwnEntries(ref TPoint point, float range, ref ISet<T> list)
-            {
-                // Rebuild entry cache if necessary.
-                if (LocalCache == null)
-                {
-                    RebuildLocalCache();
-                    Debug.Assert(LocalCache != null);
-                }
-
-                // Add all entries to the collection.
-                for (int i = 0, j = LocalCache.Length; i < j; i++)
-                {
-                    var entry = LocalCache[i];
-                    if (ComputeIntersection(ref point, range, ref entry.Bounds) != IntersectionType.Disjoint)
-                    {
-                        list.Add(entry.Value);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Adds all entries stored in this node to the specified list if
-            /// they intersect with the specified rectangle.
-            /// </summary>
-            /// <param name="rectangle">The rectangle.</param>
-            /// <param name="list">The list.</param>
-            public void AddOwnEntries(ref TRectangle rectangle, ref ISet<T> list)
-            {
-                // Rebuild entry cache if necessary.
-                if (LocalCache == null)
-                {
-                    RebuildLocalCache();
-                    Debug.Assert(LocalCache != null);
-                }
-
-                // Add all entries to the collection.
-                for (int i = 0, j = LocalCache.Length; i < j; i++)
-                {
-                    var entry = LocalCache[i];
-                    if (ComputeIntersection(ref rectangle, ref entry.Bounds) != IntersectionType.Disjoint)
-                    {
-                        list.Add(entry.Value);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Adds all child entries to the specified list.
-            /// </summary>
-            /// <param name="list">The list.</param>
-            public void AddChildEntries(ref ISet<T> list)
-            {
-                // Rebuild entry cache if necessary.
-                if (ChildCache == null)
-                {
-                    RebuildChildCache();
-                    Debug.Assert(ChildCache != null);
-                }
-
-                // Add all entries to the collection.
-                for (int i = 0, j = ChildCache.Length; i < j; i++)
-                {
-                    list.Add(ChildCache[i].Value);
                 }
             }
 

@@ -3,14 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
+using Engine.FarCollections;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 
+// Adjust these as necessary, they just have to share a compatible
+// interface with the XNA types.
+#if FARMATH
+using Engine.Collections;
 using TPoint = Engine.FarMath.FarPosition;
+using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
+#else
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TSingle = System.Single;
+using TRectangle = Engine.Math.RectangleF;
+#endif
 
 namespace Tests
 {
@@ -53,13 +64,13 @@ namespace Tests
         /// The maximum radius of a range query, and half the maximum
         /// extent of an area query.
         /// </summary>
-        private const int MaxQueryRange = CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
+        private const int MaxQueryRange = 512;//CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
 
         /// <summary>
         /// The minimum query range, and half the minimum extent of an
         /// area query.
         /// </summary>
-        private const int MinQueryRange = (CellSystem.CellSize >> 8) + 1;
+        private const int MinQueryRange = (MaxQueryRange >> 8) + 1;
 
         // List of values for max entry count to test.
         private static readonly int[] QuadTreeMaxNodeEntries = new[] {30};
@@ -76,7 +87,7 @@ namespace Tests
             var points = new List<Tuple<int, TPoint>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                points.Add(Tuple.Create(i, random.NextFarPosition(Area)));
+                points.Add(Tuple.Create(i, random.NextVector(Area)));
             }
 
             Console.WriteLine("Minimum node size for index structures is {0}.", MinimumNodeSize);
@@ -87,17 +98,17 @@ namespace Tests
             var smallRectangles = new List<Tuple<int, TRectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                smallRectangles.Add(Tuple.Create(i, random.NextFarRectangle(Area, MinimumNodeSize >> 2, MinimumNodeSize >> 1)));
+                smallRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize >> 2, MinimumNodeSize >> 1)));
             }
             var mediumRectangles = new List<Tuple<int, TRectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                mediumRectangles.Add(Tuple.Create(i, random.NextFarRectangle(Area, MinimumNodeSize, MinimumNodeSize << 1)));
+                mediumRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize, MinimumNodeSize << 1)));
             }
             var largeRectangles = new List<Tuple<int, TRectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                largeRectangles.Add(Tuple.Create(i, random.NextFarRectangle(Area, MinimumNodeSize << 2, MinimumNodeSize << 3)));
+                largeRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize << 2, MinimumNodeSize << 3)));
             }
 
             // Wait for application to settle in.
@@ -129,7 +140,14 @@ namespace Tests
             foreach (var maxEntriesPerNode in QuadTreeMaxNodeEntries)
             {
                 Console.WriteLine("Running QuadTree test with maximum entries per node = {0}.", maxEntriesPerNode);
-                var tree = new SpatialHashedQuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+                //var tree = new SpatialHashedQuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+#if FARMATH
+                //var tree = new Engine.FarCollections.QuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+                var tree = new Engine.FarCollections.SpatialHashedQuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+#else
+                //var tree = new Engine.Collections.QuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+                var tree = new Engine.Collections.SpatialHashedQuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+#endif
                 Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
             }
 
@@ -179,9 +197,9 @@ namespace Tests
         private delegate void DoUpdate<T>(IIndex<int, TRectangle, TPoint> index, Tuple<int, T> update);
 
         private static void Test(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, TPoint>> points,
-            IList<Tuple<int, FarRectangle>> smallRectangles,
-            IList<Tuple<int, FarRectangle>> mediumRectangles,
-            IList<Tuple<int, FarRectangle>> largeRectangles)
+            IList<Tuple<int, TRectangle>> smallRectangles,
+            IList<Tuple<int, TRectangle>> mediumRectangles,
+            IList<Tuple<int, TRectangle>> largeRectangles)
         {
             Console.WriteLine("Testing with point data...");
             {
@@ -215,8 +233,8 @@ namespace Tests
         {
             Run(index,
                 points,
-                (list, data, random, i) => list.Add(Tuple.Create(i, data[i].Item2 + random.NextVector(2))),
-                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextFarPosition(Area))),
+                (list, data, random, i) => list.Add(Tuple.Create(i, data[i].Item2 + random.NextVector(0.05f))),
+                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextVector(Area))),
                 (ints, data) =>
                 {
                     foreach (var item in data)
@@ -228,18 +246,18 @@ namespace Tests
                 );
         }
 
-        private static void RunRectangles(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, FarRectangle>> rectangles)
+        private static void RunRectangles(IIndex<int, TRectangle, TPoint> index, IList<Tuple<int, TRectangle>> rectangles)
         {
             Run(index,
                 rectangles,
                 (list, data, random, i) =>
                 {
                     var rect = data[i].Item2;
-                    rect.X += random.NextInt32(-2, 2);
-                    rect.Y += random.NextInt32(-2, 2);
+                    rect.X += (float)random.NextDouble(-0.05, 0.05);
+                    rect.Y += (float)random.NextDouble(-0.05, 0.05);
                     list.Add(Tuple.Create(i, rect));
                 },
-                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextFarRectangle(Area, 16, 1024))),
+                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextRectangle(Area, 16, 1024))),
                 (ints, data) =>
                 {
                     foreach (var item in data)
@@ -269,8 +287,8 @@ namespace Tests
             var watch = new Stopwatch();
 
             // Also allocate the ids to look up in advance.
-            var rangeQueries = new List<Tuple<Vector2, float>>(Operations);
-            var areaQueries = new List<FarRectangle>(Operations);
+            var rangeQueries = new List<Tuple<TPoint, float>>(Operations);
+            var areaQueries = new List<TRectangle>(Operations);
 
             // And updates.
             var smallUpdates = new List<Tuple<int, T>>(Operations);
@@ -303,7 +321,7 @@ namespace Tests
                 areaQueries.Clear();
                 for (var j = 0; j < Operations; j++)
                 {
-                    areaQueries.Add(random.NextFarRectangle(Area, MinQueryRange * 2, MaxQueryRange * 2));
+                    areaQueries.Add(random.NextRectangle(Area, MinQueryRange * 2, MaxQueryRange * 2));
                 }
 
                 // Generate position updates.
@@ -371,7 +389,11 @@ namespace Tests
                     watch.Start();
                     for (var j = 0; j < Operations; j++)
                     {
+#if USE_CALLBACK
+                        index.Find(rangeQueries[j].Item1, rangeQueries[j].Item2, value => true);
+#else
                         index.Find(rangeQueries[j].Item1, rangeQueries[j].Item2, ref DummyCollection<int>.Instance);
+#endif
                     }
                     watch.Stop();
                     rangeQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
@@ -387,7 +409,11 @@ namespace Tests
                     for (var j = 0; j < Operations; j++)
                     {
                         var rect = areaQueries[j];
-                        index.Find(ref rect, ref DummyCollection<int>.Instance);
+#if USE_CALLBACK
+                        index.Find(rect, value => true);
+#else
+                        index.Find(rect, ref DummyCollection<int>.Instance);
+#endif
                     }
                     watch.Stop();
                     areaQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
@@ -471,7 +497,7 @@ namespace Tests
     /// Dummy collection used for result gathering, to ignore overhead from used collections.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal sealed class DummyCollection<T> : ICollection<T>, ISet<T>
+    internal sealed class DummyCollection<T> : ISet<T>
     {
         public static ISet<T> Instance = new DummyCollection<T>();
 
@@ -639,31 +665,32 @@ namespace Tests
     /// </summary>
     internal static class Extensions
     {
+#if FARMATH
+        public static FarPosition NextVector(this IUniformRandom random, float area)
+        {
+            return new FarPosition((float)(random.NextDouble() * area - area / 2.0),
+                                   (float)(random.NextDouble() * area - area / 2.0));
+        }
+
+        public static FarRectangle NextRectangle(this IUniformRandom random, float area, float minSize, float maxSize)
+        {
+            var rect = new FarRectangle
+            {
+                Width = (float)random.NextDouble(minSize, maxSize),
+                Height = (float)random.NextDouble(minSize, maxSize)
+            };
+            rect.X = (float)random.NextDouble(-area / 2, area / 2 - (int)rect.Width);
+            rect.Y = (float)random.NextDouble(-area / 2, area / 2 - (int)rect.Height);
+            return rect;
+        }
+#else
         public static Vector2 NextVector(this IUniformRandom random, int area)
         {
             return new Vector2((float)(random.NextDouble() * area - area / 2.0),
                                (float)(random.NextDouble() * area - area / 2.0));
         }
 
-        public static FarPosition NextFarPosition(this IUniformRandom random, int area)
-        {
-            return new FarPosition((float)(random.NextDouble() * area - area / 2.0),
-                                   (float)(random.NextDouble() * area - area / 2.0));
-        }
-
-        public static Rectangle NextRectangle(this IUniformRandom random, int area, int minSize, int maxSize)
-        {
-            var rect = new Rectangle
-                       {
-                           Width = random.NextInt32(minSize, maxSize),
-                           Height = random.NextInt32(minSize, maxSize)
-                       };
-            rect.X = random.NextInt32(-area / 2, area / 2 - rect.Width);
-            rect.Y = random.NextInt32(-area / 2, area / 2 - rect.Height);
-            return rect;
-        }
-
-        public static RectangleF NextRectangleF(this IUniformRandom random, float area, float minSize, float maxSize)
+        public static RectangleF NextRectangle(this IUniformRandom random, float area, float minSize, float maxSize)
         {
             var rect = new RectangleF
             {
@@ -675,17 +702,18 @@ namespace Tests
             return rect;
         }
 
-        public static FarRectangle NextFarRectangle(this IUniformRandom random, float area, float minSize, float maxSize)
-        {
-            var rect = new FarRectangle
-            {
-                Width = (float)random.NextDouble(minSize, maxSize),
-                Height = (float)random.NextDouble(minSize, maxSize)
-            };
-            rect.X = (float)random.NextDouble(-area / 2, area / 2 - (int)rect.Width);
-            rect.Y = (float)random.NextDouble(-area / 2, area / 2 - (int)rect.Height);
-            return rect;
-        }
+        //public static Rectangle NextRectangle(this IUniformRandom random, int area, int minSize, int maxSize)
+        //{
+        //    var rect = new Rectangle
+        //               {
+        //                   Width = random.NextInt32(minSize, maxSize),
+        //                   Height = random.NextInt32(minSize, maxSize)
+        //               };
+        //    rect.X = random.NextInt32(-area / 2, area / 2 - rect.Width);
+        //    rect.Y = random.NextInt32(-area / 2, area / 2 - rect.Height);
+        //    return rect;
+        //}
+#endif
     }
     
     #endregion

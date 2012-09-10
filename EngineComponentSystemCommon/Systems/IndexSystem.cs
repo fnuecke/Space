@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Engine.Collections;
+using Engine.FarCollections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
@@ -274,33 +275,33 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// Get all entities in the specified range of the query point.
         /// </summary>
-        /// <param name="query">The point to use as a query point.</param>
-        /// <param name="range">The distance up to which to get neighbors.</param>
-        /// <param name="list">The list to use for storing the results.</param>
+        /// <param name="center">The point to use as a query point.</param>
+        /// <param name="radius">The distance up to which to get neighbors.</param>
+        /// <param name="results">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(FarPosition query, float range, ref ISet<int> list, ulong groups)
+        public void Find(FarPosition center, float radius, ref ISet<int> results, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
                 Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
-                tree.Find(query, range, ref list);
+                tree.Find(center, radius, ref results);
             }
         }
 
         /// <summary>
         /// Get all entities contained in the specified rectangle.
         /// </summary>
-        /// <param name="query">The query rectangle.</param>
-        /// <param name="list">The list to use for storing the results.</param>
+        /// <param name="rectangle">The query rectangle.</param>
+        /// <param name="results">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(ref FarRectangle query, ref ISet<int> list, ulong groups)
+        public void Find(ref FarRectangle rectangle, ref ISet<int> results, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
                 Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
-                tree.Find(ref query, ref list);
+                tree.Find(rectangle, ref results);
             }
         }
 
@@ -320,7 +321,7 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
                 {
-                    _trees[index] = new SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
+                    _trees[index] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
                 }
                 groups = groups >> 1;
                 ++index;
@@ -444,7 +445,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
                 if (_trees[i] == null)
                 {
-                    _trees[i] = new SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
+                    _trees[i] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
                 }
                 for (var j = 0; j < count; ++j)
                 {
@@ -533,7 +534,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
                 if (copy._trees[i] == null)
                 {
-                    copy._trees[i] = new SpatialHashedQuadTree<int>(copy._maxEntriesPerNode, copy._minNodeBounds);
+                    copy._trees[i] = new FarCollections.SpatialHashedQuadTree<int>(copy._maxEntriesPerNode, copy._minNodeBounds);
                 }
                 foreach (var entry in _trees[i])
                 {
@@ -574,7 +575,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                var index = tree as SpatialHashedQuadTree<int>;
+                var index = tree as FarCollections.SpatialHashedQuadTree<int>;
                 if (index != null)
                 {
                     index.Draw(shape, translation);

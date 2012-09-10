@@ -80,8 +80,8 @@ namespace Engine.FarMath
             FarRectangle result;
             result.X = packet.ReadFarValue();
             result.Y = packet.ReadFarValue();
-            result.Width = packet.ReadFarValue();
-            result.Height = packet.ReadFarValue();
+            result.Width = packet.ReadSingle();
+            result.Height = packet.ReadSingle();
             return result;
         }
     }

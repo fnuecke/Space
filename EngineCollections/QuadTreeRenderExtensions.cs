@@ -1,8 +1,23 @@
-﻿using Engine.FarMath;
-using Engine.Graphics;
+﻿using Engine.Graphics;
 using Microsoft.Xna.Framework;
 
+// Adjust these as necessary, they just have to share a compatible
+// interface with the XNA types.
+#if FARMATH
+using TPoint = Engine.FarMath.FarPosition;
+using TSingle = Engine.FarMath.FarValue;
+using TRectangle = Engine.FarMath.FarRectangle;
+#else
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TSingle = System.Single;
+using TRectangle = Engine.Math.RectangleF;
+#endif
+
+#if FARMATH
+namespace Engine.FarCollections
+#else
 namespace Engine.Collections
+#endif
 {
     /// <summary>
     /// Add extension methods for a QuadTree to allow rendering its nodes
@@ -18,12 +33,12 @@ namespace Engine.Collections
         /// <param name="shape">The shape renderer to paint with.</param>
         /// <param name="translation">The translation to apply to all draw
         /// operation.</param>
-        public static void Draw<T>(this QuadTree<T> quadTree, AbstractShape shape, FarPosition translation)
+        public static void Draw<T>(this QuadTree<T> quadTree, AbstractShape shape, TPoint translation)
         {
-            var screenBounds = new FarRectangle(-5000, -5000, 10000, 10000);
+            var screenBounds = new TRectangle(-5000, -5000, 10000, 10000);
             foreach (var node in quadTree.GetNodeEnumerable())
             {
-                FarRectangle bounds = node.Item1;
+                var bounds = node.Item1;
                 bounds.Offset(translation);
                 var center = (Vector2)bounds.Center;
 

@@ -27,7 +27,6 @@ namespace Engine.IO
         /// <exception cref="T:System.IO.IOException">An I/O error occurs. </exception><filterpriority>2</filterpriority>
         public override void Flush()
         {
-            throw new NotSupportedException();
         }
 
         /// <summary>

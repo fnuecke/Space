@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Engine.Math;
 using Microsoft.Xna.Framework;
 
 namespace Engine.FarMath
@@ -98,7 +99,7 @@ namespace Engine.FarMath
         /// </summary>
         public bool IsEmpty
         {
-            get { return Width == 0 && Height == 0 && X == 0 && Y == 0; }
+            get { return Width == 0f && Height == 0f && X == 0 && Y == 0; }
         }
 
         #endregion
@@ -118,12 +119,12 @@ namespace Engine.FarMath
         /// <summary>
         /// Specifies the width of the rectangle.
         /// </summary>
-        public FarValue Width;
+        public float Width;
 
         /// <summary>
         /// Specifies the height of the rectangle.
         /// </summary>
-        public FarValue Height;
+        public float Height;
 
         #endregion
 
@@ -136,7 +137,7 @@ namespace Engine.FarMath
         /// <param name="y">The y-coordinate of the rectangle.</param>
         /// <param name="width">The width of the rectangle.</param>
         /// <param name="height">The height of the rectangle.</param>
-        public FarRectangle(FarValue x, FarValue y, FarValue width, FarValue height)
+        public FarRectangle(FarValue x, FarValue y, float width, float height)
         {
             X = x;
             Y = y;
@@ -379,8 +380,8 @@ namespace Engine.FarMath
             {
                 result.X = left;
                 result.Y = top;
-                result.Width = right - left;
-                result.Height = bottom - top;
+                result.Width = (float)(right - left);
+                result.Height = (float)(bottom - top);
             }
             else
             {
@@ -414,8 +415,8 @@ namespace Engine.FarMath
             {
                 result.X = left;
                 result.Y = top;
-                result.Width = right - left;
-                result.Height = bottom - top;
+                result.Width = (float)(right - left);
+                result.Height = (float)(bottom - top);
             }
             else
             {
@@ -446,8 +447,8 @@ namespace Engine.FarMath
             FarRectangle result;
             result.X = left;
             result.Y = top;
-            result.Width = right - left;
-            result.Height = bottom - top;
+            result.Width = (float)(right - left);
+            result.Height = (float)(bottom - top);
             return result;
         }
 
@@ -470,8 +471,8 @@ namespace Engine.FarMath
 
             result.X = left;
             result.Y = top;
-            result.Width = right - left;
-            result.Height = bottom - top;
+            result.Width = (float)(right - left);
+            result.Height = (float)(bottom - top);
         }
 
         #endregion
@@ -542,6 +543,40 @@ namespace Engine.FarMath
             return r;
         }
 
+        /// <summary>
+        /// Performs an implicit conversion from <see cref="Engine.Math.RectangleF"/> to <see cref="Engine.FarMath.FarRectangle"/>.
+        /// </summary>
+        /// <param name="rectangle">The <see cref="Engine.Math.RectangleF"/> to convert.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator FarRectangle(RectangleF rectangle)
+        {
+            FarRectangle r;
+            r.X = rectangle.X;
+            r.Y = rectangle.Y;
+            r.Width = rectangle.Width;
+            r.Height = rectangle.Height;
+            return r;
+        }
+
+        /// <summary>
+        /// Performs an explicit conversion from <see cref="Engine.FarMath.FarRectangle"/> to <see cref="Microsoft.Xna.Framework.Rectangle"/>.
+        /// </summary>
+        /// <param name="rectangle">The <see cref="Engine.FarMath.FarRectangle"/> to convert.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static explicit operator RectangleF(FarRectangle rectangle)
+        {
+            RectangleF r;
+            r.X = (float)rectangle.X;
+            r.Y = (float)rectangle.Y;
+            r.Width = rectangle.Width;
+            r.Height = rectangle.Height;
+            return r;
+        }
+
         #endregion
 
         #region Equality Overrides
@@ -597,7 +632,7 @@ namespace Engine.FarMath
         /// </returns>
         public override string ToString()
         {
-            return string.Format(CultureInfo.CurrentCulture, "{{X:{0} Y:{1} Width:{2} Height:{3}}}", X, Y, Width, Height);
+            return string.Format(CultureInfo.InvariantCulture, "{{X:{0} Y:{1} Width:{2} Height:{3}}}", X, Y, Width, Height);
         }
 
         #endregion
