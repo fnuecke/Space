@@ -38,6 +38,9 @@
         <Item>
           <Name>StarterThruster</Name>
         </Item>
+        <Item>
+          <Name>StarterShield</Name>
+        </Item>
       </Items>
     </Item>
     <Item>

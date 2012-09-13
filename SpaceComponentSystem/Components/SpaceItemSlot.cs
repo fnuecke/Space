@@ -163,6 +163,17 @@ namespace Space.ComponentSystem.Components
             return AccumulateOffset(Vector2.Zero);
         }
 
+        /// <summary>
+        /// Accumulates the rotation of this slot, relative to the root node and
+        /// adds the specified rotation.
+        /// </summary>
+        /// <param name="rotation">The base rotation.</param>
+        /// <returns>The rotation for items in this slot.</returns>
+        public float AccumulateRotation(float rotation)
+        {
+            // TODO
+            return rotation;
+        }
 
         /// <summary>
         /// Mirrors the specified direction if necessary (i.e. if the first

@@ -39,7 +39,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Determines whether this system is enabled, i.e. whether it should perform
         /// updates and react to events.
         /// </summary>
-        public bool IsEnabled { get; set; }
+        public bool Enabled { get; set; }
 
         #endregion
 
@@ -105,7 +105,7 @@ namespace Engine.ComponentSystem.Common.Systems
             _soundBank = soundBank;
             _maxAudibleDistance = maxAudibleDistance;
             _maxAudibleDistanceSquared = maxAudibleDistance * maxAudibleDistance;
-            IsEnabled = _soundBank != null;
+            Enabled = _soundBank != null;
         }
 
         #endregion

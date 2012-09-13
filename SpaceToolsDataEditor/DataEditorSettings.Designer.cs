@@ -49,7 +49,7 @@ namespace Space.Tools.DataEditor {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("100, 100, 640, 480")]
+        [global::System.Configuration.DefaultSettingValueAttribute("100, 100, 1024, 768")]
         public global::System.Drawing.Rectangle WindowBounds {
             get {
                 return ((global::System.Drawing.Rectangle)(this["WindowBounds"]));

@@ -22,23 +22,25 @@ namespace SpaceTests.ComponentSystem.Components
             {
                 new Weapon(),
                 (Weapon)new Weapon().Initialize("name1", "icon1"),
-                (Weapon)new Weapon().Initialize("name2", "icon2", ItemQuality.Common, ItemSlotSize.Large, Vector2.Zero, false),
-                new Weapon().Initialize("name3", "icon3", ItemQuality.Rare, ItemSlotSize.Small, Vector2.Zero, false, "sound", 1.5f,
-                                        2.5f, 3.5f, new[]
-                                        {
-                                            new ProjectileFactory
-                                            {
-                                                AccelerationForce = new FloatInterval(1, 2),
-                                                CanBeShot = true,
-                                                CollisionRadius = 4,
-                                                Effect = "qwe",
-                                                Friction = 3,
-                                                InitialDirection = new FloatInterval(2, 7),
-                                                InitialVelocity = new FloatInterval(4, 5),
-                                                Model = "sdf",
-                                                TimeToLive = 5
-                                            }
-                                        })
+                (Weapon)
+                new Weapon().Initialize("name2", "icon2", ItemQuality.Common, ItemSlotSize.Large, Vector2.Zero, false),
+                (Weapon)new Weapon().Initialize("sound", 1.5f,
+                                                2.5f, 3.5f, new[]
+                                                {
+                                                    new ProjectileFactory
+                                                    {
+                                                        AccelerationForce = new FloatInterval(1, 2),
+                                                        CanBeShot = true,
+                                                        CollisionRadius = 4,
+                                                        Effect = "qwe",
+                                                        Friction = 3,
+                                                        InitialDirection = new FloatInterval(2, 7),
+                                                        InitialVelocity = new FloatInterval(4, 5),
+                                                        Model = "sdf",
+                                                        TimeToLive = 5
+                                                    }
+                                                }).Initialize("name3", "icon3", ItemQuality.Rare, ItemSlotSize.Small,
+                                                              Vector2.Zero, false)
             };
         }
 

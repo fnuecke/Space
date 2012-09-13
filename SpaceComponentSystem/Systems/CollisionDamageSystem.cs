@@ -47,36 +47,35 @@ namespace Space.ComponentSystem.Systems
                 // same message in reverse for the other entity anyway. We still need it
                 // for reference, though (collision damage).
                 var damageMessage = (Collision)(ValueType)message;
-                var firstEntity = damageMessage.FirstEntity;
-                var secondEntity = damageMessage.SecondEntity;
+                var damagee = damageMessage.FirstEntity;
+                var damager = damageMessage.SecondEntity;
 
                 // Get damage we might take.
-                var secondDamage = ((CollisionDamage)Manager.GetComponent(secondEntity, CollisionDamage.TypeId));
+                var damage = ((CollisionDamage)Manager.GetComponent(damager, CollisionDamage.TypeId));
 
                 // Checking if the cooldowns contain this entry can be done without
                 // locking, because we're the only thread that would set the entry for
                 // that value.
-                if (secondDamage != null && !secondDamage.Cooldowns.ContainsKey(firstEntity))
+                if (damage != null && !damage.Cooldowns.ContainsKey(damagee))
                 {
-                    // Apply damage to second entity.
-                    var firstHealth = ((Health)Manager.GetComponent(firstEntity, Health.TypeId));
-                    if (firstHealth != null)
+                    // Apply damage to second entity if it has health.
+                    if (Manager.GetComponent(damagee, Health.TypeId) != null)
                     {
-                        firstHealth.SetValue(firstHealth.Value - secondDamage.Damage, secondEntity);
+                        Manager.AddComponent<DamagingStatusEffect>(damagee).Initialize(0, damage.Damage, damager);
                     }
 
                     // One-shot?
-                    if (secondDamage.Cooldown == 0)
+                    if (damage.Cooldown == 0)
                     {
                         // Yes, kill it.
-                        ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(secondEntity);
+                        ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
                     }
                     else
                     {
                         // No, keep cooldown for this one, if it is still alive.
-                        lock (secondDamage.Cooldowns)
+                        lock (damage.Cooldowns)
                         {
-                            secondDamage.Cooldowns.Add(firstEntity, secondDamage.Cooldown);
+                            damage.Cooldowns.Add(damagee, damage.Cooldown);
                         }
                     }   
                 }

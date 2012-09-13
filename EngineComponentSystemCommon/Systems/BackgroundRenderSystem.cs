@@ -30,7 +30,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Determines whether this system is enabled, i.e. whether it should perform
         /// updates and react to events.
         /// </summary>
-        public bool IsEnabled { get; set; }
+        public bool Enabled { get; set; }
 
         #endregion
 
@@ -64,7 +64,7 @@ namespace Engine.ComponentSystem.Common.Systems
             _content = content;
             _spriteBatch = spriteBatch;
 
-            IsEnabled = true;
+            Enabled = true;
         }
 
         #region Logic

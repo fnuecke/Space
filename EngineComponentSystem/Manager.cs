@@ -142,7 +142,7 @@ namespace Engine.ComponentSystem
         {
             for (int i = 0, j = _drawingSystems.Count; i < j; ++i)
             {
-                if (_drawingSystems[i].IsEnabled)
+                if (_drawingSystems[i].Enabled)
                 {
                     _drawingSystems[i].Draw(frame, elapsedMilliseconds);
                 }

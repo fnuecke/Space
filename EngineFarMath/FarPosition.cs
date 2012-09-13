@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace Engine.FarMath
 {
@@ -62,6 +63,16 @@ namespace Engine.FarMath
             Y = y;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FarPosition"/> struct.
+        /// </summary>
+        /// <param name="xy">The x- and y-coordinate of the position.</param>
+        public FarPosition(FarValue xy)
+        {
+            X = xy;
+            Y = xy;
+        }
+
         #endregion
 
         #region Transformation
@@ -71,11 +82,12 @@ namespace Engine.FarMath
         /// </summary>
         /// <param name="position">The position to transform.</param>
         /// <param name="transform">The transformation to apply.</param>
-        /// <returns>The result of the transformation.</returns>
-        public static Vector2 Transform(FarPosition position, FarTransform transform)
+        /// <returns>
+        /// The result of the transformation.
+        /// </returns>
+        public static FarPosition Transform(FarPosition position, FarTransform transform)
         {
-            var translatedPosition = (Vector2)(position + transform.Translation);
-            return Vector2.Transform(translatedPosition, transform.Matrix);
+            return Transform(position + transform.Translation, transform.Matrix);
         }
 
         /// <summary>
@@ -84,10 +96,69 @@ namespace Engine.FarMath
         /// <param name="position">The position to transform.</param>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="result">The result of the transformation.</param>
-        public static void Transform(ref FarPosition position, ref FarTransform transform, out Vector2 result)
+        public static void Transform(ref FarPosition position, ref FarTransform transform, out FarPosition result)
         {
-            var translatedPosition = (Vector2)(position + transform.Translation);
-            Vector2.Transform(ref translatedPosition, ref transform.Matrix, out result);
+            var translatedPosition = position + transform.Translation;
+            Transform(ref translatedPosition, ref transform.Matrix, out result);
+        }
+
+        /// <summary>
+        /// Transforms the specified position by the specified matrix.
+        /// </summary>
+        /// <param name="position">The position to transform.</param>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <returns>
+        /// The result of the transformation.
+        /// </returns>
+        public static FarPosition Transform(FarPosition position, Matrix transform)
+        {
+            FarPosition result;
+            result.X = position.X * transform.M11 + position.Y * transform.M21 + transform.M41;
+            result.Y = position.X * transform.M12 + position.Y * transform.M22 + transform.M42;
+            return result;
+        }
+
+        /// <summary>
+        /// Transforms the specified position by the specified matrix.
+        /// </summary>
+        /// <param name="position">The position to transform.</param>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>
+        /// The result of the transformation.
+        /// </returns>
+        public static void Transform(ref FarPosition position, ref Matrix transform, out FarPosition result)
+        {
+            result.X = position.X * transform.M11 + position.Y * transform.M21 + transform.M41;
+            result.Y = position.X * transform.M12 + position.Y * transform.M22 + transform.M42;
+        }
+
+        /// <summary>
+        /// Transforms the specified position by the specified matrix.
+        /// </summary>
+        /// <param name="sourceArray">The source array.</param>
+        /// <param name="transform">The transformation to apply.</param>
+        /// <param name="destinationArray">The destination array.</param>
+        public static void Transform(FarPosition[] sourceArray, ref Matrix transform, FarPosition[] destinationArray)
+        {
+            if (sourceArray == null)
+            {
+                throw new ArgumentNullException("sourceArray");
+            }
+            if (destinationArray == null)
+            {
+                throw new ArgumentNullException("destinationArray");
+            }
+            if (destinationArray.Length < sourceArray.Length)
+            {
+                throw new ArgumentException("Target array too small.");
+            }
+            for (var i = 0; i < sourceArray.Length; i++)
+            {
+                destinationArray[i].X = sourceArray[i].X * transform.M11 + sourceArray[i].Y * transform.M21 + transform.M41;
+                destinationArray[i].Y = sourceArray[i].X * transform.M12 + sourceArray[i].Y * transform.M22 + transform.M42;
+            }
+
         }
 
         #endregion
@@ -119,7 +190,7 @@ namespace Engine.FarMath
         public static void Min(ref FarPosition value1, ref FarPosition value2, out FarPosition result)
         {
             result.X = (value1.X < value2.X) ? value1.X : value2.X;
-            result.Y = (value1.X < value2.X) ? value1.X : value2.X;
+            result.Y = (value1.Y < value2.Y) ? value1.Y : value2.Y;
         }
 
         /// <summary>
@@ -134,7 +205,7 @@ namespace Engine.FarMath
         {
             FarPosition result;
             result.X = (value1.X > value2.X) ? value1.X : value2.X;
-            result.Y = (value1.X > value2.X) ? value1.X : value2.X;
+            result.Y = (value1.Y > value2.Y) ? value1.Y : value2.Y;
             return result;
         }
 
@@ -147,7 +218,29 @@ namespace Engine.FarMath
         public static void Max(ref FarPosition value1, ref FarPosition value2, out FarPosition result)
         {
             result.X = (value1.X > value2.X) ? value1.X : value2.X;
-            result.Y = (value1.X > value2.X) ? value1.X : value2.X;
+            result.Y = (value1.Y > value2.Y) ? value1.Y : value2.Y;
+        }
+
+        /// <summary>
+        /// Computes the dot product of the specified <see cref="FarPosition"/> and <see cref="Vector2"/>.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>The dot product.</returns>
+        public static FarValue Dot(Vector2 value1, FarPosition value2)
+        {
+            return value1.X * value2.X + value1.Y * value2.Y;
+        }
+
+        /// <summary>
+        /// Computes the dot product of the specified <see cref="FarPosition"/> and <see cref="Vector2"/>.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>The dot product.</returns>
+        public static FarValue Dot(FarPosition value1, Vector2 value2)
+        {
+            return Dot(value2, value1);
         }
 
         /// <summary>
@@ -371,6 +464,22 @@ namespace Engine.FarMath
         }
 
         /// <summary>
+        /// Subtracts the specified <see cref="Vector2"/> from the specified <see cref="FarPosition"/>.
+        /// </summary>
+        /// <param name="value1">The value to subtract from.</param>
+        /// <param name="value2">The value to subtract.</param>
+        /// <returns>
+        /// The result of the subtraction.
+        /// </returns>
+        public static FarPosition operator -(Vector2 value1, FarPosition value2)
+        {
+            FarPosition result;
+            result.X = value1.X - value2.X;
+            result.Y = value1.Y - value2.Y;
+            return result;
+        }
+
+        /// <summary>
         /// Subtracts the specified <see cref="Point"/> from the specified <see cref="FarPosition"/>.
         /// </summary>
         /// <param name="value1">The value to subtract from.</param>
@@ -383,6 +492,22 @@ namespace Engine.FarMath
             var result = value1;
             result.X -= value2.X;
             result.Y -= value2.Y;
+            return result;
+        }
+
+        /// <summary>
+        /// Subtracts the specified <see cref="Point"/> from the specified <see cref="FarPosition"/>.
+        /// </summary>
+        /// <param name="value1">The value to subtract from.</param>
+        /// <param name="value2">The value to subtract.</param>
+        /// <returns>
+        /// The result of the subtraction.
+        /// </returns>
+        public static FarPosition operator -(Point value1, FarPosition value2)
+        {
+            FarPosition result;
+            result.X = value1.X - value2.X;
+            result.Y = value1.Y - value2.Y;
             return result;
         }
 
@@ -400,6 +525,48 @@ namespace Engine.FarMath
             result.X *= value2;
             result.Y *= value2;
             return result;
+        }
+
+        /// <summary>
+        /// Multiplies the specified <see cref="FarPosition"/> with the specified <see cref="float"/>.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The result of the multiplication.
+        /// </returns>
+        public static FarPosition operator *(float value1, FarPosition value2)
+        {
+            return value2 * value1;
+        }
+
+        /// <summary>
+        /// Multiplies the specified <see cref="FarPosition"/> with the specified <see cref="Vector2"/>, component-wise.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The result of the multiplication.
+        /// </returns>
+        public static FarPosition operator *(FarPosition value1, Vector2 value2)
+        {
+            var result = value1;
+            result.X *= value2.X;
+            result.Y *= value2.Y;
+            return result;
+        }
+
+        /// <summary>
+        /// Multiplies the specified <see cref="FarPosition"/> with the specified <see cref="Vector2"/>, component-wise.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>
+        /// The result of the multiplication.
+        /// </returns>
+        public static FarPosition operator *(Vector2 value1, FarPosition value2)
+        {
+            return value2 * value1;
         }
 
         /// <summary>

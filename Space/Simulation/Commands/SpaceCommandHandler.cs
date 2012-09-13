@@ -220,6 +220,11 @@ from Space.Data import *
                     control.SetAcceleration(command.Value);
                     break;
 
+                // Begin rotating.
+                case PlayerInputCommand.PlayerInputCommandType.Rotate:
+                    control.SetTargetRotation(command.Value.X);
+                    break;
+
                 // Begin/stop to stabilize our position.
                 case PlayerInputCommand.PlayerInputCommandType.BeginStabilizing:
                     control.Stabilizing = true;
@@ -228,17 +233,28 @@ from Space.Data import *
                     control.Stabilizing = false;
                     break;
 
-                // Begin rotating.
-                case PlayerInputCommand.PlayerInputCommandType.Rotate:
-                    control.SetTargetRotation(command.Value.X);
-                    break;
-
                 // Begin/stop shooting.
                 case PlayerInputCommand.PlayerInputCommandType.BeginShooting:
                     control.Shooting = true;
                     break;
                 case PlayerInputCommand.PlayerInputCommandType.StopShooting:
                     control.Shooting = false;
+                    break;
+
+                // Begin/stop shielding.
+                case PlayerInputCommand.PlayerInputCommandType.BeginShielding:
+                    if (!control.ShieldsActive)
+                    {
+                        control.ShieldsActive = true;
+                        manager.AddComponent<ShieldEnergyStatusEffect>(avatar);
+                    }
+                    break;
+                case PlayerInputCommand.PlayerInputCommandType.StopShielding:
+                    if (control.ShieldsActive)
+                    {
+                        control.ShieldsActive = false;
+                        manager.RemoveComponent(manager.GetComponent(avatar, ShieldEnergyStatusEffect.TypeId));
+                    }
                     break;
             }
         }

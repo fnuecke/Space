@@ -15,6 +15,7 @@
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>PoorBasicSensor</Name>
@@ -34,14 +35,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>BasicSensor</Name>
@@ -61,14 +63,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>UncommonBasicSensor</Name>
@@ -88,14 +91,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 2 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>RareBasicSensor</Name>
@@ -115,14 +119,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 3 HealthRegeneration</Item>
         <Item>1 to 3 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>1 to 5 AccelerationForce</Item>
         <Item>1 to 3 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>L1_AI_Sensor</Name>
@@ -138,6 +143,7 @@
         <Item>2000 SensorRange</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
   </Asset>
 </XnaContent>

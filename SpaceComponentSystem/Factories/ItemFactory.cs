@@ -229,6 +229,8 @@ namespace Space.ComponentSystem.Factories
 
         private IntInterval _additionalAttributeCount = IntInterval.Zero;
 
+        private string[] _attributePools = new string[0];
+
         #endregion
 
         #region Sampling

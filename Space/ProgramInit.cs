@@ -220,10 +220,10 @@ namespace Space
                 case "on":
                 case "true":
                 case "yes":
-                    _client.GetSystem<T>().IsEnabled = true;
+                    _client.GetSystem<T>().Enabled = true;
                     break;
                 default:
-                    _client.GetSystem<T>().IsEnabled = false;
+                    _client.GetSystem<T>().Enabled = false;
                     break;
             }
         }

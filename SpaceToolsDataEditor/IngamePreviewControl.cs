@@ -8,6 +8,7 @@ using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -58,12 +59,15 @@ namespace Space.Tools.DataEditor
 
         private long _frame;
 
+        private ShieldRenderSystem _shields;
+
         public IngamePreviewControl()
         {
             _contextMenu.Items.Add(new ToolStripMenuItem("Collision bounds", null, null, "collbounds") { CheckOnClick = true, CheckState = CheckState.Checked });
             _contextMenu.Items.Add(new ToolStripMenuItem("Planet/sun maximum radius", null, null, "maxbounds") { CheckOnClick = true, CheckState = CheckState.Checked });
             _contextMenu.Items.Add(new ToolStripMenuItem("Equipment slots", null, null, "slots") { CheckOnClick = true, CheckState = CheckState.Checked });
             _contextMenu.Items.Add(new ToolStripMenuItem("Thruster effects", null, null, "thrusterfx") { CheckOnClick = true, CheckState = CheckState.Checked });
+            _contextMenu.Items.Add(new ToolStripMenuItem("Shield effects", null, null, "shieldfx") { CheckOnClick = true, CheckState = CheckState.Checked });
             _contextMenu.Items.Add(new ToolStripMenuItem("Show grid", null, null, "grid") { CheckOnClick = true, CheckState = CheckState.Checked });
 
             ContextMenuStrip = _contextMenu;
@@ -126,6 +130,7 @@ namespace Space.Tools.DataEditor
 
                     new CameraCenteredTextureRenderSystem(_content, _batch),
                     new CameraCenteredParticleEffectSystem(_content, (IGraphicsDeviceService)Services.GetService(typeof(IGraphicsDeviceService)), () => 20f),
+                    new ShieldRenderSystem(_content, GraphicsDevice),
                     
                     new DebugSlotRenderSystem(_content, GraphicsDevice)
                     
@@ -137,6 +142,7 @@ namespace Space.Tools.DataEditor
             _collisionBounds = (DebugCollisionBoundsRenderSystem)_manager.GetSystem(DebugCollisionBoundsRenderSystem.TypeId);
             _slots = (DebugSlotRenderSystem)_manager.GetSystem(DebugSlotRenderSystem.TypeId);
             _maxBounds = (PlanetMaxBoundsRenderer)Manager.GetSystem(PlanetMaxBoundsRenderer.TypeId);
+            _shields = (ShieldRenderSystem)Manager.GetSystem(ShieldRenderSystem.TypeId);
 
             Clear();
 
@@ -189,15 +195,19 @@ namespace Space.Tools.DataEditor
                 }
                 if (_collisionBounds != null)
                 {
-                    _collisionBounds.IsEnabled = ((ToolStripMenuItem)_contextMenu.Items["collbounds"]).Checked;
+                    _collisionBounds.Enabled = ((ToolStripMenuItem)_contextMenu.Items["collbounds"]).Checked;
                 }
                 if (_slots != null)
                 {
-                    _slots.IsEnabled = ((ToolStripMenuItem)_contextMenu.Items["slots"]).Checked;
+                    _slots.Enabled = ((ToolStripMenuItem)_contextMenu.Items["slots"]).Checked;
                 }
                 if (_maxBounds != null)
                 {
-                    _maxBounds.IsEnabled = ((ToolStripMenuItem)_contextMenu.Items["maxbounds"]).Checked;
+                    _maxBounds.Enabled = ((ToolStripMenuItem)_contextMenu.Items["maxbounds"]).Checked;
+                }
+                if (_shields != null)
+                {
+                    _shields.Enabled = ((ToolStripMenuItem)_contextMenu.Items["shieldfx"]).Checked;
                 }
 
                 // Render the grid in the background.
@@ -275,7 +285,7 @@ namespace Space.Tools.DataEditor
 
             private readonly Ellipse _ellipse;
 
-            public bool IsEnabled { get; set; }
+            public bool Enabled { get; set; }
 
             public PlanetMaxBoundsRenderer(ContentManager content, GraphicsDevice graphics)
             {
@@ -296,6 +306,19 @@ namespace Space.Tools.DataEditor
                     _ellipse.SetSize(component.MaxRadius * 2);
                     _ellipse.Draw();
                 }
+            }
+
+            public override void Hash(Hasher hasher)
+            {
+            }
+
+            public override AbstractSystem NewInstance()
+            {
+                throw new NotSupportedException();
+            }
+            public override void CopyInto(AbstractSystem into)
+            {
+                throw new NotSupportedException();
             }
         }
     }

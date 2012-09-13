@@ -101,7 +101,9 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Weapon>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent, _sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), _projectiles);
+            manager.AddComponent<Weapon>(entity)
+                .Initialize(_sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), _projectiles)
+                .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
             return SampleAttributes(manager, entity, random);
         }

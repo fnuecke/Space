@@ -25,6 +25,7 @@
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>PoorBasicThruster</Name>
@@ -54,14 +55,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 15 AccelerationForce</Item>
         <Item>5 to 15 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>BasicThruster</Name>
@@ -91,14 +93,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>2 to 4 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 18 AccelerationForce</Item>
         <Item>8 to 15 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>UncommonBasicThruster</Name>
@@ -128,14 +131,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 2 HealthRegeneration</Item>
         <Item>1 to 2 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 25 AccelerationForce</Item>
         <Item>3 to 9 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>1 to 3</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>RareBasicThruster</Name>
@@ -165,14 +169,15 @@
         <Item>10 to 15 Energy</Item>
         <Item>1 to 3 HealthRegeneration</Item>
         <Item>1 to 3 EnergyRegeneration</Item>
-        <Item>10 to 15 Armor</Item>
+        <Item>10 to 15 DamageReduction</Item>
         <Item>10 to 35 AccelerationForce</Item>
         <Item>5 to 15 RotationForce</Item>
-        <Item>10 to 15 ShieldEfficiency</Item>
+        <Item>10 to 15 ShieldBlockCost</Item>
         <Item>100 to 150 SensorRange</Item>
         <Item>1 to 3 WeaponDamage</Item>
       </AdditionalAttributes>
       <AdditionalAttributeCount>3 to 5</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>L1_AI_Thruster</Name>
@@ -198,6 +203,7 @@
         <Item>2.25 to 2.75 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
   </Asset>
 </XnaContent>

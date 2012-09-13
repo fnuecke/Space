@@ -25,7 +25,7 @@
           <LevelScale>0</LevelScale>
         </Item>
         <Item>
-          <Attribute>10 to 15 Armor</Attribute>
+          <Attribute>10 to 15 DamageReduction</Attribute>
           <Chance>0</Chance>
           <LevelScale>0</LevelScale>
         </Item>
@@ -40,7 +40,7 @@
           <LevelScale>0</LevelScale>
         </Item>
         <Item>
-          <Attribute>10 to 15 ShieldEfficiency</Attribute>
+          <Attribute>10 to 15 ShieldBlockCost</Attribute>
           <Chance>0</Chance>
           <LevelScale>0</LevelScale>
         </Item>
@@ -57,20 +57,10 @@
       </Attributes>
     </Item>
     <Item>
-      <Name>Armor Level 1 </Name>
+      <Name>Fuselage Level 1 </Name>
       <Attributes>
         <Item>
-          <Attribute>10 to 15 Armor</Attribute>
-          <Chance>1</Chance>
-          <LevelScale>0.1</LevelScale>
-        </Item>
-      </Attributes>
-    </Item>
-    <Item>
-      <Name>Armor Rare Level 1 </Name>
-      <Attributes>
-        <Item>
-          <Attribute>15 to 20 Armor</Attribute>
+          <Attribute>10 to 15 DamageReduction</Attribute>
           <Chance>1</Chance>
           <LevelScale>0.1</LevelScale>
         </Item>

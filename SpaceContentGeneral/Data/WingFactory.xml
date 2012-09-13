@@ -33,6 +33,7 @@
         </Item>
       </Slots>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
     <Item>
       <Name>L1_AI_Wing</Name>
@@ -50,6 +51,7 @@
         </Item>
       </Slots>
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
+      <AttributePool />
     </Item>
   </Asset>
 </XnaContent>

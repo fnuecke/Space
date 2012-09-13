@@ -36,7 +36,7 @@ namespace Space.ComponentSystem.Systems
         /// Determines whether this system is enabled, i.e. whether it should perform
         /// updates and react to events.
         /// </summary>
-        public bool IsEnabled { get; set; }
+        public bool Enabled { get; set; }
 
         #endregion
 
@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Systems
             _renderer.LoadContent(content);
             _simulationFps = simulationFps;
 
-            IsEnabled = true;
+            Enabled = true;
         }
 
         #endregion
@@ -127,7 +127,7 @@ namespace Space.ComponentSystem.Systems
                     if (effect.Enabled && effect.Scale * effect.Intensity > 0.1f)
                     {
                         // Check if it's in bounds, i.e. whether we have to trigger it at all.
-                        Vector2 translation;
+                        FarPosition translation;
                         FarPosition.Transform(ref position, ref transform, out translation);
                         var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
                         bounds.Inflate(256, 256);
@@ -198,7 +198,7 @@ namespace Space.ComponentSystem.Systems
         {
             // Get position of the effect relative to view port.
             var transform = GetTransform();
-            Vector2 translation;
+            FarPosition translation;
             FarPosition.Transform(ref position, ref transform, out translation);
 
             // Check if it's in bounds, i.e. whether we have to render it at all.
@@ -282,14 +282,24 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         private ParticleEffect GetEffect(string effectName)
         {
-            // Note: No need to lock the dictionary, because this only gets
-            // called from the rendering instance.
+            // See if the effect is already known.
             if (!_effects.ContainsKey(effectName))
             {
-                var effect = _content.Load<ParticleEffect>(effectName);
-                effect.LoadContent(_content);
-                effect.Initialise();
-                _effects.Add(effectName, effect);
+                // It isn't. Lock the dictionary (might be called from some reactionary
+                // systems, e.g. death triggering expliosions which run in parallel).
+                lock (_effects)
+                {
+                    // Check again (some other thread might have already added it
+                    // while we locked).
+                    if (!_effects.ContainsKey(effectName))
+                    {
+                        // Nope, really don't have it yet, load and init.
+                        var effect = _content.Load<ParticleEffect>(effectName);
+                        effect.LoadContent(_content);
+                        effect.Initialise();
+                        _effects.Add(effectName, effect);
+                    }
+                }
             }
             return _effects[effectName];
         }
