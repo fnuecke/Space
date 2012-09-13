@@ -189,10 +189,18 @@ namespace Space.ComponentSystem.Factories
             get { return _additionalAttributeCount; }
             set { _additionalAttributeCount = value; }
         }
-         [Editor("Space.Tools.DataEditor.AttributePoolChooserEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-         [ContentSerializer(Optional = true)]
-        public string[] AttributePool { get; set; }
+        [ContentSerializer(Optional = true)]
+        public StringWrapper[] AttributePool { get; set; }
+
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public class StringWrapper
+        {
+            [Editor("Space.Tools.DataEditor.AttributePoolChooserEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+           "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+            [ContentSerializer(Optional = true)]
+            public string AttributePool { get; set; }
+
+        }
         #endregion
 
         #region Backing fields
