@@ -1,3 +1,4 @@
+#if EXPLOSIONS
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -464,3 +465,4 @@ namespace FarseerPhysics.Common.PhysicsLogic
         }
     }
 }
+#endif

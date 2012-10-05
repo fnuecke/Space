@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -71,15 +72,13 @@ namespace FarseerPhysics.Dynamics.Joints
         // J = [0 0 -1 0 0 1]
 
         internal LineJoint()
+            : base(JointType.Line)
         {
-            JointType = JointType.Line;
         }
 
         public LineJoint(Body bA, Body bB, WorldVector2 worldAnchor, Vector2 axis)
-            : base(bA, bB)
+            : base(bA, bB, JointType.Line)
         {
-            JointType = JointType.Line;
-
             LocalAnchorA = bA.GetLocalPoint(worldAnchor);
             LocalAnchorB = bB.GetLocalPoint(worldAnchor);
             LocalXAxis = bA.GetLocalVector(axis);
@@ -435,3 +434,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

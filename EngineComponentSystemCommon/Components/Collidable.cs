@@ -44,14 +44,9 @@ namespace Engine.ComponentSystem.Common.Components
             None,
 
             /// <summary>
-            /// One or more collidables nearby, but cannot collide (same group).
+            /// One or more collidables nearby, can collide (bounds overlap).
             /// </summary>
-            HasNeighbors,
-
-            /// <summary>
-            /// One ore more collidables nearby, can collide.
-            /// </summary>
-            HasCollidableNeighbors,
+            Contact,
 
             /// <summary>
             /// Colliding with one or more other collidables.
@@ -81,6 +76,11 @@ namespace Engine.ComponentSystem.Common.Components
         /// It is intended to be used for debug rendering.
         /// </summary>
         public CollisionState State;
+
+        /// <summary>
+        /// Start of the list of contacts this collidable is involved in.
+        /// </summary>
+        internal int ContactList = -1;
 
         #endregion
 
@@ -122,6 +122,7 @@ namespace Engine.ComponentSystem.Common.Components
 
             CollisionGroups = 0;
             PreviousPosition = FarPosition.Zero;
+            ContactList = -1;
         }
 
         #endregion
@@ -160,7 +161,8 @@ namespace Engine.ComponentSystem.Common.Components
         {
             return base.Packetize(packet)
                 .Write(CollisionGroups)
-                .Write(PreviousPosition);
+                .Write(PreviousPosition)
+                .Write(ContactList);
         }
 
         /// <summary>
@@ -173,6 +175,7 @@ namespace Engine.ComponentSystem.Common.Components
 
             CollisionGroups = packet.ReadUInt32();
             PreviousPosition = packet.ReadFarPosition();
+            ContactList = packet.ReadInt32();
         }
 
         /// <summary>
@@ -186,6 +189,7 @@ namespace Engine.ComponentSystem.Common.Components
 
             hasher.Put(CollisionGroups);
             hasher.Put(PreviousPosition);
+            hasher.Put(ContactList);
         }
 
         #endregion
@@ -200,7 +204,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", PreviousPosition=" + PreviousPosition;
+            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", PreviousPosition=" + PreviousPosition + ", ContactList=" + ContactList;
         }
 
         #endregion

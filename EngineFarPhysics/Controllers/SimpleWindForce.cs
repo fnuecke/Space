@@ -1,4 +1,5 @@
-﻿using FarseerPhysics.Dynamics;
+﻿#if CONTROLLERS
+using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 
 namespace FarseerPhysics.Controllers
@@ -30,7 +31,7 @@ namespace FarseerPhysics.Controllers
 
         public override void ApplyForce(float dt, float strength)
         {
-            foreach (Body body in World.BodyList)
+            foreach (Body body in World.Bodies)
             {
                 //TODO: Consider Force Type
                 float decayMultiplier = GetDecayMultiplier(body);
@@ -73,3 +74,4 @@ namespace FarseerPhysics.Controllers
         }
     }
 }
+#endif

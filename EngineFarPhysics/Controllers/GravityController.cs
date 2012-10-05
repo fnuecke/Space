@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if CONTROLLERS
+using System;
 using System.Collections.Generic;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
@@ -41,7 +42,7 @@ namespace FarseerPhysics.Controllers
         {
             Vector2 f = Vector2.Zero;
 
-            foreach (Body body1 in World.BodyList)
+            foreach (Body body1 in World.Bodies)
             {
                 if (!IsActiveOn(body1))
                     continue;
@@ -116,3 +117,4 @@ namespace FarseerPhysics.Controllers
         }
     }
 }
+#endif

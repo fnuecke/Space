@@ -105,6 +105,14 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
+        /// <summary>
+        /// Gets the list of entites for which the index entry changed.
+        /// </summary>
+        public IEnumerable<int> ChangedEntites
+        {
+            get { return _changed; }
+        }
+
         #endregion
 
         #region Fields
@@ -125,6 +133,11 @@ namespace Engine.ComponentSystem.Common.Systems
         /// entities, allowing faster range queries.
         /// </summary>
         private IIndex<int, FarRectangle, FarPosition>[] _trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
+
+        /// <summary>
+        /// List of entities for which the index entry changed in the last update.
+        /// </summary>
+        private HashSet<int> _changed = new HashSet<int>();
 
         #endregion
 
@@ -187,6 +200,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="frame">The current simulation frame.</param>
         public void Update(long frame)
         {
+            // Reset for next update cycle.
+            _changed.Clear();
+
             // Reset query count until next run.
             _numQueriesSinceLastUpdate = 0;
         }
@@ -238,9 +254,18 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Update all indexes the entity is part of.
+                var changed = false;
                 foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
-                    tree.Update(bounds, Vector2.Zero, changedMessage.Entity);
+                    if (tree.Update(bounds, Vector2.Zero, changedMessage.Entity))
+                    {
+                        changed = true;
+                    }
+                }
+                if (changed)
+                {
+                    // Mark as changed.
+                    _changed.Add(changedMessage.Entity);
                 }
             }
             else if (message is TranslationChanged)
@@ -261,9 +286,18 @@ namespace Engine.ComponentSystem.Common.Systems
                 var velocity = ((Velocity)Manager.GetComponent(changedMessage.Entity, Velocity.TypeId));
                 var delta = velocity != null ? velocity.Value : Vector2.Zero;
 
+                var changed = false;
                 foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
-                    tree.Update(bounds, delta, changedMessage.Entity);
+                    if (tree.Update(bounds, delta, changedMessage.Entity))
+                    {
+                        changed = true;
+                    }
+                }
+                if (changed)
+                {
+                    // Mark as changed.
+                    _changed.Add(changedMessage.Entity);
                 }
             }
         }
@@ -303,6 +337,25 @@ namespace Engine.ComponentSystem.Common.Systems
                 Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
                 tree.Find(rectangle, ref results);
             }
+        }
+
+        /// <summary>
+        /// Gets the bounds for the specified entity in the first of the specified
+        /// groups containing the entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="groups">The groups.</param>
+        /// <returns></returns>
+        public FarRectangle GetBounds(int entity, ulong groups)
+        {
+            foreach (var tree in TreesForGroups(groups))
+            {
+                if (tree.Contains(entity))
+                {
+                    return tree[entity];
+                }
+            }
+            return FarRectangle.Empty;
         }
 
         #endregion
@@ -379,6 +432,9 @@ namespace Engine.ComponentSystem.Common.Systems
                 // Add to each group.
                 tree.Add(bounds, entity);
             }
+
+            // Mark as changed.
+            _changed.Add(entity);
         }
 
         #endregion
@@ -493,6 +549,7 @@ namespace Engine.ComponentSystem.Common.Systems
             var copy = (IndexSystem)base.NewInstance();
 
             copy._trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
+            copy._changed = new HashSet<int>();
 
             return copy;
         }
@@ -542,6 +599,9 @@ namespace Engine.ComponentSystem.Common.Systems
                     copy._trees[i].Add(bounds, entry.Item2);
                 }
             }
+
+            copy._changed.Clear();
+            copy._changed.UnionWith(_changed);
         }
 
         #endregion

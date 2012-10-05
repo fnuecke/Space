@@ -205,9 +205,9 @@ namespace Poly2Tri.Triangulation.Delaunay.Sweep
             Triangles.Clear();
         }
 
-        public override TriangulationConstraint NewConstraint(TriangulationPoint a, TriangulationPoint b)
+        public override void NewConstraint(TriangulationPoint a, TriangulationPoint b)
         {
-            return new DTSweepConstraint(a, b);
+            new DTSweepConstraint(a, b);
         }
 
         #region Nested type: DTSweepBasin

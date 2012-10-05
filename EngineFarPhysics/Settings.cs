@@ -111,13 +111,6 @@ namespace FarseerPhysics
         /// </summary>
         public static Category DefaultFixtureCollidesWith = Category.All;
 
-
-        /// <summary>
-        /// This is used by the Fixture constructor as the default value 
-        /// for Fixture.IgnoreCCDWith member.
-        /// </summary>
-        public static Category DefaultFixtureIgnoreCCDWith = Category.None;
-
         /// <summary>
         /// Conserve memory makes sure that objects are used by reference instead of cloned.
         /// When you give a vertices collection to a PolygonShape, it will by default copy the vertices

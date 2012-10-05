@@ -1,3 +1,4 @@
+#if JOINTS
 using System;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
@@ -16,9 +17,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private float _targetAngle;
 
         public FixedAngleJoint(Body bodyA)
-            : base(bodyA)
+            : base(bodyA, JointType.FixedAngle)
         {
-            JointType = JointType.FixedAngle;
             TargetAngle = 0;
             BiasFactor = .2f;
             Softness = 0f;
@@ -65,7 +65,7 @@ namespace FarseerPhysics.Dynamics.Joints
         {
             _jointError = BodyA.Sweep.A - TargetAngle;
 
-            _bias = -BiasFactor * step.inv_dt * _jointError;
+            _bias = -BiasFactor * step.dtInverse * _jointError;
 
             _massFactor = (1 - Softness) / (BodyA.InvI);
         }
@@ -83,3 +83,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

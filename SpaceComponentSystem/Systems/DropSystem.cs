@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages item drops by reacting to death events.
     /// </summary>
-    public sealed class DropSystem : AbstractComponentSystem<Drops>, IMessagingSystem
+    public sealed class DropSystem : AbstractSystem, IMessagingSystem, IUpdatingSystem
     {
         #region Fields
 
@@ -24,6 +24,12 @@ namespace Space.ComponentSystem.Systems
         /// as read-only after construction.
         /// </summary>
         private Dictionary<string, ItemPool> _itemPools = new Dictionary<string, ItemPool>();
+
+        /// <summary>
+        /// List of drops to sample when we update. This is accumulated from
+        /// death events, to allow thread safe sampling in one go.
+        /// </summary>
+        private List<Tuple<string, FarPosition>> _dropsToSample = new List<Tuple<string, FarPosition>>();
 
         #endregion
 
@@ -46,11 +52,40 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Drops one or more Items from the given Item Pool  on the given Position
+        /// Removes entities that died this frame from the manager.
+        /// </summary>
+        /// <param name="frame">The current simulation frame.</param>
+        public void Update(long frame)
+        {
+            // Remove dead entities (getting out of bounds).
+            foreach (var drop in _dropsToSample)
+            {
+                SampleDrop(drop.Item1, drop.Item2);
+            }
+            _dropsToSample.Clear();
+        }
+        
+        /// <summary>
+        /// Queues a drops for one or more items from the specified item pool at the
+        /// specified position. The actual drop will be performed when the drop system
+        /// updates.
         /// </summary>
         /// <param name="poolName">The name of the item pool to sample from.</param>
         /// <param name="position">The position at which to drop the items.</param>
         public void Drop(string poolName, ref FarPosition position)
+        {
+            lock (_dropsToSample)
+            {
+                _dropsToSample.Add(Tuple.Create(poolName, position));
+            }
+        }
+
+        /// <summary>
+        /// Performs the actual drop sampling.
+        /// </summary>
+        /// <param name="poolName">The name of the item pool to sample from.</param>
+        /// <param name="position">The position at which to drop the items.</param>
+        private void SampleDrop(string poolName, FarPosition position)
         {
             // Get the actual item pool to pull items from.
             var pool = _itemPools[poolName];

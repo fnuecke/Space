@@ -24,52 +24,34 @@
 */
 
 using FarseerPhysics.Collision;
-using FarseerPhysics.Controllers;
 using FarseerPhysics.Dynamics.Contacts;
+#if CONTROLLERS
+using FarseerPhysics.Controllers;
+#endif
+#if JOINTS
 using FarseerPhysics.Dynamics.Joints;
+#endif
+
 using Microsoft.Xna.Framework;
 using WorldVector2 = Engine.FarMath.FarPosition;
 
 namespace FarseerPhysics.Dynamics
 {
     /// <summary>
-    /// Called for each fixture found in the query. You control how the ray cast
-    /// proceeds by returning a float:
+    /// Called for each fixture found in the query. You control how the ray cast proceeds by returning a float:
     /// <returns>-1 to filter, 0 to terminate, fraction to clip the ray for closest hit, 1 to continue</returns>
     /// </summary>
     public delegate float RayCastCallback(Fixture fixture, WorldVector2 point, Vector2 normal, float fraction);
 
     /// <summary>
-    /// This delegate is called when a contact is deleted
-    /// </summary>
-    public delegate void EndContactDelegate(Contact contact);
-
-    /// <summary>
-    /// This delegate is called when a contact is created
+    /// This delegate is called when a contact is created.
     /// </summary>
     public delegate bool BeginContactDelegate(Contact contact);
 
-    public delegate void PreSolveDelegate(Contact contact, ref Manifold oldManifold);
-
-    public delegate void PostSolveDelegate(Contact contact, ContactConstraint impulse);
-
-    public delegate void FixtureDelegate(Fixture fixture);
-
-    public delegate void JointDelegate(Joint joint);
-
-    public delegate void BodyDelegate(Body body);
-
-    public delegate void ControllerDelegate(Controller controller);
+    /// <summary>
+    /// This delegate is called when a contact is deleted.
+    /// </summary>
+    public delegate void EndContactDelegate(Contact contact);
 
     public delegate bool CollisionFilterDelegate(Fixture fixtureA, Fixture fixtureB);
-
-    public delegate void BroadphaseDelegate(ref FixtureProxy proxyA, ref FixtureProxy proxyB);
-
-    public delegate bool BeforeCollisionEventHandler(Fixture fixtureA, Fixture fixtureB);
-
-    public delegate bool OnCollisionEventHandler(Fixture fixtureA, Fixture fixtureB, Contact contact);
-
-    public delegate void AfterCollisionEventHandler(Fixture fixtureA, Fixture fixtureB, Contact contact);
-
-    public delegate void OnSeparationEventHandler(Fixture fixtureA, Fixture fixtureB);
 }

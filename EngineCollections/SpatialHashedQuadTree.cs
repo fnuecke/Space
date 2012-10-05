@@ -279,16 +279,19 @@ namespace Engine.Collections
             // Add to new cells.
             foreach (var cell in ComputeCells(newBounds))
             {
-                Collections.DynamicQuadTree<T> tree;
-                _entries.TryGetValue(cell.Item1, out tree);
-                if (tree != null)
+                // Create the quad tree for that cell if it doesn't yet exist.
+                if (!_entries.ContainsKey(cell.Item1))
                 {
-                    // Convert the item bounds to the tree's local coordinate space.
-                    var relativeBounds = newBounds;
-                    relativeBounds.Offset(cell.Item2);
-
-                    tree.Add((Math.RectangleF)relativeBounds, item);
+                    // No need to extend again, we already did.
+                    _entries.Add(cell.Item1, new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
                 }
+
+                // Convert the item bounds to the tree's local coordinate space.
+                var relativeBounds = newBounds;
+                relativeBounds.Offset(cell.Item2);
+
+                // And add the item to the tree.
+                _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
             }
 
             //*/
@@ -297,11 +300,6 @@ namespace Engine.Collections
             _entryBounds[item] = newBounds;
 
             return true;
-        }
-
-        private static int CellComparator(Tuple<ulong, TPoint> a, Tuple<ulong, TPoint> b)
-        {
-            return (int)(a.Item1 - b.Item1);
         }
 
         /// <summary>
@@ -626,11 +624,16 @@ namespace Engine.Collections
             // We want to check if we really need to check this value -- this is only
             // necessary if it's on the border between two or more cells. This way we
             // can keep our hashset as small as possible, making it much faster.
-#if FARMATH
+#if FALSE && FARMATH // Only works when automatically normalizing.
             var left = _entryBounds[value].X.Segment;
             var right = _entryBounds[value].Right.Segment;
             var top = _entryBounds[value].Y.Segment;
             var bottom = _entryBounds[value].Bottom.Segment;
+#elif FARMATH // TODO make sure this works
+            var left = _entryBounds[value].X.Segment + (int)(_entryBounds[value].X.Offset / FarValue.SegmentSize);
+            var right = _entryBounds[value].Right.Segment + (int)(_entryBounds[value].Right.Offset / FarValue.SegmentSize);
+            var top = _entryBounds[value].Y.Segment + (int)(_entryBounds[value].Y.Offset / FarValue.SegmentSize);
+            var bottom = _entryBounds[value].Bottom.Segment + (int)(_entryBounds[value].Bottom.Offset / FarValue.SegmentSize);
 #else
             var left = (int)(_entryBounds[value].X / CellSize);
             var right = (int)(_entryBounds[value].Right / CellSize);
@@ -659,11 +662,16 @@ namespace Engine.Collections
         /// <returns>The cells the rectangle intersects with.</returns>
         private static IEnumerable<Tuple<ulong, TPoint>> ComputeCells(TRectangle rectangle)
         {
-#if FARMATH
+#if FALSE && FARMATH // Only works when automatically normalizing.
             var left = rectangle.X.Segment;
             var right = rectangle.Right.Segment;
             var top = rectangle.Y.Segment;
             var bottom = rectangle.Bottom.Segment;
+#elif FARMATH // TODO make sure this works
+            var left = rectangle.X.Segment + (int)(rectangle.X.Offset / FarValue.SegmentSizeHalf);
+            var right = rectangle.Right.Segment + (int)(rectangle.Right.Offset / FarValue.SegmentSizeHalf);
+            var top = rectangle.Y.Segment + (int)(rectangle.Y.Offset / FarValue.SegmentSizeHalf);
+            var bottom = rectangle.Bottom.Segment + (int)(rectangle.Bottom.Offset / FarValue.SegmentSizeHalf);
 #else
             var left = (int)(rectangle.X / CellSize);
             var right = (int)(rectangle.Right / CellSize);

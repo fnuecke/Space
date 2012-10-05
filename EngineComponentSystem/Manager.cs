@@ -424,6 +424,19 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
+        /// Removes the specified component from the system.
+        /// </summary>
+        /// <param name="componentId">The id of the component to remove.</param>
+        public void RemoveComponent(int componentId)
+        {
+            // Validate the component.
+            Debug.Assert(HasComponent(componentId), "No such component in the system.");
+
+            // Re-use instance based removal.
+            RemoveComponent(_components[componentId]);
+        }
+
+        /// <summary>
         /// Test whether the component with the specified id exists.
         /// </summary>
         /// <param name="componentId">The id of the component to check for.</param>

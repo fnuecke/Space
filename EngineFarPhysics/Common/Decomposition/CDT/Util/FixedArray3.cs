@@ -88,12 +88,6 @@ namespace Poly2Tri.Triangulation.Util
 
         #endregion
 
-        public bool Contains(T value)
-        {
-            for (int i = 0; i < 3; ++i) if (this[i] == value) return true;
-            return false;
-        }
-
         public int IndexOf(T value)
         {
             for (int i = 0; i < 3; ++i) if (this[i] == value) return i;
@@ -103,11 +97,6 @@ namespace Poly2Tri.Triangulation.Util
         public void Clear()
         {
             _0 = _1 = _2 = null;
-        }
-
-        public void Clear(T value)
-        {
-            for (int i = 0; i < 3; ++i) if (this[i] == value) this[i] = null;
         }
 
         private IEnumerable<T> Enumerate()

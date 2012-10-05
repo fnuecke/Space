@@ -170,7 +170,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// Clone the concrete shape
         /// </summary>
         /// <returns>A clone of the shape</returns>
-        public abstract Shape Clone();
+        internal abstract Shape Clone();
 
         /// <summary>
         /// Test a point for containment in this shape. This only works for convex shapes.
@@ -178,7 +178,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public abstract bool TestPoint(ref Transform transform, ref WorldVector2 point);
+        internal abstract bool TestPoint(ref Transform transform, ref WorldVector2 point);
 
         /// <summary>
         /// Cast a ray against a child shape.
@@ -188,7 +188,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The transform to be applied to the shape.</param>
         /// <param name="childIndex">The child shape index.</param>
         /// <returns>True if the ray-cast hits the shape</returns>
-        public abstract bool RayCast(out RayCastOutput output, ref RayCastInput input, ref Transform transform,
+        internal abstract bool RayCast(out RayCastOutput output, ref RayCastInput input, ref Transform transform,
                                      int childIndex);
 
         /// <summary>
@@ -203,21 +203,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// Compute the mass properties of this shape using its dimensions and density.
         /// The inertia tensor is computed about the local origin, not the centroid.
         /// </summary>
-        public abstract void ComputeProperties();
-
-        public bool CompareTo(Shape shape)
-        {
-            if (shape is PolygonShape && this is PolygonShape)
-                return ((PolygonShape)this).CompareTo((PolygonShape)shape);
-
-            if (shape is CircleShape && this is CircleShape)
-                return ((CircleShape)this).CompareTo((CircleShape)shape);
-
-            if (shape is EdgeShape && this is EdgeShape)
-                return ((EdgeShape)this).CompareTo((EdgeShape)shape);
-
-            return false;
-        }
+        protected abstract void ComputeProperties();
 
         public abstract float ComputeSubmergedArea(Vector2 normal, WorldSingle offset, Transform xf, out WorldVector2 sc);
     }

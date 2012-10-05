@@ -903,6 +903,15 @@ namespace Engine.Simulation
             }
 
             /// <summary>
+            /// Removes the specified component from the system.
+            /// </summary>
+            /// <param name="componentId">The id of the component to remove.</param>
+            void IManager.RemoveComponent(int componentId)
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
             /// Test whether the component with the specified id exists.
             /// </summary>
             /// <param name="componentId">The id of the component to check for.</param>

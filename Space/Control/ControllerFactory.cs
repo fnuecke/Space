@@ -98,6 +98,15 @@ namespace Space.Control
                     // to function as intended. Mess this up, and you can cause
                     // terrible, terrible damage!
 
+                    // ---- Informational and passive things ----- //
+
+                    // The index system will update its indexes when the translation
+                    // of an object changes, and remembers which movements triggered
+                    // actual tree updates. It also marks entities as changed when
+                    // they're added or change index groups. We update this first
+                    // to reset the list of changed entities.
+                    new IndexSystem(16, 64),
+
                     // Purely reactive/informational systems (only do stuff when
                     // receiving messages, if at all).
                     new AvatarSystem(),
@@ -108,6 +117,17 @@ namespace Space.Control
                     new PlayerMassSystem(),
                     new SpaceUsablesSystem(),
                     
+                    // These are also purely reactive, but they handle chained removals
+                    // so they're here for context (i.e. they remove items if the owner
+                    // is removed, or the item from the owner if the item is removed).
+                    new InventorySystem(),
+                    new ItemSlotSystem(),
+                    // The following systems will react to equipment changes, to adjust
+                    // how a ship is rendered.
+                    new ItemEffectSystem(),
+
+                    // ----- Stuff that updates positions of things ----- //
+
                     // Friction has to be updated before acceleration is, to allow
                     // maximum speed to be reached at the end of one cycle.
                     new FrictionSystem(),
@@ -132,55 +152,12 @@ namespace Space.Control
                     // Update position after everything that might want to update it
                     // has run. This will apply those changes.
                     new TranslationSystem(),
-
-                    // The index system will update its indexes when the translation
-                    // of an object changes, so we keep it here for context.
-                    new IndexSystem(16, 64),
-
-                    // Check for collisions after positions have been updated.
-                    new CollisionSystem(),
-                    // Collision damage is mainly reactive to collisions, but let's keep
-                    // it here for context. Note that it also has it's own update, in
-                    // which it updates damager cooldowns.
-                    new CollisionDamageSystem(),
                     
-                    // Apply any status effects at this point. Shield system first, to
-                    // consume possibly regenerated energy -- so as not to block with
-                    // the tiny regenerated value (which would apply the full shield
-                    // armor rating...)
-                    new ShieldSystem(),
-                    // Apply damage after shield system update (after energy consumption).
-                    new DamageSystem(),
+                    // ----- Stuff that creates new things ----- //
 
-                    // Remove expired status effects.
-                    new StatusEffectSystem(),
-                    // This system is purely reactive, and will trigger on entity death
-                    // from whatever cause (debuffs, normally).
-                    new DropSystem(game.Content),
-                    // Handle deaths granting experience.
-                    new ExperienceSystem(),
-                    
-                    // Update this system after updating the cell system, to
-                    // make sure we give cells a chance to 'activate' before
-                    // checking if there are entities inside them.
-                    new DeathSystem(),
-                    // Get rid of expired components. This is similar to our death system
-                    // as it's one of the few systems that actually remove stuff, so we
-                    // keep it here, for context.
-                    new ExpirationSystem(),
                     // Handle player respawns before the cell system update, as this
                     // might move the player somewhere out of the current live cells.
                     new RespawnSystem(),
-                    
-                    // These are also purely reactive, but they handle chained removals
-                    // so they're here for context (i.e. they remove items if the owner
-                    // is removed, or the item from the owner if the item is removed).
-                    new InventorySystem(),
-                    new ItemSlotSystem(),
-                    // The following systems will react to equipment changes, to adjust
-                    // how a ship is rendered.
-                    new ItemEffectSystem(),
-
                     // Check which cells are active after updating positions. This system
                     // may also remove entities if they are now out of bounds. But it'll
                     // also trigger new stuff via the spawn systems below.
@@ -199,13 +176,56 @@ namespace Space.Control
                     // correct position.
                     new WeaponControlSystem(),
 
+                    // This system is purely reactive, and will trigger on entity death
+                    // from whatever cause (debuffs, normally). Having it here will lead
+                    // to drops mostly appear in the next update cycle, but no-one will
+                    // know ;)
+                    new DropSystem(game.Content),
+
+                    // ----- Stuff that removes things ----- //
+
+                    // Check for collisions after positions have been updated.
+                    new CollisionSystem(),
+                    // Collision damage is mainly reactive to collisions, but let's keep
+                    // it here for context. Note that it also has it's own update, in
+                    // which it updates damager cooldowns.
+                    new CollisionDamageSystem(),
+                    
+                    // Apply any status effects at this point. Shield system first, to
+                    // consume possibly regenerated energy -- so as not to block with
+                    // the tiny regenerated value (which would apply the full shield
+                    // armor rating...)
+                    new ShieldSystem(),
+                    // Apply damage after shield system update (after energy consumption).
+                    new DamageSystem(),
+
+                    // Remove expired status effects.
+                    new StatusEffectSystem(),
+                    // Handle deaths granting experience.
+                    new ExperienceSystem(),
+                    
+                    // ----- Stuff that removes things ----- //
+
+                    // Update this system after updating the cell system, to
+                    // make sure we give cells a chance to 'activate' before
+                    // checking if there are entities inside them.
+                    new DeathSystem(),
+                    // Get rid of expired components. This is similar to our death system
+                    // as it's one of the few systems that actually remove stuff, so we
+                    // keep it here, for context.
+                    new ExpirationSystem(),
+                    
                     // Energy should be update after it was used, to give it a chance
                     // to regenerate (e.g. if we're using less than we produce this
                     // avoids always displaying slightly less than max). Same for health.
                     new RegeneratingValueSystem(),
                     
+                    // ----- Special stuff ----- //
+
                     // AI should react after everything else had its turn.
                     new AISystem()
+
+                    // ----- For reference: rendering ----- //
                 });
         }
 

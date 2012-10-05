@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -56,14 +57,13 @@ namespace FarseerPhysics.Dynamics.Joints
         private Mat22 _linearMass;
 
         internal FrictionJoint()
+            : base(JointType.Friction)
         {
-            JointType = JointType.Friction;
         }
 
         public FrictionJoint(Body bodyA, Body bodyB, Vector2 localAnchorA, Vector2 localAnchorB)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Friction)
         {
-            JointType = JointType.Friction;
             LocalAnchorA = localAnchorA;
             LocalAnchorB = localAnchorB;
         }
@@ -248,3 +248,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -63,8 +64,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private Vector2 _u;
 
         internal SliderJoint()
+            : base(JointType.Slider)
         {
-            JointType = JointType.Slider;
         }
 
         /// <summary>
@@ -79,10 +80,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="maxlength">The maximum length between anchorpoints.</param>
         public SliderJoint(Body bodyA, Body bodyB, Vector2 localAnchorA, Vector2 localAnchorB, float minLength,
                            float maxlength)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Slider)
         {
-            JointType = JointType.Slider;
-
             LocalAnchorA = localAnchorA;
             LocalAnchorB = localAnchorB;
             MaxLength = maxlength;
@@ -297,3 +296,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

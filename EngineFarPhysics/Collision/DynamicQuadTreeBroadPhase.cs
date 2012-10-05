@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.FarMath;
+using Engine.Util;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 
@@ -12,7 +13,7 @@ namespace FarseerPhysics.Collision
     /// of objects into single (rather large) cells. Each cell has, in turn, its
     /// own quad tree.
     /// </summary>
-    public sealed class DynamicQuadTreeBroadPhase : IBroadPhase
+    internal sealed class DynamicQuadTreeBroadPhase : IInternalBroadPhase
     {
         #region Properties
 
@@ -51,7 +52,7 @@ namespace FarseerPhysics.Collision
         /// Re-used set of proxy pairs. The pair is stored as a packed ulong,
         /// with the first proxy (with the lower id) at the high word.
         /// </summary>
-        private readonly List<Pair> _pairs = new List<Pair>();
+        private readonly List<ulong> _pairs = new List<ulong>();
 
         #endregion
 
@@ -71,9 +72,9 @@ namespace FarseerPhysics.Collision
         {
             ISet<int> collisions = new HashSet<int>();
             // Treat all of the marked proxies.
-            for (int i = 0; i < _touched.Count; i++)
+            for (var i = 0; i < _touched.Count; i++)
             {
-                int currentId = _touched[i];
+                var currentId = _touched[i];
                 _tree.Find(_tree[_touched[i]], ref collisions);
                 foreach (var otherId in collisions)
                 {
@@ -83,11 +84,7 @@ namespace FarseerPhysics.Collision
                         continue;
                     }
 
-                    _pairs.Add(new Pair
-                    {
-                        ProxyIdA = Math.Min(currentId, otherId),
-                        ProxyIdB = Math.Max(currentId, otherId)
-                    });
+                    _pairs.Add(BitwiseMagic.Pack(Math.Min(currentId, otherId), Math.Max(currentId, otherId)));
                 }
                 collisions.Clear();
 
@@ -106,21 +103,31 @@ namespace FarseerPhysics.Collision
 
             // Handle each pair. Because we're using a set there will be
             // no duplicates.
-            for (int i = 0; i < _pairs.Count; ++i)
+            for (var i = 0; i < _pairs.Count; ++i)
             {
-                Pair pair = _pairs[i];
+                int idA, idB;
+                BitwiseMagic.Unpack(_pairs[i], out idA, out idB);
 
                 // Get the actual proxies and execute the callback.
-                FixtureProxy f1 = _proxies[pair.ProxyIdA];
-                FixtureProxy f2 = _proxies[pair.ProxyIdB];
+                FixtureProxy f1 = _proxies[idA];
+                FixtureProxy f2 = _proxies[idB];
                 callback(ref f1, ref f2);
 
                 // Skip duplicate entries.
-                while (i + 1 < _pairs.Count &&
-                    _pairs[i].ProxyIdA == _pairs[i + 1].ProxyIdA &&
-                    _pairs[i].ProxyIdB == _pairs[i + 1].ProxyIdB)
+                while (i + 1 < _pairs.Count)
                 {
-                    ++i;
+                    int nextIdA, nextIdB;
+                    BitwiseMagic.Unpack(_pairs[i + 1], out nextIdA, out nextIdB);
+                    if (idA == nextIdA && idB == nextIdB)
+                    {
+                        // Still more duplicates.
+                        ++i;
+                    }
+                    else
+                    {
+                        // Next one is different, stop.
+                        break;
+                    }
                 }
             }
 

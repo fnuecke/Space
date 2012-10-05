@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if CONTROLLERS
+using System;
 using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 using WorldVector2 = Engine.FarMath.FarPosition;
@@ -322,3 +323,4 @@ namespace FarseerPhysics.Controllers
         public abstract void ApplyForce(float dt, float strength);
     }
 }
+#endif

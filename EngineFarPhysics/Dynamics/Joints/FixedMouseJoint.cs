@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -57,9 +58,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="body">The body.</param>
         /// <param name="worldAnchor">The target.</param>
         public FixedMouseJoint(Body body, WorldVector2 worldAnchor)
-            : base(body)
+            : base(body, JointType.FixedMouse)
         {
-            JointType = JointType.FixedMouse;
             Frequency = 5.0f;
             DampingRatio = 0.7f;
 
@@ -208,3 +208,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

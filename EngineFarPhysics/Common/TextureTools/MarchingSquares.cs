@@ -638,79 +638,7 @@ namespace FarseerPhysics.Common
                 return false;
             }
 
-            /// <summary>
-            /// computes size of list (O(n))
-            /// </summary>
-            public int Size()
-            {
-                CxFastListNode<T> i = Begin();
-                int count = 0;
-
-                do
-                {
-                    count++;
-                } while (i.Next() != null);
-
-                return count;
-            }
-
-            /// <summary>
-            /// empty the list (O(1) if CxMixList, O(n) otherwise)
-            /// </summary>
-            public void Clear()
-            {
-                CxFastListNode<T> head = _head;
-                while (head != null)
-                {
-                    CxFastListNode<T> node2 = head;
-                    head = head._next;
-                    node2._next = null;
-                }
-                _head = null;
-                _count = 0;
-            }
-
-            /// <summary>
-            /// returns true if 'value' is an element of the list (O(n))
-            /// </summary>
-            public bool Has(T value)
-            {
-                return (Find(value) != null);
-            }
-
             // Non CxFastList Methods 
-            public CxFastListNode<T> Find(T value)
-            {
-                // start at head
-                CxFastListNode<T> head = _head;
-                EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-                if (head != null)
-                {
-                    if (value != null)
-                    {
-                        do
-                        {
-                            if (comparer.Equals(head._elt, value))
-                            {
-                                return head;
-                            }
-                            head = head._next;
-                        } while (head != _head);
-                    }
-                    else
-                    {
-                        do
-                        {
-                            if (head._elt == null)
-                            {
-                                return head;
-                            }
-                            head = head._next;
-                        } while (head != _head);
-                    }
-                }
-                return null;
-            }
 
             public List<T> GetListOfElements()
             {

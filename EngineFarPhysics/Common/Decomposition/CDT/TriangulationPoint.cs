@@ -48,18 +48,6 @@ namespace Poly2Tri.Triangulation
 
         public List<DTSweepConstraint> Edges { get; private set; }
 
-        public float Xf
-        {
-            get { return (float) X; }
-            set { X = value; }
-        }
-
-        public float Yf
-        {
-            get { return (float) Y; }
-            set { Y = value; }
-        }
-
         public bool HasEdges
         {
             get { return Edges != null; }

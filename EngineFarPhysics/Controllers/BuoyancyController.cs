@@ -1,3 +1,4 @@
+#if CONTROLLERS
 using System.Collections.Generic;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
@@ -87,22 +88,22 @@ namespace FarseerPhysics.Controllers
             {
                 Body body = kv.Value;
 
-                WorldVector2 areac = WorldVector2.Zero;
-                WorldVector2 massc = WorldVector2.Zero;
+                var areac = WorldVector2.Zero;
+                var massc = WorldVector2.Zero;
                 float area = 0;
                 float mass = 0;
 
-                for (int j = 0; j < body.FixtureList.Count; j++)
+                for (var j = 0; j < body.FixtureList.Count; j++)
                 {
-                    Fixture fixture = body.FixtureList[j];
+                    var fixture = body.FixtureList[j];
 
                     if (fixture.Shape.ShapeType != ShapeType.Polygon && fixture.Shape.ShapeType != ShapeType.Circle)
                         continue;
 
-                    Shape shape = fixture.Shape;
+                    var shape = fixture.Shape;
 
                     WorldVector2 sc;
-                    float sarea = shape.ComputeSubmergedArea(_normal, _offset, body.Xf, out sc);
+                    var sarea = shape.ComputeSubmergedArea(_normal, _offset, body.Xf, out sc);
                     area += sarea;
                     areac.X += sarea * sc.X;
                     areac.Y += sarea * sc.Y;
@@ -135,3 +136,4 @@ namespace FarseerPhysics.Controllers
         }
     }
 }
+#endif

@@ -79,7 +79,7 @@ namespace FarseerPhysics.Collision.Shapes
             get { return 1; }
         }
 
-        public override Shape Clone()
+        internal override Shape Clone()
         {
             PolygonShape clone = new PolygonShape();
             clone.ShapeType = ShapeType;
@@ -167,7 +167,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// Compute the mass properties of this shape using its dimensions and density.
         /// The inertia tensor is computed about the local origin, not the centroid.
         /// </summary>
-        public override void ComputeProperties()
+        protected override void ComputeProperties()
         {
             // Polygon mass, centroid, and inertia.
             // Let rho be the polygon density in mass per unit area.
@@ -293,7 +293,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
+        internal override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
             Vector2 pLocal = MathUtils.MultiplyT(ref transform.R, (Vector2)(point - transform.Position));
 
@@ -317,7 +317,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The transform to be applied to the shape.</param>
         /// <param name="childIndex">The child shape index.</param>
         /// <returns>True if the ray-cast hits the shape</returns>
-        public override bool RayCast(out RayCastOutput output, ref RayCastInput input, ref Transform transform,
+        internal override bool RayCast(out RayCastOutput output, ref RayCastInput input, ref Transform transform,
                                      int childIndex)
         {
             output = new RayCastOutput();

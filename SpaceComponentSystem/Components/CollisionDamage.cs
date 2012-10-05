@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
@@ -52,11 +51,6 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public float Damage;
 
-        /// <summary>
-        /// Cooldown before doing damage to an entity (maps entity id to cd).
-        /// </summary>
-        internal Dictionary<int, int> Cooldowns = new Dictionary<int, int>();
-
         #endregion
 
         #region Initialization
@@ -72,10 +66,6 @@ namespace Space.ComponentSystem.Components
             var otherCollisionDamage = (CollisionDamage)other;
             Cooldown = otherCollisionDamage.Cooldown;
             Damage = otherCollisionDamage.Damage;
-            foreach (var item in otherCollisionDamage.Cooldowns)
-            {
-                Cooldowns.Add(item.Key, item.Value);
-            }
 
             return this;
         }
@@ -112,7 +102,6 @@ namespace Space.ComponentSystem.Components
 
             Cooldown = 0;
             Damage = 0;
-            Cooldowns.Clear();
         }
 
         #endregion
@@ -132,12 +121,6 @@ namespace Space.ComponentSystem.Components
 
             packet.Write(Cooldown);
             packet.Write(Damage);
-            packet.Write(Cooldowns.Count);
-            foreach (var item in Cooldowns)
-            {
-                packet.Write(item.Key);
-                packet.Write(item.Value);
-            }
 
             return packet;
         }
@@ -152,15 +135,6 @@ namespace Space.ComponentSystem.Components
 
             Cooldown = packet.ReadInt32();
             Damage = packet.ReadSingle();
-
-            Cooldowns.Clear();
-            var numCooldowns = packet.ReadInt32();
-            for (var i = 0; i < numCooldowns; i++)
-            {
-                var key = packet.ReadInt32();
-                var value = packet.ReadInt32();
-                Cooldowns.Add(key, value);
-            }
         }
 
         /// <summary>
@@ -174,11 +148,6 @@ namespace Space.ComponentSystem.Components
 
             hasher.Put(Cooldown);
             hasher.Put(Damage);
-            foreach (var cooldown in Cooldowns)
-            {
-                hasher.Put(cooldown.Key);
-                hasher.Put(cooldown.Value);
-            }
         }
 
         #endregion
@@ -193,7 +162,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Cooldown=" + Cooldown + ", Damage=" + Damage.ToString(CultureInfo.InvariantCulture) + ", CooldownCount=" + Cooldowns.Count;
+            return base.ToString() + ", Cooldown=" + Cooldown + ", Damage=" + Damage.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

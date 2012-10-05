@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using FarseerPhysics.Collision;
 using Microsoft.Xna.Framework;
 
 namespace FarseerPhysics.Common
@@ -195,58 +193,6 @@ namespace FarseerPhysics.Common
         }
 
         /// <summary>
-        /// This method detects if two line segments (or lines) intersect,
-        /// and, if so, the point of intersection. Use the <paramref name="firstIsSegment"/> and
-        /// <paramref name="secondIsSegment"/> parameters to set whether the intersection point
-        /// must be on the first and second line segments. Setting these
-        /// both to true means you are doing a line-segment to line-segment
-        /// intersection. Setting one of them to true means you are doing a
-        /// line to line-segment intersection test, and so on.
-        /// Note: If two line segments are coincident, then 
-        /// no intersection is detected (there are actually
-        /// infinite intersection points).
-        /// Author: Jeremy Bell
-        /// </summary>
-        /// <param name="point1">The first point of the first line segment.</param>
-        /// <param name="point2">The second point of the first line segment.</param>
-        /// <param name="point3">The first point of the second line segment.</param>
-        /// <param name="point4">The second point of the second line segment.</param>
-        /// <param name="intersectionPoint">This is set to the intersection
-        /// point if an intersection is detected.</param>
-        /// <param name="firstIsSegment">Set this to true to require that the 
-        /// intersection point be on the first line segment.</param>
-        /// <param name="secondIsSegment">Set this to true to require that the
-        /// intersection point be on the second line segment.</param>
-        /// <returns>True if an intersection is detected, false otherwise.</returns>
-        public static bool LineIntersect(Vector2 point1, Vector2 point2, Vector2 point3, Vector2 point4,
-                                         bool firstIsSegment,
-                                         bool secondIsSegment, out Vector2 intersectionPoint)
-        {
-            return LineIntersect(ref point1, ref point2, ref point3, ref point4, firstIsSegment, secondIsSegment,
-                                 out intersectionPoint);
-        }
-
-        /// <summary>
-        /// This method detects if two line segments intersect,
-        /// and, if so, the point of intersection. 
-        /// Note: If two line segments are coincident, then 
-        /// no intersection is detected (there are actually
-        /// infinite intersection points).
-        /// </summary>
-        /// <param name="point1">The first point of the first line segment.</param>
-        /// <param name="point2">The second point of the first line segment.</param>
-        /// <param name="point3">The first point of the second line segment.</param>
-        /// <param name="point4">The second point of the second line segment.</param>
-        /// <param name="intersectionPoint">This is set to the intersection
-        /// point if an intersection is detected.</param>
-        /// <returns>True if an intersection is detected, false otherwise.</returns>
-        public static bool LineIntersect(ref Vector2 point1, ref Vector2 point2, ref Vector2 point3, ref Vector2 point4,
-                                         out Vector2 intersectionPoint)
-        {
-            return LineIntersect(ref point1, ref point2, ref point3, ref point4, true, true, out intersectionPoint);
-        }
-
-        /// <summary>
         /// This method detects if two line segments intersect,
         /// and, if so, the point of intersection. 
         /// Note: If two line segments are coincident, then 
@@ -264,45 +210,6 @@ namespace FarseerPhysics.Common
                                          out Vector2 intersectionPoint)
         {
             return LineIntersect(ref point1, ref point2, ref point3, ref point4, true, true, out intersectionPoint);
-        }
-
-        /// <summary>
-        /// Get all intersections between a line segment and a list of vertices
-        /// representing a polygon. The vertices reuse adjacent points, so for example
-        /// edges one and two are between the first and second vertices and between the
-        /// second and third vertices. The last edge is between vertex vertices.Count - 1
-        /// and verts0. (ie, vertices from a Geometry or AABB)
-        /// </summary>
-        /// <param name="point1">The first point of the line segment to test</param>
-        /// <param name="point2">The second point of the line segment to test.</param>
-        /// <param name="vertices">The vertices, as described above</param>
-        /// <param name="intersectionPoints">An list of intersection points. Any intersection points
-        /// found will be added to this list.</param>
-        public static void LineSegmentVerticesIntersect(ref Vector2 point1, ref Vector2 point2, Vertices vertices,
-                                                        ref List<Vector2> intersectionPoints)
-        {
-            for (int i = 0; i < vertices.Count; i++)
-            {
-                Vector2 point;
-                if (LineIntersect(vertices[i], vertices[vertices.NextIndex(i)],
-                                  point1, point2, true, true, out point))
-                {
-                    intersectionPoints.Add(point);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get all intersections between a line segment and an AABB. 
-        /// </summary>
-        /// <param name="point1">The first point of the line segment to test</param>
-        /// <param name="point2">The second point of the line segment to test.</param>
-        /// <param name="aabb">The AABB that is used for testing intersection.</param>
-        /// <param name="intersectionPoints">An list of intersection points. Any intersection points found will be added to this list.</param>
-        public static void LineSegmentAABBIntersect(ref Vector2 point1, ref Vector2 point2, AABB aabb,
-                                                    ref List<Vector2> intersectionPoints)
-        {
-            LineSegmentVerticesIntersect(ref point1, ref point2, aabb.Vertices, ref intersectionPoints);
         }
     }
 }

@@ -8,17 +8,37 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class DamagingStatusEffect : StatusEffect
     {
+        #region Constants
+
+        /// <summary>
+        /// Value that can be passed as the duration in the initialization method
+        /// to signal that the damage should be applied indefinitely.
+        /// </summary>
+        public const int InfiniteDamageDuration = -1;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
-        /// The damage to apply, per tick / update.
+        /// The damage to apply per tick (see <c>Interval</c>).
         /// </summary>
         public float Value;
+
+        /// <summary>
+        /// The damage tick interval, in game frames.
+        /// </summary>
+        public int Interval = 1;
 
         /// <summary>
         /// The ID of the entity that created this effect.
         /// </summary>
         public int Owner;
+
+        /// <summary>
+        /// The number of ticks to delay until the next damage tick.
+        /// </summary>
+        internal int Delay;
 
         #endregion
 
@@ -35,23 +55,38 @@ namespace Space.ComponentSystem.Components
 
             var otherDamage = (DamagingStatusEffect)other;
             Value = otherDamage.Value;
+            Interval = otherDamage.Interval;
             Owner = otherDamage.Owner;
+            Delay = otherDamage.Delay;
 
             return this;
+        }
+
+        /// <summary>
+        /// Initializes the specified damage once.
+        /// </summary>
+        /// <param name="tickDamage">The damage to apply per tick (not game frame, see next param).</param>
+        /// <param name="owner">The id of the entity that caused the creation of the effect.</param>
+        /// <returns></returns>
+        public DamagingStatusEffect Initialize(float tickDamage, int owner = 0)
+        {
+            return Initialize(0, tickDamage, 1, owner);
         }
 
         /// <summary>
         /// Initializes the specified tick damage.
         /// </summary>
         /// <param name="duration">The duration of the effect, in ticks.</param>
-        /// <param name="tickDamage">The damage to apply per tick / update.</param>
+        /// <param name="tickDamage">The damage to apply per tick (not game frame, see next param).</param>
+        /// <param name="tickInterval">The tick interval, i.e. every how many game frames to apply the damage.</param>
         /// <param name="owner">The id of the entity that caused the creation of the effect.</param>
         /// <returns></returns>
-        public DamagingStatusEffect Initialize(int duration, float tickDamage, int owner = 0)
+        public DamagingStatusEffect Initialize(int duration, float tickDamage, int tickInterval = 1, int owner = 0)
         {
-            Initialize(duration);
+            base.Initialize(duration);
 
             Value = tickDamage;
+            Interval = System.Math.Max(1, tickInterval);
             Owner = owner;
 
             return this;
@@ -66,7 +101,9 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Value = 0f;
+            Interval = 1;
             Owner = 0;
+            Delay = 0;
         }
 
         #endregion
@@ -84,7 +121,9 @@ namespace Space.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write(Value)
-                .Write(Owner);
+                .Write(Interval)
+                .Write(Owner)
+                .Write(Delay);
         }
 
         /// <summary>
@@ -96,7 +135,9 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Value = packet.ReadSingle();
+            Interval = packet.ReadInt32();
             Owner = packet.ReadInt32();
+            Delay = packet.ReadInt32();
         }
 
         /// <summary>
@@ -109,7 +150,9 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(Value);
+            hasher.Put(Interval);
             hasher.Put(Owner);
+            hasher.Put(Delay);
         }
 
         #endregion
@@ -124,7 +167,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", Owner=" + Owner;
+            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", Interval=" + Interval + ", Owner=" + Owner + ", Delay=" + Delay;
         }
 
         #endregion

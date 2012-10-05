@@ -37,7 +37,9 @@ namespace FarseerPhysics.Collision.Shapes
     /// </summary>
     public class EdgeShape : Shape
     {
-        public bool HasVertex0, HasVertex3;
+        public bool HasVertex0;
+
+        public bool HasVertex3;
 
         /// <summary>
         /// Optional adjacent vertices. These are used for smooth collision.
@@ -120,7 +122,7 @@ namespace FarseerPhysics.Collision.Shapes
             ComputeProperties();
         }
 
-        public override Shape Clone()
+        internal override Shape Clone()
         {
             EdgeShape edge = new EdgeShape();
             edge._radius = _radius;
@@ -141,7 +143,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
+        internal override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
             return false;
         }
@@ -154,7 +156,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The transform to be applied to the shape.</param>
         /// <param name="childIndex">The child shape index.</param>
         /// <returns>True if the ray-cast hits the shape</returns>
-        public override bool RayCast(out RayCastOutput output, ref RayCastInput input,
+        internal override bool RayCast(out RayCastOutput output, ref RayCastInput input,
                                      ref Transform transform, int childIndex)
         {
             // p = p1 + t * d
@@ -244,7 +246,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// Compute the mass properties of this shape using its dimensions and density.
         /// The inertia tensor is computed about the local origin, not the centroid.
         /// </summary>
-        public override void ComputeProperties()
+        protected override void ComputeProperties()
         {
             MassData.Centroid = 0.5f * (_vertex1 + _vertex2);
         }

@@ -16,7 +16,6 @@ namespace FarseerPhysics.Common.PolygonManipulation
     {
         None,
         DegeneratedOutput,
-        NonSimpleInput,
         BrokenResult
     }
 

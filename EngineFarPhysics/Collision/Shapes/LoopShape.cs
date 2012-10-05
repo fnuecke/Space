@@ -71,7 +71,7 @@ namespace FarseerPhysics.Collision.Shapes
             get { return Vertices.Count; }
         }
 
-        public override Shape Clone()
+        internal override Shape Clone()
         {
             LoopShape loop = new LoopShape();
             loop._density = _density;
@@ -116,7 +116,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
+        internal override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
             return false;
         }
@@ -129,7 +129,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The transform to be applied to the shape.</param>
         /// <param name="childIndex">The child shape index.</param>
         /// <returns>True if the ray-cast hits the shape</returns>
-        public override bool RayCast(out RayCastOutput output, ref RayCastInput input,
+        internal override bool RayCast(out RayCastOutput output, ref RayCastInput input,
                                      ref Transform transform, int childIndex)
         {
             Debug.Assert(childIndex < Vertices.Count);
@@ -174,7 +174,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <summary>
         /// Chains have zero mass.
         /// </summary>
-        public override void ComputeProperties()
+        protected override void ComputeProperties()
         {
             //Does nothing. Loop shapes don't have properties.
         }

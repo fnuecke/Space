@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -67,9 +68,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private Mat22 _linearMass;
 
         public FixedFrictionJoint(Body body, Vector2 localAnchorA)
-            : base(body)
+            : base(body, JointType.FixedFriction)
         {
-            JointType = JointType.FixedFriction;
             LocalAnchorA = localAnchorA;
 
             //Setting default max force and max torque
@@ -226,3 +226,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

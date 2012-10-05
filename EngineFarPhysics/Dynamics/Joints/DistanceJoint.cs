@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -72,8 +73,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private Vector2 _u;
 
         internal DistanceJoint()
+            : base(JointType.Distance)
         {
-            JointType = JointType.Distance;
         }
 
         /// <summary>
@@ -89,10 +90,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="localAnchorA">The first body anchor</param>
         /// <param name="localAnchorB">The second body anchor</param>
         public DistanceJoint(Body bodyA, Body bodyB, Vector2 localAnchorA, Vector2 localAnchorB)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Distance)
         {
-            JointType = JointType.Distance;
-
             LocalAnchorA = localAnchorA;
             LocalAnchorB = localAnchorB;
 
@@ -127,23 +126,23 @@ namespace FarseerPhysics.Dynamics.Joints
             set { Debug.Assert(false, "You can't set the world anchor on this joint type."); }
         }
 
-		/// <summary>
-		/// Get the reaction force given the inverse time step. Unit is N.
-		/// </summary>
-		/// <param name="inv_dt"></param>
-		/// <returns></returns>
+        /// <summary>
+        /// Get the reaction force given the inverse time step. Unit is N.
+        /// </summary>
+        /// <param name="inv_dt"></param>
+        /// <returns></returns>
         public override Vector2 GetReactionForce(float inv_dt)
         {
             Vector2 F = (inv_dt * _impulse) * _u;
             return F;
         }
 
-		/// <summary>
-		/// Get the reaction torque given the inverse time step.
-		/// Unit is N*m. This is always zero for a distance joint.
-		/// </summary>
-		/// <param name="inv_dt"></param>
-		/// <returns></returns>
+        /// <summary>
+        /// Get the reaction torque given the inverse time step.
+        /// Unit is N*m. This is always zero for a distance joint.
+        /// </summary>
+        /// <param name="inv_dt"></param>
+        /// <returns></returns>
         public override float GetReactionTorque(float inv_dt)
         {
             return 0.0f;
@@ -296,3 +295,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

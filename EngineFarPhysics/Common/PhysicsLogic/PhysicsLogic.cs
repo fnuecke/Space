@@ -1,4 +1,6 @@
+#if EXPLOSIONS
 using System;
+using FarseerPhysics.Controllers;
 using FarseerPhysics.Dynamics;
 
 namespace FarseerPhysics.Common.PhysicsLogic
@@ -20,15 +22,6 @@ namespace FarseerPhysics.Common.PhysicsLogic
         public void IgnorePhysicsLogic(PhysicsLogicType type)
         {
             ControllerIgnores |= type;
-        }
-
-        /// <summary>
-        /// Restore the controller. The controller affects this body.
-        /// </summary>
-        /// <param name="type">The logic type.</param>
-        public void RestorePhysicsLogic(PhysicsLogicType type)
-        {
-            ControllerIgnores &= ~type;
         }
 
         /// <summary>
@@ -64,3 +57,4 @@ namespace FarseerPhysics.Common.PhysicsLogic
         }
     }
 }
+#endif

@@ -67,7 +67,7 @@ namespace FarseerPhysics.Collision.Shapes
             }
         }
 
-        public override Shape Clone()
+        internal override Shape Clone()
         {
             CircleShape shape = new CircleShape();
             shape._radius = Radius;
@@ -84,7 +84,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The shape world transform.</param>
         /// <param name="point">a point in world coordinates.</param>
         /// <returns>True if the point is inside the shape</returns>
-        public override bool TestPoint(ref Transform transform, ref WorldVector2 point)
+        internal override bool TestPoint(ref Transform transform, ref WorldVector2 point)
         {
             WorldVector2 center = transform.Position + MathUtils.Multiply(ref transform.R, Position);
             Vector2 d = (Vector2)(point - center);
@@ -99,7 +99,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// <param name="transform">The transform to be applied to the shape.</param>
         /// <param name="childIndex">The child shape index.</param>
         /// <returns>True if the ray-cast hits the shape</returns>
-        public override bool RayCast(out RayCastOutput output, ref RayCastInput input, ref Transform transform,
+        internal override bool RayCast(out RayCastOutput output, ref RayCastInput input, ref Transform transform,
                                      int childIndex)
         {
             // Collision Detection in Interactive 3D Environments by Gino van den Bergen
@@ -161,7 +161,7 @@ namespace FarseerPhysics.Collision.Shapes
         /// Compute the mass properties of this shape using its dimensions and density.
         /// The inertia tensor is computed about the local origin, not the centroid.
         /// </summary>
-        public override sealed void ComputeProperties()
+        protected override sealed void ComputeProperties()
         {
             float area = Settings.Pi * Radius * Radius;
             MassData.Area = area;

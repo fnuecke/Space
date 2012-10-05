@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -123,6 +124,12 @@ namespace FarseerPhysics.Dynamics.Joints
     public abstract class Joint
     {
         /// <summary>
+        /// Gets or sets the type of the joint.
+        /// </summary>
+        /// <value>The type of the joint.</value>
+        public readonly JointType JointType;
+
+        /// <summary>
         /// The Breakpoint simply indicates the maximum Value the JointError can be before it breaks.
         /// The default value is float.MaxValue
         /// </summary>
@@ -138,11 +145,13 @@ namespace FarseerPhysics.Dynamics.Joints
         internal bool IslandFlag;
         protected Vector2 LocalCenterA, LocalCenterB;
 
-        protected Joint()
+        protected Joint(JointType type)
         {
+            JointType = type;
         }
 
-        protected Joint(Body body, Body bodyB)
+        protected Joint(Body body, Body bodyB, JointType type)
+            : this(type)
         {
             Debug.Assert(body != bodyB);
 
@@ -156,19 +165,14 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <summary>
         /// Constructor for fixed joint
         /// </summary>
-        protected Joint(Body body)
+        protected Joint(Body body, JointType type)
+            : this(type)
         {
             BodyA = body;
 
             //Connected bodies should not collide by default
             CollideConnected = false;
         }
-
-        /// <summary>
-        /// Gets or sets the type of the joint.
-        /// </summary>
-        /// <value>The type of the joint.</value>
-        public JointType JointType { get; protected set; }
 
         /// <summary>
         /// Get the first body attached to this joint.
@@ -282,3 +286,4 @@ namespace FarseerPhysics.Dynamics.Joints
         internal abstract bool SolvePositionConstraints();
     }
 }
+#endif

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
@@ -9,30 +10,18 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Handles applying damage when two entities collide.
     /// </summary>
-    public sealed class CollisionDamageSystem : AbstractParallelComponentSystem<CollisionDamage>, IMessagingSystem
+    public sealed class CollisionDamageSystem : AbstractSystem, IMessagingSystem
     {
-        #region Logic
+        #region Fields
 
         /// <summary>
-        /// Decrements cooldowns, clears entries for expired cooldown.
+        /// List of current collisions, mapping to their damage effect.
         /// </summary>
-        /// <param name="frame">The frame.</param>
-        /// <param name="component">The component.</param>
-        protected override void UpdateComponent(long frame, CollisionDamage component)
-        {
-            // Decrement, remove if run out.
-            foreach (var entityId in new List<int>(component.Cooldowns.Keys))
-            {
-                if (component.Cooldowns[entityId] > 0)
-                {
-                    component.Cooldowns[entityId]--;
-                }
-                else
-                {
-                    component.Cooldowns.Remove(entityId);
-                }
-            }
-        }
+        private Dictionary<ulong, int> _collisions = new Dictionary<ulong, int>();
+
+        #endregion
+
+        #region Logic
 
         /// <summary>
         /// Handle collision messages by applying damage, if possible.
@@ -41,44 +30,60 @@ namespace Space.ComponentSystem.Systems
         /// <param name="message">The message.</param>
         public void Receive<T>(ref T message) where T : struct
         {
-            if (message is Collision)
+            if (message is BeginCollision)
             {
-                // We only explicitly handle the first entity here, because we'll get the
-                // same message in reverse for the other entity anyway. We still need it
-                // for reference, though (collision damage).
-                var damageMessage = (Collision)(ValueType)message;
-                var damagee = damageMessage.FirstEntity;
-                var damager = damageMessage.SecondEntity;
+                // We only get one message for a collision pair, so we apply damage
+                // to both parties.
+                var damageMessage = (BeginCollision)(ValueType)message;
+                BeginDamage(damageMessage.EntityA, damageMessage.EntityB);
+                BeginDamage(damageMessage.EntityB, damageMessage.EntityA);
 
-                // Get damage we might take.
-                var damage = ((CollisionDamage)Manager.GetComponent(damager, CollisionDamage.TypeId));
+            }
+            else if (message is EndCollision)
+            {
+                // Stop damage that is being applied because of this collision.
+                var damageMessage = (EndCollision)(ValueType)message;
+                EndDamage(damageMessage.EntityA, damageMessage.EntityB);
+                EndDamage(damageMessage.EntityB, damageMessage.EntityA);
+            }
+        }
 
-                // Checking if the cooldowns contain this entry can be done without
-                // locking, because we're the only thread that would set the entry for
-                // that value.
-                if (damage != null && !damage.Cooldowns.ContainsKey(damagee))
+        private void BeginDamage(int damagee, int damager)
+        {
+            // Get damage we might take.
+            var damage = (CollisionDamage)Manager.GetComponent(damager, CollisionDamage.TypeId);
+            if (damage == null)
+            {
+                return;
+            }
+
+            // Apply damage to second entity if it has health.
+            var hasHealth = Manager.GetComponent(damagee, Health.TypeId) != null;
+
+            // One-shot?
+            if (damage.Cooldown == 0)
+            {
+                // Yes, kill the damager after applying our damage.
+                ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
+                if (hasHealth)
                 {
-                    // Apply damage to second entity if it has health.
-                    if (Manager.GetComponent(damagee, Health.TypeId) != null)
-                    {
-                        Manager.AddComponent<DamagingStatusEffect>(damagee).Initialize(0, damage.Damage, damager);
-                    }
-
-                    // One-shot?
-                    if (damage.Cooldown == 0)
-                    {
-                        // Yes, kill it.
-                        ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
-                    }
-                    else
-                    {
-                        // No, keep cooldown for this one, if it is still alive.
-                        lock (damage.Cooldowns)
-                        {
-                            damage.Cooldowns.Add(damagee, damage.Cooldown);
-                        }
-                    }   
+                    Manager.AddComponent<DamagingStatusEffect>(damagee).Initialize(damage.Damage, damager);
                 }
+            }
+            else if (hasHealth)
+            {
+                // No, keep cooldown for this one, if it is still alive.
+                var effect = Manager.AddComponent<DamagingStatusEffect>(damagee).Initialize(DamagingStatusEffect.InfiniteDamageDuration, damage.Damage, damage.Cooldown, damager);
+                _collisions.Add(BitwiseMagic.Pack(damagee, damager), effect.Id);
+            }
+        }
+
+        private void EndDamage(int damagee, int damager)
+        {
+            int effectId;
+            if (_collisions.TryGetValue(BitwiseMagic.Pack(damagee, damager), out effectId))
+            {
+                Manager.RemoveComponent(effectId);
             }
         }
 

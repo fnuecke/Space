@@ -1,4 +1,5 @@
-﻿/*
+﻿#if JOINTS
+/*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
 * 
@@ -70,13 +71,14 @@ namespace FarseerPhysics.Dynamics.Joints
         // Cdot = wB - wA
         // J = [0 0 -1 0 0 1]
 
-        internal FixedLineJoint() { JointType = JointType.FixedLine; }
+        internal FixedLineJoint()
+            : base(JointType.FixedLine)
+        {
+        }
 
         public FixedLineJoint(Body body, WorldVector2 worldAnchor, Vector2 axis)
-            : base(body)
+            : base(body, JointType.FixedLine)
         {
-            JointType = JointType.FixedLine;
-
             BodyB = BodyA;
 
             LocalAnchorA = worldAnchor;
@@ -420,3 +422,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

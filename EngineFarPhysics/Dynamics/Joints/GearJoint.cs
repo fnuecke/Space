@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -65,9 +66,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="jointB">The second joint.</param>
         /// <param name="ratio">The ratio.</param>
         public GearJoint(Joint jointA, Joint jointB, float ratio)
-            : base(jointA.BodyA, jointA.BodyB)
+            : base(jointA.BodyA, jointA.BodyB, JointType.Gear)
         {
-            JointType = JointType.Gear;
             JointA = jointA;
             JointB = jointB;
             Ratio = ratio;
@@ -349,3 +349,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

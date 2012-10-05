@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if JOINTS
+using System;
 using System.Collections.Generic;
 using Engine.FarMath;
 using FarseerPhysics.Collision.Shapes;
@@ -15,16 +16,6 @@ namespace FarseerPhysics.Factories
     /// </summary>
     public static class PathManager
     {
-        #region LinkType enum
-
-        public enum LinkType
-        {
-            Revolute,
-            Slider
-        }
-
-        #endregion
-
         //Contributed by Matthew Bettcher
 
         /// <summary>
@@ -198,45 +189,6 @@ namespace FarseerPhysics.Factories
 
             return joints;
         }
-
-        /// <summary>
-        /// Attaches the bodies with revolute joints.
-        /// </summary>
-        /// <param name="world">The world.</param>
-        /// <param name="bodies">The bodies.</param>
-        /// <param name="localAnchorA">The local anchor A.</param>
-        /// <param name="localAnchorB">The local anchor B.</param>
-        /// <param name="connectFirstAndLast">if set to <c>true</c> [connect first and last].</param>
-        /// <param name="collideConnected">if set to <c>true</c> [collide connected].</param>
-        /// <param name="minLength">Minimum length of the slider joint.</param>
-        /// <param name="maxLength">Maximum length of the slider joint.</param>
-        /// <returns></returns>
-        public static List<SliderJoint> AttachBodiesWithSliderJoint(World world, List<Body> bodies, Vector2 localAnchorA,
-                                                                    Vector2 localAnchorB, bool connectFirstAndLast,
-                                                                    bool collideConnected, float minLength,
-                                                                    float maxLength)
-        {
-            List<SliderJoint> joints = new List<SliderJoint>(bodies.Count + 1);
-
-            for (int i = 1; i < bodies.Count; i++)
-            {
-                SliderJoint joint = new SliderJoint(bodies[i], bodies[i - 1], localAnchorA, localAnchorB, minLength,
-                                                    maxLength);
-                joint.CollideConnected = collideConnected;
-                world.AddJoint(joint);
-                joints.Add(joint);
-            }
-
-            if (connectFirstAndLast)
-            {
-                SliderJoint lastjoint = new SliderJoint(bodies[0], bodies[bodies.Count - 1], localAnchorA, localAnchorB,
-                                                        minLength, maxLength);
-                lastjoint.CollideConnected = collideConnected;
-                world.AddJoint(lastjoint);
-                joints.Add(lastjoint);
-            }
-
-            return joints;
-        }
     }
 }
+#endif

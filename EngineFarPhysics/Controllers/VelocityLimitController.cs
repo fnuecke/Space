@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if CONTROLLERS
+using System;
 using System.Collections.Generic;
 using FarseerPhysics.Dynamics;
 
@@ -127,3 +128,4 @@ namespace FarseerPhysics.Controllers
         }
     }
 }
+#endif

@@ -37,12 +37,7 @@ namespace FarseerPhysics.Common
             set { _holes = value; }
         }
 
-        public DetectedVertices()
-            : base()
-        {
-        }
-
-        public DetectedVertices(Vertices vertices)
+        public DetectedVertices(IList<Vector2> vertices)
             : base(vertices)
         {
         }
@@ -50,18 +45,18 @@ namespace FarseerPhysics.Common
         public void Transform(Matrix transform)
         {
             // Transform main polygon
-            for (int i = 0; i < this.Count; i++)
+            for (var i = 0; i < Count; i++)
+            {
                 this[i] = Vector2.Transform(this[i], transform);
+            }
 
             // Transform holes
-            Vector2[] temp = null;
             if (_holes != null && _holes.Count > 0)
             {
-                for (int i = 0; i < _holes.Count; i++)
+                for (var i = 0; i < _holes.Count; i++)
                 {
-                    temp = _holes[i].ToArray();
+                    var temp = _holes[i].ToArray();
                     Vector2.Transform(temp, ref transform, temp);
-
                     _holes[i] = new Vertices(temp);
                 }
             }

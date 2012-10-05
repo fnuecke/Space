@@ -1,4 +1,5 @@
-﻿/*
+﻿#if JOINTS
+/*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
 * 
@@ -60,14 +61,13 @@ namespace FarseerPhysics.Dynamics.Joints
         private Vector2 _u;
 
         internal RopeJoint()
+            : base(JointType.Rope)
         {
-            JointType = JointType.Rope;
         }
 
         public RopeJoint(Body bodyA, Body bodyB, Vector2 localAnchorA, Vector2 localAnchorB)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Rope)
         {
-            JointType = JointType.Rope;
             LocalAnchorA = localAnchorA;
             LocalAnchorB = localAnchorB;
 
@@ -188,7 +188,7 @@ namespace FarseerPhysics.Dynamics.Joints
             // Predictive constraint.
             if (C < 0.0f)
             {
-                Cdot += step.inv_dt * C;
+                Cdot += step.dtInverse * C;
             }
 
             float impulse = -_mass * Cdot;
@@ -242,3 +242,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

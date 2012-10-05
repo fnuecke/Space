@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -57,8 +58,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private Mat33 _mass;
 
         internal WeldJoint()
+            : base(JointType.Weld)
         {
-            JointType = JointType.Weld;
         }
 
         /// <summary>
@@ -73,10 +74,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="localAnchorA">The first body anchor.</param>
         /// <param name="localAnchorB">The second body anchor.</param>
         public WeldJoint(Body bodyA, Body bodyB, Vector2 localAnchorA, Vector2 localAnchorB)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Weld)
         {
-            JointType = JointType.Weld;
-
             LocalAnchorA = localAnchorA;
             LocalAnchorB = localAnchorB;
             ReferenceAngle = BodyB.Rotation - BodyA.Rotation;
@@ -262,3 +261,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

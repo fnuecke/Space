@@ -1,4 +1,5 @@
-﻿using FarseerPhysics.Dynamics;
+﻿#if JOINTS
+using FarseerPhysics.Dynamics;
 using FarseerPhysics.Dynamics.Joints;
 using Microsoft.Xna.Framework;
 using WorldVector2 = Engine.FarMath.FarPosition;
@@ -368,3 +369,4 @@ namespace FarseerPhysics.Factories
         #endregion
     }
 }
+#endif

@@ -36,8 +36,6 @@ using Poly2Tri.Triangulation.Delaunay;
 using Poly2Tri.Triangulation.Delaunay.Sweep;
 using Poly2Tri.Triangulation.Polygon;
 
-using System.Linq;
-
 namespace FarseerPhysics.Common.Decomposition
 {
     public static class CDTDecomposer
@@ -68,53 +66,6 @@ namespace FarseerPhysics.Common.Decomposition
             }
 
             return results;
-        }
-
-        public static List<Vertices> ConvexPartition(DetectedVertices vertices)
-        {
-            Polygon poly = new Polygon();
-            foreach (var vertex in vertices)
-                poly.Points.Add(new TriangulationPoint(vertex.X, vertex.Y));
-
-            if (vertices.Holes != null)
-            {
-                foreach (var holeVertices in vertices.Holes)
-                {
-                    Polygon hole = new Polygon();
-                    foreach (var vertex in holeVertices)
-                        hole.Points.Add(new TriangulationPoint(vertex.X, vertex.Y));
-
-                    poly.AddHole(hole);
-                }
-            }
-
-            DTSweepContext tcx = new DTSweepContext();
-            tcx.PrepareTriangulation(poly);
-            DTSweep.Triangulate(tcx);
-
-            List<Vertices> results = new List<Vertices>();
-
-            foreach (DelaunayTriangle triangle in poly.Triangles)
-            {
-                Vertices v = new Vertices();
-                foreach (TriangulationPoint p in triangle.Points)
-                {
-                    v.Add(new Vector2((float)p.X, (float)p.Y));
-                }
-                results.Add(v);
-            }
-
-            return results;
-        }
-
-        public static List<Vertices> ConvexPartition(List<DetectedVertices> vertices)
-        {
-            List<Vertices> result = new List<Vertices>();
-
-            foreach (var e in vertices)
-                result.AddRange(ConvexPartition(e));
-
-            return result;
         }
     }
 }

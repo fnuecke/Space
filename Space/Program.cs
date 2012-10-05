@@ -279,7 +279,7 @@ namespace Space
 
             // Grab actual graph data.
             _watch.Stop();
-            _updateHistory.Put(_watch.ElapsedMilliseconds);
+            _updateHistory.Put(1000 * _watch.ElapsedTicks / (float)Stopwatch.Frequency);
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace Space
 
             // Grab actual graph data.
             _watch.Stop();
-            _drawHistory.Put(_watch.ElapsedMilliseconds);
+            _drawHistory.Put(1000 * _watch.ElapsedTicks / (float)Stopwatch.Frequency);
 
             // Draw graphs after everything else, to avoid filters on the
             // other screen data to affect us.
@@ -452,7 +452,7 @@ namespace Space
                     {
                         if (_indexRectangle == null)
                         {
-                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) { Color = Color.LightGreen * 0.25f, Thickness = 2f };
+                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) { Color = Color.LightGreen * 0.25f, Thickness = 2f, BlendState = BlendState.Additive};
                         }
                         _indexRectangle.SetTransform(camera.Transform.Matrix);
                         index.DrawIndex(_indexGroupMask, _indexRectangle, camera.Transform.Translation);

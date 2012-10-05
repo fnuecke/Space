@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -125,8 +126,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private float _upperTranslation;
 
         internal PrismaticJoint()
+            : base(JointType.Prismatic)
         {
-            JointType = JointType.Prismatic;
         }
 
         /// <summary>
@@ -143,10 +144,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="localAnchorB">The second body anchor.</param>
         /// <param name="axis">The axis.</param>
         public PrismaticJoint(Body bodyA, Body bodyB, Vector2 localAnchorA, Vector2 localAnchorB, Vector2 axis)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Prismatic)
         {
-            JointType = JointType.Prismatic;
-
             LocalAnchorA = localAnchorA;
             LocalAnchorB = localAnchorB;
 
@@ -225,12 +224,12 @@ namespace FarseerPhysics.Dynamics.Joints
                 Debug.Assert(BodyA.FixedRotation == false || BodyB.FixedRotation == false,
                              "Warning: limits does currently not work with fixed rotation");
 
-				if (value != _enableLimit)
-				{
-					WakeBodies();
-					_enableLimit = value;
-					_impulse.Z = 0;
-				}
+                if (value != _enableLimit)
+                {
+                    WakeBodies();
+                    _enableLimit = value;
+                    _impulse.Z = 0;
+                }
             }
         }
 
@@ -243,12 +242,12 @@ namespace FarseerPhysics.Dynamics.Joints
             get { return _lowerTranslation; }
             set
             {
-				if (value != _lowerTranslation)
-				{
-					WakeBodies();
-					_lowerTranslation = value;
-					_impulse.Z = 0.0f;
-				}
+                if (value != _lowerTranslation)
+                {
+                    WakeBodies();
+                    _lowerTranslation = value;
+                    _impulse.Z = 0.0f;
+                }
             }
         }
 
@@ -261,30 +260,30 @@ namespace FarseerPhysics.Dynamics.Joints
             get { return _upperTranslation; }
             set
             {
-				if (value != _upperTranslation)
-				{
-					WakeBodies();
-					_upperTranslation = value;
-					_impulse.Z = 0.0f;
-				}
+                if (value != _upperTranslation)
+                {
+                    WakeBodies();
+                    _upperTranslation = value;
+                    _impulse.Z = 0.0f;
+                }
             }
         }
 
-		/// <summary>
-		/// Set the joint limits, usually in meters.
-		/// </summary>
-		/// <param name="lower"></param>
-		/// <param name="upper"></param>
-		public void SetLimits(float lower, float upper)
-		{
-			if (upper != _upperTranslation || lower != _lowerTranslation)
-			{
-				WakeBodies();
-				_upperTranslation = upper;
-				_lowerTranslation = lower;
-				_impulse.Z = 0.0f;
-			}
-		}
+        /// <summary>
+        /// Set the joint limits, usually in meters.
+        /// </summary>
+        /// <param name="lower"></param>
+        /// <param name="upper"></param>
+        public void SetLimits(float lower, float upper)
+        {
+            if (upper != _upperTranslation || lower != _lowerTranslation)
+            {
+                WakeBodies();
+                _upperTranslation = upper;
+                _lowerTranslation = lower;
+                _impulse.Z = 0.0f;
+            }
+        }
 
         /// <summary>
         /// Is the joint motor enabled?
@@ -338,10 +337,10 @@ namespace FarseerPhysics.Dynamics.Joints
             set { _motorImpulse = value; }
         }
 
-		public float GetMotorForce(float inv_dt)
-		{
-			return inv_dt * _motorImpulse;
-		}
+        public float GetMotorForce(float inv_dt)
+        {
+            return inv_dt * _motorImpulse;
+        }
 
         public Vector2 LocalXAxis1
         {
@@ -709,3 +708,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if JOINTS
 using System;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
@@ -6,36 +7,30 @@ using WorldVector2 = Engine.FarMath.FarPosition;
 namespace FarseerPhysics.Dynamics.Joints
 {
     /// <summary>
-    /// Maintains a fixed angle between two bodies
+    /// Maintains a fixed angle between two bodies.
     /// </summary>
-    public class AngleJoint : Joint
+    public sealed class AngleJoint : Joint
     {
-        public float BiasFactor;
-        public float MaxImpulse;
-        public float Softness;
+        private const float BiasFactor = .2f;
+        private const float Softness = 0f;
+
         private float _bias;
-        private float _jointError;
         private float _massFactor;
         private float _targetAngle;
 
-        internal AngleJoint()
+        public AngleJoint()
+            : base(JointType.Angle)
         {
-            JointType = JointType.Angle;
         }
 
         public AngleJoint(Body bodyA, Body bodyB)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Angle)
         {
-            JointType = JointType.Angle;
-            TargetAngle = 0;
-            BiasFactor = .2f;
-            Softness = 0f;
-            MaxImpulse = float.MaxValue;
+            _targetAngle = 0f;
         }
 
         public float TargetAngle
         {
-            get { return _targetAngle; }
             set
             {
                 if (value != _targetAngle)
@@ -71,18 +66,17 @@ namespace FarseerPhysics.Dynamics.Joints
 
         internal override void InitVelocityConstraints(ref TimeStep step)
         {
-            _jointError = (BodyB.Sweep.A - BodyA.Sweep.A - TargetAngle);
+            var jointError = BodyB.Sweep.A - BodyA.Sweep.A - _targetAngle;
 
-            _bias = -BiasFactor * step.inv_dt * _jointError;
-
+            _bias = -BiasFactor * step.dtInverse * jointError;
             _massFactor = (1 - Softness) / (BodyA.InvI + BodyB.InvI);
         }
 
         internal override void SolveVelocityConstraints(ref TimeStep step)
         {
-            float p = (_bias - BodyB.AngularVelocity + BodyA.AngularVelocity) * _massFactor;
-            BodyA.AngularVelocity -= BodyA.InvI * Math.Sign(p) * Math.Min(Math.Abs(p), MaxImpulse);
-            BodyB.AngularVelocity += BodyB.InvI * Math.Sign(p) * Math.Min(Math.Abs(p), MaxImpulse);
+            var p = (_bias - BodyB.AngularVelocity + BodyA.AngularVelocity) * _massFactor;
+            BodyA.AngularVelocity -= BodyA.InvI * Math.Sign(p) * Math.Abs(p);
+            BodyB.AngularVelocity += BodyB.InvI * Math.Sign(p) * Math.Abs(p);
         }
 
         internal override bool SolvePositionConstraints()
@@ -91,4 +85,5 @@ namespace FarseerPhysics.Dynamics.Joints
             return true;
         }
     }
-}
+} 
+#endif

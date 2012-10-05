@@ -25,7 +25,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using WorldSingle = Engine.FarMath.FarValue;
 using WorldVector2 = Engine.FarMath.FarPosition;
@@ -47,11 +46,6 @@ namespace FarseerPhysics.Common
         public static Vector2 Cross(float s, Vector2 a)
         {
             return new Vector2(-s * a.Y, s * a.X);
-        }
-
-        public static Vector2 Abs(Vector2 v)
-        {
-            return new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
         }
 
         public static Vector2 Multiply(ref Mat22 A, Vector2 v)
@@ -82,11 +76,6 @@ namespace FarseerPhysics.Common
             return MultiplyT(ref A, ref v);
         }
 
-        public static WorldVector2 MultiplyT(ref Mat22 A, WorldVector2 v)
-        {
-            return MultiplyT(ref A, ref v);
-        }
-
         public static Vector2 MultiplyT(ref Mat22 A, ref Vector2 v)
         {
             return new Vector2(v.X * A.Col1.X + v.Y * A.Col1.Y, v.X * A.Col2.X + v.Y * A.Col2.Y);
@@ -111,11 +100,6 @@ namespace FarseerPhysics.Common
             result.X = T.Position.X + (T.R.Col1.X * v.X + T.R.Col2.X * v.Y);
             result.Y = T.Position.Y + (T.R.Col1.Y * v.X + T.R.Col2.Y * v.Y);
             return result;
-        }
-
-        public static WorldVector2 MultiplyT(ref Transform T, Vector2 v)
-        {
-            return MultiplyT(ref T, ref v);
         }
 
         public static WorldVector2 MultiplyT(ref Transform T, ref Vector2 v)
@@ -169,32 +153,6 @@ namespace FarseerPhysics.Common
             C.Position.Y = B.Position.Y - A.Position.Y;
         }
 
-        public static void Swap<T>(ref T a, ref T b)
-        {
-            T tmp = a;
-            a = b;
-            b = tmp;
-        }
-
-        /// <summary>
-        /// This function is used to ensure that a floating point number is
-        /// not a NaN or infinity.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>
-        /// 	<c>true</c> if the specified x is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsValid(float x)
-        {
-            if (float.IsNaN(x))
-            {
-                // NaN.
-                return false;
-            }
-
-            return !float.IsInfinity(x);
-        }
-
         /// <summary>
         /// This function is used to ensure that a floating point number is
         /// not a NaN or infinity.
@@ -214,30 +172,9 @@ namespace FarseerPhysics.Common
             return !WorldSingle.IsInfinity(x);
         }
 
-        public static bool IsValid(this Vector2 x)
-        {
-            return IsValid(x.X) && IsValid(x.Y);
-        }
-
         public static bool IsValid(this WorldVector2 x)
         {
             return IsValid(x.X) && IsValid(x.Y);
-        }
-
-        /// <summary>
-        /// This is a approximate yet fast inverse square-root.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns></returns>
-        public static float InvSqrt(float x)
-        {
-            FloatConverter convert = new FloatConverter();
-            convert.x = x;
-            float xhalf = 0.5f * x;
-            convert.i = 0x5f3759df - (convert.i >> 1);
-            x = convert.x;
-            x = x * (1.5f - xhalf * x * x);
-            return x;
         }
 
         public static int Clamp(int a, int low, int high)
@@ -248,11 +185,6 @@ namespace FarseerPhysics.Common
         public static float Clamp(float a, float low, float high)
         {
             return Math.Max(low, Math.Min(a, high));
-        }
-
-        public static Vector2 Clamp(Vector2 a, Vector2 low, Vector2 high)
-        {
-            return Vector2.Max(low, Vector2.Min(a, high));
         }
 
         public static void Cross(ref Vector2 a, ref Vector2 b, out float c)
@@ -278,11 +210,6 @@ namespace FarseerPhysics.Common
             return (dtheta);
         }
 
-        public static double VectorAngle(Vector2 p1, Vector2 p2)
-        {
-            return VectorAngle(ref p1, ref p2);
-        }
-
         /// <summary>
         /// Returns a positive number if c is to the left of the line going from a to b.
         /// </summary>
@@ -301,18 +228,6 @@ namespace FarseerPhysics.Common
         public static float Area(ref Vector2 a, ref Vector2 b, ref Vector2 c)
         {
             return a.X * (b.Y - c.Y) + b.X * (c.Y - a.Y) + c.X * (a.Y - b.Y);
-        }
-
-        /// <summary>
-        /// Determines if three vertices are collinear (ie. on a straight line)
-        /// </summary>
-        /// <param name="a">First vertex</param>
-        /// <param name="b">Second vertex</param>
-        /// <param name="c">Third vertex</param>
-        /// <returns></returns>
-        public static bool Collinear(ref Vector2 a, ref Vector2 b, ref Vector2 c)
-        {
-            return Collinear(ref a, ref b, ref c, 0);
         }
 
         public static bool Collinear(ref Vector2 a, ref Vector2 b, ref Vector2 c, float tolerance)
@@ -356,19 +271,6 @@ namespace FarseerPhysics.Common
         {
             return (value >= min && value <= max);
         }
-
-        #region Nested type: FloatConverter
-
-        [StructLayout(LayoutKind.Explicit)]
-        private struct FloatConverter
-        {
-            [FieldOffset(0)]
-            public float x;
-            [FieldOffset(0)]
-            public int i;
-        }
-
-        #endregion
     }
 
     /// <summary>
@@ -390,19 +292,6 @@ namespace FarseerPhysics.Common
         }
 
         /// <summary>
-        /// Construct this matrix using scalars.
-        /// </summary>
-        /// <param name="a11">The a11.</param>
-        /// <param name="a12">The a12.</param>
-        /// <param name="a21">The a21.</param>
-        /// <param name="a22">The a22.</param>
-        public Mat22(float a11, float a12, float a21, float a22)
-        {
-            Col1 = new Vector2(a11, a21);
-            Col2 = new Vector2(a12, a22);
-        }
-
-        /// <summary>
         /// Construct this matrix using an angle. This matrix becomes
         /// an orthonormal rotation matrix.
         /// </summary>
@@ -413,16 +302,6 @@ namespace FarseerPhysics.Common
             float c = (float)Math.Cos(angle), s = (float)Math.Sin(angle);
             Col1 = new Vector2(c, s);
             Col2 = new Vector2(-s, c);
-        }
-
-        /// <summary>
-        /// Extract the angle from this matrix (assumed to be
-        /// a rotation matrix).
-        /// </summary>
-        /// <value></value>
-        public float Angle
-        {
-            get { return (float)Math.Atan2(Col1.Y, Col1.X); }
         }
 
         public Mat22 Inverse
@@ -445,17 +324,6 @@ namespace FarseerPhysics.Common
 
                 return result;
             }
-        }
-
-        /// <summary>
-        /// Initialize this matrix using columns.
-        /// </summary>
-        /// <param name="c1">The c1.</param>
-        /// <param name="c2">The c2.</param>
-        public void Set(Vector2 c1, Vector2 c2)
-        {
-            Col1 = c1;
-            Col2 = c2;
         }
 
         /// <summary>
@@ -527,29 +395,6 @@ namespace FarseerPhysics.Common
         public Vector3 Col1, Col2, Col3;
 
         /// <summary>
-        /// Construct this matrix using columns.
-        /// </summary>
-        /// <param name="c1">The c1.</param>
-        /// <param name="c2">The c2.</param>
-        /// <param name="c3">The c3.</param>
-        public Mat33(Vector3 c1, Vector3 c2, Vector3 c3)
-        {
-            Col1 = c1;
-            Col2 = c2;
-            Col3 = c3;
-        }
-
-        /// <summary>
-        /// Set this matrix to all zeros.
-        /// </summary>
-        public void SetZero()
-        {
-            Col1 = Vector3.Zero;
-            Col2 = Vector3.Zero;
-            Col3 = Vector3.Zero;
-        }
-
-        /// <summary>
         /// Solve A * x = b, where b is a column vector. This is more efficient
         /// than computing the inverse in one-shot cases.
         /// </summary>
@@ -607,15 +452,6 @@ namespace FarseerPhysics.Common
         {
             Position = position;
             R = r;
-        }
-
-        /// <summary>
-        /// Calculate the angle that the rotation matrix represents.
-        /// </summary>
-        /// <value></value>
-        public float Angle
-        {
-            get { return (float)Math.Atan2(R.Col1.Y, R.Col1.X); }
         }
 
         /// <summary>

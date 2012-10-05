@@ -1,4 +1,5 @@
-﻿/*
+﻿#if JOINTS
+/*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
 * 
@@ -77,10 +78,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="bodyAnchor">The body anchor.</param>
         /// <param name="worldAnchor">The world anchor.</param>
         public FixedDistanceJoint(Body body, Vector2 bodyAnchor, WorldVector2 worldAnchor)
-            : base(body)
+            : base(body, JointType.FixedDistance)
         {
-            JointType = JointType.FixedDistance;
-
             LocalAnchorA = bodyAnchor;
             _worldAnchorB = worldAnchor;
 
@@ -254,3 +253,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

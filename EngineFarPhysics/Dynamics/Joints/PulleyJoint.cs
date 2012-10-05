@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -77,8 +78,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private Vector2 _u2;
 
         internal PulleyJoint()
+            : base(JointType.Pulley)
         {
-            JointType = JointType.Pulley;
         }
 
         /// <summary>
@@ -98,10 +99,8 @@ namespace FarseerPhysics.Dynamics.Joints
                            WorldVector2 groundAnchorA, WorldVector2 groundAnchorB,
                            Vector2 localAnchorA, Vector2 localAnchorB,
                            float ratio)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Pulley)
         {
-            JointType = JointType.Pulley;
-
             GroundAnchorA = groundAnchorA;
             GroundAnchorB = groundAnchorB;
             LocalAnchorA = localAnchorA;
@@ -506,3 +505,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if JOINTS
 /*
 * Farseer Physics Engine based on Box2D.XNA port:
 * Copyright (c) 2010 Ian Qvist
@@ -60,8 +61,8 @@ namespace FarseerPhysics.Dynamics.Joints
         private float _upperAngle;
 
         internal RevoluteJoint()
+            : base(JointType.Revolute)
         {
-            JointType = JointType.Revolute;
         }
 
         /// <summary>
@@ -83,10 +84,8 @@ namespace FarseerPhysics.Dynamics.Joints
         /// <param name="localAnchorA">The first body anchor.</param>
         /// <param name="localAnchorB">The second anchor.</param>
         public RevoluteJoint(Body bodyA, Body bodyB, Vector2 localAnchorA, Vector2 localAnchorB)
-            : base(bodyA, bodyB)
+            : base(bodyA, bodyB, JointType.Revolute)
         {
-            JointType = JointType.Revolute;
-
             // Changed to local coordinates.
             LocalAnchorA = localAnchorA;
             LocalAnchorB = localAnchorB;
@@ -98,27 +97,25 @@ namespace FarseerPhysics.Dynamics.Joints
             _limitState = LimitState.Inactive;
         }
 
-		/// <summary>
-		/// Initialize the bodies and world anchor.
-		/// </summary>
-		/// <param name="bodyA">The first body.</param>
-		/// <param name="bodyB">The second body.</param>
-		/// <param name="worldAnchor">The world coordinate anchor.</param>
-		public RevoluteJoint(Body bodyA, Body bodyB, WorldVector2 worldAnchor)
-			: base(bodyA, bodyB)
-		{
-			JointType = JointType.Revolute;
+        /// <summary>
+        /// Initialize the bodies and world anchor.
+        /// </summary>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="bodyB">The second body.</param>
+        /// <param name="worldAnchor">The world coordinate anchor.</param>
+        public RevoluteJoint(Body bodyA, Body bodyB, WorldVector2 worldAnchor)
+            : base(bodyA, bodyB, JointType.Revolute)
+        {
+            // Changed to local coordinates.
+            LocalAnchorA = bodyA.GetLocalPoint(worldAnchor);
+            LocalAnchorB = bodyB.GetLocalPoint(worldAnchor);
 
-			// Changed to local coordinates.
-			LocalAnchorA = bodyA.GetLocalPoint(worldAnchor);
-			LocalAnchorB = bodyB.GetLocalPoint(worldAnchor);
+            ReferenceAngle = BodyB.Rotation - BodyA.Rotation;
 
-			ReferenceAngle = BodyB.Rotation - BodyA.Rotation;
+            _impulse = Vector3.Zero;
 
-			_impulse = Vector3.Zero;
-
-			_limitState = LimitState.Inactive;
-		}
+            _limitState = LimitState.Inactive;
+        }
 
         public override WorldVector2 WorldAnchorA
         {
@@ -168,13 +165,13 @@ namespace FarseerPhysics.Dynamics.Joints
             get { return _enableLimit; }
             set
             {
-				if (_enableLimit != value)
-				{
-					WakeBodies();
-					_enableLimit = value;
-					_impulse.Z = 0.0f;
-				}
-			}
+                if (_enableLimit != value)
+                {
+                    WakeBodies();
+                    _enableLimit = value;
+                    _impulse.Z = 0.0f;
+                }
+            }
         }
 
         /// <summary>
@@ -186,13 +183,13 @@ namespace FarseerPhysics.Dynamics.Joints
             get { return _lowerAngle; }
             set
             {
-				if (_lowerAngle != value)
-				{
-					WakeBodies();
-					_lowerAngle = value;
-					_impulse.Z = 0.0f;
-				}
-			}
+                if (_lowerAngle != value)
+                {
+                    WakeBodies();
+                    _lowerAngle = value;
+                    _impulse.Z = 0.0f;
+                }
+            }
         }
 
         /// <summary>
@@ -204,30 +201,30 @@ namespace FarseerPhysics.Dynamics.Joints
             get { return _upperAngle; }
             set
             {
-				if (_upperAngle != value)
-				{
-					WakeBodies();
-					_upperAngle = value;
-					_impulse.Z = 0.0f;
-				}
+                if (_upperAngle != value)
+                {
+                    WakeBodies();
+                    _upperAngle = value;
+                    _impulse.Z = 0.0f;
+                }
             }
         }
 
-		/// <summary>
-		/// Set the joint limits, usually in meters.
-		/// </summary>
-		/// <param name="lower"></param>
-		/// <param name="upper"></param>
-		public void SetLimits(float lower, float upper)
-		{
-			if (upper != _upperAngle || lower != _lowerAngle)
-			{
-				WakeBodies();
-				_upperAngle = upper;
-				_lowerAngle = lower;
-				_impulse.Z = 0.0f;
-			}
-		}
+        /// <summary>
+        /// Set the joint limits, usually in meters.
+        /// </summary>
+        /// <param name="lower"></param>
+        /// <param name="upper"></param>
+        public void SetLimits(float lower, float upper)
+        {
+            if (upper != _upperAngle || lower != _lowerAngle)
+            {
+                WakeBodies();
+                _upperAngle = upper;
+                _lowerAngle = lower;
+                _impulse.Z = 0.0f;
+            }
+        }
 
         /// <summary>
         /// Is the joint motor enabled?
@@ -285,10 +282,10 @@ namespace FarseerPhysics.Dynamics.Joints
             }
         }
 
-		public float GetMotorTorque(float inv_dt)
-		{
-			return inv_dt * _motorImpulse;
-		}
+        public float GetMotorTorque(float inv_dt)
+        {
+            return inv_dt * _motorImpulse;
+        }
 
         public override Vector2 GetReactionForce(float inv_dt)
         {
@@ -464,40 +461,40 @@ namespace FarseerPhysics.Dynamics.Joints
                 else if (_limitState == LimitState.AtLower)
                 {
                     float newImpulse = _impulse.Z + impulse.Z;
-					if (newImpulse < 0.0f)
-					{
-						Vector2 rhs = -Cdot1 + _impulse.Z * new Vector2(_mass.Col3.X, _mass.Col3.Y);
-						Vector2 reduced = _mass.Solve22(rhs);
-						impulse.X = reduced.X;
-						impulse.Y = reduced.Y;
-						impulse.Z = -_impulse.Z;
-						_impulse.X += reduced.X;
-						_impulse.Y += reduced.Y;
-						_impulse.Z = 0.0f;
-					}
-					else
-					{
-						_impulse += impulse;
-					}
+                    if (newImpulse < 0.0f)
+                    {
+                        Vector2 rhs = -Cdot1 + _impulse.Z * new Vector2(_mass.Col3.X, _mass.Col3.Y);
+                        Vector2 reduced = _mass.Solve22(rhs);
+                        impulse.X = reduced.X;
+                        impulse.Y = reduced.Y;
+                        impulse.Z = -_impulse.Z;
+                        _impulse.X += reduced.X;
+                        _impulse.Y += reduced.Y;
+                        _impulse.Z = 0.0f;
+                    }
+                    else
+                    {
+                        _impulse += impulse;
+                    }
                 }
                 else if (_limitState == LimitState.AtUpper)
                 {
                     float newImpulse = _impulse.Z + impulse.Z;
-					if (newImpulse > 0.0f)
-					{
-						Vector2 rhs = -Cdot1 + _impulse.Z * new Vector2(_mass.Col3.X, _mass.Col3.Y);
-						Vector2 reduced = _mass.Solve22(rhs);
-						impulse.X = reduced.X;
-						impulse.Y = reduced.Y;
-						impulse.Z = -_impulse.Z;
-						_impulse.X += reduced.X;
-						_impulse.Y += reduced.Y;
-						_impulse.Z = 0.0f;
-					}
-					else
-					{
-						_impulse += impulse;
-					}
+                    if (newImpulse > 0.0f)
+                    {
+                        Vector2 rhs = -Cdot1 + _impulse.Z * new Vector2(_mass.Col3.X, _mass.Col3.Y);
+                        Vector2 reduced = _mass.Solve22(rhs);
+                        impulse.X = reduced.X;
+                        impulse.Y = reduced.Y;
+                        impulse.Z = -_impulse.Z;
+                        _impulse.X += reduced.X;
+                        _impulse.Y += reduced.Y;
+                        _impulse.Z = 0.0f;
+                    }
+                    else
+                    {
+                        _impulse += impulse;
+                    }
                 }
 
                 Vector2 P = new Vector2(impulse.X, impulse.Y);
@@ -659,3 +656,4 @@ namespace FarseerPhysics.Dynamics.Joints
         }
     }
 }
+#endif

@@ -22,7 +22,7 @@
 * misrepresented as being the original software. 
 * 3. This notice may not be removed or altered from any source distribution. 
 */
-//#define USE_AWAKE_BODY_SET
+#define USE_AWAKE_BODY_SET
 
 using System;
 using System.Collections.Generic;
@@ -30,10 +30,17 @@ using System.Diagnostics;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
-using FarseerPhysics.Common.PhysicsLogic;
-using FarseerPhysics.Controllers;
 using FarseerPhysics.Dynamics.Contacts;
+#if EXPLOSIONS
+using FarseerPhysics.Common.PhysicsLogic;
+#endif
+#if CONTROLLERS
+using FarseerPhysics.Controllers;
+#endif
+#if JOINTS
 using FarseerPhysics.Dynamics.Joints;
+#endif
+
 using Microsoft.Xna.Framework;
 using WorldSingle = Engine.FarMath.FarValue;
 using WorldVector2 = Engine.FarMath.FarPosition;
@@ -69,22 +76,32 @@ namespace FarseerPhysics.Dynamics
         Bullet = (1 << 3),
         FixedRotation = (1 << 4),
         Enabled = (1 << 5),
-        IgnoreGravity = (1 << 6),
-		IgnoreCCD = (1 << 7),
+        IgnoreGravity = (1 << 6)
     }
 
-    public class Body : IDisposable
+    public sealed class Body : IDisposable
     {
+#if CONTROLLERS
+        public ControllerFilter ControllerFilter;
+#endif
+#if EXPLOSIONS
+        public PhysicsLogicFilter PhysicsLogicFilter;
+#endif
+
+        /// <summary>
+        /// Gets all the fixtures attached to this body.
+        /// </summary>
+        /// <value>The fixture list.</value>
+        public List<Fixture> FixtureList = new List<Fixture>(32);
+
         private static int _bodyIdCounter;
         internal float AngularVelocityInternal;
         public int BodyId;
-        public ControllerFilter ControllerFilter;
         internal BodyFlags Flags;
         internal Vector2 Force;
         internal float InvI;
         internal float InvMass;
         internal Vector2 LinearVelocityInternal;
-        public PhysicsLogicFilter PhysicsLogicFilter;
         internal float SleepTime;
         internal Sweep Sweep; // the swept motion for CCD
         internal float Torque;
@@ -98,17 +115,10 @@ namespace FarseerPhysics.Dynamics
 
         internal Body()
         {
-            FixtureList = new List<Fixture>(32);
         }
 
-        public Body(World world)
-            : this(world, null)
+        public Body(World world, object userData = null)
         {
-        }
-
-        public Body(World world, object userData)
-        {
-            FixtureList = new List<Fixture>(32);
             BodyId = _bodyIdCounter++;
 
             World = world;
@@ -117,9 +127,9 @@ namespace FarseerPhysics.Dynamics
             FixedRotation = false;
             IsBullet = false;
             SleepingAllowed = true;
-#if !USE_AWAKE_BODY_SET
+//#if !USE_AWAKE_BODY_SET
             Awake = true;
-#endif
+//#endif
             BodyType = BodyType.Static;
             Enabled = true;
 
@@ -157,14 +167,14 @@ namespace FarseerPhysics.Dynamics
 
                 if (_bodyType == BodyType.Static)
                 {
-					Awake = false;
+                    Awake = false;
                     LinearVelocityInternal = Vector2.Zero;
                     AngularVelocityInternal = 0.0f;
                 }
-				else
-				{
-					Awake = true;
-				}
+                else
+                {
+                    Awake = true;
+                }
 
                 Force = Vector2.Zero;
                 Torque = 0.0f;
@@ -307,35 +317,30 @@ namespace FarseerPhysics.Dynamics
                     {
                         Flags |= BodyFlags.Awake;
                         SleepTime = 0.0f;
-						World.ContactManager.UpdateContacts(ContactList, true);
-#if USE_AWAKE_BODY_SET
-						if (InWorld && !World.AwakeBodySet.Contains(this))
-						{
-							World.AwakeBodySet.Add(this);
-						}
-#endif
-					}
+                        World.ContactManager.EnableContacts(ContactList);
+                        if (InWorld)
+                        {
+                            World.SetAwake(this);
+                        }
+                    }
                 }
                 else
                 {
-#if USE_AWAKE_BODY_SET
-					// Check even for BodyType.Static because if this body had just been changed to Static it will have
-					// set Awake = false in the process.
-					if (InWorld && World.AwakeBodySet.Contains(this))
-					{
-						World.AwakeBodySet.Remove(this);
-					}
-#endif
+                    // Check even for BodyType.Static because if this body had just been changed to Static it will have
+                    // set Awake = false in the process.
                     Flags &= ~BodyFlags.Awake;
                     SleepTime = 0.0f;
                     LinearVelocityInternal = Vector2.Zero;
                     AngularVelocityInternal = 0.0f;
                     Force = Vector2.Zero;
                     Torque = 0.0f;
- 					World.ContactManager.UpdateContacts(ContactList, false);
-
+                    World.ContactManager.DisableContacts(ContactList);
+                    if (InWorld)
+                    {
+                        World.SetAsleep(this);
+                    }
                 }
-           }
+            }
             get { return (BodyType != Dynamics.BodyType.Static) && (Flags & BodyFlags.Awake) == BodyFlags.Awake; }
         }
 
@@ -426,19 +431,15 @@ namespace FarseerPhysics.Dynamics
             get { return (Flags & BodyFlags.FixedRotation) == BodyFlags.FixedRotation; }
         }
 
-		public bool InWorld { get; internal set; }
+        public bool InWorld { get; internal set; }
 
-        /// <summary>
-        /// Gets all the fixtures attached to this body.
-        /// </summary>
-        /// <value>The fixture list.</value>
-        public List<Fixture> FixtureList { get; internal set; }
-
+#if  JOINTS
         /// <summary>
         /// Get the list of all joints attached to this body.
         /// </summary>
         /// <value>The joint list.</value>
         public JointEdge JointList { get; internal set; }
+#endif
 
         /// <summary>
         /// Get the list of all contacts attached to this body.
@@ -666,24 +667,6 @@ namespace FarseerPhysics.Dynamics
             }
         }
 
-		/// <summary>
-		/// Body objects can define which categories of bodies they wish to ignore CCD with. 
-		/// This allows certain bodies to be configured to ignore CCD with objects that
-		/// aren't a penetration problem due to the way content has been prepared.
-		/// This is compared against the other Body's fixture CollisionCategories within World.SolveTOI().
-		/// </summary>
-		public Category IgnoreCCDWith
-		{
-            set
-            {
-                for (int i = 0; i < FixtureList.Count; i++)
-                {
-                    Fixture f = FixtureList[i];
-					f.IgnoreCCDWith = value;
-                }
-            }
-		}
-
         public short CollisionGroup
         {
             set
@@ -708,17 +691,6 @@ namespace FarseerPhysics.Dynamics
             }
         }
 
-        public bool IgnoreCCD
-        {
-            get { return (Flags & BodyFlags.IgnoreCCD) == BodyFlags.IgnoreCCD; }
-            set
-            {
-                if (value)
-                    Flags |= BodyFlags.IgnoreCCD;
-                else
-                    Flags &= ~BodyFlags.IgnoreCCD;
-            }
-        }
         #region IDisposable Members
 
         public bool IsDisposed { get; set; }
@@ -1253,51 +1225,20 @@ namespace FarseerPhysics.Dynamics
             return GetLinearVelocityFromWorldPoint(GetWorldPoint(ref localPoint));
         }
 
-        public Body DeepClone()
-        {
-            Body body = Clone();
-
-            for (int i = 0; i < FixtureList.Count; i++)
-            {
-                FixtureList[i].Clone(body);
-            }
-
-            return body;
-        }
-
-        public Body Clone()
-        {
-            Body body = new Body();
-            body.World = World;
-            body.UserData = UserData;
-            body.LinearDamping = LinearDamping;
-            body.LinearVelocityInternal = LinearVelocityInternal;
-            body.AngularDamping = AngularDamping;
-            body.AngularVelocityInternal = AngularVelocityInternal;
-            body.Position = Position;
-            body.Rotation = Rotation;
-            body._bodyType = _bodyType;
-            body.Flags = Flags;
-
-            World.AddBody(body);
-
-            return body;
-        }
-
         internal void SynchronizeFixtures()
         {
-            Transform xf1 = new Transform();
             float c = (float)Math.Cos(Sweep.A0), s = (float)Math.Sin(Sweep.A0);
+            var xf1 = new Transform();
             xf1.R.Col1.X = c;
-            xf1.R.Col2.X = -s;
             xf1.R.Col1.Y = s;
+            xf1.R.Col2.X = -s;
             xf1.R.Col2.Y = c;
 
             xf1.Position.X = Sweep.C0.X - (xf1.R.Col1.X * Sweep.LocalCenter.X + xf1.R.Col2.X * Sweep.LocalCenter.Y);
             xf1.Position.Y = Sweep.C0.Y - (xf1.R.Col1.Y * Sweep.LocalCenter.X + xf1.R.Col2.Y * Sweep.LocalCenter.Y);
 
-            IBroadPhase broadPhase = World.ContactManager.BroadPhase;
-            for (int i = 0; i < FixtureList.Count; i++)
+            var broadPhase = World.ContactManager.BroadPhase;
+            for (var i = 0; i < FixtureList.Count; i++)
             {
                 FixtureList[i].Synchronize(broadPhase, ref xf1, ref Xf);
             }
@@ -1328,6 +1269,7 @@ namespace FarseerPhysics.Dynamics
                 return false;
             }
 
+#if JOINTS
             // Does a joint prevent collision?
             for (JointEdge jn = JointList; jn != null; jn = jn.Next)
             {
@@ -1339,6 +1281,7 @@ namespace FarseerPhysics.Dynamics
                     }
                 }
             }
+#endif
 
             return true;
         }
@@ -1352,42 +1295,7 @@ namespace FarseerPhysics.Dynamics
             SynchronizeTransform();
         }
 
-        public event OnCollisionEventHandler OnCollision
-        {
-            add
-            {
-                for (int i = 0; i < FixtureList.Count; i++)
-                {
-                    FixtureList[i].OnCollision += value;
-                }
-            }
-            remove
-            {
-                for (int i = 0; i < FixtureList.Count; i++)
-                {
-                    FixtureList[i].OnCollision -= value;
-                }
-            }
-        }
-
-        public event OnSeparationEventHandler OnSeparation
-        {
-            add
-            {
-                for (int i = 0; i < FixtureList.Count; i++)
-                {
-                    FixtureList[i].OnSeparation += value;
-                }
-            }
-            remove
-            {
-                for (int i = 0; i < FixtureList.Count; i++)
-                {
-                    FixtureList[i].OnSeparation -= value;
-                }
-            }
-        }
-
+#if false
         public void IgnoreCollisionWith(Body other)
         {
             for (int i = 0; i < FixtureList.Count; i++)
@@ -1415,5 +1323,6 @@ namespace FarseerPhysics.Dynamics
                 }
             }
         }
+#endif
     }
 }

@@ -27,7 +27,10 @@ using System;
 using System.Diagnostics;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics.Contacts;
+#if JOINTS
 using FarseerPhysics.Dynamics.Joints;
+#endif
+
 using Microsoft.Xna.Framework;
 
 namespace FarseerPhysics.Dynamics
@@ -39,33 +42,48 @@ namespace FarseerPhysics.Dynamics
     {
         public Body[] Bodies;
         public int BodyCount;
-        public int ContactCount;
-        public int JointCount;
         private int _bodyCapacity;
-        private int _contactCapacity;
-        private ContactManager _contactManager;
-        private ContactSolver _contactSolver = new ContactSolver();
-        private Contact[] _contacts;
-        private int _jointCapacity;
-        private Joint[] _joints;
-        public float JointUpdateTime;
 
-        private const float LinTolSqr = Settings.LinearSleepTolerance * Settings.LinearSleepTolerance;
-        private const float AngTolSqr = Settings.AngularSleepTolerance * Settings.AngularSleepTolerance;
+        public int ContactCount;
+        private Contact[] _contacts;
+        private int _contactCapacity;
+
+#if JOINTS
+        public int JointCount;
+        private Joint[] _joints;
+        private int _jointCapacity;
+
+        public float JointUpdateTime;
+        private float _tmpTime;
 
 #if (!SILVERLIGHT)
         private Stopwatch _watch = new Stopwatch();
 #endif
+#endif
 
-        public void Reset(int bodyCapacity, int contactCapacity, int jointCapacity, ContactManager contactManager)
+        private ContactManager _contactManager;
+        private ContactSolver _contactSolver = new ContactSolver();
+
+        private const float LinTolSqr = Settings.LinearSleepTolerance * Settings.LinearSleepTolerance;
+        private const float AngTolSqr = Settings.AngularSleepTolerance * Settings.AngularSleepTolerance;
+
+        public void Reset(int bodyCapacity,
+                          int contactCapacity,
+#if JOINTS
+                          int jointCapacity,
+#endif
+                          ContactManager contactManager)
         {
-            _bodyCapacity = bodyCapacity;
-            _contactCapacity = contactCapacity;
-            _jointCapacity = jointCapacity;
-
             BodyCount = 0;
+            _bodyCapacity = bodyCapacity;
+
             ContactCount = 0;
+            _contactCapacity = contactCapacity;
+
+#if JOINTS
             JointCount = 0;
+            _jointCapacity = jointCapacity;
+#endif
 
             _contactManager = contactManager;
 
@@ -79,20 +97,23 @@ namespace FarseerPhysics.Dynamics
                 _contacts = new Contact[contactCapacity * 2];
             }
 
+#if JOINTS
             if (_joints == null || _joints.Length < jointCapacity)
             {
                 _joints = new Joint[jointCapacity * 2];
             }
+#endif
         }
 
         public void Clear()
         {
             BodyCount = 0;
             ContactCount = 0;
+#if JOINTS
             JointCount = 0;
+#endif
         }
 
-        private float _tmpTime;
 
         public void Solve(ref TimeStep step, ref Vector2 gravity)
         {
@@ -161,6 +182,7 @@ namespace FarseerPhysics.Dynamics
                 _contactSolver.WarmStart();
             }
 
+#if JOINTS
 #if (!SILVERLIGHT)
             if (Settings.EnableDiagnostics)
             {
@@ -181,10 +203,12 @@ namespace FarseerPhysics.Dynamics
                 _tmpTime += _watch.ElapsedTicks;
             }
 #endif
+#endif
 
             // Solve velocity constraints.
             for (int i = 0; i < Settings.VelocityIterations; ++i)
             {
+#if JOINTS
 #if (!SILVERLIGHT)
                 if (Settings.EnableDiagnostics)
                     _watch.Start();
@@ -197,7 +221,7 @@ namespace FarseerPhysics.Dynamics
                         continue;
 
                     joint.SolveVelocityConstraints(ref step);
-                    joint.Validate(step.inv_dt);
+                    joint.Validate(step.dtInverse);
                 }
 
 #if (!SILVERLIGHT)
@@ -207,6 +231,7 @@ namespace FarseerPhysics.Dynamics
                     _tmpTime += _watch.ElapsedTicks;
                     _watch.Reset();
                 }
+#endif
 #endif
 
                 _contactSolver.SolveVelocityConstraints();
@@ -266,8 +291,9 @@ namespace FarseerPhysics.Dynamics
             for (int i = 0; i < Settings.PositionIterations; ++i)
             {
                 bool contactsOkay = _contactSolver.SolvePositionConstraints(Settings.ContactBaumgarte);
-                bool jointsOkay = true;
 
+#if JOINTS
+                bool jointsOkay = true;
 #if (!SILVERLIGHT)
                 if (Settings.EnableDiagnostics)
                     _watch.Start();
@@ -295,16 +321,21 @@ namespace FarseerPhysics.Dynamics
                     // Exit early if the position errors are small.
                     break;
                 }
+#else
+                if (contactsOkay)
+                {
+                    // Exit early if the position errors are small.
+                    break;
+                }
+#endif
             }
 
-#if (!SILVERLIGHT)
+#if (!SILVERLIGHT) && JOINTS
             if (Settings.EnableDiagnostics)
             {
                 JointUpdateTime = _tmpTime;
             }
 #endif
-
-            Report(_contactSolver.Constraints);
 
             if (Settings.AllowSleep)
             {
@@ -401,7 +432,7 @@ namespace FarseerPhysics.Dynamics
                 if (dot > Settings.MaxTranslationSquared)
                 {
                     float norm = 1f / (float)Math.Sqrt(dot);
-                    float value = Settings.MaxTranslation * subStep.inv_dt;
+                    float value = Settings.MaxTranslation * subStep.dtInverse;
                     b.LinearVelocityInternal.X = value * (translationx * norm);
                     b.LinearVelocityInternal.Y = value * (translationy * norm);
                 }
@@ -411,11 +442,11 @@ namespace FarseerPhysics.Dynamics
                 {
                     if (rotation < 0.0)
                     {
-                        b.AngularVelocityInternal = -subStep.inv_dt * Settings.MaxRotation;
+                        b.AngularVelocityInternal = -subStep.dtInverse * Settings.MaxRotation;
                     }
                     else
                     {
-                        b.AngularVelocityInternal = subStep.inv_dt * Settings.MaxRotation;
+                        b.AngularVelocityInternal = subStep.dtInverse * Settings.MaxRotation;
                     }
                 }
 
@@ -429,8 +460,6 @@ namespace FarseerPhysics.Dynamics
 
                 // Note: shapes are synchronized later.
             }
-
-            Report(_contactSolver.Constraints);
         }
 
         public void Add(Body body)
@@ -445,34 +474,12 @@ namespace FarseerPhysics.Dynamics
             _contacts[ContactCount++] = contact;
         }
 
+#if JOINTS
         public void Add(Joint joint)
         {
             Debug.Assert(JointCount < _jointCapacity);
             _joints[JointCount++] = joint;
         }
-
-        private void Report(ContactConstraint[] constraints)
-        {
-            if (_contactManager == null)
-                return;
-
-            for (int i = 0; i < ContactCount; ++i)
-            {
-                Contact c = _contacts[i];
-
-                if (c.FixtureA.AfterCollision != null)
-                    c.FixtureA.AfterCollision(c.FixtureA, c.FixtureB, c);
-
-                if (c.FixtureB.AfterCollision != null)
-                    c.FixtureB.AfterCollision(c.FixtureB, c.FixtureA, c);
-
-                if (_contactManager.PostSolve != null)
-                {
-                    ContactConstraint cc = constraints[i];
-
-                    _contactManager.PostSolve(c, cc);
-                }
-            }
-        }
+#endif
     }
 }

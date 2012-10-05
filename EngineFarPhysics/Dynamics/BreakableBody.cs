@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if BREAKABLES
+using System;
 using System.Collections.Generic;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
@@ -135,3 +136,4 @@ namespace FarseerPhysics.Dynamics
         }
     }
 }
+#endif
