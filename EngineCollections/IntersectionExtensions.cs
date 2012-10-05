@@ -142,20 +142,6 @@ namespace Engine.Collections
             var boundsRight = boundsLeft + rectangle.Width;
             var boundsBottom = boundsTop + rectangle.Height;
 
-            //var circleLeft = center.X - radius;
-            //var circleTop = center.Y - radius;
-            //var circleRight = center.X + radius;
-            //var circleBottom = center.Y + radius;
-
-            //// Check for axis aligned separation.
-            //if (circleLeft > boundsRight ||
-            //    circleTop > boundsBottom ||
-            //    circleBottom < boundsLeft ||
-            //    circleRight < boundsTop)
-            //{
-            //    return false;
-            //}
-
             // Check for unaligned separation.
             var closest = center;
             if (closest.X < boundsLeft)

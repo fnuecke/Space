@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
 {
@@ -359,7 +360,8 @@ namespace Engine.ComponentSystem.Common.Systems
                 var collidableB = (Collidable)Manager.GetComponent(entityB, Collidable.TypeId);
 
                 // Test for actual collision.
-                if (collidableA.Intersects(collidableB))
+                Vector2 normal;
+                if (collidableA.Intersects(collidableB, out normal))
                 {
                     if (!_contacts[i].Intersecting)
                     {
@@ -370,6 +372,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         BeginCollision message;
                         message.EntityA = entityA;
                         message.EntityB = entityB;
+                        message.Normal = normal;
                         Manager.SendMessage(ref message);
 
                         // For debug view.

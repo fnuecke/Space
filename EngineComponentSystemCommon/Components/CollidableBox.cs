@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using Engine.ComponentSystem.Common.Components.Intersection;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -64,9 +63,11 @@ namespace Engine.ComponentSystem.Common.Components
         /// </summary>
         /// <param name="size">The size.</param>
         /// <param name="groups">The collision groups.</param>
-        public CollidableBox Initialize(Vector2 size, uint groups)
+        /// <param name="sweep">Whether the collidable should perform sweeping
+        /// intersection tests (for small, fast moving objects, like bullets).</param>
+        public CollidableBox Initialize(Vector2 size, uint groups, bool sweep = false)
         {
-            Initialize(groups);
+            Initialize(groups, sweep);
 
             Size = size;
 
@@ -101,27 +102,98 @@ namespace Engine.ComponentSystem.Common.Components
         /// Test if this collidable collides with the specified one.
         /// </summary>
         /// <param name="collidable">The other collidable to test against.</param>
-        /// <returns>Whether the two collide or not.</returns>
-        public override bool Intersects(Collidable collidable)
+        /// <param name="normal">The normal pointing to the other collidable at the
+        /// time of collision (may differ from current direction due to sweep tests).</param>
+        /// <returns>
+        /// Whether the two collide or not.
+        /// </returns>
+        internal override bool Intersects(Collidable collidable, out Vector2 normal)
         {
             var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
-            return collidable.Intersects(ref Size, ref PreviousPosition, ref currentPosition);
+            if (ShouldSweep || collidable.ShouldSweep)
+            {
+                // Use sweep collision tests.
+                return collidable.Intersects(ref Size, ref PreviousPosition, ref currentPosition, out normal);
+            }
+            else
+            {
+                // Use simple collision tests.
+                return collidable.Intersects(ref Size, ref currentPosition, out normal);
+            }
         }
 
-        internal override bool Intersects(ref Vector2 extents, ref FarPosition previousPosition, ref FarPosition position)
+        internal override bool Intersects(ref Vector2 extents, ref FarPosition position, out Vector2 normal)
         {
             var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
-            return AABBSweep.Test(
+            if (Intersection.Test(ref Size, ref currentPosition, ref extents, ref position))
+            {
+                normal = (Vector2)(position - currentPosition);
+                normal.Normalize();
+                return true;
+            }
+            else
+            {
+                normal = Vector2.Zero;
+                return false;
+            }
+        }
+
+        internal override bool Intersects(float radius, ref FarPosition position, out Vector2 normal)
+        {
+            var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
+            if (Intersection.Test(ref Size, ref currentPosition, radius, ref position))
+            {
+                normal = (Vector2)(position - currentPosition);
+                normal.Normalize();
+                return true;
+            }
+            else
+            {
+                normal = Vector2.Zero;
+                return false;
+            }
+        }
+
+        internal override bool Intersects(ref Vector2 extents, ref FarPosition previousPosition, ref FarPosition position, out Vector2 normal)
+        {
+            var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
+            float t;
+            if (Intersection.Test(
                 ref Size, ref PreviousPosition, ref currentPosition,
-                ref extents, ref previousPosition, ref position);
+                ref extents, ref previousPosition, ref position, out t))
+            {
+                var v0 = FarPosition.Lerp(previousPosition, position, t);
+                var v1 = FarPosition.Lerp(PreviousPosition, currentPosition, t);
+                normal = (Vector2)(v1 - v0);
+                normal.Normalize();
+                return true;
+            }
+            else
+            {
+                normal = Vector2.Zero;
+                return false;
+            }
         }
 
-        internal override bool Intersects(float radius, ref FarPosition previousPosition, ref FarPosition position)
+        internal override bool Intersects(float radius, ref FarPosition previousPosition, ref FarPosition position, out Vector2 normal)
         {
             var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
-            return SphereAABBSweep.Test(
+            float t;
+            if (Intersection.Test(
                 radius, ref previousPosition, ref position,
-                ref Size, ref PreviousPosition, ref currentPosition);
+                ref Size, ref PreviousPosition, ref currentPosition, out t))
+            {
+                var v0 = FarPosition.Lerp(previousPosition, position, t);
+                var v1 = FarPosition.Lerp(PreviousPosition, currentPosition, t);
+                normal = (Vector2)(v1 - v0);
+                normal.Normalize();
+                return true;
+            }
+            else
+            {
+                normal = Vector2.Zero;
+                return false;
+            }
         }
 
         #endregion

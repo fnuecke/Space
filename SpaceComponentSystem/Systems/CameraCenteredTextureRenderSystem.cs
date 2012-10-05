@@ -39,7 +39,8 @@ namespace Space.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         /// <param name="position">The position.</param>
         /// <param name="rotation">The rotation.</param>
-        protected override void DrawComponent(TextureRenderer component, Vector2 position, float rotation)
+        /// <param name="layerDepth">The base layer depth to render at.</param>
+        protected override void DrawComponent(TextureRenderer component, Vector2 position, float rotation, float layerDepth)
         {
             // See what we're drawing.
             ShipInfo shipInfo;
@@ -49,7 +50,7 @@ namespace Space.ComponentSystem.Systems
                 // Precompute sine and cosine (because they're expensive).
                 var cosRadians = (float)Math.Cos(rotation);
                 var sinRadians = (float)Math.Sin(rotation);
-                RenderEquipment(shipInfo.Equipment, position, rotation, cosRadians, sinRadians);
+                RenderEquipment(shipInfo.Equipment, position, rotation, cosRadians, sinRadians, layerDepth);
             }
             else
             {
@@ -60,11 +61,11 @@ namespace Space.ComponentSystem.Systems
 
                 // Draw.
                 SpriteBatch.Draw(component.Texture, position, null, component.Tint, rotation, origin, component.Scale,
-                                 SpriteEffects.None, 0);
+                                 SpriteEffects.None, layerDepth);
             }
         }
 
-        private void RenderEquipment(SpaceItemSlot slot, Vector2 offset, float rotation, float cosRadians, float sinRadians, int depth = 1, float order = 0.5f, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
+        private void RenderEquipment(SpaceItemSlot slot, Vector2 offset, float rotation, float cosRadians, float sinRadians, float layerDepth, int depth = 1, float order = 0.5f, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
         {
             // Get item info.
             var item = (SpaceItem)Manager.GetComponent(slot.Item, Item.TypeId);
@@ -121,7 +122,7 @@ namespace Space.ComponentSystem.Systems
                 origin,
                 item.RequiredSlotSize.Scale(1f),
                 mirrored.HasValue && mirrored.Value ? SpriteEffects.FlipVertically : SpriteEffects.None,
-                order);
+                order + layerDepth);
 
             // Render sub-items.
             foreach (SpaceItemSlot childSlot in Manager.GetComponents(item.Entity, ItemSlot.TypeId))
@@ -129,7 +130,7 @@ namespace Space.ComponentSystem.Systems
                 if (childSlot.Item > 0)
                 {
                     RenderEquipment(childSlot, localOffset, rotation, cosRadians, sinRadians,
-                        depth + 1, order, item.RequiredSlotSize, mirrored);
+                        layerDepth, depth + 1, order, item.RequiredSlotSize, mirrored);
                 }
             }
         }

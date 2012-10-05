@@ -452,7 +452,7 @@ namespace Space
                     {
                         if (_indexRectangle == null)
                         {
-                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) { Color = Color.LightGreen * 0.25f, Thickness = 2f, BlendState = BlendState.Additive};
+                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) { Color = Color.LightGreen * 0.75f, Thickness = 2f, BlendState = BlendState.Additive};
                         }
                         _indexRectangle.SetTransform(camera.Transform.Matrix);
                         index.DrawIndex(_indexGroupMask, _indexRectangle, camera.Transform.Translation);

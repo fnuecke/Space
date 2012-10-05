@@ -66,6 +66,13 @@ namespace Engine.ComponentSystem.Common.Components
         public uint CollisionGroups;
 
         /// <summary>
+        /// Whether intersection tests involving this collidable should use a sweeping
+        /// intersection test (relatively small object moving at potentially high speeds),
+        /// e.g. bullets.
+        /// </summary>
+        public bool ShouldSweep;
+
+        /// <summary>
         /// Previous position of the underlying physics component (for sweep tests).
         /// </summary>
         public FarPosition PreviousPosition;
@@ -96,6 +103,7 @@ namespace Engine.ComponentSystem.Common.Components
 
             var otherCollidable = (Collidable)other;
             CollisionGroups = otherCollidable.CollisionGroups;
+            ShouldSweep = otherCollidable.ShouldSweep;
             PreviousPosition = otherCollidable.PreviousPosition;
 
             return this;
@@ -105,9 +113,13 @@ namespace Engine.ComponentSystem.Common.Components
         /// Initialize the component with specified collision groups.
         /// </summary>
         /// <param name="groups">The groups.</param>
-        protected Collidable Initialize(uint groups)
+        /// <param name="sweep">Whether the collidable should perform sweeping
+        /// intersection tests (for small, fast moving objects, like bullets).</param>
+        /// <returns></returns>
+        protected Collidable Initialize(uint groups, bool sweep = false)
         {
             CollisionGroups = groups;
+            ShouldSweep = sweep;
 
             return this;
         }
@@ -121,6 +133,7 @@ namespace Engine.ComponentSystem.Common.Components
             base.Reset();
 
             CollisionGroups = 0;
+            ShouldSweep = false;
             PreviousPosition = FarPosition.Zero;
             ContactList = -1;
         }
@@ -139,12 +152,28 @@ namespace Engine.ComponentSystem.Common.Components
         /// Test if this collidable collides with the specified one.
         /// </summary>
         /// <param name="collidable">The other collidable to test against.</param>
-        /// <returns>Whether the two collide or not.</returns>
-        public abstract bool Intersects(Collidable collidable);
+        /// <param name="normal">The normal pointing to the other collidable at the
+        /// time of collision (may differ from current direction due to sweep tests).</param>
+        /// <returns>
+        /// Whether the two collide or not.
+        /// </returns>
+        internal abstract bool Intersects(Collidable collidable, out Vector2 normal);
 
-        internal abstract bool Intersects(ref Vector2 extents, ref FarPosition previousPosition, ref FarPosition position);
+        #region Pairwise matching for shape type collision, normal and sweep variants
 
-        internal abstract bool Intersects(float radius, ref FarPosition previousPosition, ref FarPosition position);
+        // Simple box intersection.
+        internal abstract bool Intersects(ref Vector2 extents, ref FarPosition position, out Vector2 normal);
+
+        // Simple sphere intersection.
+        internal abstract bool Intersects(float radius, ref FarPosition position, out Vector2 normal);
+
+        // Sweep box intersection.
+        internal abstract bool Intersects(ref Vector2 extents, ref FarPosition previousPosition, ref FarPosition position, out Vector2 normal);
+
+        // Sweep sphere intersection.
+        internal abstract bool Intersects(float radius, ref FarPosition previousPosition, ref FarPosition position, out Vector2 normal);
+
+        #endregion
 
         #endregion
 
@@ -161,6 +190,7 @@ namespace Engine.ComponentSystem.Common.Components
         {
             return base.Packetize(packet)
                 .Write(CollisionGroups)
+                .Write(ShouldSweep)
                 .Write(PreviousPosition)
                 .Write(ContactList);
         }
@@ -174,6 +204,7 @@ namespace Engine.ComponentSystem.Common.Components
             base.Depacketize(packet);
 
             CollisionGroups = packet.ReadUInt32();
+            ShouldSweep = packet.ReadBoolean();
             PreviousPosition = packet.ReadFarPosition();
             ContactList = packet.ReadInt32();
         }
@@ -188,6 +219,7 @@ namespace Engine.ComponentSystem.Common.Components
             base.Hash(hasher);
 
             hasher.Put(CollisionGroups);
+            hasher.Put(ShouldSweep);
             hasher.Put(PreviousPosition);
             hasher.Put(ContactList);
         }
@@ -204,7 +236,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", PreviousPosition=" + PreviousPosition + ", ContactList=" + ContactList;
+            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", ShouldSweep=" + ShouldSweep + ", PreviousPosition=" + PreviousPosition + ", ContactList=" + ContactList;
         }
 
         #endregion
