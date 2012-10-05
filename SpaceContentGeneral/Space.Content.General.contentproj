@@ -97,21 +97,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects\BasicExplosion.xml">
-      <Name>BasicExplosion</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Effects\Thruster.xml">
-      <Name>Thruster</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-      <SubType>Designer</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Fonts\ConsoleFont.spritefont">
       <SubType>Designer</SubType>
       <Name>ConsoleFont</Name>
@@ -134,10 +119,6 @@
     <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
       <Name>Engine.Serialization.Writers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ProjectMercuryContentPipeline\ProjectMercury.ContentPipeline.csproj">
-      <Project>{5B60FB65-704B-4D28-9117-AF0B25220484}</Project>
-      <Name>ProjectMercury.ContentPipeline</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>

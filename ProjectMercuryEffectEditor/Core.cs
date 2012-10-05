@@ -384,7 +384,8 @@ namespace ProjectMercury.EffectEditor
 
             List<TextureReference> references = new List<TextureReference>();
 
-            DirectoryInfo texturesDirectory = new DirectoryInfo("Textures");
+            //DirectoryInfo texturesDirectory = new DirectoryInfo("Textures");
+            DirectoryInfo texturesDirectory = new DirectoryInfo(Application.StartupPath + "\\..\\..\\..\\SpaceContentTextures\\Effects");
 
             if (texturesDirectory.Exists)
             {
@@ -430,7 +431,7 @@ namespace ProjectMercury.EffectEditor
 
             float x, y;
 
-            if (this.Interface.TriggerRequired(out x, out y))
+            if (this.Interface.TriggerRequired(out x, out y, this.ParticleEffect))
                 this.ParticleEffect.Trigger(new FarPosition { X = x, Y = y });
 
             Stopwatch updateTimer = Stopwatch.StartNew();
@@ -504,7 +505,7 @@ namespace ProjectMercury.EffectEditor
 
                         foreach (TextureReference reference in this.TextureReferences)
                         {
-                            if (reference.GetAssetName() == emitter.ParticleTextureAssetName)
+                            if ("Textures\\Effects\\" + reference.GetAssetName() == emitter.ParticleTextureAssetName.Replace('/', '\\'))
                             {
                                 emitter.ParticleTexture = reference.Texture;
 
