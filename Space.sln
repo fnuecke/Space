@@ -95,10 +95,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectMercury.EffectEditor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectMercury.EffectEditor.DefaultPluginLibrary", "ProjectMercuryEffectEditorDefaultPluginLibrary\ProjectMercury.EffectEditor.DefaultPluginLibrary.csproj", "{1DA69486-E7D0-46EF-A8A7-74E3CDFFB3FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarPhysics", "EngineFarPhysics\Engine.FarPhysics.csproj", "{1FFF439C-6FB7-4886-A8A7-612713905688}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.Physics", "EngineComponentSystemPhysics\Engine.ComponentSystem.Physics.csproj", "{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarCollections", "EngineFarCollections\Engine.FarCollections.csproj", "{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}"
 EndProject
 Global
@@ -761,38 +757,6 @@ Global
 		{1DA69486-E7D0-46EF-A8A7-74E3CDFFB3FC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1DA69486-E7D0-46EF-A8A7-74E3CDFFB3FC}.Release|x86.ActiveCfg = Release|Any CPU
 		{1DA69486-E7D0-46EF-A8A7-74E3CDFFB3FC}.Release|x86.Build.0 = Release|Any CPU
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug|Any CPU.Build.0 = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug|x86.ActiveCfg = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Debug|x86.Build.0 = Debug|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release (TSS Threading)|x86.Build.0 = Release|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release|Any CPU.ActiveCfg = Release|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release|Any CPU.Build.0 = Release|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release|x86.ActiveCfg = Release|x86
-		{1FFF439C-6FB7-4886-A8A7-612713905688}.Release|x86.Build.0 = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug|Any CPU.Build.0 = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug|x86.ActiveCfg = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Debug|x86.Build.0 = Debug|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release (TSS Threading)|x86.Build.0 = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release|Any CPU.ActiveCfg = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release|Any CPU.Build.0 = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release|x86.ActiveCfg = Release|x86
-		{EE25D4DD-68C4-4A40-851A-3BEE00EF0178}.Release|x86.Build.0 = Release|x86
 		{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
 		{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86

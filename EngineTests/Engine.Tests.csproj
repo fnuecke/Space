@@ -71,7 +71,6 @@
     <Compile Include="ComponentSystem\Common\Systems\SpinSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\ManagerTest.cs" />
     <Compile Include="FarMath\FarValueTests.cs" />
-    <Compile Include="FarPhysics\WorldSerializationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -94,10 +93,6 @@
     <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
       <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
       <Name>Engine.FarMath</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineFarPhysics\Engine.FarPhysics.csproj">
-      <Project>{0A850700-1ABB-4288-A391-6726B90EBEB9}</Project>
-      <Name>Engine.FarPhysics</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineIO\Engine.IO.csproj">
       <Project>{6AF3014F-82CF-4702-A7D2-DB4193BC2729}</Project>
