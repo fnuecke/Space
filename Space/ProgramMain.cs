@@ -29,7 +29,7 @@ namespace Space
                             assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
                 Logger.Info("Build Version: {0}", assembly.Version);
                 Logger.Info("CLR Version: {0}", Environment.Version);
-                Logger.Info("CPU Processors: {0}", Environment.ProcessorCount);
+                Logger.Info("CPU Count: {0}", Environment.ProcessorCount);
                 Logger.Info("Starting up...");
                 game.Run();
                 Logger.Info("Shutting down...");

@@ -88,10 +88,10 @@ namespace Space.View
         private void SessionOnGameInfoReceived(object sender, GameInfoReceivedEventArgs e)
         {
             var args = new JSObject();
-            args["host"] = new JSValue(e.Host.Address.ToString());
-            args["numPlayers"] = new JSValue(e.NumPlayers);
-            args["maxPlayers"] = new JSValue(e.MaxPlayers);
-            args["data"] = JSValue.CreateNull(); // TODO think of what else we might want to send
+            args["host"] = e.Host.Address.ToString();
+            args["numPlayers"] = e.NumPlayers;
+            args["maxPlayers"] = e.MaxPlayers;
+            args["data"] = JSValue.Null; // TODO think of what else we might want to send
             _game.ScreenManager.Call("Space", "onGameInfoReceived", new[] {new JSValue(args)});
         }
 
@@ -123,8 +123,8 @@ namespace Space.View
         private void SessionOnPlayerJoined(object sender, PlayerEventArgs e)
         {
             var args = new JSObject();
-            args["number"] = new JSValue(e.Player.Number);
-            args["name"] = new JSValue(e.Player.Name);
+            args["number"] = e.Player.Number;
+            args["name"] = e.Player.Name;
             _game.ScreenManager.Call("Space", "onPlayerJoined", new[] { new JSValue(args) });
         }
 
@@ -136,8 +136,8 @@ namespace Space.View
         private void SessionOnPlayerLeft(object sender, PlayerEventArgs e)
         {
             var args = new JSObject();
-            args["number"] = new JSValue(e.Player.Number);
-            args["name"] = new JSValue(e.Player.Name);
+            args["number"] = e.Player.Number;
+            args["name"] = e.Player.Name;
             _game.ScreenManager.Call("Space", "onPlayerLeft", new[] { new JSValue(args) });
         }
 
@@ -178,10 +178,10 @@ namespace Space.View
             s.AddCallbackWithReturnValue("Space", "getEnergy", GetEnergy);
             s.AddCallbackWithReturnValue("Space", "getMaxEnergy", GetMaxEnergy);
 
-            s.AddCallbackWithReturnValue("Space", "getXCoordinate", GetXCoordinate);
-            s.AddCallbackWithReturnValue("Space", "getYCoordinate", GetYCoordinate);
-            s.AddCallbackWithReturnValue("Space", "getXCell", GetXCell);
-            s.AddCallbackWithReturnValue("Space", "getYCell", GetYCell);
+            s.AddCallbackWithReturnValue("Space", "getXCoordinate", GetPositionX);
+            s.AddCallbackWithReturnValue("Space", "getYCoordinate", GetPositionY);
+            s.AddCallbackWithReturnValue("Space", "getXCell", GetCellX);
+            s.AddCallbackWithReturnValue("Space", "getYCell", GetCellY);
             s.AddCallbackWithReturnValue("Space", "getSpeed", GetSpeed);
             s.AddCallbackWithReturnValue("Space", "getMaxSpeed", GetMaxSpeed);
             s.AddCallbackWithReturnValue("Space", "getMaxAcceleration", GetMaxAcceleration);
@@ -197,17 +197,17 @@ namespace Space.View
         /// <summary>
         /// Gets the GUI string for the specified id.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The name of the GUI string to get.</param>
-        /// <returns>The value for that string for the current language setting.</returns>
-        private static JSValue GetGuiString(JSValue[] args)
+        private static void GetGuiString(object sender, JavascriptMethodEventArgs args)
         {
-            if (args.Length != 1 || !args[0].IsString)
+            if (args.Arguments.Length != 1 || !args.Arguments[0].IsString)
             {
                 Logger.Warn("Invalid call to 'L', must specify one string argument.");
-                return JSValue.CreateUndefined();
+                args.Result = JSValue.Undefined; return;
             }
-            var s = GuiStrings.ResourceManager.GetString(args[0].ToString());
-            return new JSValue(s ?? ("!!" + args[0] + "!!"));
+            var s = GuiStrings.ResourceManager.GetString(args.Arguments[0].ToString());
+            args.Result = s ?? ("!!" + args.Arguments[0] + "!!");
         }
 
         #endregion
@@ -217,8 +217,9 @@ namespace Space.View
         /// <summary>
         /// Hosts a new game, launching a local server and connecting to it.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        private void StartLocalGame(JSValue[] args)
+        private void StartLocalGame(object sender, JavascriptMethodEventArgs args)
         {
             _game.RestartServer(true);
             _game.RestartClient(true);
@@ -227,8 +228,9 @@ namespace Space.View
         /// <summary>
         /// Hosts a new game, launching a local server and connecting to it.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        private void HostGame(JSValue[] args)
+        private void HostGame(object sender, JavascriptMethodEventArgs args)
         {
             _game.RestartServer();
             /*
@@ -243,25 +245,27 @@ namespace Space.View
         /// <summary>
         /// Joins a game running on the specified server.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        private void JoinGame(JSValue[] args)
+        private void JoinGame(object sender, JavascriptMethodEventArgs args)
         {
-            if (args.Length != 1 || !args[0].IsString)
+            if (args.Arguments.Length != 1 || !args.Arguments[0].IsString)
             {
                 Logger.Warn("Invalid call to 'Space.joinGame', must specify one string argument.");
                 return;
             }
             _game.DisposeServer();
             _game.RestartClient();
-            _game.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[0].ToString()), 7777),
+            _game.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args.Arguments[0].ToString()), 7777),
                                                  Settings.Instance.PlayerName, Settings.Instance.CurrentProfile);
         }
 
         /// <summary>
         /// Leaves the game we are currently in, if any.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        private void LeaveGame(JSValue[] args)
+        private void LeaveGame(object sender, JavascriptMethodEventArgs args)
         {
             _game.DisposeControllers();
         }
@@ -269,8 +273,9 @@ namespace Space.View
         /// <summary>
         /// Searches for games in the local network.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        private void SearchGames(JSValue[] args)
+        private void SearchGames(object sender, JavascriptMethodEventArgs args)
         {
             _game.Client.Controller.Session.Search();
         }
@@ -311,15 +316,15 @@ namespace Space.View
         /// <summary>
         /// Gets the setting names available for scripting environment.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        /// <returns>An array with available setting names.</returns>
-        private static JSValue GetSettingInfos(JSValue[] args)
+        private static void GetSettingInfos(object sender, JavascriptMethodEventArgs args)
         {
             var settings = new JSObject();
             foreach (var setting in SettingInfo)
             {
                 var obj = new JSObject();
-                obj["name"] = new JSValue(setting.Key);
+                obj["name"] = setting.Key;
 
                 // Write meta info for this setting.
                 var attribute = setting.Value.Item2;
@@ -332,7 +337,7 @@ namespace Space.View
                     {
                         options[i] = ObjectToJSValue(attribute.Options[i]);
                     }
-                    obj["options"] = new JSValue(options);
+                    obj["options"] = options;
                 }
 
                 // Value ranges, if applicable.
@@ -346,60 +351,60 @@ namespace Space.View
                 }
 
                 // Should we list the setting?
-                obj["show"] = new JSValue(attribute.ShouldList);
+                obj["show"] = attribute.ShouldList;
 
                 // Localized strings.
-                obj["title"] = new JSValue(GuiStrings.ResourceManager.
-                    GetString(attribute.TitleLocalizationId) ?? ("!!" + attribute.TitleLocalizationId + "!!"));
+                obj["title"] = GuiStrings.ResourceManager.GetString(attribute.TitleLocalizationId) ?? ("!!" + attribute.TitleLocalizationId + "!!");
                 var description = GuiStrings.ResourceManager.GetString(attribute.DescriptionLocalizationId);
                 if (description != null)
                 {
-                    obj["description"] = new JSValue(description);
+                    obj["description"] = description;
                 }
 
-                settings[setting.Key] = new JSValue(obj);
+                settings[setting.Key] = obj;
             }
-            return new JSValue(settings);
+            args.Result = settings;
         }
 
         /// <summary>
         /// Gets the current value of the setting with the specified name,
         /// which must be one of the array that can be read via GetSettingNames.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        /// <returns>The current value for that setting.</returns>
-        private static JSValue GetSetting(JSValue[] args)
+        private static void GetSetting(object sender, JavascriptMethodEventArgs args)
         {
-            if (args.Length != 1 || !args[0].IsString)
+            if (args.Arguments.Length != 1 || !args.Arguments[0].IsString)
             {
                 Logger.Warn("Invalid call to 'Space.getSetting', must specify one string argument.");
-                return JSValue.CreateUndefined();
+                args.Result = JSValue.Undefined; return;
             }
             Tuple<string, ScriptAccessAttribute> settingInfo;
-            if (!SettingInfo.TryGetValue(args[0].ToString(), out settingInfo))
+            if (!SettingInfo.TryGetValue(args.Arguments[0].ToString(), out settingInfo))
             {
                 Logger.Warn("Invalid call to 'Space.getSetting', unknown setting.");
-                return JSValue.CreateUndefined();
+                args.Result = JSValue.Undefined; return;
             }
             var info = typeof(Settings);
             var fieldInfo = info.GetField(settingInfo.Item1);
-            return ObjectToJSValue(fieldInfo.GetValue(Settings.Instance));
+            args.Result = ObjectToJSValue(fieldInfo.GetValue(Settings.Instance));
         }
 
         /// <summary>
         /// Sets a new value for a setting.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        private static void SetSetting(JSValue[] args)
+        private static void SetSetting(object sender, JavascriptMethodEventArgs args)
         {
-            if (args.Length != 2 || !args[0].IsString)
+            if (args.Arguments.Length != 2 || !args.Arguments[0].IsString)
             {
                 Logger.Warn("Invalid call to 'Space.setSetting', must specify two arguments, of which the first must be a string.");
                 return;
             }
 
             Tuple<string, ScriptAccessAttribute> settingInfo;
-            if (!SettingInfo.TryGetValue(args[0].ToString(), out settingInfo))
+            if (!SettingInfo.TryGetValue(args.Arguments[0].ToString(), out settingInfo))
             {
                 Logger.Warn("Invalid call to 'Space.setSetting', unknown setting.");
                 return;
@@ -409,7 +414,7 @@ namespace Space.View
             var fieldInfo = info.GetField(settingInfo.Item1);
             try
             {
-                fieldInfo.SetValue(Settings.Instance, JSValueToObject(fieldInfo.FieldType, args[1]));
+                fieldInfo.SetValue(Settings.Instance, JSValueToObject(fieldInfo.FieldType, args.Arguments[1]));
             }
             catch (Exception)
             {
@@ -420,11 +425,11 @@ namespace Space.View
         /// <summary>
         /// Gets a list of all commands that can be handled in the GUI.
         /// </summary>
+        /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
-        /// <returns></returns>
-        private static JSValue GetGameCommands(JSValue[] args)
+        private static void GetGameCommands(object sender, JavascriptMethodEventArgs args)
         {
-            return new JSValue(Enum.GetNames(typeof(GameCommand)).Select(name => new JSValue(name)).ToArray());
+            args.Result = new JSValue(Enum.GetNames(typeof(GameCommand)).Select(name => new JSValue(name)).ToArray());
         }
 
         #region Value conversion
@@ -457,7 +462,7 @@ namespace Space.View
                 {typeof(float), o => new JSValue((float)o)},
                 {typeof(double), o => new JSValue((double)o)},
                 {typeof(bool), o => new JSValue((bool)o)},
-                {typeof(Point), o => new JSValue(((Point)o).X + "x" + ((Point)o).Y)},
+                {typeof(Point), o => ((Point)o).X + "x" + ((Point)o).Y},
             };
 
         /// <summary>
@@ -467,13 +472,13 @@ namespace Space.View
             new Dictionary<Type, FromJSValue>
             {
                 {typeof(string), v => v.ToString()},
-                {typeof(int), v => v.ToInteger()},
-                {typeof(short), v => (short)v.ToInteger()},
-                {typeof(ushort), v => (ushort)v.ToInteger()},
-                {typeof(byte), v => (byte)v.ToInteger()},
-                {typeof(float), v => (float)v.ToDouble()},
-                {typeof(double), v => v.ToDouble()},
-                {typeof(bool), v => v.ToBoolean()},
+                {typeof(int), v => (int)v},
+                {typeof(short), v => (short)v},
+                {typeof(ushort), v => (ushort)v},
+                {typeof(byte), v => (byte)v},
+                {typeof(float), v => (float)v},
+                {typeof(double), v => (double)v},
+                {typeof(bool), v => (bool)v},
                 {typeof(Point), v => {
                     var a = v.ToString().Split('x');
                     return new Point(int.Parse(a[0]), int.Parse(a[1]));
@@ -490,7 +495,7 @@ namespace Space.View
             // Null is a special case.
             if (obj == null)
             {
-                return JSValue.CreateNull();
+                return JSValue.Null;
             }
 
             // Check if we have a simple converter for this type.
@@ -509,12 +514,12 @@ namespace Space.View
                 {
                     result[key.ToString()] = new JSValue(dict[key].ToString());
                 }
-                return new JSValue(result);
+                return result;
             }
 
             // Cannot handle this type.
             Logger.Warn("Cannot convert C# object of type '" + type.Name + "' to JSValue.");
-            return JSValue.CreateUndefined();
+            return JSValue.Undefined;
         }
 
         private static object JSValueToObject(Type fieldType, JSValue value)
@@ -553,162 +558,112 @@ namespace Space.View
 
         #region Ingame
 
-        private JSValue GetNumPlayers(JSValue[] args)
+        private void GetNumPlayers(object sender, JavascriptMethodEventArgs args)
         {
             var session = _game.Client.Controller.Session;
-            if (session.ConnectionState != ClientState.Connected)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(session.NumPlayers);
+            args.Result = session.ConnectionState != ClientState.Connected ? JSValue.Undefined : session.NumPlayers;
         }
 
-        private JSValue GetMaxPlayers(JSValue[] args)
+        private void GetMaxPlayers(object sender, JavascriptMethodEventArgs args)
         {
             var session = _game.Client.Controller.Session;
-            if (session.ConnectionState != ClientState.Connected)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(session.MaxPlayers);
+            args.Result = session.ConnectionState != ClientState.Connected ? JSValue.Undefined : session.MaxPlayers;
         }
 
-        private JSValue GetLocalPlayerNumber(JSValue[] args)
+        private void GetLocalPlayerNumber(object sender, JavascriptMethodEventArgs args)
         {
             var session = _game.Client.Controller.Session;
-            if (session.ConnectionState != ClientState.Connected)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(session.LocalPlayer.Number);
+            args.Result = session.ConnectionState != ClientState.Connected ? JSValue.Undefined : session.LocalPlayer.Number;
         }
 
-        private JSValue GetHealth(JSValue[] args)
+        private void GetHealth(object sender, JavascriptMethodEventArgs args)
+        {
+            var info = _game.Client.GetPlayerShipInfo();
+            args.Result = info == null ? JSValue.Undefined : info.Health;
+        }
+
+        private void GetMaxHealth(object sender, JavascriptMethodEventArgs args)
+        {
+            var info = _game.Client.GetPlayerShipInfo();
+            args.Result = info == null ? JSValue.Undefined : info.MaxHealth;
+        }
+
+        private void GetEnergy(object sender, JavascriptMethodEventArgs args)
+        {
+            var info = _game.Client.GetPlayerShipInfo();
+            args.Result = info == null ? JSValue.Undefined : info.Energy;
+        }
+
+        private void GetMaxEnergy(object sender, JavascriptMethodEventArgs args)
+        {
+            var info = _game.Client.GetPlayerShipInfo();
+            args.Result = info == null ? JSValue.Undefined : info.MaxEnergy;
+        }
+
+        private void GetPositionX(object sender, JavascriptMethodEventArgs args)
+        {
+            var info = _game.Client.GetPlayerShipInfo();
+            args.Result = info == null ? JSValue.Undefined : (JSValue)info.Position.X.ToString();
+        }
+
+        private void GetPositionY(object sender, JavascriptMethodEventArgs args)
+        {
+            var info = _game.Client.GetPlayerShipInfo();
+            args.Result = info == null ? JSValue.Undefined : (JSValue)info.Position.Y.ToString();
+        }
+
+        private void GetCellX(object sender, JavascriptMethodEventArgs args)
         {
             var info = _game.Client.GetPlayerShipInfo();
             if (info == null)
             {
-                return JSValue.CreateUndefined();
+                args.Result = JSValue.Undefined;
             }
-            return new JSValue(info.Health);
+            else
+            {
+                var pos = info.Position.X;
+                var cellX = ((int)pos) >> CellSystem.CellSizeShiftAmount;
+                args.Result = cellX;
+            }
         }
 
-        private JSValue GetMaxHealth(JSValue[] args)
+        private void GetCellY(object sender, JavascriptMethodEventArgs args)
         {
             var info = _game.Client.GetPlayerShipInfo();
             if (info == null)
             {
-                return JSValue.CreateUndefined();
+                args.Result = JSValue.Undefined;
             }
-            return new JSValue(info.MaxHealth);
+            else
+            {
+                var pos = info.Position.Y;
+                var cell = ((int)pos) >> CellSystem.CellSizeShiftAmount;
+                args.Result = cell;
+            }
         }
 
-        private JSValue GetEnergy(JSValue[] args)
+        private void GetSpeed(object sender, JavascriptMethodEventArgs args)
         {
             var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(info.Energy);
+            args.Result = info == null ? JSValue.Undefined : Math.Round(info.Speed, 1);
         }
 
-        private JSValue GetMaxEnergy(JSValue[] args)
+        private void GetMaxSpeed(object sender, JavascriptMethodEventArgs args)
         {
             var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(info.MaxEnergy);
+            args.Result = info == null ? JSValue.Undefined : Math.Round(info.MaxSpeed, 1);
         }
 
-        private JSValue GetXCoordinate(JSValue[] args)
+        private void GetMaxAcceleration(object sender, JavascriptMethodEventArgs args)
         {
-            
             var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-
-            return new JSValue((int)info.Position.X);
+            args.Result = info == null ? JSValue.Undefined : Math.Round(info.MaxAcceleration, 1);
         }
 
-        private JSValue GetYCoordinate(JSValue[] args)
+        private void GetMass(object sender, JavascriptMethodEventArgs args)
         {
             var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-
-            return new JSValue((int)info.Position.Y);
-        }
-
-        private JSValue GetXCell(JSValue[] args)
-        {
-            var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            var pos = info.Position.X;
-            var cellX = ((int)pos) >> CellSystem.CellSizeShiftAmount;
-            return new JSValue(cellX);
-        }
-
-        private JSValue GetYCell(JSValue[] args)
-        {
-            var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-
-            var pos = info.Position.Y;
-            var cell = ((int)pos) >> CellSystem.CellSizeShiftAmount;
-            return new JSValue(cell);
-        }
-
-        private JSValue GetSpeed(JSValue[] args)
-        {
-            var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(Math.Round(info.Speed,1));
-        }
-
-        private JSValue GetMaxSpeed(JSValue[] args)
-        {
-            var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(Math.Round(info.MaxSpeed,1));
-        }
-
-        private JSValue GetMaxAcceleration(JSValue[] args)
-        {
-            var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(Math.Round(info.MaxAcceleration,1));
-        }
-
-        private JSValue GetMass(JSValue[] args)
-        {
-            var info = _game.Client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(info.Mass);
+            args.Result = info == null ? JSValue.Undefined : info.Mass;
         }
 
         #endregion

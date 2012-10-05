@@ -175,7 +175,7 @@ namespace Engine.Controller
                             assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
             sb.AppendFormat("Build Version: {0}\n", assembly.Version);
             sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
-            sb.AppendFormat("CPU Processors: {0}\n", Environment.ProcessorCount);
+            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
             sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
             sb.Append("Controller Type: Client\n");
             sb.Append("--------------------------------------------------------------------------------\n");
