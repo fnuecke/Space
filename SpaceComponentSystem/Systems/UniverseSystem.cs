@@ -128,6 +128,7 @@ namespace Space.ComponentSystem.Systems
                         // It is, use a predefined number of planets and moons,
                         // and make sure it's a solar system.
                         FactoryLibrary.SampleSunSystem(Manager, "solar_system", center, random);
+                       // FactoryLibrary.SampleTestObject(Manager, new FarPosition(50000, 50000), random);//TODO just for testing
                     }
                     else
                     {

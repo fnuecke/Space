@@ -106,6 +106,7 @@
     <Compile Include="Components\ShipInfo.cs" />
     <Compile Include="Components\SunRenderer.cs" />
     <Compile Include="Components\ItemEffect.cs" />
+    <Compile Include="Components\TestObjectRenderer.cs" />
     <Compile Include="Components\WeaponControl.cs" />
     <Compile Include="Components\Wing.cs" />
     <Compile Include="EntityFactory.cs" />
@@ -121,11 +122,13 @@
     <Compile Include="Factories\SunSystemFactory.cs" />
     <Compile Include="Factories\TriggersFullValidationAttribute.cs" />
     <Compile Include="Factories\WingFactory.cs" />
+    <Compile Include="Messages\MoveCamera.cs" />
     <Compile Include="Systems\AISystem.cs" />
     <Compile Include="Systems\BiomeSystem.cs" />
     <Compile Include="Systems\CameraCenteredBackgroundSystem.cs" />
     <Compile Include="Systems\CameraCenteredInterpolationSystem.cs" />
     <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
+    <Compile Include="Systems\CameraMovementSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionDamageSystem.cs" />
     <Compile Include="Systems\DamageSystem.cs" />
@@ -151,6 +154,7 @@
     <Compile Include="Systems\SpaceUsablesSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\ItemEffectSystem.cs" />
+    <Compile Include="Systems\TestObjectRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Systems\WeaponControlSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />

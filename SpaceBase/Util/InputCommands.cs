@@ -157,8 +157,12 @@
         /// <summary>
         /// Target the element closest to the current cursor position.
         /// </summary>
-        CursorTarget
+        CursorTarget,
 
+        #endregion
+
+        #region test
+        TestCommand
         #endregion
     }
 

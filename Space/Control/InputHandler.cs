@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Engine.FarMath;
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Engine.Util;
@@ -7,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
+using Space.ComponentSystem.Messages;
 using Space.ComponentSystem.Systems;
 using Space.Input;
 using Space.Simulation.Commands;
@@ -498,6 +501,17 @@ namespace Space.Control
                 case GameCommand.Console:
                     // Toggle console.
                     _game.GameConsole.IsOpen = !_game.GameConsole.IsOpen;
+                    break;
+
+                    //Testing time
+                case GameCommand.TestCommand:
+                    var move = new MoveCamera {Player = 0, Position = new List<MoveCamera.Positions>(),Return = true,ReturnSpeed = 10};
+                    var pos = new MoveCamera.Positions {Speed = 10,Zoom = 0.3f};
+                    move.Position.Add(pos);
+                    pos = new MoveCamera.Positions {Destination = new FarPosition(51000, 49000),Speed = 10};
+                    move.Position.Add(pos);
+                    move.Position.Add(new MoveCamera.Positions { Destination = new FarPosition(51000, 49000), Speed = 100, Zoom = 0.7f });
+                    _game.Client.GetSystem<CameraMovementSystem>().Move(move);
                     break;
             }
 
