@@ -1,82 +1,85 @@
 ﻿<html>
-	<head>
+    <head>
         <title>Options</title>
-		<base href=".." />
-		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/Settings/Stylesheet.css" />
-		<script type="text/javascript" src="asset://xna/Screens/General/jquery-1.7.2.js"></script>
-	</head>
-	<body style="background:url(asset://xna/Images/background.png)">
-		<h1 id="title"></h1>
-		<ul id="settings">
-		</ul>
-		<button id="accept"></button>
-		<button id="cancel"></button>
-		
-		<script type="text/javascript">
-			var Space = {};
-			var Screens = {};
-			(function($) {
-				// Wait for init to make sure callbacks are registered.
-				Screens.onInit = function() {
-	                // Set scaling retrieved from settings.
-	                $("body").css("zoom", Space.getSetting("GuiScale"));
+        <base href=".." />
+        <link type="text/css" rel="stylesheet" href="asset://xna/Screens/Settings/Stylesheet.css" />
+        <script type="text/javascript" src="asset://xna/Screens/General/jquery-1.7.2.js"></script>
+    </head>
+    <body style="background:url(asset://xna/Images/background.png)">
+        <h1 id="title"></h1>
+        <ul id="settings">
+        </ul>
+        <button id="accept"></button>
+        <button id="cancel"></button>
+        
+        <script type="text/javascript">
+            var Space = {};
+            var Screens = {};
+            (function($) {
+                // Wait for init to make sure callbacks are registered.
+                Screens.onInit = function() {
+                    // Set scaling retrieved from settings.
+                    $("body").css("zoom", Space.getSetting("GuiScale"));
 
-	                // Fill in localized strings.
-	                $("#title").text(L("Options"));
-	                $("#accept").text(L("Accept"));
-	                $("#cancel").text(L("Cancel"));
+                    // Fill in localized strings.
+                    $("#title").text(L("Options"));
+                    $("#accept").text(L("Accept"));
+                    $("#cancel").text(L("Cancel"));
 
-	                // Fill in settings list.
-	                var settings = Space.getSettingInfos();
-	                $.each(settings, function(name, setting) {
-	                	var value = Space.getSetting(name);
-	                	// Depending on the type show some GUI input option.
-                		var li = $("<li></li>");
-                		li.attr("id", "Setting_" + name);
-	                	switch (typeof value) {
-	                		case "boolean":
-		                		li.load("asset://xna/Screens/Settings/Types/Boolean.html",
-                					function() {
-                						li.find(".title").text(setting.title);
-            							li.find(".setting").val(value);
-                					});
-	                			break;
-	                		case "number":
-		                		li.load("asset://xna/Screens/Settings/Types/Number.html",
-                					function() {
-                						li.find(".title").text(setting.title);
-                						// TODO adjust when switching to slider
-            							li.find(".setting").val(value);
-                					});
-	                			break;
-                			case "string":
-                				// TODO handle case when "options" are given, i.e. a select
-                				// should be used (which cannot be rendered in awe rc1).
-		                		li.load("asset://xna/Screens/Settings/Types/String.html",
-                					function() {
-                						li.find(".title").text(setting.title);
-            							li.find(".setting").val(value);
-                					});
-                				break;
-                			default:
-                				console.log("Unknown value type for setting '" + name + "'.");
-                				return;
-	                	}
-            			$("#settings").append(li);
-	                });
-	            };
-				
-				$("#accept").click(function() {
-	                var settings = Space.getSettingInfos();
-	                $.each(settings, function(name, setting) {
-	                	Space.setSetting(name, $("#Setting_" + name + " .setting").val());
-	                });
-					Screens.pop();
-				});
-				$("#cancel").click(function() {
-					Screens.pop();
-				});
-			})(jQuery);
-		</script>
-	</body>
+                    // Fill in settings list.
+                    Space.getSettingInfos(function(settings) {
+                        $.each(settings, function(name, setting) {
+                            Space.getSetting(name, function(value) {
+                                // Depending on the type show some GUI input option.
+                                var li = $("<li></li>");
+                                li.attr("id", "Setting_" + name);
+                                switch (typeof value) {
+                                    case "boolean":
+                                        li.load("asset://xna/Screens/Settings/Types/Boolean.html",
+                                            function() {
+                                                li.find(".title").text(setting.title);
+                                                li.find(".setting").val(value);
+                                            });
+                                        break;
+                                    case "number":
+                                        li.load("asset://xna/Screens/Settings/Types/Number.html",
+                                            function() {
+                                                li.find(".title").text(setting.title);
+                                                // TODO adjust when switching to slider
+                                                li.find(".setting").val(value);
+                                            });
+                                        break;
+                                    case "string":
+                                        // TODO handle case when "options" are given, i.e. a select
+                                        // should be used (which cannot be rendered in awe rc1).
+                                        li.load("asset://xna/Screens/Settings/Types/String.html",
+                                            function() {
+                                                li.find(".title").text(setting.title);
+                                                li.find(".setting").val(value);
+                                            });
+                                        break;
+                                    default:
+                                        console.log("Unknown value type for setting '" + name + "'.");
+                                        return;
+                                }
+                                $("#settings").append(li);
+                            });
+                        });
+                    });
+                };
+                
+                $("#accept").click(function() {
+                    Space.getSettingInfos(function(settings) {
+                        $.each(settings, function(name, setting) {
+                            Space.setSetting(name, $("#Setting_" + name + " .setting").val());
+                        });
+                        Screens.pop();
+                    });
+                });
+                $("#cancel").click(function() {
+                    Screens.pop();
+                });
+            })(jQuery);
+        </script>
+    </body>
 </html>

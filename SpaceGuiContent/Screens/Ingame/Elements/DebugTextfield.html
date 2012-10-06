@@ -3,7 +3,13 @@
 <!-- ---------------------- -->
 
 <div class="westbox debug_textfield">
-    <p class="debug_textfield-value"></p>
+    <p class="debug_textfield-value">
+        Position: (<span id="positionx"/>, <span id="positiony"/>), Cell: (<span id="cellx"/>, <span id="celly"/>)<br/>
+        Speed: <span id="speed"/>/<span id="maxspeed"/>, Maximum acceleration: <span id="maxaccel"/></br>
+        Mass: <span id="mass"/><br/>
+        Health: <span id="health"/>/<span id="maxhealth"/></br>
+        Energy: <span id="energy"/>/<span id="maxenergy"/></br>
+    </p>
 </div>
 
 <!-- ------------------------------ -->
@@ -17,16 +23,60 @@
         }
     });
 
+    var Callbacks = {
+        setPositionX: function(value) {
+            $("#positionx").html(value);
+        },
+        setPositionY: function(value) {
+            $("#positiony").html(value);
+        },
+        setCellX: function(value) {
+            $("#cellx").html(value);
+        },
+        setCellY: function(value) {
+            $("#celly").html(value);
+        },
+        setSpeed: function(value) {
+            $("#speed").html(value);
+        },
+        setMaxSpeed: function(value) {
+            $("#maxspeed").html(value);
+        },
+        setMaxAcceleration: function(value) {
+            $("#maxaccel").html(value);
+        },
+        setMass: function(value) {
+            $("#mass").html(value);
+        },
+        setHealth: function(value) {
+            $("#health").html(value);
+        },
+        setMaxHealth: function(value) {
+            $("#maxhealth").html(value);
+        },
+        setEnergy: function(value) {
+            $("#energy").html(value);
+        },
+        setMaxEnergy: function(value) {
+            $("#maxenergy").html(value);
+        },
+    };
+
     (function ($) {
         setInterval(function () {
-            $(".debug_textfield-value").html(
-                "Position:  (" + Space.getXCoordinate() + ", " + Space.getYCoordinate() + "), Cell: (" + Space.getXCell() + ", " + Space.getYCell() + ")<br />" +
-                "Speed: " + Space.getSpeed() + "/" + Space.getMaxSpeed() + ", Maximum acceleration: " + Space.getMaxAcceleration() + "<br />" +
-                "Mass: " + Space.getMass() + "<br />" +
-                "Health: " + Math.round(Space.getHealth()) + "/" + Math.round(Space.getMaxHealth()) + "<br />" +
-                "Energy: " + Math.round(Space.getEnergy()) + "/" + Math.round(Space.getMaxEnergy())
-            );
-        }, 500);
+            Space.getPositionX("Callbacks.setPositionX");
+            Space.getPositionY("Callbacks.setPositionY");
+            Space.getCellX("Callbacks.setCellX");
+            Space.getCellY("Callbacks.setCellY");
+            Space.getSpeed("Callbacks.setSpeed");
+            Space.getMaxSpeed("Callbacks.setMaxSpeed");
+            Space.getMaxAcceleration("Callbacks.setMaxAcceleration");
+            Space.getMass("Callbacks.setMass");
+            Space.getHealth("Callbacks.setHealth");
+            Space.getMaxHealth("Callbacks.setMaxHealth");
+            Space.getEnergy("Callbacks.setEnergy");
+            Space.getMaxEnergy("Callbacks.setMaxEnergy");
+        }, 100);
     }) (jQuery);
 
 </script>

@@ -303,6 +303,9 @@ input[type=""text""], input[type=""password""], textarea {
             {
                 GetNamespace(screen, callback.Namespace, true).Bind(callback.Name, true, callback.Callback);
             }
+
+            // Trigger init event.
+            Call("Screens", "onInit");
         }
 
         /// <summary>
