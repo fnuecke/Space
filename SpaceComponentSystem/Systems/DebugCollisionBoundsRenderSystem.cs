@@ -138,11 +138,8 @@ namespace Space.ComponentSystem.Systems
                         case Collidable.CollisionState.None:
                             shape.Color = Color.Green;
                             break;
-                        case Collidable.CollisionState.HasNeighbors:
+                        case Collidable.CollisionState.Contact:
                             shape.Color = Color.Blue;
-                            break;
-                        case Collidable.CollisionState.HasCollidableNeighbors:
-                            shape.Color = Color.Yellow;
                             break;
                         case Collidable.CollisionState.Collides:
                             shape.Color = Color.DarkRed;
@@ -153,7 +150,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     shape.Color = Color.Gray;
                 }
-                shape.Color *= 0.25f;
+                shape.Color *= 0.6f;
                 shape.BlendState = BlendState.Additive;
 
                 // Get interpolated position.

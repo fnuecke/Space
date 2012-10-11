@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -62,17 +62,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bag.cs" />
-    <Compile Include="BagBasedQuadTree.cs" />
+    <Compile Include="IntersectionExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="SerializableDictionary.cs" />
     <Compile Include="SpatialHashedQuadTreeRenderExtensions.cs" />
     <Compile Include="IIndex.cs" />
     <Compile Include="IndexPointExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QuadTree.cs" />
-    <Compile Include="QuadTreeRenderExtensions.cs" />
-    <Compile Include="RTree.cs" />
+    <Compile Include="DynamicQuadTree.cs" />
+    <Compile Include="DynamicQuadTreeRenderExtensions.cs" />
     <Compile Include="SparseArray.cs" />
-    <Compile Include="SpatialHash.cs" />
     <Compile Include="SpatialHashedQuadTree.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +83,10 @@
     <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
       <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
       <Name>Engine.Graphics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
       <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>

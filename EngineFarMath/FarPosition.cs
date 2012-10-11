@@ -32,7 +32,7 @@ namespace Engine.FarMath
         /// <summary>
         /// Keep as private field to avoid manipulation.
         /// </summary>
-        private static readonly FarPosition ConstZero = new FarPosition(0, 0);
+        private static readonly FarPosition ConstZero = new FarPosition {X = 0, Y = 0};
 
         #endregion
 
@@ -230,6 +230,15 @@ namespace Engine.FarMath
         public static FarValue Dot(Vector2 value1, FarPosition value2)
         {
             return value1.X * value2.X + value1.Y * value2.Y;
+
+            // We could save two FarValue multiplications (one FarPosition multiplication),
+            // but that would come at the cost of precision for positions primarily far
+            // along a single axis:
+            //  ax + by
+            //= ax + bx + by - bx
+            //= x(a + b) + b(y - x)
+            //= (a + b)(x + b/(a + b)(y - x))
+            //return (value1.X + value1.Y) * (value2.X + value1.Y / (value1.X + value1.Y) * (float)(value2.Y - value2.X));
         }
 
         /// <summary>

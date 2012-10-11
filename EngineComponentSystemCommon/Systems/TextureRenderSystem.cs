@@ -111,7 +111,10 @@ namespace Engine.ComponentSystem.Common.Systems
 
                 // Begin rendering.
                 SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
-
+                
+                // We increment the base depth for each component we render, as a tie breaker,
+                // i.e. to avoid z-fighting.
+                var layerDepth = 0f;
                 foreach (var entity in _drawablesInView)
                 {
                     var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
@@ -119,7 +122,8 @@ namespace Engine.ComponentSystem.Common.Systems
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        BeginDrawComponent(component, cameraTransform.Translation, interpolation);
+                        BeginDrawComponent(component, cameraTransform.Translation, interpolation, layerDepth);
+                        layerDepth += 0.00001f;
                     }
                 }
 
@@ -137,7 +141,8 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="component">The component to draw.</param>
         /// <param name="translation">The camera translation.</param>
         /// <param name="interpolation">The interpolation system to get position and rotation from.</param>
-        private void BeginDrawComponent(TextureRenderer component, FarPosition translation, InterpolationSystem interpolation)
+        /// <param name="layerDepth">The base layer depth to render at.</param>
+        private void BeginDrawComponent(TextureRenderer component, FarPosition translation, InterpolationSystem interpolation, float layerDepth)
         {
             // Load the texture if it isn't already.
             if (component.Texture == null)
@@ -160,7 +165,7 @@ namespace Engine.ComponentSystem.Common.Systems
             }
 
             // Draw.
-            DrawComponent(component, ((Vector2)(position + translation)) * layer, rotation);
+            DrawComponent(component, ((Vector2)(position + translation)) * layer, rotation, layerDepth);
         }
 
         /// <summary>
@@ -169,14 +174,15 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="component">The component.</param>
         /// <param name="position">The position.</param>
         /// <param name="rotation">The rotation.</param>
-        protected virtual void DrawComponent(TextureRenderer component, Vector2 position, float rotation)
+        /// <param name="layerDepth">The base layer depth to render at.</param>
+        protected virtual void DrawComponent(TextureRenderer component, Vector2 position, float rotation, float layerDepth)
         {
             // Get the rectangle at which we'll draw.
             Vector2 origin;
             origin.X = component.Texture.Width / 2f;
             origin.Y = component.Texture.Height / 2f;
 
-            SpriteBatch.Draw(component.Texture, position, null, component.Tint, rotation, origin, component.Scale, SpriteEffects.None, 0);
+            SpriteBatch.Draw(component.Texture, position, null, component.Tint, rotation, origin, component.Scale, SpriteEffects.None, layerDepth);
         }
 
         /// <summary>

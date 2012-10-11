@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Awesomium.Core;
+using Awesomium.Core.Data;
 using Awesomium.Xna;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -86,12 +87,12 @@ input[type=""text""], input[type=""password""], textarea {
         /// <summary>
         /// List of callbacks to expose to all screens.
         /// </summary>
-        private readonly List<JSCallBackInfo<JSCallback>> _callbacks = new List<JSCallBackInfo<JSCallback>>();
-        
+        private readonly List<JSCallBackInfo<JavascriptMethodEventHandler>> _callbacks = new List<JSCallBackInfo<JavascriptMethodEventHandler>>();
+
         /// <summary>
         /// List of callbacks with return values to expose to all screens.
         /// </summary>
-        private readonly List<JSCallBackInfo<JSCallbackWithReturnValue>> _callbacksWithReturnValue = new List<JSCallBackInfo<JSCallbackWithReturnValue>>();
+        private readonly List<JSCallBackInfo<JavascriptMethodEventHandler>> _callbacksWithReturnValue = new List<JSCallBackInfo<JavascriptMethodEventHandler>>();
 
         /// <summary>
         /// All currently tracked screens.
@@ -146,15 +147,15 @@ input[type=""text""], input[type=""password""], textarea {
             if (!WebCore.IsRunning)
             {
                 WebCore.Initialize(new WebConfig
-                                   {
+                {
 #if DEBUG
-                                       LogLevel = LogLevel.Verbose,
+                    LogLevel = LogLevel.Verbose,
 #else
-                                       LogLevel = LogLevel.None,
+                    LogLevel = LogLevel.None,
 #endif
-                                       LogPath = Environment.CurrentDirectory + "\\awesomium.log",
-                                       RemoteDebuggingPort = 1337
-                                   });
+                    LogPath = Environment.CurrentDirectory + "\\awesomium.log",
+                    RemoteDebuggingPort = 1337,
+                });
                 // If we created it, we shut it down on disposal, too.
                 _ownsWebCore = true;
             }
@@ -207,21 +208,14 @@ input[type=""text""], input[type=""password""], textarea {
 
                 _session.Dispose();
 
-                try
-                {
-                    _dataSource.Dispose();
-                }
-                catch (Exception)
-                {
-                    // bug in 1.7rc1, remove when switching rc2 or later
-                }
+                _dataSource.Dispose();
 
                 if (_ownsWebCore)
                 {
                     WebCore.Shutdown();
                 }
             }
-            
+
             base.Dispose(disposing);
         }
 
@@ -265,7 +259,7 @@ input[type=""text""], input[type=""password""], textarea {
 
                 _spriteBatch.Begin();
                 _spriteBatch.Draw(_backBuffer, Vector2.Zero, Color.White);
-                _spriteBatch.End();   
+                _spriteBatch.End();
             }
         }
 
@@ -284,24 +278,31 @@ input[type=""text""], input[type=""password""], textarea {
                                                Game.GraphicsDevice.Viewport.Height,
                                                _session);
 
-            // Create JS handler and register callbacks.
-            var handler = new DelegatingJSMethodHandler(screen);
-            foreach (var callback in _callbacks)
-            {
-                handler.RegisterCallback(callback.Namespace, callback.Name, callback.Callback);
-            }
-            foreach (var callback in _callbacksWithReturnValue)
-            {
-                handler.RegisterCallback(callback.Namespace, callback.Name, callback.Callback);
-            }
-
-            // Force screen to be transparent.
-            screen.ProcessCreated += (s, e) => ((WebView)s).IsTransparent = true;
+            // Force screen to be transparent and register callbacks.
+            screen.DocumentReady += HandleWebViewDocumentReady;
 
             // Load the HTML for that screen and focus it.
-            screen.LoadURL(new Uri("asset://xna/Screens/" + screenName));
+            screen.LoadHTML(Game.Content.Load<string>("Screens/" + screenName));
             screen.FocusView();
             _screens.Push(screen);
+        }
+
+        private void HandleWebViewDocumentReady(object sender, UrlEventArgs e)
+        {
+            var screen = (WebView)sender;
+            screen.IsTransparent = true;
+
+            // Register normal callbacks.
+            foreach (var callback in _callbacks)
+            {
+                GetNamespace(screen, callback.Namespace, true).Bind(callback.Name, false, callback.Callback);
+            }
+
+            // Register callbacks with return value.
+            foreach (var callback in _callbacksWithReturnValue)
+            {
+                GetNamespace(screen, callback.Namespace, true).Bind(callback.Name, true, callback.Callback);
+            }
         }
 
         /// <summary>
@@ -330,7 +331,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <param name="nameSpace">The name space to add the callback to.</param>
         /// <param name="name">The name of the callback.</param>
         /// <param name="callback">The callback.</param>
-        public void AddCallback(string nameSpace, string name, JSCallback callback)
+        public void AddCallback(string nameSpace, string name, JavascriptMethodEventHandler callback)
         {
             if (String.IsNullOrWhiteSpace(nameSpace))
             {
@@ -341,15 +342,15 @@ input[type=""text""], input[type=""password""], textarea {
                 throw new ArgumentException("Invalid name, must not be empty.");
             }
 
-            _callbacks.Add(new JSCallBackInfo<JSCallback>
-                           {
-                               Name = name,
-                               Namespace = nameSpace,
-                               Callback = callback
-                           });
+            _callbacks.Add(new JSCallBackInfo<JavascriptMethodEventHandler>
+            {
+                Name = name,
+                Namespace = nameSpace,
+                Callback = callback
+            });
             foreach (var screen in _screens)
             {
-                ((DelegatingJSMethodHandler)screen.JSMethodHandler).RegisterCallback(nameSpace, name, callback);
+                GetNamespace(screen, nameSpace, true).Bind(name, false, callback);
             }
         }
 
@@ -360,7 +361,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <param name="nameSpace">The name space to add the callback to.</param>
         /// <param name="name">The name of the callback.</param>
         /// <param name="callback">The callback.</param>
-        public void AddCallbackWithReturnValue(string nameSpace, string name, JSCallbackWithReturnValue callback)
+        public void AddCallbackWithReturnValue(string nameSpace, string name, JavascriptMethodEventHandler callback)
         {
             if (String.IsNullOrWhiteSpace(nameSpace))
             {
@@ -371,15 +372,15 @@ input[type=""text""], input[type=""password""], textarea {
                 throw new ArgumentException("Invalid name, must not be empty.");
             }
 
-            _callbacksWithReturnValue.Add(new JSCallBackInfo<JSCallbackWithReturnValue>
-                                          {
-                                              Name = name,
-                                              Namespace = nameSpace,
-                                              Callback = callback
-                                          });
+            _callbacksWithReturnValue.Add(new JSCallBackInfo<JavascriptMethodEventHandler>
+            {
+                Name = name,
+                Namespace = nameSpace,
+                Callback = callback
+            });
             foreach (var screen in _screens)
             {
-                ((DelegatingJSMethodHandler)screen.JSMethodHandler).RegisterCallback(nameSpace, name, callback);
+                GetNamespace(screen, nameSpace, true).Bind(name, true, callback);
             }
         }
 
@@ -405,11 +406,38 @@ input[type=""text""], input[type=""password""], textarea {
                 return;
             }
 
-            var screen = _screens.Peek();
-            if (screen != null && screen.JSMethodHandler != null)
+            var obj = GetNamespace(_screens.Peek(), nameSpace, false);
+            if (obj.HasMethod(name))
             {
-                ((DelegatingJSMethodHandler)screen.JSMethodHandler).Call(nameSpace, name, args);
+                obj.Invoke(name, args);
             }
+        }
+
+        /// <summary>
+        /// Utility method to get global namespace of specified name if it exists,
+        /// or create it if not.
+        /// </summary>
+        /// <param name="screen">The screen to create the global namespace for.</param>
+        /// <param name="nameSpace">The name of the namespace.</param>
+        /// <param name="create">Whether to create the namespace if it doesn't exist, yet.</param>
+        /// <returns>The namespace.</returns>
+        private static JSObject GetNamespace(IWebView screen, string nameSpace, bool create)
+        {
+            var ns = screen.ExecuteJavascriptWithResult("window." + nameSpace);
+            if (ns.IsObject)
+            {
+                return ns;
+            }
+            else if (create)
+            {
+                // Not an object, but if there is something there, log a warning, as we're overwriting it.
+                if (!ns.IsUndefined && !ns.IsNull)
+                {
+                    Logger.Warn("Possibly overwriting a global object '{0}'.", nameSpace);
+                }
+                return screen.ExecuteJavascriptWithResult("window." + nameSpace + " = {};");
+            }
+            return JSValue.Undefined;
         }
 
         #endregion
@@ -428,11 +456,11 @@ input[type=""text""], input[type=""password""], textarea {
             }
 
             var e = new WebKeyboardEvent
-                    {
-                        Type = WebKeyboardEventType.KeyDown,
-                        IsSystemKey = false,
-                        VirtualKeyCode = (VirtualKey)key
-                    };
+            {
+                Type = WebKeyboardEventType.KeyDown,
+                IsSystemKey = false,
+                VirtualKeyCode = (VirtualKey)key
+            };
             SetModifiers(e);
             _screens.Peek().InjectKeyboardEvent(e);
 
@@ -450,14 +478,14 @@ input[type=""text""], input[type=""password""], textarea {
             }
 
             var e = new WebKeyboardEvent
-                    {
-                        Type = WebKeyboardEventType.Char,
-                        IsSystemKey = false,
-                        Text = new string(character, 1),
-                        UnmodifiedText = new string(character, 1),
-                        VirtualKeyCode = (VirtualKey)VkKeyScan(character),
-                        NativeKeyCode = character
-                    };
+            {
+                Type = WebKeyboardEventType.Char,
+                IsSystemKey = false,
+                Text = new string(character, 1),
+                UnmodifiedText = new string(character, 1),
+                VirtualKeyCode = (VirtualKey)VkKeyScan(character),
+                NativeKeyCode = character
+            };
             SetModifiers(e);
             _screens.Peek().InjectKeyboardEvent(e);
         }
@@ -474,11 +502,11 @@ input[type=""text""], input[type=""password""], textarea {
             }
 
             var e = new WebKeyboardEvent
-                    {
-                        Type = WebKeyboardEventType.KeyUp,
-                        IsSystemKey = false,
-                        VirtualKeyCode = (VirtualKey)key
-                    };
+            {
+                Type = WebKeyboardEventType.KeyUp,
+                IsSystemKey = false,
+                VirtualKeyCode = (VirtualKey)key
+            };
             SetModifiers(e);
             _screens.Peek().InjectKeyboardEvent(e);
         }
@@ -582,9 +610,9 @@ input[type=""text""], input[type=""password""], textarea {
                 return;
             }
 
-            _screens.Peek().InjectMouseWheel((int)(ticks * ScrollAmount),  0);
+            _screens.Peek().InjectMouseWheel((int)(ticks * ScrollAmount), 0);
         }
-        
+
         #endregion
 
         private sealed class JSCallBackInfo<T>
@@ -592,7 +620,7 @@ input[type=""text""], input[type=""password""], textarea {
             public string Namespace;
 
             public string Name;
-            
+
             public T Callback;
         }
 
@@ -610,9 +638,9 @@ input[type=""text""], input[type=""password""], textarea {
                 _content = content;
             }
 
-            public override void OnRequest(int requestId, string path)
+            protected override void OnRequest(DataSourceRequest request)
             {
-                var url = path;
+                var url = request.Path;
                 var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
                 string assetName;
                 string assetExtension;
@@ -640,41 +668,48 @@ input[type=""text""], input[type=""password""], textarea {
                             using (var pngStream = new MemoryStream())
                             {
                                 image.SaveAsPng(pngStream, image.Width, image.Height);
-                                SendResponse(requestId, pngStream.GetBuffer(), "image/png");
+                                SendResponse(request, pngStream.GetBuffer(), "image/png");
                                 return;
                             }
                         case "css":
-                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/css");
+                            SendResponse(request, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/css");
                             return;
                         case "js":
-                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "application/x-javascript");
+                            SendResponse(request, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/javascript");
                             return;
                         case "xml":
-                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "application/xml");
+                            SendResponse(request, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "application/xml");
                             return;
                         //case "html":
+                        //case "xhtml":
                         default:
-                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/html");
+                            SendResponse(request, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/html");
                             return;
                     }
                 }
                 catch (ContentLoadException ex)
                 {
                     // Failed loading that asset, return null.
-                    Logger.WarnException("Failed loading a resource for a web view: '" + path + "'. Is the file registered in the content project?", ex);
+                    Logger.WarnException("Failed loading a resource for a web view: '" + url + "'. Is the file registered in the content project?", ex);
                 }
                 // We cannot handle that request, abort it.
-                SendResponse(requestId, 0, IntPtr.Zero, string.Empty);
+                SendRequestFailed(request);
             }
 
-            private void SendResponse(int requestId, byte[] buffer, string mimeType)
+            private void SendResponse(DataSourceRequest request, byte[] buffer, string mimeType)
             {
                 var size = Marshal.SizeOf(buffer[0]) * buffer.Length;
                 var pointer = Marshal.AllocHGlobal(size);
                 try
                 {
                     Marshal.Copy(buffer, 0, pointer, buffer.Length);
-                    SendResponse(requestId, (uint)size, pointer, mimeType);
+                    SendResponse(request,
+                                 new DataSourceResponse
+                                 {
+                                     Buffer = pointer,
+                                     Size = (uint)buffer.Length,
+                                     MimeType = mimeType
+                                 });
                 }
                 finally
                 {
@@ -690,18 +725,18 @@ input[type=""text""], input[type=""password""], textarea {
         /// <summary>
         /// Allow pushing screens from within screens.
         /// </summary>
-        private void JSPushScreen(JSValue[] args)
+        private void JSPushScreen(object sender, JavascriptMethodEventArgs e)
         {
-            if (args.Length == 1 && args[0].IsString)
+            if (e.Arguments.Length == 1 && e.Arguments[0].IsString)
             {
-                PushScreen(args[0].ToString());
+                PushScreen(e.Arguments[0].ToString());
             }
         }
 
         /// <summary>
         /// Allow popping screens from within screens.
         /// </summary>
-        private void JSPopScreen(JSValue[] args)
+        private void JSPopScreen(object sender, JavascriptMethodEventArgs e)
         {
             PopScreen();
         }

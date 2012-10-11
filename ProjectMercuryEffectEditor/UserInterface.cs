@@ -341,7 +341,8 @@ namespace ProjectMercury.EffectEditor
         {
             Trace.WriteLine("Searching for library particle effects...", "UI");
 
-            DirectoryInfo effectsDir = new DirectoryInfo(Application.StartupPath + "\\EffectLibrary");
+            //DirectoryInfo effectsDir = new DirectoryInfo(Application.StartupPath + "\\EffectLibrary");
+            DirectoryInfo effectsDir = new DirectoryInfo(Application.StartupPath + "\\..\\..\\..\\SpaceContentEffects");
 
             foreach (FileInfo file in effectsDir.GetFiles())
             {
@@ -737,6 +738,8 @@ namespace ProjectMercury.EffectEditor
             this.uxEffectPreview.Invalidate();
         }
 
+        private bool firstTrigger = false;
+
         /// <summary>
         /// Handles the MouseDown event of the uxEffectPreview control.
         /// </summary>
@@ -751,6 +754,8 @@ namespace ProjectMercury.EffectEditor
             this.uxStatusLabel.Text = this.LocalMousePosition.ToString();
 
             this.TriggerTimer.Start();
+
+            firstTrigger = true;
         }
 
         /// <summary>
@@ -789,17 +794,26 @@ namespace ProjectMercury.EffectEditor
         /// </summary>
         /// <param name="x">The x location of the trigger.</param>
         /// <param name="y">The y location of the trigger.</param>
-        public bool TriggerRequired(out float x, out float y)
+        /// <param name="particleEffect"> </param>
+        public bool TriggerRequired(out float x, out float y, ParticleEffect particleEffect)
         {
             x = (float)this.LocalMousePosition.X;
             y = (float)this.LocalMousePosition.Y;
 
             if (this.MouseButtonPressed)
             {
-                if (this.TriggerTimer.Elapsed.TotalSeconds > (1f / 60f))
+                // find min delay in current effect, if it's zero force a wait of a second or so
+                var minimumTriggerPeriod = float.MaxValue;
+                foreach (var emitter in particleEffect)
+                {
+                    minimumTriggerPeriod = Math.Min(minimumTriggerPeriod, emitter.MinimumTriggerPeriod);
+                }
+                if (firstTrigger || this.TriggerTimer.Elapsed.TotalSeconds > (minimumTriggerPeriod <= 0f ? 1f : 1f / 60f))
                 {
                     this.TriggerTimer.Reset();
                     this.TriggerTimer.Start();
+
+                    firstTrigger = false;
 
                     return true;
                 }
@@ -1065,7 +1079,8 @@ namespace ProjectMercury.EffectEditor
 
                 IEffectSerializationPlugin plugin = item.Tag as IEffectSerializationPlugin;
 
-                string filePath = Application.StartupPath + "\\EffectLibrary\\" + item.Text;
+                //string filePath = Application.StartupPath + "\\EffectLibrary\\" + item.Text;
+                string filePath = Application.StartupPath + "\\..\\..\\..\\SpaceContentEffects\\" + item.Text;
 
                 this.OnDeserialize(new SerializeEventArgs(plugin, filePath));
             }

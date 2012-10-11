@@ -106,9 +106,11 @@ namespace Space.ComponentSystem.Systems
         #region Single-Allocation
 
         /// <summary>
-        /// Reused for iterating components.
+        /// Reused for iterating components. This should be a sorted set, to avoid
+        /// random order of elements, leading to random flipping of render order.
+        /// (looks pretty much like z-fighting then)
         /// </summary>
-        private ISet<int> _reusableNeighborList = new HashSet<int>();
+        private ISet<int> _reusableNeighborList = new SortedSet<int>();
 
         #endregion
 

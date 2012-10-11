@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;FARMATH USE_CALLBACK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;FARMATH USE_CALLBACK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -40,11 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CollectionsPerformanceTest.cs" />
-    <Compile Include="JohnMcDonald\QuadTree.cs" />
-    <Compile Include="MichaelCoyle\IHasRect.cs" />
-    <Compile Include="MichaelCoyle\QuadTree.cs" />
-    <Compile Include="MichaelCoyle\QuadTreeNode.cs" />
-    <Compile Include="Microsoft\QuadTree.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +50,10 @@
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineFarCollections\Engine.FarCollections.csproj">
+      <Project>{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}</Project>
+      <Name>Engine.FarCollections</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
       <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>

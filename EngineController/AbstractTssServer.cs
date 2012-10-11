@@ -129,6 +129,8 @@ namespace Engine.Controller
         [Conditional("DEBUG")]
         private void DumpGameState()
         {
+            // TODO clone state instead, may in fact be faster than stringifying the whole thing
+
             // String builder we use to concatenate our strings.
             var sb = new StringBuilder();
 
@@ -144,7 +146,7 @@ namespace Engine.Controller
                             assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
             sb.AppendFormat("Build Version: {0}\n", assembly.Version);
             sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
-            sb.AppendFormat("CPU Processors: {0}\n", Environment.ProcessorCount);
+            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
             sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
             sb.Append("Controller Type: Server\n");
             sb.Append("--------------------------------------------------------------------------------\n");

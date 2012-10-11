@@ -40,7 +40,7 @@ namespace ProjectMercury.EffectEditor
         event TextureReferenceChangedEventHandler   TextureReferenceChanged;
         event EventHandler                          NewParticleEffect;
 
-        bool TriggerRequired(out float x, out float y);
+        bool TriggerRequired(out float x, out float y, ParticleEffect particleEffect);
         void Draw(ParticleEffect effect, Renderer renderer);
 
         void SetEmitterPlugins(IEnumerable<IEmitterPlugin> plugins);

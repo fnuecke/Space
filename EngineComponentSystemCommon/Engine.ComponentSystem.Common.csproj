@@ -73,9 +73,7 @@
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\Index.cs" />
-    <Compile Include="Components\Intersection\AABBSweep.cs" />
-    <Compile Include="Components\Intersection\SphereAABBSweep.cs" />
-    <Compile Include="Components\Intersection\SphereSweep.cs" />
+    <Compile Include="Components\Intersection.cs" />
     <Compile Include="Components\Owner.cs" />
     <Compile Include="Components\Parallax.cs" />
     <Compile Include="Components\Sound.cs" />
@@ -83,8 +81,9 @@
     <Compile Include="Components\TextureRenderer.cs" />
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Components\Velocity.cs" />
+    <Compile Include="Messages\EndCollision.cs" />
     <Compile Include="Messages\IndexBoundsChanged.cs" />
-    <Compile Include="Messages\Collision.cs" />
+    <Compile Include="Messages\BeginCollision.cs" />
     <Compile Include="Messages\IndexGroupsChanged.cs" />
     <Compile Include="Messages\TranslationChanged.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -111,6 +110,10 @@
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineFarCollections\Engine.FarCollections.csproj">
+      <Project>{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}</Project>
+      <Name>Engine.FarCollections</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
       <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>

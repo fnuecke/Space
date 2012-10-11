@@ -61,6 +61,11 @@
       <Name>Space.Content.Audio %28data/Audio%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
+    <ProjectReference Include="..\SpaceContentEffects\Space.Content.Effects.contentproj">
+      <Project>{292C5408-F986-41BF-AAC3-35B61EF43C27}</Project>
+      <Name>Space.Content.Effects %28data/Effects%29</Name>
+      <XnaReferenceType>Content</XnaReferenceType>
+    </ProjectReference>
     <ProjectReference Include="..\SpaceContentShaders\Space.Content.Shaders.contentproj">
       <Project>{F41E6372-18BC-45BE-AB8B-26E13CD83856}</Project>
       <Name>Space.Content.Shaders %28data/Shaders%29</Name>

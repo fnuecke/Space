@@ -183,6 +183,10 @@
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineCollections\Engine.Collections.csproj">
+      <Project>{D73BAEF1-9B31-4548-A982-E19D68745757}</Project>
+      <Name>Engine.Collections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
       <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
       <Name>Engine.ComponentSystem.Common</Name>

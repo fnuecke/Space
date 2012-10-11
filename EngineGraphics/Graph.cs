@@ -633,7 +633,7 @@ namespace Engine.Graphics
         private void AppendFloat(float value)
         {
             var preDecimal = (int)value;
-            var postDecimal = (int)((value - preDecimal) * 100);
+            var postDecimal = (int)((value - preDecimal) * 10);
 
             if (preDecimal < 0)
             {
