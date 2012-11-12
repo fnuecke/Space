@@ -246,6 +246,8 @@ namespace Space.Util
 
             GameBindings.Add(GameCommand.ToggleGraphs, Keys.F1);
             GameBindings.Add(GameCommand.Console, Keys.OemTilde);
+
+            GameBindings.Add(GameCommand.TestCommand, Keys.T);
         }
 
         /// <summary>

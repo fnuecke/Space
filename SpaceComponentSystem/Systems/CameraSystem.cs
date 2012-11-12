@@ -76,9 +76,18 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         public float Zoom
         {
-            get { return _currentZoom; }
+            get { return _customZoom ?? _currentZoom ; }
+            set { _customZoom = value; }
         }
 
+        /// <summary>
+        /// The zoom set in the camera must not neccesarily represent the current actually used zoom
+        /// </summary>
+        public float CameraZoom
+        {
+            get { return _currentZoom; }
+
+        }
         #endregion
 
         #region Fields
@@ -114,7 +123,11 @@ namespace Space.ComponentSystem.Systems
         /// or was dynamically computed.
         /// </summary>
         private FarPosition? _customCameraPosition;
-
+        /// <summary>
+        /// The current zoom of the camera which is interpolated towards the
+        /// actual target zoom.
+        /// </summary>
+        private float? _customZoom;
         /// <summary>
         /// The current target zoom of the camera.
         /// </summary>
@@ -184,6 +197,15 @@ namespace Space.ComponentSystem.Systems
             _currentZoom = _targetZoom = MathHelper.Clamp(value, MinimumZoom, MaximumZoom);
         }
 
+        public void ResetCamera()
+        {
+            _customCameraPosition = null;
+        }
+
+        public void ResetZoom()
+        {
+            _customZoom = null;
+        }
         /// <summary>
         /// Set the target zoom to the specified value. This slowly interpolates
         /// to the specified zoom value.
@@ -320,7 +342,7 @@ namespace Space.ComponentSystem.Systems
             // Use far position for camera translation.
             _transform.Translation = -CameraPositon;
             // Apply zoom and viewport offset via normal matrix.
-            _transform.Matrix = Matrix.CreateScale(new Vector3(_currentZoom, _currentZoom, 1)) *
+            _transform.Matrix = Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
                                 Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
         }
 

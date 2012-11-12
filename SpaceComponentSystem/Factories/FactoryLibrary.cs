@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
 using Engine.Random;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
@@ -247,6 +251,34 @@ namespace Space.ComponentSystem.Factories
             {
                 factory.SampleSunSystem(manager, cellCenter, random);
             }
+        }
+        /// <summary>
+        /// Samples a new sun system with the specified name.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="name">The logical name of the ship to sample.</param>
+        /// <param name="cellCenter">The center of the cell for which the sun is created.</param>
+        /// <param name="random">The randomizer to use.</param>
+        /// <returns>
+        /// The sampled sun.
+        /// </returns>
+        public static void SampleTestObject(IManager manager,  FarPosition cellCenter, IUniformRandom random)
+        {
+            var radius = 10f;
+            var entity = manager.AddEntity();
+            manager.AddComponent<Transform>(entity).Initialize(cellCenter);
+            // Make it detectable.
+            manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
+            // Make it glow.
+            manager.AddComponent<TestObjectRenderer>(entity).Initialize(radius * 0.95f, Color.White);
+
+            // Add to indexes for lookup.
+            manager.AddComponent<Index>(entity).Initialize(
+                DetectableSystem.IndexGroupMask | // Can be detected.
+                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
+                TextureRenderSystem.IndexGroupMask,
+                (int)(radius + radius));
+
         }
 
         /// <summary>

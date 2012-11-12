@@ -262,6 +262,7 @@ namespace Space.Control
 
                     // Update camera first, as it determines what to render.
                     new CameraSystem(game.GraphicsDevice, game.Services, session),
+                    new CameraMovementSystem(session), 
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance"), session),

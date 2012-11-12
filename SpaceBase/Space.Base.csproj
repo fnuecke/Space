@@ -90,6 +90,7 @@
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Shield.cs" />
     <Compile Include="Graphics\Sun.cs" />
+    <Compile Include="Graphics\TestObject.cs" />
     <Compile Include="Input\GamePadHelper.cs" />
     <Compile Include="Data\ItemQuality.cs" />
     <Compile Include="Input\MouseWheel.cs" />
