@@ -73,6 +73,7 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\ArmorReductionStatusEffect.cs" />
     <Compile Include="Components\Behaviors\AttackBehavior.cs" />
     <Compile Include="Components\Behaviors\Behavior.cs" />
     <Compile Include="Components\Behaviors\DockBehavior.cs" />
@@ -80,8 +81,10 @@
     <Compile Include="Components\Behaviors\AttackMoveBehavior.cs" />
     <Compile Include="Components\ArtificialIntelligence.cs" />
     <Compile Include="Components\Behaviors\RoamBehavior.cs" />
+    <Compile Include="Components\ColdSlowStatusEffect.cs" />
     <Compile Include="Components\DamagingStatusEffect.cs" />
     <Compile Include="Components\ExperiencePoints.cs" />
+    <Compile Include="Components\FreezeStatusEffect.cs" />
     <Compile Include="Components\Fuselage.cs" />
     <Compile Include="Components\ItemInfo.cs" />
     <Compile Include="Components\ShieldEnergyStatusEffect.cs" />
@@ -121,27 +124,35 @@
     <Compile Include="Factories\SunSystemFactory.cs" />
     <Compile Include="Factories\TriggersFullValidationAttribute.cs" />
     <Compile Include="Factories\WingFactory.cs" />
+    <Compile Include="Messages\DamageApplied.cs" />
+    <Compile Include="Messages\DamageBlocked.cs" />
+    <Compile Include="Messages\DamageReceived.cs" />
+    <Compile Include="Systems\AbstractDamageApplyingSystem.cs" />
     <Compile Include="Systems\AISystem.cs" />
     <Compile Include="Systems\BiomeSystem.cs" />
     <Compile Include="Systems\CameraCenteredBackgroundSystem.cs" />
     <Compile Include="Systems\CameraCenteredInterpolationSystem.cs" />
     <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />
-    <Compile Include="Systems\CollisionDamageSystem.cs" />
+    <Compile Include="Systems\CollisionAttributeEffectSystem.cs" />
     <Compile Include="Systems\DamageSystem.cs" />
     <Compile Include="Systems\DeathSystem.cs" />
     <Compile Include="Systems\DebugCollisionBoundsRenderSystem.cs" />
     <Compile Include="Systems\DebugEntityIdRenderSystem.cs" />
     <Compile Include="Systems\DebugSlotRenderSystem.cs" />
     <Compile Include="Systems\DetectableSystem.cs" />
+    <Compile Include="Systems\DirectDamageApplyingSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Systems\ExperienceSystem.cs" />
+    <Compile Include="Systems\FreezeOnHitSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />
     <Compile Include="Systems\OrbitRenderSystem.cs" />
+    <Compile Include="Systems\OverTimeDamageApplyingSystem.cs" />
     <Compile Include="Systems\PlanetRenderSystem.cs" />
     <Compile Include="Systems\PlayerMassSystem.cs" />
     <Compile Include="Systems\RadarRenderSystem.cs" />
     <Compile Include="Systems\RegeneratingValueSystem.cs" />
+    <Compile Include="Systems\ResistanceDebuffApplyingSystem.cs" />
     <Compile Include="Systems\RespawnSystem.cs" />
     <Compile Include="Systems\ShieldRenderSystem.cs" />
     <Compile Include="Systems\ShieldSystem.cs" />

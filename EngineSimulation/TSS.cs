@@ -968,7 +968,7 @@ namespace Engine.Simulation
             /// </summary>
             /// <typeparam name="T">The type of the message.</typeparam>
             /// <param name="message">The sent message.</param>
-            void IManager.SendMessage<T>(ref T message)
+            void IManager.SendMessage<T>(T message)
             {
                 throw new NotSupportedException();
             }

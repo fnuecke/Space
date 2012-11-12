@@ -5,68 +5,8 @@
       <Name>Starter</Name>
       <MaxDrops>3</MaxDrops>
       <Item>
-        <ItemName>PoorBasicWeapon</ItemName>
+        <ItemName>StarterWeapon</ItemName>
         <Probability>0.2</Probability>
-      </Item>
-      <Item>
-        <ItemName>BasicWeapon</ItemName>
-        <Probability>0.05</Probability>
-      </Item>
-      <Item>
-        <ItemName>UncommonBasicWeapon</ItemName>
-        <Probability>0.01</Probability>
-      </Item>
-      <Item>
-        <ItemName>RareBasicWeapon</ItemName>
-        <Probability>0.001</Probability>
-      </Item>
-      <Item>
-        <ItemName>PoorBasicReactor</ItemName>
-        <Probability>0.2</Probability>
-      </Item>
-      <Item>
-        <ItemName>BasicReactor</ItemName>
-        <Probability>0.05</Probability>
-      </Item>
-      <Item>
-        <ItemName>UncommonBasicReactor</ItemName>
-        <Probability>0.01</Probability>
-      </Item>
-      <Item>
-        <ItemName>RareBasicReactor</ItemName>
-        <Probability>0.001</Probability>
-      </Item>
-      <Item>
-        <ItemName>PoorBasicSensor</ItemName>
-        <Probability>0.2</Probability>
-      </Item>
-      <Item>
-        <ItemName>BasicSensor</ItemName>
-        <Probability>0.05</Probability>
-      </Item>
-      <Item>
-        <ItemName>UncommonBasicSensor</ItemName>
-        <Probability>0.01</Probability>
-      </Item>
-      <Item>
-        <ItemName>RareBasicSensor</ItemName>
-        <Probability>0.001</Probability>
-      </Item>
-      <Item>
-        <ItemName>PoorBasicThruster</ItemName>
-        <Probability>0.2</Probability>
-      </Item>
-      <Item>
-        <ItemName>BasicThruster</ItemName>
-        <Probability>0.05</Probability>
-      </Item>
-      <Item>
-        <ItemName>UncommonBasicThruster</ItemName>
-        <Probability>0.01</Probability>
-      </Item>
-      <Item>
-        <ItemName>RareBasicThruster</ItemName>
-        <Probability>0.001</Probability>
       </Item>
     </Item>
     <Item>
@@ -74,15 +14,15 @@
       <MaxDrops>2</MaxDrops>
       <Item>
         <ItemName>StarterThruster</ItemName>
-        <Probability>0</Probability>
+        <Probability>0.2</Probability>
       </Item>
       <Item>
         <ItemName>StarterWing</ItemName>
-        <Probability>0</Probability>
+        <Probability>0.2</Probability>
       </Item>
       <Item>
-        <ItemName>PoorBasicReactor</ItemName>
-        <Probability>0</Probability>
+        <ItemName>StarterReactor</ItemName>
+        <Probability>0.2</Probability>
       </Item>
     </Item>
   </Asset>

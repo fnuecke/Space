@@ -15,35 +15,7 @@ namespace Space.Data
         /// </summary>
         None,
 
-        /// <summary>
-        /// Health of a entity.
-        /// </summary>
-        Health,
-
-        /// <summary>
-        /// Energy of an entity, used for movement, shields and shooting.
-        /// </summary>
-        Energy,
-
-        /// <summary>
-        /// Speed in units per tick with which an entities health replenishes.
-        /// </summary>
-        HealthRegeneration,
-
-        /// <summary>
-        /// Speed in units per tick with which an entities energy replenishes.
-        /// </summary>
-        EnergyRegeneration,
-
-        /// <summary>
-        /// Armor rating of a entity, i.e. how much physical damage gets blocked.
-        /// </summary>
-        DamageReduction,
-
-        /// <summary>
-        /// Shield armor rating, i.e. how much physical damage gets blocked by the shield.
-        /// </summary>
-        ShieldDamageReduction,
+        #region Movement
 
         /// <summary>
         /// Mass of an entity, determines how well it accelerates / rotates.
@@ -61,24 +33,97 @@ namespace Space.Data
         RotationForce,
 
         /// <summary>
+        /// The maximum velocity of a ship. This allows relatively quick acceleration
+        /// without getting ridiculously fast, making the game feel less lethargic.
+        /// </summary>
+        MaximumVelocity,
+
+        /// <summary>
         /// Energy consumption of all thrusters on the entity.
         /// </summary>
         ThrusterEnergyConsumption,
 
-        /// <summary>
-        /// Energy consumption of all active shields on the entity.
-        /// </summary>
-        ShieldEnergyConsumption,
+        #endregion
+
+        #region Health / Energy
 
         /// <summary>
-        /// Energy consumption of all weapons on the entity.
+        /// Health of a entity.
         /// </summary>
-        WeaponEnergyConsumption,
+        Health,
 
         /// <summary>
-        /// Shield block cost, i.e. the energy it costs to block one damage.
+        /// Speed in units per tick with which an entities health replenishes.
         /// </summary>
-        ShieldBlockCost,
+        HealthRegeneration,
+
+        /// <summary>
+        /// Energy of an entity, used for movement, shields and shooting.
+        /// </summary>
+        Energy,
+
+        /// <summary>
+        /// Speed in units per tick with which an entities energy replenishes.
+        /// </summary>
+        EnergyRegeneration,
+
+        #endregion
+
+        #region Defense
+
+        /// <summary>
+        /// Armor rating of a entity, i.e. how much physical damage gets blocked.
+        /// </summary>
+        PhysicalDamageReduction,
+
+        /// <summary>
+        /// Shield armor rating, i.e. how much physical damage gets blocked by the shield.
+        /// </summary>
+        ShieldDamageReduction,
+
+        /// <summary>
+        /// Fire resistance rating, i.e. how much fire damage gets absorbed.
+        /// </summary>
+        FireDamageReduction,
+
+        /// <summary>
+        /// Ice resistance rating, i.e. how much ice damage gets absorbed.
+        /// </summary>
+        IceDamageReduction,
+
+        /// <summary>
+        /// Acid resistance rating, i.e. how much acid damage gets absorbed.
+        /// </summary>
+        AcidDamageReduction,
+
+        /// <summary>
+        /// Electric resistance rating, i.e. how much electricity damage gets absorbed.
+        /// </summary>
+        ElectricDamageReduction,
+
+        /// <summary>
+        /// Time reduction of burn damage debuffs in seconds.
+        /// </summary>
+        BurnDurationReduction,
+
+        /// <summary>
+        /// Time reduction of cold/freeze debuffs in seconds.
+        /// </summary>
+        ColdAndFreezeDurationReduction,
+
+        /// <summary>
+        /// Time reduction of corrosion damage debuffs in seconds.
+        /// </summary>
+        CorrosionDurationReduction,
+
+        /// <summary>
+        /// Time reduction of radiation damage debuffs in seconds.
+        /// </summary>
+        RadiationDurationReduction,
+
+        #endregion
+
+        #region Shields
 
         /// <summary>
         /// Shield coverage angle, i.e. the percentage of the ship covered by the shield.
@@ -86,19 +131,175 @@ namespace Space.Data
         ShieldCoverage,
 
         /// <summary>
+        /// Energy consumption of all active shields on the entity. The unit is energy per second.
+        /// </summary>
+        ShieldActiveEnergyConsumption,
+
+        /// <summary>
+        /// Shield block chance, i.e. how likely it is damage gets blocked completely,
+        /// free of additional energy cost. Let's pretend this means the shot ricocheted
+        /// or something :P
+        /// This is applied upon collision detection.
+        /// </summary>
+        ShieldBlockChance,
+
+        /// <summary>
+        /// Shield absorbtion cost, i.e. the energy it costs to absorb one damage point,
+        /// in case the damage wasn't blocked.
+        /// This is handled each time damage is applied (including debuffs).
+        /// </summary>
+        ShieldEnergyConsumptionPerAbsorbedDamage,
+
+        #endregion
+
+        #region Offense
+
+        /// <summary>
         /// Weapon cooldown modifier for an entity.
         /// </summary>
         WeaponCooldown,
+
+        /// <summary>
+        /// Energy consumption of all weapons on the entity.
+        /// </summary>
+        WeaponEnergyConsumption,
+
+        /// <summary>
+        /// Chance that an attack deals critical damage.
+        /// </summary>
+        AttackCriticalDamageChance,
+
+        /// <summary>
+        /// Damage modifier when dealing critical damage.
+        /// </summary>
+        AttackCriticalDamageMultiplier,
+
+        /// <summary>
+        /// Modifies the amount of physical damage of a weapon.
+        /// </summary>
+        AttackPhysicalMinDamage, AttackPhysicalMaxDamage,
+
+        /// <summary>
+        /// Modifies the amount of fire damage of a weapon.
+        /// </summary>
+        AttackFireMinDamage, AttackFireMaxDamage,
+
+        /// <summary>
+        /// Modifies the amount of ice damage of a weapon.
+        /// </summary>
+        AttackIceMinDamage, AttackIceMaxDamage,
+
+        /// <summary>
+        /// Modifies the amount of acid damage of a weapon.
+        /// </summary>
+        AttackAcidMinDamage, AttackAcidMaxDamage,
+
+        /// <summary>
+        /// Modifies the amount of electric damage of a weapon.
+        /// </summary>
+        AttackElectricMinDamage, AttackElectricMaxDamage,
+
+        /// <summary>
+        /// Chance that a hit will trigger a burn dot on the target.
+        /// </summary>
+        AttackBurnChance,
+
+        /// <summary>
+        /// Modifies the amount of fire damage of a weapon.
+        /// </summary>
+        AttackBurnMinDamage, AttackBurnMaxDamage,
+
+        /// <summary>
+        /// The time in seconds for how long the target should burn.
+        /// </summary>
+        AttackBurnMinDuration, AttackBurnMaxDuration,
+
+        /// <summary>
+        /// Chance that a hit will freeze the target.
+        /// </summary>
+        AttackFreezeChance,
+
+        /// <summary>
+        /// The time in seconds for how long the target should be frozen.
+        /// </summary>
+        AttackFreezeMinDuration, AttackFreezeMaxDuration,
+
+        /// <summary>
+        /// The time in seconds for how long the target should be slowed from
+        /// cold damage. This debuff is *always* applied on cold damage.
+        /// </summary>
+        AttackColdMinDuration, AttackColdMaxDuration,
+
+        /// <summary>
+        /// Chance that a hit will trigger a corrosion damage debuff on the target.
+        /// </summary>
+        AttackCorrosionChance,
+
+        /// <summary>
+        /// Modifies the amount of corrosion damage of a corrosion debuff.
+        /// </summary>
+        AttackCorrosionMinDamage, AttackCorrosionMaxDamage,
+
+        /// <summary>
+        /// Time in ticks the corrosion damage debuff should last.
+        /// </summary>
+        AttackCorrosionMinDuration, AttackCorrosionMaxDuration,
+
+        /// <summary>
+        /// Chance that a hit will trigger a corrosion dot on the target.
+        /// </summary>
+        AttackRadiationChance,
+
+        /// <summary>
+        /// Modifies the amount of radiation damage of a weapon.
+        /// </summary>
+        AttackRadiationMinDamage, AttackRadiationMaxDamage,
+
+        /// <summary>
+        /// Time in ticks the acid damage should last.
+        /// </summary>
+        AttackRadiationMinDuration, AttackRadiationMaxDuration,
+
+        /// <summary>
+        /// Armor reduction debuff on attack.
+        /// </summary>
+        AttackReduceArmorDamageReduction,
+
+        /// <summary>
+        /// Shield armor debuff on attack.
+        /// </summary>
+        AttackReduceShieldDamageReduction,
+
+        /// <summary>
+        /// Fire resistance debuff on attack.
+        /// </summary>
+        AttackReduceFireDamageReduction,
+
+        /// <summary>
+        /// Ice resistance debuff on attack.
+        /// </summary>
+        AttackReduceIceDamageReduction,
+
+        /// <summary>
+        /// Acid resistance debuff on attack.
+        /// </summary>
+        AttackReduceAcidDamageReduction,
+
+        /// <summary>
+        /// Electric resistance debuff on attack.
+        /// </summary>
+        AttackReduceElectricDamageReduction,
+
+        #endregion
+
+        #region Sensors
 
         /// <summary>
         /// Radar Distance for an entity.
         /// </summary>
         SensorRange,
 
-        /// <summary>
-        /// Modifies the amount of damage all equipped weapons do.
-        /// </summary>
-        WeaponDamage
+        #endregion
     }
 
     public static class AttributeTypeExtension
@@ -111,17 +312,16 @@ namespace Space.Data
             {AttributeType.Energy, 1},
             {AttributeType.HealthRegeneration, 50},
             {AttributeType.EnergyRegeneration, 50},
-            {AttributeType.DamageReduction, 1},
+            {AttributeType.PhysicalDamageReduction, 1},
             {AttributeType.Mass, -0.1f},
             {AttributeType.AccelerationForce, 50},
             {AttributeType.RotationForce, 50},
             {AttributeType.ThrusterEnergyConsumption, -50},
-            {AttributeType.ShieldEnergyConsumption, -60},
+            {AttributeType.ShieldActiveEnergyConsumption, -60},
             {AttributeType.WeaponEnergyConsumption, -70},
-            {AttributeType.ShieldBlockCost, -5},
+            {AttributeType.ShieldEnergyConsumptionPerAbsorbedDamage, -5},
             {AttributeType.WeaponCooldown, -20},
             {AttributeType.SensorRange, 0.1f},
-            {AttributeType.WeaponDamage, 80}
         };
 
         #endregion
@@ -134,7 +334,7 @@ namespace Space.Data
         public static string ToLocalizedString(this AttributeType attributeType)
         {
             var name = Enum.GetName(typeof(AttributeType), attributeType);
-            return AttributeNames.ResourceManager.GetString(name)
+            return (name != null ? AttributeNames.ResourceManager.GetString(name) : null)
                    ?? "!!AttributeNames:" + name + "!!";
         }
 
@@ -146,7 +346,7 @@ namespace Space.Data
         public static string ToLocalizedPrefixString(this AttributeType attributeType)
         {
             var name = Enum.GetName(typeof(AttributeType), attributeType);
-            return AttributePrefixes.ResourceManager.GetString(name)
+            return (name != null ? AttributePrefixes.ResourceManager.GetString(name) : null)
                    ?? "!!AttributePrefixes:" + name + "!!";
         }
 

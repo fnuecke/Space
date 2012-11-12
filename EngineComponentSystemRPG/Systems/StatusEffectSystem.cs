@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem.RPG.Systems
     public sealed class StatusEffectSystem : AbstractUpdatingComponentSystem<StatusEffect>
     {
         #region Logic
-        
+
         /// <summary>
         /// Updates the component by updating the remaining time to live.
         /// </summary>

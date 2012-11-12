@@ -90,7 +90,7 @@ namespace Space.ComponentSystem.Factories
                 .Initialize(this, coverage)
                 .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
-            return SampleAttributes(manager, entity, random);
+            return entity;
         }
 
         /// <summary>

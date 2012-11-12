@@ -35,7 +35,7 @@ namespace Space.Control
             var controller = new SimpleServerController<Profile>(7777, purelyLocal ? 1 : 8, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
-            AddSpaceServerSystems(controller.Simulation.Manager, game);
+            AddSpaceServerSystems(controller.Simulation.Manager);
 
             // Done.
             return controller;
@@ -52,7 +52,7 @@ namespace Space.Control
             var controller = new SimpleClientController<Profile>(SpaceCommandHandler.HandleCommand);
 
             // Needed by some systems. Add all systems we need in our game as a client.
-            AddSpaceServerSystems(controller.Simulation.Manager, game);
+            AddSpaceServerSystems(controller.Simulation.Manager);
             AddSpaceClientSystems(controller.Simulation.Manager, game, controller.Session, controller);
 
             // Done.
@@ -88,8 +88,7 @@ namespace Space.Control
         /// Adds systems used by the server and the client.
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="game">The game.</param>
-        private static void AddSpaceServerSystems(IManager manager, Game game)
+        private static void AddSpaceServerSystems(IManager manager)
         {
             manager.AddSystems(
                 new AbstractSystem[]
@@ -180,7 +179,7 @@ namespace Space.Control
                     // from whatever cause (debuffs, normally). Having it here will lead
                     // to drops mostly appear in the next update cycle, but no-one will
                     // know ;)
-                    new DropSystem(game.Content),
+                    new DropSystem(),
 
                     // ----- Stuff that removes things ----- //
 
@@ -189,7 +188,11 @@ namespace Space.Control
                     // Collision damage is mainly reactive to collisions, but let's keep
                     // it here for context. Note that it also has it's own update, in
                     // which it updates damager cooldowns.
-                    new CollisionDamageSystem(),
+                    new CollisionAttributeEffectSystem(),
+                    // Systems that apply effects, damage, handle on-hit effects etc.
+                    new DirectDamageApplyingSystem(),
+                    new OverTimeDamageApplyingSystem(),
+                    new FreezeOnHitSystem(),
                     
                     // Apply any status effects at this point. Shield system first, to
                     // consume possibly regenerated energy -- so as not to block with

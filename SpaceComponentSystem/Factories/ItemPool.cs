@@ -10,6 +10,48 @@ namespace Space.ComponentSystem.Factories
     public sealed class ItemPool
     {
         /// <summary>
+        /// The logical name of the item pool.
+        /// </summary>
+        [Category("General")]
+        [Description("The name of the item pool, by which it may be referenced (e.g. in ships).")]
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
+
+        /// <summary>
+        /// The maximum amount of simultaneously dropped items.
+        /// </summary>
+        [DefaultValue(0)]
+        [Category("Logic")]
+        [Description("The maximum number of items to sample from this item pool (actual number is randomly determined per drop, with this as the maximum number of items).")]
+        public int MaxDrops
+        {
+            get { return _maxDrops; }
+            set { _maxDrops = value; }
+        }
+
+        /// <summary>
+        /// A list of tuples containing the name of the item and the
+        /// probability the item will be dropped.
+        /// </summary>
+        [ContentSerializer(FlattenContent = true, CollectionItemName = "Item")]
+        [Category("Logic")]
+        [Description("The list of items that can be drawn from this item pool.")]
+        public DropInfo[] Items
+        {
+            get { return _items; }
+            set { _items = value; }
+        }
+
+        private string _name = "";
+
+        private int _maxDrops;
+
+        private DropInfo[] _items;
+
+        /// <summary>
         /// The class holding the information about a single drop.
         /// </summary>
         [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -54,47 +96,5 @@ namespace Space.ComponentSystem.Factories
                 return _itemName + _probability.ToString(" (0.00%)");
             }
         }
-
-        /// <summary>
-        /// The logical name of the item pool.
-        /// </summary>
-        [Category("General")]
-        [Description("The name of the item pool, by which it may be referenced (e.g. in ships).")]
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-
-        /// <summary>
-        /// The maximum amount of simultaneously dropped items.
-        /// </summary>
-        [DefaultValue(0)]
-        [Category("Logic")]
-        [Description("The maximum number of items to sample from this item pool (actual number is randomly determined per drop, with this as the maximum number of items).")]
-        public int MaxDrops
-        {
-            get { return _maxDrops; }
-            set { _maxDrops = value; }
-        }
-
-        /// <summary>
-        /// A list of tuples containing the name of the item and the
-        /// probability the item will be dropped.
-        /// </summary>
-        [ContentSerializer(FlattenContent = true, CollectionItemName = "Item")]
-        [Category("Logic")]
-        [Description("The list of items that can be drawn from this item pool.")]
-        public DropInfo[] Items
-        {
-            get { return _items; }
-            set { _items = value; }
-        }
-
-        private string _name = "";
-
-        private int _maxDrops;
-
-        private DropInfo[] _items;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.RPG.Components;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -21,9 +22,29 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// The damage to apply per tick (see <c>Interval</c>).
+        /// The damage type.
         /// </summary>
-        public float Value;
+        public DamageType Type;
+
+        /// <summary>
+        /// The minimum damage to apply per tick (see <c>Interval</c>).
+        /// </summary>
+        public float MinValue;
+
+        /// <summary>
+        /// The maximum damage to apply per tick (see <c>Interval</c>).
+        /// </summary>
+        public float MaxValue;
+
+        /// <summary>
+        /// The chance that we cause critical damage in one tick.
+        /// </summary>
+        public float ChanceToCrit;
+
+        /// <summary>
+        /// The damage multiplier to apply when causing critical damage.
+        /// </summary>
+        public float CriticalDamageMultiplier = 1;
 
         /// <summary>
         /// The damage tick interval, in game frames.
@@ -54,7 +75,11 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherDamage = (DamagingStatusEffect)other;
-            Value = otherDamage.Value;
+            Type = otherDamage.Type;
+            MinValue = otherDamage.MinValue;
+            MaxValue = otherDamage.MaxValue;
+            ChanceToCrit = otherDamage.ChanceToCrit;
+            CriticalDamageMultiplier = otherDamage.CriticalDamageMultiplier;
             Interval = otherDamage.Interval;
             Owner = otherDamage.Owner;
             Delay = otherDamage.Delay;
@@ -65,27 +90,39 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Initializes the specified damage once.
         /// </summary>
-        /// <param name="tickDamage">The damage to apply per tick (not game frame, see next param).</param>
+        /// <param name="tickMinDamage">The minimal damage to apply per tick (not game frame, see next param).</param>
+        /// <param name="tickMaxDamage">The maximum damage to apply per tick.</param>
+        /// <param name="chanceToCrit">The chance that we cause critical damage in one tick.</param>
+        /// <param name="criticalDamageMultiplier">The critical damage multiplier.</param>
+        /// <param name="type">The type of the damage.</param>
         /// <param name="owner">The id of the entity that caused the creation of the effect.</param>
         /// <returns></returns>
-        public DamagingStatusEffect Initialize(float tickDamage, int owner = 0)
+        public DamagingStatusEffect Initialize(float tickMinDamage, float tickMaxDamage, float chanceToCrit, float criticalDamageMultiplier, DamageType type = DamageType.Physical, int owner = 0)
         {
-            return Initialize(0, tickDamage, 1, owner);
+            return Initialize(0, 1, tickMinDamage, tickMaxDamage, chanceToCrit, criticalDamageMultiplier, type, owner);
         }
 
         /// <summary>
         /// Initializes the specified tick damage.
         /// </summary>
         /// <param name="duration">The duration of the effect, in ticks.</param>
-        /// <param name="tickDamage">The damage to apply per tick (not game frame, see next param).</param>
         /// <param name="tickInterval">The tick interval, i.e. every how many game frames to apply the damage.</param>
+        /// <param name="tickMinDamage">The damage to apply per tick (not game frame, see next param).</param>
+        /// <param name="tickMaxDamage">The maximum damage to apply per tick.</param>
+        /// <param name="chanceToCrit">The chance that we cause critical damage in one tick.</param>
+        /// <param name="criticalDamageMultiplier">The critical damage multiplier.</param>
+        /// <param name="type">The type of the damage.</param>
         /// <param name="owner">The id of the entity that caused the creation of the effect.</param>
         /// <returns></returns>
-        public DamagingStatusEffect Initialize(int duration, float tickDamage, int tickInterval = 1, int owner = 0)
+        public DamagingStatusEffect Initialize(int duration, int tickInterval, float tickMinDamage, float tickMaxDamage, float chanceToCrit, float criticalDamageMultiplier, DamageType type = DamageType.Physical, int owner = 0)
         {
             base.Initialize(duration);
 
-            Value = tickDamage;
+            Type = type;
+            MinValue = tickMinDamage;
+            MaxValue = tickMaxDamage;
+            ChanceToCrit = chanceToCrit;
+            CriticalDamageMultiplier = criticalDamageMultiplier;
             Interval = System.Math.Max(1, tickInterval);
             Owner = owner;
 
@@ -100,7 +137,11 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
-            Value = 0f;
+            Type = DamageType.None;
+            MinValue = 0;
+            MaxValue = 0;
+            ChanceToCrit = 0;
+            CriticalDamageMultiplier = 1;
             Interval = 1;
             Owner = 0;
             Delay = 0;
@@ -120,7 +161,11 @@ namespace Space.ComponentSystem.Components
         public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Value)
+                .Write((byte)Type)
+                .Write(MinValue)
+                .Write(MaxValue)
+                .Write(ChanceToCrit)
+                .Write(CriticalDamageMultiplier)
                 .Write(Interval)
                 .Write(Owner)
                 .Write(Delay);
@@ -134,7 +179,11 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Value = packet.ReadSingle();
+            Type = (DamageType)packet.ReadByte();
+            MinValue = packet.ReadSingle();
+            MaxValue = packet.ReadSingle();
+            ChanceToCrit = packet.ReadSingle();
+            CriticalDamageMultiplier = packet.ReadSingle();
             Interval = packet.ReadInt32();
             Owner = packet.ReadInt32();
             Delay = packet.ReadInt32();
@@ -149,7 +198,11 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(Value);
+            hasher.Put((byte)Type);
+            hasher.Put(MinValue);
+            hasher.Put(MaxValue);
+            hasher.Put(ChanceToCrit);
+            hasher.Put(CriticalDamageMultiplier);
             hasher.Put(Interval);
             hasher.Put(Owner);
             hasher.Put(Delay);
@@ -167,7 +220,12 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", Interval=" + Interval + ", Owner=" + Owner + ", Delay=" + Delay;
+            return base.ToString() + ", Type=" + Type +
+                ", MinValue=" + MinValue.ToString(CultureInfo.InvariantCulture) +
+                ", MaxValue=" + MaxValue.ToString(CultureInfo.InvariantCulture) +
+                ", ChanceToCrit=" + ChanceToCrit.ToString(CultureInfo.InvariantCulture) +
+                ", CriticalDamageMultiplier=" + CriticalDamageMultiplier.ToString(CultureInfo.InvariantCulture) +
+                ", Interval=" + Interval + ", Owner=" + Owner + ", Delay=" + Delay;
         }
 
         #endregion

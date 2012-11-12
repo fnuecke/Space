@@ -498,11 +498,11 @@ namespace Engine.ComponentSystem
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>
-        public void SendMessage<T>(ref T message) where T : struct
+        public void SendMessage<T>(T message) where T : struct
         {
             for (int i = 0, j = _messagingSystems.Count; i < j; ++i)
             {
-                _messagingSystems[i].Receive(ref message);
+                _messagingSystems[i].Receive(message);
             }
         }
 

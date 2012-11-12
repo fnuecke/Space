@@ -536,7 +536,20 @@ namespace Space.Tools.DataEditor
             _projectilePreview.Projectiles = factories;
             if (pgProperties.SelectedObject is WeaponFactory)
             {
-                _projectilePreview.TriggerSpeed = ((WeaponFactory)pgProperties.SelectedObject).Cooldown;
+                var weapon = (WeaponFactory)pgProperties.SelectedObject;
+                //outer: foreach (var attributePool in weapon.AdditionalLocalAttributes)
+                //{
+                //    var pool = AttributePoolManager.GetAttributePool(attributePool);
+                //    foreach (var attributeInfo in pool.Attributes)
+                //    {
+                //        if (attributeInfo.Attribute.Type == AttributeType.WeaponCooldown)
+                //        {
+                //            break outer;
+                //            _projectilePreview.TriggerSpeed = 1;
+                //        }
+                //    }
+                //}
+                // TODO
             }
             else
             {

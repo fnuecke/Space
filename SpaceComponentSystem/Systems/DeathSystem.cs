@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -67,57 +66,65 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is EntityDied)
             {
-                var entity = ((EntityDied)(ValueType)message).KilledEntity;
+                var cm = message as EntityDied?;
+                if (cm != null)
+                {
+                    var entity = cm.Value.KilledEntity;
 
-                // Play explosion effect at point of death.
-                var particleSystem = (CameraCenteredParticleEffectSystem)Manager.GetSystem(ParticleEffectSystem.TypeId);
-                if (particleSystem != null)
-                {
-                    particleSystem.Play("Effects/BasicExplosion", entity);
-                }
-                var soundSystem = (CameraCenteredSoundSystem)Manager.GetSystem(SoundSystem.TypeId);
-                if (soundSystem != null)
-                {
-                    soundSystem.Play("Explosion", entity);
-                }
-
-                // See if the entity respawns.
-                var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
-                if (respawn == null)
-                {
-                    // Entity does not respawn, remove it. This can be triggered from
-                    // a parallel system (e.g. collisions), so we remember to remove it.
-                    lock (_entitiesToRemove)
+                    // Play explosion effect at point of death.
+                    var particleSystem =
+                        (CameraCenteredParticleEffectSystem)Manager.GetSystem(ParticleEffectSystem.TypeId);
+                    if (particleSystem != null)
                     {
-                        _entitiesToRemove.Add(entity);
+                        particleSystem.Play("Effects/BasicExplosion", entity);
                     }
-                }
-            }
-            else if (message is TranslationChanged)
-            {
-                var changedMessage = ((TranslationChanged)(ValueType)message);
+                    var soundSystem = (CameraCenteredSoundSystem)Manager.GetSystem(SoundSystem.TypeId);
+                    if (soundSystem != null)
+                    {
+                        soundSystem.Play("Explosion", entity);
+                    }
 
-                // Only remove entities marked for removal.
-                if (Manager.GetComponent(changedMessage.Entity, CellDeath.TypeId) == null)
-                {
+                    // See if the entity respawns.
+                    var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
+                    if (respawn == null)
+                    {
+                        // Entity does not respawn, remove it. This can be triggered from
+                        // a parallel system (e.g. collisions), so we remember to remove it.
+                        lock (_entitiesToRemove)
+                        {
+                            _entitiesToRemove.Add(entity);
+                        }
+                    }
                     return;
                 }
-
-                // Check our new cell after the position change.
-                var position = changedMessage.CurrentPosition;
-                var cellId = BitwiseMagic.Pack(
-                    (int)position.X >> CellSystem.CellSizeShiftAmount,
-                    (int)position.Y >> CellSystem.CellSizeShiftAmount);
-
-                // If the cell changed, check if we're out of bounds.
-                if (!((CellSystem)Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
+            }
+            {
+                var cm = message as TranslationChanged?;
+                if (cm != null)
                 {
-                    // Dead space, kill it.
-                    Manager.RemoveEntity(changedMessage.Entity);
+                    var m = cm.Value;
+
+                    // Only remove entities marked for removal.
+                    if (Manager.GetComponent(m.Entity, CellDeath.TypeId) == null)
+                    {
+                        return;
+                    }
+
+                    // Check our new cell after the position change.
+                    var position = m.CurrentPosition;
+                    var cellId = BitwiseMagic.Pack(
+                        (int)position.X >> CellSystem.CellSizeShiftAmount,
+                        (int)position.Y >> CellSystem.CellSizeShiftAmount);
+
+                    // If the cell changed, check if we're out of bounds.
+                    if (!((CellSystem)Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
+                    {
+                        // Dead space, kill it.
+                        Manager.RemoveEntity(m.Entity);
+                    }
                 }
             }
         }

@@ -144,9 +144,6 @@ namespace Space.ComponentSystem.Components
             if (weapon != null)
             {
                 descripton.IsWeapon = true;
-                descripton.WeaponDamage = weapon.Damage;
-                descripton.WeaponCooldown = weapon.Cooldown;
-                descripton.WeaponEnergyConsumption = weapon.EnergyConsumption;
                 descripton.WeaponProjectileCount = weapon.Projectiles.Length;
             }
             else

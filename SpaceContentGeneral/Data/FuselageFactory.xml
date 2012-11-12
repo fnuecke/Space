@@ -46,8 +46,8 @@
           <Offset>-20 0</Offset>
         </Item>
       </Slots>
+      <AdditionalAttributes />
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <AttributePool />
     </Item>
     <Item>
       <Name>L1_AI_Fuselage</Name>
@@ -81,8 +81,8 @@
           <Size>Small</Size>
         </Item>
       </Slots>
+      <AdditionalAttributes />
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <AttributePool />
     </Item>
   </Asset>
 </XnaContent>

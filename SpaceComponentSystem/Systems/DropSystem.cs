@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
-using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
@@ -20,32 +19,10 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// A list of all item pools mapped by their ID. This should be treated
-        /// as read-only after construction.
-        /// </summary>
-        private Dictionary<string, ItemPool> _itemPools = new Dictionary<string, ItemPool>();
-
-        /// <summary>
         /// List of drops to sample when we update. This is accumulated from
         /// death events, to allow thread safe sampling in one go.
         /// </summary>
         private List<Tuple<string, FarPosition>> _dropsToSample = new List<Tuple<string, FarPosition>>();
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DropSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content manager used to load drop tables.</param>
-        public DropSystem(ContentManager content)
-        {
-            foreach (var itemPool in content.Load<ItemPool[]>("Data/ItemPool"))
-            {
-                _itemPools.Add(itemPool.Name, itemPool);
-            }
-        }
 
         #endregion
 
@@ -88,7 +65,7 @@ namespace Space.ComponentSystem.Systems
         private void SampleDrop(string poolName, FarPosition position)
         {
             // Get the actual item pool to pull items from.
-            var pool = _itemPools[poolName];
+            var pool = FactoryLibrary.GetItemPool(poolName);
 
             // Get the list of possible drops.
             var dropInfo = new List<ItemPool.DropInfo>(pool.Items);
@@ -148,18 +125,21 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is EntityDied)
+            var cm = message as EntityDied?;
+            if (cm == null)
             {
-                var entity = ((EntityDied)(ValueType)message).KilledEntity;
+                return;
+            }
 
-                var drops = ((Drops)Manager.GetComponent(entity, Drops.TypeId));
-                if (drops != null)
-                {
-                    var translation = ((Transform)Manager.GetComponent(entity, Transform.TypeId)).Translation;
-                    Drop(drops.ItemPool, ref translation);
-                }
+            var entity = cm.Value.KilledEntity;
+
+            var drops = ((Drops)Manager.GetComponent(entity, Drops.TypeId));
+            if (drops != null)
+            {
+                var translation = ((Transform)Manager.GetComponent(entity, Transform.TypeId)).Translation;
+                Drop(drops.ItemPool, ref translation);
             }
         }
 
@@ -181,35 +161,9 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (DropSystem)base.NewInstance();
 
-            copy._itemPools = new Dictionary<string, ItemPool>();
+            copy._dropsToSample = new List<Tuple<string, FarPosition>>();
 
             return copy;
-        }
-
-        /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
-        /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
-        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override void CopyInto(AbstractSystem into)
-        {
-            base.CopyInto(into);
-            
-            var copy = (DropSystem)into;
-
-            // Copy for shuffling.
-            copy._itemPools.Clear();
-            foreach (var item in _itemPools)
-            {
-                copy._itemPools.Add(item.Key, item.Value);
-            }
         }
 
         #endregion

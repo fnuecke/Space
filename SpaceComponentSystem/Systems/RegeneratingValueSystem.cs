@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.RPG.Messages;
+﻿using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 
@@ -34,15 +33,17 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is CharacterStatsInvalidated)
+            var cm = message as CharacterStatsInvalidated?;
+            if (cm == null)
             {
-                var entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
-                foreach (var component in Manager.GetComponents(entity, AbstractRegeneratingValue.TypeId))
-                {
-                    ((AbstractRegeneratingValue)component).RecomputeValues();
-                }
+                return;
+            }
+
+            foreach (var component in Manager.GetComponents(cm.Value.Entity, AbstractRegeneratingValue.TypeId))
+            {
+                ((AbstractRegeneratingValue)component).RecomputeValues();
             }
         }
 

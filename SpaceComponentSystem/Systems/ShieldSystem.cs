@@ -30,9 +30,8 @@ namespace Space.ComponentSystem.Systems
 
             // Got a shield, consume constant energy drain.
             var energy = (Energy)Manager.GetComponent(component.Entity, Energy.TypeId);
-            var character = (Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId);
-            var drain = character.GetValue(AttributeType.ShieldEnergyConsumption,
-                                           character.GetBaseValue(AttributeType.ShieldEnergyConsumption)) / Settings.TicksPerSecond;
+            var attributes = (Attributes<AttributeType>)Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
+            var drain = attributes.GetValue(AttributeType.ShieldActiveEnergyConsumption) / Settings.TicksPerSecond;
             energy.SetValue(energy.Value - drain);
         }
 

@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components
@@ -36,20 +35,9 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// Determines how many frames (updates) to wait between dealing our
-        /// damage. This is per other entity we collide with.
-        /// 
-        /// <para>
-        /// A special case is zero, which means we only do our damage once,
-        /// then die.
-        /// </para>
+        /// Whether to destroy this instance on collision.
         /// </summary>
-        public int Cooldown;
-
-        /// <summary>
-        /// The amount of damage to deal upon collision.
-        /// </summary>
-        public float Damage;
+        public bool RemoveOnCollision;
 
         #endregion
 
@@ -63,9 +51,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            var otherCollisionDamage = (CollisionDamage)other;
-            Cooldown = otherCollisionDamage.Cooldown;
-            Damage = otherCollisionDamage.Damage;
+            RemoveOnCollision = ((CollisionDamage)other).RemoveOnCollision;
 
             return this;
         }
@@ -73,23 +59,13 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Initialize with the specified parameters.
         /// </summary>
-        /// <param name="cooldown">The cooldown.</param>
-        /// <param name="damage">The damage.</param>
-        public CollisionDamage Initialize(int cooldown, float damage)
+        /// <param name="removeOnCollision">whether to self-destruct on collision.</param>
+        /// <returns></returns>
+        public CollisionDamage Initialize(bool removeOnCollision)
         {
-            Cooldown = cooldown;
-            Damage = damage;
+            RemoveOnCollision = removeOnCollision;
 
             return this;
-        }
-
-        /// <summary>
-        /// Initialize with the specified damage.
-        /// </summary>
-        /// <param name="damage">The damage.</param>
-        public CollisionDamage Initialize(float damage)
-        {
-            return Initialize(0, damage);
         }
 
         /// <summary>
@@ -100,8 +76,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
-            Cooldown = 0;
-            Damage = 0;
+            RemoveOnCollision = false;
         }
 
         #endregion
@@ -119,8 +94,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(Cooldown);
-            packet.Write(Damage);
+            packet.Write(RemoveOnCollision);
 
             return packet;
         }
@@ -133,8 +107,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Cooldown = packet.ReadInt32();
-            Damage = packet.ReadSingle();
+            RemoveOnCollision = packet.ReadBoolean();
         }
 
         /// <summary>
@@ -146,8 +119,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(Cooldown);
-            hasher.Put(Damage);
+            hasher.Put(RemoveOnCollision);
         }
 
         #endregion
@@ -162,7 +134,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Cooldown=" + Cooldown + ", Damage=" + Damage.ToString(CultureInfo.InvariantCulture);
+            return base.ToString() + ", RemoveOnCollision=" + RemoveOnCollision;
         }
 
         #endregion

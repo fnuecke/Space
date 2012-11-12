@@ -54,7 +54,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize with the specified duration.
         /// </summary>
         /// <param name="duration">The duration.</param>
-        protected StatusEffect Initialize(int duration)
+        public StatusEffect Initialize(int duration)
         {
             Remaining = duration;
 

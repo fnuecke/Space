@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -67,33 +66,36 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is EntityDied)
+            var cm = message as EntityDied?;
+            if (cm == null)
             {
-                var entity = ((EntityDied)(ValueType)message).KilledEntity;
+                return;
+            }
 
-                // See if the entity respawns.
-                var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
-                if (respawn == null)
-                {
-                    return;
-                }
+            var entity = cm.Value.KilledEntity;
 
-                // Entity does respawn, disable components and wait.
-                foreach (var componentType in respawn.ComponentsToDisable)
-                {
-                    Manager.GetComponent(entity, componentType).Enabled = false;
-                }
-                respawn.TimeToRespawn = respawn.Delay;
+            // See if the entity respawns.
+            var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
+            if (respawn == null)
+            {
+                return;
+            }
 
-                // Stop the entity, to avoid zooming off to nowhere when
-                // killed by a sun, e.g.
-                var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
-                if (velocity != null)
-                {
-                    velocity.Value = Vector2.Zero;
-                }
+            // Entity does respawn, disable components and wait.
+            foreach (var componentType in respawn.ComponentsToDisable)
+            {
+                Manager.GetComponent(entity, componentType).Enabled = false;
+            }
+            respawn.TimeToRespawn = respawn.Delay;
+
+            // Stop the entity, to avoid zooming off to nowhere when
+            // killed by a sun, e.g.
+            var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
+            if (velocity != null)
+            {
+                velocity.Value = Vector2.Zero;
             }
         }
 

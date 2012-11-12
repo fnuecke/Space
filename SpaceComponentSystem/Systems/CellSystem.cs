@@ -181,8 +181,8 @@ namespace Space.ComponentSystem.Systems
                     // Notify if cell wasn't alive already.
                     changedMessage.Id = cellId;
                     BitwiseMagic.Unpack(cellId, out changedMessage.X, out changedMessage.Y);
-                    changedMessage.State = true;
-                    Manager.SendMessage(ref changedMessage);
+                    changedMessage.IsActive = true;
+                    Manager.SendMessage(changedMessage);
                 }
             }
             _reusableBornCellsIds.Clear();
@@ -207,8 +207,8 @@ namespace Space.ComponentSystem.Systems
                 changedMessage.Id = cellId;
                 changedMessage.X = x;
                 changedMessage.Y = y;
-                changedMessage.State = false;
-                Manager.SendMessage(ref changedMessage);
+                changedMessage.IsActive = false;
+                Manager.SendMessage(changedMessage);
 
                 // Kill any remaining entities in the area covered by the
                 // cell that just died.

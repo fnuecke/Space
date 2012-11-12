@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
@@ -75,137 +74,142 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is CellStateChanged)
+            var cm = message as CellStateChanged?;
+            if (cm == null)
             {
-                var info = (CellStateChanged)(ValueType)message;
+                return;
+            }
 
-                if (info.State)
+            var m = cm.Value;
+
+            if (m.IsActive)
+            {
+                // Get random generator based on world seed and cell location.
+                var random = new MersenneTwister((ulong)new Hasher().Put(m.Id).Put(WorldSeed).Value);
+
+                // Check if we have a changed cell info.
+                if (!_cellInfo.ContainsKey(m.Id))
                 {
-                    // Get random generator based on world seed and cell location.
-                    var random = new MersenneTwister((ulong)new Hasher().Put(info.Id).Put(WorldSeed).Value);
+                    // No, generate the default one. Get an independent
+                    // randomizer to avoid different results in other
+                    // sampling operations from when we have an existing
+                    // cell info.
+                    var independentRandom =
+                        new MersenneTwister((ulong)new Hasher().Put(m.Id).Put(WorldSeed).Value);
 
-                    // Check if we have a changed cell info.
-                    if (!_cellInfo.ContainsKey(info.Id))
+                    // Figure out which faction should own this cell.
+                    Factions faction;
+                    switch (independentRandom.NextInt32(3))
                     {
-                        // No, generate the default one. Get an independent
-                        // randomizer to avoid different results in other
-                        // sampling operations from when we have an existing
-                        // cell info.
-                        var independentRandom = new MersenneTwister((ulong)new Hasher().Put(info.Id).Put(WorldSeed).Value);
+                        case 0:
+                            faction = Factions.NpcFactionA;
+                            break;
+                        case 1:
+                            faction = Factions.NpcFactionB;
+                            break;
+                        default:
+                            faction = Factions.NpcFactionC;
+                            break;
+                    }
 
-                        // Figure out which faction should own this cell.
-                        Factions faction;
-                        switch (independentRandom.NextInt32(3))
+                    // Figure out our tech level.
+                    // TODO make dependent on distance to center / start system.
+                    var techLevel = independentRandom.NextInt32(3);
+
+                    // Create the cell and push it.
+                    _cellInfo.Add(m.Id, new CellInfo(faction, techLevel));
+                }
+
+                // Get center of our cell.
+                const int cellSize = CellSystem.CellSize;
+                var center = new FarPosition(cellSize * m.X + (cellSize >> 1),
+                                             cellSize * m.Y + (cellSize >> 1));
+
+                // Check if it's the start system or not.
+                if (m.X == 0 && m.Y == 0)
+                {
+                    // It is, use a predefined number of planets and moons,
+                    // and make sure it's a solar system.
+                    FactoryLibrary.SampleSunSystem(Manager, "solar_system", center, random);
+                }
+                else
+                {
+                    // It isn't, randomize.
+                    FactoryLibrary.SampleSunSystem(Manager, "sunsystem_1", center, random);
+                }
+
+                // Find nearby active cells and the stations in them, mark
+                // them as possible targets for all station sin this cell,
+                // and let them know about our existence, as well.
+                var cellSystem = (CellSystem)Manager.GetSystem(CellSystem.TypeId);
+                var stations = _cellInfo[m.Id].Stations;
+                for (var ny = m.Y - 1; ny <= m.Y + 1; ny++)
+                {
+                    for (var nx = m.X - 1; nx <= m.X + 1; nx++)
+                    {
+                        // Don't fly to cells that are diagonal to
+                        // ourselves, which we do by checking if the
+                        // sum of the coordinates is uneven.
+                        // This becomes more obvious when considering this:
+                        // +-+-+-+-+
+                        // |0|1|0|1|
+                        // +-+-+-+-+
+                        // |1|0|1|0|
+                        // +-+-+-+-+
+                        // |0|1|0|1|
+                        // +-+-+-+-+
+                        // |1|0|1|0|
+                        // +-+-+-+-+
+                        // Where 0 means the sum of the own coordinate is
+                        // even, 1 means it is odd. Then we can see that
+                        // the sum of diagonal pairs of cells is always
+                        // even, and the one of straight neighbors is
+                        // always odd.
+                        if (((m.X + m.Y + ny + nx) & 1) == 0)
                         {
-                            case 0:
-                                faction = Factions.NpcFactionA;
-                                break;
-                            case 1:
-                                faction = Factions.NpcFactionB;
-                                break;
-                            default:
-                                faction = Factions.NpcFactionC;
-                                break;
-                        }
-
-                        // Figure out our tech level.
-                        // TODO make dependent on distance to center / start system.
-                        var techLevel = independentRandom.NextInt32(3);
-
-                        // Create the cell and push it.
-                        _cellInfo.Add(info.Id, new CellInfo(faction, techLevel));
-                    }
-
-                    // Get center of our cell.
-                    const int cellSize = CellSystem.CellSize;
-                    var center = new FarPosition(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
-
-                    // Check if it's the start system or not.
-                    if (info.X == 0 && info.Y == 0)
-                    {
-                        // It is, use a predefined number of planets and moons,
-                        // and make sure it's a solar system.
-                        FactoryLibrary.SampleSunSystem(Manager, "solar_system", center, random);
-                    }
-                    else
-                    {
-                        // It isn't, randomize.
-                        FactoryLibrary.SampleSunSystem(Manager, "sunsystem_1", center, random);
-                    }
-
-                    // Find nearby active cells and the stations in them, mark
-                    // them as possible targets for all station sin this cell,
-                    // and let them know about our existence, as well.
-                    var cellSystem = (CellSystem)Manager.GetSystem(CellSystem.TypeId);
-                    var stations = _cellInfo[info.Id].Stations;
-                    for (var ny = info.Y - 1; ny <= info.Y + 1; ny++)
-                    {
-                        for (var nx = info.X - 1; nx <= info.X + 1; nx++)
-                        {
-                            // Don't fly to cells that are diagonal to
-                            // ourselves, which we do by checking if the
-                            // sum of the coordinates is uneven.
-                            // This becomes more obvious when considering this:
-                            // +-+-+-+-+
-                            // |0|1|0|1|
-                            // +-+-+-+-+
-                            // |1|0|1|0|
-                            // +-+-+-+-+
-                            // |0|1|0|1|
-                            // +-+-+-+-+
-                            // |1|0|1|0|
-                            // +-+-+-+-+
-                            // Where 0 means the sum of the own coordinate is
-                            // even, 1 means it is odd. Then we can see that
-                            // the sum of diagonal pairs of cells is always
-                            // even, and the one of straight neighbors is
-                            // always odd.
-                            if (((info.X + info.Y + ny + nx) & 1) == 0)
+                            // Get the id, only mark the station if we have
+                            // info on it and it's an enemy cell.
+                            var id = BitwiseMagic.Pack(nx, ny);
+                            if (cellSystem.IsCellActive(id) &&
+                                _cellInfo.ContainsKey(id) &&
+                                (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[m.Id].Faction)))
                             {
-                                // Get the id, only mark the station if we have
-                                // info on it and it's an enemy cell.
-                                var id = BitwiseMagic.Pack(nx, ny);
-                                if (cellSystem.IsCellActive(id) &&
-                                    _cellInfo.ContainsKey(id) &&
-                                    (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[info.Id].Faction)))
+                                // Tell the other stations.
+                                foreach (var stationId in _cellInfo[id].Stations)
                                 {
-                                    // Tell the other stations.
-                                    foreach (var stationId in _cellInfo[id].Stations)
+                                    var spawn = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
+                                    foreach (var otherStationId in stations)
                                     {
-                                        var spawn = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
-                                        foreach (var otherStationId in stations)
-                                        {
-                                            spawn.Targets.Add(otherStationId);
-                                        }
+                                        spawn.Targets.Add(otherStationId);
                                     }
-                                    // Tell our own stations.
-                                    foreach (var stationId in stations)
+                                }
+                                // Tell our own stations.
+                                foreach (var stationId in stations)
+                                {
+                                    var spawner = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
+                                    foreach (var otherStationId in _cellInfo[id].Stations)
                                     {
-                                        var spawner = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
-                                        foreach (var otherStationId in _cellInfo[id].Stations)
-                                        {
-                                            spawner.Targets.Add(otherStationId);
-                                        }
+                                        spawner.Targets.Add(otherStationId);
                                     }
                                 }
                             }
                         }
                     }
                 }
+            }
+            else
+            {
+                // Remove cell info only if it does not deviate from the
+                // procedural values.
+                if (!_cellInfo[m.Id].Dirty)
+                {
+                    _cellInfo.Remove(m.Id);
+                }
                 else
                 {
-                    // Remove cell info only if it does not deviate from the
-                    // procedural values.
-                    if (!_cellInfo[info.Id].Dirty)
-                    {
-                        _cellInfo.Remove(info.Id);
-                    }
-                    else
-                    {
-                        _cellInfo[info.Id].Stations.Clear();
-                    }
+                    _cellInfo[m.Id].Stations.Clear();
                 }
             }
         }

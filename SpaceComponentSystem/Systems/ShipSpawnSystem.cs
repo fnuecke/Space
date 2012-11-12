@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
@@ -97,35 +96,40 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is CellStateChanged)
+            var cm = message as CellStateChanged?;
+            if (cm == null)
             {
-                var info = (CellStateChanged)(ValueType)message;
-                if (info.State)
-                {
-                    // Get the cell info to know what faction we're spawning for.
-                    var cellInfo = ((UniverseSystem)Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(info.Id);
-                    
-                    // The area covered by the cell.
-                    FarRectangle cellArea;
-                    cellArea.X = CellSystem.CellSize * info.X;
-                    cellArea.Y = CellSystem.CellSize * info.Y;
-                    cellArea.Width = CellSystem.CellSize;
-                    cellArea.Height = CellSystem.CellSize;
+                return;
+            }
 
-                    // Create some ships at random positions.
-                    for (var i = 0; i < 20; i++)
-                    {
-                        FarPosition spawnPoint;
-                        spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
-                        spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
-                        var ship = EntityFactory.CreateAIShip(
-                            Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
-                        var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
-                        ai.Roam(ref cellArea);
-                    }
-                }
+            var m = cm.Value;
+            if (!m.IsActive)
+            {
+                return;
+            }
+
+            // Get the cell info to know what faction we're spawning for.
+            var cellInfo = ((UniverseSystem)Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(m.Id);
+
+            // The area covered by the cell.
+            FarRectangle cellArea;
+            cellArea.X = CellSystem.CellSize * m.X;
+            cellArea.Y = CellSystem.CellSize * m.Y;
+            cellArea.Width = CellSystem.CellSize;
+            cellArea.Height = CellSystem.CellSize;
+
+            // Create some ships at random positions.
+            for (var i = 0; i < 20; i++)
+            {
+                FarPosition spawnPoint;
+                spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
+                spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
+                var ship = EntityFactory.CreateAIShip(
+                    Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
+                var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
+                ai.Roam(ref cellArea);
             }
         }
 

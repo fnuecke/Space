@@ -103,7 +103,7 @@ namespace Engine.Tests.ComponentSystem
             manager.AddSystem(system);
 
             var message = 0;
-            manager.SendMessage(ref message);
+            manager.SendMessage(message);
 
             //system.ReceivedWithAnyArgs().Receive(ref message);
         }

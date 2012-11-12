@@ -34,7 +34,7 @@ namespace Space.ComponentSystem.Components
         internal override void RecomputeValues()
         {
             // Recompute our values.
-            var character = ((Character<AttributeType>)Manager.GetComponent(Entity, Character<AttributeType>.TypeId));
+            var attributes = (Attributes<AttributeType>)Manager.GetComponent(Entity, Attributes<AttributeType>.TypeId);
 
             // Remember current relative value. Set to full if it was zero
             // before, because that means we're initializing for the first
@@ -42,8 +42,8 @@ namespace Space.ComponentSystem.Components
             var relative = (MaxValue > 0) ? (Value / MaxValue) : 1;
 
             // Rebuild base energy and regeneration values.
-            MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Energy));
-            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.EnergyRegeneration) / Settings.TicksPerSecond);
+            MaxValue = System.Math.Max(1, attributes.GetValue(AttributeType.Energy));
+            Regeneration = System.Math.Max(0, attributes.GetValue(AttributeType.EnergyRegeneration) / Settings.TicksPerSecond);
 
             // Set new relative value.
             Value = relative * MaxValue;

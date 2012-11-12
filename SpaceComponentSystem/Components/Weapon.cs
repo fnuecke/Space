@@ -1,6 +1,8 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Space.ComponentSystem.Factories;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -34,19 +36,10 @@ namespace Space.ComponentSystem.Components
         public string Sound;
 
         /// <summary>
-        /// The cooldown time to wait between shots, in seconds.
+        /// Attributes that are local to this weapon and only used for computing
+        /// this weapon's damage, cooldown, energy consumption etc.
         /// </summary>
-        public float Cooldown;
-
-        /// <summary>
-        /// The amount of energy this weapon requires for a single shot.
-        /// </summary>
-        public float EnergyConsumption;
-
-        /// <summary>
-        /// The amount of energy this weapon requires for a single shot.
-        /// </summary>
-        public float Damage;
+        public readonly Dictionary<AttributeType, float> Attributes = new Dictionary<AttributeType, float>();
 
         /// <summary>
         /// The projectiles this weapon fires.
@@ -67,9 +60,10 @@ namespace Space.ComponentSystem.Components
 
             var otherWeapon = (Weapon)other;
             Sound = otherWeapon.Sound;
-            Cooldown = otherWeapon.Cooldown;
-            EnergyConsumption = otherWeapon.EnergyConsumption;
-            Damage = otherWeapon.Damage;
+            foreach (var attribute in otherWeapon.Attributes)
+            {
+                Attributes.Add(attribute.Key, attribute.Value);
+            }
             Projectiles = otherWeapon.Projectiles;
 
             return this;
@@ -79,19 +73,19 @@ namespace Space.ComponentSystem.Components
         /// Creates a new weapon with the specified parameters.
         /// </summary>
         /// <param name="sound">The sound to play when the weapon is fired.</param>
-        /// <param name="cooldown">The cooldown in ticks betweens shots.</param>
-        /// <param name="energyConsumption">The amount of energy consumed per
-        /// shot</param>
-        /// <param name="damage">The amount of damage a single projectile does.</param>
+        /// <param name="attributes">The attributes for this specific weapon.</param>
         /// <param name="projectiles">The info on projectiles being shot.</param>
         /// <returns></returns>
-        public Weapon Initialize(string sound, float cooldown, float energyConsumption,
-                                 float damage, ProjectileFactory[] projectiles)
+        public Weapon Initialize(string sound, Dictionary<AttributeType, float> attributes, ProjectileFactory[] projectiles)
         {
             Sound = sound;
-            Cooldown = cooldown;
-            EnergyConsumption = energyConsumption;
-            Damage = damage;
+            if (attributes != null)
+            {
+                foreach (var attribute in attributes)
+                {
+                    Attributes.Add(attribute.Key, attribute.Value);
+                }
+            }
             Projectiles = projectiles;
 
             return this;
@@ -106,9 +100,7 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Sound = null;
-            Cooldown = 0;
-            EnergyConsumption = 0;
-            Damage = 0;
+            Attributes.Clear();
             Projectiles = null;
         }
 
@@ -123,12 +115,19 @@ namespace Space.ComponentSystem.Components
         /// <returns></returns>
         public override Packet Packetize(Packet packet)
         {
-            return base.Packetize(packet)
-                .Write(Sound)
-                .Write(Cooldown)
-                .Write(EnergyConsumption)
-                .Write(Damage)
-                .Write(Projectiles);
+            base.Packetize(packet)
+                .Write(Sound);
+
+            packet.Write(Attributes.Count);
+            foreach (var attribute in Attributes)
+            {
+                packet.Write((byte)attribute.Key);
+                packet.Write(attribute.Value);
+            }
+
+            packet.Write(Projectiles);
+
+            return packet;
         }
 
         /// <summary>
@@ -140,9 +139,13 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Sound = packet.ReadString();
-            Cooldown = packet.ReadSingle();
-            EnergyConsumption = packet.ReadSingle();
-            Damage = packet.ReadSingle();
+            var numAttributes = packet.ReadInt32();
+            for (var i = 0; i < numAttributes; i++)
+            {
+                var type = (AttributeType)packet.ReadByte();
+                var value = packet.ReadSingle();
+                Attributes.Add(type, value);
+            }
             Projectiles = packet.ReadPacketizables<ProjectileFactory>();
         }
 
@@ -155,9 +158,7 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(Sound);
-            hasher.Put(Cooldown);
-            hasher.Put(EnergyConsumption);
-            hasher.Put(Damage);
+            hasher.Put(Attributes.Count);
             hasher.Put(Projectiles);
         }
 

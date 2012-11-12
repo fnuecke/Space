@@ -83,7 +83,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     ItemUnequipped message;
                     message.Item = oldItem;
                     message.Slot = this;
-                    Manager.SendMessage(ref message);
+                    Manager.SendMessage(message);
 
                     // Update hierarchy (after message, as it might need the Parent/Root property).
                     foreach (var slot in Manager.GetComponents(oldItem, TypeId))
@@ -123,7 +123,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     ItemEquipped message;
                     message.Item = _item;
                     message.Slot = this;
-                    Manager.SendMessage(ref message);
+                    Manager.SendMessage(message);
                 }
             }
         }
@@ -284,7 +284,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 ItemEquipped message;
                 message.Item = _item;
                 message.Slot = this;
-                Manager.SendMessage(ref message);
+                Manager.SendMessage(message);
             }
         }
 

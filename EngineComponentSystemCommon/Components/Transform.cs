@@ -266,7 +266,7 @@ namespace Engine.ComponentSystem.Common.Components
             Translation = _nextTranslation;
             _translationChanged = false;
 
-            Manager.SendMessage(ref message);
+            Manager.SendMessage(message);
         }
 
         /// <summary>

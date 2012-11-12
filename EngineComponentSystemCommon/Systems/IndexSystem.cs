@@ -212,92 +212,103 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is IndexGroupsChanged)
             {
-                var changedMessage = (IndexGroupsChanged)(ValueType)message;
-
-                // Do we have new groups?
-                if (changedMessage.AddedIndexGroups != 0)
+                var cm = message as IndexGroupsChanged?;
+                if (cm != null)
                 {
-                    AddEntity(changedMessage.Entity, changedMessage.AddedIndexGroups);
-                }
+                    var m = cm.Value;
 
-                // Do we have deprecated groups?
-                if (changedMessage.RemovedIndexGroups != 0)
-                {
-                    // Remove from each old group.
-                    foreach (var tree in TreesForGroups(changedMessage.RemovedIndexGroups))
+                    // Do we have new groups?
+                    if (m.AddedIndexGroups != 0)
                     {
-                        tree.Remove(changedMessage.Entity);
+                        AddEntity(m.Entity, m.AddedIndexGroups);
                     }
-                }
-            }
-            else if (message is IndexBoundsChanged)
-            {
-                var changedMessage = (IndexBoundsChanged)(ValueType)message;
 
-                // Check if the entity is indexable.
-                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
-                if (index == null)
-                {
+                    // Do we have deprecated groups?
+                    if (m.RemovedIndexGroups != 0)
+                    {
+                        // Remove from each old group.
+                        foreach (var tree in TreesForGroups(m.RemovedIndexGroups))
+                        {
+                            tree.Remove(m.Entity);
+                        }
+                    }
                     return;
                 }
-
-                var bounds = changedMessage.Bounds;
-                var transform = ((Transform)Manager.GetComponent(changedMessage.Entity, Transform.TypeId));
-                if (transform != null)
-                {
-                    bounds.X = (int)transform.Translation.X - bounds.Width / 2;
-                    bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
-                }
-
-                // Update all indexes the entity is part of.
-                var changed = false;
-                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
-                {
-                    if (tree.Update(bounds, Vector2.Zero, changedMessage.Entity))
-                    {
-                        changed = true;
-                    }
-                }
-                if (changed)
-                {
-                    // Mark as changed.
-                    _changed.Add(changedMessage.Entity);
-                }
             }
-            else if (message is TranslationChanged)
             {
-                var changedMessage = (TranslationChanged)(ValueType)message;
-
-                // Check if the entity is indexable.
-                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
-                if (index == null)
+                var cm = message as IndexBoundsChanged?;
+                if (cm != null)
                 {
+                    var m = cm.Value;
+
+                    // Check if the entity is indexable.
+                    var index = ((Index)Manager.GetComponent(m.Entity, Index.TypeId));
+                    if (index == null)
+                    {
+                        return;
+                    }
+
+                    var bounds = m.Bounds;
+                    var transform = ((Transform)Manager.GetComponent(m.Entity, Transform.TypeId));
+                    if (transform != null)
+                    {
+                        bounds.X = (int)transform.Translation.X - bounds.Width / 2;
+                        bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
+                    }
+
+                    // Update all indexes the entity is part of.
+                    var changed = false;
+                    foreach (var tree in TreesForGroups(index.IndexGroupsMask))
+                    {
+                        if (tree.Update(bounds, Vector2.Zero, m.Entity))
+                        {
+                            changed = true;
+                        }
+                    }
+                    if (changed)
+                    {
+                        // Mark as changed.
+                        _changed.Add(m.Entity);
+                    }
                     return;
                 }
-
-                var bounds = index.Bounds;
-                bounds.X = (int)changedMessage.CurrentPosition.X - bounds.Width / 2;
-                bounds.Y = (int)changedMessage.CurrentPosition.Y - bounds.Height / 2;
-
-                var velocity = ((Velocity)Manager.GetComponent(changedMessage.Entity, Velocity.TypeId));
-                var delta = velocity != null ? velocity.Value : Vector2.Zero;
-
-                var changed = false;
-                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
+            }
+            {
+                var cm = message as TranslationChanged?;
+                if (cm != null)
                 {
-                    if (tree.Update(bounds, delta, changedMessage.Entity))
+                    var m = cm.Value;
+
+                    // Check if the entity is indexable.
+                    var index = ((Index)Manager.GetComponent(m.Entity, Index.TypeId));
+                    if (index == null)
                     {
-                        changed = true;
+                        return;
                     }
-                }
-                if (changed)
-                {
-                    // Mark as changed.
-                    _changed.Add(changedMessage.Entity);
+
+                    var bounds = index.Bounds;
+                    bounds.X = (int)m.CurrentPosition.X - bounds.Width / 2;
+                    bounds.Y = (int)m.CurrentPosition.Y - bounds.Height / 2;
+
+                    var velocity = ((Velocity)Manager.GetComponent(m.Entity, Velocity.TypeId));
+                    var delta = velocity != null ? velocity.Value : Vector2.Zero;
+
+                    var changed = false;
+                    foreach (var tree in TreesForGroups(index.IndexGroupsMask))
+                    {
+                        if (tree.Update(bounds, delta, m.Entity))
+                        {
+                            changed = true;
+                        }
+                    }
+                    if (changed)
+                    {
+                        // Mark as changed.
+                        _changed.Add(m.Entity);
+                    }
                 }
             }
         }

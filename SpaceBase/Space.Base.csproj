@@ -79,7 +79,9 @@
       <DependentUpon>AttributePrefixes.resx</DependentUpon>
     </Compile>
     <Compile Include="Data\AttributeType.cs" />
+    <Compile Include="Data\DamageType.cs" />
     <Compile Include="Data\Factions.cs" />
+    <Compile Include="Data\GameLogicConstants.cs" />
     <Compile Include="Data\IProfile.cs" />
     <Compile Include="Data\ItemDescription.cs" />
     <Compile Include="Data\ItemSlotSize.cs" />

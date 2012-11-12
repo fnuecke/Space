@@ -32,8 +32,8 @@
           <Offset>-5 16</Offset>
         </Item>
       </Slots>
+      <AdditionalAttributes />
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <AttributePool />
     </Item>
     <Item>
       <Name>L1_AI_Wing</Name>
@@ -50,8 +50,8 @@
           <Size>Small</Size>
         </Item>
       </Slots>
+      <AdditionalAttributes />
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <AttributePool />
     </Item>
   </Asset>
 </XnaContent>

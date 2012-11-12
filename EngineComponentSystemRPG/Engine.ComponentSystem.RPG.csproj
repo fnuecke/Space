@@ -60,7 +60,7 @@
   <ItemGroup>
     <Compile Include="Components\AttributeModifier.cs" />
     <Compile Include="Components\AttributeStatusEffect.cs" />
-    <Compile Include="Components\Character.cs" />
+    <Compile Include="Components\Attributes.cs" />
     <Compile Include="Components\Experience.cs" />
     <Compile Include="Components\ItemSlot.cs" />
     <Compile Include="Components\Inventory.cs" />

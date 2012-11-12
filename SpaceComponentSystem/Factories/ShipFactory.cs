@@ -162,7 +162,7 @@ namespace Space.ComponentSystem.Factories
             }
 
             // Add our attributes.
-            var character = ((Character<AttributeType>)manager.GetComponent(entity, Character<AttributeType>.TypeId));
+            var attributes = (Attributes<AttributeType>)manager.GetComponent(entity, Attributes<AttributeType>.TypeId);
             foreach (var attribute in _attributes)
             {
                 var modifier = attribute.SampleAttributeModifier(random);
@@ -170,7 +170,7 @@ namespace Space.ComponentSystem.Factories
                 {
                     throw new InvalidOperationException("Base attributes must be additive.");
                 }
-                character.SetBaseValue(modifier.Type, modifier.Value);
+                attributes.SetBaseValue(modifier.Type, modifier.Value);
             }
             
             // Fill up our values.
@@ -278,7 +278,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Inventory>(entity).Initialize(10);
 
             // Add some character!
-            manager.AddComponent<Character<AttributeType>>(entity);
+            manager.AddComponent<Attributes<AttributeType>>(entity);
 
             // Do we drop stuff?
             if (_itemPool != null)

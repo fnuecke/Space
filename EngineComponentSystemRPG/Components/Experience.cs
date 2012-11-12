@@ -92,7 +92,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 if (Enabled && Manager != null)
                 {
                     message.NewLevel = _level;
-                    Manager.SendMessage(ref message);
+                    Manager.SendMessage(message);
                 }
             }
         }

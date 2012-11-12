@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
@@ -282,10 +283,36 @@ namespace Space.ComponentSystem.Factories
                 manager.AddComponent<Expiration>(entity).Initialize((int)(_timeToLive * Settings.TicksPerSecond));
             }
 
-            // Figure out how much damage we should do, if any.
-            if (Math.Abs(weapon.Damage) > 0.001f)
+            // Mark as applying damage on collision.
+            manager.AddComponent<CollisionDamage>(entity).Initialize(true);
+
+            // Apply attributes of the weapon, modified with emitter attribute values,
+            // and emitter attributes to the projectile to allow damage calculation if
+            // it hits something.
+            var emitterAttributes = (Attributes<AttributeType>)manager.GetComponent(emitter, Attributes<AttributeType>.TypeId);
+            Attributes<AttributeType> projectileAttributes = null; // Only create if necessary.
+            foreach (AttributeType attributeType in Enum.GetValues(typeof(AttributeType)))
             {
-                manager.AddComponent<CollisionDamage>(entity).Initialize(weapon.Damage);
+                // Try to get weapon local attribute as base values.
+                var value = 0f;
+                if (weapon.Attributes.ContainsKey(attributeType))
+                {
+                    value = weapon.Attributes[attributeType];
+                }
+                // Try to modify it with emitter attributes.
+                if (emitterAttributes != null)
+                {
+                    value = emitterAttributes.GetValue(attributeType, value);
+                }
+                // If we have something, copy it to the projectile.
+                if (value != 0f)
+                {
+                    if (projectileAttributes == null)
+                    {
+                        projectileAttributes = manager.AddComponent<Attributes<AttributeType>>(entity);
+                    }
+                    projectileAttributes.SetBaseValue(attributeType, value);
+                }
             }
 
             // Register with indexes that need to be able to find us.
@@ -296,11 +323,7 @@ namespace Space.ComponentSystem.Factories
                 (int)(_collisionRadius + _collisionRadius));
 
             // See what we can bump into.
-            var collisionGroup = (weapon.Damage >= 0)
-                                     // We do damage, so we want to collide with enemies.
-                                     ? faction.ToCollisionGroup()
-                                     // We don't do damage, so we collide with friends (heal, e.g.).
-                                     : faction.Inverse().ToCollisionGroup();
+            var collisionGroup = faction.ToCollisionGroup();
 
             // Normally projectiles won't test against each other, but some may be
             // shot down, such as missiles. If that's the case, don't add us to the

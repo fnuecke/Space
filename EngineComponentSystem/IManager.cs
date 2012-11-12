@@ -187,7 +187,7 @@ namespace Engine.ComponentSystem
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>
-        void SendMessage<T>(ref T message) where T : struct;
+        void SendMessage<T>(T message) where T : struct;
         
         #endregion
 

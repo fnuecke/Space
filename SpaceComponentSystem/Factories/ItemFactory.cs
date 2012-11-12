@@ -169,8 +169,8 @@ namespace Space.ComponentSystem.Factories
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Stats")]
-        [Description("Possible attribute bonuses items of this type might have. Additional attributes are sampled from this pool.")]
-        public AttributeModifierConstraint<AttributeType>[] AdditionalAttributes
+        [Description("Possible attribute bonuses items of this type might have. Additional attributes are sampled from these pools.")]
+        public string[] AdditionalAttributes
         {
             get { return _additionalAttributes; }
             set { _additionalAttributes = value; }
@@ -188,15 +188,6 @@ namespace Space.ComponentSystem.Factories
         {
             get { return _additionalAttributeCount; }
             set { _additionalAttributeCount = value; }
-        }
-
-        [ContentSerializer(Optional = true)]
-        [Category("Stats")]
-        [Description("The list of attribute pools to draw attributes from when sampling the item.")]
-        public string[] AttributePool
-        {
-            get { return _attributePools; }
-            set { _attributePools = value; }
         }
 
         #endregion
@@ -223,11 +214,9 @@ namespace Space.ComponentSystem.Factories
 
         private AttributeModifierConstraint<AttributeType>[] _guaranteedAttributes;
 
-        private AttributeModifierConstraint<AttributeType>[] _additionalAttributes;
+        private string[] _additionalAttributes = new string[0];
 
         private IntInterval _additionalAttributeCount = IntInterval.Zero;
-
-        private string[] _attributePools = new string[0];
 
         #endregion
 
@@ -283,40 +272,122 @@ namespace Space.ComponentSystem.Factories
                     }
                 }
             }
-            return entity;
-        }
 
-        /// <summary>
-        /// Samples the attributes to apply to the item.
-        /// </summary>
-        /// <param name="manager">The manager.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns></returns>
-        /// <return>The entity with the attributes applied.</return>
-        protected int SampleAttributes(IManager manager, int item, IUniformRandom random)
-        {
+            // Sample guaranteed attributes.
             if (_guaranteedAttributes != null)
             {
                 foreach (var attribute in _guaranteedAttributes)
                 {
-                    manager.AddComponent<Attribute<AttributeType>>(item).Initialize(
+                    manager.AddComponent<Attribute<AttributeType>>(entity).Initialize(
                         attribute.SampleAttributeModifier(random));
                 }
             }
-            if (_additionalAttributes != null && _additionalAttributeCount != null)
+
+            // Sample additional attributes.
+            if (_additionalAttributes != null && _additionalAttributes.Length > 0 && _additionalAttributeCount != null)
             {
-                var numAdditionalAttributes = (_additionalAttributeCount.Low == _additionalAttributeCount.High || random == null)
-                                                  ? _additionalAttributeCount.Low
-                                                  : random.NextInt32(_additionalAttributeCount.Low,
-                                                                     _additionalAttributeCount.High);
-                for (var i = 0; i < numAdditionalAttributes; i++)
+                // Get how many attributes to sample.
+                foreach (var attribute in SampleAttributes(SampleAdditionalAttributeCount(random), _additionalAttributes, random))
                 {
-                    manager.AddComponent<Attribute<AttributeType>>(item).Initialize(
-                        _additionalAttributes[random == null ? (i % _additionalAttributes.Length) : random.NextInt32(_additionalAttributes.Length)].SampleAttributeModifier(random));
+                    manager.AddComponent<Attribute<AttributeType>>(entity).Initialize(attribute);
                 }
             }
-            return item;
+
+            return entity;
+        }
+
+        /// <summary>
+        /// Samples the specified number of attributes from the list of
+        /// available attributes in the specified attribute pools.
+        /// </summary>
+        /// <param name="count">The number of attributes to sample.</param>
+        /// <param name="attributePools">The attribute pools to sample from.</param>
+        /// <param name="random">The randomizer to use.</param>
+        protected IEnumerable<AttributeModifier<AttributeType>> SampleAttributes(int count, string[] attributePools, IUniformRandom random)
+        {
+            if (count <= 0)
+            {
+                yield break;
+            }
+
+            // Get the cumulative weights, and figure out how many attributes
+            // there are, so we don't have to resize our list of all attributes
+            // while adding them.
+            var summedWeights = 0;
+            var numAttributes = 0;
+            for (var i = 0; i < _additionalAttributes.Length; i++)
+            {
+                var pool = FactoryLibrary.GetAttributePool(_additionalAttributes[i]);
+                numAttributes += pool.Attributes.Length;
+                foreach (var attribute in pool.Attributes)
+                {
+                    summedWeights += attribute.Weight;
+                }
+            }
+
+            // Get the actual list of available attributes.
+            var attributes = new List<AttributePool.AttributeInfo>(numAttributes);
+            for (var i = 0; i < _additionalAttributes.Length; i++)
+            {
+                attributes.AddRange(FactoryLibrary.GetAttributePool(_additionalAttributes[i]).Attributes);
+            }
+
+            // Sample some attributes! Make sure we always have some (may
+            // remove some, if they may not be re-used).
+            for (var i = 0; i < count && attributes.Count > 0; i++)
+            {
+                // Regarding the following...
+                // Assume we have 5 attributes, when concatenating their
+                // weights on an interval that might look like so:
+                // |--|----|--|-|---------|
+                // where one '-' represents one weight (i.e. '--' == 2).
+                // Now, when sampling we multiply a uniform random value
+                // with the sum of those weights, meaning that number
+                // falls somewhere in that interval. What we need to do
+                // then, is to figure out into which sub-interval it is,
+                // meaning which attribute is to be picked. We do this by
+                // starting with the left interval, moving to the right
+                // and subtracting the weight of the current interval until
+                // the remaining rolled value becomes negative, in which
+                // case we it fell into the last one. (equal zero does
+                // not count, because the roll is at max weight - 1,
+                // because 0 counts for the first interval).
+
+                // Note that the list does *not* have to be sorted for
+                // this, because each point on the interval is equally
+                // likely to be hit!
+
+                // Get a random number determining the attribute we want.
+                var roll = (int)(random.NextDouble() * summedWeights);
+
+                // Figure out the interval, starting with the first.
+                var j = 0;
+                while (roll >= 0)
+                {
+                    roll -= attributes[j].Weight;
+                    ++j;
+                }
+
+                // Get the attribute that was sampled.
+                var attribute = attributes[j];
+
+                // Sample it!
+                yield return attribute.Attribute.SampleAttributeModifier(random);
+
+                // If the attribute may not be reused, remove it from our list.
+                if (!attribute.AllowRedraw)
+                {
+                    attributes.RemoveAt(j);
+                    summedWeights -= attribute.Weight;
+                }
+            }
+        }
+
+        private int SampleAdditionalAttributeCount(IUniformRandom random)
+        {
+            return (_additionalAttributeCount.Low == _additionalAttributeCount.High || random == null)
+                       ? _additionalAttributeCount.Low
+                       : random.NextInt32(_additionalAttributeCount.Low, _additionalAttributeCount.High);
         }
 
         #endregion

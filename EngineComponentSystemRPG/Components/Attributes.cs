@@ -8,12 +8,12 @@ using Engine.Serialization;
 namespace Engine.ComponentSystem.RPG.Components
 {
     /// <summary>
-    /// Represents a character or unit with a set of base attribute values, and
-    /// modified values, based on equipped items and active status effects.
+    /// Represents a set of base attribute values, and modified values, for example
+    /// based on equipped items and active status effects.
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public sealed class Character<TAttribute> : Component
+    public sealed class Attributes<TAttribute> : Component
         where TAttribute : struct
     {
         #region Type ID
@@ -93,12 +93,12 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Initialize(other);
 
-            var otherCharacter = (Character<TAttribute>)other;
-            foreach (var attribute in otherCharacter._baseAttributes)
+            var attributes = (Attributes<TAttribute>)other;
+            foreach (var attribute in attributes._baseAttributes)
             {
                 _baseAttributes.Add(attribute.Key, attribute.Value);
             }
-            foreach (var attribute in otherCharacter._modifiedAttributes)
+            foreach (var attribute in attributes._modifiedAttributes)
             {
                 var values = new float[attribute.Value.Length];
                 attribute.Value.CopyTo(values, 0);
@@ -152,12 +152,16 @@ namespace Engine.ComponentSystem.RPG.Components
 
         /// <summary>
         /// Gets the modified value for the specified attribute type.
+        /// Note that the specified base value will be added to the
+        /// base value stored in this attribute collection before the
+        /// multiplier is applied.
         /// </summary>
         /// <param name="type">The attribute type.</param>
         /// <param name="baseValue">The base value to use.</param>
-        /// <returns>The base value for that type.</returns>
-        public float GetValue(TAttribute type, float baseValue = 0)
+        /// <returns>The modified value for that type.</returns>
+        public float GetValue(TAttribute type, float baseValue = 0f)
         {
+            baseValue += GetBaseValue(type);
             if (!_modifiedAttributes.ContainsKey(type))
             {
                 return baseValue;
@@ -262,7 +266,7 @@ namespace Engine.ComponentSystem.RPG.Components
             // Send message.
             CharacterStatsInvalidated message;
             message.Entity = Entity;
-            Manager.SendMessage(ref message);
+            Manager.SendMessage(message);
         }
 
         #endregion

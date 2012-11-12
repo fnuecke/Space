@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
@@ -19,48 +18,55 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is ItemEquipped)
             {
-                var equipped = (ItemEquipped)(ValueType)message;
-
-                // Check if we can show effects.
-                var effects = (ParticleEffects)Manager.GetComponent(equipped.Slot.Root.Entity, ParticleEffects.TypeId);
-                if (effects == null)
+                var cm = message as ItemEquipped?;
+                if (cm != null)
                 {
+                    var m = cm.Value;
+
+                    // Check if we can show effects.
+                    var effects = (ParticleEffects)Manager.GetComponent(m.Slot.Root.Entity, ParticleEffects.TypeId);
+                    if (effects == null)
+                    {
+                        return;
+                    }
+
+                    // Get the item to get its size (for scaling offset and effect).
+                    var item = (SpaceItem)Manager.GetComponent(m.Item, Item.TypeId);
+
+                    // OK, add the effects, if there are any.
+                    foreach (ItemEffect effect in Manager.GetComponents(m.Item, ItemEffect.TypeId))
+                    {
+                        var slot = (SpaceItemSlot)m.Slot;
+                        var offset = effect.Offset;
+                        offset.X = item.RequiredSlotSize.Scale(offset.X);
+                        offset.Y = item.RequiredSlotSize.Scale(offset.Y);
+                        effects.TryAdd(effect.Id, effect.Name, item.RequiredSlotSize.Scale(effect.Scale), slot.Mirror(effect.Direction),
+                            slot.AccumulateOffset(offset), effect.Group, effect.Group == ParticleEffects.EffectGroup.None);
+                    }
                     return;
-                }
-
-                // Get the item to get its size (for scaling offset and effect).
-                var item = (SpaceItem)Manager.GetComponent(equipped.Item, Item.TypeId);
-
-                // OK, add the effects, if there are any.
-                foreach (ItemEffect effect in Manager.GetComponents(equipped.Item, ItemEffect.TypeId))
-                {
-                    var slot = (SpaceItemSlot)equipped.Slot;
-                    var offset = effect.Offset;
-                    offset.X = item.RequiredSlotSize.Scale(offset.X);
-                    offset.Y = item.RequiredSlotSize.Scale(offset.Y);
-                    effects.TryAdd(effect.Id, effect.Name, item.RequiredSlotSize.Scale(effect.Scale), slot.Mirror(effect.Direction),
-                        slot.AccumulateOffset(offset), effect.Group, effect.Group == ParticleEffects.EffectGroup.None);
                 }
             }
-            else if (message is ItemUnequipped)
             {
-                var unequipped = (ItemUnequipped)(ValueType)message;
+                var cm = message as ItemUnequipped?;
+                if (cm != null)
+                {
+                    var m = cm.Value;
 
-                // Check if we can show effects.
-                var effects = (ParticleEffects)Manager.GetComponent(unequipped.Slot.Root.Entity, ParticleEffects.TypeId);
-                if (effects == null)
-                {
-                    return;
-                }
-                
-                // OK, remove the effects, if there are any.
-                foreach (ItemEffect effect in Manager.GetComponents(unequipped.Item, ItemEffect.TypeId))
-                {
-                    effects.Remove(effect.Id);
+                    // Check if we can show effects.
+                    var effects = (ParticleEffects)Manager.GetComponent(m.Slot.Root.Entity, ParticleEffects.TypeId);
+                    if (effects == null)
+                    {
+                        return;
+                    }
+
+                    // OK, remove the effects, if there are any.
+                    foreach (ItemEffect effect in Manager.GetComponents(m.Item, ItemEffect.TypeId))
+                    {
+                        effects.Remove(effect.Id);
+                    }
                 }
             }
         }

@@ -1,9 +1,13 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Math;
 using Engine.Random;
-using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
+using Space.Data;
 
 namespace Space.ComponentSystem.Factories
 {
@@ -12,6 +16,12 @@ namespace Space.ComponentSystem.Factories
     /// </summary>
     public sealed class WeaponFactory : ItemFactory
     {
+        #region Logger
+
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -28,36 +38,52 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// The cooldown time to wait between shots, in seconds.
+        /// A list of local attribute modifiers that are guaranteed to be applied to
+        /// the generated item, just with random values.
         /// </summary>
-        [Category("Logic")]
-        [Description("The time to wait between firing shots from this weapon, in seconds.")]
-        public FloatInterval Cooldown
+        /// <remarks>
+        /// These attributes only apply to the weapon itself.
+        /// </remarks>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Stats")]
+        [Description("Local attribute bonuses that a generated weapon of this type is guaranteed to provide when equipped.")]
+        public AttributeModifierConstraint<AttributeType>[] GuaranteedLocalAttributes
         {
-            get { return _cooldown; }
-            set { _cooldown = value; }
+            get { return _guaranteedLocalAttributes; }
+            set { _guaranteedLocalAttributes = value; }
         }
 
         /// <summary>
-        /// The energy this weapon consumes per shot.
+        /// A list of attribute modifiers from which a certain number is
+        /// randomly sampled, and from the chosen attribute modifiers will then
+        /// be sampled the actual values to be applied to the generated item.
         /// </summary>
-        [Category("Logic")]
-        [Description("The amount of energy this weapon needs to fire one round of projectiles.")]
-        public FloatInterval EnergyConsumption
+        /// <remarks>
+        /// These attributes only apply to the weapon itself.
+        /// </remarks>
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Stats")]
+        [Description("Possible local attribute bonuses items of this type might have. Additional attributes are sampled from these pools. Note that attributes in this list only apply to the weapon itself, and that not all attribute types actually have an effect (only damage, procs, things like that).")]
+        public string[] AdditionalLocalAttributes
         {
-            get { return _energyConsumption; }
-            set { _energyConsumption = value; }
+            get { return _additionalLocalAttributes; }
+            set { _additionalLocalAttributes = value; }
         }
 
         /// <summary>
-        /// The damage this weapon's projectiles inflict.
+        /// The number of local attribute modifiers to apply to a
+        /// generated weapon.
         /// </summary>
-        [Category("Logic")]
-        [Description("The damage each single projectile fired from this weapon does when hitting an enemy.")]
-        public FloatInterval Damage
+        [ContentSerializer(Optional = true)]
+        [DefaultValue(null)]
+        [Category("Stats")]
+        [Description("The number of local attributes to sample for a generated weapon of this type.")]
+        public IntInterval AdditionalLocalAttributeCount
         {
-            get { return _damage; }
-            set { _damage = value; }
+            get { return _additionalLocalAttributeCount; }
+            set { _additionalLocalAttributeCount = value; }
         }
 
         /// <summary>
@@ -77,11 +103,11 @@ namespace Space.ComponentSystem.Factories
 
         private string _sound;
 
-        private FloatInterval _cooldown = FloatInterval.Zero;
+        private AttributeModifierConstraint<AttributeType>[] _guaranteedLocalAttributes;
 
-        private FloatInterval _energyConsumption = FloatInterval.Zero;
+        private string[] _additionalLocalAttributes = new string[0];
 
-        private FloatInterval _damage = FloatInterval.Zero;
+        private IntInterval _additionalLocalAttributeCount = IntInterval.Zero;
 
         private ProjectileFactory[] _projectiles;
 
@@ -101,44 +127,103 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
+            // Get baked list of attributes.
+            Dictionary<AttributeType, float> attributes = null;
+
+            // Iterate over all local attribute modifiers and accumulate the
+            // additive base value, store the multiplicative values in an
+            // extra list to apply them at the end.
+            Dictionary<AttributeType, float> multipliers = null;
+
+            if (_guaranteedLocalAttributes != null)
+            {
+                foreach (var attribute in _guaranteedLocalAttributes)
+                {
+                    AccumulateModifier(attribute.SampleAttributeModifier(random), ref attributes, ref multipliers);
+                }
+            }
+            if (_additionalLocalAttributes != null && _additionalLocalAttributes.Length > 0)
+            {
+                foreach (var attributeModifier in SampleAttributes(SampleLocalAttributeCount(random), _additionalLocalAttributes, random))
+                {
+                    AccumulateModifier(attributeModifier, ref attributes, ref multipliers);
+                }
+            }
+
+            // Done checking all local attributes, apply multipliers, if any.
+            if (multipliers != null)
+            {
+                foreach (var multiplier in multipliers)
+                {
+                    if (attributes != null && attributes.ContainsKey(multiplier.Key))
+                    {
+                        attributes[multiplier.Key] *= multiplier.Value;
+                    }
+                    else
+                    {
+                        Logger.Warn("Invalid local attribute for weapon {0}: {1} does not have an additive base value.", Name, multiplier.Key);
+                    }
+                }
+            }
+
             manager.AddComponent<Weapon>(entity)
-                .Initialize(_sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), _projectiles)
+                .Initialize(_sound, attributes, _projectiles)
                 .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
-            return SampleAttributes(manager, entity, random);
+            return entity;
         }
 
         /// <summary>
-        /// Samples the cooldown of this weapon.
+        /// Utility method for baking attribute modifiers into final values.
         /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled cooldown.</returns>
-        private float SampleCooldown(IUniformRandom random)
+        /// <param name="attributeModifier">The attribute modifier.</param>
+        /// <param name="additives">The additive attribute values.</param>
+        /// <param name="multiplicatives">The multiplicative attribute values.</param>
+        private static void AccumulateModifier(AttributeModifier<AttributeType> attributeModifier, ref Dictionary<AttributeType, float> additives, ref Dictionary<AttributeType, float> multiplicatives)
         {
-            return (random == null) ? _cooldown.Low
-                : MathHelper.Lerp(_cooldown.Low, _cooldown.High, (float)random.NextDouble());
+            switch (attributeModifier.ComputationType)
+            {
+                case AttributeComputationType.Additive:
+                    if (additives == null)
+                    {
+                        additives = new Dictionary<AttributeType, float>();
+                    }
+                    if (additives.ContainsKey(attributeModifier.Type))
+                    {
+                        additives[attributeModifier.Type] += attributeModifier.Value;
+                    }
+                    else
+                    {
+                        additives[attributeModifier.Type] = attributeModifier.Value;
+                    }
+                    break;
+                case AttributeComputationType.Multiplicative:
+                    if (multiplicatives == null)
+                    {
+                        multiplicatives = new Dictionary<AttributeType, float>();
+                    }
+                    if (multiplicatives.ContainsKey(attributeModifier.Type))
+                    {
+                        multiplicatives[attributeModifier.Type] *= attributeModifier.Value;
+                    }
+                    else
+                    {
+                        multiplicatives[attributeModifier.Type] = attributeModifier.Value;
+                    }
+                    break;
+            }
         }
 
         /// <summary>
-        /// Samples the energy consumption of this weapon.
+        /// Samples the local attribute count.
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled energy consumption.</returns>
-        private float SampleEnergyConsumption(IUniformRandom random)
+        /// <returns></returns>
+        private int SampleLocalAttributeCount(IUniformRandom random)
         {
-            return (random == null) ? _energyConsumption.Low
-                : MathHelper.Lerp(_energyConsumption.Low, _energyConsumption.High, (float)random.NextDouble());
-        }
-
-        /// <summary>
-        /// Samples the damage of this weapon.
-        /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled damage.</returns>
-        private float SampleDamage(IUniformRandom random)
-        {
-            return (random == null) ? _damage.Low
-                : MathHelper.Lerp(_damage.Low, _damage.High, (float)random.NextDouble());
+            return (_additionalLocalAttributeCount.Low == _additionalLocalAttributeCount.High || random == null)
+                       ? _additionalLocalAttributeCount.Low
+                       : random.NextInt32(_additionalLocalAttributeCount.Low, _additionalLocalAttributeCount.High);
         }
 
         #endregion

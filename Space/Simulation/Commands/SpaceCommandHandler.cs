@@ -591,7 +591,7 @@ from Space.Data import *
                 // Some more utility variables used frequently.
                 scope.SetVariable("manager", manager);
                 scope.SetVariable("avatar", avatar);
-                scope.SetVariable("character", manager.GetComponent(avatar, Character<AttributeType>.TypeId));
+                scope.SetVariable("attributes", manager.GetComponent(avatar, Attributes<AttributeType>.TypeId));
                 scope.SetVariable("inventory", manager.GetComponent(avatar, Inventory.TypeId));
                 scope.SetVariable("equipment", manager.GetComponent(avatar, ItemSlot.TypeId));
 
@@ -611,7 +611,7 @@ from Space.Data import *
                 {
                     scope.RemoveVariable("manager");
                     scope.RemoveVariable("avatar");
-                    scope.RemoveVariable("character");
+                    scope.RemoveVariable("attributes");
                     scope.RemoveVariable("inventory");
                     scope.RemoveVariable("equipment");
                 }

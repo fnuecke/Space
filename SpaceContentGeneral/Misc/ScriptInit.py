@@ -4,7 +4,7 @@
 	component.ApplyTranslation()
 
 def setBaseStat(type, value):
-    character.SetBaseValue(type, value)
+    attributes.SetBaseValue(type, value)
 
 def desync():
 	import sys

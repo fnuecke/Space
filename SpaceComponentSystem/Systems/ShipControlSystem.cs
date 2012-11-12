@@ -29,15 +29,15 @@ namespace Space.ComponentSystem.Systems
             //TODO: Add flag to component to check if we actually need to recompute anything?
 
             // Get components we depend upon / modify.
-            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
-            var spin = ((Spin)Manager.GetComponent(component.Entity, Spin.TypeId));
-            var character = ((Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId));
-            var info = ((ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId));
-            var weaponControl = ((WeaponControl)Manager.GetComponent(component.Entity, WeaponControl.TypeId));
-            var acceleration = ((Acceleration)Manager.GetComponent(component.Entity, Acceleration.TypeId));
-            var effects = ((ParticleEffects)Manager.GetComponent(component.Entity, ParticleEffects.TypeId));
-            var sound = ((Sound)Manager.GetComponent(component.Entity, Sound.TypeId));
-            var maxAccelerationForce = character.GetValue(AttributeType.AccelerationForce) / Settings.TicksPerSecond;
+            var transform = (Transform)Manager.GetComponent(component.Entity, Transform.TypeId);
+            var spin = (Spin)Manager.GetComponent(component.Entity, Spin.TypeId);
+            var attributes = (Attributes<AttributeType>)Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
+            var info = (ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId);
+            var weaponControl = (WeaponControl)Manager.GetComponent(component.Entity, WeaponControl.TypeId);
+            var acceleration = (Acceleration)Manager.GetComponent(component.Entity, Acceleration.TypeId);
+            var effects = (ParticleEffects)Manager.GetComponent(component.Entity, ParticleEffects.TypeId);
+            var sound = (Sound)Manager.GetComponent(component.Entity, Sound.TypeId);
+            var maxAccelerationForce = attributes.GetValue(AttributeType.AccelerationForce) / Settings.TicksPerSecond;
 
             // Get the mass of the ship.
             var mass = info.Mass;
@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Systems
                 direction.Normalize();
 
                 // Get the needed energy and thruster power.
-                var maxEnergyConsumption = character.GetValue(AttributeType.ThrusterEnergyConsumption) / Settings.TicksPerSecond;
+                var maxEnergyConsumption = attributes.GetValue(AttributeType.ThrusterEnergyConsumption) / Settings.TicksPerSecond;
 
                 // Apply some dampening on how fast we accelerate when accelerating
                 // sideways/backwards. We do this before computing energy consumption
@@ -133,7 +133,7 @@ namespace Space.ComponentSystem.Systems
 
             // Compute rotation speed. Yes, this is actually the rotation acceleration,
             // but whatever...
-            var rotation = character.GetValue(AttributeType.RotationForce) / (mass * Settings.TicksPerSecond);
+            var rotation = attributes.GetValue(AttributeType.RotationForce) / (mass * Settings.TicksPerSecond);
 
             // Update rotation / spin.
             var currentDelta = Angle.MinAngle(transform.Rotation, component.TargetRotation);

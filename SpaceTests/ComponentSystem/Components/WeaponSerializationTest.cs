@@ -24,8 +24,7 @@ namespace SpaceTests.ComponentSystem.Components
                 (Weapon)new Weapon().Initialize("name1", "icon1"),
                 (Weapon)
                 new Weapon().Initialize("name2", "icon2", ItemQuality.Common, ItemSlotSize.Large, Vector2.Zero, false),
-                (Weapon)new Weapon().Initialize("sound", 1.5f,
-                                                2.5f, 3.5f, new[]
+                (Weapon)new Weapon().Initialize("sound", null, new[]
                                                 {
                                                     new ProjectileFactory
                                                     {
@@ -52,9 +51,6 @@ namespace SpaceTests.ComponentSystem.Components
         {
             return new ValueChanger[]
             {
-                instance => instance.Cooldown += 10,
-                instance => instance.EnergyConsumption += 10,
-                instance => instance.Damage += 10,
                 instance => instance.Sound += "b",
                 instance => instance.Projectiles = new[]
                 {

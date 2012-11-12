@@ -12,12 +12,12 @@
       <RequiredSlotSize>Small</RequiredSlotSize>
       <Slots />
       <GuaranteedAttributes>
-        <Item>5 ShieldEnergyConsumption</Item>
+        <Item>5 ShieldActiveEnergyConsumption</Item>
         <Item>2 ShieldDamageReduction</Item>
-        <Item>3 ShieldBlockCost</Item>
+        <Item>3 ShieldEnergyConsumptionPerAbsorbedDamage</Item>
       </GuaranteedAttributes>
+      <AdditionalAttributes />
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <AttributePool />
       <Coverage>0.5</Coverage>
       <Structure>Textures/Effects/Shield</Structure>
       <Tint>7880FFFF</Tint>

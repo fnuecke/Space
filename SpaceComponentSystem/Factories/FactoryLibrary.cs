@@ -19,7 +19,17 @@ namespace Space.ComponentSystem.Factories
         /// Mapping of names to factories.
         /// </summary>
         private static readonly Dictionary<string, IFactory> Factories = new Dictionary<string, IFactory>();
-        
+
+        /// <summary>
+        /// Mapping of names to item pools.
+        /// </summary>
+        private static readonly Dictionary<string, ItemPool> ItemPools = new Dictionary<string, ItemPool>();
+
+        /// <summary>
+        /// Mapping of names to attribute pools.
+        /// </summary>
+        private static readonly Dictionary<string, AttributePool> AttributePools = new Dictionary<string, AttributePool>();
+
         #endregion
 
         #region Initialization
@@ -31,6 +41,8 @@ namespace Space.ComponentSystem.Factories
         public static void LoadContent(ContentManager content)
         {
             Factories.Clear();
+            ItemPools.Clear();
+            AttributePools.Clear();
 
             foreach (var factory in new[]
             {
@@ -49,6 +61,16 @@ namespace Space.ComponentSystem.Factories
             })
             {
                 Load(factory, content);
+            }
+
+            foreach (var pool in content.Load<ItemPool[]>("Data/ItemPool"))
+            {
+                ItemPools.Add(pool.Name, pool);
+            }
+
+            foreach (var pool in content.Load<AttributePool[]>("Data/AttributePool"))
+            {
+                AttributePools.Add(pool.Name, pool);
             }
         }
 
@@ -225,6 +247,30 @@ namespace Space.ComponentSystem.Factories
             {
                 factory.SampleSunSystem(manager, cellCenter, random);
             }
+        }
+
+        /// <summary>
+        /// Gets the item pool with the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public static ItemPool GetItemPool(string name)
+        {
+            ItemPool result;
+            ItemPools.TryGetValue(name, out result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the attribute pool with the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public static AttributePool GetAttributePool(string name)
+        {
+            AttributePool result;
+            AttributePools.TryGetValue(name, out result);
+            return result;
         }
 
         #endregion

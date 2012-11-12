@@ -7,7 +7,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// <summary>
     /// A status effect that modifies attributes.
     /// </summary>
-    public sealed class AttributeStatusEffect<TAttribute> : StatusEffect
+    public class AttributeStatusEffect<TAttribute> : StatusEffect
         where TAttribute : struct
     {
         #region Type ID
@@ -32,7 +32,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// The actual attribute modifiers which are applied.
         /// </summary>
-        public IList<AttributeModifier<TAttribute>> Modifiers;
+        public readonly List<AttributeModifier<TAttribute>> Modifiers = new List<AttributeModifier<TAttribute>>();
 
         #endregion
         
@@ -46,7 +46,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Initialize(other);
 
-            Modifiers = ((AttributeStatusEffect<TAttribute>)other).Modifiers;
+            Modifiers.AddRange(((AttributeStatusEffect<TAttribute>)other).Modifiers);
 
             return this;
         }
@@ -55,9 +55,9 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize with the specified modifiers.
         /// </summary>
         /// <param name="value">The value.</param>
-        public AttributeStatusEffect<TAttribute> Initialize(IList<AttributeModifier<TAttribute>> value)
+        public AttributeStatusEffect<TAttribute> Initialize(IEnumerable<AttributeModifier<TAttribute>> value)
         {
-            Modifiers = value;
+            Modifiers.AddRange(value);
 
             return this;
         }
@@ -79,7 +79,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Reset();
 
-            Modifiers = null;
+            Modifiers.Clear();
         }
 
         #endregion
@@ -107,7 +107,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Depacketize(packet);
 
-            Modifiers = packet.ReadPacketizables<AttributeModifier<TAttribute>>();
+            Modifiers.AddRange(packet.ReadPacketizables<AttributeModifier<TAttribute>>());
         }
 
         /// <summary>

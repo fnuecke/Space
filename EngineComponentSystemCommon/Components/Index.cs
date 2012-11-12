@@ -150,7 +150,7 @@ namespace Engine.ComponentSystem.Common.Components
             message.AddedIndexGroups = groups & ~oldMask;
             message.RemovedIndexGroups = oldMask & ~groups;
 
-            Manager.SendMessage(ref message);
+            Manager.SendMessage(message);
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace Engine.ComponentSystem.Common.Components
             message.Entity = Entity;
             message.Bounds = Bounds;
 
-            Manager.SendMessage(ref message);
+            Manager.SendMessage(message);
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
@@ -95,7 +94,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get components.
-            var character = (Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId);
+            var attributes = (Attributes<AttributeType>)Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
             var equipment = (ItemSlot)Manager.GetComponent(component.Entity, ItemSlot.TypeId);
             var energy = (Energy)Manager.GetComponent(component.Entity, Energy.TypeId);
             var faction = (Faction)Manager.GetComponent(component.Entity, Faction.TypeId);
@@ -123,14 +122,25 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Get the energy consumption, skip if we don't have enough.
-                var energyConsumption = character.GetValue(AttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
+                var energyConsumption = 0f;
+                if (weapon.Attributes.ContainsKey(AttributeType.WeaponEnergyConsumption))
+                {
+                    energyConsumption = attributes.GetValue(AttributeType.WeaponEnergyConsumption,
+                                                            weapon.Attributes[AttributeType.WeaponEnergyConsumption]);
+                }
                 if (energy.Value < energyConsumption)
                 {
                     continue;
                 }
 
                 // Set cooldown.
-                _cooldowns[weapon.Entity] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * Settings.TicksPerSecond);
+                var cooldown = 0f;
+                if (weapon.Attributes.ContainsKey(AttributeType.WeaponCooldown))
+                {
+                    cooldown = attributes.GetValue(AttributeType.WeaponCooldown,
+                                                   weapon.Attributes[AttributeType.WeaponCooldown]);
+                }
+                _cooldowns[weapon.Entity] = (int)(cooldown * Settings.TicksPerSecond);
 
                 // Consume our energy.
                 energy.SetValue(energy.Value - energyConsumption);
@@ -180,24 +190,31 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is ItemEquipped)
             {
-                var added = (ItemEquipped)(ValueType)message;
-                if (Manager.GetComponent(added.Item, Weapon.TypeId) != null)
+                var cm = message as ItemEquipped?;
+                if (cm != null)
                 {
-                    // Weapon was equipped, track a cooldown for it.
-                    _cooldowns.Add(added.Item, 0);
+                    var m = cm.Value;
+                    if (Manager.GetComponent(m.Item, Weapon.TypeId) != null)
+                    {
+                        // Weapon was equipped, track a cooldown for it.
+                        _cooldowns.Add(m.Item, 0);
+                    }
+                    return;
                 }
             }
-            else if (message is ItemUnequipped)
             {
-                var removed = (ItemUnequipped)(ValueType)message;
-                if (Manager.GetComponent(removed.Item, Weapon.TypeId) != null)
+                var cm = message as ItemUnequipped?;
+                if (cm != null)
                 {
-                    // Weapon was unequipped, stop tracking.
-                    _cooldowns.Remove(removed.Item);
+                    var m = cm.Value;
+                    if (Manager.GetComponent(m.Item, Weapon.TypeId) != null)
+                    {
+                        // Weapon was unequipped, stop tracking.
+                        _cooldowns.Remove(m.Item);
+                    }
                 }
             }
         }

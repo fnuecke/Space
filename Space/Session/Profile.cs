@@ -322,14 +322,14 @@ namespace Space.Session
             var playerClass = (PlayerClass)manager.GetComponent(avatar, ComponentSystem.Components.PlayerClass.TypeId);
             var respawn = (Respawn)manager.GetComponent(avatar, Respawn.TypeId);
             var experience = (Experience)manager.GetComponent(avatar, Experience.TypeId);
-            var character = (Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId);
+            var attributes = (Attributes<AttributeType>)manager.GetComponent(avatar, Attributes<AttributeType>.TypeId);
             var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
             var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
 
             // Check if we have everything we need.
             if (playerClass == null ||
                 respawn == null ||
-                character == null ||
+                attributes == null ||
                 equipment == null ||
                 inventory == null)
             {
@@ -358,10 +358,10 @@ namespace Space.Session
             // Store experience.
             _data.Write(experience.Value);
 
-            // Store the character's base values, just use serialization. This
+            // Store the attribute base values, just use serialization. This
             // is a slightly adjusted serialization method which does not touch
             // the base class (as we don't need that).
-            character.PacketizeLocal(_data);
+            attributes.PacketizeLocal(_data);
 
             // Store the equipment tree.
             foreach (var slot in equipment.AllSlots)
@@ -470,7 +470,7 @@ namespace Space.Session
                 avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
 
                 // Get the elements we need to save.
-                var character = (Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId);
+                var attributes = (Attributes<AttributeType>)manager.GetComponent(avatar, Attributes<AttributeType>.TypeId);
                 var experience = (Experience)manager.GetComponent(avatar, Experience.TypeId);
                 var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
                 var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
@@ -496,12 +496,12 @@ namespace Space.Session
                 experience.Value = _data.ReadInt32();
                 experience.Enabled = true;
 
-                // Restore character. Use special packetizer implementation only
-                // adjusting the actual character data, not the base data.
-                character.DepacketizeLocal(_data);
+                // Restore attributes. Use special packetizer implementation only
+                // adjusting the actual attribute data, not the base data.
+                attributes.DepacketizeLocal(_data);
 
                 // Disable recomputation while fixing equipped item ids.
-                character.Enabled = false;
+                attributes.Enabled = false;
 
                 // Restore equipment.
                 var itemIdMapping = new Dictionary<int, int>();
@@ -563,9 +563,9 @@ namespace Space.Session
                     itemIdMapping.Add(oldItemId, newItemId);
                 }
 
-                // Reenable character stat updating and trigger recomputation.
-                character.Enabled = true;
-                character.RecomputeAttributes();
+                // Reenable attribute updating and trigger recomputation.
+                attributes.Enabled = true;
+                attributes.RecomputeAttributes();
 
                 // Restore inventory, read back the stored items.
                 var numInventoryItems = _data.ReadInt32();

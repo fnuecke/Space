@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
@@ -373,7 +372,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         message.EntityA = entityA;
                         message.EntityB = entityB;
                         message.Normal = normal;
-                        Manager.SendMessage(ref message);
+                        Manager.SendMessage(message);
 
                         // For debug view.
                         SetCollisionState(entityA, Collidable.CollisionState.Contact);
@@ -398,7 +397,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         EndCollision message;
                         message.EntityA = entityA;
                         message.EntityB = entityB;
-                        Manager.SendMessage(ref message);
+                        Manager.SendMessage(message);
 
                         // For debug view.
                         SetCollisionState(entityA, Collidable.CollisionState.Collides);
@@ -446,7 +445,7 @@ namespace Engine.ComponentSystem.Common.Systems
                             EndCollision message;
                             message.EntityA = _contacts[i].EntityA;
                             message.EntityB = _contacts[i].EntityB;
-                            Manager.SendMessage(ref message);
+                            Manager.SendMessage(message);
                         }
 
                         var collidableA = (Collidable)Manager.GetComponent(_contacts[i].EntityA, Collidable.TypeId);
@@ -462,17 +461,20 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Update the previous position when a collidable component changes its position.
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is TranslationChanged)
+            var cm = message as TranslationChanged?;
+            if (cm == null)
             {
-                var typedMessage = (TranslationChanged)(ValueType)message;
+                return;
+            }
 
-                var collidable = ((Collidable)Manager.GetComponent(typedMessage.Entity, Collidable.TypeId));
-                if (collidable!= null)
-                {
-                    collidable.PreviousPosition = typedMessage.PreviousPosition;
-                }
+            var m = cm.Value;
+
+            var collidable = ((Collidable)Manager.GetComponent(m.Entity, Collidable.TypeId));
+            if (collidable != null)
+            {
+                collidable.PreviousPosition = m.PreviousPosition;
             }
         }
 

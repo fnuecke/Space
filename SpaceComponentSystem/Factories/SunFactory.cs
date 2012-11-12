@@ -2,6 +2,7 @@
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
@@ -152,8 +153,14 @@ namespace Space.ComponentSystem.Factories
             // Make it collidable.
             manager.AddComponent<CollidableSphere>(entity).Initialize(radius, Factions.Nature.ToCollisionGroup());
 
-            // Instantly kill stuff that touches a sun.
-            manager.AddComponent<CollisionDamage>(entity).Initialize(1, float.MaxValue);
+            // Damage stuff that touches a sun.
+            manager.AddComponent<CollisionDamage>(entity).Initialize(false);
+            var attributes = manager.AddComponent<Attributes<AttributeType>>(entity);
+            attributes.SetBaseValue(AttributeType.AttackBurnMinDamage, 1000);
+            attributes.SetBaseValue(AttributeType.AttackBurnMaxDamage, 2000);
+            attributes.SetBaseValue(AttributeType.AttackBurnChance, 1);
+            attributes.SetBaseValue(AttributeType.AttackBurnMinDuration, 5);
+            attributes.SetBaseValue(AttributeType.AttackBurnMaxDuration, 5);
 
             // Make it detectable.
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");

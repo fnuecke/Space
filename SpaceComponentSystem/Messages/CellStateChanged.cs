@@ -25,6 +25,6 @@
         /// <summary>
         /// The new state of the cell (active: <c>true</c>, inactive: <c>false</c>).
         /// </summary>
-        public bool State;
+        public bool IsActive;
     }
 }

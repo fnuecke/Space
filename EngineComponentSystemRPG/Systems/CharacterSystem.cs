@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 
@@ -21,9 +20,9 @@ namespace Engine.ComponentSystem.RPG.Systems
         public override void OnComponentAdded(ComponentSystem.Components.Component component)
         {
             // Check if the component is of the right type.
-            if (component is Character<TAttribute>)
+            if (component is Attributes<TAttribute>)
             {
-                ((Character<TAttribute>)component).RecomputeAttributes();
+                ((Attributes<TAttribute>)component).RecomputeAttributes();
             }
         }
 
@@ -33,31 +32,38 @@ namespace Engine.ComponentSystem.RPG.Systems
         /// </summary>
         /// <typeparam name="T">The type of the messages.</typeparam>
         /// <param name="message">The message.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is ItemEquipped)
             {
-                // Recompute if an item with attribute modifiers was added.
-                var added = (ItemEquipped)(ValueType)message;
-                if (Manager.GetComponent(added.Item, Attribute<TAttribute>.TypeId) != null)
+                var cm = message as ItemEquipped?;
+                if (cm != null)
                 {
-                    var character = ((Character<TAttribute>)Manager.GetComponent(added.Slot.Root.Entity, Character<TAttribute>.TypeId));
-                    if (character != null)
+                    // Recompute if an item with attribute modifiers was added.
+                    var m = cm.Value;
+                    if (Manager.GetComponent(m.Item, Attribute<TAttribute>.TypeId) != null)
                     {
-                        character.RecomputeAttributes();
+                        var attributes = ((Attributes<TAttribute>)Manager.GetComponent(m.Slot.Root.Entity, Attributes<TAttribute>.TypeId));
+                        if (attributes != null)
+                        {
+                            attributes.RecomputeAttributes();
+                        }
                     }
+                    return;
                 }
             }
-            else if (message is ItemUnequipped)
             {
-                // Recompute if an item with attribute modifiers was removed.
-                var removed = (ItemUnequipped)(ValueType)message;
-                if (Manager.GetComponent(removed.Item, Attribute<TAttribute>.TypeId) != null)
+                var cm = message as ItemUnequipped?;
+                if (cm != null)
                 {
-                    var character = ((Character<TAttribute>)Manager.GetComponent(removed.Slot.Root.Entity, Character<TAttribute>.TypeId));
-                    if (character != null)
+                    // Recompute if an item with attribute modifiers was removed.
+                    var m = cm.Value;
+                    if (Manager.GetComponent(m.Item, Attribute<TAttribute>.TypeId) != null)
                     {
-                        character.RecomputeAttributes();   
+                        var attributes = ((Attributes<TAttribute>)Manager.GetComponent(m.Slot.Root.Entity, Attributes<TAttribute>.TypeId));
+                        if (attributes != null)
+                        {
+                            attributes.RecomputeAttributes();   
+                        }
                     }
                 }
             }

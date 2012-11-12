@@ -25,7 +25,7 @@ namespace Space.ComponentSystem.Factories
 
             manager.AddComponent<Thruster>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
             
-            return SampleAttributes(manager, entity, random);
+            return entity;
         }
 
         #endregion

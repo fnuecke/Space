@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
@@ -21,36 +20,47 @@ namespace Space.ComponentSystem.Systems
         /// change.
         /// </summary>
         /// <param name="message">The message to handle.</param>
-        public void Receive<T>(ref T message) where T : struct
+        public void Receive<T>(T message) where T : struct
         {
-            if (message is CharacterStatsInvalidated)
+            var cm = message as CharacterStatsInvalidated?;
+            if (cm == null)
             {
-                var entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
-                var shipInfo = ((ShipInfo)Manager.GetComponent(entity, ShipInfo.TypeId));
-
-                // Get ship modules.
-                var character = ((Character<AttributeType>)Manager.GetComponent(entity, Character<AttributeType>.TypeId));
-
-                // Get the mass of the ship and return it.
-                shipInfo.Mass = character.GetValue(AttributeType.Mass);
-
-                // Recompute cached values.
-                shipInfo.MaxAcceleration = character.GetValue(AttributeType.AccelerationForce) / (shipInfo.Mass * Settings.TicksPerSecond);
-                shipInfo.MaxSpeed = float.PositiveInfinity;
-
-                // Maximum speed.
-                var friction = ((Friction)Manager.GetComponent(entity, Friction.TypeId));
-                if (friction != null)
-                {
-                    shipInfo.MaxSpeed = shipInfo.MaxAcceleration / friction.Value;
-                }
-
-                // Figure out the overall range of our radar system.
-                shipInfo.RadarRange = character.GetValue(AttributeType.SensorRange);
-
-                // TODO: compute actual range
-                shipInfo.WeaponRange = 1000;
+                return;
             }
+
+            var entity = cm.Value.Entity;
+            var shipInfo = ((ShipInfo)Manager.GetComponent(entity, ShipInfo.TypeId));
+            if (shipInfo == null)
+            {
+                // Skip if there's no ship info here (other entites with attributes,
+                // such as damagers -- e.g. suns).
+                return;
+            }
+
+            // Get ship modules.
+            var attributes =
+                (Attributes<AttributeType>)Manager.GetComponent(entity, Attributes<AttributeType>.TypeId);
+
+            // Get the mass of the ship and return it.
+            shipInfo.Mass = attributes.GetValue(AttributeType.Mass);
+
+            // Recompute cached values.
+            shipInfo.MaxAcceleration = attributes.GetValue(AttributeType.AccelerationForce) /
+                                       (shipInfo.Mass * Settings.TicksPerSecond);
+            shipInfo.MaxSpeed = float.PositiveInfinity;
+
+            // Maximum speed.
+            var friction = ((Friction)Manager.GetComponent(entity, Friction.TypeId));
+            if (friction != null)
+            {
+                shipInfo.MaxSpeed = shipInfo.MaxAcceleration / friction.Value;
+            }
+
+            // Figure out the overall range of our radar system.
+            shipInfo.RadarRange = attributes.GetValue(AttributeType.SensorRange);
+
+            // TODO: compute actual range
+            shipInfo.WeaponRange = 1000;
         }
 
         #endregion
