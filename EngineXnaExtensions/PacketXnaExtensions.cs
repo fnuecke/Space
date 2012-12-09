@@ -29,6 +29,19 @@ namespace Engine.XnaExtensions
         }
 
         /// <summary>
+        /// Writes the specified matrix value.
+        /// </summary>
+        /// <param name="data">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Write(this Packet packet, Matrix data)
+        {
+            return packet.Write(data.M11).Write(data.M12).Write(data.M13).Write(data.M14).
+                Write(data.M21).Write(data.M22).Write(data.M23).Write(data.M24).
+                Write(data.M31).Write(data.M32).Write(data.M33).Write(data.M34).
+                Write(data.M41).Write(data.M42).Write(data.M43).Write(data.M44);
+        }
+
+        /// <summary>
         /// Writes the specified rectangle value.
         /// </summary>
         /// <param name="data">The value to write.</param>
@@ -74,6 +87,34 @@ namespace Engine.XnaExtensions
             result.X = packet.ReadSingle();
             result.Y = packet.ReadSingle();
             result.Z = packet.ReadSingle();
+            return result;
+        }
+
+        /// <summary>
+        /// Reads a matrix value.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        public static Matrix ReadMatrix(this Packet packet)
+        {
+            Matrix result;
+            result.M11 = packet.ReadSingle();
+            result.M12 = packet.ReadSingle();
+            result.M13 = packet.ReadSingle();
+            result.M14 = packet.ReadSingle();
+            result.M21 = packet.ReadSingle();
+            result.M22 = packet.ReadSingle();
+            result.M23 = packet.ReadSingle();
+            result.M24 = packet.ReadSingle();
+            result.M31 = packet.ReadSingle();
+            result.M32 = packet.ReadSingle();
+            result.M33 = packet.ReadSingle();
+            result.M34 = packet.ReadSingle();
+            result.M41 = packet.ReadSingle();
+            result.M42 = packet.ReadSingle();
+            result.M43 = packet.ReadSingle();
+            result.M44 = packet.ReadSingle();
             return result;
         }
 

@@ -48,7 +48,7 @@ namespace Space.Data
         /// <returns>
         /// The pixel size of the slot.
         /// </returns>
-        public static float Scale(this ItemSlotSize size, float pixelSize)
+        public static float Scale(this ItemSlotSize size, float pixelSize = 1.0f)
         {
             switch (size)
             {

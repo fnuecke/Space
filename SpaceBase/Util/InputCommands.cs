@@ -161,8 +161,10 @@
 
         #endregion
 
-        #region test
+        #region Debug / Testing
+
         TestCommand
+
         #endregion
     }
 

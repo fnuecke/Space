@@ -120,7 +120,7 @@ namespace Space.ComponentSystem.Systems
                 renderer.Tint,
                 rotation,
                 origin,
-                item.RequiredSlotSize.Scale(1f),
+                item.RequiredSlotSize.Scale(),
                 mirrored.HasValue && mirrored.Value ? SpriteEffects.FlipVertically : SpriteEffects.None,
                 order + layerDepth);
 

@@ -236,7 +236,7 @@ namespace Space.ComponentSystem.Factories
 
             // Add position (when dropped) and renderer (when dropped or equipped).
             manager.AddComponent<Transform>(entity);
-            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _requiredSlotSize.Scale(1f));
+            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _requiredSlotSize.Scale());
 
             // Do not render initially (only when dropped).
             renderer.Enabled = false;

@@ -103,6 +103,14 @@ namespace Space.Tools.DataEditor
             {
                 return (T)(object)FactoryManager.GetFactoriesFromFile(assetName).ToArray();
             }
+            else if (typeof(T) == typeof(ItemPool[]))
+            {
+                return (T)(object)ItemPoolManager.GetItemPools().ToArray();
+            }
+            else if (typeof(T) == typeof(AttributePool[]))
+            {
+                return (T)(object)AttributePoolManager.GetAttributePools().ToArray();
+            }
             return default(T);
         }
 
