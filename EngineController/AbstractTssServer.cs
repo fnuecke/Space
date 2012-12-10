@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -51,7 +52,7 @@ namespace Engine.Controller
         /// Some game state dumps from the past we keep to compare them to any
         /// we receive from clients due to hash check failure.
         /// </summary>
-        private readonly Dictionary<long, string> _gameStateDumps = new Dictionary<long, string>();
+        private readonly Dictionary<long, IManager> _gameStates = new Dictionary<long, IManager>();
 
         #endregion
 
@@ -116,7 +117,7 @@ namespace Engine.Controller
             // We want to use the trailing frame for this because at this point it's
             // guaranteed not to change anymore (from incoming commands -- they will be
             // discarded now).
-            if (Tss.TrailingFrame > _lastHashedFrame && ((Tss.TrailingFrame % HashInterval) == 0))
+            if (Session.MaxPlayers > 1 && Tss.TrailingFrame > _lastHashedFrame && ((Tss.TrailingFrame % HashInterval) == 0))
             {
                 DumpGameState();
                 PerformHashCheck();
@@ -129,47 +130,18 @@ namespace Engine.Controller
         [Conditional("DEBUG")]
         private void DumpGameState()
         {
-            // TODO clone state instead, may in fact be faster than stringifying the whole thing
-
-            // String builder we use to concatenate our strings.
-            var sb = new StringBuilder();
-
-            // Get some general system information, for reference.
-            var assembly = Assembly.GetEntryAssembly().GetName();
-#if DEBUG
-            const string build = "Debug";
-#else
-            const string build = "Release";
-#endif
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
-                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
-            sb.AppendFormat("Build Version: {0}\n", assembly.Version);
-            sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
-            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
-            sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
-            sb.Append("Controller Type: Server\n");
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("Gamestate at frame {0}\n", Tss.TrailingFrame);
-            sb.Append("--------------------------------------------------------------------------------\n");
-
-            // Dump actual game state.
-            foreach (var system in Tss.TrailingSimulation.Manager.Systems)
+            IManager copy;
+            if (_gameStates.ContainsKey(Tss.TrailingFrame - HashInterval * 2))
             {
-                sb.Append(system);
-                sb.AppendLine();
+                copy = _gameStates[Tss.TrailingFrame - HashInterval * 2];
+                _gameStates.Remove(Tss.TrailingFrame - HashInterval * 2);
             }
-            foreach (var component in Tss.TrailingSimulation.Manager.Components)
+            else
             {
-                sb.Append(component);
-                sb.AppendLine();
+                copy = new Manager();
             }
-
-            // Store it for later comparison.
-            _gameStateDumps.Add(Tss.TrailingFrame, sb.ToString());
-
-            // Remove old ones (keep two, the one just created and the one before).
-            _gameStateDumps.Remove(Tss.TrailingFrame - HashInterval * 2);
+            Tss.TrailingSimulation.Manager.CopyInto(copy);
+            _gameStates.Add(Tss.TrailingFrame, copy);
         }
 
         /// <summary>
@@ -286,109 +258,148 @@ namespace Engine.Controller
             switch (type)
             {
                 case TssControllerMessage.Command:
-                {
-                    // Normal command, forward it if it's valid.
-                    var command = base.UnwrapDataForReceive(e);
-
-                    // Validate player number (avoid command injection for
-                    // other players).
-                    if (command.PlayerNumber == args.Player.Number)
                     {
-                        // All green.
-                        return command;
-                    }
+                        // Normal command, forward it if it's valid.
+                        var command = base.UnwrapDataForReceive(e);
 
-                    Logger.Warn("Received invalid packet (player number mismatch).");
+                        // Validate player number (avoid command injection for
+                        // other players).
+                        if (command.PlayerNumber == args.Player.Number)
+                        {
+                            // All green.
+                            return command;
+                        }
 
-                    // Disconnect the player, as this might have been a
-                    // hacking attempt.
-                    Session.Disconnect(Session.GetPlayer(args.Player.Number));
+                        Logger.Warn("Received invalid packet (player number mismatch).");
 
-                    // Ignore the command.
-                    return null;
-                }
-                case TssControllerMessage.Synchronize:
-                {
-                    // Client re-synchronizing.
+                        // Disconnect the player, as this might have been a
+                        // hacking attempt.
+                        Session.Disconnect(Session.GetPlayer(args.Player.Number));
 
-                    // Get the frame the client is at.
-                    var clientFrame = args.Data.ReadInt64();
-
-                    // Get performance information of the client.
-                    _clientLoads[args.Player.Number] = args.Data.ReadSingle();
-
-                    // Re-evaluate at what speed we want to run.
-                    AdjustSpeed();
-
-                    // Send our reply.
-                    using (var packet = new Packet())
-                    {
-                        packet
-                            // Message type.
-                            .Write((byte)TssControllerMessage.Synchronize)
-                            // For reference, the frame the client sent this message.
-                            .Write(clientFrame)
-                            // The current server frame, to allow the client to compute
-                            // the round trip time.
-                            .Write(Tss.CurrentFrame)
-                            // The current speed the game should run at.
-                            .Write(AdjustedSpeed);
-                        Session.SendTo(args.Player, packet);
-                    }
-                    break;
-                }
-
-                case TssControllerMessage.GameState:
-                {
-                    // Client needs game state.
-                    var hasher = new Hasher();
-                    Tss.TrailingSimulation.Hash(hasher);
-                    using (var packet = new Packet())
-                    {
-                        packet
-                            // Message type.
-                            .Write((byte)TssControllerMessage.GameState)
-                            // Hash value for validation.
-                            .Write(hasher.Value)
-                            // Actual game state, including the TSS wrapper.
-                            .Write(Tss);
-                        Session.SendTo(args.Player, packet);
-                    }
-                    break;
-                }
-
-                case TssControllerMessage.GameStateDump:
-                {
-                    // Got a game state dump from a client due to hash check failure.
-                    var frame = args.Data.ReadInt64();
-                    if (!_gameStateDumps.ContainsKey(frame))
-                    {
-                        Logger.Warn("Got a game state dump for a frame we don't have the local dump for anymore.");
+                        // Ignore the command.
                         return null;
                     }
-
-                    // Get the two correlating dumps.
-                    var clientDump = args.Data.ReadString();
-                    var serverDump = _gameStateDumps[frame];
-
-                    // Get a (relatively) unique base name for the files.
-                    var dumpId = "desync_" + DateTime.UtcNow.Ticks;
-
-                    // Write the dumps.
-                    try
+                case TssControllerMessage.Synchronize:
                     {
-                        File.WriteAllText(dumpId + "_client.txt", clientDump);
-                        File.WriteAllText(dumpId + "_server.txt", serverDump);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Failed writing desynchronization dumps.", ex);
+                        // Client re-synchronizing.
+
+                        // Get the frame the client is at.
+                        var clientFrame = args.Data.ReadInt64();
+
+                        // Get performance information of the client.
+                        _clientLoads[args.Player.Number] = args.Data.ReadSingle();
+
+                        // Re-evaluate at what speed we want to run.
+                        AdjustSpeed();
+
+                        // Send our reply.
+                        using (var packet = new Packet())
+                        {
+                            packet
+                                // Message type.
+                                .Write((byte)TssControllerMessage.Synchronize)
+                                // For reference, the frame the client sent this message.
+                                .Write(clientFrame)
+                                // The current server frame, to allow the client to compute
+                                // the round trip time.
+                                .Write(Tss.CurrentFrame)
+                                // The current speed the game should run at.
+                                .Write(AdjustedSpeed);
+                            Session.SendTo(args.Player, packet);
+                        }
+                        break;
                     }
 
-                    break;
-                }
+                case TssControllerMessage.GameState:
+                    {
+                        // Client needs game state.
+                        var hasher = new Hasher();
+                        Tss.TrailingSimulation.Hash(hasher);
+                        using (var packet = new Packet())
+                        {
+                            packet
+                                // Message type.
+                                .Write((byte)TssControllerMessage.GameState)
+                                // Hash value for validation.
+                                .Write(hasher.Value)
+                                // Actual game state, including the TSS wrapper.
+                                .Write(Tss);
+                            Session.SendTo(args.Player, packet);
+                        }
+                        break;
+                    }
+
+                case TssControllerMessage.GameStateDump:
+                    {
+                        // Got a game state dump from a client due to hash check failure.
+                        var frame = args.Data.ReadInt64();
+                        if (!_gameStates.ContainsKey(frame))
+                        {
+                            Logger.Warn("Got a game state dump for a frame we don't have the local dump for anymore.");
+                            return null;
+                        }
+
+                        // Get the two correlating dumps.
+                        var clientDump = args.Data.ReadString();
+                        var serverDump = StringifyGameState(frame, _gameStates[frame]);
+
+                        // Get a (relatively) unique base name for the files.
+                        var dumpId = "desync_" + DateTime.UtcNow.Ticks;
+
+                        // Write the dumps.
+                        try
+                        {
+                            File.WriteAllText(dumpId + "_client.txt", clientDump);
+                            File.WriteAllText(dumpId + "_server.txt", serverDump);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.ErrorException("Failed writing desynchronization dumps.", ex);
+                        }
+
+                        break;
+                    }
             }
             return null;
+        }
+
+        static string StringifyGameState(long frame, IManager manager)
+        {
+            // String builder we use to concatenate our strings.
+            var sb = new StringBuilder();
+
+            // Get some general system information, for reference.
+            var assembly = Assembly.GetEntryAssembly().GetName();
+#if DEBUG
+            const string build = "Debug";
+#else
+            const string build = "Release";
+#endif
+            sb.Append("--------------------------------------------------------------------------------\n");
+            sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
+                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
+            sb.AppendFormat("Build Version: {0}\n", assembly.Version);
+            sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
+            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
+            sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
+            sb.Append("Controller Type: Server\n");
+            sb.Append("--------------------------------------------------------------------------------\n");
+            sb.AppendFormat("Gamestate at frame {0}\n", frame);
+            sb.Append("--------------------------------------------------------------------------------\n");
+
+            // Dump actual game state.
+            foreach (var system in manager.Systems)
+            {
+                sb.Append(system);
+                sb.AppendLine();
+            }
+            foreach (var component in manager.Components)
+            {
+                sb.Append(component);
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
         }
 
         #endregion

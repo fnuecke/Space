@@ -228,7 +228,7 @@ namespace Engine.ComponentSystem
         public void CopySystem(AbstractSystem system)
         {
             // Make sure we have a valid system.
-            if(system is IDrawingSystem)
+            if (system is IDrawingSystem)
             {
                 throw new ArgumentException("Cannot copy presentation systems.", "system");
             }
