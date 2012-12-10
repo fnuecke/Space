@@ -268,7 +268,10 @@ namespace Engine.Controller
             // Fill in / override data to be correct.
             command.Id = _nextCommandId++;
             command.PlayerNumber = Session.LocalPlayer.Number;
-            command.Frame = Tss.CurrentFrame + 1;
+            // Push the command back a bit to allow remote simulations a better
+            // chance of receiving the command before they reach the frame it
+            // applies to. This is used reduce the likelihood of rollbacks.
+            command.Frame = Tss.CurrentFrame + 1 + (int)System.Math.Max(0, System.Math.Round(_frameDiff.Mean()));
             Apply(command);
         }
 
