@@ -15,35 +15,42 @@
           <Type>Wing</Type>
           <Size>Small</Size>
           <Offset>-12 35</Offset>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Wing</Type>
           <Size>Small</Size>
           <Offset>-12 -35</Offset>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Shield</Type>
           <Size>Small</Size>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Reactor</Type>
           <Size>Small</Size>
           <Offset>-35 22</Offset>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Reactor</Type>
           <Size>Small</Size>
           <Offset>-35 -22</Offset>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Thruster</Type>
           <Size>Small</Size>
           <Offset>-42 0</Offset>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Sensor</Type>
           <Size>Small</Size>
           <Offset>-20 0</Offset>
+          <Rotation>0</Rotation>
         </Item>
       </Slots>
       <AdditionalAttributes />
@@ -62,23 +69,28 @@
         <Item>
           <Type>Weapon</Type>
           <Size>Small</Size>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Shield</Type>
           <Size>Small</Size>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Reactor</Type>
           <Size>Small</Size>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Thruster</Type>
           <Size>Small</Size>
           <Offset>-25 0</Offset>
+          <Rotation>0</Rotation>
         </Item>
         <Item>
           <Type>Sensor</Type>
           <Size>Small</Size>
+          <Rotation>0</Rotation>
         </Item>
       </Slots>
       <AdditionalAttributes />

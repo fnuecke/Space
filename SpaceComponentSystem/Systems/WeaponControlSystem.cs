@@ -75,7 +75,7 @@ namespace Space.ComponentSystem.Systems
             // Sort for arrays/collections isn't.
             foreach (var projectile in _projectilesToCreate.OrderBy(x => x.Entity))
             {
-                projectile.Factory.SampleProjectile(Manager, projectile.Entity, projectile.Offset, projectile.Weapon, projectile.Faction, _random);
+                projectile.Factory.SampleProjectile(Manager, projectile.Entity, projectile.Offset, projectile.Rotation, projectile.Weapon, projectile.Faction, _random);
             }
             _projectilesToCreate.Clear();
         }
@@ -146,7 +146,9 @@ namespace Space.ComponentSystem.Systems
                 energy.SetValue(energy.Value - energyConsumption);
 
                 // Compute spawn offset.
-                var offset = ((SpaceItemSlot)slot).AccumulateOffset();
+                var offset = Vector2.Zero;
+                var rotation = 0f;
+                ((SpaceItemSlot)slot).Accumulate(ref offset, ref rotation);
                 
                 // Generate projectiles.
                 foreach (var projectile in weapon.Projectiles)
@@ -156,6 +158,7 @@ namespace Space.ComponentSystem.Systems
                         Factory = projectile,
                         Entity = component.Entity,
                         Offset = offset,
+                        Rotation = rotation,
                         Weapon = weapon,
                         Faction = faction.Value
                     });
@@ -373,6 +376,11 @@ namespace Space.ComponentSystem.Systems
             /// The offset of the projectile from its emitter.
             /// </summary>
             public Vector2 Offset;
+
+            /// <summary>
+            /// The rotation (angle) in which to emit the projectile.
+            /// </summary>
+            public float Rotation;
 
             /// <summary>
             /// The weapon that shot the projectile.

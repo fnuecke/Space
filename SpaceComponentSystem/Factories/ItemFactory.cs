@@ -256,7 +256,7 @@ namespace Space.ComponentSystem.Factories
                 {
                     manager.AddComponent<SpaceItemSlot>(entity).
                         Initialize(ItemSlotInfo.TypeMap[_slots[i].Type], _slots[i].Size,
-                                   _slots[i].Offset.HasValue ? _slots[i].Offset.Value : Vector2.Zero);
+                                   _slots[i].Offset.HasValue ? _slots[i].Offset.Value : Vector2.Zero, MathHelper.ToRadians(_slots[i].Rotation));
                 }
             }
 
@@ -472,6 +472,18 @@ namespace Space.ComponentSystem.Factories
                 set { _offset = value; }
             }
 
+            /// <summary>
+            /// The rotation of this item relative to its parent slot.
+            /// </summary>
+            [ContentSerializer(Optional = true)]
+            [DefaultValue(null)]
+            [Description("The rotation of the slot relative to its parent.")]
+            public float Rotation
+            {
+                get { return _rotation; }
+                set { _rotation = value; }
+            }
+
             #endregion
 
             #region Backing fields
@@ -481,6 +493,8 @@ namespace Space.ComponentSystem.Factories
             private ItemSlotSize _size = ItemSlotSize.Small;
 
             private Vector2? _offset;
+
+            private float _rotation;
 
             #endregion
 

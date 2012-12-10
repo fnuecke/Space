@@ -594,7 +594,7 @@ namespace Space.Tools.DataEditor
                 var dummy = manager.AddEntity();
                 manager.AddComponent<Transform>(dummy);
                 manager.AddComponent<ParticleEffects>(dummy);
-                var parentSlot = manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero);
+                var parentSlot = manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero, 0);
                 parentSlot.Item = entity;
 
                 if (factory is ShieldFactory)

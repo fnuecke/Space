@@ -212,13 +212,14 @@ namespace Space.ComponentSystem.Factories
         /// <param name="manager">The manager.</param>
         /// <param name="emitter">The emitter that the projectile comes from.</param>
         /// <param name="offset">The offset.</param>
+        /// <param name="angle">The angle.</param>
         /// <param name="weapon">The weapon.</param>
         /// <param name="faction">The faction the projectile belongs to.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>
         /// A new projectile.
         /// </returns>
-        public int SampleProjectile(IManager manager, int emitter, Vector2 offset, Weapon weapon, Factions faction, IUniformRandom random)
+        public int SampleProjectile(IManager manager, int emitter, Vector2 offset, float angle, Weapon weapon, Factions faction, IUniformRandom random)
         {
             var entity = manager.AddEntity();
 
@@ -228,19 +229,19 @@ namespace Space.ComponentSystem.Factories
             var emitterVelocity = (Velocity)manager.GetComponent(emitter, Velocity.TypeId);
 
             // Rotate the offset.
-            var cosRadians = (float)Math.Cos(emitterTransform.Rotation);
-            var sinRadians = (float)Math.Sin(emitterTransform.Rotation);
+            var rotation = emitterTransform.Rotation;
+            var cosRadians = (float)Math.Cos(rotation);
+            var sinRadians = (float)Math.Sin(rotation);
 
             FarPosition rotatedOffset;
             rotatedOffset.X = -offset.X * cosRadians - offset.Y * sinRadians;
             rotatedOffset.Y = -offset.X * sinRadians + offset.Y * cosRadians;
 
             // Set initial velocity.
-            var velocity = SampleInitialDirectedVelocity(emitterTransform.Rotation, random);
-            var accelerationForce = SampleAccelerationForce(emitterTransform.Rotation, random);
+            var velocity = SampleInitialDirectedVelocity(rotation + angle, random);
+            var accelerationForce = SampleAccelerationForce(rotation + angle, random);
 
-            // Adjust rotation for projectile.
-            var rotation = emitterTransform.Rotation;
+            // Adjust rotation for projectile based on its own acceleration or speed.
             if (accelerationForce != Vector2.Zero)
             {
                 rotation = (float)Math.Atan2(accelerationForce.Y, accelerationForce.X);

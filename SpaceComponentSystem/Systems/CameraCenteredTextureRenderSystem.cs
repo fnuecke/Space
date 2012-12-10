@@ -108,6 +108,8 @@ namespace Space.ComponentSystem.Systems
             renderOffset.X += item.RequiredSlotSize.Scale(itemOffset.X * cosRadians - itemOffset.Y * sinRadians);
             renderOffset.Y += item.RequiredSlotSize.Scale(itemOffset.X * sinRadians + itemOffset.Y * cosRadians);
 
+            rotation += mirrored.HasValue && mirrored.Value ? -slot.Rotation : slot.Rotation;
+            
             // Get center of texture.
             Vector2 origin;
             origin.X = renderer.Texture.Width / 2f;

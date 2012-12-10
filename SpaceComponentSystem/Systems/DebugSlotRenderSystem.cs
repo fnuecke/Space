@@ -103,10 +103,18 @@ namespace Space.ComponentSystem.Systems
                     {
                         continue;
                     }
-                    var offset = slot.AccumulateOffset();
 
-                    float rotation;
-                    interpolation.GetInterpolatedRotation(entity, out rotation);
+                    // Get slot based offset
+                    var offset = Vector2.Zero;
+                    var rotation = 0f;
+                    slot.Accumulate(ref offset, ref rotation);
+
+                    // We only use this in the editor, where the components don't have an
+                    // inherit rotation -- otherwise we'd also need to transform the offset
+                    // accordingly (by rotating it around the origin).
+                    //float entityRotation;
+                    //interpolation.GetInterpolatedRotation(entity, out entityRotation);
+
                     var texture = _textures[slot.SlotTypeId];
 
                     // Get center of texture.

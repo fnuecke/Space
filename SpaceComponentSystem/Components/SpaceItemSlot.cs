@@ -26,6 +26,11 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public Vector2 Offset = Vector2.Zero;
 
+        /// <summary>
+        /// The rotation of this item slot relative to its parent.
+        /// </summary>
+        public float Rotation;
+
         #endregion
 
         #region Initialization
@@ -41,6 +46,7 @@ namespace Space.ComponentSystem.Components
             var otherSlot = (SpaceItemSlot)other;
             Size = otherSlot.Size;
             Offset = otherSlot.Offset;
+            Rotation = otherSlot.Rotation;
 
             return this;
         }
@@ -52,13 +58,15 @@ namespace Space.ComponentSystem.Components
         /// <param name="typeId">The type id.</param>
         /// <param name="slotSize">Size of the slot.</param>
         /// <param name="offset">The offset.</param>
+        /// <param name="rotation">The rotation.</param>
         /// <returns></returns>
-        public SpaceItemSlot Initialize(int typeId, ItemSlotSize slotSize, Vector2 offset)
+        public SpaceItemSlot Initialize(int typeId, ItemSlotSize slotSize, Vector2 offset, float rotation)
         {
             Initialize(typeId);
 
             Size = slotSize;
             Offset = offset;
+            Rotation = rotation;
 
             return this;
         }
@@ -73,6 +81,7 @@ namespace Space.ComponentSystem.Components
 
             Size = ItemSlotSize.Small;
             Offset = Vector2.Zero;
+            Rotation = 0f;
         }
 
         #endregion
@@ -169,30 +178,18 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="rotation">The base rotation.</param>
         /// <returns>The rotation for items in this slot.</returns>
-        public float AccumulateRotation(float rotation)
-        {
-            // TODO
-            return rotation;
-        }
-
-        /// <summary>
-        /// Mirrors the specified direction if necessary (i.e. if the first
-        /// node in this equipment branch with an offset along the y axis has
-        /// a negative y offset).
-        /// </summary>
-        /// <param name="direction">The direction.</param>
-        /// <returns>The adjusted direction, as necessary.</returns>
-        public float Mirror(float direction)
+        public float AccumulateRotation(float rotation = 0f)
         {
             // Walk up the tree and accumulate offsets.
             var slot = this;
 
             // Keep track of the first (or, walking up: last) node that
             // has an actual offset along the x-axis.
-            var potentialRootOffset = Vector2.Zero;
-            bool mirror = false;
+            var mirror = false;
             do
             {
+                // Accumulate the slot rotations.
+                rotation += slot.Rotation;
                 // If there's an offset, mark it as the new top-level node.
                 if (slot.Offset.Y != 0f)
                 {
@@ -200,14 +197,66 @@ namespace Space.ComponentSystem.Components
                 }
             } while ((slot = (SpaceItemSlot)slot.Parent) != null);
 
-            if (mirror)
+            return mirror ? -rotation : rotation;
+        }
+
+        /// <summary>
+        /// Accumulates offset and rotation at the same time, which is more efficient
+        /// than doing so separately. The specified values will be used as base offset
+        /// and base rotation.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <param name="rotation">The rotation.</param>
+        public void Accumulate(ref Vector2 offset, ref float rotation)
+        {
+            // Walk up the tree and accumulate offsets.
+            var slot = this;
+
+            // Keep track of the first (or, walking up: last) node that
+            // has an actual offset along the x-axis.
+            var potentialRootOffset = Vector2.Zero;
+            do
             {
-                return -direction;
+                var slotOffset = slot.Offset;
+                var parent = slot.Parent;
+                if (parent != null)
+                {
+                    var parentItem = (SpaceItem)Manager.GetComponent(parent.Item, Engine.ComponentSystem.RPG.Components.Item.TypeId);
+                    slotOffset.X = parentItem.RequiredSlotSize.Scale(slotOffset.X);
+                    slotOffset.Y = parentItem.RequiredSlotSize.Scale(slotOffset.Y);
+                }
+                // Accumulate the slot rotations.
+                rotation += slot.Rotation;
+                // If there's an offset, mark it as the new top-level node.
+                if (slot.Offset.Y != 0f)
+                {
+                    // Dump old top level offset into accumulator.
+                    offset += potentialRootOffset;
+                    // And set new top level offset.
+                    potentialRootOffset = slotOffset;
+                }
+                else
+                {
+                    // Nothing special (just offset along the y-axis).
+                    offset += slotOffset;
+                }
+            } while ((slot = (SpaceItemSlot)slot.Parent) != null);
+
+            // Check if our top-level node is negative along the x-axis.
+            if (potentialRootOffset.Y >= 0)
+            {
+                // Nope, just add.
+                offset.Y = potentialRootOffset.Y + offset.Y;
             }
             else
             {
-                return direction;
+                // Yes, mirror child offsets.
+                offset.Y = potentialRootOffset.Y - offset.Y;
+                // Also mirror rotation.
+                rotation = -rotation;
             }
+            // Add x-offset normally.
+            offset.X = potentialRootOffset.X + offset.X;
         }
 
         #endregion
@@ -223,7 +272,8 @@ namespace Space.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write((byte)Size)
-                .Write(Offset);
+                .Write(Offset)
+                .Write(Rotation);
         }
 
         /// <summary>
@@ -236,6 +286,7 @@ namespace Space.ComponentSystem.Components
 
             Size = (ItemSlotSize)packet.ReadByte();
             Offset = packet.ReadVector2();
+            Rotation = packet.ReadSingle();
         }
 
         /// <summary>
@@ -249,6 +300,7 @@ namespace Space.ComponentSystem.Components
 
             hasher.Put((byte)Size);
             hasher.Put(Offset);
+            hasher.Put(Rotation);
         }
 
         #endregion
@@ -263,7 +315,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + "Size=" + Size + ", Offset=" + Offset.X.ToString(CultureInfo.InvariantCulture) + ":" + Offset.Y.ToString(CultureInfo.InvariantCulture);
+            return base.ToString() + "Size=" + Size + ", Offset=" + Offset.X.ToString(CultureInfo.InvariantCulture) + ":" + Offset.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

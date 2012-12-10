@@ -30,6 +30,7 @@
           <Type>Weapon</Type>
           <Size>Small</Size>
           <Offset>-5 16</Offset>
+          <Rotation>-5</Rotation>
         </Item>
       </Slots>
       <AdditionalAttributes />
@@ -48,6 +49,7 @@
         <Item>
           <Type>Weapon</Type>
           <Size>Small</Size>
+          <Rotation>0</Rotation>
         </Item>
       </Slots>
       <AdditionalAttributes />
