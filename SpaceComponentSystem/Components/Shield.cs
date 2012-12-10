@@ -33,11 +33,6 @@ namespace Space.ComponentSystem.Components
         public ShieldFactory Factory;
 
         /// <summary>
-        /// The shields coverage, as a percentage.
-        /// </summary>
-        public float Coverage;
-
-        /// <summary>
         /// The texture to use as a structure for the shield.
         /// </summary>
         public Texture2D Structure;
@@ -57,7 +52,6 @@ namespace Space.ComponentSystem.Components
 
             var otherShield = (Shield)other;
             Factory = otherShield.Factory;
-            Coverage = otherShield.Coverage;
             Structure = otherShield.Structure;
 
             return this;
@@ -68,10 +62,9 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="factory">The factory.</param>
         /// <returns></returns>
-        public Shield Initialize(ShieldFactory factory, float coverage)
+        public Shield Initialize(ShieldFactory factory)
         {
             Factory = factory;
-            Coverage = coverage;
 
             return this;
         }
@@ -85,7 +78,6 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Factory = null;
-            Coverage = 0f;
             Structure = null;
         }
 
@@ -103,8 +95,7 @@ namespace Space.ComponentSystem.Components
         public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Factory.Name)
-                .Write(Coverage);
+                .Write(Factory.Name);
         }
 
         /// <summary>
@@ -116,7 +107,6 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Factory = (ShieldFactory)FactoryLibrary.GetFactory(packet.ReadString());
-            Coverage = packet.ReadSingle();
         }
 
         #endregion

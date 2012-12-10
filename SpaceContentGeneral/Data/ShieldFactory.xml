@@ -15,10 +15,10 @@
         <Item>5 ShieldActiveEnergyConsumption</Item>
         <Item>2 ShieldDamageReduction</Item>
         <Item>3 ShieldEnergyConsumptionPerAbsorbedDamage</Item>
+        <Item>0.5 ShieldCoverage</Item>
       </GuaranteedAttributes>
       <AdditionalAttributes />
       <AdditionalAttributeCount>0</AdditionalAttributeCount>
-      <Coverage>0.5</Coverage>
       <Structure>Textures/Effects/Shield</Structure>
       <Tint>7880FFFF</Tint>
     </Item>

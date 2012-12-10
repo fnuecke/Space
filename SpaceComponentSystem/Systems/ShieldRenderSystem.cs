@@ -113,9 +113,20 @@ namespace Space.ComponentSystem.Systems
                 // Got some energy left, figure out coverage.
                 var equipment = (SpaceItemSlot)Manager.GetComponent(effect.Entity, ItemSlot.TypeId);
                 var attributes = (Attributes<AttributeType>)Manager.GetComponent(effect.Entity, Attributes<AttributeType>.TypeId);
+                var coverage = 0f;
+                if (attributes != null)
+                {
+                    coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage), 0f, 1f) * MathHelper.Pi;
+                }
 
-                var sumCoverage = 0f;
-                var maxCoverage = 0f;
+                // Skip render if we have no coverage.
+                if (coverage <= 0f)
+                {
+                    continue;
+                }
+
+                // Figure out best shield (for texture).
+                var maxQuality = ItemQuality.None;
                 foreach (SpaceItemSlot slot in equipment.AllSlots)
                 {
                     // Skip empty slots.
@@ -131,20 +142,10 @@ namespace Space.ComponentSystem.Systems
                         continue;
                     }
 
-                    // Get coverage of the shield.
-                    float coverage;
-                    if (attributes != null)
+                    // Check level.
+                    if (shield.Quality > maxQuality)
                     {
-                        coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage, shield.Coverage), 0f, 1f) * MathHelper.Pi;
-                    }
-                    else
-                    {
-                        coverage = shield.Coverage * MathHelper.Pi;
-                    }
-                    sumCoverage += coverage;
-                    if (coverage > maxCoverage)
-                    {
-                        maxCoverage = coverage;
+                        maxQuality = shield.Quality;
 
                         // Load texture if necessary.
                         if (shield.Structure == null && !string.IsNullOrWhiteSpace(shield.Factory.Structure))
@@ -156,12 +157,6 @@ namespace Space.ComponentSystem.Systems
                         _shader.Structure = shield.Structure;
                         _shader.Color = shield.Factory.Tint;
                     }
-                }
-
-                // Skip render if we have no coverage.
-                if (sumCoverage <= 0f)
-                {
-                    continue;
                 }
 
                 // Apply relative opacity with minimum visibility.
@@ -178,7 +173,7 @@ namespace Space.ComponentSystem.Systems
                 _shader.SetSize(bounds.Width, bounds.Height);
 
                 // Set coverage of the shield.
-                _shader.Coverage = sumCoverage;
+                _shader.Coverage = coverage;
 
                 // Rotate the structure.
                 _shader.StructureRotation = MathHelper.ToRadians(frame / Settings.TicksPerSecond * 5);

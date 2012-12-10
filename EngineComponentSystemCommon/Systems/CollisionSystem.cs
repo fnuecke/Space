@@ -367,6 +367,42 @@ namespace Engine.ComponentSystem.Common.Systems
                         // Got a new intersection.
                         _contacts[i].Intersecting = true;
 
+                        // HACK: because tracing back to check where the collision actually
+                        // began is a pain in the ass we simply guesstimate the original impact
+                        // normal by weighing in the relative velocity of the to two parties.
+                        // This is far from perfect, but should do a relatively good (and cheap) job.
+                        var velocityA = (Velocity)Manager.GetComponent(entityA, Velocity.TypeId);
+                        var velocityB = (Velocity)Manager.GetComponent(entityB, Velocity.TypeId);
+                        Vector2 relativeVelocity;
+                        if (velocityB != null)
+                        {
+                            if (velocityA != null)
+                            {
+                                // Both parties are moving, compute A's relative velocity.
+                                relativeVelocity = velocityA.Value - velocityB.Value;
+                            }
+                            else
+                            {
+                                // A isn't moving, so we can just take B's inverse velocity.
+                                relativeVelocity = -velocityB.Value;
+                            }
+                        }
+                        else if (velocityA != null)
+                        {
+                            // B wasn't moving, so we can take A's speed as is.
+                            relativeVelocity = velocityA.Value;
+                        }
+                        else
+                        {
+                            // Well this is interesting... neither of the parties moved :P
+                            // Use the normal to avoid doing anything at all...
+                            relativeVelocity = normal;
+                        }
+
+                        // Normalize, then interpolate with the normal.
+                        relativeVelocity.Normalize();
+                        normal = Vector2.Lerp(normal, relativeVelocity, 0.5f);
+
                         // Send message.
                         BeginCollision message;
                         message.EntityA = entityA;

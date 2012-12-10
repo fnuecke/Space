@@ -117,7 +117,6 @@ namespace Space.ComponentSystem.Systems
                                 if (reduction > 0f)
                                 {
                                     // Got some, determine coverage to see if we have a multiplicator.
-                                    // TODO this is wrong, must iterate over all shields to get actual coverage!
                                     var coverage = attributes.GetValue(AttributeType.ShieldCoverage);
                                     if (coverage > 1f)
                                     {

@@ -17,17 +17,6 @@ namespace Space.ComponentSystem.Factories
         #region Properties
 
         /// <summary>
-        /// Gets or sets the coverage of the shield.
-        /// </summary>
-        [Category("Logic")]
-        [Description("The coverage of the shield, as a percentage. 0 means the shield covers nothing, 1 means it covers 360 degrees.")]
-        public FloatInterval Coverage
-        {
-            get { return _coverage; }
-            set { _coverage = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the structure texture.
         /// </summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
@@ -62,8 +51,6 @@ namespace Space.ComponentSystem.Factories
 
         #region Backing fields
 
-        private FloatInterval _coverage = FloatInterval.Zero;
-
         private string _structure;
 
         private Color _tint = Color.White;
@@ -84,31 +71,11 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = base.Sample(manager, random);
 
-            var coverage = SampleCoverage(random);
-
             manager.AddComponent<Shield>(entity)
-                .Initialize(this, coverage)
+                .Initialize(this)
                 .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
             return entity;
-        }
-
-        /// <summary>
-        /// Samples the coverage of this shield.
-        /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled coverage.</returns>
-        private float SampleCoverage(IUniformRandom random)
-        {
-            if (_coverage != null)
-            {
-                return (random == null) ? _coverage.Low
-                    : MathHelper.Lerp(_coverage.Low, _coverage.High, (float)random.NextDouble());
-            }
-            else
-            {
-                return 0f;
-            }
         }
 
         #endregion

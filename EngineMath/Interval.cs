@@ -440,6 +440,10 @@ namespace Engine.Math
         {
             if (value is string)
             {
+                if (string.IsNullOrWhiteSpace((string)value))
+                {
+                    value = "0";
+                }
                 // Parse the content.
                 var match = IntervalPattern.Match((string)value);
                 if (match.Success)
