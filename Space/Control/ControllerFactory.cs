@@ -125,6 +125,9 @@ namespace Space.Control
                     // how a ship is rendered.
                     new ItemEffectSystem(),
 
+                    // Cleans up dangling references in ownership hierarchy.
+                    new OwnerSystem(),
+
                     // ----- Stuff that updates positions of things ----- //
 
                     // Friction has to be updated before acceleration is, to allow
@@ -225,7 +228,9 @@ namespace Space.Control
                     
                     // ----- Special stuff ----- //
 
-                    // AI should react after everything else had its turn.
+                    // Toggle AI based on player proximity.
+                    new SleepSystem(),
+                    // AI should react after everything else had its turn. 
                     new AISystem()
 
                     // ----- For reference: rendering ----- //

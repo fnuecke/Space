@@ -121,14 +121,14 @@ namespace Space.ComponentSystem.Systems
             cellArea.Height = CellSystem.CellSize;
 
             // Create some ships at random positions.
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < 500; i++)
             {
                 FarPosition spawnPoint;
                 spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
                 spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
                 var ship = EntityFactory.CreateAIShip(
                     Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
-                var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
+                var ai = (ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId);
                 ai.Roam(ref cellArea);
             }
         }

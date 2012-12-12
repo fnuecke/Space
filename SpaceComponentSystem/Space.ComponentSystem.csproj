@@ -151,6 +151,7 @@
     <Compile Include="Systems\GravitationSystem.cs" />
     <Compile Include="Systems\OrbitRenderSystem.cs" />
     <Compile Include="Systems\OverTimeDamageApplyingSystem.cs" />
+    <Compile Include="Systems\OwnerSystem.cs" />
     <Compile Include="Systems\PlanetRenderSystem.cs" />
     <Compile Include="Systems\PlayerMassSystem.cs" />
     <Compile Include="Systems\RadarRenderSystem.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Systems\ShipControlSystem.cs" />
     <Compile Include="Systems\ShipInfoSystem.cs" />
     <Compile Include="Systems\ShipSpawnSystem.cs" />
+    <Compile Include="Systems\SleepSystem.cs" />
     <Compile Include="Systems\SpaceUsablesSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\ItemEffectSystem.cs" />

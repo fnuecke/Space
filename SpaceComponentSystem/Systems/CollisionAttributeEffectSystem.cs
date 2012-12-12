@@ -36,23 +36,6 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Called by the manager when an entity was removed.
-        /// </summary>
-        /// <param name="entity">The entity that was removed.</param>
-        public override void OnEntityRemoved(int entity)
-        {
-            // Remove ownership from status effects, to avoid possibly weird effects
-            // when the id is reused.
-            foreach (var component in Components)
-            {
-                if (component.Owner == entity)
-                {
-                    component.Owner = 0;
-                }
-            }
-        }
-
-        /// <summary>
         /// Handle collision messages by applying damage, if possible.
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
@@ -204,7 +187,7 @@ namespace Space.ComponentSystem.Systems
                     break;
                 }
                 entity = parent.Value;
-            } while (true);
+            } while (entity != 0);
             return entity;
         }
 

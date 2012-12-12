@@ -80,12 +80,14 @@ namespace Space.ComponentSystem
             // Add to the index from which entities will automatically removed
             // on cell death and mark it (for translation checks into empty space).
             var index = ((Index)manager.GetComponent(entity, Index.TypeId));
-            index.SetIndexGroupsMask(index.IndexGroupsMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
+            index.SetIndexGroupsMask(index.IndexGroupsMask |
+                CellSystem.CellDeathAutoRemoveIndexGroupMask |
+                ArtificialIntelligence.AIIndexGroupMask);
             manager.AddComponent<CellDeath>(entity);
 
             var input = (ShipControl)manager.GetComponent(entity, ShipControl.TypeId);
             input.Stabilizing = true;
-            manager.AddComponent<ArtificialIntelligence>(entity).Initialize(random.NextUInt32());
+            manager.AddComponent<ArtificialIntelligence>(entity).Initialize(random.NextUInt32()).Enabled = false;
 
             return entity;
         }

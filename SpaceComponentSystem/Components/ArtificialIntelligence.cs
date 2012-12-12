@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Random;
@@ -23,6 +24,15 @@ namespace Space.ComponentSystem.Components
         {
             return TypeId;
         }
+
+        #endregion
+
+        #region Constants
+
+        /// <summary>
+        /// Index group containing all entities with an AI component.
+        /// </summary>
+        public static readonly ulong AIIndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 

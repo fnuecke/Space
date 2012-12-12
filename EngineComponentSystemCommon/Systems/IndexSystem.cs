@@ -191,6 +191,9 @@ namespace Engine.ComponentSystem.Common.Systems
                 {
                     tree.Remove(component.Entity);
                 }
+
+                // Remove from changed list.
+                _changed.Remove(component.Entity);
             }
         }
 
