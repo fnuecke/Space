@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -42,6 +43,13 @@ namespace Space.ComponentSystem.Systems
         /// The maximum zoom scale.
         /// </summary>
         public const float ZoomStep = 0.1f;
+
+        /// <summary>
+        /// Index group mask for the index we use to track positions of stuff
+        /// that can be seen by the camera (and can therefore appear in the
+        /// list of visible entities).
+        /// </summary>
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 
@@ -88,6 +96,15 @@ namespace Space.ComponentSystem.Systems
             get { return _currentZoom; }
 
         }
+
+        /// <summary>
+        /// The list of currently visible entities.
+        /// </summary>
+        public IEnumerable<int> VisibleEntities
+        {
+            get { return _drawablesInView; }
+        }
+
         #endregion
 
         #region Fields
@@ -143,6 +160,16 @@ namespace Space.ComponentSystem.Systems
         /// The transformation to use for perspective projection.
         /// </summary>
         private FarTransform _transform;
+
+        #endregion
+
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components when updating, to avoid
+        /// modifications to the list of components breaking the update.
+        /// </summary>
+        private ISet<int> _drawablesInView = new HashSet<int>();
 
         #endregion
 
@@ -344,6 +371,11 @@ namespace Space.ComponentSystem.Systems
             // Apply zoom and viewport offset via normal matrix.
             _transform.Matrix = Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
                                 Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
+            // Update the list of visible entities. This method is called each
+            // draw, so we can do this here.
+            _drawablesInView.Clear();
+            var view = ComputeVisibleBounds(_graphics.Viewport);
+            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
         }
 
         #endregion

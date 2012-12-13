@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -256,12 +255,8 @@ namespace Space.ComponentSystem.Factories
         /// Samples a new sun system with the specified name.
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="name">The logical name of the ship to sample.</param>
         /// <param name="cellCenter">The center of the cell for which the sun is created.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled sun.
-        /// </returns>
         public static void SampleTestObject(IManager manager,  FarPosition cellCenter, IUniformRandom random)
         {
             var radius = 10f;
@@ -276,7 +271,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Index>(entity).Initialize(
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                TextureRenderSystem.IndexGroupMask,
+                CameraSystem.IndexGroupMask, // Must be detectable by the camera.
                 (int)(radius + radius));
 
         }

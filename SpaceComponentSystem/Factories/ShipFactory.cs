@@ -296,7 +296,7 @@ namespace Space.ComponentSystem.Factories
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 GravitationSystem.IndexGroupMask | // Can be attracted.
                 SoundSystem.IndexGroupMask | // Can make noise.
-                TextureRenderSystem.IndexGroupMask | // Can be rendered.
+                CameraSystem.IndexGroupMask | // Must be detectable by the camera.
                 InterpolationSystem.IndexGroupMask, // Rendering should be interpolated.
                 (int)(_collisionRadius + _collisionRadius));
 

@@ -25,15 +25,6 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #endregion
 
-        #region Constants
-
-        /// <summary>
-        /// Index group mask for the index we use to track positions of renderables.
-        /// </summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -58,16 +49,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The content manager used to load textures.
         /// </summary>
         protected readonly ContentManager Content;
-
-        #endregion
-
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components when updating, to avoid
-        /// modifications to the list of components breaking the update.
-        /// </summary>
-        private ISet<int> _drawablesInView = new HashSet<int>();
 
         #endregion
 
@@ -96,43 +77,32 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            // Get all renderable entities in the viewport.
-            var view = ComputeViewport();
-            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
+            // Get the interpolation system for interpolated positions.
+            var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
 
-            // Skip there rest if nothing is visible.
-            if (_drawablesInView.Count > 0)
-            {
-                // Get the interpolation system for interpolated positions.
-                var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+            // Get the transformation to use.
+            var cameraTransform = GetTransform();
 
-                // Get the transformation to use.
-                var cameraTransform = GetTransform();
-
-                // Begin rendering.
-                SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
+            // Begin rendering.
+            SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
                 
-                // We increment the base depth for each component we render, as a tie breaker,
-                // i.e. to avoid z-fighting.
-                var layerDepth = 0f;
-                foreach (var entity in _drawablesInView)
+            // We increment the base depth for each component we render, as a tie breaker,
+            // i.e. to avoid z-fighting.
+            var layerDepth = 0f;
+            foreach (var entity in GetVisibleEntities())
+            {
+                var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
+
+                // Skip invalid or disabled entities.
+                if (component != null && component.Enabled)
                 {
-                    var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
-
-                    // Skip invalid or disabled entities.
-                    if (component != null && component.Enabled)
-                    {
-                        BeginDrawComponent(component, cameraTransform.Translation, interpolation, layerDepth);
-                        layerDepth += 0.00001f;
-                    }
+                    BeginDrawComponent(component, cameraTransform.Translation, interpolation, layerDepth);
+                    layerDepth += 0.00001f;
                 }
-
-                // Done rendering.
-                SpriteBatch.End();
-
-                // Clear for next iteration.
-                _drawablesInView.Clear();
             }
+
+            // Done rendering.
+            SpriteBatch.End();
         }
 
         /// <summary>
@@ -186,10 +156,16 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>
-        /// Returns the current bounds of the viewport, i.e. the rectangle of
-        /// the world to actually render.
+        /// Gets the list of currently visible entities.
         /// </summary>
-        protected abstract FarRectangle ComputeViewport();
+        /// <returns>The list of visible entities.</returns>
+        protected virtual IEnumerable<int> GetVisibleEntities()
+        {
+            foreach (var component in Components)
+            {
+                yield return component.Entity;
+            }
+        }
 
         /// <summary>
         /// Returns the <em>transformation</em> for offsetting and scaling rendered content.

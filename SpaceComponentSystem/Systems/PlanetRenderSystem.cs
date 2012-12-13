@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -43,16 +41,6 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components when updating, to avoid
-        /// modifications to the list of components breaking the update.
-        /// </summary>
-        private ISet<int> _drawablesInView = new HashSet<int>();
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
@@ -84,23 +72,13 @@ namespace Space.ComponentSystem.Systems
         {
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
-            // Get all renderable entities in the viewport.
-            var view = camera.ComputeVisibleBounds(_planet.GraphicsDevice.Viewport);
-            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, TextureRenderSystem.IndexGroupMask);
-
-            // Skip there rest if nothing is visible.
-            if (_drawablesInView.Count == 0)
-            {
-                return;
-            }
-
             // Set/get loop invariants.
             var translation = camera.Transform.Translation;
             _planet.Transform = camera.Transform.Matrix;
             _planet.Time = frame / Settings.TicksPerSecond;
             
             // Draw everything in view.
-            foreach (var entity in _drawablesInView)
+            foreach (var entity in camera.VisibleEntities)
             {
                 var component = (PlanetRenderer)Manager.GetComponent(entity, PlanetRenderer.TypeId);
 
@@ -110,8 +88,6 @@ namespace Space.ComponentSystem.Systems
                     RenderPlanet(component, ref translation);
                 }
             }
-
-            _drawablesInView.Clear();
         }
 
         /// <summary>

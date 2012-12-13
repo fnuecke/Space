@@ -12,6 +12,7 @@ using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 using Space.Data;
 using Space.Util;
 
@@ -319,7 +320,7 @@ namespace Space.ComponentSystem.Factories
             // Register with indexes that need to be able to find us.
             manager.AddComponent<Index>(entity).Initialize(
                 CollisionSystem.IndexGroupMask | // Can collide.
-                TextureRenderSystem.IndexGroupMask | // Can be rendered.
+                CameraSystem.IndexGroupMask | // Must be detectable by the camera.
                 InterpolationSystem.IndexGroupMask, // Rendering should be interpolated.
                 (int)(_collisionRadius + _collisionRadius));
 

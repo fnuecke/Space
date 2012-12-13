@@ -138,12 +138,14 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Returns the current bounds of the viewport, i.e. the rectangle of
-        /// the world to actually render.
+        /// Gets the list of currently visible entities.
         /// </summary>
-        protected override FarRectangle ComputeViewport()
+        /// <returns>
+        /// The list of visible entities.
+        /// </returns>
+        protected override System.Collections.Generic.IEnumerable<int> GetVisibleEntities()
         {
-            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).ComputeVisibleBounds(SpriteBatch.GraphicsDevice.Viewport);
+            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).VisibleEntities;
         }
 
         /// <summary>

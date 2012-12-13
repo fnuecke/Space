@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Math;
@@ -11,6 +10,7 @@ using Engine.Random;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
@@ -243,8 +243,9 @@ namespace Space.ComponentSystem.Factories
 
             // Add to relevant indexes.
             manager.AddComponent<Index>(entity).Initialize(
-                Item.IndexGroupMask |
-                TextureRenderSystem.IndexGroupMask);
+                Item.IndexGroupMask | // Can be picked up.
+                CameraSystem.IndexGroupMask // Must be detectable by the camera.
+                );
 
             // Add helper class for info retrieval.
             manager.AddComponent<ItemInfo>(entity);

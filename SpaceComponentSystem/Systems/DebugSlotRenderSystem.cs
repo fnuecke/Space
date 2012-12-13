@@ -36,19 +36,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Fields
 
-        private readonly GraphicsDevice _graphics;
-
         private readonly SpriteBatch _spriteBatch;
 
         #endregion
 
         #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components when updating, to avoid
-        /// modifications to the list of components breaking the update.
-        /// </summary>
-        private ISet<int> _entitiesInView = new HashSet<int>();
 
         private readonly Dictionary<int, Texture2D> _textures = new Dictionary<int, Texture2D>();
 
@@ -58,7 +50,6 @@ namespace Space.ComponentSystem.Systems
 
         public DebugSlotRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
-            _graphics = graphics;
             _spriteBatch = new SpriteBatch(graphics);
 
             _textures.Add(Fuselage.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_fuselage"));
@@ -79,14 +70,7 @@ namespace Space.ComponentSystem.Systems
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
             // Get all renderable entities in the viewport.
-            var view = camera.ComputeVisibleBounds(_graphics.Viewport);
-            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _entitiesInView, TextureRenderSystem.IndexGroupMask);
-
-            // Skip there rest if nothing is visible.
-            if (_entitiesInView.Count == 0)
-            {
-                return;
-            }
+            var visibleEntities = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).VisibleEntities;
 
             // Set/get loop invariants.
             var transform = camera.Transform;
@@ -94,7 +78,7 @@ namespace Space.ComponentSystem.Systems
 
             // Iterate over all visible entities.
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, transform.Matrix);
-            foreach (var entity in _entitiesInView)
+            foreach (var entity in visibleEntities)
             {
                 foreach (SpaceItemSlot slot in Manager.GetComponents(entity, ItemSlot.TypeId))
                 {
@@ -126,9 +110,6 @@ namespace Space.ComponentSystem.Systems
                 }
             }
             _spriteBatch.End();
-
-            // Clear for next iteration.
-            _entitiesInView.Clear();
         }
 
         #endregion

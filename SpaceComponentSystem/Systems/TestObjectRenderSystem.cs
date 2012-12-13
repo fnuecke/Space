@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -43,16 +41,6 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components when updating, to avoid
-        /// modifications to the list of components breaking the update.
-        /// </summary>
-        private ISet<int> _drawablesInView = new HashSet<int>();
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
@@ -60,8 +48,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics device to render to.</param>
-        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
-        public TestObjectRenderSystem(ContentManager content, GraphicsDevice graphics, SpriteBatch spriteBatch)
+        public TestObjectRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
             _content = content;
             if (_testObject == null)
@@ -85,22 +72,12 @@ namespace Space.ComponentSystem.Systems
         {
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
-            // Get all renderable entities in the viewport.
-            var view = camera.ComputeVisibleBounds(_testObject.GraphicsDevice.Viewport);
-            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, TextureRenderSystem.IndexGroupMask);
-
-            // Skip there rest if nothing is visible.
-            if (_drawablesInView.Count == 0)
-            {
-                return;
-            }
-
             // Set/get loop invariants.
             var transform = camera.Transform;
             _testObject.Time = frame / Settings.TicksPerSecond;
 
             // Render everything in sight.
-            foreach (var entity in _drawablesInView)
+            foreach (var entity in camera.VisibleEntities)
             {
                 var component = (TestObjectRenderer)Manager.GetComponent(entity, TestObjectRenderer.TypeId);
 
@@ -110,8 +87,6 @@ namespace Space.ComponentSystem.Systems
                     RenderObject(component, ref transform);
                 }
             }
-
-            _drawablesInView.Clear();
         }
 
         /// <summary>

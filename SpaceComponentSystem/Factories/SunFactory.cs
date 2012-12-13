@@ -177,7 +177,7 @@ namespace Space.ComponentSystem.Factories
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 SoundSystem.IndexGroupMask | // Can make noise.
                 CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                TextureRenderSystem.IndexGroupMask,
+                CameraSystem.IndexGroupMask, // Must be detectable by the camera.
                 (int)(radius + radius));
 
             return entity;
