@@ -2,7 +2,6 @@
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
-using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -55,8 +54,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </returns>
         protected override bool UpdateInternal()
         {
-            // Stop if our target has died.
-            if (!AI.Manager.HasEntity(Target))
+            // Stop if we're guarding ourself or our target has died.
+            if (Target == AI.Entity || !AI.Manager.HasEntity(Target))
             {
                 AI.PopBehavior();
                 return false;
@@ -85,7 +84,16 @@ namespace Space.ComponentSystem.Components.Behaviors
         {
             if (entity == Target)
             {
-                Target = 0;
+                // If we're in a squad, guard the leader, otherwise give up.
+                var squad = (Squad)AI.Manager.GetComponent(AI.Entity, Squad.TypeId);
+                if (squad != null)
+                {
+                    Target = squad.Leader;
+                }
+                else
+                {
+                    Target = 0;
+                }
             }
         }
 

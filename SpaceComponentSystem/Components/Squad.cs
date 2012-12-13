@@ -32,6 +32,364 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Types
+
+        /// <summary>
+        /// Possible formation types for squads.
+        /// </summary>
+        public enum FormationType
+        {
+            /// <summary>
+            /// No formation.
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// A block formation, i.e. units arrange in a rectangular shape.
+            /// </summary>
+            Block,
+
+            /// <summary>
+            /// A column formation, i.e. units arrange in a jagged line.
+            /// </summary>
+            Column,
+
+            /// <summary>
+            /// Line formation, i.e. units arrange in single column.
+            /// </summary>
+            Line,
+
+            /// <summary>
+            /// Wedge formation, i.e. units align in an open, triangular shape (inverse V).
+            /// </summary>
+            Wedge,
+
+            /// <summary>
+            /// Filled wedge formation, i.e. units align in a closed triangular shape.
+            /// </summary>
+            FilledWedge,
+
+            /// <summary>
+            /// Vee formation, i.e. units align in an inverse open triangular shape (V).
+            /// </summary>
+            Vee
+        }
+
+        #endregion
+
+        #region Constants
+
+        // Note: all formation positions are computed without taking the leader's rotation
+        // into account directly. Instead, the final position is rotated at the end each time,
+        // around the leader's position, based on the leader's orientation.
+
+        // Note: all formations are defined in a coordinate system where forward is "up",
+        // i.e. is the negative y axis. In game forward is actually to the right, but this
+        // will be corrected for accordingly. For me it's easier to visualize formations
+        // this way, which is the only reason it's like this.
+
+        // Note: formations are defined by specifying the unit offset relative to the squad
+        // leader for each member, with the index matching the member index. This has the
+        // limitation of a maximum count supported, but the huge advantage of high flexibility
+        // as well as good performance (simple lookup).
+
+        // Note: in the following formation diagrams 'L' is the leader and 'F' are the
+        // followers, filled up top-down left-to-right.
+
+        /// <summary>
+        /// This is an implementation for a block formation, i.e. the formation will look
+        /// like this:
+        ///  F  F  L  F  F
+        ///  F  F  F  F  F
+        ///       ...
+        /// The balance that a formation is determined how it expands: it toggles between
+        /// vertical and horizontal expansion whenever the formation becomes "full". So
+        /// in numbers:
+        /// 6 1 0 2 7
+        /// 8 4 3 5 9
+        ///    ...
+        /// </summary>
+        private static readonly Vector2[] BlockFormation =
+            {
+                new Vector2(0, 0),
+                new Vector2(-1, 0),
+                new Vector2(1, 0),
+                new Vector2(0, 1),
+                new Vector2(-1, 1),
+                new Vector2(1, 1),
+                new Vector2(-2, 0),
+                new Vector2(2, 0),
+                new Vector2(-2, 1),
+                new Vector2(2, 1),
+                new Vector2(0, 2),
+                new Vector2(-1, 2),
+                new Vector2(1, 2),
+                new Vector2(-2, 2),
+                new Vector2(2, 2),
+                new Vector2(-3, 0),
+                new Vector2(3, 0),
+                new Vector2(-3, 1),
+                new Vector2(3, 1),
+                new Vector2(-3, 2),
+                new Vector2(3, 2),
+                new Vector2(0, 3),
+                new Vector2(-1, 3),
+                new Vector2(1, 3),
+                new Vector2(-2, 3),
+                new Vector2(2, 3),
+                new Vector2(-3, 3),
+                new Vector2(3, 3)
+            };
+
+        /// <summary>
+        /// This is an implementation for a column formation, i.e. the formation
+        /// will look like this:
+        ///           L
+        ///         F
+        ///           F
+        ///         F
+        ///          ...
+        /// The order goes like so:
+        ///           0
+        ///         1
+        ///           2
+        ///          ...
+        /// </summary>
+        private static readonly Vector2[] ColumnFormation =
+            {
+                new Vector2(0, 0),
+                new Vector2(-1, 1),
+                new Vector2(0, 2),
+                new Vector2(-1, 3),
+                new Vector2(0, 4),
+                new Vector2(-1, 5),
+                new Vector2(0, 6),
+                new Vector2(-1, 7),
+                new Vector2(0, 8),
+                new Vector2(-1, 9),
+                new Vector2(0, 10),
+                new Vector2(-1, 11),
+                new Vector2(0, 12),
+                new Vector2(-1, 13),
+                new Vector2(0, 14),
+                new Vector2(-1, 15),
+                new Vector2(0, 16),
+                new Vector2(-1, 17),
+                new Vector2(0, 18),
+                new Vector2(-1, 19),
+                new Vector2(0, 20),
+                new Vector2(-1, 21),
+                new Vector2(0, 22),
+                new Vector2(-1, 23),
+                new Vector2(0, 24),
+                new Vector2(-1, 25),
+                new Vector2(0, 26),
+                new Vector2(-1, 27),
+                new Vector2(0, 28),
+                new Vector2(-1, 29)
+            };
+
+        /// <summary>
+        /// This is an implementation for a line formation, i.e. the formation
+        /// will look like this:
+        ///           L
+        ///           F
+        ///           F
+        ///          ...
+        /// The order goes like so:
+        ///           0
+        ///           1
+        ///           2
+        ///          ...
+        /// </summary>
+        private static readonly Vector2[] LineFormation =
+            {
+                new Vector2(0, 0),
+                new Vector2(0, 1),
+                new Vector2(0, 2),
+                new Vector2(0, 3),
+                new Vector2(0, 4),
+                new Vector2(0, 5),
+                new Vector2(0, 6),
+                new Vector2(0, 7),
+                new Vector2(0, 8),
+                new Vector2(0, 9),
+                new Vector2(0, 10),
+                new Vector2(0, 11),
+                new Vector2(0, 12),
+                new Vector2(0, 13),
+                new Vector2(0, 14),
+                new Vector2(0, 15),
+                new Vector2(0, 16),
+                new Vector2(0, 17),
+                new Vector2(0, 18),
+                new Vector2(0, 19),
+                new Vector2(0, 20),
+                new Vector2(0, 21),
+                new Vector2(0, 22),
+                new Vector2(0, 23),
+                new Vector2(0, 24),
+                new Vector2(0, 25),
+                new Vector2(0, 26),
+                new Vector2(0, 27),
+                new Vector2(0, 28),
+                new Vector2(0, 29)
+            };
+
+        /// <summary>
+        /// This is an implementation for an open wedge formation, i.e. the formation
+        /// will look like this:
+        ///           L
+        ///         F   F
+        ///       F       F
+        ///     F           F
+        ///          ...
+        /// The order goes like so:
+        ///           0
+        ///         1   2
+        ///       3       4
+        ///          ...
+        /// </summary>
+        private static readonly Vector2[] WedgeFormation =
+            {
+                new Vector2(0, 0),
+                new Vector2(-1, 1),
+                new Vector2(1, 1),
+                new Vector2(-2, 2),
+                new Vector2(2, 2),
+                new Vector2(-3, 3),
+                new Vector2(3, 3),
+                new Vector2(-4, 4),
+                new Vector2(4, 4),
+                new Vector2(-5, 5),
+                new Vector2(5, 5),
+                new Vector2(-6, 6),
+                new Vector2(6, 6),
+                new Vector2(-7, 7),
+                new Vector2(7, 7),
+                new Vector2(-8, 8),
+                new Vector2(8, 8),
+                new Vector2(-9, 9),
+                new Vector2(9, 9),
+                new Vector2(-10, 10),
+                new Vector2(10, 10),
+                new Vector2(-11, 11),
+                new Vector2(11, 11),
+                new Vector2(-12, 12),
+                new Vector2(12, 12),
+                new Vector2(-13, 13),
+                new Vector2(13, 13),
+                new Vector2(-14, 14),
+                new Vector2(14, 14),
+                new Vector2(-15, 15),
+                new Vector2(15, 15)
+            };
+
+        /// <summary>
+        /// This is an implementation for a filled wedge formation, i.e. the formation
+        /// will look like this:
+        ///           L
+        ///         F   F
+        ///       F   F   F
+        ///     F   F   F   F
+        ///          ...
+        /// The order goes like so:
+        ///           0
+        ///         1   2
+        ///       3   4   5
+        ///          ...
+        /// </summary>
+        private static readonly Vector2[] FilledWedgeFormation =
+            {
+                new Vector2(0, 0),
+                new Vector2(-1, 1),
+                new Vector2(0, 1),
+                new Vector2(1, 1),
+                new Vector2(-2, 2),
+                new Vector2(-1, 2),
+                new Vector2(0, 2),
+                new Vector2(1, 2),
+                new Vector2(2, 2),
+                new Vector2(-3, 3),
+                new Vector2(-2, 3),
+                new Vector2(-1, 3),
+                new Vector2(0, 3),
+                new Vector2(1, 3),
+                new Vector2(2, 3),
+                new Vector2(3, 3),
+                new Vector2(-4, 4),
+                new Vector2(-3, 4),
+                new Vector2(-2, 4),
+                new Vector2(-1, 4),
+                new Vector2(0, 4),
+                new Vector2(1, 4),
+                new Vector2(2, 4),
+                new Vector2(3, 4),
+                new Vector2(4, 4),
+                new Vector2(-5, 5),
+                new Vector2(-4, 5),
+                new Vector2(-3, 5),
+                new Vector2(-2, 5),
+                new Vector2(-1, 5),
+                new Vector2(0, 5),
+                new Vector2(1, 5),
+                new Vector2(2, 5),
+                new Vector2(3, 5),
+                new Vector2(4, 5),
+                new Vector2(5, 5)
+            };
+
+        /// <summary>
+        /// This is an implementation for a vee formation, i.e. the formation
+        /// will look like this:
+        ///          ...
+        ///     F           F
+        ///       F       F
+        ///         F   F
+        ///           L
+        /// The order goes like so:
+        ///          ...
+        ///       3       4
+        ///         1   2
+        ///           0
+        /// </summary>
+        private static readonly Vector2[] VeeFormation =
+            {
+                new Vector2(0, 0),
+                new Vector2(-1, -1),
+                new Vector2(1, -1),
+                new Vector2(-2, -2),
+                new Vector2(2, -2),
+                new Vector2(-3, -3),
+                new Vector2(3, -3),
+                new Vector2(-4, -4),
+                new Vector2(4, -4),
+                new Vector2(-5, -5),
+                new Vector2(5, -5),
+                new Vector2(-6, -6),
+                new Vector2(6, -6),
+                new Vector2(-7, -7),
+                new Vector2(7, -7),
+                new Vector2(-8, -8),
+                new Vector2(8, -8),
+                new Vector2(-9, -9),
+                new Vector2(9, -9),
+                new Vector2(-10, -10),
+                new Vector2(10, -10),
+                new Vector2(-11, -11),
+                new Vector2(11, -11),
+                new Vector2(-12, -12),
+                new Vector2(12, -12),
+                new Vector2(-13, -13),
+                new Vector2(13, -13),
+                new Vector2(-14, -14),
+                new Vector2(14, -14),
+                new Vector2(-15, -15),
+                new Vector2(15, -15)
+            };
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -51,11 +409,36 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>
+        /// Gets or sets the formation the squad keeps.
+        /// </summary>
+        public FormationType Formation
+        {
+            get { return _formation; }
+            set
+            {
+                foreach (var member in _members)
+                {
+                    ((Squad)Manager.GetComponent(member, TypeId))._formation = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the formation spacing, i.e. the space to keep between individual
         /// formation slots. This should at least be as large as the flocking separation
         /// of AI behaviors.
         /// </summary>
-        public float FormationSpacing { get; set; }
+        public float FormationSpacing
+        {
+            get { return _spacing; }
+            set
+            {
+                foreach (var member in _members)
+                {
+                    ((Squad)Manager.GetComponent(member, TypeId))._spacing = value;
+                }
+            }
+        }
 
         #endregion
 
@@ -66,17 +449,19 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         private readonly List<int> _members = new List<int>();
 
+        /// <summary>
+        /// The current formation of this squad.
+        /// </summary>
+        private FormationType _formation = FormationType.Block;
+
+        /// <summary>
+        /// The current formation spacing of this squad.
+        /// </summary>
+        private float _spacing = 200;
+
         #endregion
 
         #region Initialization
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Squad"/> class.
-        /// </summary>
-        public Squad()
-        {
-            FormationSpacing = 200;
-        }
 
         /// <summary>
         /// Initialize the component by using another instance of its type.
@@ -126,79 +511,40 @@ namespace Space.ComponentSystem.Components
         {
             var leaderTransform = (Transform)Manager.GetComponent(_members[0], Transform.TypeId);
 
-            // Note: we may one day decide to extend this to support multiple formations.
-
-            // Note: all formation positions are computed without taking the leader's rotation
-            // into account directly. Instead, the final position is rotated at the end, around
-            // the leader's position, based on the leader's orientation.
-
-            // Note: in the following formation diagrams 'L' is the leader and 'F' are the
-            // followers, filled up top-down left-to-right.
-
-            // First get the own index in the formation.
+            // Get our own index in the formation.
             var index = _members.IndexOf(Entity);
 
-            // The position relative to the leader. This will be in a unit scale and "expanded"
-            // based on the spacing set for the squad.
+            // The position relative to the leader. This will be in a unit scale and
+            // scaled based on the spacing set for the squad.
             var position = Vector2.Zero;
 
-            // This is an implementation for a 'box' formation, i.e. the formation will look
-            // like this:
-            //  F  F  L  F  F
-            //  F  F  F  F  F 
-            // The balance that a formation is determined how it expands: it toggles between
-            // vertical and horizontal expansion whenever the formation becomes "full". So
-            // in numbers:
-            // 6 1 0 2 7
-            // 8 4 3 5 9
-            //    ...
+            // Figure out which formation we're flying in, if any.
+            Vector2[] formation = null;
+            switch (Formation)
             {
-                // Note: if someone can be bothered to figure out a procedural way to generate
-                // this formation, that'd be nice.
-                Vector2[] box =
-                    {
-                        new Vector2(0, 0),
-                        new Vector2(-1, 0),
-                        new Vector2(1, 0),
-                        new Vector2(0, 1),
-                        new Vector2(-1, 1),
-                        new Vector2(1, 1),
-                        new Vector2(-2, 0),
-                        new Vector2(2, 0),
-                        new Vector2(-2, 1),
-                        new Vector2(2, 1),
-                        new Vector2(0, 2),
-                        new Vector2(-1, 2),
-                        new Vector2(1, 2),
-                        new Vector2(-2, 2),
-                        new Vector2(2, 2),
-                        new Vector2(-3, 0),
-                        new Vector2(3, 0),
-                        new Vector2(-3, 1),
-                        new Vector2(3, 1),
-                        new Vector2(-3, 2),
-                        new Vector2(3, 2),
-                        new Vector2(0, 3),
-                        new Vector2(-1, 3),
-                        new Vector2(1, 3),
-                        new Vector2(-2, 3),
-                        new Vector2(2, 3),
-                        new Vector2(-3, 3),
-                        new Vector2(3, 3)
-                    };
-                if (index < box.Length)
-                {
-                    position = box[index];
-                }
+                case FormationType.Block:
+                    formation = BlockFormation;
+                    break;
+                case FormationType.Column:
+                    formation = ColumnFormation;
+                    break;
+                case FormationType.Line:
+                    formation = LineFormation;
+                    break;
+                case FormationType.Wedge:
+                    formation = WedgeFormation;
+                    break;
+                case FormationType.FilledWedge:
+                    formation = FilledWedgeFormation;
+                    break;
+                case FormationType.Vee:
+                    formation = VeeFormation;
+                    break;
             }
-
-            // This is an implementation for a 'triangular' formation, i.e. the formation
-            // will look like this:
-            //           L
-            //         F   F
-            //       F   F   F
-            //     F   F   F   F
-            //          ...
+            if (formation != null && index < formation.Length)
+            {
+                position = formation[index];
+            }
 
             // Rotate around origin of the formation (which should be the leader's position in
             // most cases).
@@ -238,8 +584,8 @@ namespace Space.ComponentSystem.Components
             }
 
             // Make sure the entity isn't in a squad (except the identity squad).
-            var newMemberSquad = (Squad)Manager.GetComponent(entity, TypeId);
-            newMemberSquad.RemoveMember(entity);
+            var newMember = (Squad)Manager.GetComponent(entity, TypeId);
+            newMember.RemoveMember(entity);
             // Register that entity will all existing members.
             foreach (var member in _members)
             {
@@ -253,8 +599,10 @@ namespace Space.ComponentSystem.Components
             // Tell the new member about its new sqad mates (after clearing, to make
             // sure the order is the same -- in particular that the first entry is
             // the same, which must be the squad leader).
-            newMemberSquad._members.Clear();
-            newMemberSquad._members.AddRange(_members);
+            newMember._members.Clear();
+            newMember._members.AddRange(_members);
+            newMember._formation = _formation;
+            newMember._spacing = _spacing;
         }
 
         /// <summary>
@@ -276,15 +624,27 @@ namespace Space.ComponentSystem.Components
                 // Skip this instance to avoid breaking the iterator.
                 if (member != Entity)
                 {
-                    ((Squad)Manager.GetComponent(member, TypeId))._members.Remove(entity);
+                    ((Squad)Manager.GetComponent(member, TypeId)).RemoveMemberInternal(entity);
                 }
             }
-            _members.Remove(entity);
+            RemoveMemberInternal(entity);
 
             // Reset the squad component of that entity to a blank squad with only that
             // entity in it.
             ((Squad)Manager.GetComponent(entity, TypeId))._members.Clear();
             ((Squad)Manager.GetComponent(entity, TypeId))._members.Add(entity);
+        }
+
+        /// <summary>
+        /// Removes the member by replacing it with the last member.
+        /// </summary>
+        /// <param name="entity">The entity to remove.</param>
+        private void RemoveMemberInternal(int entity)
+        {
+            // Remove by moving the last member to the removed one's slot.
+            // This will reduce flux when a member leaves a formation.
+            _members[_members.IndexOf(entity)] = _members[_members.Count - 1];
+            _members.RemoveAt(_members.Count - 1);
         }
 
         #endregion

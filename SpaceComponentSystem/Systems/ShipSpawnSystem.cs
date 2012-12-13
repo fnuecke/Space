@@ -121,7 +121,7 @@ namespace Space.ComponentSystem.Systems
             cellArea.Height = CellSystem.CellSize;
 
             // Create some ships at random positions.
-            for (var i = 0; i < 50; ++i)
+            for (var i = 0; i < 30; ++i)
             {
                 FarPosition spawnPoint;
                 spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
@@ -130,12 +130,15 @@ namespace Space.ComponentSystem.Systems
                 var leader = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
                 ((ArtificialIntelligence)Manager.GetComponent(leader, ArtificialIntelligence.TypeId)).Roam(ref cellArea);
                 var squad = Manager.AddComponent<Squad>(leader).Initialize();
-                for (var j = 0; j < 9; ++j)
+                squad.Formation = Squad.FormationType.Block;
+                for (var j = 0; j < 19; ++j)
                 {
                     var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
                     Manager.AddComponent<Squad>(ship).Initialize();
                     squad.AddMember(ship);
-                    ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId)).Guard(leader);
+                    var ai = (ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId);
+                    ai.Roam(ref cellArea); // fallback for when leader dies
+                    ai.Guard(leader);
                 }
             }
         }

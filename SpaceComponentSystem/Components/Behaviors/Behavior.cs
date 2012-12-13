@@ -492,7 +492,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                     var leaderVelocity = (Velocity)AI.Manager.GetComponent(squad.Leader, Velocity.TypeId);
                     if (leaderVelocity != null)
                     {
-                        formation += leaderVelocity.Value * 2;
+                        formation += leaderVelocity.Value;
                     }
                 }
             }
