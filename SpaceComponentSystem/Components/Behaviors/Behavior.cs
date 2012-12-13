@@ -276,7 +276,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <returns></returns>
         protected int GetClosestEnemy(float range, Func<int, bool> filter = null)
         {
-            return 0;
             // See if there are any enemies nearby, if so attack them.
             var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
