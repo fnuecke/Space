@@ -2,6 +2,7 @@
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -28,7 +29,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <param name="ai">The ai component this behavior belongs to.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
         public GuardBehavior(ArtificialIntelligence ai, IUniformRandom random)
-            : base(ai, random, 2)
+            : base(ai, random, 0.25f)
         {
         }
 
@@ -75,6 +76,24 @@ namespace Space.ComponentSystem.Components.Behaviors
         }
 
         /// <summary>
+        /// Called when an entity becomes an invalid target (removed from the
+        /// system or died). This is intended to allow behaviors to stop in
+        /// case their related entity is removed (e.g. target when attacking).
+        /// </summary>
+        /// <param name="entity">The entity that was removed.</param>
+        internal override void OnEntityInvalidated(int entity)
+        {
+            if (entity == Target)
+            {
+                Target = 0;
+            }
+        }
+
+        #endregion
+
+        #region Behavior type specifics
+
+        /// <summary>
         /// Figure out where we want to go.
         /// </summary>
         /// <returns>
@@ -85,8 +104,28 @@ namespace Space.ComponentSystem.Components.Behaviors
             FarPosition target;
             if (Target != 0)
             {
-                target = ((Transform)(AI.Manager.GetComponent(Target, Transform.TypeId))).Translation;
-                target += ((Velocity)(AI.Manager.GetComponent(Target, Velocity.TypeId))).Value;
+                var squad = (Squad)AI.Manager.GetComponent(AI.Entity, Squad.TypeId);
+                if (squad != null && squad.Contains(Target))
+                {
+                    // We're in a squad and protecting a member. Leave everything to the
+                    // autopilot (vegetative nervous system) but keep going.
+                    target = ((Transform)(AI.Manager.GetComponent(AI.Entity, Transform.TypeId))).Translation;
+                    var leaderVelocity = (Velocity)AI.Manager.GetComponent(squad.Leader, Velocity.TypeId);
+                    if (leaderVelocity != null)
+                    {
+                        target += leaderVelocity.Value;
+                    }
+                }
+                else
+                {
+                    // Not in a squad or targeting something that's not in the squad...
+                    target = ((Transform)(AI.Manager.GetComponent(Target, Transform.TypeId))).Translation;
+                    var targetVelocity = (Velocity)AI.Manager.GetComponent(Target, Velocity.TypeId);
+                    if (targetVelocity != null)
+                    {
+                        target += targetVelocity.Value;
+                    }
+                }
             }
             else
             {

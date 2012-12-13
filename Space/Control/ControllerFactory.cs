@@ -127,6 +127,8 @@ namespace Space.Control
 
                     // Cleans up dangling references in ownership hierarchy.
                     new OwnerSystem(),
+                    // Cleans up references in squads when a component is removed.
+                    new SquadSystem(),
 
                     // ----- Stuff that updates positions of things ----- //
 
@@ -308,7 +310,8 @@ namespace Space.Control
                 new AbstractSystem[]
                 {
                     new DebugCollisionBoundsRenderSystem(game.Content, game.GraphicsDevice),
-                    new DebugEntityIdRenderSystem(game.Content, spriteBatch)
+                    new DebugEntityIdRenderSystem(game.Content, spriteBatch),
+                    new DebugAIRenderSystem(game.Content, spriteBatch)
                 });
         }
     }

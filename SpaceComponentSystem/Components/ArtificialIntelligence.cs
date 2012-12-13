@@ -1,13 +1,18 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components.Behaviors;
 
 namespace Space.ComponentSystem.Components
 {
+    /// <summary>
+    /// This component adds an AI controller to a ship.
+    /// </summary>
     public sealed class ArtificialIntelligence : Component
     {
         #region Type ID
@@ -27,12 +32,82 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Types
+
+        /// <summary>
+        /// Possible AI behaviors.
+        /// </summary>
+        public enum BehaviorType
+        {
+            /// <summary>
+            /// No behavior at all. Note that this does not mean the AI will
+            /// stop, but that it simply won't change its state anymore.
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// Makes an AI patrol to the nearest friendly station and then
+            /// dock at it, removing the AI from the game. This is a 'cleanup'
+            /// behavior to get rid of ships that have lost their purpose.
+            /// </summary>
+            Dock,
+
+            /// <summary>
+            /// Performs a random walk of the AI in the range of a specified
+            /// point, using the patrol behavior.
+            /// </summary>
+            Roam,
+
+            /// <summary>
+            /// Emulates trading behavior by making the AI fly from one
+            /// friendly base to another, picking the next station to fly to
+            /// randomly.
+            /// </summary>
+            Trade,
+
+            /// <summary>
+            /// AI tries to kill a specified aiComponent.
+            /// </summary>
+            Attack,
+
+            /// <summary>
+            /// AI moves to a specified point, ignoring what it flies past.
+            /// </summary>
+            Move,
+
+            /// <summary>
+            /// AI moves to a specified point, but checks if it gets in range
+            /// of enemy ships it will then attack.
+            /// </summary>
+            AttackMove,
+
+            /// <summary>
+            /// AI follows a specified entity and tries to protect it by
+            /// attacking enemies that get in range.
+            /// </summary>
+            Guard
+        }
+
+        #endregion
+
         #region Constants
 
         /// <summary>
         /// Index group containing all entities with an AI component.
         /// </summary>
         public static readonly ulong AIIndexGroupMask = 1ul << IndexSystem.GetGroup();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the current behavior type.
+        /// </summary>
+        public BehaviorType CurrentBehavior
+        {
+            get { return _currentBehaviors.Count > 0 ? _currentBehaviors.Peek() : BehaviorType.None; }
+        }
 
         #endregion
 
@@ -46,7 +121,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The currently running behaviors, ordered as they were issued.
         /// </summary>
-        private readonly Stack<Behavior.BehaviorType> _currentBehaviors = new Stack<Behavior.BehaviorType>();
+        private readonly Stack<BehaviorType> _currentBehaviors = new Stack<BehaviorType>();
 
         /// <summary>
         /// List of all possible behaviors. This keeps us from having to
@@ -54,7 +129,7 @@ namespace Space.ComponentSystem.Components
         /// we cannot stack multiple behaviors of the same type, but that's
         /// probably not needed anyway.
         /// </summary>
-        private readonly Dictionary<Behavior.BehaviorType, Behavior> _behaviors = new Dictionary<Behavior.BehaviorType, Behavior>();
+        private readonly Dictionary<BehaviorType, Behavior> _behaviors = new Dictionary<BehaviorType, Behavior>();
 
         #endregion
 
@@ -62,11 +137,11 @@ namespace Space.ComponentSystem.Components
 
         public ArtificialIntelligence()
         {
-            _behaviors.Add(Behavior.BehaviorType.Roam, new RoamBehavior(this, _random));
-            _behaviors.Add(Behavior.BehaviorType.Attack, new AttackBehavior(this, _random));
-            _behaviors.Add(Behavior.BehaviorType.Move, new MoveBehavior(this, _random));
-            _behaviors.Add(Behavior.BehaviorType.AttackMove, new AttackMoveBehavior(this, _random));
-            _behaviors.Add(Behavior.BehaviorType.Guard, new GuardBehavior(this, _random));
+            _behaviors.Add(BehaviorType.Roam, new RoamBehavior(this, _random));
+            _behaviors.Add(BehaviorType.Attack, new AttackBehavior(this, _random));
+            _behaviors.Add(BehaviorType.Move, new MoveBehavior(this, _random));
+            _behaviors.Add(BehaviorType.AttackMove, new AttackMoveBehavior(this, _random));
+            _behaviors.Add(BehaviorType.Guard, new GuardBehavior(this, _random));
         }
 
         /// <summary>
@@ -139,6 +214,20 @@ namespace Space.ComponentSystem.Components
             }
         }
 
+        /// <summary>
+        /// Called when an entity becomes an invalid target (removed from the
+        /// system or died). This is intended to allow behaviors to stop in
+        /// case their related entity is removed (e.g. target when attacking).
+        /// </summary>
+        /// <param name="entity">The entity that was removed.</param>
+        internal void OnEntityInvalidated(int entity)
+        {
+            foreach (var behavior in _behaviors)
+            {
+                behavior.Value.OnEntityInvalidated(entity);
+            }
+        }
+
         #endregion
 
         #region Commands
@@ -149,7 +238,7 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public void Dock()
         {
-            PushBehavior(Behavior.BehaviorType.Dock);
+            PushBehavior(BehaviorType.Dock);
         }
 
         /// <summary>
@@ -158,8 +247,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="area">The area.</param>
         public void Roam(ref FarRectangle area)
         {
-            ((RoamBehavior)_behaviors[Behavior.BehaviorType.Roam]).Area = area;
-            PushBehavior(Behavior.BehaviorType.Roam);
+            ((RoamBehavior)_behaviors[BehaviorType.Roam]).Area = area;
+            PushBehavior(BehaviorType.Roam);
         }
 
         /// <summary>
@@ -168,8 +257,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="entity">The entity to attack.</param>
         public void Attack(int entity)
         {
-            ((AttackBehavior)_behaviors[Behavior.BehaviorType.Attack]).Target = entity;
-            PushBehavior(Behavior.BehaviorType.Attack);
+            ((AttackBehavior)_behaviors[BehaviorType.Attack]).Target = entity;
+            PushBehavior(BehaviorType.Attack);
         }
 
         /// <summary>
@@ -178,8 +267,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="target">The target to move to.</param>
         public void AttackMove(ref FarPosition target)
         {
-            ((AttackMoveBehavior)_behaviors[Behavior.BehaviorType.AttackMove]).Target = target;
-            PushBehavior(Behavior.BehaviorType.AttackMove);
+            ((AttackMoveBehavior)_behaviors[BehaviorType.AttackMove]).Target = target;
+            PushBehavior(BehaviorType.AttackMove);
         }
 
         /// <summary>
@@ -188,8 +277,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="entity">The entity to guard.</param>
         public void Guard(int entity)
         {
-            ((GuardBehavior)_behaviors[Behavior.BehaviorType.Guard]).Target = entity;
-            PushBehavior(Behavior.BehaviorType.Guard);
+            ((GuardBehavior)_behaviors[BehaviorType.Guard]).Target = entity;
+            PushBehavior(BehaviorType.Guard);
         }
 
         #endregion
@@ -208,7 +297,7 @@ namespace Space.ComponentSystem.Components
         /// Pushes the behavior to the stack, making it the executing one.
         /// </summary>
         /// <param name="behavior">The behavior to push.</param>
-        private void PushBehavior(Behavior.BehaviorType behavior)
+        private void PushBehavior(BehaviorType behavior)
         {
             // Remove all behaviors induced by this type of behavior and
             // the old instance, as well, then push the new behavior.
@@ -265,7 +354,7 @@ namespace Space.ComponentSystem.Components
             var numBehaviors = packet.ReadInt32();
             for (var i = 0; i < numBehaviors; i++)
             {
-                _currentBehaviors.Push((Behavior.BehaviorType)packet.ReadByte());
+                _currentBehaviors.Push((BehaviorType)packet.ReadByte());
             }
 
             foreach (var behaviorType in _behaviors.Keys)
@@ -305,6 +394,105 @@ namespace Space.ComponentSystem.Components
         public override string ToString()
         {
             return base.ToString() + ", Random=" + _random + ", CurrentBehaviors=[" + string.Join(", ", _currentBehaviors) + "], Behaviors=[" + string.Join(", ", _behaviors) + "]";
+        }
+
+        #endregion
+
+        #region Debugging
+
+        // The following are just accessors for th AI debug render system.
+
+        public Vector2 GetLastEscape()
+        {
+#if DEBUG
+            if (_currentBehaviors.Count > 0)
+            {
+                return _behaviors[_currentBehaviors.Peek()].GetLastEscape();
+            }
+#endif
+            return Vector2.Zero;
+        }
+
+        public Vector2 GetLastSeparation()
+        {
+#if DEBUG
+            if (_currentBehaviors.Count > 0)
+            {
+                return _behaviors[_currentBehaviors.Peek()].GetLastSeparation();
+            }
+#endif
+            return Vector2.Zero;
+        }
+
+        public Vector2 GetLastCohesion()
+        {
+#if DEBUG
+            if (_currentBehaviors.Count > 0)
+            {
+                return _behaviors[_currentBehaviors.Peek()].GetLastCohesion();
+            }
+#endif
+            return Vector2.Zero;
+        }
+
+        public Vector2 GetLastFormation()
+        {
+#if DEBUG
+            if (_currentBehaviors.Count > 0)
+            {
+                return _behaviors[_currentBehaviors.Peek()].GetLastFormation();
+            }
+#endif
+            return Vector2.Zero;
+        }
+
+        public Vector2 GetBehaviorTargetDirection()
+        {
+#if DEBUG
+            if (_currentBehaviors.Count > 0)
+            {
+                var behaviorType = _currentBehaviors.Peek();
+                var behavior = _behaviors[behaviorType];
+                switch (behaviorType)
+                {
+                    case BehaviorType.Attack:
+                    {
+                        var target = ((AttackBehavior)behavior).Target;
+                        if (Manager.HasEntity(target))
+                        {
+                            var transform = (Transform)Manager.GetComponent(Entity, Transform.TypeId);
+                            var targetTransform = (Transform)Manager.GetComponent(target, Transform.TypeId);
+                            return (Vector2)(targetTransform.Translation - transform.Translation);
+                        }
+                        break;
+                    }
+                    case BehaviorType.Move:
+                    {
+                        var target = ((MoveBehavior)behavior).Target;
+                        var transform = (Transform)Manager.GetComponent(Entity, Transform.TypeId);
+                        return (Vector2)(target - transform.Translation);
+                    }
+                    case BehaviorType.AttackMove:
+                    {
+                        var target = ((AttackMoveBehavior)behavior).Target;
+                        var transform = (Transform)Manager.GetComponent(Entity, Transform.TypeId);
+                        return (Vector2)(target - transform.Translation);
+                    }
+                    case BehaviorType.Guard:
+                    {
+                        var target = ((GuardBehavior)behavior).Target;
+                        if (Manager.HasEntity(target))
+                        {
+                            var transform = (Transform)Manager.GetComponent(Entity, Transform.TypeId);
+                            var targetTransform = (Transform)Manager.GetComponent(target, Transform.TypeId);
+                            return (Vector2)(targetTransform.Translation - transform.Translation);
+                        }
+                        break;
+                    }
+                }
+            }
+#endif
+            return Vector2.Zero;
         }
 
         #endregion

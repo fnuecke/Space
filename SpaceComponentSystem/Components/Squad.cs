@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
 {
@@ -49,6 +50,13 @@ namespace Space.ComponentSystem.Components
             get { return _members.Count; }
         }
 
+        /// <summary>
+        /// Gets or sets the formation spacing, i.e. the space to keep between individual
+        /// formation slots. This should at least be as large as the flocking separation
+        /// of AI behaviors.
+        /// </summary>
+        public float FormationSpacing { get; set; }
+
         #endregion
 
         #region Fields
@@ -56,11 +64,19 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The list of ships in this squad.
         /// </summary>
-        private List<int> _members = new List<int>();
+        private readonly List<int> _members = new List<int>();
 
         #endregion
 
         #region Initialization
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Squad"/> class.
+        /// </summary>
+        public Squad()
+        {
+            FormationSpacing = 200;
+        }
 
         /// <summary>
         /// Initialize the component by using another instance of its type.
@@ -95,6 +111,7 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             _members.Clear();
+            FormationSpacing = 200;
         }
 
         #endregion
@@ -109,9 +126,101 @@ namespace Space.ComponentSystem.Components
         {
             var leaderTransform = (Transform)Manager.GetComponent(_members[0], Transform.TypeId);
 
-            // TODO compute real position
+            // Note: we may one day decide to extend this to support multiple formations.
 
-            return leaderTransform.Translation;
+            // Note: all formation positions are computed without taking the leader's rotation
+            // into account directly. Instead, the final position is rotated at the end, around
+            // the leader's position, based on the leader's orientation.
+
+            // Note: in the following formation diagrams 'L' is the leader and 'F' are the
+            // followers, filled up top-down left-to-right.
+
+            // First get the own index in the formation.
+            var index = _members.IndexOf(Entity);
+
+            // The position relative to the leader. This will be in a unit scale and "expanded"
+            // based on the spacing set for the squad.
+            var position = Vector2.Zero;
+
+            // This is an implementation for a 'box' formation, i.e. the formation will look
+            // like this:
+            //  F  F  L  F  F
+            //  F  F  F  F  F 
+            // The balance that a formation is determined how it expands: it toggles between
+            // vertical and horizontal expansion whenever the formation becomes "full". So
+            // in numbers:
+            // 6 1 0 2 7
+            // 8 4 3 5 9
+            //    ...
+            {
+                // Note: if someone can be bothered to figure out a procedural way to generate
+                // this formation, that'd be nice.
+                Vector2[] box =
+                    {
+                        new Vector2(0, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(0, 1),
+                        new Vector2(-1, 1),
+                        new Vector2(1, 1),
+                        new Vector2(-2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(-2, 1),
+                        new Vector2(2, 1),
+                        new Vector2(0, 2),
+                        new Vector2(-1, 2),
+                        new Vector2(1, 2),
+                        new Vector2(-2, 2),
+                        new Vector2(2, 2),
+                        new Vector2(-3, 0),
+                        new Vector2(3, 0),
+                        new Vector2(-3, 1),
+                        new Vector2(3, 1),
+                        new Vector2(-3, 2),
+                        new Vector2(3, 2),
+                        new Vector2(0, 3),
+                        new Vector2(-1, 3),
+                        new Vector2(1, 3),
+                        new Vector2(-2, 3),
+                        new Vector2(2, 3),
+                        new Vector2(-3, 3),
+                        new Vector2(3, 3)
+                    };
+                if (index < box.Length)
+                {
+                    position = box[index];
+                }
+            }
+
+            // This is an implementation for a 'triangular' formation, i.e. the formation
+            // will look like this:
+            //           L
+            //         F   F
+            //       F   F   F
+            //     F   F   F   F
+            //          ...
+
+            // Rotate around origin of the formation (which should be the leader's position in
+            // most cases).
+            var finalPosition = leaderTransform.Translation;
+            var cosRadians = (float)Math.Cos(leaderTransform.Rotation);
+            var sinRadians = (float)Math.Sin(leaderTransform.Rotation);
+            finalPosition.X += (-position.Y * cosRadians - position.X * sinRadians) * FormationSpacing;
+            finalPosition.Y += (-position.Y * sinRadians + position.X * cosRadians) * FormationSpacing;
+
+            return finalPosition;
+        }
+
+        /// <summary>
+        /// Determines whether the squad contains the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to check for.</param>
+        /// <returns>
+        ///   <c>true</c> if the squad contains the specified entity; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Contains(int entity)
+        {
+            return _members.Contains(entity);
         }
 
         /// <summary>
@@ -129,9 +238,8 @@ namespace Space.ComponentSystem.Components
             }
 
             // Make sure the entity isn't in a squad (except the identity squad).
-            ((Squad)Manager.GetComponent(entity, TypeId)).RemoveMember(entity);
-            // Tell its new sqad mates.
-            ((Squad)Manager.GetComponent(entity, TypeId))._members.AddRange(_members);
+            var newMemberSquad = (Squad)Manager.GetComponent(entity, TypeId);
+            newMemberSquad.RemoveMember(entity);
             // Register that entity will all existing members.
             foreach (var member in _members)
             {
@@ -142,6 +250,11 @@ namespace Space.ComponentSystem.Components
                 }
             }
             _members.Add(entity);
+            // Tell the new member about its new sqad mates (after clearing, to make
+            // sure the order is the same -- in particular that the first entry is
+            // the same, which must be the squad leader).
+            newMemberSquad._members.Clear();
+            newMemberSquad._members.AddRange(_members);
         }
 
         /// <summary>

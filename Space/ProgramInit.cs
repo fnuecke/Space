@@ -144,6 +144,11 @@ namespace Space
             // Add hints for auto completion to also complete python methods.
             _console.AddAutoCompletionLookup(SpaceCommandHandler.GetGlobalNames);
 
+            _console.AddCommand("d_ai",
+                args => SetDebugRenderSystemEnabled<DebugAIRenderSystem>(args[1]),
+                "Enables rendering debug information on AI ships.",
+                "d_ai 1|0 - set whether to enabled rendering AI debug info.");
+
             _console.AddCommand("d_renderindex",
                 args =>
                 {

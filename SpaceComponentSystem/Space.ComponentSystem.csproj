@@ -142,6 +142,7 @@
     <Compile Include="Systems\CollisionAttributeEffectSystem.cs" />
     <Compile Include="Systems\DamageSystem.cs" />
     <Compile Include="Systems\DeathSystem.cs" />
+    <Compile Include="Systems\DebugAIRenderSystem.cs" />
     <Compile Include="Systems\DebugCollisionBoundsRenderSystem.cs" />
     <Compile Include="Systems\DebugEntityIdRenderSystem.cs" />
     <Compile Include="Systems\DebugSlotRenderSystem.cs" />
@@ -167,6 +168,7 @@
     <Compile Include="Systems\ShipSpawnSystem.cs" />
     <Compile Include="Systems\SleepSystem.cs" />
     <Compile Include="Systems\SpaceUsablesSystem.cs" />
+    <Compile Include="Systems\SquadSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\ItemEffectSystem.cs" />
     <Compile Include="Systems\TestObjectRenderSystem.cs" />

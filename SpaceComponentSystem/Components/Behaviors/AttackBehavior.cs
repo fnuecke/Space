@@ -127,6 +127,20 @@ namespace Space.ComponentSystem.Components.Behaviors
             return true;
         }
 
+        /// <summary>
+        /// Called when an entity becomes an invalid target (removed from the
+        /// system or died). This is intended to allow behaviors to stop in
+        /// case their related entity is removed (e.g. target when attacking).
+        /// </summary>
+        /// <param name="entity">The entity that was removed.</param>
+        internal override void OnEntityInvalidated(int entity)
+        {
+            if (entity == Target)
+            {
+                Target = 0;
+            }
+        }
+
         #endregion
 
         #region Behavior type specifics
@@ -165,7 +179,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <returns>
         /// The desired target rotation.
         /// </returns>
-        protected override float GetTargetRotation(ref Vector2 direction)
+        protected override float GetTargetRotation(Vector2 direction)
         {
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;

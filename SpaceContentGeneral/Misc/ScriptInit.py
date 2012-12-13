@@ -50,3 +50,7 @@ def unequip(slotId):
 def level():
 	xp = manager.GetComponent(avatar, Experience.TypeId)
 	print("Level %s [%d / %d XP (%.2f%%)" % (xp.Level, xp.Value, xp.RequiredForNextLevel, (xp.Value / float(xp.RequiredForNextLevel))))
+
+def setFactions():
+	f = manager.GetComponent(avatar, Faction.TypeId)
+	f.Value = f.Value | Factions.NpcFactionA | Factions.NpcFactionB

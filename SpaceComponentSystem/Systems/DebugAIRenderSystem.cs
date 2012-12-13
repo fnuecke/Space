@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -7,13 +6,11 @@ using Engine.FarMath;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Renders entity ids at their position, if they have a position.
-    /// </summary>
-    public sealed class DebugEntityIdRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class DebugAIRenderSystem : AbstractComponentSystem<ArtificialIntelligence>, IDrawingSystem
     {
         #region Properties
 
@@ -39,19 +36,25 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private readonly SpriteFont _font;
 
+        /// <summary>
+        /// Arrow texture to render indication of where AI is headed.
+        /// </summary>
+        private readonly Texture2D _arrow;
+
         #endregion
 
         #region Constructor
-
+        
         /// <summary>
-        /// Initializes a new instance of the <see cref="DebugEntityIdRenderSystem"/> class.
+        /// Initializes a new instance of the <see cref="DebugAIRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="spriteBatch">The sprite batch.</param>
-        public DebugEntityIdRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        public DebugAIRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _spriteBatch = spriteBatch;
             _font = content.Load<SpriteFont>("Fonts/ConsoleFont");
+            _arrow = content.Load<Texture2D>("Textures/arrow");
         }
 
         #endregion
@@ -75,16 +78,46 @@ namespace Space.ComponentSystem.Systems
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
             foreach (var entity in camera.VisibleEntities)
             {
-                var transform = (Transform)Manager.GetComponent(entity, Transform.TypeId);
-                if (transform != null)
+                var ai = (ArtificialIntelligence)Manager.GetComponent(entity, ArtificialIntelligence.TypeId);
+                if (ai != null)
                 {
+                    var transform = (Transform)Manager.GetComponent(entity, Transform.TypeId);
                     FarPosition position;
                     interpolation.GetInterpolatedPosition(transform.Entity, out position);
                     position += cameraTransform.Translation;
-                    _spriteBatch.DrawString(_font, "ID: " + transform.Entity, (Vector2)position, Color.White);
+
+                    // Render vegetative influences.
+                    DrawArrow((Vector2)position, ai.GetLastEscape(), Color.Red);
+
+                    DrawArrow((Vector2)position, ai.GetLastSeparation(), Color.Yellow);
+
+                    DrawArrow((Vector2)position, ai.GetLastCohesion(), Color.Blue);
+
+                    DrawArrow((Vector2)position, ai.GetLastFormation(), Color.Teal);
+
+                    // Render target.
+                    DrawArrow((Vector2)position, ai.GetBehaviorTargetDirection(), Color.Green);
+
+                    // Render current state.
+                    position.X += 20; // don't intersect with entity id if visible
+                    _spriteBatch.DrawString(_font, "AI: " + ai.CurrentBehavior, (Vector2)position, Color.White);
                 }
             }
             _spriteBatch.End();
+        }
+
+        private void DrawArrow(Vector2 start, Vector2 toEnd, Color color)
+        {
+            // Don't draw tiny arrows...
+            if (toEnd.LengthSquared() < 1f)
+            {
+                return;
+            }
+            _spriteBatch.Draw(_arrow, start, null, color,
+                              (float)Math.Atan2(toEnd.Y, toEnd.X),
+                              new Vector2(0, _arrow.Height / 2f),
+                              new Vector2(toEnd.Length() / _arrow.Width, 1),
+                              SpriteEffects.None, 0);
         }
 
         #endregion
