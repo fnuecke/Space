@@ -63,7 +63,7 @@ namespace Engine.ComponentSystem
             {
                 _dirtyPool[typeId] = new Stack<Component>();
             }
-            Debug.Assert(!_dirtyPool[typeId].Contains(component));
+            //Debug.Assert(!_dirtyPool[typeId].Contains(component));
             _dirtyPool[typeId].Push(component);
         }
 
@@ -88,7 +88,7 @@ namespace Engine.ComponentSystem
                     }
                     foreach (var instance in _dirtyPool[typeId])
                     {
-                        Debug.Assert(!ComponentPool[typeId].Contains(instance));
+                        //Debug.Assert(!ComponentPool[typeId].Contains(instance));
                         ComponentPool[typeId].Push(instance);
                     }
                     _dirtyPool[typeId].Clear();

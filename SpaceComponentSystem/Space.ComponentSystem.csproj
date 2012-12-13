@@ -77,6 +77,7 @@
     <Compile Include="Components\Behaviors\AttackBehavior.cs" />
     <Compile Include="Components\Behaviors\Behavior.cs" />
     <Compile Include="Components\Behaviors\DockBehavior.cs" />
+    <Compile Include="Components\Behaviors\GuardBehavior.cs" />
     <Compile Include="Components\Behaviors\MoveBehavior.cs" />
     <Compile Include="Components\Behaviors\AttackMoveBehavior.cs" />
     <Compile Include="Components\ArtificialIntelligence.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="Components\Drops.cs" />
     <Compile Include="Components\PlayerClass.cs" />
     <Compile Include="Components\ShipSpawner.cs" />
+    <Compile Include="Components\Squad.cs" />
     <Compile Include="Components\Target.cs" />
     <Compile Include="Components\Detectable.cs" />
     <Compile Include="Components\ParticleEffects.cs" />

@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
-using Engine.Random;
-using Space.ComponentSystem.Systems;
+﻿using Engine.Random;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -12,16 +8,6 @@ namespace Space.ComponentSystem.Components.Behaviors
     /// </summary>
     internal sealed class AttackMoveBehavior : MoveBehavior
     {
-        #region Constants
-
-        /// <summary>
-        /// The distance enemy units must get closer than for us to attack
-        /// them.
-        /// </summary>
-        private const float DefaultAggroRange = 2500;
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
@@ -37,7 +23,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         #endregion
 
         #region Logic
-        
+
         /// <summary>
         /// Check if there are any enemies nearby, if not check if we have
         /// arrived at our target.
@@ -47,32 +33,13 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </returns>
         protected override bool UpdateInternal()
         {
-            // See if there are any enemies nearby, if so attack them.
-            var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
-            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
-            var shipInfo = (ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
-            var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
-            ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, sensorRange > 0 ? sensorRange : DefaultAggroRange, ref neighbors, DetectableSystem.IndexGroupMask);
-            foreach (var neighbor in neighbors)
+            // Check for nearby enemies.
+            var enemy = GetClosestEnemy(DefaultAggroRange, HealthFilter);
+            if (enemy != 0)
             {
-                // See if it has health. Otherwise don't bother attacking.
-                var health = ((Health)AI.Manager.GetComponent(neighbor, Health.TypeId));
-                if (health == null || !health.Enabled || health.Value <= 0)
-                {
-                    continue;
-                }
-
-                // Friend or foe? Don't care if it's a friend.
-                // TODO: unless it's in a fight, then we might want to support our allies?
-                var neighborFaction = ((Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId));
-                if (neighborFaction != null && (neighborFaction.Value & faction) == 0)
-                {
-                    // It's an enemy. Attack it.
-                    AI.Attack(neighbor);
-                    return false;
-                }
+                // It's an enemy. Attack it.
+                AI.Attack(enemy);
+                return false;
             }
 
             // Nothing is distracting us, keep going as usual.

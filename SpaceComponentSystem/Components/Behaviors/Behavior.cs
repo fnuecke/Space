@@ -71,15 +71,21 @@ namespace Space.ComponentSystem.Components.Behaviors
             AttackMove,
 
             /// <summary>
-            /// AI follows a specified aiComponent and tries to protect it by
+            /// AI follows a specified entity and tries to protect it by
             /// attacking enemies that get in range.
             /// </summary>
-            Escort
+            Guard
         }
 
         #endregion
 
         #region Constants
+
+        /// <summary>
+        /// The distance enemy units must get closer than for us to attack
+        /// them.
+        /// </summary>
+        protected const float DefaultAggroRange = 2500;
 
         /// <summary>
         /// The radius around ourself we check for objects we want to evade.
@@ -96,12 +102,12 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// The distance to another ship we need to be under for flocking
         /// to kick in.
         /// </summary>
-        private const float FlockingThreshold = 600;
+        private const float FlockingThreshold = 100;
 
         /// <summary>
         /// The desired distance to keep to other flock members.
         /// </summary>
-        protected const float FlockingSeparation = 300;
+        protected const float FlockingSeparation = 30;
 
         /// <summary>
         /// For damagers that have a gravitational pull, this is the multiple
@@ -286,7 +292,68 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #endregion
 
-        #region Vegetative nervous system
+        #region Vegetative nervous system / Utility
+
+        /// <summary>
+        /// Filter function for <see cref="GetClosestEnemy"/> to only look for living
+        /// enemies only.
+        /// </summary>
+        /// <param name="entity">The entity to check.</param>
+        /// <returns>Whether to consider attacking that entity.</returns>
+        protected bool HealthFilter(int entity)
+        {
+            var health = (Health)AI.Manager.GetComponent(entity, Health.TypeId);
+            return health != null && health.Enabled && health.Value > 0;
+        }
+
+        /// <summary>
+        /// Gets the closest enemy based on the specified criteria. This checks all
+        /// enemies in the specified range, but only takes into consideration those
+        /// that pass the filter function. The enemy with the lowest distance will
+        /// be returned.
+        /// </summary>
+        /// <param name="range">The maximum range up to which to search.</param>
+        /// <param name="filter">The filter function, if any.</param>
+        /// <returns></returns>
+        protected int GetClosestEnemy(float range, Func<int, bool> filter = null)
+        {
+            // See if there are any enemies nearby, if so attack them.
+            var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
+            var shipInfo = (ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
+            var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
+            ISet<int> neighbors = new HashSet<int>();
+            index.Find(position, sensorRange > 0 ? sensorRange : range, ref neighbors, DetectableSystem.IndexGroupMask);
+            var closest = 0;
+            var closestDistance = float.PositiveInfinity;
+            foreach (var neighbor in neighbors)
+            {
+                // Friend or foe? Don't care if it's a friend. Also filter based on passed
+                // filter function.
+                // TODO: unless it's in a fight, then we might want to support our allies?
+                //       i.e. check if it's behavior is 'Attack' and if so what its target is.
+                //       Also, in that case don't jump... too far? I.e. add a range check for
+                //       indirect targets.
+                var neighborFaction = (Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId);
+                if (neighborFaction != null &&
+                    (neighborFaction.Value & faction) == 0 &&
+                    (filter == null || filter(neighbor)))
+                {
+                    // It's an enemy. Check the distance.
+                    var enemyPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                    var distance = ((Vector2)(position - enemyPosition)).LengthSquared();
+                    if (distance < closestDistance)
+                    {
+                        closest = neighbor;
+                        closestDistance = distance;
+                    }
+                }
+            }
+
+            // Return whatever we found.
+            return closest;
+        }
 
         /// <summary>
         /// Gets the escape direction, i.e. the direction in which to
@@ -305,6 +372,7 @@ namespace Space.ComponentSystem.Components.Behaviors
 
             // Get some info about ourself.
             var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
+            var squad = (Squad)AI.Manager.GetComponent(AI.Entity, Squad.TypeId);
             var info = ((ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
             var position = info.Position;
             var mass = info.Mass;
@@ -352,7 +420,8 @@ namespace Space.ComponentSystem.Components.Behaviors
                 }
             }
             
-            // Check all neighbors in normal flocking range.
+            // Check all neighbors in normal flocking range. If we're in a squad, skip
+            // other squad members and take our squad position into account instead.
             neighbors.Clear();
             index.Find(position, FlockingThreshold, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
@@ -365,7 +434,7 @@ namespace Space.ComponentSystem.Components.Behaviors
 
                 // Get the position, needed for everything that follows.
                 var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
-                var toNeighbor = (Vector2)(position - neighborPosition);
+                var toNeighbor = (Vector2)(neighborPosition - position);
 
                 // See if separation kicks in.
                 if (toNeighbor.LengthSquared() < FlockingSeparation * FlockingSeparation)
@@ -376,12 +445,12 @@ namespace Space.ComponentSystem.Components.Behaviors
                         // Somewhere outside the other object (which should
                         // really be the normal case).
                         toNeighbor.Normalize();
-                        direction += FlockingSeparation * toNeighbor;
+                        direction -= FlockingSeparation * toNeighbor;
                     }
                     // Else we're exactly inside the other object... this
                     // is so unlikely that we just won't bother handling it.
                 }
-                else
+                else if (squad == null || AI.Entity == squad.Leader)
                 {
                     // No, check if it's a friend, because if it is, we want to flock!
                     var neighborFaction = ((Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId));
@@ -396,6 +465,15 @@ namespace Space.ComponentSystem.Components.Behaviors
                         direction.Y += neighborVelocity.Value.Y;
                     }
                 }
+            }
+
+            // Apply "formation flocking" for non-squad-leaders.
+            if (squad != null && AI.Entity != squad.Leader)
+            {
+                var toLeader = (Vector2)(squad.ComputeFormationOffset() - position);
+
+                direction.X += toLeader.X;
+                direction.Y += toLeader.Y;
             }
 
             // If we have some influence, normalize it if necessary.

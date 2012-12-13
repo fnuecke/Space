@@ -47,6 +47,13 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Sets the awake state for an entity. This toggles the enabled state for
+        /// a couple of relevant components (e.g. velocity, to avoid the entity to
+        /// idle straight into the sun).
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="awake">if set to <c>true</c> [awake].</param>
         private void SetAwake(int entity, bool awake)
         {
             Manager.GetComponent(entity, ArtificialIntelligence.TypeId).Enabled = awake;

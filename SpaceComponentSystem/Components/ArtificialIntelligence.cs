@@ -66,6 +66,7 @@ namespace Space.ComponentSystem.Components
             _behaviors.Add(Behavior.BehaviorType.Attack, new AttackBehavior(this, _random));
             _behaviors.Add(Behavior.BehaviorType.Move, new MoveBehavior(this, _random));
             _behaviors.Add(Behavior.BehaviorType.AttackMove, new AttackMoveBehavior(this, _random));
+            _behaviors.Add(Behavior.BehaviorType.Guard, new GuardBehavior(this, _random));
         }
 
         /// <summary>
@@ -179,6 +180,16 @@ namespace Space.ComponentSystem.Components
         {
             ((AttackMoveBehavior)_behaviors[Behavior.BehaviorType.AttackMove]).Target = target;
             PushBehavior(Behavior.BehaviorType.AttackMove);
+        }
+
+        /// <summary>
+        /// Tells the AI to guard the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to guard.</param>
+        public void Guard(int entity)
+        {
+            ((GuardBehavior)_behaviors[Behavior.BehaviorType.Guard]).Target = entity;
+            PushBehavior(Behavior.BehaviorType.Guard);
         }
 
         #endregion

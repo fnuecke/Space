@@ -158,6 +158,12 @@ namespace Space.ComponentSystem.Systems
         /// <param name="frame">The frame the update applies to.</param>
         public void Update(long frame)
         {
+            // Only check from time to time.
+            if (frame % 10 != 0)
+            {
+                return;
+            }
+
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.
             var avatarSystem = (AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId);
