@@ -1,4 +1,7 @@
-﻿using Engine.ComponentSystem.Common.Components;
+﻿using System;
+using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
@@ -22,9 +25,60 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private MersenneTwister _random = new MersenneTwister(0);
 
+        /// <summary>
+        /// Tracks remaining number of mob groups to spawn per cell
+        /// (after a cell was toggled to 'living'). This is used to
+        /// spread the spawning across several frames to reduce freezes.
+        /// </summary>
+        private List<Tuple<ulong, int>> _cellSpawns = new List<Tuple<ulong, int>>();
+
         #endregion
 
         #region Logic
+
+        public override void Update(long frame)
+        {
+            // See if we have some pending spawns.
+            if (_cellSpawns.Count > 0)
+            {
+                // Prefer cells with players in them.
+                var avatars = (AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId);
+                var index = -1;
+                foreach (var avatar in avatars.Avatars)
+                {
+                    var avatarPosition = ((Transform)Manager.GetComponent(avatar, Transform.TypeId)).Translation;
+                    var avatarCell = CellSystem.GetCellIdFromCoordinates(avatarPosition);
+                    index = _cellSpawns.FindIndex(x => x.Item1 == avatarCell);
+                    if (index >= 0)
+                    {
+                        break;
+                    }
+                }
+
+                // Fall back to using the first cell, if there's no player in any.
+                if (index < 0)
+                {
+                    index = _cellSpawns.Count - 1;
+                }
+
+                // Pop the entry (tuples are immutable).
+                var spawn = _cellSpawns[index];
+                _cellSpawns.RemoveAt(index);
+
+                // If the cell is still active (if it died we drop this entry) do the spawn.
+                if (((CellSystem)Manager.GetSystem(CellSystem.TypeId)).IsCellActive(spawn.Item1))
+                {
+                    ProcessSpawn(spawn.Item1);
+                    // If there's stuff left to do push it back again.
+                    if (spawn.Item2 > 1)
+                    {
+                        _cellSpawns.Add(Tuple.Create(spawn.Item1, spawn.Item2 - 1));
+                    }
+                }
+            }
+
+            base.Update(frame);
+        }
 
         /// <summary>
         /// Updates the component by checking if it's time to spawn a new entity.
@@ -47,6 +101,111 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 component.Cooldown = component.SpawnInterval;
+            }
+        }
+
+        /// <summary>
+        /// Processes a single spawn from the top of the spawn queue.
+        /// </summary>
+        private void ProcessSpawn(ulong id)
+        {
+            // Get the cell position.
+            int x, y;
+            CellSystem.GetCellCoordinatesFromId(id, out x, out y);
+
+            // Get the cell info to know what faction we're spawning for.
+            var cellInfo = ((UniverseSystem)Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(id);
+
+            // The area covered by the cell.
+            FarRectangle cellArea;
+            cellArea.X = x;
+            cellArea.Y = y;
+            cellArea.Width = CellSystem.CellSize;
+            cellArea.Height = CellSystem.CellSize;
+
+            // Get center point for spawn group.
+            FarPosition spawnPoint;
+            spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
+            spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
+
+            // Configuration for spawned ships.
+            string[] ships;
+            ArtificialIntelligence.AIConfiguration[] configurations = null;
+            var formation = Squad.FormationType.None;
+
+            // TODO different groups, based on cell info? definable via editor maybe?
+            if (_random.NextDouble() < 0.5f)
+            {
+                ships = new[]
+                {
+                    "L1_AI_Ship",
+                    "L1_AI_Ship",
+                    "L1_AI_Ship",
+                    "L1_AI_Ship",
+                    "L1_AI_Ship",
+                    "L1_AI_Ship"
+                };
+                formation = Squad.FormationType.FilledWedge;
+            }
+            else
+            {
+                ships = new[]
+                {
+                    "L1_AI_Ship",
+                    "L1_AI_Ship",
+                    "L1_AI_Ship",
+                    "L1_AI_Ship",
+                    "L1_AI_Ship"
+                };
+                configurations = new[]
+                {
+                    new ArtificialIntelligence.AIConfiguration
+                    {
+                        AggroRange = 1000
+                    }
+                };
+                formation = Squad.FormationType.Vee;
+            }
+
+            // Spawn all ships.
+            Squad leaderSquad = null;
+            for (var i = 0; i < ships.Length; i++)
+            {
+                // Get the configuration for this particular ship. If we don't have enough configurations
+                // we just re-use the last existing one.
+                var configuration = configurations != null && configurations.Length > 0
+                                 ? configurations[Math.Min(i, configurations.Length - 1)]
+                                 : null;
+                
+                // Get a position nearby the spawn (avoids spawning all ships in one point).
+                var spawnPosition = spawnPoint;
+                spawnPoint.X += _random.NextInt32(-100, 100);
+                spawnPoint.Y += _random.NextInt32(-100, 100);
+
+                // Create the ship and get the AI component.
+                var ship = EntityFactory.CreateAIShip(Manager, ships[i], cellInfo.Faction, spawnPosition, _random, configuration);
+                var ai = (ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId);
+                
+                // Push fallback roam behavior, if an area has been specified.
+                ai.Roam(ref cellArea);
+
+                // If we have a squad push the squad component.
+                if (ships.Length > 1)
+                {
+                    var squad = Manager.AddComponent<Squad>(ship).Initialize();
+                    // If we're not the leader we guard him, otherwise mark us as
+                    // the squad leader (ergo: first loop iteration).
+                    if (leaderSquad != null)
+                    {
+                        leaderSquad.AddMember(ship);
+                        ai.Guard(leaderSquad.Entity);
+                    }
+                    else
+                    {
+                        leaderSquad = squad;
+                        squad.Formation = formation;
+                    }
+                }
             }
         }
 
@@ -107,40 +266,11 @@ namespace Space.ComponentSystem.Systems
             var m = cm.Value;
             if (!m.IsActive)
             {
+                _cellSpawns.RemoveAll(x => x.Item1 == m.Id);
                 return;
             }
 
-            // Get the cell info to know what faction we're spawning for.
-            var cellInfo = ((UniverseSystem)Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(m.Id);
-
-            // The area covered by the cell.
-            FarRectangle cellArea;
-            cellArea.X = CellSystem.CellSize * m.X;
-            cellArea.Y = CellSystem.CellSize * m.Y;
-            cellArea.Width = CellSystem.CellSize;
-            cellArea.Height = CellSystem.CellSize;
-
-            // Create some ships at random positions.
-            for (var i = 0; i < 20; ++i)
-            {
-                FarPosition spawnPoint;
-                spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
-                spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
-
-                var leader = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
-                ((ArtificialIntelligence)Manager.GetComponent(leader, ArtificialIntelligence.TypeId)).Roam(ref cellArea);
-                var squad = Manager.AddComponent<Squad>(leader).Initialize();
-                squad.Formation = Squad.FormationType.FilledWedge;
-                for (var j = 0; j < 25; ++j)
-                {
-                    var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
-                    Manager.AddComponent<Squad>(ship).Initialize();
-                    squad.AddMember(ship);
-                    var ai = (ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId);
-                    ai.Roam(ref cellArea); // fallback for when leader dies
-                    ai.Guard(leader);
-                }
-            }
+            _cellSpawns.Add(Tuple.Create(m.Id, 20));
         }
 
         #endregion
@@ -156,7 +286,14 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            return packet.Write(_random);
+            packet.Write(_random);
+            packet.Write(_cellSpawns.Count);
+            for (var i = 0; i < _cellSpawns.Count; i++)
+            {
+                packet.Write(_cellSpawns[i].Item1);
+                packet.Write(_cellSpawns[i].Item2);
+            }
+            return packet;
         }
 
         /// <summary>
@@ -166,6 +303,14 @@ namespace Space.ComponentSystem.Systems
         public override void Depacketize(Packet packet)
         {
             packet.ReadPacketizableInto(ref _random);
+            _cellSpawns.Clear();
+            var spawnCount = packet.ReadInt32();
+            for (var i = 0; i < spawnCount; i++)
+            {
+                var id = packet.ReadUInt64();
+                var count = packet.ReadInt32();
+                _cellSpawns.Add(Tuple.Create(id, count));
+            }
         }
 
         /// <summary>
@@ -176,6 +321,11 @@ namespace Space.ComponentSystem.Systems
         public override void Hash(Hasher hasher)
         {
             _random.Hash(hasher);
+            for (var i = 0; i < _cellSpawns.Count; i++)
+            {
+                hasher.Put(_cellSpawns[i].Item1);
+                hasher.Put(_cellSpawns[i].Item2);
+            }
         }
 
         #endregion
@@ -197,6 +347,7 @@ namespace Space.ComponentSystem.Systems
             var copy = (ShipSpawnSystem)base.NewInstance();
 
             copy._random = new MersenneTwister(0);
+            copy._cellSpawns = new List<Tuple<ulong, int>>();
 
             return copy;
         }
@@ -220,6 +371,8 @@ namespace Space.ComponentSystem.Systems
             var copy = (ShipSpawnSystem)into;
 
             _random.CopyInto(copy._random);
+            copy._cellSpawns.Clear();
+            copy._cellSpawns.AddRange(_cellSpawns);
         }
 
         #endregion
@@ -234,7 +387,7 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Random=" + _random;
+            return base.ToString() + ", Random=" + _random + ", CellSpawns=" + _cellSpawns.Count;
         }
 
         #endregion

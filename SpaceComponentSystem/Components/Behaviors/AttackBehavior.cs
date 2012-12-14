@@ -12,23 +12,6 @@ namespace Space.ComponentSystem.Components.Behaviors
     /// </summary>
     internal sealed class AttackBehavior : Behavior
     {
-        #region Constants
-
-        /// <summary>
-        /// How much earlier to start firing our weapons, before the target
-        /// enters our range of fire. This way we have a chance some shots
-        /// will hit the target because it's flying into them.
-        /// </summary>
-        private const float WeaponRangeEpsilon = 100;
-
-        /// <summary>
-        /// Distance we have to have to where we were when we started chasing
-        /// our target before we give up and fall back to our previous behavior.
-        /// </summary>
-        private const float ChaseDistance = 2000;
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -96,7 +79,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Check if we've traveled too far.
             if (_start.HasValue)
             {
-                if (((Vector2)(position - _start.Value)).LengthSquared() > ChaseDistance * ChaseDistance)
+                if (((Vector2)(position - _start.Value)).LengthSquared() > AI.Configuration.ChaseDistance * AI.Configuration.ChaseDistance)
                 {
                     // Yeah, that's it, let's give up and return to what we
                     // were doing before.
@@ -113,14 +96,14 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
 
             // Get our ship info.
-            var info = ((ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
+            var info = (ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
 
             // Target still lives, see how far away it is.
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
             var toTarget = (Vector2)(position - targetPosition);
 
             // If we're close enough, open fire.
-            var weaponRange = info.WeaponRange + WeaponRangeEpsilon;
+            var weaponRange = info.WeaponRange + AI.Configuration.WeaponRangeEpsilon;
             control.Shooting = (toTarget.LengthSquared() < weaponRange * weaponRange);
 
             // All OK.
@@ -153,23 +136,9 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </returns>
         protected override FarPosition GetTargetPosition()
         {
-            // Don't fly directly towards the enemy, but to a point slightly
-            // offset, and at something slightly above the flocking separation.
-            // This will lead to a circling effect.
-            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = (Vector2)(position - targetPosition);
-            var separationIntercept = 1 - AI.Configuration.FlockingSeparation * AI.Configuration.FlockingSeparation / toTarget.LengthSquared();
-            FarPosition separationPosition;
-            FarPosition.Lerp(ref position, ref targetPosition, separationIntercept, out separationPosition);
-            if (toTarget != Vector2.Zero && separationIntercept > 0 && separationIntercept < 0.7f)
-            {
-                toTarget.Normalize();
-                separationPosition.X += toTarget.Y * 50 / separationIntercept;
-                separationPosition.Y -= toTarget.X * 50 / separationIntercept;
-            }
-
-            return separationPosition;
+            // We can just fly straight at our enemy, the vegetative evasion mechanism
+            // will prevent us to crash into it, as well as lead to a circling effect.
+            return ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
         }
 
         /// <summary>
@@ -181,6 +150,9 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </returns>
         protected override float GetTargetRotation(Vector2 direction)
         {
+            // Always try to face our target.
+            // TODO predict which way we need to face to actually hit
+            //      based on target velocity and weapon projectile speed...
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
             var toTarget = (Vector2)(targetPosition - position);
@@ -198,12 +170,13 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Get our ship info.
             var info = ((ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
 
-            // Decrease output if we're getting closer to our target.
+            // Decrease output if we're getting closer to our target than
+            // we need to to shoot.
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = (Vector2)(position - targetPosition);
+            var toTarget = (Vector2)(targetPosition - position);
             var weaponRange = info.WeaponRange;
-            var thrusterPower = Math.Min(1, toTarget.LengthSquared() / weaponRange);
+            var thrusterPower = Math.Min(1, toTarget.LengthSquared() / (weaponRange * weaponRange));
 
             // Decrease output based on how much energy we have left,
             // to avoid consuming all our energy for fuel when we could

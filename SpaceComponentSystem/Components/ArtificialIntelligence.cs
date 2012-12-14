@@ -157,6 +157,19 @@ namespace Space.ComponentSystem.Components
             /// </summary>
             public float VegetativeWeight = 2;
 
+            /// <summary>
+            /// How much earlier to start firing our weapons, before the target
+            /// enters our range of fire. This way we have a chance some shots
+            /// will hit the target because it's flying into them.
+            /// </summary>
+            public float WeaponRangeEpsilon = 100;
+
+            /// <summary>
+            /// Distance we have to have to where we were when we started chasing
+            /// our target before we give up and fall back to our previous behavior.
+            /// </summary>
+            public float ChaseDistance = 2000;
+
             #endregion
 
             #region Copying
@@ -187,6 +200,8 @@ namespace Space.ComponentSystem.Components
                 into.FlockingSeparation = FlockingSeparation;
                 into.VegetativeUrgencyDistance = VegetativeUrgencyDistance;
                 into.VegetativeWeight = VegetativeWeight;
+                into.WeaponRangeEpsilon = WeaponRangeEpsilon;
+                into.ChaseDistance = ChaseDistance;
             }
 
             #endregion
@@ -211,7 +226,9 @@ namespace Space.ComponentSystem.Components
                     .Write(FlockingThreshold)
                     .Write(FlockingSeparation)
                     .Write(VegetativeUrgencyDistance)
-                    .Write(VegetativeWeight);
+                    .Write(VegetativeWeight)
+                    .Write(WeaponRangeEpsilon)
+                    .Write(ChaseDistance);
             }
 
             /// <summary>
@@ -229,6 +246,8 @@ namespace Space.ComponentSystem.Components
                 FlockingSeparation = packet.ReadSingle();
                 VegetativeUrgencyDistance = packet.ReadSingle();
                 VegetativeWeight = packet.ReadSingle();
+                WeaponRangeEpsilon = packet.ReadSingle();
+                ChaseDistance = packet.ReadSingle();
             }
 
             /// <summary>
@@ -247,6 +266,8 @@ namespace Space.ComponentSystem.Components
                 hasher.Put(FlockingSeparation);
                 hasher.Put(VegetativeUrgencyDistance);
                 hasher.Put(VegetativeWeight);
+                hasher.Put(WeaponRangeEpsilon);
+                hasher.Put(ChaseDistance);
             }
 
             #endregion

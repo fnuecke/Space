@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Messages;
 using Space.Util;
 
@@ -142,9 +141,23 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="position">The position.</param>
         /// <returns>The id of the cell containing that position.</returns>
-        public static ulong GetCellIdFromCoordinates(ref Vector2 position)
+        public static ulong GetCellIdFromCoordinates(FarPosition position)
         {
-            return GetCellIdFromCoordinates((int)position.X, (int)position.Y);
+            return BitwiseMagic.Pack(position.X.Segment * FarValue.SegmentSize / CellSize,
+                                     position.Y.Segment * FarValue.SegmentSize / CellSize);
+        }
+
+        /// <summary>
+        /// Gets the cell coordinates for the specified cell id.
+        /// </summary>
+        /// <param name="id">The id of the cell.</param>
+        /// <param name="x">The x coordinate of the cell.</param>
+        /// <param name="y">The y coordinate of the cell.</param>
+        public static void GetCellCoordinatesFromId(ulong id, out int x, out int y)
+        {
+            BitwiseMagic.Unpack(id, out x, out y);
+            x <<= CellSizeShiftAmount;
+            y <<= CellSizeShiftAmount;
         }
 
         #endregion
