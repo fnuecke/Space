@@ -131,7 +131,7 @@ namespace Space.ComponentSystem.Systems
                 ((ArtificialIntelligence)Manager.GetComponent(leader, ArtificialIntelligence.TypeId)).Roam(ref cellArea);
                 var squad = Manager.AddComponent<Squad>(leader).Initialize();
                 squad.Formation = Squad.FormationType.FilledWedge;
-                for (var j = 0; j < 5; ++j)
+                for (var j = 0; j < 25; ++j)
                 {
                     var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
                     Manager.AddComponent<Squad>(ship).Initialize();

@@ -34,7 +34,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         protected override bool UpdateInternal()
         {
             // Check for nearby enemies.
-            var enemy = GetClosestEnemy(DefaultAggroRange, HealthFilter);
+            var enemy = GetClosestEnemy(AI.Configuration.AggroRange, HealthFilter);
             if (enemy != 0)
             {
                 // It's an enemy. Attack it.

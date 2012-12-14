@@ -640,8 +640,18 @@ namespace Space.ComponentSystem.Components
         {
             // Remove by moving the last member to the removed one's slot.
             // This will reduce flux when a member leaves a formation.
-            _members[_members.IndexOf(entity)] = _members[_members.Count - 1];
-            _members.RemoveAt(_members.Count - 1);
+            // Unless the leader is killed, in which case there's flux anyway,
+            // so it's actually less noisy to just pick the next member as
+            // the new leader.
+            if (entity == _members[0])
+            {
+                _members.RemoveAt(0);
+            }
+            else
+            {
+                _members[_members.IndexOf(entity)] = _members[_members.Count - 1];
+                _members.RemoveAt(_members.Count - 1);
+            }
         }
 
         #endregion

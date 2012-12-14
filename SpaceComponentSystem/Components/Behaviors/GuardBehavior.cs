@@ -28,7 +28,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <param name="ai">The ai component this behavior belongs to.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
         public GuardBehavior(ArtificialIntelligence ai, IUniformRandom random)
-            : base(ai, random, 0.25f)
+            // We need a relatively high poll rate to avoid jittery formation flight.
+            : base(ai, random, 0.3f)
         {
         }
 
@@ -62,7 +63,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
 
             // Check for nearby enemies.
-            var enemy = GetClosestEnemy(DefaultAggroRange, HealthFilter);
+            var enemy = GetClosestEnemy(AI.Configuration.AggroRange, HealthFilter);
             if (enemy != 0)
             {
                 // It's an enemy. Attack it.

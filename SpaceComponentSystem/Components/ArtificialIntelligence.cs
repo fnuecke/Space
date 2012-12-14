@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components.Behaviors;
 
@@ -88,6 +90,185 @@ namespace Space.ComponentSystem.Components
             Guard
         }
 
+        /// <summary>
+        /// This class contains some settings controlling an AI's behavior.
+        /// </summary>
+        public sealed class AIConfiguration : IPacketizable, IHashable, ICopyable<AIConfiguration>
+        {
+            #region Fields
+            
+            /// <summary>
+            /// The distance up to which the AI will scan for enemies to attack.
+            /// </summary>
+            public float AggroRange = 1000;
+
+            /// <summary>
+            /// The radius in which we look for dangerous objects that we may
+            /// want to avoid (damaging entities, possibly with gravity and
+            /// normal enemies).
+            /// </summary>
+            public float MaxEscapeCheckDistance = 8000;
+
+            /// <summary>
+            /// How far away we want to stay from objects that hurt us, but don't
+            /// attract us (i.e. have no gravitational pull). For those with gravity
+            /// the distance is computed dynamically, based on the point of no return.
+            /// </summary>
+            public float MinDistanceToDamagers = 1000;
+
+            /// <summary>
+            /// For damagers that have a gravitational pull, this is the multiple
+            /// of the distance that represents the point of no return (i.e. the
+            /// point where our thrusters won't be enough to get away anymore)...
+            /// the multiple of the point of no return we want to at least stay
+            /// away form the damager.
+            /// </summary>
+            public float MinMultipleOfPointOfNoReturn = 2;
+
+            /// <summary>
+            /// How far away from enemy units AI ships will try to stay (this
+            /// avoids them flying *into* their attack targets).
+            /// TODO per unit dynamically based on attack range
+            /// </summary>
+            public float EnemySeparation = 500;
+
+            /// <summary>
+            /// The distance to another ship we need to be under for flocking
+            /// to kick in (in particular for cohesion/alignment).
+            /// </summary>
+            public float FlockingThreshold = 400;
+
+            /// <summary>
+            /// The desired distance to keep to other flock members.
+            /// </summary>
+            public float FlockingSeparation = 200;
+
+            /// <summary>
+            /// The distance (scale) at which our vegetative input is considered
+            /// urgent, i.e. is normalized to 1. Everything below will be scaled
+            /// to the interval of [0, 1).
+            /// </summary>
+            public float VegetativeUrgencyDistance = 500;
+
+            /// <summary>
+            /// How important our vegetative direction comes into play. One means
+            /// it's 50:50 with other behavior input, 0 means it's only other
+            /// behavioral input.
+            /// </summary>
+            public float VegetativeWeight = 2;
+
+            #endregion
+
+            #region Copying
+
+            /// <summary>
+            /// Creates a new copy of the object, that shares no mutable
+            /// references with this instance.
+            /// </summary>
+            /// <returns>The copy.</returns>
+            public AIConfiguration NewInstance()
+            {
+                return new AIConfiguration();
+            }
+
+            /// <summary>
+            /// Creates a deep copy of the object, reusing the given object.
+            /// </summary>
+            /// <param name="into">The object to copy into.</param>
+            /// <returns>The copy.</returns>
+            public void CopyInto(AIConfiguration into)
+            {
+                into.AggroRange = AggroRange;
+                into.MaxEscapeCheckDistance = MaxEscapeCheckDistance;
+                into.MinDistanceToDamagers = MinDistanceToDamagers;
+                into.MinMultipleOfPointOfNoReturn = MinMultipleOfPointOfNoReturn;
+                into.EnemySeparation = EnemySeparation;
+                into.FlockingThreshold = FlockingThreshold;
+                into.FlockingSeparation = FlockingSeparation;
+                into.VegetativeUrgencyDistance = VegetativeUrgencyDistance;
+                into.VegetativeWeight = VegetativeWeight;
+            }
+
+            #endregion
+
+            #region Serialization / Hashing
+            
+            /// <summary>
+            /// Write the object's state to the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to write the data to.</param>
+            /// <returns>
+            /// The packet after writing.
+            /// </returns>
+            public Packet Packetize(Packet packet)
+            {
+                return packet
+                    .Write(AggroRange)
+                    .Write(MaxEscapeCheckDistance)
+                    .Write(MinDistanceToDamagers)
+                    .Write(MinMultipleOfPointOfNoReturn)
+                    .Write(EnemySeparation)
+                    .Write(FlockingThreshold)
+                    .Write(FlockingSeparation)
+                    .Write(VegetativeUrgencyDistance)
+                    .Write(VegetativeWeight);
+            }
+
+            /// <summary>
+            /// Bring the object to the state in the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
+            public void Depacketize(Packet packet)
+            {
+                AggroRange = packet.ReadSingle();
+                MaxEscapeCheckDistance = packet.ReadSingle();
+                MinDistanceToDamagers = packet.ReadSingle();
+                MinMultipleOfPointOfNoReturn = packet.ReadSingle();
+                EnemySeparation = packet.ReadSingle();
+                FlockingThreshold = packet.ReadSingle();
+                FlockingSeparation = packet.ReadSingle();
+                VegetativeUrgencyDistance = packet.ReadSingle();
+                VegetativeWeight = packet.ReadSingle();
+            }
+
+            /// <summary>
+            /// Push some unique data of the object to the given hasher,
+            /// to contribute to the generated hash.
+            /// </summary>
+            /// <param name="hasher">The hasher to push data to.</param>
+            public void Hash(Hasher hasher)
+            {
+                hasher.Put(AggroRange);
+                hasher.Put(MaxEscapeCheckDistance);
+                hasher.Put(MinDistanceToDamagers);
+                hasher.Put(MinMultipleOfPointOfNoReturn);
+                hasher.Put(EnemySeparation);
+                hasher.Put(FlockingThreshold);
+                hasher.Put(FlockingSeparation);
+                hasher.Put(VegetativeUrgencyDistance);
+                hasher.Put(VegetativeWeight);
+            }
+
+            #endregion
+
+            #region ToString
+
+            /// <summary>
+            /// Returns a <see cref="System.String"/> that represents this instance.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="System.String"/> that represents this instance.
+            /// </returns>
+            public override string ToString()
+            {
+                var h = new Hasher();
+                h.Put(this);
+                return h.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            #endregion
+        }
+
         #endregion
 
         #region Constants
@@ -100,6 +281,14 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the (mutable) configuration for this AI, controlling its behavior.
+        /// </summary>
+        public AIConfiguration Configuration
+        {
+            get { return _config; }
+        }
 
         /// <summary>
         /// Gets the current behavior type.
@@ -117,6 +306,11 @@ namespace Space.ComponentSystem.Components
         /// The randomizer we use to make pseudo random decisions.
         /// </summary>
         private MersenneTwister _random = new MersenneTwister(0);
+
+        /// <summary>
+        /// The configuration for this AI instance, controlling its behavior.
+        /// </summary>
+        private AIConfiguration _config = new AIConfiguration();
 
         /// <summary>
         /// The currently running behaviors, ordered as they were issued.
@@ -155,6 +349,7 @@ namespace Space.ComponentSystem.Components
 
             var otherAI = (ArtificialIntelligence)other;
             otherAI._random.CopyInto(_random);
+            otherAI._config.CopyInto(_config);
             _currentBehaviors.Clear();
             var behaviorTypes = otherAI._currentBehaviors.ToArray();
             // Stacks iterators work backwards (first is the last pushed element),
@@ -175,10 +370,17 @@ namespace Space.ComponentSystem.Components
         /// Initializes the AI with the specified random seed.
         /// </summary>
         /// <param name="seed">The seed to use.</param>
-        /// <returns>This instance.</returns>
-        public ArtificialIntelligence Initialize(ulong seed)
+        /// <param name="config">The configuration to use for this AI.</param>
+        /// <returns>
+        /// This instance.
+        /// </returns>
+        public ArtificialIntelligence Initialize(ulong seed, AIConfiguration config = null)
         {
             _random.Seed(seed);
+            if (config != null)
+            {
+                _config = config;
+            }
 
             return this;
         }
@@ -191,6 +393,8 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
+            _random.Seed(0);
+            _config = new AIConfiguration();
             _currentBehaviors.Clear();
             foreach (var behavior in _behaviors.Values)
             {
@@ -324,6 +528,7 @@ namespace Space.ComponentSystem.Components
             base.Packetize(packet);
 
             packet.Write(_random);
+            packet.Write(_config);
             packet.Write(_currentBehaviors.Count);
             var behaviorTypes = _currentBehaviors.ToArray();
             // Stacks iterators work backwards (first is the last pushed element),
@@ -350,6 +555,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             packet.ReadPacketizableInto(ref _random);
+            packet.ReadPacketizableInto(ref _config);
             _currentBehaviors.Clear();
             var numBehaviors = packet.ReadInt32();
             for (var i = 0; i < numBehaviors; i++)
@@ -374,6 +580,7 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(_random);
+            hasher.Put(_config);
             foreach (var behaviorType in _currentBehaviors)
             {
                 hasher.Put((byte)behaviorType);
@@ -393,7 +600,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Random=" + _random + ", CurrentBehaviors=[" + string.Join(", ", _currentBehaviors) + "], Behaviors=[" + string.Join(", ", _behaviors) + "]";
+            return base.ToString() + ", Random=" + _random + ", Config=" + _config + ", CurrentBehaviors=[" + string.Join(", ", _currentBehaviors) + "], Behaviors=[" + string.Join(", ", _behaviors) + "]";
         }
 
         #endregion

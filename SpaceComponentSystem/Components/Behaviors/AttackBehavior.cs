@@ -159,7 +159,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
             var toTarget = (Vector2)(position - targetPosition);
-            var separationIntercept = 1 - FlockingSeparation * FlockingSeparation / toTarget.LengthSquared();
+            var separationIntercept = 1 - AI.Configuration.FlockingSeparation * AI.Configuration.FlockingSeparation / toTarget.LengthSquared();
             FarPosition separationPosition;
             FarPosition.Lerp(ref position, ref targetPosition, separationIntercept, out separationPosition);
             if (toTarget != Vector2.Zero && separationIntercept > 0 && separationIntercept < 0.7f)

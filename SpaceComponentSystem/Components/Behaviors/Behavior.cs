@@ -21,68 +21,6 @@ namespace Space.ComponentSystem.Components.Behaviors
     /// </summary>
     internal abstract class Behavior : IPacketizable, IHashable, ICopyable<Behavior>
     {
-        #region Constants
-
-        /// <summary>
-        /// The distance enemy units must get closer than for us to attack
-        /// them.
-        /// </summary>
-        protected const float DefaultAggroRange = 2500;
-
-        /// <summary>
-        /// The radius around ourself we check for objects we want to evade.
-        /// </summary>
-        private const float MaxEscapeCheckDistance = 8000;
-
-        /// <summary>
-        /// How far away we want to stay from objects that hurt us, but don't
-        /// attract us (i.e. have no gravitational pull).
-        /// </summary>
-        private const float MinDistanceToDamagers = 1000;
-
-        /// <summary>
-        /// How far away from enemy units AI ships will try to stay (this
-        /// avoids them flying *into* their attack targets).
-        /// TODO per unit dynamically based on attack range
-        /// </summary>
-        private const float EnemySeparation = 500;
-
-        /// <summary>
-        /// The distance to another ship we need to be under for flocking
-        /// to kick in (in particular for cohesion/alignment).
-        /// </summary>
-        private const float FlockingThreshold = 400;
-
-        /// <summary>
-        /// The desired distance to keep to other flock members.
-        /// </summary>
-        protected const float FlockingSeparation = 200;
-
-        /// <summary>
-        /// For damagers that have a gravitational pull, this is the multiple
-        /// of the distance that represents the point of no return (i.e. the
-        /// point where our thrusters won't be enough to get away anymore)...
-        /// the multiple of the point of no return we want to at least stay
-        /// away form the damager.
-        /// </summary>
-        private const float MinMultipleOfPointOfNoReturn = 2;
-
-        /// <summary>
-        /// The distance (scale) at which our vegetative input is considered
-        /// urgent, i.e. is normalized to 1. Everything below will be scaled
-        /// to the interval of [0, 1).
-        /// </summary>
-        private const float VegetativeUrgencyDistance = 500;
-
-        /// <summary>
-        /// How important our vegetative direction comes into play. One means
-        /// it's 50:50 with other behavior input, 0 means it's only other
-        /// behavioral input.
-        /// </summary>
-        private const float VegetativeWeight = 2;
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -183,7 +121,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             direction.Y *= speed;
 
             // Figure out where we want to go vegetatively (flocking).
-            direction += GetVegetativeDirection() * VegetativeWeight;
+            direction += GetVegetativeDirection() * AI.Configuration.VegetativeWeight;
 
             // Set our new acceleration direction and target rotation.
             var shipControl = ((ShipControl)AI.Manager.GetComponent(AI.Entity, ShipControl.TypeId));
@@ -276,6 +214,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <returns></returns>
         protected int GetClosestEnemy(float range, Func<int, bool> filter = null)
         {
+            return 0;
             // See if there are any enemies nearby, if so attack them.
             var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
@@ -337,7 +276,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Look for evil neighbors, in particular suns and the like.
             var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, MaxEscapeCheckDistance, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, AI.Configuration.MaxEscapeCheckDistance, ref neighbors, DetectableSystem.IndexGroupMask);
             var escape = Vector2.Zero;
             var escapeNormalizer = 0;
             foreach (var neighbor in neighbors)
@@ -359,12 +298,12 @@ namespace Space.ComponentSystem.Components.Behaviors
                     {
                         // Yes! Let's see how close we are comfortable to get.
                         var pointOfNoReturnSquared = mass * neighborGravitation.Mass / info.MaxAcceleration;
-                        if (toNeighbor.LengthSquared() < pointOfNoReturnSquared * MinMultipleOfPointOfNoReturn * MinMultipleOfPointOfNoReturn)
+                        if (toNeighbor.LengthSquared() < pointOfNoReturnSquared * AI.Configuration.MinMultipleOfPointOfNoReturn * AI.Configuration.MinMultipleOfPointOfNoReturn)
                         {
                             // We're too close, let's pull out. Just use the square
                             // of the point of no return so it's really urgent.
                             toNeighbor.Normalize();
-                            escape += MinMultipleOfPointOfNoReturn * pointOfNoReturnSquared * toNeighbor;
+                            escape += AI.Configuration.MinMultipleOfPointOfNoReturn * pointOfNoReturnSquared * toNeighbor;
                             ++escapeNormalizer;
                         }
                     }
@@ -373,7 +312,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                         // OK, just a damager, but doesn't pull us in. Scale
                         // to make us reach a certain minimum distance.
                         toNeighbor.Normalize();
-                        escape += MinDistanceToDamagers * toNeighbor;
+                        escape += AI.Configuration.MinDistanceToDamagers * toNeighbor;
                         ++escapeNormalizer;
                     }
                 }
@@ -385,11 +324,11 @@ namespace Space.ComponentSystem.Components.Behaviors
                     var toNeighborDistanceSquared = toNeighbor.LengthSquared();
                     // Avoid NaNs when at same place as neighbor and see if we're close
                     // enough to care.
-                    if (toNeighborDistanceSquared > 0f && toNeighborDistanceSquared <= EnemySeparation * EnemySeparation)
+                    if (toNeighborDistanceSquared > 0f && toNeighborDistanceSquared <= AI.Configuration.EnemySeparation * AI.Configuration.EnemySeparation)
                     {
                         // Try to put some distance between us.
                         var distance = (float)Math.Sqrt(toNeighborDistanceSquared);
-                        var escapeDir = toNeighbor * -(EnemySeparation / distance - 1);
+                        var escapeDir = toNeighbor * -(AI.Configuration.EnemySeparation / distance - 1);
                         // Add some of that perpendicular to the escape direction, to
                         // avoid enemies just stopping, instead making them circle their
                         // target. Make the direction the unit circles depend on its ID
@@ -416,7 +355,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Check all neighbors in normal flocking range. If we're in a squad, skip
             // other squad members and take our squad position into account instead.
             neighbors.Clear();
-            index.Find(position, FlockingThreshold, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, AI.Configuration.FlockingThreshold, ref neighbors, DetectableSystem.IndexGroupMask);
             var separation = Vector2.Zero;
             var separationNormalizer = 0;
             var cohesion = Vector2.Zero;
@@ -450,20 +389,20 @@ namespace Space.ComponentSystem.Components.Behaviors
                 if ((faction & neighborFaction.Value) != 0)
                 {
                     // OK, flock. See if separation kicks in.
-                    if (distance <= FlockingSeparation)
+                    if (distance <= AI.Configuration.FlockingSeparation)
                     {
                         // Yes, somewhere outside the separation bounds of the other object. Note
                         // that we halve the separation because the other party will try to do the
                         // same thing (in the opposite direction), thus we reduce "bouncing" a
                         // little, i.e. oscillation between cohesion and separation.
-                        separation -= toNeighbor * (FlockingSeparation / distance - 1) * 0.5f;
+                        separation -= toNeighbor * (AI.Configuration.FlockingSeparation / distance - 1) * 0.5f;
                         ++separationNormalizer;
                     }
                     else if (squad == null) // from query: && distance < FlockingThreshold
                     {
                         // No, add cohesion and alignment. Note that we only want to move up to
                         // the separation barrier. Halving has the same reason as separation above.
-                        cohesion += toNeighbor * (1 - FlockingSeparation / distance) * 0.5f;
+                        cohesion += toNeighbor * (1 - AI.Configuration.FlockingSeparation / distance) * 0.5f;
 
                         var neighborVelocity = (Velocity)AI.Manager.GetComponent(neighbor, Velocity.TypeId);
                         cohesion += neighborVelocity.Value;
@@ -502,7 +441,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var direction = escape + separation + cohesion + formation;
 
             // If we have some influence, normalize it if necessary.
-            direction /= VegetativeUrgencyDistance;
+            direction /= AI.Configuration.VegetativeUrgencyDistance;
             if (direction.LengthSquared() > 1f)
             {
                 direction.Normalize();
