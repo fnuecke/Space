@@ -99,7 +99,7 @@ namespace Space.ComponentSystem.Systems
                     DrawArrow((Vector2)position, ai.GetBehaviorTargetDirection(), Color.Green);
 
                     // Render current state.
-                    position.X += 20; // don't intersect with entity id if visible
+                    position.Y += 20; // don't intersect with entity id if visible
                     _spriteBatch.DrawString(_font, "AI: " + ai.CurrentBehavior, (Vector2)position, Color.White);
                 }
             }
