@@ -197,7 +197,31 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </summary>
         /// <param name="entity">The entity to check.</param>
         /// <returns>Whether to consider attacking that entity.</returns>
-        protected bool HealthFilter(int entity)
+        protected int OwnerWithHealthFilter(int entity)
+        {
+            // Check if the entity has health.
+            if (CheckHealth(entity))
+            {
+                return entity;
+            }
+
+            // Otherwise see if we can find an owner and check its health.
+            entity = ((OwnerSystem)AI.Manager.GetSystem(OwnerSystem.TypeId)).GetRootOwner(entity);
+            if (entity != 0 && CheckHealth(entity))
+            {
+                return entity;
+            }
+
+            // If we come here, entity is invalid.
+            return 0;
+        }
+
+        /// <summary>
+        /// Checks if an entity has health, and is not dead (health != 0).
+        /// </summary>
+        /// <param name="entity">The entity to check for.</param>
+        /// <returns>Whether the entity has any health left.</returns>
+        private bool CheckHealth(int entity)
         {
             var health = (Health)AI.Manager.GetComponent(entity, Health.TypeId);
             return health != null && health.Enabled && health.Value > 0;
@@ -207,12 +231,14 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// Gets the closest enemy based on the specified criteria. This checks all
         /// enemies in the specified range, but only takes into consideration those
         /// that pass the filter function. The enemy with the lowest distance will
-        /// be returned.
+        /// be returned. Note that the filter function may also "transform" the id,
+        /// for example to allow selecting the actual owner of an entity (normally:
+        /// projectiles).
         /// </summary>
         /// <param name="range">The maximum range up to which to search.</param>
         /// <param name="filter">The filter function, if any.</param>
         /// <returns></returns>
-        protected int GetClosestEnemy(float range, Func<int, bool> filter = null)
+        protected int GetClosestEnemy(float range, Func<int, int> filter = null)
         {
             // See if there are any enemies nearby, if so attack them.
             var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
@@ -221,28 +247,32 @@ namespace Space.ComponentSystem.Components.Behaviors
             var shipInfo = (ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
             var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, sensorRange > 0 ? Math.Min(sensorRange, range) : range, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, sensorRange > 0 ? Math.Min(sensorRange, range) : range, ref neighbors, CollisionSystem.IndexGroupMask);
             var closest = 0;
             var closestDistance = float.PositiveInfinity;
             foreach (var neighbor in neighbors)
             {
+                // Apply our filter, if we have one.
+                var filteredNeighbor = neighbor;
+                if (filter != null)
+                {
+                    filteredNeighbor = filter(neighbor);
+                }
+                if (filteredNeighbor == 0)
+                {
+                    continue;
+                }
                 // Friend or foe? Don't care if it's a friend. Also filter based on passed
                 // filter function.
-                // TODO: unless it's in a fight, then we might want to support our allies?
-                //       i.e. check if it's behavior is 'Attack' and if so what its target is.
-                //       Also, in that case don't jump... too far? I.e. add a range check for
-                //       indirect targets.
-                var neighborFaction = (Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId);
-                if (neighborFaction != null &&
-                    (neighborFaction.Value & faction) == 0 &&
-                    (filter == null || filter(neighbor)))
+                var neighborFaction = (Faction)AI.Manager.GetComponent(filteredNeighbor, Faction.TypeId);
+                if (neighborFaction != null && (neighborFaction.Value & faction) == 0)
                 {
                     // It's an enemy. Check the distance.
-                    var enemyPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                    var enemyPosition = ((Transform)AI.Manager.GetComponent(filteredNeighbor, Transform.TypeId)).Translation;
                     var distance = ((Vector2)(position - enemyPosition)).LengthSquared();
                     if (distance < closestDistance)
                     {
-                        closest = neighbor;
+                        closest = filteredNeighbor;
                         closestDistance = distance;
                     }
                 }

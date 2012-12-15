@@ -63,7 +63,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
 
             // Check for nearby enemies.
-            var enemy = GetClosestEnemy(AI.Configuration.AggroRange, HealthFilter);
+            var enemy = GetClosestEnemy(AI.Configuration.AggroRange, OwnerWithHealthFilter);
             if (enemy != 0)
             {
                 // It's an enemy. Attack it.

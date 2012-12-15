@@ -9,6 +9,40 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class OwnerSystem : AbstractComponentSystem<Owner>
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
+        #region Logic
+
+        /// <summary>
+        /// Gets the root owner of an ownership chain, starting with the
+        /// specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to start at.</param>
+        /// <returns>The root entry of the owner chain the entity is in.</returns>
+        public int GetRootOwner(int entity)
+        {
+            while (entity != 0)
+            {
+                var owner = (Owner)Manager.GetComponent(entity, Owner.TypeId);
+                if (owner != null && owner.Value != 0)
+                {
+                    entity = owner.Value;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return entity;
+        }
+
         /// <summary>
         /// Called by the manager when an entity was removed.
         /// </summary>
@@ -27,5 +61,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
         }
+
+        #endregion
     }
 }

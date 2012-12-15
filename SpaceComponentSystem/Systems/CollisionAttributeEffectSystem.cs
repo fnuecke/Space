@@ -99,7 +99,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Figure out the root owner of the damager. We need to keep track of
                 // this to allow us to eventually attribute kills properly.
-                message.Owner = GetOwner(damager);
+                message.Owner = ((OwnerSystem)Manager.GetSystem(OwnerSystem.TypeId)).GetRootOwner(damager);
 
                 // Apply damages, debuffs, ... get the damager attributes for actual values.
                 message.Attributes = (Attributes<AttributeType>)Manager.GetComponent(damager, Attributes<AttributeType>.TypeId);
@@ -170,25 +170,6 @@ namespace Space.ComponentSystem.Systems
             Manager.SendMessage(message);
 
             return true;
-        }
-
-        /// <summary>
-        /// Utility method for finding the "root" owner of the entity doing damage.
-        /// </summary>
-        /// <param name="entity">The entity to find the root owner for.</param>
-        /// <returns></returns>
-        private int GetOwner(int entity)
-        {
-            do
-            {
-                var parent = (Owner)Manager.GetComponent(entity, Owner.TypeId);
-                if (parent == null)
-                {
-                    break;
-                }
-                entity = parent.Value;
-            } while (entity != 0);
-            return entity;
         }
 
         private void EndCollision(int damagee, int damager)
