@@ -145,6 +145,13 @@ namespace Space.ComponentSystem.Systems
                     "L1_AI_Ship",
                     "L1_AI_Ship"
                 };
+                configurations = new[]
+                {
+                    new ArtificialIntelligence.AIConfiguration
+                    {
+                        AggroRange = 600
+                    }
+                };
                 formation = Squad.FormationType.FilledWedge;
             }
             else
@@ -161,7 +168,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     new ArtificialIntelligence.AIConfiguration
                     {
-                        AggroRange = 1000
+                        AggroRange = 800
                     }
                 };
                 formation = Squad.FormationType.Vee;

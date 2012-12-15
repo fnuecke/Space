@@ -398,6 +398,14 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>
+        /// Gets a list of all the members in this squad.
+        /// </summary>
+        public IEnumerable<int> Members
+        {
+            get { return _members; }
+        }
+
+        /// <summary>
         /// Gets the size of this squad, i.e. the number of members in it.
         /// </summary>
         public int Count

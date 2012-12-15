@@ -27,21 +27,10 @@ namespace Engine.ComponentSystem.RPG.Systems
                 // to keep the hierarchy alive as long as possible (due to this
                 // recursing this will delete bottom up). This is necessary to allow
                 // other systems to check the root node (e.g. thruster effect tsystem).
-                foreach (ItemSlot slot in Manager.GetComponents(component.Entity, ItemSlot.TypeId))
+                Component slot;
+                while ((slot = Manager.GetComponent(component.Entity, ItemSlot.TypeId)) != null)
                 {
-                    if (slot.Item > 0)
-                    {
-                        Manager.RemoveEntity(slot.Item);
-                    }
-                }
-
-                // An item was removed, unequip it everywhere.
-                foreach (var slot in Components)
-                {
-                    if (slot.Item == component.Entity)
-                    {
-                        slot.Item = 0;
-                    }
+                    Manager.RemoveComponent(slot);
                 }
             }
             else if (component is ItemSlot)
@@ -49,11 +38,28 @@ namespace Engine.ComponentSystem.RPG.Systems
                 // An equipment was removed, remove its item. This will
                 // also recursively remove the sub tree (as the removed
                 // item will remove its item slots, etc.)
-                var item = ((ItemSlot)component).Item;
-                if (item > 0)
+                var slot = (ItemSlot)component;
+                if (slot.Item > 0)
                 {
-                    ((ItemSlot)component).Item = 0;
-                    Manager.RemoveEntity(item);
+                    Manager.RemoveEntity(slot.Item);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unequips items that were removed from the simulation.
+        /// </summary>
+        /// <param name="entity">The entity that was removed.</param>
+        public override void OnEntityRemoved(int entity)
+        {
+            base.OnEntityRemoved(entity);
+
+            // An item was removed, unequip it everywhere.
+            foreach (var slot in Components)
+            {
+                if (slot.Item == entity)
+                {
+                    slot.Item = 0;
                 }
             }
         }

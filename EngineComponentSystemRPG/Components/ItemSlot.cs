@@ -77,7 +77,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 _item = 0;
 
                 // Check if there was something in this slot.
-                if (oldItem > 0)
+                if (oldItem > 0 && Manager.HasEntity(oldItem))
                 {
                     // Send unequip message.
                     ItemUnequipped message;

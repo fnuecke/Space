@@ -165,6 +165,13 @@ namespace Space.ComponentSystem.Components
             public float WeaponRangeEpsilon = 100;
 
             /// <summary>
+            /// The angle ahead of the AI ship in which an enemy ship must be for
+            /// the AI to start shooting (this avoids shooting if the enemy is
+            /// behind the AI, which would be a waste of energy).
+            /// </summary>
+            public float WeaponFiringAngle = MathHelper.ToRadians(90);
+
+            /// <summary>
             /// Distance we have to have to where we were when we started chasing
             /// our target before we give up and fall back to our previous behavior.
             /// </summary>
@@ -201,6 +208,7 @@ namespace Space.ComponentSystem.Components
                 into.VegetativeUrgencyDistance = VegetativeUrgencyDistance;
                 into.VegetativeWeight = VegetativeWeight;
                 into.WeaponRangeEpsilon = WeaponRangeEpsilon;
+                into.WeaponFiringAngle = WeaponFiringAngle;
                 into.ChaseDistance = ChaseDistance;
             }
 
@@ -228,6 +236,7 @@ namespace Space.ComponentSystem.Components
                     .Write(VegetativeUrgencyDistance)
                     .Write(VegetativeWeight)
                     .Write(WeaponRangeEpsilon)
+                    .Write(WeaponFiringAngle)
                     .Write(ChaseDistance);
             }
 
@@ -247,6 +256,7 @@ namespace Space.ComponentSystem.Components
                 VegetativeUrgencyDistance = packet.ReadSingle();
                 VegetativeWeight = packet.ReadSingle();
                 WeaponRangeEpsilon = packet.ReadSingle();
+                WeaponFiringAngle = packet.ReadSingle();
                 ChaseDistance = packet.ReadSingle();
             }
 
@@ -267,6 +277,7 @@ namespace Space.ComponentSystem.Components
                 hasher.Put(VegetativeUrgencyDistance);
                 hasher.Put(VegetativeWeight);
                 hasher.Put(WeaponRangeEpsilon);
+                hasher.Put(WeaponFiringAngle);
                 hasher.Put(ChaseDistance);
             }
 

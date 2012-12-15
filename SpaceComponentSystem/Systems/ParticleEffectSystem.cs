@@ -210,7 +210,10 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Let there be graphics!
-            effect.Trigger(ref position, ref impulse, rotation, scale);
+            lock (this)
+            {
+                effect.Trigger(ref position, ref impulse, rotation, scale);
+            }
         }
 
         /// <summary>

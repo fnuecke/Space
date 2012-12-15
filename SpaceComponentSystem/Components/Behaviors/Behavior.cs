@@ -221,7 +221,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var shipInfo = (ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
             var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, sensorRange > 0 ? sensorRange : range, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, sensorRange > 0 ? Math.Min(sensorRange, range) : range, ref neighbors, DetectableSystem.IndexGroupMask);
             var closest = 0;
             var closestDistance = float.PositiveInfinity;
             foreach (var neighbor in neighbors)

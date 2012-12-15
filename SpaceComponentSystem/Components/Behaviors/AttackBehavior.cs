@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.Behaviors
@@ -100,11 +101,32 @@ namespace Space.ComponentSystem.Components.Behaviors
 
             // Target still lives, see how far away it is.
             var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = (Vector2)(position - targetPosition);
-
-            // If we're close enough, open fire.
+            var toTarget = (Vector2)(targetPosition - position);
+            var targetAngle = (float)Math.Atan2(toTarget.Y, toTarget.X);
             var weaponRange = info.WeaponRange + AI.Configuration.WeaponRangeEpsilon;
-            control.Shooting = (toTarget.LengthSquared() < weaponRange * weaponRange);
+
+            // If we're close enough and the target is somewhat in front of us, open fire.
+            control.Shooting = (toTarget.LengthSquared() < weaponRange * weaponRange) &&
+                Math.Abs(Angle.MinAngle(targetAngle, info.Rotation)) < AI.Configuration.WeaponFiringAngle * 0.5f;
+
+            // If we're in a squad we want the other members to help us.
+            var squad = (Squad)AI.Manager.GetComponent(AI.Entity, Squad.TypeId);
+            if (squad != null)
+            {
+                foreach (var member in squad.Members)
+                {
+                    // Skip self, we're already busy.
+                    if (member == AI.Entity)
+                    {
+                        continue;
+                    }
+                    var ai = (ArtificialIntelligence)AI.Manager.GetComponent(member, ArtificialIntelligence.TypeId);
+                    if (ai != null && ai.CurrentBehavior != ArtificialIntelligence.BehaviorType.Attack)
+                    {
+                        ai.Attack(Target);
+                    }
+                }
+            }
 
             // All OK.
             return true;
