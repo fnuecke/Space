@@ -19,6 +19,11 @@ namespace Space.ComponentSystem.Messages
         public float Amount;
 
         /// <summary>
+        /// The amount of damage that was absorbed by shields.
+        /// </summary>
+        public float ShieldedAmount;
+
+        /// <summary>
         /// The type of damage taken.
         /// </summary>
         public DamageType Type;

@@ -45,9 +45,9 @@ namespace Space.ComponentSystem.Components
             None,
 
             /// <summary>
-            /// A block formation, i.e. units arrange in a rectangular shape.
+            /// Line formation, i.e. units arrange in single column.
             /// </summary>
-            Block,
+            Line,
 
             /// <summary>
             /// A column formation, i.e. units arrange in a jagged line.
@@ -55,9 +55,9 @@ namespace Space.ComponentSystem.Components
             Column,
 
             /// <summary>
-            /// Line formation, i.e. units arrange in single column.
+            /// Vee formation, i.e. units align in an inverse open triangular shape (V).
             /// </summary>
-            Line,
+            Vee,
 
             /// <summary>
             /// Wedge formation, i.e. units align in an open, triangular shape (inverse V).
@@ -70,36 +70,66 @@ namespace Space.ComponentSystem.Components
             FilledWedge,
 
             /// <summary>
-            /// Vee formation, i.e. units align in an inverse open triangular shape (V).
+            /// A block formation, i.e. units arrange in a rectangular shape.
             /// </summary>
-            Vee
+            Block,
         }
 
         #endregion
 
         #region Types
 
-        private abstract class AbstractFormation
+        /// <summary>
+        /// Helper class for formation implementations, taking care of result
+        /// caching for fast lookups.
+        /// </summary>
+        private sealed class CachedFormation
         {
+            /// <summary>
+            /// The formation implementation.
+            /// </summary>
+            private readonly Func<int, Vector2> _formation; 
+
+            /// <summary>
+            /// Internal cache of already-computed coordiantes. This simply
+            /// holds the coordinate at the corresponding index.
+            /// </summary>
             private readonly List<Vector2> _cache = new List<Vector2>();
 
-            protected AbstractFormation()
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CachedFormation"/> class.
+            /// </summary>
+            /// <param name="formation">The formationimplementation. This
+            /// should compute the relative offset to the leading squad
+            /// member, based on the index the member has inside the squad.
+            /// The result must be in unit scale (i.e. it will be scaled by
+            /// the squad's <see cref="Squad.FormationSpacing"/> property to
+            /// get the final position.
+            /// </param>
+            public CachedFormation(Func<int, Vector2> formation)
             {
-                // Initialize cache up to a certain bound which isn't
+                _formation = formation;
+                // Initialize cache up to a certain bound which isn't absolutely
                 // unlikely to be used.
                 GetOffset(30);
             }
 
+            /// <summary>
+            /// Gets the relative position of the squad member at the specified
+            /// offset to the leader of the squad. This is in unit scale.
+            /// </summary>
+            /// <param name="index">The index of the squad member.</param>
+            /// <returns></returns>
             public Vector2 GetOffset(int index)
             {
+                // Build cache for missing items up to requested one, if necessary.
                 for (var i = _cache.Count; i <= index; i++)
                 {
-                    _cache.Add(ComputeOffset(i));
+                    _cache.Add(_formation(i));
                 }
+                // Return cached coordinate.
                 return _cache[index];
             }
-
-            protected abstract Vector2 ComputeOffset(int index);
         }
 
         #endregion
@@ -108,52 +138,129 @@ namespace Space.ComponentSystem.Components
 
         /// <summary>
         /// The list of available formations, mapping enum to implementation.
+        /// Therefore they must be in the exact same order as the corresponding
+        /// enum declaration. These are ordered roughly by formation complexity.
         /// </summary>
-        private static readonly AbstractFormation[] Formations = new AbstractFormation[]
+        private static readonly CachedFormation[] Formations = new[]
         {
-            null,
-            new BlockFormation(),
-            new ColumnFormation(),
-            new LineFormation(),
-            new WedgeFormation(),
-            new FilledWedgeFormation(),
-            new VeeFormation()
-        };
+            // Note: all formation positions are computed without taking the leader's rotation
+            // into account directly. Instead, the final position is rotated at the end each time,
+            // around the leader's position, based on the leader's orientation.
 
-        // Note: all formation positions are computed without taking the leader's rotation
-        // into account directly. Instead, the final position is rotated at the end each time,
-        // around the leader's position, based on the leader's orientation.
+            // Note: all formations are defined in a coordinate system where forward is "up",
+            // i.e. is the negative y axis. In game forward is actually to the right, but this
+            // will be corrected for accordingly. For me it's easier to visualize formations
+            // this way, which is the only reason it's like this.
 
-        // Note: all formations are defined in a coordinate system where forward is "up",
-        // i.e. is the negative y axis. In game forward is actually to the right, but this
-        // will be corrected for accordingly. For me it's easier to visualize formations
-        // this way, which is the only reason it's like this.
+            // Note: formations are defined by specifying the unit offset relative to the squad
+            // leader for each member, with the index matching the member index. This has the
+            // limitation of a maximum count supported, but the huge advantage of high flexibility
+            // as well as good performance (simple lookup).
 
-        // Note: formations are defined by specifying the unit offset relative to the squad
-        // leader for each member, with the index matching the member index. This has the
-        // limitation of a maximum count supported, but the huge advantage of high flexibility
-        // as well as good performance (simple lookup).
+            // Note: in the following formation diagrams 'L' is the leader and 'F' are the
+            // followers, filled up top-down left-to-right.
 
-        // Note: in the following formation diagrams 'L' is the leader and 'F' are the
-        // followers, filled up top-down left-to-right.
+            // This is the 'null' implementation, which simply returns zero.
+            new CachedFormation(index => Vector2.Zero),
+            
+            // This is an implementation for a line formation, i.e. the formation
+            // will look like this:
+            //           L
+            //           F
+            //           F
+            //          ...
+            // The order goes like so:
+            //           0
+            //           1
+            //           2
+            //          ...
+            new CachedFormation(index => new Vector2(0, index)),
 
-        /// <summary>
-        /// This is an implementation for a block formation, i.e. the formation will look
-        /// like this:
-        ///  F  F  L  F  F
-        ///  F  F  F  F  F
-        ///       ...
-        /// The balance that a formation is determined how it expands: it toggles between
-        /// vertical and horizontal expansion whenever the formation becomes "full". So
-        /// in numbers:
-        /// 6 1 0 2 7
-        /// 8 4 3 5 9
-        ///    ...
-        /// </summary>
-        private sealed class BlockFormation : AbstractFormation
-        {
-            protected override Vector2 ComputeOffset(int index)
-            {
+            // This is an implementation for a column formation, i.e. the formation
+            // will look like this:
+            //           L
+            //         F
+            //           F
+            //         F
+            //          ...
+            // The order goes like so:
+            //           0
+            //         1
+            //           2
+            //          ...
+            new CachedFormation(index => new Vector2(-(index & 1), index)),
+
+            // This is an implementation for a vee formation, i.e. the formation
+            // will look like this:
+            //          ...
+            //     F           F
+            //       F       F
+            //         F   F
+            //           L
+            // The order goes like so:
+            //          ...
+            //       3       4
+            //         1   2
+            //           0
+            new CachedFormation(index => {
+                var k = index + 1;
+                return new Vector2((k >> 1) * (((k & 1) == 0) ? -0.5f : 0.5f), -(k >> 1));
+            }),
+
+            // This is an implementation for an open wedge formation, i.e. the formation
+            // will look like this:
+            //           L
+            //         F   F
+            //       F       F
+            //     F           F
+            //          ...
+            // The order goes like so:
+            //           0
+            //         1   2
+            //       3       4
+            //          ...
+            new CachedFormation(index => {
+                var k = index + 1;
+                return new Vector2((k >> 1) * (((k & 1) == 0) ? -0.5f : 0.5f), k >> 1);
+            }),
+
+            // This is an implementation for a filled wedge formation, i.e. the formation
+            // will look like this:
+            //           L
+            //         F   F
+            //       F   F   F
+            //     F   F   F   F
+            //          ...
+            // The order goes like so:
+            //           0
+            //         1   2
+            //       4   3   5
+            //     8   6   7   9
+            //          ...
+            new CachedFormation(index => {
+                var k = index + 1;
+                var h = 0;
+                while ((((h + 1) * ((h + 1) + 1)) >> 1) < k)
+                {
+                    ++h;
+                }
+                var i = k - ((h * (h + 1)) >> 1);
+                var x = (((i & 1) == 0) ? 2 : -2) * (i / 2) - (h & 1);
+                return new Vector2(0.5f * x, h);
+            }),
+
+            // This is an implementation for a block formation, i.e. the formation will look
+            // like this:
+            //  F  F  L  F  F
+            //  F  F  F  F  F
+            //       ...
+            // The balance that a formation is determined how it expands: it toggles between
+            // vertical and horizontal expansion whenever the formation becomes "full". So
+            // in numbers:
+            // 6 1 0 2 7
+            // 8 4 3 5 9
+            //    ...
+            new CachedFormation(index => {
                 var k = index + 1;
                 var h = 0;
                 while ((h + 1) * Math.Max(0, 2 * (h + 1) - 1) < k)
@@ -164,163 +271,11 @@ namespace Space.ComponentSystem.Components
                 var j = i - 2 * h + 1;
                 var y = Math.Min(h, i >> 1);
                 var x = (h > y)
-                            ? ((((i & 1) == 0) ? 1 : -1) * h)
-                            : ((((j & 1) == 0) ? 1 : -1) * (j >> 1));
+                            ? (((i & 1) == 0) ? h : -h)
+                            : ((((j & 1) == 0) ? (j >> 1) : -(j >> 1)));
                 return new Vector2(x, y);
-            }
-        }
-
-        /// <summary>
-        /// This is an implementation for a column formation, i.e. the formation
-        /// will look like this:
-        ///           L
-        ///         F
-        ///           F
-        ///         F
-        ///          ...
-        /// The order goes like so:
-        ///           0
-        ///         1
-        ///           2
-        ///          ...
-        /// </summary>
-        private sealed class ColumnFormation : AbstractFormation
-        {
-            protected override Vector2 ComputeOffset(int index)
-            {
-                return new Vector2((index & 1) * -1, index);
-            }
-        }
-
-        /// <summary>
-        /// This is an implementation for a line formation, i.e. the formation
-        /// will look like this:
-        ///           L
-        ///           F
-        ///           F
-        ///          ...
-        /// The order goes like so:
-        ///           0
-        ///           1
-        ///           2
-        ///          ...
-        /// </summary>
-        private sealed class LineFormation : AbstractFormation
-        {
-            protected override Vector2 ComputeOffset(int index)
-            {
-                return new Vector2(0, index);
-            }
-        }
-
-        /// <summary>
-        /// This is an implementation for an open wedge formation, i.e. the formation
-        /// will look like this:
-        ///           L
-        ///         F   F
-        ///       F       F
-        ///     F           F
-        ///          ...
-        /// The order goes like so:
-        ///           0
-        ///         1   2
-        ///       3       4
-        ///          ...
-        /// </summary>
-        private sealed class WedgeFormation : AbstractFormation
-        {
-            protected override Vector2 ComputeOffset(int index)
-            {
-                index = index + 1;
-                return new Vector2((index >> 1) * (((index & 1) == 0) ? -0.5f : 0.5f), index >> 1);
-            }
-        }
-
-        /// <summary>
-        /// This is an implementation for a filled wedge formation, i.e. the formation
-        /// will look like this:
-        ///           L
-        ///         F   F
-        ///       F   F   F
-        ///     F   F   F   F
-        ///          ...
-        /// The order goes like so:
-        ///           0
-        ///         1   2
-        ///       4   3   5
-        ///     8   6   7   9
-        ///          ...
-        /// </summary>
-        private sealed class FilledWedgeFormation : AbstractFormation
-        {
-            private static readonly Vector2[] Positions =
-                {
-                    new Vector2(0, 0),
-                    new Vector2(-0.5f, 1),
-                    new Vector2(0.5f, 1),
-                    new Vector2(0, 2),
-                    new Vector2(-1, 2),
-                    new Vector2(1, 2),
-                    new Vector2(-0.5f, 3),
-                    new Vector2(0.5f, 3),
-                    new Vector2(-1.5f, 3),
-                    new Vector2(1.5f, 3),
-                    new Vector2(0, 4),
-                    new Vector2(-1, 4),
-                    new Vector2(1, 4),
-                    new Vector2(-2, 4),
-                    new Vector2(2, 4),
-                    new Vector2(-0.5f, 5),
-                    new Vector2(0.5f, 5),
-                    new Vector2(-1.5f, 5),
-                    new Vector2(1.5f, 5),
-                    new Vector2(-2.5f, 5),
-                    new Vector2(2.5f, 5),
-                    new Vector2(0, 6),
-                    new Vector2(-1, 6),
-                    new Vector2(1, 6),
-                    new Vector2(-2, 6),
-                    new Vector2(2, 6),
-                    new Vector2(-3, 6),
-                    new Vector2(3, 6),
-                    new Vector2(-0.5f, 7),
-                    new Vector2(0.5f, 7),
-                    new Vector2(-1.5f, 7),
-                    new Vector2(1.5f, 7),
-                    new Vector2(-2.5f, 7),
-                    new Vector2(2.5f, 7),
-                    new Vector2(-3.5f, 7),
-                    new Vector2(3.5f, 7)
-                };
-
-            protected override Vector2 ComputeOffset(int index)
-            {
-                return index < Positions.Length ? Positions[index] : Positions[0];
-            }
-        }
-
-        /// <summary>
-        /// This is an implementation for a vee formation, i.e. the formation
-        /// will look like this:
-        ///          ...
-        ///     F           F
-        ///       F       F
-        ///         F   F
-        ///           L
-        /// The order goes like so:
-        ///          ...
-        ///       3       4
-        ///         1   2
-        ///           0
-        /// </summary>
-        private sealed class VeeFormation : AbstractFormation
-        {
-            protected override Vector2 ComputeOffset(int index)
-            {
-                index = index + 1;
-                return new Vector2((index >> 1) * (((index & 1) == 0) ? -0.5f : 0.5f), -(index >> 1));
-            }
-        }
+            })
+        };
 
         #endregion
 

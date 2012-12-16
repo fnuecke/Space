@@ -134,17 +134,21 @@ namespace Space.ComponentSystem.Systems
         /// Make sure to dispose the result when done with it.
         /// </summary>
         /// <param name="value">The value to render.</param>
-        /// <returns>The rendered texture.</returns>
-        private Texture2D RenderToTexture(string value)
+        /// <param name="scale">The scale of the text.</param>
+        /// <returns>
+        /// The rendered texture.
+        /// </returns>
+        private Texture2D RenderToTexture(string value, float scale)
         {
-            var size = _font.MeasureString(value);
+            var size = _font.MeasureString(value) * scale;
             var texture = new RenderTarget2D(_spriteBatch.GraphicsDevice,
                                              (int)System.Math.Ceiling(size.X),
                                              (int)System.Math.Ceiling(size.Y));
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
             _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
             _spriteBatch.Begin();
-            _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White);
+            _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White, 0,
+                Vector2.Zero, scale, SpriteEffects.None, 0);
             _spriteBatch.End();
             _spriteBatch.GraphicsDevice.SetRenderTarget(null);
             return texture;
@@ -155,16 +159,21 @@ namespace Space.ComponentSystem.Systems
         /// Make sure to dispose the result when done with it.
         /// </summary>
         /// <param name="value">The value to render.</param>
-        /// <returns>The rendered texture.</returns>
-        private Texture2D RenderToTexture(StringBuilder value)
+        /// <param name="scale">The scale of the text.</param>
+        /// <returns>
+        /// The rendered texture.
+        /// </returns>
+        private Texture2D RenderToTexture(StringBuilder value, float scale)
         {
-            var size = _font.MeasureString(value);
+            var size = _font.MeasureString(value) * scale;
             var texture = new RenderTarget2D(_spriteBatch.GraphicsDevice,
                                              (int)System.Math.Ceiling(size.X),
                                              (int)System.Math.Ceiling(size.Y));
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
+            _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
             _spriteBatch.Begin();
-            _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White);
+            _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White, 0,
+                Vector2.Zero, scale, SpriteEffects.None, 0);
             _spriteBatch.End();
             _spriteBatch.GraphicsDevice.SetRenderTarget(null);
             return texture;
@@ -180,8 +189,10 @@ namespace Space.ComponentSystem.Systems
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
+        /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
-        public void Display(string value, FarPosition position, Color color, float duration) {
+        public void Display(string value, FarPosition position, Color color, float scale, float duration)
+        {
             // Don't draw stuff that's way off-screen.
             if (!IsInBounds(position))
             {
@@ -190,7 +201,7 @@ namespace Space.ComponentSystem.Systems
             Debug.Assert(duration > 0);
             lock (this)
             {
-                var texture = RenderToTexture(value);
+                var texture = RenderToTexture(value, scale);
                 position.X -= texture.Width / 2;
                 position.Y -= texture.Height / 2;
                 _texts.Add(new FloatingText
@@ -209,21 +220,11 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
-        /// <param name="duration">How long to display the text, in seconds (zero = default).</param>
-        public void Display(string value, FarPosition position, float duration)
-        {
-            Display(value, position, DefaultColor, duration);
-        }
-
-        /// <summary>
-        /// Displays the specified text at the specified world coordinates.
-        /// </summary>
-        /// <param name="value">The value to display.</param>
-        /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
-        public void Display(string value, FarPosition position, Color color)
+        /// <param name="scale">The scale of the text.</param>
+        public void Display(string value, FarPosition position, Color color, float scale = 1f)
         {
-            Display(value, position, color, DefaultDuration);
+            Display(value, position, color, scale, DefaultDuration);
         }
 
         /// <summary>
@@ -233,7 +234,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         public void Display(string value, FarPosition position)
         {
-            Display(value, position, DefaultColor, DefaultDuration);
+            Display(value, position, DefaultColor, 1f, DefaultDuration);
         }
 
         /// <summary>
@@ -242,8 +243,9 @@ namespace Space.ComponentSystem.Systems
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
+        /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
-        public void Display(StringBuilder value, FarPosition position, Color color, float duration)
+        public void Display(StringBuilder value, FarPosition position, Color color, float scale, float duration)
         {
             // Don't draw stuff that's way off-screen.
             if (!IsInBounds(position))
@@ -253,7 +255,7 @@ namespace Space.ComponentSystem.Systems
             Debug.Assert(duration > 0);
             lock (this)
             {
-                var texture = RenderToTexture(value);
+                var texture = RenderToTexture(value, scale);
                 position.X -= texture.Width / 2;
                 position.Y -= texture.Height / 2;
                 _texts.Add(new FloatingText
@@ -272,21 +274,11 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
-        /// <param name="duration">How long to display the text, in seconds (zero = default).</param>
-        public void Display(StringBuilder value, FarPosition position, float duration)
-        {
-            Display(value, position, DefaultColor, duration);
-        }
-
-        /// <summary>
-        /// Displays the specified text at the specified world coordinates.
-        /// </summary>
-        /// <param name="value">The value to display.</param>
-        /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
-        public void Display(StringBuilder value, FarPosition position, Color color)
+        /// <param name="scale">The scale of the text.</param>
+        public void Display(StringBuilder value, FarPosition position, Color color, float scale = 1f)
         {
-            Display(value, position, color, DefaultDuration);
+            Display(value, position, color, scale, DefaultDuration);
         }
 
         /// <summary>
@@ -296,7 +288,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         public void Display(StringBuilder value, FarPosition position)
         {
-            Display(value, position, DefaultColor, DefaultDuration);
+            Display(value, position, DefaultColor, 1f, DefaultDuration);
         }
 
         /// <summary>
@@ -305,8 +297,9 @@ namespace Space.ComponentSystem.Systems
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
+        /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
-        public void Display(float value, FarPosition position, Color color, float duration)
+        public void Display(float value, FarPosition position, Color color, float scale, float duration)
         {
             // Don't draw stuff that's way off-screen.
             if (!IsInBounds(position))
@@ -315,18 +308,7 @@ namespace Space.ComponentSystem.Systems
             }
             var sb = new StringBuilder();
             sb.Append(value);
-            Display(sb, position, color, duration);
-        }
-
-        /// <summary>
-        /// Displays the specified text at the specified world coordinates.
-        /// </summary>
-        /// <param name="value">The value to display.</param>
-        /// <param name="position">The position to display it at.</param>
-        /// <param name="duration">How long to display the text, in seconds (zero = default).</param>
-        public void Display(float value, FarPosition position, float duration)
-        {
-            Display(value, position, DefaultColor, duration);
+            Display(sb, position, color, scale, duration);
         }
 
         /// <summary>
@@ -335,9 +317,10 @@ namespace Space.ComponentSystem.Systems
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
-        public void Display(float value, FarPosition position, Color color)
+        /// <param name="scale">The scale of the text.</param>
+        public void Display(float value, FarPosition position, Color color, float scale = 1f)
         {
-            Display(value, position, color, DefaultDuration);
+            Display(value, position, color, scale, DefaultDuration);
         }
 
         /// <summary>
@@ -347,7 +330,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         public void Display(float value, FarPosition position)
         {
-            Display(value, position, DefaultColor, DefaultDuration);
+            Display(value, position, DefaultColor, 1f, DefaultDuration);
         }
 
         /// <summary>
@@ -356,8 +339,9 @@ namespace Space.ComponentSystem.Systems
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
+        /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
-        public void Display(int value, FarPosition position, Color color, float duration)
+        public void Display(int value, FarPosition position, Color color, float scale, float duration)
         {
             // Don't draw stuff that's way off-screen.
             if (!IsInBounds(position))
@@ -366,18 +350,7 @@ namespace Space.ComponentSystem.Systems
             }
             var sb = new StringBuilder();
             sb.Append(value);
-            Display(sb, position, color, duration);
-        }
-
-        /// <summary>
-        /// Displays the specified text at the specified world coordinates.
-        /// </summary>
-        /// <param name="value">The value to display.</param>
-        /// <param name="position">The position to display it at.</param>
-        /// <param name="duration">How long to display the text, in seconds (zero = default).</param>
-        public void Display(int value, FarPosition position, float duration)
-        {
-            Display(value, position, DefaultColor, duration);
+            Display(sb, position, color, scale, duration);
         }
 
         /// <summary>
@@ -386,9 +359,10 @@ namespace Space.ComponentSystem.Systems
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
-        public void Display(int value, FarPosition position, Color color)
+        /// <param name="scale">The scale of the text.</param>
+        public void Display(int value, FarPosition position, Color color, float scale = 1f)
         {
-            Display(value, position, color, DefaultDuration);
+            Display(value, position, color, scale, DefaultDuration);
         }
 
         /// <summary>
@@ -398,7 +372,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         public void Display(int value, FarPosition position)
         {
-            Display(value, position, DefaultColor, DefaultDuration);
+            Display(value, position, DefaultColor, 1f, DefaultDuration);
         }
 
         /// <summary>

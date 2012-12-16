@@ -11,6 +11,11 @@ namespace Space.Data
     public enum Factions
     {
         /// <summary>
+        /// No valid faction.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// Fixed world entities such as suns, black holes, etc.
         /// </summary>
         Nature = 1 << 0,

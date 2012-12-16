@@ -280,7 +280,7 @@ namespace Space.Control
                     new CameraCenteredBackgroundSystem(game.Content, spriteBatch),
 
                     // Trigger combat text rendering.
-                    new CombatTextSystem(),
+                    new CombatTextSystem(session),
 
                     // Mind the order: orbits below planets below suns below normal
                     // objects below particle effects below radar.

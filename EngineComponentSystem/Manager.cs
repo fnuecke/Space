@@ -163,9 +163,9 @@ namespace Engine.ComponentSystem
         public IManager AddSystem(AbstractSystem system)
         {
             // We do not allow systems to be both logic and presentation related.
-            if ((system is IUpdatingSystem || system is IMessagingSystem) && system is IDrawingSystem)
+            if (system is IUpdatingSystem && system is IDrawingSystem)
             {
-                throw new ArgumentException("Systems must be either logic related (IUpdatingSystem, IMessagingSystem) or presentation related (IDrawingSystem), but never both.");
+                throw new ArgumentException("Systems must be either logic related (IUpdatingSystem) or presentation related (IDrawingSystem), but never both.");
             }
 
             // Get type ID for that system.

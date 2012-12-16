@@ -133,6 +133,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.TextureImporter, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Nuclex.Fonts.Content.TrueTypeImporter">
       <HintPath>..\Libraries\Nuclex.Fonts.Content.TrueTypeImporter.dll</HintPath>
     </Reference>
@@ -155,10 +156,17 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fonts\bauhaus.spritefont">
-      <Name>bauhaus</Name>
+    <Compile Include="Fonts\bauhaus2.spritefont">
+      <Name>bauhaus2</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>NuclexSpriteFontDescriptionProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Fonts\bauhaus.png">
+      <Name>bauhaus</Name>
+      <Processor>FontTextureProcessor</Processor>
+      <Importer>TextureImporter</Importer>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

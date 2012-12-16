@@ -59,6 +59,14 @@ namespace Space.ComponentSystem.Systems
             var damage = damageMultiplier * (float)_random.NextDouble(component.MinValue, component.MaxValue);
             var typeEffectiveness = GameLogicConstants.DamageReductionEffectiveness[component.Type];
 
+            // We fill in some data over the course of the next checks.
+            DamageApplied message;
+            message.Entity = component.Entity;
+            message.Type = component.Type;
+            message.IsCriticalHit = isCriticalHit;
+            message.Amount = 0;
+            message.ShieldedAmount = 0;
+
             // Check for attribute info that could modify damage values.
             var attributes = (Attributes<AttributeType>)Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
             if (attributes != null)
@@ -139,26 +147,32 @@ namespace Space.ComponentSystem.Systems
                                     {
                                         // We can block it all! Just subtract the energy and we're done.
                                         energy.SetValue(energy.Value - actualCost, component.Owner);
-                                        return;
+
+                                        // Notify some other systems (floating text, effects, ...)
+                                        message.ShieldedAmount = damage;
+                                        damage = 0;
                                     }
+                                    else
+                                    {
+                                        // See how much we *can* block, consume energy required for that and
+                                        // subtract the blocked amount of damage. Again, we need to take into
+                                        // account the effectiveness of the shield against that type of damage.
+                                        var blockable = energy.Value / cost * effectiveness;
+                                        energy.SetValue(0, component.Owner);
 
-                                    // See how much we *can* block, consume energy required for that and
-                                    // subtract the blocked amount of damage. Again, we need to take into
-                                    // account the effectiveness of the shield against that type of damage.
-                                    var blockable = energy.Value / cost * effectiveness;
-                                    energy.SetValue(0, component.Owner);
+                                        // The following assert must hold because from above:
+                                        // damage * cost / effectiveness >= energy.Value
+                                        // because actualCost >= energy.Value, otherwise we'd have returned by now.
+                                        // -> ... / cost * effectiveness
+                                        // -> damage >= energy.Value / cost * effectiveness
+                                        // with blockable = energy.Value / cost * effectiveness this gives
+                                        // -> damage >= blockable
+                                        // And that tells us we won't "heal" by overshielding.
+                                        Debug.Assert(damage >= blockable);
 
-                                    // The following assert must hold because from above:
-                                    // damage * cost / effectiveness >= energy.Value
-                                    // because actualCost >= energy.Value, otherwise we'd have returned by now.
-                                    // -> ... / cost * effectiveness
-                                    // -> damage >= energy.Value / cost * effectiveness
-                                    // with blockable = energy.Value / cost * effectiveness this gives
-                                    // -> damage >= blockable
-                                    // And that tells us we won't "heal" by overshielding.
-                                    Debug.Assert(damage >= blockable);
-
-                                    damage -= blockable;
+                                        message.ShieldedAmount = blockable;
+                                        damage -= blockable;
+                                    }
                                 }
                                 else if (reduction < 0f)
                                 {
@@ -168,27 +182,21 @@ namespace Space.ComponentSystem.Systems
                                     damage -= System.Math.Max(GameLogicConstants.NegativeDamageReductionCap * damage, reduction);
                                 }
                             }
-                        }   
+                        }
                     }
                 }
             }
 
             // If we don't do any damage (all absorbed via resistances) we can skip the rest.
-            if (damage <= 0f)
+            if (damage > 0f)
             {
-                return;
+                // Apply whatever remains as direct physical damage.
+                var health = (Health)Manager.GetComponent(component.Entity, Health.TypeId);
+                health.SetValue(health.Value - damage, component.Owner);
             }
 
-            // Apply whatever remains as direct physical damage.
-            var health = (Health)Manager.GetComponent(component.Entity, Health.TypeId);
-            health.SetValue(health.Value - damage, component.Owner);
-
             // Notify some other systems (floating text, effects, ...)
-            DamageApplied message;
-            message.Entity = component.Entity;
             message.Amount = damage;
-            message.Type = component.Type;
-            message.IsCriticalHit = isCriticalHit;
             Manager.SendMessage(message);
         }
 
