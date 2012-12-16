@@ -152,7 +152,7 @@ namespace Space.ComponentSystem.Systems
                         AggroRange = 600
                     }
                 };
-                formation = Squad.FormationType.FilledWedge;
+                formation = Squad.FormationType.Block;
             }
             else
             {

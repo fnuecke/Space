@@ -197,13 +197,13 @@ namespace Space.ComponentSystem.Systems
         /// Returns the current bounds of the viewport, i.e. the rectangle of
         /// the world to actually render.
         /// </summary>
-        /// <param name="view">The viewport to compute the visible bounds for.</param>
-        public FarRectangle ComputeVisibleBounds(Viewport view)
+        /// <returns>The visible bounds, in world coordinates.</returns>
+        public FarRectangle ComputeVisibleBounds()
         {
             var center = CameraPositon;
             var zoom = Zoom;
-            var width = (int)(view.Width / zoom);
-            var height = (int)(view.Height / zoom);
+            var width = (int)(_graphics.Viewport.Width / zoom);
+            var height = (int)(_graphics.Viewport.Height / zoom);
             // Return scaled viewport bounds, translated to camera position
             // with a margin as safety against rounding errors and interpolation.
             return new FarRectangle
@@ -374,7 +374,7 @@ namespace Space.ComponentSystem.Systems
             // Update the list of visible entities. This method is called each
             // draw, so we can do this here.
             _drawablesInView.Clear();
-            var view = ComputeVisibleBounds(_graphics.Viewport);
+            var view = ComputeVisibleBounds();
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
         }
 

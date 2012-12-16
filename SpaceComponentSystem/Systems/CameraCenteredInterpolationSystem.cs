@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -11,26 +10,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CameraCenteredInterpolationSystem : InterpolationSystem
     {
-        #region Fields
-
-        /// <summary>
-        /// The graphics device we render to, to get the viewport.
-        /// </summary>
-        private readonly GraphicsDevice _graphics;
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CameraCenteredTextureRenderSystem"/> class.
         /// </summary>
-        /// <param name="graphics">The graphics device we render to (to get the viewport).</param>
         /// <param name="simulationFps">A function getting the current simulation frame rate.</param>
-        public CameraCenteredInterpolationSystem(GraphicsDevice graphics, Func<float> simulationFps)
+        public CameraCenteredInterpolationSystem(Func<float> simulationFps)
             : base(simulationFps)
         {
-            _graphics = graphics;
         }
 
         #endregion
@@ -43,7 +31,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         protected override FarRectangle ComputeViewport()
         {
-            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).ComputeVisibleBounds(_graphics.Viewport);
+            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).ComputeVisibleBounds();
         }
 
         #endregion

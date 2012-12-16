@@ -89,7 +89,7 @@ namespace Space.ComponentSystem
             var input = (ShipControl)manager.GetComponent(entity, ShipControl.TypeId);
             input.Stabilizing = true;
             manager.AddComponent<ArtificialIntelligence>(entity).
-                Initialize(random.NextUInt32(), configuration).Enabled = false;
+                Initialize(random != null ? random.NextUInt32() : 0, configuration).Enabled = false;
 
             return entity;
         }

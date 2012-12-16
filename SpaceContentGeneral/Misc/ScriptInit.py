@@ -54,3 +54,16 @@ def level():
 def setFactions():
 	f = manager.GetComponent(avatar, Faction.TypeId)
 	f.Value = f.Value | Factions.NpcFactionA | Factions.NpcFactionB
+
+def ftext(value):
+	manager.GetSystem(FloatingTextSystem.TypeId).Display(value, manager.GetComponent(1, Transform.TypeId).Translation)
+
+def addAi(squadMember):
+	squad = manager.GetComponent(squadMember, Squad.TypeId);
+	position = manager.GetComponent(squadMember, Transform.TypeId).Translation;
+	faction = manager.GetComponent(squadMember, Faction.TypeId).Value;
+	ship = EntityFactory.CreateAIShip(manager, "L1_AI_Ship", faction, position, None)
+	ai = manager.GetComponent(ship, ArtificialIntelligence.TypeId)
+	manager.AddComponent[Squad](ship).Initialize()
+	squad.AddMember(ship)
+	ai.Guard(squad.Leader)

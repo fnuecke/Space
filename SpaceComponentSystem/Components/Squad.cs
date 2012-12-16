@@ -77,7 +77,41 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Types
+
+        private abstract class AbstractFormation
+        {
+            private readonly List<Vector2> _cache = new List<Vector2>();
+
+            public Vector2 GetOffset(int index)
+            {
+                for (var i = _cache.Count; i <= index; i++)
+                {
+                    _cache.Add(ComputeOffset(i));
+                }
+                return _cache[index];
+            }
+
+            protected abstract Vector2 ComputeOffset(int index);
+        }
+
+        #endregion
+
         #region Constants
+
+        /// <summary>
+        /// The list of available formations, mapping enum to implementation.
+        /// </summary>
+        private static readonly AbstractFormation[] Formations = new AbstractFormation[]
+        {
+            null,
+            new BlockFormation(),
+            new ColumnFormation(),
+            new LineFormation(),
+            new WedgeFormation(),
+            new FilledWedgeFormation(),
+            new VeeFormation()
+        };
 
         // Note: all formation positions are computed without taking the leader's rotation
         // into account directly. Instead, the final position is rotated at the end each time,
@@ -109,37 +143,64 @@ namespace Space.ComponentSystem.Components
         /// 8 4 3 5 9
         ///    ...
         /// </summary>
-        private static readonly Vector2[] BlockFormation =
+        private sealed class BlockFormation : AbstractFormation
+        {
+            private static readonly Vector2[] Positions =
+                {
+                    new Vector2(0, 0),
+                    new Vector2(-1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(0, 1),
+                    new Vector2(-1, 1),
+                    new Vector2(1, 1),
+                    new Vector2(-2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(-2, 1),
+                    new Vector2(2, 1),
+                    new Vector2(0, 2),
+                    new Vector2(-1, 2),
+                    new Vector2(1, 2),
+                    new Vector2(-2, 2),
+                    new Vector2(2, 2),
+                    new Vector2(-3, 0),
+                    new Vector2(3, 0),
+                    new Vector2(-3, 1),
+                    new Vector2(3, 1),
+                    new Vector2(-3, 2),
+                    new Vector2(3, 2),
+                    new Vector2(0, 3),
+                    new Vector2(-1, 3),
+                    new Vector2(1, 3),
+                    new Vector2(-2, 3),
+                    new Vector2(2, 3),
+                    new Vector2(-3, 3),
+                    new Vector2(3, 3)
+                };
+
+            protected override Vector2 ComputeOffset(int index)
             {
-                new Vector2(0, 0),
-                new Vector2(-1, 0),
-                new Vector2(1, 0),
-                new Vector2(0, 1),
-                new Vector2(-1, 1),
-                new Vector2(1, 1),
-                new Vector2(-2, 0),
-                new Vector2(2, 0),
-                new Vector2(-2, 1),
-                new Vector2(2, 1),
-                new Vector2(0, 2),
-                new Vector2(-1, 2),
-                new Vector2(1, 2),
-                new Vector2(-2, 2),
-                new Vector2(2, 2),
-                new Vector2(-3, 0),
-                new Vector2(3, 0),
-                new Vector2(-3, 1),
-                new Vector2(3, 1),
-                new Vector2(-3, 2),
-                new Vector2(3, 2),
-                new Vector2(0, 3),
-                new Vector2(-1, 3),
-                new Vector2(1, 3),
-                new Vector2(-2, 3),
-                new Vector2(2, 3),
-                new Vector2(-3, 3),
-                new Vector2(3, 3)
-            };
+                //index = index + 1;
+                //var h = 0;
+                //while (h * (2 * h - 1) < index)
+                //{
+                //    ++h;
+                //}
+                //var w = 2 * h - 1;
+                //var maxh = h + 1;
+                //var maxw = maxh;
+
+                //var indexRect = index - h * w - 1;
+                //var indexRow = indexRect - 2 * h + 1;
+
+                //var r = System.Math.Min(maxh, indexRect >> 1);
+                //var c = maxh > r
+                //            ? (((indexRect & 1) == 0) ? 1 : -1) * maxw
+                //            : (((indexRow & 1) == 0) ? 1 : -1) * (indexRow >> 1);
+                //return new Vector2(c, r);
+                return index < Positions.Length ? Positions[index] : Positions[0];
+            }
+        }
+
 
         /// <summary>
         /// This is an implementation for a column formation, i.e. the formation
@@ -155,39 +216,13 @@ namespace Space.ComponentSystem.Components
         ///           2
         ///          ...
         /// </summary>
-        private static readonly Vector2[] ColumnFormation =
+        private sealed class ColumnFormation : AbstractFormation
+        {
+            protected override Vector2 ComputeOffset(int index)
             {
-                new Vector2(0, 0),
-                new Vector2(-1, 1),
-                new Vector2(0, 2),
-                new Vector2(-1, 3),
-                new Vector2(0, 4),
-                new Vector2(-1, 5),
-                new Vector2(0, 6),
-                new Vector2(-1, 7),
-                new Vector2(0, 8),
-                new Vector2(-1, 9),
-                new Vector2(0, 10),
-                new Vector2(-1, 11),
-                new Vector2(0, 12),
-                new Vector2(-1, 13),
-                new Vector2(0, 14),
-                new Vector2(-1, 15),
-                new Vector2(0, 16),
-                new Vector2(-1, 17),
-                new Vector2(0, 18),
-                new Vector2(-1, 19),
-                new Vector2(0, 20),
-                new Vector2(-1, 21),
-                new Vector2(0, 22),
-                new Vector2(-1, 23),
-                new Vector2(0, 24),
-                new Vector2(-1, 25),
-                new Vector2(0, 26),
-                new Vector2(-1, 27),
-                new Vector2(0, 28),
-                new Vector2(-1, 29)
-            };
+                return new Vector2((index & 1) * -1, index);
+            }
+        }
 
         /// <summary>
         /// This is an implementation for a line formation, i.e. the formation
@@ -202,39 +237,13 @@ namespace Space.ComponentSystem.Components
         ///           2
         ///          ...
         /// </summary>
-        private static readonly Vector2[] LineFormation =
+        private sealed class LineFormation : AbstractFormation
+        {
+            protected override Vector2 ComputeOffset(int index)
             {
-                new Vector2(0, 0),
-                new Vector2(0, 1),
-                new Vector2(0, 2),
-                new Vector2(0, 3),
-                new Vector2(0, 4),
-                new Vector2(0, 5),
-                new Vector2(0, 6),
-                new Vector2(0, 7),
-                new Vector2(0, 8),
-                new Vector2(0, 9),
-                new Vector2(0, 10),
-                new Vector2(0, 11),
-                new Vector2(0, 12),
-                new Vector2(0, 13),
-                new Vector2(0, 14),
-                new Vector2(0, 15),
-                new Vector2(0, 16),
-                new Vector2(0, 17),
-                new Vector2(0, 18),
-                new Vector2(0, 19),
-                new Vector2(0, 20),
-                new Vector2(0, 21),
-                new Vector2(0, 22),
-                new Vector2(0, 23),
-                new Vector2(0, 24),
-                new Vector2(0, 25),
-                new Vector2(0, 26),
-                new Vector2(0, 27),
-                new Vector2(0, 28),
-                new Vector2(0, 29)
-            };
+                return new Vector2(0, index);
+            }
+        }
 
         /// <summary>
         /// This is an implementation for an open wedge formation, i.e. the formation
@@ -250,38 +259,46 @@ namespace Space.ComponentSystem.Components
         ///       3       4
         ///          ...
         /// </summary>
-        private static readonly Vector2[] WedgeFormation =
+        private sealed class WedgeFormation : AbstractFormation
+        {
+            private static readonly Vector2[] Positions =
+                {
+                    new Vector2(0, 0),
+                    new Vector2(-0.5f, 1),
+                    new Vector2(0.5f, 1),
+                    new Vector2(-1, 2),
+                    new Vector2(1, 2),
+                    new Vector2(-1.5f, 3),
+                    new Vector2(1.5f, 3),
+                    new Vector2(-2, 4),
+                    new Vector2(2, 4),
+                    new Vector2(-2.5f, 5),
+                    new Vector2(2.5f, 5),
+                    new Vector2(-3, 6),
+                    new Vector2(3, 6),
+                    new Vector2(-3.5f, 7),
+                    new Vector2(3.5f, 7),
+                    new Vector2(-4, 8),
+                    new Vector2(4, 8),
+                    new Vector2(-4.5f, 9),
+                    new Vector2(4.5f, 9),
+                    new Vector2(-5f, 10),
+                    new Vector2(5f, 10),
+                    new Vector2(-5.5f, 11),
+                    new Vector2(5.5f, 11),
+                    new Vector2(-6f, 12),
+                    new Vector2(6f, 12),
+                    new Vector2(-6.5f, 13),
+                    new Vector2(6.5f, 13),
+                    new Vector2(-7f, 14),
+                    new Vector2(7f, 14)
+                };
+
+            protected override Vector2 ComputeOffset(int index)
             {
-                new Vector2(0, 0),
-                new Vector2(-0.5f, 1),
-                new Vector2(0.5f, 1),
-                new Vector2(-1, 2),
-                new Vector2(1, 2),
-                new Vector2(-1.5f, 3),
-                new Vector2(1.5f, 3),
-                new Vector2(-2, 4),
-                new Vector2(2, 4),
-                new Vector2(-2.5f, 5),
-                new Vector2(2.5f, 5),
-                new Vector2(-3, 6),
-                new Vector2(3, 6),
-                new Vector2(-3.5f, 7),
-                new Vector2(3.5f, 7),
-                new Vector2(-4, 8),
-                new Vector2(4, 8),
-                new Vector2(-4.5f, 9),
-                new Vector2(4.5f, 9),
-                new Vector2(-5f, 10),
-                new Vector2(5f, 10),
-                new Vector2(-5.5f, 11),
-                new Vector2(5.5f, 11),
-                new Vector2(-6f, 12),
-                new Vector2(6f, 12),
-                new Vector2(-6.5f, 13),
-                new Vector2(6.5f, 13),
-                new Vector2(-7f, 14),
-                new Vector2(7f, 14)
-            };
+                return index < Positions.Length ? Positions[index] : Positions[0];
+            }
+        }
 
         /// <summary>
         /// This is an implementation for a filled wedge formation, i.e. the formation
@@ -298,45 +315,53 @@ namespace Space.ComponentSystem.Components
         ///     8   6   7   9
         ///          ...
         /// </summary>
-        private static readonly Vector2[] FilledWedgeFormation =
+        private sealed class FilledWedgeFormation : AbstractFormation
+        {
+            private static readonly Vector2[] Positions =
+                {
+                    new Vector2(0, 0),
+                    new Vector2(-0.5f, 1),
+                    new Vector2(0.5f, 1),
+                    new Vector2(0, 2),
+                    new Vector2(-1, 2),
+                    new Vector2(1, 2),
+                    new Vector2(-0.5f, 3),
+                    new Vector2(0.5f, 3),
+                    new Vector2(-1.5f, 3),
+                    new Vector2(1.5f, 3),
+                    new Vector2(0, 4),
+                    new Vector2(-1, 4),
+                    new Vector2(1, 4),
+                    new Vector2(-2, 4),
+                    new Vector2(2, 4),
+                    new Vector2(-0.5f, 5),
+                    new Vector2(0.5f, 5),
+                    new Vector2(-1.5f, 5),
+                    new Vector2(1.5f, 5),
+                    new Vector2(-2.5f, 5),
+                    new Vector2(2.5f, 5),
+                    new Vector2(0, 6),
+                    new Vector2(-1, 6),
+                    new Vector2(1, 6),
+                    new Vector2(-2, 6),
+                    new Vector2(2, 6),
+                    new Vector2(-3, 6),
+                    new Vector2(3, 6),
+                    new Vector2(-0.5f, 7),
+                    new Vector2(0.5f, 7),
+                    new Vector2(-1.5f, 7),
+                    new Vector2(1.5f, 7),
+                    new Vector2(-2.5f, 7),
+                    new Vector2(2.5f, 7),
+                    new Vector2(-3.5f, 7),
+                    new Vector2(3.5f, 7)
+                };
+
+            protected override Vector2 ComputeOffset(int index)
             {
-                new Vector2(0, 0),
-                new Vector2(-0.5f, 1),
-                new Vector2(0.5f, 1),
-                new Vector2(0, 2),
-                new Vector2(-1, 2),
-                new Vector2(1, 2),
-                new Vector2(-0.5f, 3),
-                new Vector2(0.5f, 3),
-                new Vector2(-1.5f, 3),
-                new Vector2(1.5f, 3),
-                new Vector2(0, 4),
-                new Vector2(-1, 4),
-                new Vector2(1, 4),
-                new Vector2(-2, 4),
-                new Vector2(2, 4),
-                new Vector2(-0.5f, 5),
-                new Vector2(0.5f, 5),
-                new Vector2(-1.5f, 5),
-                new Vector2(1.5f, 5),
-                new Vector2(-2.5f, 5),
-                new Vector2(2.5f, 5),
-                new Vector2(0, 6),
-                new Vector2(-1, 6),
-                new Vector2(1, 6),
-                new Vector2(-2, 6),
-                new Vector2(2, 6),
-                new Vector2(-3, 6),
-                new Vector2(3, 6),
-                new Vector2(-0.5f, 7),
-                new Vector2(0.5f, 7),
-                new Vector2(-1.5f, 7),
-                new Vector2(1.5f, 7),
-                new Vector2(-2.5f, 7),
-                new Vector2(2.5f, 7),
-                new Vector2(-3.5f, 7),
-                new Vector2(3.5f, 7)
-            };
+                return index < Positions.Length ? Positions[index] : Positions[0];
+            }
+        }
 
         /// <summary>
         /// This is an implementation for a vee formation, i.e. the formation
@@ -352,38 +377,46 @@ namespace Space.ComponentSystem.Components
         ///         1   2
         ///           0
         /// </summary>
-        private static readonly Vector2[] VeeFormation =
+        private sealed class VeeFormation : AbstractFormation
+        {
+            private static readonly Vector2[] Positions =
+                {
+                    new Vector2(0, 0),
+                    new Vector2(-0.5f, -1),
+                    new Vector2(0.5f, -1),
+                    new Vector2(-1, -2),
+                    new Vector2(1, -2),
+                    new Vector2(-1.5f, -3),
+                    new Vector2(1.5f, -3),
+                    new Vector2(-2, -4),
+                    new Vector2(2, -4),
+                    new Vector2(-2.5f, -5),
+                    new Vector2(2.5f, -5),
+                    new Vector2(-3, -6),
+                    new Vector2(3, -6),
+                    new Vector2(-3.5f, -7),
+                    new Vector2(3.5f, -7),
+                    new Vector2(-4, -8),
+                    new Vector2(4, -8),
+                    new Vector2(-4.5f, -9),
+                    new Vector2(4.5f, -9),
+                    new Vector2(-5f, -10),
+                    new Vector2(5f, -10),
+                    new Vector2(-5.5f, -11),
+                    new Vector2(5.5f, -11),
+                    new Vector2(-6f, -12),
+                    new Vector2(6f, -12),
+                    new Vector2(-6.5f, -13),
+                    new Vector2(6.5f, -13),
+                    new Vector2(-7f, -14),
+                    new Vector2(7f, -14)
+                };
+
+            protected override Vector2 ComputeOffset(int index)
             {
-                new Vector2(0, 0),
-                new Vector2(-0.5f, -1),
-                new Vector2(0.5f, -1),
-                new Vector2(-1, -2),
-                new Vector2(1, -2),
-                new Vector2(-1.5f, -3),
-                new Vector2(1.5f, -3),
-                new Vector2(-2, -4),
-                new Vector2(2, -4),
-                new Vector2(-2.5f, -5),
-                new Vector2(2.5f, -5),
-                new Vector2(-3, -6),
-                new Vector2(3, -6),
-                new Vector2(-3.5f, -7),
-                new Vector2(3.5f, -7),
-                new Vector2(-4, -8),
-                new Vector2(4, -8),
-                new Vector2(-4.5f, -9),
-                new Vector2(4.5f, -9),
-                new Vector2(-5f, -10),
-                new Vector2(5f, -10),
-                new Vector2(-5.5f, -11),
-                new Vector2(5.5f, -11),
-                new Vector2(-6f, -12),
-                new Vector2(6f, -12),
-                new Vector2(-6.5f, -13),
-                new Vector2(6.5f, -13),
-                new Vector2(-7f, -14),
-                new Vector2(7f, -14)
-            };
+                return index < Positions.Length ? Positions[index] : Positions[0];
+            }
+        }
 
         #endregion
 
@@ -521,35 +554,7 @@ namespace Space.ComponentSystem.Components
 
             // The position relative to the leader. This will be in a unit scale and
             // scaled based on the spacing set for the squad.
-            var position = Vector2.Zero;
-
-            // Figure out which formation we're flying in, if any.
-            Vector2[] formation = null;
-            switch (Formation)
-            {
-                case FormationType.Block:
-                    formation = BlockFormation;
-                    break;
-                case FormationType.Column:
-                    formation = ColumnFormation;
-                    break;
-                case FormationType.Line:
-                    formation = LineFormation;
-                    break;
-                case FormationType.Wedge:
-                    formation = WedgeFormation;
-                    break;
-                case FormationType.FilledWedge:
-                    formation = FilledWedgeFormation;
-                    break;
-                case FormationType.Vee:
-                    formation = VeeFormation;
-                    break;
-            }
-            if (formation != null && index < formation.Length)
-            {
-                position = formation[index];
-            }
+            var position = Formations[(int)Formation].GetOffset(index);
 
             // Rotate around origin of the formation (which should be the leader's position in
             // most cases).

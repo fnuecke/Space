@@ -32,7 +32,7 @@ namespace Space.Control
             : base(game)
         {
             // Get the controller.
-            Controller = ControllerFactory.CreateServer(game, purelyLocal);
+            Controller = ControllerFactory.CreateServer(purelyLocal);
 
             // Add listeners.
             Controller.Session.GameInfoRequested += HandleGameInfoRequested;

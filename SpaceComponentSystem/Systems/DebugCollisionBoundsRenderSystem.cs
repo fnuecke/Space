@@ -94,16 +94,6 @@ namespace Space.ComponentSystem.Systems
         {
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
-            // Get all renderable entities in the viewport.
-            var view = camera.ComputeVisibleBounds(_boxShape.GraphicsDevice.Viewport);
-            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _collidablesInView, CollisionSystem.IndexGroupMask);
-
-            // Skip there rest if nothing is visible.
-            if (_collidablesInView.Count == 0)
-            {
-                return;
-            }
-
             // Set/get loop invariants.
             var translation = camera.Transform.Translation;
             var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
@@ -111,9 +101,13 @@ namespace Space.ComponentSystem.Systems
             _sphereShape.Transform = camera.Transform.Matrix;
 
             // Iterate over all visible collidables.
-            foreach (var entity in _collidablesInView)
+            foreach (var entity in ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).VisibleEntities)
             {
                 var component = (Collidable)Manager.GetComponent(entity, Collidable.TypeId);
+                if (component == null)
+                {
+                    continue;
+                }
 
                 // See what type of collidable we have.
                 AbstractShape shape;

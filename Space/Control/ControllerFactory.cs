@@ -26,10 +26,9 @@ namespace Space.Control
         /// <summary>
         /// Creates a new game server.
         /// </summary>
-        /// <param name="game">The game to create the game for.</param>
         /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
         /// <returns>A new server.</returns>
-        public static ISimulationController<IServerSession> CreateServer(Game game, bool purelyLocal = false)
+        public static ISimulationController<IServerSession> CreateServer(bool purelyLocal = false)
         {
             // Create actual controller.
             var controller = new SimpleServerController<Profile>(7777, purelyLocal ? 1 : 8, SpaceCommandHandler.HandleCommand);
@@ -265,7 +264,7 @@ namespace Space.Control
                     // on the avatar position). It's not so bad if we use the viewport of the
                     // previous frame, but it's noticable if the avatar is no longer at the
                     // center, so we do it this way around.
-                    new CameraCenteredInterpolationSystem(game.GraphicsDevice, simulationFps),
+                    new CameraCenteredInterpolationSystem(simulationFps),
 
                     // Update camera first, as it determines what to render.
                     new CameraSystem(game.GraphicsDevice, game.Services, session),
@@ -288,6 +287,7 @@ namespace Space.Control
                     new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
                     new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
                     new ShieldRenderSystem(game.Content, game.GraphicsDevice),
+                    new FloatingTextSystem(spriteBatch, game.Content), 
                     new RadarRenderSystem(game.Content, spriteBatch, session)
                 });
 
