@@ -279,6 +279,9 @@ namespace Space.Control
                     // Draw background behind everything else.
                     new CameraCenteredBackgroundSystem(game.Content, spriteBatch),
 
+                    // Trigger combat text rendering.
+                    new CombatTextSystem(),
+
                     // Mind the order: orbits below planets below suns below normal
                     // objects below particle effects below radar.
                     new OrbitRenderSystem(game.Content, spriteBatch, session),

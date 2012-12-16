@@ -140,6 +140,7 @@
     <Compile Include="Systems\CameraMovementSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionAttributeEffectSystem.cs" />
+    <Compile Include="Systems\CombatTextSystem.cs" />
     <Compile Include="Systems\DamageSystem.cs" />
     <Compile Include="Systems\DeathSystem.cs" />
     <Compile Include="Systems\DebugAIRenderSystem.cs" />

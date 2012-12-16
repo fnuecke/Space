@@ -98,15 +98,17 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).Transform;
+            var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
+            var cameraTransform = camera.Transform;
 
             // Update all floating texts.
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.Matrix);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
             for (var i = _texts.Count - 1; i >= 0; i--)
             {
                 var text = _texts[i];
                 text.Position.Y -= FloatDistance / text.TotalTimeToLive;
-                _spriteBatch.Draw(text.Value, (Vector2)(text.Position + camera.Translation), text.Color);
+                _spriteBatch.Draw(text.Value, (Vector2)(text.Position + cameraTransform.Translation), null, text.Color,
+                                  0f, Vector2.Zero, 1f / camera.CameraZoom, SpriteEffects.None, 0f);
 
                 if (text.TimeToLive > 0)
                 {
@@ -186,17 +188,20 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
             Debug.Assert(duration > 0);
-            var texture = RenderToTexture(value);
-            position.X -= texture.Width / 2;
-            position.Y -= texture.Height / 2;
-            _texts.Add(new FloatingText
+            lock (this)
             {
-                Value = texture,
-                Color = color,
-                Position = position,
-                TotalTimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond),
-                TimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond)
-            });
+                var texture = RenderToTexture(value);
+                position.X -= texture.Width / 2;
+                position.Y -= texture.Height / 2;
+                _texts.Add(new FloatingText
+                {
+                    Value = texture,
+                    Color = color,
+                    Position = position,
+                    TotalTimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond),
+                    TimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond)
+                });
+            }
         }
 
         /// <summary>
@@ -246,17 +251,20 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
             Debug.Assert(duration > 0);
-            var texture = RenderToTexture(value);
-            position.X -= texture.Width / 2;
-            position.Y -= texture.Height / 2;
-            _texts.Add(new FloatingText
+            lock (this)
             {
-                Value = texture,
-                Color = color,
-                Position = position,
-                TotalTimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond),
-                TimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond)
-            });
+                var texture = RenderToTexture(value);
+                position.X -= texture.Width / 2;
+                position.Y -= texture.Height / 2;
+                _texts.Add(new FloatingText
+                {
+                    Value = texture,
+                    Color = color,
+                    Position = position,
+                    TotalTimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond),
+                    TimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond)
+                });
+            }
         }
 
         /// <summary>
