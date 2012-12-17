@@ -9,6 +9,23 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class SquadSystem : AbstractSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
+        #region Fields
+
+
+
+        #endregion
+
+        #region Logic
+
         /// <summary>
         /// Called when a component is removed.
         /// </summary>
@@ -21,5 +38,7 @@ namespace Space.ComponentSystem.Systems
                 cc.RemoveMember(component.Entity);
             }
         }
+
+        #endregion
     }
 }

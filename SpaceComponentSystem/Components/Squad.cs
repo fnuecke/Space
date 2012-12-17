@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
@@ -83,232 +84,6 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Types
-
-        /// <summary>
-        /// Helper class for formation implementations, taking care of result
-        /// caching for fast lookups.
-        /// </summary>
-        private sealed class CachedFormation
-        {
-            /// <summary>
-            /// The formation implementation.
-            /// </summary>
-            private readonly Func<int, Vector2> _formation; 
-
-            /// <summary>
-            /// Internal cache of already-computed coordiantes. This simply
-            /// holds the coordinate at the corresponding index.
-            /// </summary>
-            private readonly List<Vector2> _cache = new List<Vector2>();
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CachedFormation"/> class.
-            /// </summary>
-            /// <param name="formation">The formationimplementation. This
-            /// should compute the relative offset to the leading squad
-            /// member, based on the index the member has inside the squad.
-            /// The result must be in unit scale (i.e. it will be scaled by
-            /// the squad's <see cref="Squad.FormationSpacing"/> property to
-            /// get the final position.
-            /// </param>
-            public CachedFormation(Func<int, Vector2> formation)
-            {
-                _formation = formation;
-            }
-
-            /// <summary>
-            /// Gets the relative position of the squad member at the specified
-            /// offset to the leader of the squad. This is in unit scale.
-            /// </summary>
-            /// <param name="index">The index of the squad member.</param>
-            /// <returns></returns>
-            public Vector2 GetOffset(int index)
-            {
-                // Build cache for missing items up to requested one, if necessary.
-                for (var i = _cache.Count; i <= index; i++)
-                {
-                    _cache.Add(_formation(i));
-                }
-                // Return cached coordinate.
-                return _cache[index];
-            }
-        }
-
-        #endregion
-
-        #region Constants
-
-        /// <summary>
-        /// The list of available formations, mapping enum to implementation.
-        /// Therefore they must be in the exact same order as the corresponding
-        /// enum declaration. These are ordered roughly by formation complexity.
-        /// </summary>
-        private static readonly CachedFormation[] Formations = new[]
-        {
-            // Note: all formation positions are computed without taking the leader's rotation
-            // into account directly. Instead, the final position is rotated at the end each time,
-            // around the leader's position, based on the leader's orientation.
-
-            // Note: all formations are defined in a coordinate system where forward is "up",
-            // i.e. is the negative y axis. In game forward is actually to the right, but this
-            // will be corrected for accordingly. For me it's easier to visualize formations
-            // this way, which is the only reason it's like this.
-
-            // Note: formations are defined by specifying the unit offset relative to the squad
-            // leader for each member, with the index matching the member index. This has the
-            // limitation of a maximum count supported, but the huge advantage of high flexibility
-            // as well as good performance (simple lookup).
-
-            // Note: in the following formation diagrams 'L' is the leader and 'F' are the
-            // followers, filled up top-down left-to-right.
-
-            // This is the 'null' implementation, which simply returns zero.
-            new CachedFormation(index => Vector2.Zero),
-            
-            // This is an implementation for a line formation, i.e. the formation
-            // will look like this:
-            //           L
-            //           F
-            //           F
-            //          ...
-            // The order goes like so:
-            //           0
-            //           1
-            //           2
-            //          ...
-            new CachedFormation(index => new Vector2(0, index)),
-
-            // This is an implementation for a column formation, i.e. the formation
-            // will look like this:
-            //           L
-            //         F
-            //           F
-            //         F
-            //          ...
-            // The order goes like so:
-            //           0
-            //         1
-            //           2
-            //          ...
-            new CachedFormation(index => new Vector2(-(index & 1), index)),
-
-            // This is an implementation for a vee formation, i.e. the formation
-            // will look like this:
-            //          ...
-            //     F           F
-            //       F       F
-            //         F   F
-            //           L
-            // The order goes like so:
-            //          ...
-            //       3       4
-            //         1   2
-            //           0
-            new CachedFormation(index =>
-            {
-                var k = index + 1;
-                return new Vector2((k >> 1) * (((k & 1) == 0) ? -0.5f : 0.5f), -(k >> 1));
-            }),
-
-            // This is an implementation for an open wedge formation, i.e. the formation
-            // will look like this:
-            //           L
-            //         F   F
-            //       F       F
-            //     F           F
-            //          ...
-            // The order goes like so:
-            //           0
-            //         1   2
-            //       3       4
-            //          ...
-            new CachedFormation(index =>
-            {
-                var k = index + 1;
-                return new Vector2((k >> 1) * (((k & 1) == 0) ? -0.5f : 0.5f), k >> 1);
-            }),
-
-            // This is an implementation for a filled wedge formation, i.e. the formation
-            // will look like this:
-            //           L
-            //         F   F
-            //       F   F   F
-            //     F   F   F   F
-            //          ...
-            // The order goes like so:
-            //           0
-            //         1   2
-            //       4   3   5
-            //     8   6   7   9
-            //          ...
-            new CachedFormation(index =>
-            {
-                var k = index + 1;
-                var h = 0;
-                while ((((h + 1) * ((h + 1) + 1)) >> 1) < k)
-                {
-                    ++h;
-                }
-                var i = k - ((h * (h + 1)) >> 1);
-                var x = (((i & 1) == 0) ? 2 : -2) * (i / 2) - (h & 1);
-                return new Vector2(0.5f * x, h);
-            }),
-
-            // This is an implementation for a block formation, i.e. the formation will look
-            // like this:
-            //  F  F  L  F  F
-            //  F  F  F  F  F
-            //       ...
-            // The balance that a formation is determined how it expands: it toggles between
-            // vertical and horizontal expansion whenever the formation becomes "full". So
-            // in numbers:
-            // 6 1 0 2 7
-            // 8 4 3 5 9
-            //    ...
-            new CachedFormation(index =>
-            {
-                var k = index + 1;
-                var h = 0;
-                while ((h + 1) * Math.Max(0, 2 * (h + 1) - 1) < k)
-                {
-                    ++h;
-                }
-                var i = k - h * Math.Max(0, 2 * h - 1) - 1;
-                var j = i - 2 * h + 1;
-                var y = Math.Min(h, i >> 1);
-                var x = (h > y)
-                            ? (((i & 1) == 0) ? h : -h)
-                            : ((((j & 1) == 0) ? (j >> 1) : -(j >> 1)));
-                return new Vector2(x, y);
-            }),
-
-            // This in an implementation for a Sierpinski formation. See
-            // https://en.wikipedia.org/wiki/Sierpinski_triangle
-            new CachedFormation(index =>
-                                // Fetch our raw data from the filled wedge formation. We
-                                // it as our "blueprint" from which filter out some entries
-                                // (the "holes" in the Sierpinski triangle).
-                                Enumerable.Range(0, int.MaxValue)
-                                    .Select(x => Formations[(int)FormationType.FilledWedge].GetOffset(x))
-                                    // Translate coordinates back to be full integers and all positive.
-                                    .Select(v => Tuple.Create((int)Math.Round(v.X + v.Y / 2), (int)v.Y))
-                                    // Transform to rectangluar space (offset y to x axis).
-                                    .Select(t => Tuple.Create(t.Item1, t.Item2 - t.Item1))
-                                    // Because then we can wave our magic wand...
-                                    .Select(t => (t.Item1 & t.Item2) == 0)
-                                    // Merge it with our original filled wedge list again, so that we get
-                                    // the association (bool keep, Vector2 entry).
-                                    .Zip(Enumerable.Range(0, int.MaxValue)
-                                             .Select(x => Formations[(int)FormationType.FilledWedge].GetOffset(x)), Tuple.Create)
-                                    // Then filter by that association.
-                                    .Where(t => t.Item1).Select(t => t.Item2)
-                                    // And finally, return the element at the desired location.
-                                    .ElementAt(index))
-        };
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -379,7 +154,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The current formation of this squad.
         /// </summary>
-        private FormationType _formation = FormationType.Block;
+        private FormationType _formation = FormationType.None;
 
         /// <summary>
         /// The current formation spacing of this squad.
@@ -399,7 +174,10 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            _members.AddRange(((Squad)other)._members);
+            var otherSquad = (Squad)other;
+            _members.AddRange(otherSquad._members);
+            _formation = otherSquad._formation;
+            _spacing = otherSquad._spacing;
 
             return this;
         }
@@ -423,7 +201,8 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             _members.Clear();
-            FormationSpacing = 200;
+            _formation = FormationType.None;
+            _spacing = 200;
         }
 
         #endregion
@@ -443,7 +222,7 @@ namespace Space.ComponentSystem.Components
 
             // The position relative to the leader. This will be in a unit scale and
             // scaled based on the spacing set for the squad.
-            var position = Formations[(int)Formation].GetOffset(index);
+            var position = FormationTypeToImplementation[(int)_formation][index];
 
             // Rotate around origin of the formation (which should be the leader's position in
             // most cases).
@@ -575,6 +354,8 @@ namespace Space.ComponentSystem.Components
             {
                 packet.Write(_members[i]);
             }
+            packet.Write((byte)_formation);
+            packet.Write(_spacing);
             return packet;
         }
 
@@ -592,6 +373,8 @@ namespace Space.ComponentSystem.Components
             {
                 _members.Add(packet.ReadInt32());
             }
+            _formation = (FormationType)packet.ReadByte();
+            _spacing = packet.ReadSingle();
         }
 
         /// <summary>
@@ -607,6 +390,8 @@ namespace Space.ComponentSystem.Components
             {
                 hasher.Put(_members[i]);
             }
+            hasher.Put((byte)_formation);
+            hasher.Put(_spacing);
         }
 
         #endregion
@@ -621,8 +406,277 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Members=" + string.Join(", ", _members);
+            return base.ToString() + ", Members=" + string.Join(", ", _members) + ", Formation=" + _formation + ", Spacing=" + _spacing.ToString(CultureInfo.InvariantCulture);
         }
+
+        #endregion
+
+        #region Types
+
+        /// <summary>
+        /// The list of available formation implementations.
+        /// </summary>
+        private static class Formations
+        {
+            // Note: all formation positions are computed without taking the leader's rotation
+            // into account directly. Instead, the final position is rotated at the end each time,
+            // around the leader's position, based on the leader's orientation.
+
+            // Note: all formations are defined in a coordinate system where forward is "up",
+            // i.e. is the negative y axis. In game forward is actually to the right, but this
+            // will be corrected for accordingly. For me it's easier to visualize formations
+            // this way, which is the only reason it's like this.
+
+            // Note: formations are defined by specifying the unit offset relative to the squad
+            // leader for each member, with the index matching the member index. This has the
+            // limitation of a maximum count supported, but the huge advantage of high flexibility
+            // as well as good performance (simple lookup).
+
+            // Note: in the following formation diagrams 'L' is the leader and 'F' are the
+            // followers, filled up top-down left-to-right.
+
+            /// <summary>
+            /// This is the 'null' implementation, which simply returns nothing and
+            /// causes the cache to fall-back to the default value.
+            /// </summary>
+            public static readonly IEnumerable<Vector2> None = new Vector2[0];
+
+            /// <summary>
+            /// This is an implementation for a line formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///           F
+            ///           F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///           1
+            ///           2
+            ///          ...
+            /// </summary>
+            public static readonly IEnumerable<Vector2> Line =
+                Enumerable.Range(0, int.MaxValue)
+                    .Select(i => new Vector2(0, i));
+
+            /// <summary>
+            /// This is an implementation for a column formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///         F
+            ///           F
+            ///         F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///         1
+            ///           2
+            ///          ...
+            /// </summary>
+            public static readonly IEnumerable<Vector2> Column =
+                Enumerable.Range(0, int.MaxValue)
+                    .Select(i => new Vector2(-(i & 1), i));
+
+            /// <summary>
+            /// This is an implementation for a vee formation, i.e. the formation
+            /// will look like this:
+            ///          ...
+            ///     F           F
+            ///       F       F
+            ///         F   F
+            ///           L
+            /// The order goes like so:
+            ///          ...
+            ///       3       4
+            ///         1   2
+            ///           0
+            /// </summary>
+            public static readonly IEnumerable<Vector2> Vee =
+                Enumerable.Range(0, int.MaxValue)
+                    .Select(i => i + 1)
+                    .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), -(i >> 1)));
+
+            /// <summary>
+            /// This is an implementation for an open wedge formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///         F   F
+            ///       F       F
+            ///     F           F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///         1   2
+            ///       3       4
+            ///          ...
+            /// </summary>
+            public static readonly IEnumerable<Vector2> Wedge =
+                Enumerable.Range(0, int.MaxValue)
+                    .Select(i => i + 1)
+                    .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), i >> 1));
+
+            // ReSharper disable FunctionNeverReturns Infinite generators.
+
+            /// <summary>
+            /// This is an implementation for a filled wedge formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///         F   F
+            ///       F   F   F
+            ///     F   F   F   F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///         1   2
+            ///       4   3   5
+            ///     8   6   7   9
+            ///          ...
+            /// </summary>
+            public static IEnumerable<Vector2> FilledWedge
+            {
+                get
+                {
+                    var y = 0;
+                    for (var k = 1; ; k++)
+                    {
+                        while ((((y + 1) * ((y + 1) + 1)) >> 1) < k)
+                        {
+                            ++y;
+                        }
+                        var i = k - ((y * (y + 1)) >> 1);
+                        var x = (((i & 1) == 0) ? 2 : -2) * (i / 2) - (y & 1);
+                        yield return new Vector2(0.5f * x, y);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// This is an implementation for a block formation, i.e. the formation will look
+            /// like this:
+            ///  F  F  L  F  F
+            ///  F  F  F  F  F
+            ///       ...
+            /// The balance that a formation is determined how it expands: it toggles between
+            /// vertical and horizontal expansion whenever the formation becomes "full". So
+            /// in numbers:
+            /// 6 1 0 2 7
+            /// 8 4 3 5 9
+            ///    ...
+            /// </summary>
+            public static IEnumerable<Vector2> Block
+            {
+                get
+                {
+                    var h = 0;
+                    for (var k = 1; ; k++)
+                    {
+                        while ((h + 1) * Math.Max(0, 2 * (h + 1) - 1) < k)
+                        {
+                            ++h;
+                        }
+                        var i = k - h * Math.Max(0, 2 * h - 1) - 1;
+                        var j = i - 2 * h + 1;
+                        var y = Math.Min(h, i >> 1);
+                        var x = (h > y)
+                                    ? (((i & 1) == 0) ? h : -h)
+                                    : ((((j & 1) == 0) ? (j >> 1) : -(j >> 1)));
+                        yield return new Vector2(x, y);
+                    }
+                }
+            }
+
+            // ReSharper restore FunctionNeverReturns
+
+            /// <summary>
+            /// This in an implementation for a Sierpinski formation. See
+            /// https://en.wikipedia.org/wiki/Sierpinski_triangle
+            /// </summary>
+            public static readonly IEnumerable<Vector2> Sierpinski =
+                // Fetch our raw data from the filled wedge formation. We
+                // it as our "blueprint" from which filter out some entries
+                // (the "holes" in the Sierpinski triangle).
+                FilledWedge
+                // Translate coordinates back to be full integers and all positive.
+                    .Select(v => Tuple.Create((int)Math.Round(v.X + v.Y / 2), (int)v.Y))
+                // Transform to rectangluar space (offset y to x axis).
+                    .Select(t => Tuple.Create(t.Item1, t.Item2 - t.Item1))
+                // Because then we can wave our magic wand...
+                    .Select(t => (t.Item1 & t.Item2) == 0)
+                // Merge it with our original filled wedge list again, so that we get
+                // the association (bool keep, Vector2 entry).
+                    .Zip(FilledWedge, Tuple.Create)
+                // Then filter by that association.
+                    .Where(t => t.Item1).Select(t => t.Item2);
+        }
+
+        /// <summary>
+        /// Helper class for formation implementations, taking care of result
+        /// caching for fast lookups.
+        /// </summary>
+        private sealed class FormationCache
+        {
+            /// <summary>
+            /// The formation implementation.
+            /// </summary>
+            private readonly IEnumerator<Vector2> _formation;
+
+            /// <summary>
+            /// Internal cache of already-computed coordiantes. This simply
+            /// holds the coordinate at the corresponding index.
+            /// </summary>
+            private readonly List<Vector2> _cache = new List<Vector2>();
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FormationCache"/> class.
+            /// </summary>
+            /// <param name="formation">The formation implementation. This
+            /// should compute the relative offset to the leading squad
+            /// member, based on the index the member has inside the squad.
+            /// The result must be in unit scale (i.e. it will be scaled by
+            /// the squad's <see cref="Squad.FormationSpacing"/> property to
+            /// get the final position.
+            /// </param>
+            public FormationCache(IEnumerable<Vector2> formation)
+            {
+                _formation = formation.GetEnumerator();
+            }
+
+            /// <summary>
+            /// Gets the relative position of the squad member at the specified
+            /// offset to the leader of the squad. This is in unit scale.
+            /// </summary>
+            /// <param name="index">The index of the squad member.</param>
+            /// <returns></returns>
+            public Vector2 this[int index]
+            {
+                get
+                {
+                    // Build cache for missing items up to requested one, if necessary.
+                    for (var i = _cache.Count; i <= index && _formation.MoveNext(); i++)
+                    {
+                        _cache.Add(_formation.Current);
+                    }
+                    // Return cached coordinate.
+                    return _cache.Count > index ? _cache[index] : Vector2.Zero;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The list of available formations, mapping enum to implementation.
+        /// Therefore they must be in the exact same order as the corresponding
+        /// enum declaration.
+        /// </summary>
+        private static readonly FormationCache[] FormationTypeToImplementation = new[]
+        {
+            new FormationCache(Formations.None),
+            new FormationCache(Formations.Line),
+            new FormationCache(Formations.Column),
+            new FormationCache(Formations.Vee),
+            new FormationCache(Formations.Wedge),
+            new FormationCache(Formations.FilledWedge),
+            new FormationCache(Formations.Block),
+            new FormationCache(Formations.Sierpinski)
+        };
 
         #endregion
     }
