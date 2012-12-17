@@ -93,7 +93,6 @@ namespace Space.ComponentSystem.Systems
         public float CameraZoom
         {
             get { return _currentZoom; }
-
         }
 
         /// <summary>

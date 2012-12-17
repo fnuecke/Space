@@ -713,7 +713,7 @@ namespace Engine.Collections
                 ++parent.EntryCount;
 
                 // Invalidate cache.
-                node.ChildCache = null;
+                parent.ChildCache = null;
 
                 // Continue checking in our parent.
                 parent = parent.Parent;
