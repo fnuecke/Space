@@ -160,7 +160,6 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <returns>The modified value for that type.</returns>
         public float GetValue(TAttribute type, float baseValue = 0f)
         {
-            baseValue += GetBaseValue(type);
             if (!_modifiedAttributes.ContainsKey(type))
             {
                 return baseValue;
