@@ -608,26 +608,6 @@ namespace Space.ComponentSystem.Systems
                         .Select(i => i + 1)
                         .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), i >> 1)));
 
-            // ReSharper disable FunctionNeverReturns Infinite generators.
-
-            private static IEnumerable<Tuple<int, int>> FilledWedgeBase
-            {
-                get
-                {
-                    for (var k = 1;; k++)
-                    {
-                        var y = 0;
-                        while ((((y + 1) * ((y + 1) + 1)) >> 1) < k)
-                        {
-                            ++y;
-                        }
-                        var i = k - ((y * (y + 1)) >> 1);
-                        var x = (((i & 1) == 0) ? 2 : -2) * (i / 2) - (y & 1);
-                        yield return Tuple.Create(x, y);
-                    }
-                }
-            }
-
             /// <summary>
             /// This is an implementation for a filled wedge formation, i.e. the formation
             /// will look like this:
@@ -663,30 +643,6 @@ namespace Space.ComponentSystem.Systems
             public static readonly AbstractFormation Block =
                 AbstractFormation.FromEnumerable(BlockBase);
 
-            private static IEnumerable<Vector2> BlockBase
-            {
-                get
-                {
-                    for (var k = 1;; k++)
-                    {
-                        var h = 0;
-                        while ((h + 1) * Math.Max(0, 2 * (h + 1) - 1) < k)
-                        {
-                            ++h;
-                        }
-                        var i = k - h * Math.Max(0, 2 * h - 1) - 1;
-                        var j = i - 2 * h + 1;
-                        var y = Math.Min(h, i >> 1);
-                        var x = (h > y)
-                                    ? (((i & 1) == 0) ? h : -h)
-                                    : ((((j & 1) == 0) ? (j >> 1) : -(j >> 1)));
-                        yield return new Vector2(x, y);
-                    }
-                }
-            }
-
-            // ReSharper restore FunctionNeverReturns
-
             /// <summary>
             /// This in an implementation for a Sierpinski formation. See
             /// https://en.wikipedia.org/wiki/Sierpinski_triangle
@@ -708,6 +664,56 @@ namespace Space.ComponentSystem.Systems
                         .Zip(FilledWedge, Tuple.Create)
                         // Then filter by that association.
                         .Where(t => t.Item1).Select(t => t.Item2));
+
+            // ReSharper disable FunctionNeverReturns Infinite generators.
+
+            private static IEnumerable<Tuple<int, int>> FilledWedgeBase
+            {
+                get
+                {
+                    yield return Tuple.Create(0, 0);
+
+                    var k = 0;
+                    var line = 1;
+                    for (;;)
+                    {
+                        var pos = (((k & 1) == 0) ? -2 : 2) * ((k + 1) >> 1) - (line & 1);
+
+                        yield return Tuple.Create(pos, line);
+
+                        var nk = (k + 1) % (line + 1);
+                        var nl = line + k / line;
+
+                        k = nk;
+                        line = nl;
+                    }
+                }
+            }
+
+            private static IEnumerable<Vector2> BlockBase
+            {
+                get
+                {
+                    var h = 0;
+                    var k = 0;
+                    for (;;)
+                    {
+                        var l = k - 2 * h + 1;
+                        var r = Math.Min(h, k >> 1);
+                        var c = h > r
+                                    ? (((k & 1) == 0) ? -h : h)
+                                    : (((l & 1) == 0) ? -(l >> 1) : (l >> 1));
+
+                        yield return new Vector2(c, r);
+
+                        var s = 4 * h + 1;
+                        h = h + (k + 1) / s;
+                        k = (k + 1) % s;
+                    }
+                }
+            }
+
+            // ReSharper restore FunctionNeverReturns
         }
 
         /// <summary>
