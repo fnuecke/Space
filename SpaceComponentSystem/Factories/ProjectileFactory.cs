@@ -295,6 +295,10 @@ namespace Space.ComponentSystem.Factories
             Attributes<AttributeType> projectileAttributes = null; // Only create if necessary.
             foreach (AttributeType attributeType in Enum.GetValues(typeof(AttributeType)))
             {
+                if (attributeType == AttributeType.None)
+                {
+                    continue;
+                }
                 // Try to get weapon local attribute as base values.
                 var value = 0f;
                 if (weapon.Attributes.ContainsKey(attributeType))

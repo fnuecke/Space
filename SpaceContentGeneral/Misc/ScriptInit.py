@@ -67,3 +67,6 @@ def addAi(squadMember):
 	manager.AddComponent[Squad](ship).Initialize()
 	squad.AddMember(ship)
 	ai.Guard(squad.Leader)
+
+def setFormation(entity, formation):
+	manager.GetComponent(entity, Squad.TypeId).Formation = formation

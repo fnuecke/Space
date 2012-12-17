@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
@@ -73,6 +74,11 @@ namespace Space.ComponentSystem.Components
             /// A block formation, i.e. units arrange in a rectangular shape.
             /// </summary>
             Block,
+
+            /// <summary>
+            /// A Sierpinski formation, i.e. units arrange in a fractal trianglular shape with holes.
+            /// </summary>
+            Sierpinski
         }
 
         #endregion
@@ -109,9 +115,6 @@ namespace Space.ComponentSystem.Components
             public CachedFormation(Func<int, Vector2> formation)
             {
                 _formation = formation;
-                // Initialize cache up to a certain bound which isn't absolutely
-                // unlikely to be used.
-                GetOffset(30);
             }
 
             /// <summary>
@@ -202,7 +205,8 @@ namespace Space.ComponentSystem.Components
             //       3       4
             //         1   2
             //           0
-            new CachedFormation(index => {
+            new CachedFormation(index =>
+            {
                 var k = index + 1;
                 return new Vector2((k >> 1) * (((k & 1) == 0) ? -0.5f : 0.5f), -(k >> 1));
             }),
@@ -219,7 +223,8 @@ namespace Space.ComponentSystem.Components
             //         1   2
             //       3       4
             //          ...
-            new CachedFormation(index => {
+            new CachedFormation(index =>
+            {
                 var k = index + 1;
                 return new Vector2((k >> 1) * (((k & 1) == 0) ? -0.5f : 0.5f), k >> 1);
             }),
@@ -237,7 +242,8 @@ namespace Space.ComponentSystem.Components
             //       4   3   5
             //     8   6   7   9
             //          ...
-            new CachedFormation(index => {
+            new CachedFormation(index =>
+            {
                 var k = index + 1;
                 var h = 0;
                 while ((((h + 1) * ((h + 1) + 1)) >> 1) < k)
@@ -260,7 +266,8 @@ namespace Space.ComponentSystem.Components
             // 6 1 0 2 7
             // 8 4 3 5 9
             //    ...
-            new CachedFormation(index => {
+            new CachedFormation(index =>
+            {
                 var k = index + 1;
                 var h = 0;
                 while ((h + 1) * Math.Max(0, 2 * (h + 1) - 1) < k)
@@ -274,7 +281,30 @@ namespace Space.ComponentSystem.Components
                             ? (((i & 1) == 0) ? h : -h)
                             : ((((j & 1) == 0) ? (j >> 1) : -(j >> 1)));
                 return new Vector2(x, y);
-            })
+            }),
+
+            // This in an implementation for a Sierpinski formation. See
+            // https://en.wikipedia.org/wiki/Sierpinski_triangle
+            new CachedFormation(index =>
+                                // Fetch our raw data from the filled wedge formation. We
+                                // it as our "blueprint" from which filter out some entries
+                                // (the "holes" in the Sierpinski triangle).
+                                Enumerable.Range(0, int.MaxValue)
+                                    .Select(x => Formations[(int)FormationType.FilledWedge].GetOffset(x))
+                                    // Translate coordinates back to be full integers and all positive.
+                                    .Select(v => Tuple.Create((int)Math.Round(v.X + v.Y / 2), (int)v.Y))
+                                    // Transform to rectangluar space (offset y to x axis).
+                                    .Select(t => Tuple.Create(t.Item1, t.Item2 - t.Item1))
+                                    // Because then we can wave our magic wand...
+                                    .Select(t => (t.Item1 & t.Item2) == 0)
+                                    // Merge it with our original filled wedge list again, so that we get
+                                    // the association (bool keep, Vector2 entry).
+                                    .Zip(Enumerable.Range(0, int.MaxValue)
+                                             .Select(x => Formations[(int)FormationType.FilledWedge].GetOffset(x)), Tuple.Create)
+                                    // Then filter by that association.
+                                    .Where(t => t.Item1).Select(t => t.Item2)
+                                    // And finally, return the element at the desired location.
+                                    .ElementAt(index))
         };
 
         #endregion

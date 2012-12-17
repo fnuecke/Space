@@ -61,7 +61,8 @@ namespace Engine.ComponentSystem.RPG.Components
         private readonly Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
-        /// Modified values, based on equipment and status effects.
+        /// Modified values, based on equipment and status effects. This stores
+        /// the absolute value as well as the multiplier for the value.
         /// </summary>
         private readonly Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
@@ -100,9 +101,7 @@ namespace Engine.ComponentSystem.RPG.Components
             }
             foreach (var attribute in attributes._modifiedAttributes)
             {
-                var values = new float[attribute.Value.Length];
-                attribute.Value.CopyTo(values, 0);
-                _modifiedAttributes.Add(attribute.Key, values);
+                _modifiedAttributes.Add(attribute.Key, new[] {attribute.Value[0], attribute.Value[1]});
             }
 
             return this;
