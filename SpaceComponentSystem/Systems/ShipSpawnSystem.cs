@@ -131,7 +131,7 @@ namespace Space.ComponentSystem.Systems
             // Configuration for spawned ships.
             string[] ships;
             ArtificialIntelligence.AIConfiguration[] configurations = null;
-            var formation = Squad.FormationType.None;
+            var formation = SquadSystem.Formations.None;
 
             // TODO different groups, based on cell info? definable via editor maybe?
             if (_random.NextDouble() < 0.5f)
@@ -152,7 +152,7 @@ namespace Space.ComponentSystem.Systems
                         AggroRange = 600
                     }
                 };
-                formation = Squad.FormationType.Block;
+                formation = SquadSystem.Formations.Block;
             }
             else
             {
@@ -171,7 +171,7 @@ namespace Space.ComponentSystem.Systems
                         AggroRange = 800
                     }
                 };
-                formation = Squad.FormationType.Vee;
+                formation = SquadSystem.Formations.Vee;
             }
 
             // Spawn all ships.
@@ -199,7 +199,7 @@ namespace Space.ComponentSystem.Systems
                 // If we have a squad push the squad component.
                 if (ships.Length > 1)
                 {
-                    var squad = Manager.AddComponent<Squad>(ship).Initialize();
+                    var squad = Manager.AddComponent<Squad>(ship);
                     // If we're not the leader we guard him, otherwise mark us as
                     // the squad leader (ergo: first loop iteration).
                     if (leaderSquad != null)

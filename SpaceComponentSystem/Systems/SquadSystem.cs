@@ -1,5 +1,16 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Engine.Collections;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
+using Engine.Serialization;
+using Engine.Util;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
@@ -20,11 +31,247 @@ namespace Space.ComponentSystem.Systems
 
         #region Fields
 
+        /// <summary>
+        /// IDs for squads (i.e. each squad gets its own ID by which is is
+        /// referenced in the squad components of the entities in that squad).
+        /// </summary>
+        private IdManager _squadIds = new IdManager();
 
+        /// <summary>
+        /// The list of actual squads, mapping squad id to squad data.
+        /// </summary>
+        private SparseArray<SquadData> _squads = new SparseArray<SquadData>();
 
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Determines whether the specified squad exists.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified squad exists; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasSquad(int squad)
+        {
+            return _squadIds.InUse(squad);
+        }
+
+        /// <summary>
+        /// Determines whether the squad contains the specified entity.
+        /// </summary>
+        /// <param name="squad">The squad to check for.</param>
+        /// <param name="entity">The entity to check for.</param>
+        /// <returns>
+        ///   <c>true</c> if the squad contains the specified entity; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Contains(int squad, int entity)
+        {
+            Debug.Assert(HasSquad(squad));
+            return _squads[squad].Members.Contains(entity);
+        }
+
+        /// <summary>
+        /// Gets the leader of the specified squad.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <returns>The leader of the squad.</returns>
+        public int GetLeader(int squad)
+        {
+            Debug.Assert(HasSquad(squad));
+            return _squads[squad].Members[0];
+        }
+
+        /// <summary>
+        /// Gets the members of the specified squad.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <returns>The members of the squad.</returns>
+        public IEnumerable<int> GetMembers(int squad)
+        {
+            Debug.Assert(HasSquad(squad));
+            return _squads[squad].Members;
+        }
+
+        /// <summary>
+        /// Gets the number of members of the specified squad.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <returns>The number of squad members.</returns>
+        public int GetCount(int squad)
+        {
+            Debug.Assert(HasSquad(squad));
+            return _squads[squad].Members.Count;
+        }
+
+        /// <summary>
+        /// Gets the formation for the specified squad.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <returns>The formation type of that squad.</returns>
+        public AbstractFormation GetFormation(int squad)
+        {
+            Debug.Assert(HasSquad(squad));
+            return _squads[squad].Formation;
+        }
+
+        /// <summary>
+        /// Sets the formation of the specified squad.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <param name="value">The formation to set.</param>
+        public void SetFormation(int squad, AbstractFormation value)
+        {
+            Debug.Assert(HasSquad(squad));
+            _squads[squad].Formation = value;
+            _squads[squad].Cache = new FormationCache(value);
+        }
+
+        /// <summary>
+        /// Gets the formation spacing for the specified squad.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <returns>The formation spacing of that squad.</returns>
+        public float GetFormationSpacing(int squad)
+        {
+            Debug.Assert(HasSquad(squad));
+            return _squads[squad].Spacing;
+        }
+
+        /// <summary>
+        /// Sets the formation spacing of the specified squad.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <param name="value">The formation spacing to set.</param>
+        public void SetFormationSpacing(int squad, float value)
+        {
+            Debug.Assert(HasSquad(squad));
+            _squads[squad].Spacing = value;
+        }
+
+        /// <summary>
+        /// Adds a new member to this squad. Note that this will automatically
+        /// register the entity with the squad component of all other already-
+        /// members of this squad.
+        /// </summary>
+        /// <param name="squad">The squad to add to.</param>
+        /// <param name="entity">The entity to add to the squad.</param>
+        public void AddMember(int squad, int entity)
+        {
+            Debug.Assert(HasSquad(squad));
+
+            // Skip if the entity is already there.
+            if (_squads[squad].Members.Contains(entity))
+            {
+                return;
+            }
+
+            // Make sure the entity isn't in a squad (except the identity squad,
+            // into which it is moved if removed from another one).
+            var memberSquad = (Squad)Manager.GetComponent(entity, Squad.TypeId);
+            RemoveMember(memberSquad.SquadId, entity);
+
+            // Remove the identity squad.
+            _squadIds.ReleaseId(memberSquad.SquadId);
+
+            // Register that entity.
+            _squads[squad].Members.Add(entity);
+            memberSquad.SquadId = squad;
+        }
+
+        /// <summary>
+        /// Removes an entity from this squad. Note that this will automatically
+        /// remove the entity from the squad components of all other members.
+        /// </summary>
+        /// <param name="squad">The squad to remove from.</param>
+        /// <param name="entity">The entity to remove.</param>
+        public void RemoveMember(int squad, int entity)
+        {
+            Debug.Assert(HasSquad(squad));
+
+            // Error if there's no such member in this squad.
+            var members = _squads[squad].Members;
+            if (!members.Contains(entity))
+            {
+                throw new ArgumentException(@"No such member in this squad.", "entity");
+            }
+
+            // If we're already in an identity squad we can skip this.
+            if (members.Count == 1)
+            {
+                return;
+            }
+
+            // Remove by moving the last member to the removed one's slot.
+            // This will reduce flux when a member leaves a formation.
+            // Unless the leader is killed, in which case there's flux anyway,
+            // so it's actually less noisy to just pick the next member as
+            // the new leader.
+            if (entity == members[0])
+            {
+                members.RemoveAt(0);
+            }
+            else
+            {
+                members[members.IndexOf(entity)] = members[members.Count - 1];
+                members.RemoveAt(members.Count - 1);
+            }
+
+            // Put the entity into its own identity squad.
+            MakeIdentitySquad((Squad)Manager.GetComponent(entity, Squad.TypeId));
+        }
+
+        /// <summary>
+        /// Gets the position of the specified member in the squad formation (i.e. where it
+        /// should be at this time).
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        /// <param name="entity">The squad member.</param>
+        /// <returns></returns>
+        public FarPosition ComputeFormationOffset(int squad, int entity)
+        {
+            if (!Contains(squad, entity))
+            {
+                throw new ArgumentException(@"No such member in this squad.", "entity");
+            }
+
+            var data = _squads[squad];
+
+            var leaderTransform = (Transform)Manager.GetComponent(data.Members[0], Transform.TypeId);
+
+            // Get our own index in the formation.
+            var index = data.Members.IndexOf(entity);
+
+            // The position relative to the leader. This will be in a unit scale and
+            // scaled based on the spacing set for the squad.
+            var position = data.Cache[index];
+
+            // Rotate around origin of the formation (which should be the leader's position in
+            // most cases).
+            var finalPosition = leaderTransform.Translation;
+            var cosRadians = (float)Math.Cos(leaderTransform.Rotation);
+            var sinRadians = (float)Math.Sin(leaderTransform.Rotation);
+            finalPosition.X += (-position.Y * cosRadians - position.X * sinRadians) * data.Spacing;
+            finalPosition.Y += (-position.Y * sinRadians + position.X * cosRadians) * data.Spacing;
+
+            return finalPosition;
+        }
+
+        /// <summary>
+        /// Called by the manager when a new component was added.
+        /// </summary>
+        /// <param name="component">The component that was added.</param>
+        public override void OnComponentAdded(Component component)
+        {
+            base.OnComponentAdded(component);
+
+            var cc = component as Squad;
+            if (cc != null)
+            {
+                MakeIdentitySquad(cc);
+            }
+        }
 
         /// <summary>
         /// Called when a component is removed.
@@ -32,10 +279,516 @@ namespace Space.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         public override void OnComponentRemoved(Component component)
         {
+            base.OnComponentRemoved(component);
+
             var cc = component as Squad;
             if (cc != null)
             {
-                cc.RemoveMember(component.Entity);
+                // Remove from squad moving it to its identity squad.
+                RemoveMember(cc.SquadId, component.Entity);
+                // Remove the component's identity squad.
+                _squadIds.ReleaseId(cc.SquadId);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new squad, only containing the entity of the specified
+        /// squad component.
+        /// </summary>
+        /// <param name="squad">The squad.</param>
+        private void MakeIdentitySquad(Squad squad)
+        {
+            // Get id and data slot, reset the data slot.
+            var identitySquad = _squadIds.GetId();
+            if (_squads[identitySquad] == null)
+            {
+                _squads[identitySquad] = new SquadData();
+            }
+            _squads[identitySquad].Members.Clear();
+            _squads[identitySquad].Formation = Formations.None;
+            _squads[identitySquad].Spacing = 200;
+            _squads[identitySquad].Cache = new FormationCache(Formations.None);
+            
+            // Add member to squad and let it know it's in it.
+            _squads[identitySquad].Members.Add(squad.Entity);
+            squad.SquadId = identitySquad;
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>
+        /// The copy.
+        /// </returns>
+        public override AbstractSystem NewInstance()
+        {
+            var copy = (SquadSystem)base.NewInstance();
+
+            copy._squadIds = new IdManager();
+            copy._squads = new SparseArray<SquadData>();
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <param name="into">The instance to copy into.</param>
+        public override void CopyInto(AbstractSystem into)
+        {
+            base.CopyInto(into);
+
+            var copy = (SquadSystem)into;
+
+            _squadIds.CopyInto(copy._squadIds);
+            foreach (var id in _squadIds)
+            {
+                copy._squads[id] = new SquadData
+                {
+                    Formation = _squads[id].Formation,
+                    Spacing = _squads[id].Spacing
+                };
+                copy._squads[id].Members.AddRange(_squads[id].Members);
+            }
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Packet Packetize(Packet packet)
+        {
+            base.Packetize(packet);
+
+            packet.Write(_squadIds);
+            packet.Write(_squadIds.Count);
+            foreach (var id in _squadIds)
+            {
+                packet.Write(id);
+                var data = _squads[id];
+                packet.WriteWithTypeInfo(data.Formation);
+                packet.Write(data.Spacing);
+                packet.Write(data.Members.Count);
+                for (var i = 0; i < data.Members.Count; i++)
+                {
+                    packet.Write(data.Members[i]);
+                }
+            }
+
+            return packet;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+
+            packet.ReadPacketizableInto(ref _squadIds);
+            for (var i = 0; i < _squadIds.Count; i++)
+            {
+                var id = packet.ReadInt32();
+                var data = _squads[id] = new SquadData();
+                data.Formation = packet.ReadPacketizableWithTypeInfo<AbstractFormation>();
+                data.Cache = new FormationCache(data.Formation);
+                data.Spacing = packet.ReadSingle();
+                var count = packet.ReadInt32();
+                for (var j = 0; j < count; j++)
+                {
+                    data.Members.Add(packet.ReadInt32());
+                }
+            }
+        }
+
+        #endregion
+
+        #region Types
+
+        /// <summary>
+        /// Base class defining the interface all formation implementations must implement.
+        /// Formations are implemented by providing an enumerator over the positions of the
+        /// single members of a squad. 
+        /// </summary>
+        public abstract class AbstractFormation : IEnumerable<Vector2>, IPacketizable
+        {
+            /// <summary>
+            /// Utility method creating a formation from a simple enumerable. This
+            /// is meant to provide a simple way of generating formation wrappers
+            /// for parameterless formation declarations.
+            /// </summary>
+            /// <param name="formation">The formation definition.</param>
+            /// <returns></returns>
+            public static AbstractFormation FromEnumerable(IEnumerable<Vector2> formation)
+            {
+                return new SimpleFormation(formation);
+            }
+
+            /// <summary>
+            /// Returns an enumerator that iterates through the collection.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can
+            /// be used to iterate through the collection.
+            /// </returns>
+            /// <filterpriority>1</filterpriority>
+            public abstract IEnumerator<Vector2> GetEnumerator();
+
+            /// <summary>
+            /// Returns an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>
+            /// An <see cref="T:System.Collections.IEnumerator"/> object that can be
+            /// used to iterate through the collection.
+            /// </returns>
+            /// <filterpriority>2</filterpriority>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            /// <summary>
+            /// Write the object's state to the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to write the data to.</param>
+            /// <returns>The packet after writing.</returns>
+            public virtual Packet Packetize(Packet packet)
+            {
+                return packet;
+            }
+
+            /// <summary>
+            /// Bring the object to the state in the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
+            public virtual void Depacketize(Packet packet)
+            {
+            }
+
+            /// <summary>
+            /// A simple wrapper for paramaterless formation implementations.
+            /// </summary>
+            private sealed class SimpleFormation : AbstractFormation
+            {
+                private readonly IEnumerable<Vector2> _enumerable;
+
+                public SimpleFormation(IEnumerable<Vector2> formation)
+                {
+                    _enumerable = formation;
+                }
+
+                public override IEnumerator<Vector2> GetEnumerator()
+                {
+                    return _enumerable.GetEnumerator();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The list of available default formation implementations.
+        /// </summary>
+        public static class Formations
+        {
+            // Note: all formation positions are computed without taking the leader's rotation
+            // into account directly. Instead, the final position is rotated at the end each time,
+            // around the leader's position, based on the leader's orientation.
+
+            // Note: all formations are defined in a coordinate system where forward is "up",
+            // i.e. is the negative y axis. In game forward is actually to the right, but this
+            // will be corrected for accordingly. For me it's easier to visualize formations
+            // this way, which is the only reason it's like this.
+
+            // Note: formations are defined by specifying the unit offset relative to the squad
+            // leader for each member, with the index matching the member index. This has the
+            // limitation of a maximum count supported, but the huge advantage of high flexibility
+            // as well as good performance (simple lookup).
+
+            // Note: in the following formation diagrams 'L' is the leader and 'F' are the
+            // followers, filled up top-down left-to-right.
+
+            /// <summary>
+            /// This is the 'null' implementation, which simply returns nothing and
+            /// causes the cache to fall-back to the default value.
+            /// </summary>
+            public static readonly AbstractFormation None =
+                AbstractFormation.FromEnumerable(new Vector2[0]);
+
+            /// <summary>
+            /// This is an implementation for a line formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///           F
+            ///           F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///           1
+            ///           2
+            ///          ...
+            /// </summary>
+            public static readonly AbstractFormation Line =
+                AbstractFormation.FromEnumerable(
+                    Enumerable.Range(0, int.MaxValue)
+                        .Select(i => new Vector2(0, i)));
+
+            /// <summary>
+            /// This is an implementation for a column formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///         F
+            ///           F
+            ///         F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///         1
+            ///           2
+            ///          ...
+            /// </summary>
+            public static readonly AbstractFormation Column =
+                AbstractFormation.FromEnumerable(
+                    Enumerable.Range(0, int.MaxValue)
+                        .Select(i => new Vector2(-(i & 1), i)));
+
+            /// <summary>
+            /// This is an implementation for a vee formation, i.e. the formation
+            /// will look like this:
+            ///          ...
+            ///     F           F
+            ///       F       F
+            ///         F   F
+            ///           L
+            /// The order goes like so:
+            ///          ...
+            ///       3       4
+            ///         1   2
+            ///           0
+            /// </summary>
+            public static readonly AbstractFormation Vee =
+                AbstractFormation.FromEnumerable(
+                    Enumerable.Range(0, int.MaxValue)
+                        .Select(i => i + 1)
+                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), -(i >> 1))));
+
+            /// <summary>
+            /// This is an implementation for an open wedge formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///         F   F
+            ///       F       F
+            ///     F           F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///         1   2
+            ///       3       4
+            ///          ...
+            /// </summary>
+            public static readonly AbstractFormation Wedge =
+                AbstractFormation.FromEnumerable(
+                    Enumerable.Range(0, int.MaxValue)
+                        .Select(i => i + 1)
+                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), i >> 1)));
+
+            // ReSharper disable FunctionNeverReturns Infinite generators.
+
+            private static IEnumerable<Tuple<int, int>> FilledWedgeBase
+            {
+                get
+                {
+                    for (var k = 1;; k++)
+                    {
+                        var y = 0;
+                        while ((((y + 1) * ((y + 1) + 1)) >> 1) < k)
+                        {
+                            ++y;
+                        }
+                        var i = k - ((y * (y + 1)) >> 1);
+                        var x = (((i & 1) == 0) ? 2 : -2) * (i / 2) - (y & 1);
+                        yield return Tuple.Create(x, y);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// This is an implementation for a filled wedge formation, i.e. the formation
+            /// will look like this:
+            ///           L
+            ///         F   F
+            ///       F   F   F
+            ///     F   F   F   F
+            ///          ...
+            /// The order goes like so:
+            ///           0
+            ///         1   2
+            ///       4   3   5
+            ///     8   6   7   9
+            ///          ...
+            /// </summary>
+            public static readonly AbstractFormation FilledWedge =
+                AbstractFormation.FromEnumerable(
+                    FilledWedgeBase.Select(t => new Vector2(0.5f * t.Item1, t.Item2)));
+
+            /// <summary>
+            /// This is an implementation for a block formation, i.e. the formation will look
+            /// like this:
+            ///  F  F  L  F  F
+            ///  F  F  F  F  F
+            ///       ...
+            /// The balance that a formation is determined how it expands: it toggles between
+            /// vertical and horizontal expansion whenever the formation becomes "full". So
+            /// in numbers:
+            /// 6 1 0 2 7
+            /// 8 4 3 5 9
+            ///    ...
+            /// </summary>
+            public static readonly AbstractFormation Block =
+                AbstractFormation.FromEnumerable(BlockBase);
+
+            private static IEnumerable<Vector2> BlockBase
+            {
+                get
+                {
+                    for (var k = 1;; k++)
+                    {
+                        var h = 0;
+                        while ((h + 1) * Math.Max(0, 2 * (h + 1) - 1) < k)
+                        {
+                            ++h;
+                        }
+                        var i = k - h * Math.Max(0, 2 * h - 1) - 1;
+                        var j = i - 2 * h + 1;
+                        var y = Math.Min(h, i >> 1);
+                        var x = (h > y)
+                                    ? (((i & 1) == 0) ? h : -h)
+                                    : ((((j & 1) == 0) ? (j >> 1) : -(j >> 1)));
+                        yield return new Vector2(x, y);
+                    }
+                }
+            }
+
+            // ReSharper restore FunctionNeverReturns
+
+            /// <summary>
+            /// This in an implementation for a Sierpinski formation. See
+            /// https://en.wikipedia.org/wiki/Sierpinski_triangle
+            /// </summary>
+            public static readonly AbstractFormation Sierpinski =
+                AbstractFormation.FromEnumerable(
+                    // Fetch our raw data from the filled wedge formation. We
+                    // it as our "blueprint" from which filter out some entries
+                    // (the "holes" in the Sierpinski triangle).
+                    FilledWedgeBase
+                        // Translate coordinates back to be full integers and all positive.
+                        .Select(t => Tuple.Create((t.Item1 + t.Item2) / 2, t.Item2))
+                        // Transform to rectangluar space (offset y to x axis).
+                        .Select(t => Tuple.Create(t.Item1, t.Item2 - t.Item1))
+                        // Because then we can wave our magic wand...
+                        .Select(t => (t.Item1 & t.Item2) == 0)
+                        // Merge it with our original filled wedge list again, so that we get
+                        // the association (bool keep, Vector2 entry).
+                        .Zip(FilledWedge, Tuple.Create)
+                        // Then filter by that association.
+                        .Where(t => t.Item1).Select(t => t.Item2));
+        }
+
+        /// <summary>
+        /// Tracks information about a single squad.
+        /// </summary>
+        private sealed class SquadData
+        {
+            /// <summary>
+            /// The list of ships in this squad.
+            /// </summary>
+            public readonly List<int> Members = new List<int>();
+
+            /// <summary>
+            /// The current formation of this squad.
+            /// </summary>
+            public AbstractFormation Formation;
+
+            /// <summary>
+            /// The current formation spacing of this squad.
+            /// </summary>
+            public float Spacing;
+
+            /// <summary>
+            /// The cache used for position lookups in the current formation.
+            /// </summary>
+            public FormationCache Cache;
+        }
+
+        /// <summary>
+        /// Helper class for formation implementations, taking care of result
+        /// caching for fast lookups.
+        /// </summary>
+        private sealed class FormationCache
+        {
+            /// <summary>
+            /// The formation implementation.
+            /// </summary>
+            private readonly IEnumerator<Vector2> _formation;
+
+            /// <summary>
+            /// Internal cache of already-computed coordiantes. This simply
+            /// holds the coordinate at the corresponding index.
+            /// </summary>
+            private readonly List<Vector2> _cache = new List<Vector2>();
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FormationCache"/> class.
+            /// </summary>
+            /// <param name="formation">The formation implementation. This
+            /// should compute the relative offset to the leading squad
+            /// member, based on the index the member has inside the squad.
+            /// The result must be in unit scale (i.e. it will be scaled by
+            /// the squad's <see cref="Squad.FormationSpacing"/> property to
+            /// get the final position.
+            /// </param>
+            public FormationCache(IEnumerable<Vector2> formation)
+            {
+                _formation = formation.GetEnumerator();
+            }
+
+            /// <summary>
+            /// Gets the relative position of the squad member at the specified
+            /// offset to the leader of the squad. This is in unit scale.
+            /// </summary>
+            /// <param name="index">The index of the squad member.</param>
+            /// <returns></returns>
+            public Vector2 this[int index]
+            {
+                get
+                {
+                    // Build cache for missing items up to requested one, if necessary.
+                    lock (this)
+                    {
+                        for (var i = _cache.Count; i <= index && _formation.MoveNext(); i++)
+                        {
+                            _cache.Add(_formation.Current);
+                        }
+                    }
+                    // Return cached coordinate.
+                    return _cache.Count > index ? _cache[index] : Vector2.Zero;
+                }
             }
         }
 

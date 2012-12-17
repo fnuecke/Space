@@ -64,7 +64,7 @@ def addAi(squadMember):
 	faction = manager.GetComponent(squadMember, Faction.TypeId).Value;
 	ship = EntityFactory.CreateAIShip(manager, "L1_AI_Ship", faction, position, None)
 	ai = manager.GetComponent(ship, ArtificialIntelligence.TypeId)
-	manager.AddComponent[Squad](ship).Initialize()
+	manager.AddComponent[Squad](ship)
 	squad.AddMember(ship)
 	ai.Guard(squad.Leader)
 
