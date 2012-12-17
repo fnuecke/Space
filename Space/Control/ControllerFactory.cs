@@ -259,6 +259,12 @@ namespace Space.Control
                     // Load textures for detectables before trying to render radar.
                     new DetectableSystem(game.Content),
 
+                    // Provide local player's avatar ID.
+                    new LocalPlayerSystem(session),
+
+                    // Trigger combat text rendering.
+                    new CombatTextSystem(),
+
                     // Provides interpolation of objects in view space. This uses the camera
                     // for the viewport, but the camera uses it for its own position (based
                     // on the avatar position). It's not so bad if we use the viewport of the
@@ -267,31 +273,28 @@ namespace Space.Control
                     new CameraCenteredInterpolationSystem(simulationFps),
 
                     // Update camera first, as it determines what to render.
-                    new CameraSystem(game.GraphicsDevice, game.Services, session),
-                    new CameraMovementSystem(session), 
+                    new CameraSystem(game.GraphicsDevice, game.Services),
+                    new CameraMovementSystem(), 
 
                     // Handle sound.
-                    new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance"), session),
+                    new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance")),
                     
                     // Biome system triggers background changes and stuff.
-                    new BiomeSystem(session),
+                    new BiomeSystem(),
 
                     // Draw background behind everything else.
                     new CameraCenteredBackgroundSystem(game.Content, spriteBatch),
 
-                    // Trigger combat text rendering.
-                    new CombatTextSystem(session),
-
                     // Mind the order: orbits below planets below suns below normal
                     // objects below particle effects below radar.
-                    new OrbitRenderSystem(game.Content, spriteBatch, session),
+                    new OrbitRenderSystem(game.Content, spriteBatch),
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
                     new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
                     new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
                     new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
                     new ShieldRenderSystem(game.Content, game.GraphicsDevice),
                     new FloatingTextSystem(spriteBatch, game.Content), 
-                    new RadarRenderSystem(game.Content, spriteBatch, session)
+                    new RadarRenderSystem(game.Content, spriteBatch)
                 });
 
             // Add some systems for debug overlays.

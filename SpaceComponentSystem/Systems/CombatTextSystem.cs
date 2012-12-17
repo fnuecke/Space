@@ -1,8 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
-using Engine.Session;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
@@ -10,26 +8,13 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class CombatTextSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    /// <summary>
+    /// This system interprets messages and triggers combat floating text
+    /// accordingly.
+    /// </summary>
+    public sealed class CombatTextSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
     {
-        #region Properties
-        
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should draw.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
-        /// </value>
-        public bool Enabled { get; set; }
-
-        #endregion
-
         #region Fields
-
-        /// <summary>
-        /// The session this system belongs to, for fetching the local player.
-        /// </summary>
-        private readonly IClientSession _session;
 
         /// <summary>
         /// The faction of the local player.
@@ -38,41 +23,19 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CombatTextSystem"/> class.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        public CombatTextSystem(IClientSession session)
-        {
-            _session = session;
-            Enabled = true;
-        }
-
-        #endregion
-
         #region Logic
 
         /// <summary>
-        /// Draws the system.
+        /// Updates the system.
         /// </summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public void Update(long frame)
         {
-            if (_session.ConnectionState != ClientState.Connected)
-            {
-                return;
-            }
-
-            var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-            if (avatar != 0)
-            {
-                _localPlayerFaction = ((Faction)Manager.GetComponent(avatar, Faction.TypeId)).Value;
-            }
+            var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
+            _localPlayerFaction = avatar > 0
+                ? ((Faction)Manager.GetComponent(avatar, Faction.TypeId)).Value
+                : Factions.None;
         }
-
 
         /// <summary>
         /// Handle a message of the specified type.
@@ -126,30 +89,6 @@ namespace Space.ComponentSystem.Systems
                         .Display("Blocked", position, Color.LightBlue, 0.5f);
                 }
             }
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

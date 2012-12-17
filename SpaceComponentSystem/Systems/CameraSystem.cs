@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
@@ -120,11 +119,6 @@ namespace Space.ComponentSystem.Systems
         private readonly IServiceProvider _services;
 
         /// <summary>
-        /// The session this system belongs to, for fetching the local player.
-        /// </summary>
-        private readonly IClientSession _session;
-
-        /// <summary>
         /// Previous offset to the ship, use to slowly interpolate, giving a
         /// more organic feel.
         /// </summary>
@@ -180,12 +174,10 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="graphics">The graphics.</param>
         /// <param name="services">The services.</param>
-        /// <param name="session">The session.</param>
-        public CameraSystem(GraphicsDevice graphics, IServiceProvider services, IClientSession session)
+        public CameraSystem(GraphicsDevice graphics, IServiceProvider services)
         {
             _graphics = graphics;
             _services = services;
-            _session = session;
             Enabled = true;
         }
 
@@ -271,18 +263,12 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            // Don't update if our position is fixed or we're not in a game.
-            if (_customCameraPosition.HasValue || _session.ConnectionState != ClientState.Connected)
+            // Don't update if our position is fixed or we're not in a game/don't have an avatar.
+            var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
+            if (_customCameraPosition.HasValue || avatar <= 0)
             {
                 // Update the transformation.
                 UpdateTransformation();
-                return;
-            }
-
-            // Don't update if we don't have an avatar representing the local player.
-            var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
-            if (avatar <= 0)
-            {
                 return;
             }
 

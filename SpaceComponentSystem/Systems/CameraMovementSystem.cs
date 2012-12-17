@@ -18,17 +18,6 @@ namespace Space.ComponentSystem.Systems
         private float _zoomStep;
         private bool _returnToSender;
         private long _returnSpeed;
-        private readonly IClientSession _session;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CameraSystem"/> class.
-        /// </summary>
-        /// <param name="session">The session.</param>
-        public CameraMovementSystem(IClientSession session)
-        {
-            _session = session;
-
-        }
 
         public void Update(long frame)
         {
@@ -36,7 +25,7 @@ namespace Space.ComponentSystem.Systems
             {
                 if (_returnToSender)//we need to get back
                 {
-                    var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
+                    var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
                     if (avatar <= 0)
                     {
                         return;

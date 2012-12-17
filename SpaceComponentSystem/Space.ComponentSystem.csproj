@@ -154,6 +154,7 @@
     <Compile Include="Systems\FloatingTextSystem.cs" />
     <Compile Include="Systems\FreezeOnHitSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />
+    <Compile Include="Systems\LocalPlayerSystem.cs" />
     <Compile Include="Systems\OrbitRenderSystem.cs" />
     <Compile Include="Systems\OverTimeDamageApplyingSystem.cs" />
     <Compile Include="Systems\OwnerSystem.cs" />

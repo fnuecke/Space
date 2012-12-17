@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
-using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -77,11 +76,6 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The local client session, to allow getting the local player's avatar.
-        /// </summary>
-        private readonly IClientSession _session;
-
-        /// <summary>
         /// The sprite batch to render the orbits into.
         /// </summary>
         private readonly SpriteBatch _spriteBatch;
@@ -121,11 +115,9 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
-        /// <param name="session">The local session to get the local player.</param>
-        public RadarRenderSystem(ContentManager content, SpriteBatch spriteBatch, IClientSession session)
+        public RadarRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _spriteBatch = spriteBatch;
-            _session = session;
 
             _radarDirection[(int)RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
             _radarDirection[(int)RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");
@@ -154,7 +146,7 @@ namespace Space.ComponentSystem.Systems
         public void Draw(long frame, float elapsedMilliseconds)
         {
             // Get local player's avatar.
-            var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
+            var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             if (avatar <= 0)
             {
                 return;

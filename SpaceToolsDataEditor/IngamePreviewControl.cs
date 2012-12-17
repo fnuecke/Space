@@ -120,7 +120,8 @@ namespace Space.Tools.DataEditor
                     new ItemEffectSystem(),
                     new RegeneratingValueSystem(),
                     new CameraCenteredInterpolationSystem(() => 20f),
-                    new CameraSystem(GraphicsDevice, null, null),
+                    new LocalPlayerSystem(null),
+                    new CameraSystem(GraphicsDevice, null),
 
                     new PlanetMaxBoundsRenderer(_content, GraphicsDevice),
                     new DebugCollisionBoundsRenderSystem(_content, GraphicsDevice),

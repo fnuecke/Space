@@ -3,7 +3,6 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
-using Engine.Session;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Systems
@@ -25,11 +24,6 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The session this system belongs to, for fetching the local player.
-        /// </summary>
-        private readonly IClientSession _session;
-
-        /// <summary>
         /// The x-coordinate of the sector we were in during the last draw.
         /// </summary>
         private int _lastX = int.MinValue;
@@ -46,11 +40,8 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="BiomeSystem"/> class.
         /// </summary>
-        /// <param name="session">The session.</param>
-        public BiomeSystem(IClientSession session)
+        public BiomeSystem()
         {
-            _session = session;
-
             Enabled = true;
         }
 
@@ -66,14 +57,8 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            // Skip if we're not connected to a game.
-            if (_session.ConnectionState != ClientState.Connected)
-            {
-                return;
-            }
-
             // Fetch the local avatar.
-            var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
+            var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             if (avatar <= 0)
             {
                 return;
