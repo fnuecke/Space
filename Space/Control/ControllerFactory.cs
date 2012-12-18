@@ -290,8 +290,8 @@ namespace Space.Control
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
                     new SunRenderSystem(game.Content, game.GraphicsDevice),
                     new CameraCenteredTextureRenderSystem(game.Content, game.GraphicsDevice),
-                    new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
                     new ShieldRenderSystem(game.Content, game.GraphicsDevice),
+                    new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
                     new FloatingTextSystem(game.Content, game.GraphicsDevice), 
                     new RadarRenderSystem(game.Content, game.GraphicsDevice)
                 });

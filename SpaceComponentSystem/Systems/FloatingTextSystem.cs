@@ -146,13 +146,14 @@ namespace Space.ComponentSystem.Systems
             var texture = new RenderTarget2D(_spriteBatch.GraphicsDevice,
                                              (int)System.Math.Ceiling(size.X),
                                              (int)System.Math.Ceiling(size.Y));
+            var previousRenderTargets = _spriteBatch.GraphicsDevice.GetRenderTargets();
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
             _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White, 0,
                 Vector2.Zero, scale, SpriteEffects.None, 0);
             _spriteBatch.End();
-            _spriteBatch.GraphicsDevice.SetRenderTarget(null);
+            _spriteBatch.GraphicsDevice.SetRenderTargets(previousRenderTargets);
             return texture;
         }
 
@@ -171,13 +172,14 @@ namespace Space.ComponentSystem.Systems
             var texture = new RenderTarget2D(_spriteBatch.GraphicsDevice,
                                              (int)System.Math.Ceiling(size.X),
                                              (int)System.Math.Ceiling(size.Y));
+            var previousRenderTargets = _spriteBatch.GraphicsDevice.GetRenderTargets();
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
             _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White, 0,
                 Vector2.Zero, scale, SpriteEffects.None, 0);
             _spriteBatch.End();
-            _spriteBatch.GraphicsDevice.SetRenderTarget(null);
+            _spriteBatch.GraphicsDevice.SetRenderTargets(previousRenderTargets);
             return texture;
         }
 

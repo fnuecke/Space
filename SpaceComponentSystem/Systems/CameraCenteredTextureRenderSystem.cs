@@ -104,12 +104,13 @@ namespace Space.ComponentSystem.Systems
                     var target = new RenderTarget2D(SpriteBatch.GraphicsDevice,
                                                     (int)System.Math.Ceiling(size.Width),
                                                     (int)System.Math.Ceiling(size.Height));
+                    var previousRenderTargets = SpriteBatch.GraphicsDevice.GetRenderTargets();
                     SpriteBatch.GraphicsDevice.SetRenderTarget(target);
                     SpriteBatch.GraphicsDevice.Clear(Color.Transparent);
-                    SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+                    SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
                     RenderEquipment(shipInfo.Equipment, new Vector2(-size.X, -size.Y));
                     SpriteBatch.End();
-                    SpriteBatch.GraphicsDevice.SetRenderTarget(null);
+                    SpriteBatch.GraphicsDevice.SetRenderTargets(previousRenderTargets);
 
                     _modelCache[equipmentHash] = new CacheEntry
                     {
