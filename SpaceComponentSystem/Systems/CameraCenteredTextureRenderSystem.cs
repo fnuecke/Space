@@ -167,6 +167,14 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Computes a hash based on the currently equipped items, using
+        /// the values relevant for rendering that item. An identical hash
+        /// will therefore mean that an equipment branch will look exactly
+        /// the same when rendered.
+        /// </summary>
+        /// <param name="slot">The slot to start from.</param>
+        /// <returns>Hash for the equipment branch.</returns>
         private int HashEquipment(ItemSlot slot)
         {
             var hasher = new Hasher();
@@ -190,11 +198,6 @@ namespace Space.ComponentSystem.Systems
         /// Computes the size of the model, i.e. the area covered by the fully rendered
         /// equipment starting with the specified slot.
         /// </summary>
-        /// <param name="slot">The slot.</param>
-        /// <param name="offset">The offset.</param>
-        /// <param name="parentSize">Size of the parent.</param>
-        /// <param name="mirrored">The mirrored.</param>
-        /// <returns></returns>
         private RectangleF ComputeModelSize(SpaceItemSlot slot, Vector2 offset, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
         {
             // Nothing to do if there's no item in the slot.
@@ -252,6 +255,9 @@ namespace Space.ComponentSystem.Systems
             return bounds;
         }
 
+        /// <summary>
+        /// Renders the equipment starting from the specified slot.
+        /// </summary>
         private void RenderEquipment(SpaceItemSlot slot, Vector2 offset, int depth = 1, float order = 0.5f, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
         {
             // Nothing to do if there's no item in the slot.
