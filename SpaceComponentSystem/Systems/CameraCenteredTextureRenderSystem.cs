@@ -1,13 +1,18 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
+using Engine.Math;
+using Engine.Serialization;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Data;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -17,6 +22,38 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CameraCenteredTextureRenderSystem : TextureRenderSystem
     {
+        #region Fields
+
+        /// <summary>
+        /// We cache rendered ship models, indexed by the equipment hash,
+        /// to avoid having to re-render them each frame, which is slow due
+        /// to the frequent texture switching for each item.
+        /// </summary>
+        private readonly Dictionary<int, CacheEntry> _modelCache = new Dictionary<int, CacheEntry>();
+
+        /// <summary>
+        /// The struct used to store single model cache entries.
+        /// </summary>
+        private sealed class CacheEntry
+        {
+            /// <summary>
+            /// The actual model texture used for rendering.
+            /// </summary>
+            public Texture2D Texture;
+
+            /// <summary>
+            /// Offset to render the cached texture at.
+            /// </summary>
+            public Vector2 Offset;
+
+            /// <summary>
+            /// The last frame the model was used in (to clean up unused models).
+            /// </summary>
+            public long LastUsedFrame;
+        }
+
+        #endregion
+
         #region Constructor
 
         /// <summary>
@@ -33,6 +70,71 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
+        public override void Draw(long frame, float elapsedMilliseconds)
+        {
+            // Rebuild model cache. We have to do that in advance, because
+            // we want to perform the actual render pass in one block, and
+            // using a custom spritebatch in between would break that.
+            foreach (var entity in GetVisibleEntities())
+            {
+                var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
+
+                // Skip invalid or disabled entities.
+                if (component == null || !component.Enabled)
+                {
+                    continue;
+                }
+                
+                // Skip if it's not a ship.
+                ShipInfo shipInfo;
+                if ((shipInfo = (ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId)) == null ||
+                    shipInfo.Equipment == null || shipInfo.Equipment.Item <= 0)
+                {
+                    continue;
+                }
+
+                // Compute the hash for this model.
+                var equipmentHash = HashEquipment(shipInfo.Equipment);
+
+                // Create cache texture if necessary.
+                if (!_modelCache.ContainsKey(equipmentHash))
+                {
+                    // No cache entry yet, create it.
+                    var size = ComputeModelSize(shipInfo.Equipment, Vector2.Zero);
+                    var target = new RenderTarget2D(SpriteBatch.GraphicsDevice,
+                                                    (int)System.Math.Ceiling(size.Width),
+                                                    (int)System.Math.Ceiling(size.Height));
+                    SpriteBatch.GraphicsDevice.SetRenderTarget(target);
+                    SpriteBatch.GraphicsDevice.Clear(Color.Transparent);
+                    SpriteBatch.Begin();
+                    RenderEquipment(shipInfo.Equipment, new Vector2(-size.X, -size.Y));
+                    SpriteBatch.End();
+                    SpriteBatch.GraphicsDevice.SetRenderTarget(null);
+
+                    _modelCache[equipmentHash] = new CacheEntry
+                    {
+                        Texture = target,
+                        Offset = new Vector2(-size.X, -size.Y)
+                    };
+                }
+
+                // Update last access time.
+                _modelCache[equipmentHash].LastUsedFrame = frame;
+            }
+
+            // Prune old, unused cache entries.
+            var deprecated = _modelCache
+                .Where(c => c.Value.LastUsedFrame < frame - 10 * Settings.TicksPerSecond)
+                .Select(c => c.Key).ToList();
+            foreach (var entry in deprecated)
+            {
+                _modelCache.Remove(entry);
+            }
+
+            // Then do actual rendering.
+            base.Draw(frame, elapsedMilliseconds);
+        }
+
         /// <summary>
         /// Draws the component.
         /// </summary>
@@ -47,14 +149,14 @@ namespace Space.ComponentSystem.Systems
             if ((shipInfo = (ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId)) != null &&
                 shipInfo.Equipment != null && shipInfo.Equipment.Item > 0)
             {
-                // Precompute sine and cosine (because they're expensive).
-                var cosRadians = (float)Math.Cos(rotation);
-                var sinRadians = (float)Math.Sin(rotation);
-                RenderEquipment(shipInfo.Equipment, position, rotation, cosRadians, sinRadians, layerDepth);
+                // Cached drawing, just render the texture.
+                var cachedModel = _modelCache[HashEquipment(shipInfo.Equipment)];
+                SpriteBatch.Draw(cachedModel.Texture, position, null, Color.White, rotation, cachedModel.Offset, component.Scale,
+                                 SpriteEffects.None, layerDepth);
             }
             else
             {
-                // Default drawing, just render the texture. Get the rectangle at which we'll draw.
+                // Default drawing, just render the texture.
                 Vector2 origin;
                 origin.X = component.Texture.Width / 2f;
                 origin.Y = component.Texture.Height / 2f;
@@ -65,8 +167,99 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private void RenderEquipment(SpaceItemSlot slot, Vector2 offset, float rotation, float cosRadians, float sinRadians, float layerDepth, int depth = 1, float order = 0.5f, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
+        private int HashEquipment(ItemSlot slot)
         {
+            var hasher = new Hasher();
+
+            foreach (var itemId in slot.AllItems)
+            {
+                // Get item info.
+                var item = (SpaceItem)Manager.GetComponent(itemId, Item.TypeId);
+                hasher.Put(item.DrawBelowParent);
+                hasher.Put(item.ModelOffset);
+                hasher.Put(item.RequiredSlotSize.Scale());
+                var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
+                hasher.Put(renderer.TextureName);
+                hasher.Put(renderer.Tint);
+            }
+
+            return hasher.Value;
+        }
+
+        /// <summary>
+        /// Computes the size of the model, i.e. the area covered by the fully rendered
+        /// equipment starting with the specified slot.
+        /// </summary>
+        /// <param name="slot">The slot.</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="parentSize">Size of the parent.</param>
+        /// <param name="mirrored">The mirrored.</param>
+        /// <returns></returns>
+        private RectangleF ComputeModelSize(SpaceItemSlot slot, Vector2 offset, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
+        {
+            // Nothing to do if there's no item in the slot.
+            if (slot.Item <= 0)
+            {
+                return RectangleF.Empty;
+            }
+
+            // Get item info.
+            var item = (SpaceItem)Manager.GetComponent(slot.Item, Item.TypeId);
+
+            // Get renderer and load texture if necessary.
+            var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
+            if (renderer.Texture == null)
+            {
+                renderer.Texture = Content.Load<Texture2D>(renderer.TextureName);
+            }
+
+            // See if we should mirror rendering (e.g. left wing).
+            var slotOffset = slot.Offset;
+            var itemOffset = item.ModelOffset;
+            if (mirrored.HasValue)
+            {
+                if (mirrored.Value)
+                {
+                    slotOffset.Y = -slotOffset.Y;
+                }
+            }
+            else if (slotOffset.Y != 0)
+            {
+                mirrored = slot.Offset.Y < 0;
+            }
+            if (mirrored.HasValue && mirrored.Value)
+            {
+                itemOffset.Y = -itemOffset.Y;
+            }
+
+            // Move the offset according to rotation and accumulate it.
+            var localOffset = offset + parentSize.Scale() * slotOffset;
+            var renderOffset = localOffset + item.RequiredSlotSize.Scale() * itemOffset;
+            
+            // Get area the texture is rendered to.
+            var bounds = (RectangleF)renderer.Texture.Bounds;
+            bounds.Offset(-bounds.Width / 2, -bounds.Height / 2);
+            bounds.Offset(renderOffset);
+            bounds.Inflate(-renderer.Texture.Width / 2f * (1 - item.RequiredSlotSize.Scale()),
+                           -renderer.Texture.Height / 2f * (1 - item.RequiredSlotSize.Scale()));
+
+            // Check sub-items.
+            foreach (SpaceItemSlot childSlot in Manager.GetComponents(item.Entity, ItemSlot.TypeId))
+            {
+                bounds = RectangleF.Union(bounds, ComputeModelSize(childSlot, localOffset, item.RequiredSlotSize, mirrored));
+            }
+
+            return bounds;
+        }
+
+        private void RenderEquipment(SpaceItemSlot slot, Vector2 offset, int depth = 1, float order = 0.5f, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
+        {
+            // Nothing to do if there's no item in the slot.
+            if (slot.Item <= 0)
+            {
+                return;
+            }
+
             // Get item info.
             var item = (SpaceItem)Manager.GetComponent(slot.Item, Item.TypeId);
 
@@ -100,16 +293,9 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Move the offset according to rotation and accumulate it.
-            var localOffset = offset;
-            localOffset.X += parentSize.Scale(slotOffset.X * cosRadians - slotOffset.Y * sinRadians);
-            localOffset.Y += parentSize.Scale(slotOffset.X * sinRadians + slotOffset.Y * cosRadians);
+            var localOffset = offset + parentSize.Scale() * slotOffset;
+            var renderOffset = localOffset + item.RequiredSlotSize.Scale() * itemOffset;
 
-            var renderOffset = localOffset;
-            renderOffset.X += item.RequiredSlotSize.Scale(itemOffset.X * cosRadians - itemOffset.Y * sinRadians);
-            renderOffset.Y += item.RequiredSlotSize.Scale(itemOffset.X * sinRadians + itemOffset.Y * cosRadians);
-
-            rotation += mirrored.HasValue && mirrored.Value ? -slot.Rotation : slot.Rotation;
-            
             // Get center of texture.
             Vector2 origin;
             origin.X = renderer.Texture.Width / 2f;
@@ -120,20 +306,16 @@ namespace Space.ComponentSystem.Systems
                 renderOffset,
                 null,
                 renderer.Tint,
-                rotation,
+                0,
                 origin,
                 item.RequiredSlotSize.Scale(),
                 mirrored.HasValue && mirrored.Value ? SpriteEffects.FlipVertically : SpriteEffects.None,
-                order + layerDepth);
+                order);
 
             // Render sub-items.
             foreach (SpaceItemSlot childSlot in Manager.GetComponents(item.Entity, ItemSlot.TypeId))
             {
-                if (childSlot.Item > 0)
-                {
-                    RenderEquipment(childSlot, localOffset, rotation, cosRadians, sinRadians,
-                        layerDepth, depth + 1, order, item.RequiredSlotSize, mirrored);
-                }
+                RenderEquipment(childSlot, localOffset, depth + 1, order, item.RequiredSlotSize, mirrored);
             }
         }
 
@@ -143,7 +325,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>
         /// The list of visible entities.
         /// </returns>
-        protected override System.Collections.Generic.IEnumerable<int> GetVisibleEntities()
+        protected override IEnumerable<int> GetVisibleEntities()
         {
             return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).VisibleEntities;
         }

@@ -649,7 +649,7 @@ namespace Engine.Graphics
         {
             var length = 1;
             var tmp = value;
-            while (tmp > 10)
+            while (tmp >= 10)
             {
                 length++;
                 tmp /= 10;

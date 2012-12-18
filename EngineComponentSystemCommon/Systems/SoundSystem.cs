@@ -119,6 +119,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
+            // No need to check *all* the time... this saves quite some performance
+            // if a lot of sound emitting objects are in range.
+            if (frame % 3 != 0)
+            {
+                return;
+            }
+
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
             Debug.Assert(index != null);
 

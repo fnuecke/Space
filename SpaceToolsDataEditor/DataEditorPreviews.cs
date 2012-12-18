@@ -582,9 +582,7 @@ namespace Space.Tools.DataEditor
                     var transform = (Transform)manager.GetComponent(entity, Transform.TypeId);
                     if (transform != null)
                     {
-                        FarPosition offset;
-                        offset.X = factory.RequiredSlotSize.Scale(factory.ModelOffset.X);
-                        offset.Y = factory.RequiredSlotSize.Scale(factory.ModelOffset.Y);
+                        var offset = (FarPosition)(factory.RequiredSlotSize.Scale() * factory.ModelOffset);
                         transform.SetTranslation(offset);
                     }
                 }

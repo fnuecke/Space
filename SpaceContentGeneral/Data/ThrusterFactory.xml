@@ -30,13 +30,13 @@
     <Item>
       <Name>L1_AI_Thruster</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Items/default</Model>
+      <Model>Textures/Stolen/Projectiles/missile_vlrm_stage2</Model>
       <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
       <Effects>
         <Item>
           <Group>Thruster</Group>
-          <Name>Effects/Thruster</Name>
+          <Name>Effects/Nozzle</Name>
           <Scale>1</Scale>
           <Offset>0 0</Offset>
           <Direction>180</Direction>

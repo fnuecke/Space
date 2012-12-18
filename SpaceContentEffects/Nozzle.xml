@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Modifiers="ProjectMercury.Modifiers">
+  <Asset Type="ProjectMercury.ParticleEffect">
+    <Item>
+      <Name>Nozzle</Name>
+      <Budget>5000</Budget>
+      <Term>0.25</Term>
+      <ReleaseQuantity>1</ReleaseQuantity>
+      <Enabled>true</Enabled>
+      <ReleaseSpeed>
+        <Value>0</Value>
+        <Variation>0</Variation>
+      </ReleaseSpeed>
+      <ReleaseColour>
+        <Value>1 0.95 0.6</Value>
+        <Variation>0 0 0</Variation>
+      </ReleaseColour>
+      <ReleaseOpacity>
+        <Value>0.6</Value>
+        <Variation>0.1</Variation>
+      </ReleaseOpacity>
+      <ReleaseScale>
+        <Value>-100</Value>
+        <Variation>10</Variation>
+      </ReleaseScale>
+      <ReleaseRotation>
+        <Value>1.57079637</Value>
+        <Variation>0</Variation>
+      </ReleaseRotation>
+      <ReleaseImpulse>0 0</ReleaseImpulse>
+      <ParticleTextureAssetName>Textures/Effects/Water002</ParticleTextureAssetName>
+      <Modifiers>
+        <Item Type="Modifiers:OpacityFastFadeModifier" />
+      </Modifiers>
+      <BlendMode>Add</BlendMode>
+      <TriggerOffset>40 0</TriggerOffset>
+      <MinimumTriggerPeriod>0.025</MinimumTriggerPeriod>
+    </Item>
+    <Name>Particle Effect</Name>
+    <Author Null="true" />
+    <Description Null="true" />
+  </Asset>
+</XnaContent>

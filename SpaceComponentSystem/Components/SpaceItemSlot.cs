@@ -125,8 +125,7 @@ namespace Space.ComponentSystem.Components
                 if (parent != null)
                 {
                     var parentItem = (SpaceItem)Manager.GetComponent(parent.Item, Engine.ComponentSystem.RPG.Components.Item.TypeId);
-                    slotOffset.X = parentItem.RequiredSlotSize.Scale(slotOffset.X);
-                    slotOffset.Y = parentItem.RequiredSlotSize.Scale(slotOffset.Y);
+                    slotOffset *= parentItem.RequiredSlotSize.Scale();
                 }
                 // If there's an offset, mark it as the new top-level node.
                 if (slot.Offset.Y != 0f)
@@ -222,8 +221,7 @@ namespace Space.ComponentSystem.Components
                 if (parent != null)
                 {
                     var parentItem = (SpaceItem)Manager.GetComponent(parent.Item, Engine.ComponentSystem.RPG.Components.Item.TypeId);
-                    slotOffset.X = parentItem.RequiredSlotSize.Scale(slotOffset.X);
-                    slotOffset.Y = parentItem.RequiredSlotSize.Scale(slotOffset.Y);
+                    slotOffset *= parentItem.RequiredSlotSize.Scale();
                 }
                 // Accumulate the slot rotations.
                 rotation += slot.Rotation;

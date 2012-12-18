@@ -10,14 +10,14 @@
       <Effects>
         <Item>
           <Group>Thruster</Group>
-          <Name>Effects/Thruster</Name>
+          <Name>Effects/Nozzle</Name>
           <Scale>0.5</Scale>
           <Offset>42 42</Offset>
           <Direction>-20</Direction>
         </Item>
         <Item>
           <Group>Thruster</Group>
-          <Name>Effects/Thruster</Name>
+          <Name>Effects/Nozzle</Name>
           <Scale>0.5</Scale>
           <Offset>20 58</Offset>
           <Direction>100</Direction>

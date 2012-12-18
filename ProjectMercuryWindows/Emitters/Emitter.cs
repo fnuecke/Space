@@ -527,12 +527,14 @@ namespace ProjectMercury.Emitters
             if (this.TotalSeconds - this.MostRecentTrigger < this.MinimumTriggerPeriod)
                 return;
 
+            var rotationMatrix = Matrix.CreateRotationZ(rotation);
+
             // Add the Emitter offset vector to the trigger position...
-            var position = new FarPosition
-            {
-                X = triggerPosition.X + this.TriggerOffset.X,
-                Y = triggerPosition.Y + this.TriggerOffset.Y,
-            };
+            var triggerOffset = this.TriggerOffset * scale;
+            Vector2.Transform(ref triggerOffset, ref rotationMatrix, out triggerOffset);
+            FarPosition position;
+            position.X = triggerPosition.X + triggerOffset.X;
+            position.Y = triggerPosition.Y + triggerOffset.Y;
 
             int oldIdle = this.Idle;
 
@@ -548,7 +550,6 @@ namespace ProjectMercury.Emitters
 
                             // Generate and offset and force vector for the particle...
                             this.GenerateOffsetAndForce(out offset, out force);
-                            var rotationMatrix = Matrix.CreateRotationZ(rotation);
                             Vector2.Transform(ref force, ref rotationMatrix, out force);
                             // Calculate the velocity of the particle using the force vector and the release velocity...
                             float speed = this.ReleaseSpeed.Sample() * scale;

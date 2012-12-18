@@ -75,7 +75,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        public virtual void Draw(long frame, float elapsedMilliseconds)
         {
             // Get the interpolation system for interpolated positions.
             var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);

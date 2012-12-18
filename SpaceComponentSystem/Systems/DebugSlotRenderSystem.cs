@@ -106,7 +106,7 @@ namespace Space.ComponentSystem.Systems
                     origin.X = texture.Width / 2f;
                     origin.Y = texture.Height / 2f;
 
-                    _spriteBatch.Draw(_textures[slot.SlotTypeId], offset, null, Color.White * 0.75f, rotation, origin, slot.Size.Scale(0.64f), SpriteEffects.None, 0);
+                    _spriteBatch.Draw(_textures[slot.SlotTypeId], offset, null, Color.White * 0.75f, rotation, origin, slot.Size.Scale() * 0.64f, SpriteEffects.None, 0);
                 }
             }
             _spriteBatch.End();

@@ -41,25 +41,24 @@ namespace Space.Data
     public static class ItemSlotSizeExtensions
     {
         /// <summary>
-        /// Returns the actual pixel size at which an object in that slot should be rendered.
+        /// Returns the scale at which an object in that slot should be rendered.
         /// </summary>
         /// <param name="size">The slot size.</param>
-        /// <param name="pixelSize">The original size to scale.</param>
         /// <returns>
-        /// The pixel size of the slot.
+        /// The scaling.
         /// </returns>
-        public static float Scale(this ItemSlotSize size, float pixelSize = 1.0f)
+        public static float Scale(this ItemSlotSize size)
         {
             switch (size)
             {
                 case ItemSlotSize.Small:
-                    return pixelSize * 0.5f;
+                    return 0.5f;
                 case ItemSlotSize.Medium:
-                    return pixelSize * 0.7f;
+                    return 0.7f;
                 case ItemSlotSize.Large:
-                    return pixelSize * 0.85f;
+                    return 0.85f;
                 default:
-                    return pixelSize * 1f;
+                    return 1f;
             }
         }
     }
