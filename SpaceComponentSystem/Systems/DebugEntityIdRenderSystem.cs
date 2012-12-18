@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -47,10 +46,10 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="DebugEntityIdRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
-        /// <param name="spriteBatch">The sprite batch.</param>
-        public DebugEntityIdRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        /// <param name="graphics">The graphics device.</param>
+        public DebugEntityIdRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = new SpriteBatch(graphics);
             _font = content.Load<SpriteFont>("Fonts/ConsoleFont");
         }
 
@@ -81,7 +80,8 @@ namespace Space.ComponentSystem.Systems
                     FarPosition position;
                     interpolation.GetInterpolatedPosition(transform.Entity, out position);
                     position += cameraTransform.Translation;
-                    _spriteBatch.DrawString(_font, "ID: " + transform.Entity, (Vector2)position, Color.White);
+                    _spriteBatch.DrawString(_font, "ID: " + transform.Entity, (Vector2)position, Color.White, 0,
+                                            Vector2.Zero, 1f / camera.CameraZoom, SpriteEffects.None, 1);
                 }
             }
             _spriteBatch.End();

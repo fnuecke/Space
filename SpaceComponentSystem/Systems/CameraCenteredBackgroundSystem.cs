@@ -16,9 +16,9 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="CameraCenteredBackgroundSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
-        /// <param name="spriteBatch">The sprite batch.</param>
-        public CameraCenteredBackgroundSystem(ContentManager content, SpriteBatch spriteBatch)
-            : base(content, spriteBatch)
+        /// <param name="graphics">The graphics device.</param>
+        public CameraCenteredBackgroundSystem(ContentManager content, GraphicsDevice graphics)
+            : base(content, graphics)
         {
         }
 

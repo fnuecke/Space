@@ -84,17 +84,17 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="OrbitRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
-        public OrbitRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        /// <param name="graphics">The graphics device.</param>
+        public OrbitRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = new SpriteBatch(graphics);
 
-            _ellipse = new Ellipse(content, spriteBatch.GraphicsDevice)
+            _ellipse = new Ellipse(content, graphics)
             {
                 Thickness = OrbitThickness,
                 BlendState = BlendState.Additive
             };
-            _filledEllipse = new FilledEllipse(content, spriteBatch.GraphicsDevice)
+            _filledEllipse = new FilledEllipse(content, graphics)
             {
                 Gradient = DeadZoneDiffuseWidth,
                 Color = DeadZoneColor,

@@ -43,13 +43,11 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics device to render to.</param>
-        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
-        public SunRenderSystem(ContentManager content, GraphicsDevice graphics, SpriteBatch spriteBatch)
+        public SunRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
             if (_sun == null)
             {
                 _sun = new Sun(content, graphics);
-                _sun.LoadContent(spriteBatch, content);
             }
 
             Enabled = true;

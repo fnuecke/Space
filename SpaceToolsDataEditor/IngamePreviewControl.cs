@@ -127,9 +127,9 @@ namespace Space.Tools.DataEditor
                     new DebugCollisionBoundsRenderSystem(_content, GraphicsDevice),
 
                     new PlanetRenderSystem(_content, GraphicsDevice),
-                    new SunRenderSystem(_content, GraphicsDevice, _batch),
+                    new SunRenderSystem(_content, GraphicsDevice),
 
-                    new CameraCenteredTextureRenderSystem(_content, _batch),
+                    new CameraCenteredTextureRenderSystem(_content, GraphicsDevice),
                     new CameraCenteredParticleEffectSystem(_content, (IGraphicsDeviceService)Services.GetService(typeof(IGraphicsDeviceService)), () => 20f),
                     new ShieldRenderSystem(_content, GraphicsDevice),
                     

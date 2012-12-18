@@ -250,7 +250,6 @@ namespace Space.Control
         {
             var audioEngine = (AudioEngine)game.Services.GetService(typeof(AudioEngine));
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
             var simulationFps = new Func<float>(() => controller.ActualSpeed * Settings.TicksPerSecond);
 
             manager.AddSystems(
@@ -283,18 +282,18 @@ namespace Space.Control
                     new BiomeSystem(),
 
                     // Draw background behind everything else.
-                    new CameraCenteredBackgroundSystem(game.Content, spriteBatch),
+                    new CameraCenteredBackgroundSystem(game.Content, game.GraphicsDevice),
 
                     // Mind the order: orbits below planets below suns below normal
                     // objects below particle effects below radar.
-                    new OrbitRenderSystem(game.Content, spriteBatch),
+                    new OrbitRenderSystem(game.Content, game.GraphicsDevice),
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
-                    new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
-                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
+                    new SunRenderSystem(game.Content, game.GraphicsDevice),
+                    new CameraCenteredTextureRenderSystem(game.Content, game.GraphicsDevice),
                     new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
                     new ShieldRenderSystem(game.Content, game.GraphicsDevice),
-                    new FloatingTextSystem(spriteBatch, game.Content), 
-                    new RadarRenderSystem(game.Content, spriteBatch)
+                    new FloatingTextSystem(game.Content, game.GraphicsDevice), 
+                    new RadarRenderSystem(game.Content, game.GraphicsDevice)
                 });
 
             // Add some systems for debug overlays.
@@ -310,14 +309,12 @@ namespace Space.Control
         [Conditional("DEBUG")]
         private static void AddDebugSystems(IManager manager, Game game)
         {
-            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-
             manager.AddSystems(
                 new AbstractSystem[]
                 {
                     new DebugCollisionBoundsRenderSystem(game.Content, game.GraphicsDevice),
-                    new DebugEntityIdRenderSystem(game.Content, spriteBatch),
-                    new DebugAIRenderSystem(game.Content, spriteBatch)
+                    new DebugEntityIdRenderSystem(game.Content, game.GraphicsDevice),
+                    new DebugAIRenderSystem(game.Content, game.GraphicsDevice)
                 });
         }
     }

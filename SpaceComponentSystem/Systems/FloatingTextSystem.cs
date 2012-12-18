@@ -77,9 +77,11 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="FloatingTextSystem"/> class.
         /// </summary>
-        public FloatingTextSystem(SpriteBatch spriteBatch, ContentManager content)
+        /// <param name="content">The content manager to use for loading.</param>
+        /// <param name="graphics">The graphics device to use for rendering.</param>
+        public FloatingTextSystem(ContentManager content, GraphicsDevice graphics)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = new SpriteBatch(graphics);
             _font = content.Load<SpriteFont>("Fonts/bauhaus");
             DefaultColor = Color.White;
             DefaultDuration = 3;
@@ -146,7 +148,7 @@ namespace Space.ComponentSystem.Systems
                                              (int)System.Math.Ceiling(size.Y));
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
             _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
-            _spriteBatch.Begin();
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White, 0,
                 Vector2.Zero, scale, SpriteEffects.None, 0);
             _spriteBatch.End();
@@ -171,7 +173,7 @@ namespace Space.ComponentSystem.Systems
                                              (int)System.Math.Ceiling(size.Y));
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
             _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
-            _spriteBatch.Begin();
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             _spriteBatch.DrawString(_font, value, Vector2.Zero, Color.White, 0,
                 Vector2.Zero, scale, SpriteEffects.None, 0);
             _spriteBatch.End();

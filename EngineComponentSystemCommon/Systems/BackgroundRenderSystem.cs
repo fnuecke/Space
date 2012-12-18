@@ -58,11 +58,11 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Initializes a new instance of the <see cref="BackgroundRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
-        /// <param name="spriteBatch">The sprite batch.</param>
-        protected BackgroundRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        /// <param name="graphics">The graphics device.</param>
+        protected BackgroundRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
             _content = content;
-            _spriteBatch = spriteBatch;
+            _spriteBatch = new SpriteBatch(graphics);
 
             Enabled = true;
         }

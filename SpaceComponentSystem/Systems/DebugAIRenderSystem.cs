@@ -44,15 +44,15 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Constructor
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugAIRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
-        /// <param name="spriteBatch">The sprite batch.</param>
-        public DebugAIRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        /// <param name="graphics">The graphics device.</param>
+        public DebugAIRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = new SpriteBatch(graphics);
             _font = content.Load<SpriteFont>("Fonts/ConsoleFont");
             _arrow = content.Load<Texture2D>("Textures/arrow");
         }
@@ -100,7 +100,8 @@ namespace Space.ComponentSystem.Systems
 
                     // Render current state.
                     position.Y += 20; // don't intersect with entity id if visible
-                    _spriteBatch.DrawString(_font, "AI: " + ai.CurrentBehavior, (Vector2)position, Color.White);
+                    _spriteBatch.DrawString(_font, "AI: " + ai.CurrentBehavior, (Vector2)position, Color.White, 0,
+                        Vector2.Zero, 1f / camera.CameraZoom, SpriteEffects.None, 0);
                 }
             }
             _spriteBatch.End();

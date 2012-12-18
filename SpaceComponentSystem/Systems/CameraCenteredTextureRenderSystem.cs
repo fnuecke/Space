@@ -60,9 +60,9 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="CameraCenteredTextureRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
-        /// <param name="spriteBatch">The sprite batch.</param>
-        public CameraCenteredTextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
-            : base(content, spriteBatch)
+        /// <param name="graphics">The graphics device.</param>
+        public CameraCenteredTextureRenderSystem(ContentManager content, GraphicsDevice graphics)
+            : base(content, graphics)
         {
         }
 
@@ -106,7 +106,7 @@ namespace Space.ComponentSystem.Systems
                                                     (int)System.Math.Ceiling(size.Height));
                     SpriteBatch.GraphicsDevice.SetRenderTarget(target);
                     SpriteBatch.GraphicsDevice.Clear(Color.Transparent);
-                    SpriteBatch.Begin();
+                    SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
                     RenderEquipment(shipInfo.Equipment, new Vector2(-size.X, -size.Y));
                     SpriteBatch.End();
                     SpriteBatch.GraphicsDevice.SetRenderTarget(null);
@@ -128,6 +128,7 @@ namespace Space.ComponentSystem.Systems
                 .Select(c => c.Key).ToList();
             foreach (var entry in deprecated)
             {
+                _modelCache[entry].Texture.Dispose();
                 _modelCache.Remove(entry);
             }
 

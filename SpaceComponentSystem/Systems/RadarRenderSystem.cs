@@ -114,10 +114,10 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="RadarRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
-        public RadarRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        /// <param name="graphics">The graphics device to use for rendering.</param>
+        public RadarRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = new SpriteBatch(graphics);
 
             _radarDirection[(int)RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
             _radarDirection[(int)RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");

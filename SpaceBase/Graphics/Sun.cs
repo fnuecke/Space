@@ -136,6 +136,23 @@ namespace Space.Graphics
         public Sun(ContentManager content, GraphicsDevice graphics)
             : base(content, graphics, "Shaders/Sun")
         {
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            // Load our textures.
+            _surface = content.Load<Texture2D>("Textures/Suns/sun_00");
+            _turbulenceOne = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence1");
+            _turbulenceTwo = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence2");
+            //_turbulenceColor = content.Load<Texture2D>("Textures/Suns/sun_00_gradient");
+            _gaussianBlur = content.Load<Effect>("Shaders/SunBlur");
+            _additiveBlend = content.Load<Effect>("Shaders/SunBlend");
+
+            // Apply texture parameters.
+            Effect.Parameters["Surface"].SetValue(_surface);
+            Effect.Parameters["TurbulenceOne"].SetValue(_turbulenceOne);
+            Effect.Parameters["TurbulenceTwo"].SetValue(_turbulenceTwo);
+            //Effect.Parameters["TurbulenceColor"].SetValue(_turbulenceColor);
+
+            RecreateRenderTargets();
         }
 
         public void Dispose()
@@ -157,32 +174,6 @@ namespace Space.Graphics
             }
 
             //GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Loads graphics and allocates graphics resources.
-        /// </summary>
-        /// <param name="spriteBatch">The spritebatch to use for rendering.</param>
-        /// <param name="content">The content manager to use to load stuff.</param>
-        public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
-        {
-            _spriteBatch = spriteBatch;
-
-            // Load our textures.
-            _surface = content.Load<Texture2D>("Textures/Suns/sun_00");
-            _turbulenceOne = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence1");
-            _turbulenceTwo = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence2");
-            //_turbulenceColor = content.Load<Texture2D>("Textures/Suns/sun_00_gradient");
-            _gaussianBlur = content.Load<Effect>("Shaders/SunBlur");
-            _additiveBlend = content.Load<Effect>("Shaders/SunBlend");
-
-            // Apply texture parameters.
-            Effect.Parameters["Surface"].SetValue(_surface);
-            Effect.Parameters["TurbulenceOne"].SetValue(_turbulenceOne);
-            Effect.Parameters["TurbulenceTwo"].SetValue(_turbulenceTwo);
-            //Effect.Parameters["TurbulenceColor"].SetValue(_turbulenceColor);
-
-            RecreateRenderTargets();
         }
 
         private void RecreateRenderTargets()

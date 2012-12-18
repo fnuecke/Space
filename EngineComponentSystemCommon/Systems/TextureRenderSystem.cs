@@ -58,11 +58,11 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Initializes a new instance of the <see cref="TextureRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
-        /// <param name="spriteBatch">The sprite batch.</param>
-        protected TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        /// <param name="graphics">The graphics device.</param>
+        protected TextureRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
             Content = content;
-            SpriteBatch = spriteBatch;
+            SpriteBatch = new SpriteBatch(graphics);
             Enabled = true;
         }
 
