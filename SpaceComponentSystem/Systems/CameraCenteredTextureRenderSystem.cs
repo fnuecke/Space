@@ -279,7 +279,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Adjust depth we want to render at.
-            order += (item.DrawBelowParent ? -0.25f : 0.25f) / depth;
+            order -= (item.DrawBelowParent ? -0.25f : 0.25f) / depth;
 
             // See if we should mirror rendering (e.g. left wing).
             var slotOffset = slot.Offset;
