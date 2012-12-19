@@ -34,7 +34,7 @@ namespace Engine.Util
             }
 
             // Set a nicer layout.
-            Layout = new SimpleLayout("${date:format=yyyy-MM-dd HH\\:mm\\:ss} [${level:uppercase=true}] ${logger:shortName=true}: ${message}");
+            Layout = new SimpleLayout("${date:format=yyyy-MM-dd HH\\:mm\\:ss} [${level:uppercase=true}] ${logger:shortName=true}: ${message}\n${exception:format=tostring}");
 
             // Add as a target, or make it the default target if there are none.
             if (LogManager.Configuration != null)
