@@ -77,6 +77,11 @@ namespace Space.Util
         public bool PostProcessing = true;
 
         /// <summary>
+        /// Which bloom filter to use.
+        /// </summary>
+        public string Bloom = "None";
+
+        /// <summary>
         /// The scaling of the GUI.
         /// </summary>
         [ScriptAccess("GuiScale", MinValue = 0.25, MaxValue = 2.0)]

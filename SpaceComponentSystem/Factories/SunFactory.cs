@@ -147,7 +147,7 @@ namespace Space.ComponentSystem.Factories
             // Make it attract stuff if it has mass.
             if (mass > 0)
             {
-                manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor, mass);
+                manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor);
             }
 
             // Make it collidable.
@@ -161,6 +161,7 @@ namespace Space.ComponentSystem.Factories
             attributes.SetBaseValue(AttributeType.AttackBurnChance, 1);
             attributes.SetBaseValue(AttributeType.AttackBurnMinDuration, 5);
             attributes.SetBaseValue(AttributeType.AttackBurnMaxDuration, 5);
+            attributes.SetBaseValue(AttributeType.Mass, mass);
 
             // Make it detectable.
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");

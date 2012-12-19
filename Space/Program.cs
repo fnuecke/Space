@@ -284,6 +284,13 @@ namespace Space
             // For graph data.
             _watch.Restart();
 
+            // Fixes funny error messages due to buggy XNA, e.g. when restoring
+            // from a minimized state. At least I couldn't reproduce it since
+            // this line is in... I claim this to be XNA's fault because of this:
+            // http://xboxforums.create.msdn.com/forums/t/76414.aspx
+            GraphicsDevice.SamplerStates[1] = SamplerState.LinearClamp;
+
+            // Clear screen.
             GraphicsDevice.Clear(Color.DarkSlateGray);
 
             // Draw world elements if we're in a game.

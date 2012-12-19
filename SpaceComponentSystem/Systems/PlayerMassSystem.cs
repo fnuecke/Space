@@ -31,14 +31,11 @@ namespace Space.ComponentSystem.Systems
             var entity = cm.Value.Entity;
             var attributes = (Attributes<AttributeType>)Manager.GetComponent(entity, Attributes<AttributeType>.TypeId);
             var gravitation = (Gravitation)Manager.GetComponent(entity, Gravitation.TypeId);
-            if (gravitation == null)
+            if (gravitation != null)
             {
-                // Skip if this entity doesn't care for gravitation.
-                return;
+                // Get the mass of the object and return it.
+                gravitation.Mass = Math.Max(1, attributes.GetValue(AttributeType.Mass));
             }
-
-            // Get the mass of the ship and return it.
-            gravitation.Mass = Math.Max(1, attributes.GetValue(AttributeType.Mass));
         }
 
         #endregion

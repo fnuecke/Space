@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Systems
                     _scene = new RenderTarget2D(cm.Value.Graphics.GraphicsDevice,
                                                 pp.BackBufferWidth, pp.BackBufferHeight,
                                                 false, pp.BackBufferFormat, DepthFormat.None,
-                                                0, RenderTargetUsage.PreserveContents);
+                                                pp.MultiSampleCount, RenderTargetUsage.PreserveContents);
                 }
             }
             {

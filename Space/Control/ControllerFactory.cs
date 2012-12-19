@@ -297,15 +297,30 @@ namespace Space.Control
                     new CameraCenteredTextureRenderSystem {Enabled = true},
                     new ShieldRenderSystem {Enabled = true},
                     new CameraCenteredParticleEffectSystem(simulationFps) {Enabled = true},
-                    new FloatingTextSystem {Enabled = true},
-                    new RadarRenderSystem {Enabled = true},
 
                     // Perform post processing on the rendered scene.
-                    new PostProcessingPostRenderSystem {Enabled = true}
+                    new PostProcessingPostRenderSystem {Enabled = true, Bloom = ParseBloomFromSettings()},
+
+                    // Do not apply post processing to overlays.
+                    new FloatingTextSystem {Enabled = true},
+                    new RadarRenderSystem {Enabled = true}
                 });
 
             // Add some systems for debug overlays.
             AddDebugSystems(manager);
+        }
+
+        /// <summary>
+        /// Tries to parse the bloom setting, which is stored as a string.
+        /// </summary>
+        private static PostProcessingPostRenderSystem.BloomType ParseBloomFromSettings()
+        {
+            PostProcessingPostRenderSystem.BloomType bloomType;
+            if (Enum.TryParse(Settings.Instance.Bloom, true, out bloomType))
+            {
+                return bloomType;
+            }
+            return PostProcessingPostRenderSystem.BloomType.None;
         }
 
         /// <summary>
