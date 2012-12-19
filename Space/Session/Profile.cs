@@ -33,7 +33,7 @@ namespace Space.Session
         /// fundamentally so that we can handle files differently. This is
         /// the version we write to new snapshots.
         /// </summary>
-        private const int Version = 6;
+        private const int Version = 7;
 
         /// <summary>
         /// Header for our save game files.
