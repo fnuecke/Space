@@ -705,7 +705,8 @@ namespace Engine.Util
             {
                 for (var i = message.Length - 1; i >= 0; --i)
                 {
-                    if (!Font.Characters.Contains(message[i]))
+                    var c = message[i];
+                    if (c != '\n' && c != '\t' && !Font.Characters.Contains(c))
                     {
                         message.Remove(i, 1);
                     }

@@ -600,13 +600,15 @@ from Space.Data import *
                 // Try executing our script.
                 try
                 {
-                    Script.Execute(command.Script, scope);
+                    Logger.Info("> {0}", command.Script);
+                    var result = Script.Execute(command.Script, scope);
+                    Logger.Info("< {0}", result != null ? result.ToString() : "null");
                 }
                 catch (Exception ex)
                 {
                     if (!_ignoreScriptOutput)
                     {
-                        Logger.ErrorException("Error executing script.", ex);
+                        Logger.Error("Error executing script.\n{0}", Script.GetService<ExceptionOperations>().FormatException(ex));
                     }
                 }
                 finally
