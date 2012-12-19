@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Recomputes mass of a player ship based on its character stats.
     /// </summary>
-    public sealed class PlayerMassSystem : AbstractSystem, IMessagingSystem
+    public sealed class DynamicMassSystem : AbstractSystem, IMessagingSystem
     {
         #region Logic
 

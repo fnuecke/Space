@@ -160,7 +160,7 @@
     <Compile Include="Systems\OverTimeDamageApplyingSystem.cs" />
     <Compile Include="Systems\OwnerSystem.cs" />
     <Compile Include="Systems\PlanetRenderSystem.cs" />
-    <Compile Include="Systems\PlayerMassSystem.cs" />
+    <Compile Include="Systems\DynamicMassSystem.cs" />
     <Compile Include="Systems\PostProcessingPostRenderSystem.cs" />
     <Compile Include="Systems\PostProcessingPreRenderSystem.cs" />
     <Compile Include="Systems\RadarRenderSystem.cs" />

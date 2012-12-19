@@ -111,7 +111,7 @@ namespace Space.Control
 
                     // These may be manipulated/triggered via player commands.
                     new CharacterSystem<AttributeType>(),
-                    new PlayerMassSystem(),
+                    new DynamicMassSystem(),
                     new SpaceUsablesSystem(),
                     
                     // These are also purely reactive, but they handle chained removals
