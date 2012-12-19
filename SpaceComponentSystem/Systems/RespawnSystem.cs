@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Common.Components;
+﻿using System.Linq;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -89,6 +90,12 @@ namespace Space.ComponentSystem.Systems
                 Manager.GetComponent(entity, componentType).Enabled = false;
             }
             respawn.TimeToRespawn = respawn.Delay;
+
+            // Remove any remaining damage debuffs.
+            foreach (var dot in Manager.GetComponents(entity, DamagingStatusEffect.TypeId).ToList())
+            {
+                Manager.RemoveComponent(dot);
+            }
 
             // Stop the entity, to avoid zooming off to nowhere when
             // killed by a sun, e.g.

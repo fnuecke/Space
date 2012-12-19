@@ -43,7 +43,22 @@ namespace Space.ComponentSystem.Systems
             }
             foreach (var entity in awake)
             {
-                SetAwake(entity, true);
+                // Wake up other squad members as well. This avoids squads
+                // getting separated due to only a couple of the members
+                // waking up.
+                var squad = (Squad)Manager.GetComponent(entity, Squad.TypeId);
+                if (squad != null)
+                {
+                    foreach (var member in squad.Members)
+                    {
+                        SetAwake(member, true);
+                    }
+                }
+                else
+                {
+                    // Not in a squad, just wake up this entity.
+                    SetAwake(entity, true);
+                }
             }
         }
 

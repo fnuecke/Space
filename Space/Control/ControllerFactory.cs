@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Systems;
@@ -248,6 +247,7 @@ namespace Space.Control
         private static void AddSpaceClientSystems<TSession>(IManager manager, Program game, IClientSession session, ISimulationController<TSession> controller) where TSession : ISession
         {
             var audioEngine = (AudioEngine)game.Services.GetService(typeof(AudioEngine));
+            var audioRange = audioEngine.GetGlobalVariable("MaxAudibleDistance");
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var simulationFps = new Func<float>(() => controller.ActualSpeed * Settings.TicksPerSecond);
 
@@ -278,7 +278,7 @@ namespace Space.Control
                     new CameraMovementSystem(), 
 
                     // Handle sound.
-                    new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance")) {Enabled = true},
+                    new CameraCenteredSoundSystem(soundBank, audioRange) {Enabled = true},
                     
                     // Biome system triggers background changes and stuff.
                     new BiomeSystem {Enabled = true},
@@ -299,7 +299,11 @@ namespace Space.Control
                     new CameraCenteredParticleEffectSystem(simulationFps) {Enabled = true},
 
                     // Perform post processing on the rendered scene.
-                    new PostProcessingPostRenderSystem {Enabled = true, Bloom = ParseBloomFromSettings()},
+                    new PostProcessingPostRenderSystem
+                    {
+                        Enabled = Settings.Instance.PostProcessing,
+                        Bloom = ParseBloomFromSettings()
+                    },
 
                     // Do not apply post processing to overlays.
                     new FloatingTextSystem {Enabled = true},

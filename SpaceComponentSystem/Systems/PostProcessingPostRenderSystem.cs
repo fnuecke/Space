@@ -15,6 +15,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class PostProcessingPostRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
         #region Types
 
         /// <summary>
@@ -68,7 +77,14 @@ namespace Space.ComponentSystem.Systems
         /// <value>
         /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
-        public bool Enabled { get; set; }
+        public bool Enabled
+        {
+            get { return true; }
+            // We always have to render (to blit the scene in the buffer), instead
+            // when we're disabled, we simply copy it directly instead of applying
+            // any effects at all.
+            set { _enabled = value; }
+        }
 
         /// <summary>
         /// Gets or sets the bloom preset in use.
@@ -84,12 +100,31 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private SpriteBatch _spriteBatch;
 
+        /// <summary>
+        /// The shader we use to extract bright areas from the original scene render.
+        /// </summary>
         private Effect _bloomExtractEffect;
-        private Effect _bloomCombineEffect;
+
+        /// <summary>
+        /// The shader we use to blur the extracted bright areas.
+        /// </summary>
         private Effect _gaussianBlurEffect;
 
-        private RenderTarget2D _renderTarget1;
-        private RenderTarget2D _renderTarget2;
+        /// <summary>
+        /// The shader we use to combine the result of our blurring with the original
+        /// scene render.
+        /// </summary>
+        private Effect _bloomCombineEffect;
+
+        /// <summary>
+        /// Temporary render targets at half screen size.
+        /// </summary>
+        private RenderTarget2D _renderTarget1, _renderTarget2;
+
+        /// <summary>
+        /// Whether to apply any post processing at all or not.
+        /// </summary>
+        private bool _enabled;
 
         #endregion
 
@@ -122,9 +157,9 @@ namespace Space.ComponentSystem.Systems
                     var width = pp.BackBufferWidth / 2;
                     var height = pp.BackBufferHeight / 2;
                     _renderTarget1 = new RenderTarget2D(device, width, height, false,
-                                                       pp.BackBufferFormat, DepthFormat.None);
+                                                        pp.BackBufferFormat, DepthFormat.None);
                     _renderTarget2 = new RenderTarget2D(device, width, height, false,
-                                                       pp.BackBufferFormat, DepthFormat.None);
+                                                        pp.BackBufferFormat, DepthFormat.None);
                 }
             }
             {
@@ -159,7 +194,7 @@ namespace Space.ComponentSystem.Systems
         {
             var preprocessor = (PostProcessingPreRenderSystem)Manager.GetSystem(PostProcessingPreRenderSystem.TypeId);
 
-            if (Bloom == BloomType.None)
+            if (!_enabled || Bloom == BloomType.None)
             {
                 // Reset our graphics device (pop our off-screen render target).
                 _spriteBatch.GraphicsDevice.SetRenderTarget(null);
@@ -214,13 +249,11 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        #endregion
-
         /// <summary>
         /// Helper for drawing a texture into a render target, using
         /// a custom shader to apply post processing effects.
         /// </summary>
-        void DrawFullscreenQuad(Texture2D texture, RenderTarget2D renderTarget, Effect effect)
+        private void DrawFullscreenQuad(Texture2D texture, RenderTarget2D renderTarget, Effect effect)
         {
             _spriteBatch.GraphicsDevice.SetRenderTarget(renderTarget);
             DrawFullscreenQuad(texture, renderTarget.Width, renderTarget.Height, effect);
@@ -230,7 +263,7 @@ namespace Space.ComponentSystem.Systems
         /// Helper for drawing a texture into the current render target,
         /// using a custom shader to apply post processing effects.
         /// </summary>
-        void DrawFullscreenQuad(Texture2D texture, int width, int height, Effect effect)
+        private void DrawFullscreenQuad(Texture2D texture, int width, int height, Effect effect)
         {
             _spriteBatch.Begin(0, BlendState.Opaque, null, null, null, effect);
             _spriteBatch.Draw(texture, new Rectangle(0, 0, width, height), Color.White);
@@ -241,7 +274,7 @@ namespace Space.ComponentSystem.Systems
         /// Computes sample weightings and texture coordinate offsets
         /// for one pass of a separable gaussian blur filter.
         /// </summary>
-        void SetBlurEffectParameters(float dx, float dy, float theta)
+        private void SetBlurEffectParameters(float dx, float dy, float theta)
         {
             // Look up the sample weight and offset effect parameters.
             var weightsParameter = _gaussianBlurEffect.Parameters["SampleWeights"];
@@ -301,16 +334,19 @@ namespace Space.ComponentSystem.Systems
             offsetsParameter.SetValue(sampleOffsets);
         }
 
-
         /// <summary>
         /// Evaluates a single point on the gaussian falloff curve.
         /// Used for setting up the blur filter weightings.
         /// </summary>
-        private float ComputeGaussian(float n, float theta)
+        private static float ComputeGaussian(float n, float theta)
         {
             return (float)((1.0 / Math.Sqrt(2 * Math.PI * theta)) *
                            Math.Exp(-(n * n) / (2 * theta * theta)));
         }
+
+        #endregion
+
+        #region Types
 
         /// <summary>
         /// Class holds all the settings used to tweak the bloom effect.
@@ -331,12 +367,14 @@ namespace Space.ComponentSystem.Systems
             // Controls the amount of the bloom and base images that
             // will be mixed into the final scene. Range 0 to 1.
             public readonly float BloomIntensity;
+
             public readonly float BaseIntensity;
 
             // Independently control the color saturation of the bloom and
             // base images. Zero is totally desaturated, 1.0 leaves saturation
             // unchanged, while higher values increase the saturation level.
             public readonly float BloomSaturation;
+
             public readonly float BaseSaturation;
 
             #endregion
@@ -345,8 +383,8 @@ namespace Space.ComponentSystem.Systems
             /// Constructs a new bloom settings descriptor.
             /// </summary>
             private BloomSettings(float bloomThreshold, float blurAmount,
-                                 float bloomIntensity, float baseIntensity,
-                                 float bloomSaturation, float baseSaturation)
+                                  float bloomIntensity, float baseIntensity,
+                                  float bloomSaturation, float baseSaturation)
             {
                 BloomThreshold = bloomThreshold;
                 BlurAmount = blurAmount;
@@ -360,15 +398,17 @@ namespace Space.ComponentSystem.Systems
             /// Table of preset bloom settings, used by the sample program.
             /// </summary>
             public static readonly BloomSettings[] Presets =
-            {
-                //                     Name           Thresh  Blur Bloom  Base  BloomSat BaseSat
-                new BloomSettings(/* "Default",    */ 0.25f,  4,   1.25f, 1,    1,       1),
-                new BloomSettings(/* "Soft",       */ 0,      3,   1,     1,    1,       1),
-                new BloomSettings(/* "Desaturated",*/ 0.5f,   8,   2,     1,    0,       1),
-                new BloomSettings(/* "Saturated",  */ 0.25f,  4,   2,     1,    2,       0),
-                new BloomSettings(/* "Blurry",     */ 0,      2,   1,     0.1f, 1,       1),
-                new BloomSettings(/* "Subtle",     */ 0.5f,   2,   1,     1,    1,       1)
-            };
+                {
+                    //                     Name           Thresh  Blur Bloom  Base  BloomSat BaseSat
+                    new BloomSettings( /* "Default",    */ 0.25f, 4, 1.25f, 1, 1, 1),
+                    new BloomSettings( /* "Soft",       */ 0, 3, 1, 1, 1, 1),
+                    new BloomSettings( /* "Desaturated",*/ 0.5f, 8, 2, 1, 0, 1),
+                    new BloomSettings( /* "Saturated",  */ 0.25f, 4, 2, 1, 2, 0),
+                    new BloomSettings( /* "Blurry",     */ 0, 2, 1, 0.1f, 1, 1),
+                    new BloomSettings( /* "Subtle",     */ 0.5f, 2, 1, 1, 1, 1)
+                };
         }
+
+        #endregion
     }
 }

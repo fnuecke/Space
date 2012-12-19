@@ -134,6 +134,12 @@ namespace Space.ComponentSystem.Systems
             // Handle particle effects attached to entities.
             foreach (var component in Components)
             {
+                // Skip disabled components.
+                if (!component.Enabled)
+                {
+                    continue;
+                }
+
                 // Handle each effect per component.
                 foreach (var effect in component.Effects)
                 {
