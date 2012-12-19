@@ -321,7 +321,8 @@ namespace Space.Control
                 {
                     new DebugCollisionBoundsRenderSystem(),
                     new DebugEntityIdRenderSystem(),
-                    new DebugAIRenderSystem()
+                    new DebugAIRenderSystem(),
+                    new DebugIndexRenderSystem()
                 });
         }
     }

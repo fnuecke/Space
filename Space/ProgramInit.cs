@@ -153,6 +153,8 @@ namespace Space
                 args =>
                 {
                     int index;
+                    ulong groupMask;
+                    var system = _client.GetSystem<DebugIndexRenderSystem>();
                     if (!int.TryParse(args[1], out index))
                     {
                         switch (args[1])
@@ -161,34 +163,45 @@ namespace Space
                             case "collision":
                             case "collidable":
                             case "collidables":
-                                _indexGroupMask = CollisionSystem.IndexGroupMask;
+                                groupMask = CollisionSystem.IndexGroupMask;
                                 break;
                             case "d":
                             case "detector":
                             case "detectable":
                             case "detectables":
-                                _indexGroupMask = DetectableSystem.IndexGroupMask;
+                                groupMask = DetectableSystem.IndexGroupMask;
                                 break;
                             case "g":
                             case "grav":
                             case "gravitation":
-                                _indexGroupMask = GravitationSystem.IndexGroupMask;
+                                groupMask = GravitationSystem.IndexGroupMask;
                                 break;
                             case "s":
                             case "sound":
                             case "sounds":
-                                _indexGroupMask = SoundSystem.IndexGroupMask;
+                                groupMask = SoundSystem.IndexGroupMask;
                                 break;
+                            default:
+                                _console.WriteLine("Invalid named index, known aliases are: collidable (c), detectable (d), gravitation (g) and sound (s).");
+                                return;
                         }
                     }
                     else if (index > 64)
                     {
                         _console.WriteLine("Invalid index, must be smaller or equal to 64.");
+                        return;
+                    }
+                    else if (index == 0)
+                    {
+                        system.Enabled = false;
+                        return;
                     }
                     else
                     {
-                        _indexGroupMask = 1ul << index;
+                        groupMask = 1ul << index;
                     }
+                    system.IndexGroupMask = groupMask;
+                    system.Enabled = true;
                 },
                 "Enables rendering of the index with the given index.",
                 "d_renderindex <index> - render the cells of the specified index.");

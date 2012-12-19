@@ -146,6 +146,7 @@
     <Compile Include="Systems\DebugAIRenderSystem.cs" />
     <Compile Include="Systems\DebugCollisionBoundsRenderSystem.cs" />
     <Compile Include="Systems\DebugEntityIdRenderSystem.cs" />
+    <Compile Include="Systems\DebugIndexRenderSystem.cs" />
     <Compile Include="Systems\DebugSlotRenderSystem.cs" />
     <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DirectDamageApplyingSystem.cs" />

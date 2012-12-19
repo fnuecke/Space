@@ -13,7 +13,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
-using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Util;
 using Space.View;
@@ -397,8 +396,6 @@ namespace Space
 
         #region Debug stuff
 
-        private Engine.Graphics.Rectangle _indexRectangle;
-        private ulong _indexGroupMask;
         private SpriteFont _debugFont;
 
         [Conditional("DEBUG")]
@@ -423,29 +420,6 @@ namespace Space
 
                     SessionInfo.Draw("Client", session, sessionOffset, _debugFont, _spriteBatch);
                     NetGraph.Draw(session.Information, ngOffset, _debugFont, _spriteBatch);
-                }
-
-                // Render index.
-                if (session.ConnectionState == ClientState.Connected)
-                {
-                    var manager = client.Controller.Simulation.Manager;
-                    var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-                    var camera = (CameraSystem)manager.GetSystem(CameraSystem.TypeId);
-                    if (_indexGroupMask > 0)
-                    {
-                        if (_indexRectangle == null)
-                        {
-                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDeviceManager)
-                            {
-                                Color = Color.LightGreen * 0.75f,
-                                Thickness = 2f,
-                                BlendState = BlendState.Additive
-                            };
-                            _indexRectangle.LoadContent();
-                        }
-                        _indexRectangle.SetTransform(camera.Transform.Matrix);
-                        index.DrawIndex(_indexGroupMask, _indexRectangle, camera.Transform.Translation);
-                    }
                 }
             }
 
