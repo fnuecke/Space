@@ -82,6 +82,14 @@ namespace Engine.ComponentSystem.Common.Systems
                     UnloadContent();
                 }
             }
+            {
+                var cm = message as GraphicsDeviceReset?;
+                if (cm != null)
+                {
+                    UnloadContent();
+                    LoadContent(cm.Value.Content, cm.Value.Graphics);
+                }
+            }
         }
 
         /// <summary>

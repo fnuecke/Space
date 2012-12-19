@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
 {
-    public abstract class AbstractShape
+    public abstract class AbstractShape : IDisposable
     {
         #region Constants
 
@@ -213,6 +213,7 @@ namespace Engine.Graphics
 
             graphics.DeviceCreated += GraphicsOnDeviceCreated;
             graphics.DeviceDisposing += GraphicsOnDeviceDisposing;
+            graphics.DeviceReset += GraphicsOnDeviceReset;
 
             BlendState = BlendState.AlphaBlend;
 
@@ -238,6 +239,12 @@ namespace Engine.Graphics
         private void GraphicsOnDeviceDisposing(object sender, EventArgs eventArgs)
         {
             UnloadContent();
+        }
+
+        private void GraphicsOnDeviceReset(object sender, EventArgs eventArgs)
+        {
+            UnloadContent();
+            LoadContent();
         }
 
         public virtual void LoadContent()
@@ -275,6 +282,13 @@ namespace Engine.Graphics
         /// <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
+            if (disposing)
+            {
+                Graphics.DeviceCreated -= GraphicsOnDeviceCreated;
+                Graphics.DeviceDisposing -= GraphicsOnDeviceDisposing;
+                Graphics.DeviceReset -= GraphicsOnDeviceReset;
+                UnloadContent();
+            }
         }
 
         #endregion

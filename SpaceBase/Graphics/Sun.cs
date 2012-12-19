@@ -9,7 +9,7 @@ namespace Space.Graphics
     /// <summary>
     /// Utility class for rendering suns.
     /// </summary>
-    public sealed class Sun : AbstractShape, IDisposable
+    public sealed class Sun : AbstractShape
     {
         #region Properties
 
@@ -164,6 +164,8 @@ namespace Space.Graphics
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
+
             if (disposing)
             {
                 Graphics.DeviceReset -= GraphicsOnDeviceReset;

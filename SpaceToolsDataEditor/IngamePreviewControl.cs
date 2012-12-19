@@ -300,6 +300,7 @@ namespace Space.Tools.DataEditor
                     Thickness = 5f,
                     BlendState = BlendState.Additive
                 };
+                _ellipse.LoadContent();
             }
 
             public void Draw(long frame, float elapsedMilliseconds)

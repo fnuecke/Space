@@ -4,7 +4,7 @@ using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Engine.ComponentSystem.Common.Components
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// This system keeps track of our graphics device, and sends messages
@@ -69,6 +69,7 @@ namespace Engine.ComponentSystem.Common.Components
 
             graphics.DeviceCreated += GraphicsOnDeviceCreated;
             graphics.DeviceDisposing += GraphicsOnDeviceDisposing;
+            graphics.DeviceReset += GraphicsOnDeviceReset;
         }
 
         /// <summary>
@@ -101,6 +102,7 @@ namespace Engine.ComponentSystem.Common.Components
             {
                 _graphics.DeviceCreated -= GraphicsOnDeviceCreated;
                 _graphics.DeviceDisposing -= GraphicsOnDeviceDisposing;
+                _graphics.DeviceReset -= GraphicsOnDeviceReset;
                 GraphicsDeviceDisposing message;
                 Manager.SendMessage(message);
             }
@@ -137,6 +139,14 @@ namespace Engine.ComponentSystem.Common.Components
         private void GraphicsOnDeviceDisposing(object sender, EventArgs eventArgs)
         {
             GraphicsDeviceDisposing message;
+            Manager.SendMessage(message);
+        }
+
+        private void GraphicsOnDeviceReset(object sender, EventArgs eventArgs)
+        {
+            GraphicsDeviceReset message;
+            message.Content = _content;
+            message.Graphics = _graphics;
             Manager.SendMessage(message);
         }
 
