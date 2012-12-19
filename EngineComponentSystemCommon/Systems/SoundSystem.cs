@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
@@ -105,7 +104,6 @@ namespace Engine.ComponentSystem.Common.Systems
             _soundBank = soundBank;
             _maxAudibleDistance = maxAudibleDistance;
             _maxAudibleDistanceSquared = maxAudibleDistance * maxAudibleDistance;
-            Enabled = _soundBank != null;
         }
 
         #endregion
@@ -119,6 +117,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
+            // Bail if we don't have a soundbank.
+            if (_soundBank == null)
+            {
+                Enabled = false;
+                return;
+            }
+
             // No need to check *all* the time... this saves quite some performance
             // if a lot of sound emitting objects are in range.
             if (frame % 3 != 0)
@@ -350,30 +355,6 @@ namespace Engine.ComponentSystem.Common.Systems
             result.Y = 0;
             result.Z = v2.Y;
             return result;
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

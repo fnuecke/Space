@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -17,7 +20,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// This system renders active shields, detecting them via their energy consumption debuff.
     /// </summary>
-    public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem
+    public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -43,42 +46,51 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The renderer we use to render our shield.
-        /// </summary>
-        private static Graphics.Shield _shader;
-
-        /// <summary>
         /// For low energy shield flickering.
         /// </summary>
         private readonly static Random Random = new Random(0);
 
         /// <summary>
-        /// The content manager used to load textures.
+        /// The renderer we use to render our shield.
         /// </summary>
-        private readonly ContentManager _content;
-
-        #endregion
-
-        #region Constructor
+        private Graphics.Shield _shader;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ShieldRenderSystem"/> class.
+        /// The list of actual shield components, for reloading shield textures
+        /// on device recreation.
         /// </summary>
-        /// <param name="content">The content.</param>
-        /// <param name="graphics">The graphics.</param>
-        public ShieldRenderSystem(ContentManager content, GraphicsDevice graphics)
-        {
-            Enabled = true;
-            if (_shader == null)
-            {
-                _shader = new Graphics.Shield(content, graphics);
-            }
-            _content = content;
-        }
+        private readonly List<Shield> _shields = new List<Shield>();
 
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    if (_shader == null)
+                    {
+                        _shader = new Graphics.Shield(cm.Value.Content, cm.Value.Graphics);
+                        _shader.LoadContent();
+                    }
+                    foreach (var component in _shields)
+                    {
+                        if (!string.IsNullOrWhiteSpace(component.Factory.Structure))
+                        {
+                            component.Structure = cm.Value.Content.Load<Texture2D>(component.Factory.Structure);
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Draws the system.
@@ -150,7 +162,8 @@ namespace Space.ComponentSystem.Systems
                         // Load texture if necessary.
                         if (shield.Structure == null && !string.IsNullOrWhiteSpace(shield.Factory.Structure))
                         {
-                            shield.Structure = _content.Load<Texture2D>(shield.Factory.Structure);
+                            var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                            shield.Structure = graphicsSystem.Content.Load<Texture2D>(shield.Factory.Structure);
                         }
 
                         // Set structure overlay and custom color.
@@ -190,6 +203,92 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Shield list maintenance
+
+        /// <summary>
+        /// Called by the manager when a new component was added.
+        /// </summary>
+        /// <param name="component">The component that was added.</param>
+        public override void OnComponentAdded(Component component)
+        {
+            base.OnComponentAdded(component);
+
+            // Check if the component is of the right type.
+            if (component is Shield)
+            {
+                var typedComponent = (Shield)component;
+
+                // Keep components in order, to stay deterministic.
+                var index = _shields.BinarySearch(typedComponent, Component.Comparer);
+                Debug.Assert(index < 0);
+                _shields.Insert(~index, typedComponent);
+            }
+        }
+
+        /// <summary>
+        /// Called by the manager when a new component was removed.
+        /// </summary>
+        /// <param name="component">The component that was removed.</param>
+        public override void OnComponentRemoved(Component component)
+        {
+            base.OnComponentRemoved(component);
+
+            // Check if the component is of the right type.
+            if (component is Shield)
+            {
+                var typedComponent = (Shield)component;
+
+                // Take advantage of the fact that the list is sorted.
+                var index = _shields.BinarySearch(typedComponent, Component.Comparer);
+                Debug.Assert(index >= 0);
+                _shields.RemoveAt(index);
+            }
+        }
+
+        /// <summary>
+        /// Called by the manager when the complete environment has been
+        /// depacketized.
+        /// </summary>
+        public override void OnDepacketized()
+        {
+            base.OnDepacketized();
+
+            RebuildComponentList();
+        }
+
+        /// <summary>
+        /// Called by the manager when the complete environment has been
+        /// copied from another manager.
+        /// </summary>
+        public override void OnCopied()
+        {
+            base.OnCopied();
+
+            RebuildComponentList();
+        }
+
+        /// <summary>
+        /// Rebuilds the component list by fetching all components handled by us.
+        /// </summary>
+        private void RebuildComponentList()
+        {
+            Components.Clear();
+            foreach (var component in Manager.Components)
+            {
+                if (component is Shield)
+                {
+                    var typedComponent = (Shield)component;
+
+                    // Components are in order (we are iterating in order), so
+                    // just add it at the end.
+                    Debug.Assert(_shields.BinarySearch(typedComponent, Component.Comparer) < 0);
+                    _shields.Add(typedComponent);
+                }
+            }
+        }
+
+        #endregion
+
         #region Serialization
 
         /// <summary>
@@ -198,30 +297,6 @@ namespace Space.ComponentSystem.Systems
         /// <param name="hasher">The hasher to use.</param>
         public override void Hash(Hasher hasher)
         {
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Engine.Math;
@@ -11,7 +12,7 @@ namespace Engine.Graphics
     /// <summary>
     /// A class for rendering graphs, based on float data.
     /// </summary>
-    public sealed class Graph
+    public sealed class Graph : IDisposable
     {
         #region Types
 
@@ -165,7 +166,17 @@ namespace Engine.Graphics
         #endregion
 
         #region Fields
-        
+
+        /// <summary>
+        /// The content manager used to load our assets.
+        /// </summary>
+        private readonly ContentManager _content;
+
+        /// <summary>
+        /// The graphics device service used to keep track of our graphics device.
+        /// </summary>
+        private readonly IGraphicsDeviceService _graphics;
+
         /// <summary>
         /// Used to render overall outline and outline around graph area.
         /// </summary>
@@ -177,14 +188,14 @@ namespace Engine.Graphics
         private readonly GradientRectangle _background;
 
         /// <summary>
-        /// Font used to render graph captions.
+        /// The spritebatch to use for rendering.
         /// </summary>
-        private readonly SpriteFont _font;
+        private SpriteBatch _spriteBatch;
 
         /// <summary>
-        /// Used to render the graph captions font.
+        /// The font to use for rendering.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        private SpriteFont _font;
 
         /// <summary>
         /// The texture we use to (manually...) render the curves.
@@ -245,24 +256,72 @@ namespace Engine.Graphics
         /// Initializes a new instance of the <see cref="Graph"/> class.
         /// </summary>
         /// <param name="content">The content manager used to load assets.</param>
-        /// <param name="graphics">The graphics device to draw to.</param>
-        public Graph(ContentManager content, GraphicsDevice graphics)
+        /// <param name="graphics">The graphics device service.</param>
+        public Graph(ContentManager content, IGraphicsDeviceService graphics)
         {
+            _content = content;
+            _graphics = graphics;
+
+            graphics.DeviceCreated += LoadContent;
+            graphics.DeviceDisposing += UnloadContent;
+
+            LoadContent(null, null);
+
             _background = new GradientRectangle(content, graphics);
+            _background.LoadContent();
             _background.SetGradients(new[]
                                      {
                                          Color.Black * 0.5f,
                                          Color.Black * 0.8f
                                      });
             _outlines = new Rectangle(content, graphics) {Color = Color.DarkGray};
-            _spriteBatch = new SpriteBatch(graphics);
-            _font = content.Load<SpriteFont>("Fonts/GraphCaptions");
+            _outlines.LoadContent();
 
             Type = GraphType.Line;
             UnitPrefix = UnitPrefixes.SI;
             _points = new List<float>();
 
             _renderTimer.Start();
+        }
+        
+        /// <summary>
+        /// Releases unmanaged resources and performs other cleanup operations before the
+        /// <see cref="Graph"/> is reclaimed by garbage collection.
+        /// </summary>
+        ~Graph()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing,
+        /// or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _graphics.DeviceCreated -= LoadContent;
+                _graphics.DeviceDisposing -= UnloadContent;
+                _spriteBatch.Dispose();
+            }
+        }
+
+        private void LoadContent(object sender, EventArgs e)
+        {
+            _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
+            _font = _content.Load<SpriteFont>("Fonts/GraphCaptions");
+        }
+
+        private void UnloadContent(object sender, EventArgs e)
+        {
+            _spriteBatch.Dispose();
         }
 
         #endregion

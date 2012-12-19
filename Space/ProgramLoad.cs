@@ -54,11 +54,6 @@ namespace Space
                 Settings.Instance.CurrentProfile.Save();
             }
 
-            // Set up the render target into which we'll draw everything (to
-            // allow switching to and from it for certain effects).
-            var pp = GraphicsDevice.PresentationParameters;
-            _scene = new RenderTarget2D(GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
-
             // Set up audio data (load wave/sound bank).
             LoadAudio();
 
@@ -127,7 +122,7 @@ namespace Space
         /// </summary>
         private void LoadGraphs()
         {
-            _fpsGraph = new Graph(Content, GraphicsDevice)
+            _fpsGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 FixedMaximum = 70,
                 Smoothing = 30,
@@ -136,7 +131,7 @@ namespace Space
                 Data = _fpsHistory
             };
 
-            _updateGraph = new Graph(Content, GraphicsDevice)
+            _updateGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Smoothing = 30,
                 FixedMaximum = 30,
@@ -145,7 +140,7 @@ namespace Space
                 Data = _updateHistory
             };
 
-            _drawGraph = new Graph(Content, GraphicsDevice)
+            _drawGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Smoothing = 30,
                 FixedMaximum = 30,
@@ -154,7 +149,7 @@ namespace Space
                 Data = _drawHistory
             };
 
-            _memoryGraph = new Graph(Content, GraphicsDevice)
+            _memoryGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Smoothing = 10,
                 Unit = "B",
@@ -163,28 +158,28 @@ namespace Space
                 Data = _memoryHistory
             };
 
-            _componentGraph = new Graph(Content, GraphicsDevice)
+            _componentGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Title = "Components",
                 Smoothing = 10,
                 Data = _componentsHistory
             };
 
-            _indexQueryGraph = new Graph(Content, GraphicsDevice)
+            _indexQueryGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Title = "Index queries",
                 Smoothing = 10,
                 Data = _indexQueryHistory
             };
 
-            _gameSpeedGraph = new Graph(Content, GraphicsDevice)
+            _gameSpeedGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Title = "Game speed",
                 Smoothing = 10,
                 Data = _gameSpeedHistory
             };
 
-            _gameLoadGraph = new Graph(Content, GraphicsDevice)
+            _gameLoadGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Title = "Game load",
                 Smoothing = 10,

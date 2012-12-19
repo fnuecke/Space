@@ -29,9 +29,9 @@ namespace Engine.Graphics
         /// <summary>
         /// Initializes a new instance of the <see cref="Grid"/> class.
         /// </summary>
-        /// <param name="content">The content.</param>
-        /// <param name="graphics">The graphics.</param>
-        public Grid(ContentManager content, GraphicsDevice graphics)
+        /// <param name="content">The content manager.</param>
+        /// <param name="graphics">The graphics device service.</param>
+        public Grid(ContentManager content, IGraphicsDeviceService graphics)
             : base(content, graphics, "Shaders/Grid")
         {
             SmallGridCellSize = 16f;

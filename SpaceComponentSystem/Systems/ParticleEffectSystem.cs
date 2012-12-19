@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
 using ProjectMercury.Renderers;
 using Space.ComponentSystem.Components;
@@ -19,7 +18,7 @@ namespace Space.ComponentSystem.Systems
     /// Controls the particle components in a game, passing them some
     /// information about how to render themselves.
     /// </summary>
-    public abstract class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>, IDrawingSystem
+    public abstract class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -43,15 +42,9 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// Content manager used for loading particle effect descriptors and
-        /// textures.
-        /// </summary>
-        private readonly ContentManager _content;
-
-        /// <summary>
         /// The renderer used to draw effects.
         /// </summary>
-        private readonly SpriteBatchRenderer _renderer;
+        private SpriteBatchRenderer _renderer;
 
         /// <summary>
         /// Gets the current speed of the simulation.
@@ -70,22 +63,57 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="ParticleEffectSystem"/> class.
         /// </summary>
-        /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics.</param>
         /// <param name="simulationFps">A function getting the current simulation framerate.</param>
-        protected ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics, Func<float> simulationFps)
+        protected ParticleEffectSystem(Func<float> simulationFps)
         {
-            _content = content;
-            _renderer = new SpriteBatchRenderer {GraphicsDeviceService = graphics};
-            _renderer.LoadContent(content);
             _simulationFps = simulationFps;
-
-            Enabled = true;
         }
 
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    if (_renderer == null)
+                    {
+                        _renderer = new SpriteBatchRenderer {GraphicsDeviceService = cm.Value.Graphics};
+                    }
+                    _renderer.LoadContent(cm.Value.Content);
+                    foreach (var component in Components)
+                    {
+                        foreach (var effect in component.Effects)
+                        {
+                            if (effect.Effect == null)
+                            {
+                                var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                                effect.Effect = graphicsSystem.Content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
+                                effect.Effect.LoadContent(cm.Value.Content);
+                                effect.Effect.Initialise();
+                            }
+                            else
+                            {
+                                effect.Effect.LoadContent(cm.Value.Content);
+                            }
+                        }
+                    }
+                    foreach (var effect in _effects)
+                    {
+                        effect.Value.LoadContent(cm.Value.Content);
+                    }
+                }
+            }
+            // TODO do we have to dispose and recreate the renderer?
+        }
 
         /// <summary>
         /// Flags our system as the presenting instance and renders all effects.
@@ -116,8 +144,9 @@ namespace Space.ComponentSystem.Systems
                     // Load / initialize particle effects if they aren't yet.
                     if (effect.Effect == null)
                     {
-                        effect.Effect = _content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
-                        effect.Effect.LoadContent(_content);
+                        var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                        effect.Effect = graphicsSystem.Content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
+                        effect.Effect.LoadContent(graphicsSystem.Content);
                         effect.Effect.Initialise();
                     }
 
@@ -297,8 +326,9 @@ namespace Space.ComponentSystem.Systems
                     if (!_effects.ContainsKey(effectName))
                     {
                         // Nope, really don't have it yet, load and init.
-                        var effect = _content.Load<ParticleEffect>(effectName);
-                        effect.LoadContent(_content);
+                        var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                        var effect = graphicsSystem.Content.Load<ParticleEffect>(effectName).DeepCopy();
+                        effect.LoadContent(graphicsSystem.Content);
                         effect.Initialise();
                         _effects.Add(effectName, effect);
                     }
@@ -317,30 +347,6 @@ namespace Space.ComponentSystem.Systems
         /// <param name="hasher">The hasher to use.</param>
         public override void Hash(Hasher hasher)
         {
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

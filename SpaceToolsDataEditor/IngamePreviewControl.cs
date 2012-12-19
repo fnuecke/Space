@@ -94,11 +94,12 @@ namespace Space.Tools.DataEditor
             }
             if (_batch == null)
             {
-                _batch = new SpriteBatch(GraphicsDevice);
+                _batch = new SpriteBatch(GraphicsDeviceManager.GraphicsDevice);
             }
             if (_grid == null)
             {
-                _grid = new Grid(_content, GraphicsDevice);
+                _grid = new Grid(_content, GraphicsDeviceManager);
+                _grid.LoadContent();
             }
 
             FactoryLibrary.LoadContent(_content);
@@ -119,21 +120,24 @@ namespace Space.Tools.DataEditor
                     new ItemSlotSystem(),
                     new ItemEffectSystem(),
                     new RegeneratingValueSystem(),
-                    new CameraCenteredInterpolationSystem(() => 20f),
+
+                    new GraphicsDeviceSystem(_content, GraphicsDeviceManager) {Enabled = true},
+
+                    new CameraCenteredInterpolationSystem(() => 20f) {Enabled = true},
                     new LocalPlayerSystem(null),
-                    new CameraSystem(GraphicsDevice, null),
+                    new CameraSystem(GraphicsDeviceManager.GraphicsDevice, null) {Enabled = true},
 
-                    new PlanetMaxBoundsRenderer(_content, GraphicsDevice),
-                    new DebugCollisionBoundsRenderSystem(_content, GraphicsDevice),
+                    new PlanetMaxBoundsRenderer(_content, GraphicsDeviceManager) {Enabled = true},
+                    new DebugCollisionBoundsRenderSystem {Enabled = true},
 
-                    new PlanetRenderSystem(_content, GraphicsDevice),
-                    new SunRenderSystem(_content, GraphicsDevice),
+                    new PlanetRenderSystem {Enabled = true},
+                    new SunRenderSystem {Enabled = true},
 
-                    new CameraCenteredTextureRenderSystem(_content, GraphicsDevice),
-                    new CameraCenteredParticleEffectSystem(_content, (IGraphicsDeviceService)Services.GetService(typeof(IGraphicsDeviceService)), () => 20f),
-                    new ShieldRenderSystem(_content, GraphicsDevice),
+                    new CameraCenteredTextureRenderSystem {Enabled = true},
+                    new CameraCenteredParticleEffectSystem(() => 20f) {Enabled = true},
+                    new ShieldRenderSystem {Enabled = true},
                     
-                    new DebugSlotRenderSystem(_content, GraphicsDevice)
+                    new DebugSlotRenderSystem {Enabled = true}
                     
             });
             // Fix position to avoid querying unavailable services.
@@ -151,7 +155,7 @@ namespace Space.Tools.DataEditor
             _drawTimer.Enabled = true;
 
             GraphicsDeviceOnDeviceReset(null, null);
-            GraphicsDevice.DeviceReset += GraphicsDeviceOnDeviceReset;
+            GraphicsDeviceManager.GraphicsDevice.DeviceReset += GraphicsDeviceOnDeviceReset;
         }
 
         private void GraphicsDeviceOnDeviceReset(object sender, EventArgs eventArgs)
@@ -162,13 +166,13 @@ namespace Space.Tools.DataEditor
             }
 
             // Get settings. We use the whole screen to draw.
-            var pp = GraphicsDevice.PresentationParameters;
+            var pp = GraphicsDeviceManager.GraphicsDevice.PresentationParameters;
 
             var width = pp.BackBufferWidth;
             var height = pp.BackBufferHeight;
 
             // Create a target for rendering the main sun texture.
-            _target = new RenderTarget2D(GraphicsDevice, width, height, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+            _target = new RenderTarget2D(GraphicsDeviceManager.GraphicsDevice, width, height, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
         }
 
         protected override void Draw()
@@ -177,13 +181,13 @@ namespace Space.Tools.DataEditor
             if (_target == null)
             {
                 // Otherwise just clear the screen.
-                GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
+                GraphicsDeviceManager.GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
                 return;
             }
 
             // OK, set our custom render target and clear it.
-            GraphicsDevice.SetRenderTarget(_target);
-            GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
+            GraphicsDeviceManager.GraphicsDevice.SetRenderTarget(_target);
+            GraphicsDeviceManager.GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
             try
             {
                 // Toggle systems depending on the check state in the context menu.
@@ -214,8 +218,8 @@ namespace Space.Tools.DataEditor
                 // Render the grid in the background.
                 if (_grid != null && ((ToolStripMenuItem)_contextMenu.Items["grid"]).Checked)
                 {
-                    _grid.SetSize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-                    _grid.SetCenter(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f);
+                    _grid.SetSize(GraphicsDeviceManager.GraphicsDevice.Viewport.Width, GraphicsDeviceManager.GraphicsDevice.Viewport.Height);
+                    _grid.SetCenter(GraphicsDeviceManager.GraphicsDevice.Viewport.Width / 2f, GraphicsDeviceManager.GraphicsDevice.Viewport.Height / 2f);
                     _grid.Draw();
                 }
 
@@ -245,9 +249,9 @@ namespace Space.Tools.DataEditor
             }
 
             // Switch back to main backbuffer and copy over our render target.
-            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDeviceManager.GraphicsDevice.SetRenderTarget(null);
             _batch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
-            _batch.Draw(_target, GraphicsDevice.PresentationParameters.Bounds, Color.White);
+            _batch.Draw(_target, GraphicsDeviceManager.GraphicsDevice.PresentationParameters.Bounds, Color.White);
             _batch.End();
         }
 
@@ -288,7 +292,7 @@ namespace Space.Tools.DataEditor
 
             public bool Enabled { get; set; }
 
-            public PlanetMaxBoundsRenderer(ContentManager content, GraphicsDevice graphics)
+            public PlanetMaxBoundsRenderer(ContentManager content, IGraphicsDeviceService graphics)
             {
                 _ellipse = new Ellipse(content, graphics)
                 {

@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -100,8 +99,6 @@ namespace Engine.ComponentSystem.Common.Systems
         protected InterpolationSystem(Func<float> simulationFps)
         {
             _simulationFps = simulationFps;
-
-            Enabled = true;
         }
 
         #endregion
@@ -275,42 +272,6 @@ namespace Engine.ComponentSystem.Common.Systems
             // We don't have one, use the fixed one instead.
             var transform = (Transform)Manager.GetComponent(entity, Transform.TypeId);
             rotation = transform != null ? transform.Rotation : 0f;
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// We're purely visual, so don't hash anything.
-        /// </summary>
-        /// <param name="hasher">The hasher to use.</param>
-        public override void Hash(Hasher hasher)
-        {
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

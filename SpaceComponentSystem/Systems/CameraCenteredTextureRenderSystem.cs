@@ -8,7 +8,6 @@ using Engine.Math;
 using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -54,21 +53,22 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Constructor
+        #region Logic
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CameraCenteredTextureRenderSystem"/> class.
+        /// Called when the graphics device is being disposed, and
+        /// any assets manually allocated should be disposed.
         /// </summary>
-        /// <param name="content">The content manager.</param>
-        /// <param name="graphics">The graphics device.</param>
-        public CameraCenteredTextureRenderSystem(ContentManager content, GraphicsDevice graphics)
-            : base(content, graphics)
+        protected override void UnloadContent()
         {
+            base.UnloadContent();
+
+            foreach (var entry in _modelCache)
+            {
+                entry.Value.Texture.Dispose();
+            }
+            _modelCache.Clear();
         }
-
-        #endregion
-
-        #region Logic
 
         public override void Draw(long frame, float elapsedMilliseconds)
         {
@@ -215,7 +215,8 @@ namespace Space.ComponentSystem.Systems
             var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
             if (renderer.Texture == null)
             {
-                renderer.Texture = Content.Load<Texture2D>(renderer.TextureName);
+                var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                renderer.Texture = graphicsSystem.Content.Load<Texture2D>(renderer.TextureName);
             }
 
             // See if we should mirror rendering (e.g. left wing).
@@ -275,7 +276,8 @@ namespace Space.ComponentSystem.Systems
             var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
             if (renderer.Texture == null)
             {
-                renderer.Texture = Content.Load<Texture2D>(renderer.TextureName);
+                var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                renderer.Texture = graphicsSystem.Content.Load<Texture2D>(renderer.TextureName);
             }
 
             // Adjust depth we want to render at.

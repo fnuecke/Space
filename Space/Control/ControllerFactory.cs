@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation.Commands;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Systems;
 using Space.Data;
 using Space.Session;
@@ -255,8 +254,11 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
+                    // This system provides content manager and graphics device to other systems.
+                    new GraphicsDeviceSystem(game.Content, game.GraphicsDeviceManager) {Enabled = true},
+
                     // Load textures for detectables before trying to render radar.
-                    new DetectableSystem(game.Content),
+                    new DetectableSystem {Enabled = true},
 
                     // Provide local player's avatar ID.
                     new LocalPlayerSystem(session),
@@ -269,35 +271,41 @@ namespace Space.Control
                     // on the avatar position). It's not so bad if we use the viewport of the
                     // previous frame, but it's noticable if the avatar is no longer at the
                     // center, so we do it this way around.
-                    new CameraCenteredInterpolationSystem(simulationFps),
+                    new CameraCenteredInterpolationSystem(simulationFps) {Enabled = true},
 
                     // Update camera first, as it determines what to render.
-                    new CameraSystem(game.GraphicsDevice, game.Services),
+                    new CameraSystem(game.GraphicsDevice, game.Services) {Enabled = true},
                     new CameraMovementSystem(), 
 
                     // Handle sound.
-                    new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance")),
+                    new CameraCenteredSoundSystem(soundBank, audioEngine.GetGlobalVariable("MaxAudibleDistance")) {Enabled = true},
                     
                     // Biome system triggers background changes and stuff.
-                    new BiomeSystem(),
+                    new BiomeSystem {Enabled = true},
+
+                    // Setup for post processing.
+                    new PostProcessingPreRenderSystem {Enabled = true},
 
                     // Draw background behind everything else.
-                    new CameraCenteredBackgroundSystem(game.Content, game.GraphicsDevice),
+                    new CameraCenteredBackgroundSystem {Enabled = true},
 
                     // Mind the order: orbits below planets below suns below normal
                     // objects below particle effects below radar.
-                    new OrbitRenderSystem(game.Content, game.GraphicsDevice),
-                    new PlanetRenderSystem(game.Content, game.GraphicsDevice),
-                    new SunRenderSystem(game.Content, game.GraphicsDevice),
-                    new CameraCenteredTextureRenderSystem(game.Content, game.GraphicsDevice),
-                    new ShieldRenderSystem(game.Content, game.GraphicsDevice),
-                    new CameraCenteredParticleEffectSystem(game.Content, game.GraphicsDeviceManager, simulationFps),
-                    new FloatingTextSystem(game.Content, game.GraphicsDevice), 
-                    new RadarRenderSystem(game.Content, game.GraphicsDevice)
+                    new OrbitRenderSystem {Enabled = true},
+                    new PlanetRenderSystem {Enabled = true},
+                    new SunRenderSystem {Enabled = true},
+                    new CameraCenteredTextureRenderSystem {Enabled = true},
+                    new ShieldRenderSystem {Enabled = true},
+                    new CameraCenteredParticleEffectSystem(simulationFps) {Enabled = true},
+                    new FloatingTextSystem {Enabled = true},
+                    new RadarRenderSystem {Enabled = true},
+
+                    // Perform post processing on the rendered scene.
+                    new PostProcessingPostRenderSystem {Enabled = true}
                 });
 
             // Add some systems for debug overlays.
-            AddDebugSystems(manager, game);
+            AddDebugSystems(manager);
         }
 
         /// <summary>
@@ -305,16 +313,15 @@ namespace Space.Control
         /// information).
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="game">The game.</param>
         [Conditional("DEBUG")]
-        private static void AddDebugSystems(IManager manager, Game game)
+        private static void AddDebugSystems(IManager manager)
         {
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    new DebugCollisionBoundsRenderSystem(game.Content, game.GraphicsDevice),
-                    new DebugEntityIdRenderSystem(game.Content, game.GraphicsDevice),
-                    new DebugAIRenderSystem(game.Content, game.GraphicsDevice)
+                    new DebugCollisionBoundsRenderSystem(),
+                    new DebugEntityIdRenderSystem(),
+                    new DebugAIRenderSystem()
                 });
         }
     }

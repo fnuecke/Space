@@ -1,7 +1,5 @@
 ﻿using System;
 using Engine.FarMath;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -16,11 +14,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="CameraCenteredParticleEffectSystem"/> class.
         /// </summary>
-        /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics.</param>
         /// <param name="simulationFps">A function getting the current simulation framerate.</param>
-        public CameraCenteredParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics, Func<float> simulationFps)
-            : base(content, graphics, simulationFps)
+        public CameraCenteredParticleEffectSystem(Func<float> simulationFps)
+            : base(simulationFps)
         {
         }
 

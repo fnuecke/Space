@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -36,9 +37,10 @@ namespace Engine.Graphics
         #region Properties
 
         /// <summary>
-        /// The graphics device to which this shape will be rendered.
+        /// The graphics device service used to keep track of the graphics device
+        /// to which this shape will be rendered.
         /// </summary>
-        public GraphicsDevice GraphicsDevice { get { return Device; } }
+        public IGraphicsDeviceService Graphics { get; private set; }
 
         /// <summary>
         /// Gets or sets the state of the blend to use when rendering.
@@ -133,14 +135,9 @@ namespace Engine.Graphics
         #region Fields
 
         /// <summary>
-        /// The graphics device we'll be drawing on.
+        /// The content manager used to load our assets.
         /// </summary>
-        protected readonly GraphicsDevice Device;
-
-        /// <summary>
-        /// The shader we use to draw the ellipse.
-        /// </summary>
-        protected readonly Effect Effect;
+        protected readonly ContentManager Content;
 
         /// <summary>
         /// The list of vertices making up our quad.
@@ -148,15 +145,25 @@ namespace Engine.Graphics
         protected readonly QuadVertex[] Vertices = new QuadVertex[4];
 
         /// <summary>
-        /// The transformation to apply when rendering.
+        /// The shader we use to draw the ellipse.
         /// </summary>
-        protected Matrix _transform;
+        protected Effect Effect;
+
+        /// <summary>
+        /// The name of the shader to use for this shape.
+        /// </summary>
+        private readonly string _effectName;
 
         /// <summary>
         /// Whether our vertices are valid, i.e. correspond to the set shape
         /// parameters.
         /// </summary>
         private bool _verticesAreValid;
+
+        /// <summary>
+        /// The transformation to apply when rendering.
+        /// </summary>
+        private Matrix _transform;
 
         /// <summary>
         /// The current center of the shape.
@@ -187,7 +194,7 @@ namespace Engine.Graphics
         /// The scale of the shape
         /// </summary>
         private float _scale = 1.0f;
-        
+
         #endregion
 
         #region Constructor
@@ -196,15 +203,17 @@ namespace Engine.Graphics
         /// Creates a new ellipse renderer for the given game.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
+        /// <param name="graphics">The graphics device service.</param>
         /// <param name="effectName">The shader to use for rendering the shape.</param>
-        protected AbstractShape(ContentManager content, GraphicsDevice graphics, string effectName)
+        protected AbstractShape(ContentManager content, IGraphicsDeviceService graphics, string effectName)
         {
-            if (Effect == null)
-            {
-                Effect = content.Load<Effect>(effectName);
-            }
-            Device = graphics;
+            Content = content;
+            Graphics = graphics;
+            _effectName = effectName;
+
+            graphics.DeviceCreated += GraphicsOnDeviceCreated;
+            graphics.DeviceDisposing += GraphicsOnDeviceDisposing;
+
             BlendState = BlendState.AlphaBlend;
 
             // Set texture coordinates.
@@ -219,6 +228,53 @@ namespace Engine.Graphics
 
             // Set default transformation to map to center of screen.
             _transform = Matrix.Identity;
+        }
+
+        private void GraphicsOnDeviceCreated(object sender, EventArgs eventArgs)
+        {
+            LoadContent();
+        }
+
+        private void GraphicsOnDeviceDisposing(object sender, EventArgs eventArgs)
+        {
+            UnloadContent();
+        }
+
+        public virtual void LoadContent()
+        {
+            Effect = Content.Load<Effect>(_effectName);
+        }
+
+        public virtual void UnloadContent()
+        {
+        }
+        
+        /// <summary>
+        /// Releases unmanaged resources and performs other cleanup operations before the
+        /// <see cref="AbstractShape"/> is reclaimed by garbage collection.
+        /// </summary>
+        ~AbstractShape()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing,
+        /// or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
+        /// <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
         }
 
         #endregion
@@ -302,7 +358,7 @@ namespace Engine.Graphics
             AdjustParameters();
 
             // Apply blend state.
-            Device.BlendState = BlendState;
+            Graphics.GraphicsDevice.BlendState = BlendState;
 
             // Apply the effect and render our area.
             foreach (var pass in Effect.CurrentTechnique.Passes)
@@ -310,8 +366,11 @@ namespace Engine.Graphics
                 if (IsPassEnabled(pass.Name))
                 {
                     pass.Apply();
-                    Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2,
-                                                     VertexDeclaration);
+                    Graphics.GraphicsDevice
+                        .DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+                                                   Vertices, 0, 4,
+                                                   Indices, 0, 2,
+                                                   VertexDeclaration);
                 }
             }
         }
@@ -361,6 +420,9 @@ namespace Engine.Graphics
                 return;
             }
 
+            // Shortcut to viewport for next couple of lines.
+            var viewport = Graphics.GraphicsDevice.Viewport;
+
             // Adjust bounds.
             AdjustBounds();
 
@@ -369,8 +431,8 @@ namespace Engine.Graphics
             Quaternion rotation;
             Vector3 translation;
             _transform.Decompose(out scale, out rotation, out translation);
-            translation.X = translation.X - GraphicsDevice.Viewport.Width / 2f;
-            translation.Y = GraphicsDevice.Viewport.Height / 2f - translation.Y;
+            translation.X = translation.X - viewport.Width / 2f;
+            translation.Y = viewport.Height / 2f - translation.Y;
 
             // Build transforms.
             var transform =
@@ -392,7 +454,8 @@ namespace Engine.Graphics
                 * Matrix.CreateScale(scale)
 
                 // Finally map what we have to screen space.
-                * Matrix.CreateOrthographic(Device.Viewport.Width, Device.Viewport.Height, Device.Viewport.MinDepth, Device.Viewport.MaxDepth);
+                * Matrix.CreateOrthographic(viewport.Width, viewport.Height,
+                                            viewport.MinDepth, viewport.MaxDepth);
 
             // Apply transform to each corner.
             Vector3.Transform(ref Vertices[0].Position, ref transform, out Vertices[0].Position);

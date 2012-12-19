@@ -1,16 +1,16 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class DebugAIRenderSystem : AbstractComponentSystem<ArtificialIntelligence>, IDrawingSystem
+    public sealed class DebugAIRenderSystem : AbstractComponentSystem<ArtificialIntelligence>, IDrawingSystem, IMessagingSystem
     {
         #region Properties
 
@@ -29,33 +29,17 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The spritebatch to use for rendering.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        private SpriteBatch _spriteBatch;
 
         /// <summary>
         /// The font to use for rendering.
         /// </summary>
-        private readonly SpriteFont _font;
+        private SpriteFont _font;
 
         /// <summary>
         /// Arrow texture to render indication of where AI is headed.
         /// </summary>
-        private readonly Texture2D _arrow;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DebugAIRenderSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content manager.</param>
-        /// <param name="graphics">The graphics device.</param>
-        public DebugAIRenderSystem(ContentManager content, GraphicsDevice graphics)
-        {
-            _spriteBatch = new SpriteBatch(graphics);
-            _font = content.Load<SpriteFont>("Fonts/ConsoleFont");
-            _arrow = content.Load<Texture2D>("Textures/arrow");
-        }
+        private Texture2D _arrow;
 
         #endregion
 
@@ -119,6 +103,35 @@ namespace Space.ComponentSystem.Systems
                               new Vector2(0, _arrow.Height / 2f),
                               new Vector2(toEnd.Length() / _arrow.Width, 1),
                               SpriteEffects.None, 0);
+        }
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+                    _font = cm.Value.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+                    _arrow = cm.Value.Content.Load<Texture2D>("Textures/arrow");
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    if (_spriteBatch != null)
+                    {
+                        _spriteBatch.Dispose();
+                        _spriteBatch = null;
+                    }
+                }
+            }
         }
 
         #endregion

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -13,7 +14,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// to the full viewport. It supports fading between different sets of
     /// textures.
     /// </summary>
-    public abstract class BackgroundRenderSystem : AbstractSystem, IDrawingSystem
+    public abstract class BackgroundRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -37,14 +38,9 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Fields
 
         /// <summary>
-        /// Used to load textures for backgrounds.
-        /// </summary>
-        private readonly ContentManager _content;
-
-        /// <summary>
         /// The spritebatch used for rendering.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        private SpriteBatch _spriteBatch;
 
         /// <summary>
         /// Our backgrounds, if there's more than one, those are pending for
@@ -54,20 +50,41 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #endregion
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BackgroundRenderSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content manager.</param>
-        /// <param name="graphics">The graphics device.</param>
-        protected BackgroundRenderSystem(ContentManager content, GraphicsDevice graphics)
-        {
-            _content = content;
-            _spriteBatch = new SpriteBatch(graphics);
-
-            Enabled = true;
-        }
-
         #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+                    foreach (var background in _backgrounds)
+                    {
+                        for (var i = 0; i < background.TextureNames.Length; i++)
+                        {
+                            background.Textures[i] = cm.Value.Content.Load<Texture2D>(background.TextureNames[i]);
+                        }
+                    }
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    if (_spriteBatch != null)
+                    {
+                        _spriteBatch.Dispose();
+                        _spriteBatch = null;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Draws the current background.
@@ -92,7 +109,8 @@ namespace Engine.ComponentSystem.Common.Systems
                     }
 
                     // Otherwise load the texture.
-                    background.Textures[j] = _content.Load<Texture2D>(background.TextureNames[j]);
+                    var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                    background.Textures[j] = graphicsSystem.Content.Load<Texture2D>(background.TextureNames[j]);
                 }
 
                 // Stop if we're already at full alpha.
@@ -219,30 +237,6 @@ namespace Engine.ComponentSystem.Common.Systems
                 // Make the first background immediately fully opaque.
                 Alpha = _backgrounds.Count == 0 ? 1f : 0f
             });
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

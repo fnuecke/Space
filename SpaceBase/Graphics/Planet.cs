@@ -259,8 +259,8 @@ namespace Space.Graphics
         /// Initializes a new instance of the <see cref="Planet"/> class.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
-        public Planet(ContentManager content, GraphicsDevice graphics)
+        /// <param name="graphics">The graphics device service.</param>
+        public Planet(ContentManager content, IGraphicsDeviceService graphics)
             : base(content, graphics, "Shaders/Planet")
         {
         }

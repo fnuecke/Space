@@ -29,22 +29,14 @@ namespace Space.Tools.DataEditor
     /// </summary>
     public class GraphicsDeviceControl : Control
     {
-        #region Fields
-
-        // However many GraphicsDeviceControl instances you have, they all share
-        // the same underlying GraphicsDevice, managed by this helper service.
-        GraphicsDeviceService _graphicsDeviceService;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
-        /// Gets a GraphicsDevice that can be used to draw onto this control.
+        /// Gets the graphics device service.
         /// </summary>
-        public GraphicsDevice GraphicsDevice
+        public IGraphicsDeviceService GraphicsDeviceManager
         {
-            get { return _graphicsDeviceService.GraphicsDevice; }
+            get { return _graphicsDeviceService; }
         }
 
         /// <summary>
@@ -57,7 +49,15 @@ namespace Space.Tools.DataEditor
             get { return _services; }
         }
 
+        #endregion
+
+        #region Fields
+
         readonly ServiceContainer _services = new ServiceContainer();
+
+        // However many GraphicsDeviceControl instances you have, they all share
+        // the same underlying GraphicsDevice, managed by this helper service.
+        private GraphicsDeviceService _graphicsDeviceService;
 
         #endregion
 
@@ -148,13 +148,13 @@ namespace Space.Tools.DataEditor
             {
                 X = 0,
                 Y = 0,
-                Width = GraphicsDevice.PresentationParameters.BackBufferWidth,
-                Height = GraphicsDevice.PresentationParameters.BackBufferHeight,
+                Width = GraphicsDeviceManager.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                Height = GraphicsDeviceManager.GraphicsDevice.PresentationParameters.BackBufferHeight,
                 MinDepth = 0,
                 MaxDepth = 1
             };
 
-            GraphicsDevice.Viewport = viewport;
+            GraphicsDeviceManager.GraphicsDevice.Viewport = viewport;
 
             return null;
         }
@@ -171,7 +171,7 @@ namespace Space.Tools.DataEditor
             {
                 var sourceRectangle = new Microsoft.Xna.Framework.Rectangle(0, 0, ClientSize.Width, ClientSize.Height);
 
-                GraphicsDevice.Present(sourceRectangle, null, Handle);
+                GraphicsDeviceManager.GraphicsDevice.Present(sourceRectangle, null, Handle);
             }
             catch
             {
@@ -191,7 +191,7 @@ namespace Space.Tools.DataEditor
         {
             bool deviceNeedsReset;
 
-            switch (GraphicsDevice.GraphicsDeviceStatus)
+            switch (GraphicsDeviceManager.GraphicsDevice.GraphicsDeviceStatus)
             {
                 case GraphicsDeviceStatus.Lost:
                     // If the graphics device is lost, we cannot use it at all.
@@ -204,7 +204,7 @@ namespace Space.Tools.DataEditor
 
                 default:
                     // If the device state is ok, check whether it is big enough.
-                    var pp = GraphicsDevice.PresentationParameters;
+                    var pp = GraphicsDeviceManager.GraphicsDevice.PresentationParameters;
 
                     deviceNeedsReset = (ClientSize.Width != pp.BackBufferWidth) ||
                                        (ClientSize.Height != pp.BackBufferHeight);

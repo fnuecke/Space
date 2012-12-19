@@ -36,8 +36,8 @@ namespace Engine.Graphics
         /// Creates a new gradient rectangle renderer for the given game.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
-        public GradientRectangle(ContentManager content, GraphicsDevice graphics)
+        /// <param name="graphics">The graphics device service.</param>
+        public GradientRectangle(ContentManager content, IGraphicsDeviceService graphics)
             : base(content, graphics, "Shaders/GradientRectangle")
         {
             // Set defaults.

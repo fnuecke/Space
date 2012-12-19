@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Util;
 
@@ -14,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// This system can render floating texts, which can be useful for drawing damage
     /// numbers and the like.
     /// </summary>
-    public sealed class FloatingTextSystem : AbstractSystem, IDrawingSystem
+    public sealed class FloatingTextSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -56,14 +57,14 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The spritebatch we use for rendering.
+        /// The spritebatch to use for rendering.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        private SpriteBatch _spriteBatch;
 
         /// <summary>
         /// The font we use for rendering.
         /// </summary>
-        private readonly SpriteFont _font;
+        private SpriteFont _font;
 
         /// <summary>
         /// The currently displayed floating texts.
@@ -77,21 +78,44 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="FloatingTextSystem"/> class.
         /// </summary>
-        /// <param name="content">The content manager to use for loading.</param>
-        /// <param name="graphics">The graphics device to use for rendering.</param>
-        public FloatingTextSystem(ContentManager content, GraphicsDevice graphics)
+        public FloatingTextSystem()
         {
-            _spriteBatch = new SpriteBatch(graphics);
-            _font = content.Load<SpriteFont>("Fonts/bauhaus");
             DefaultColor = Color.White;
             DefaultDuration = 3;
             FloatDistance = 10;
-            Enabled = true;
         }
 
         #endregion
 
-        #region Drawing
+        #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+                    _font = cm.Value.Content.Load<SpriteFont>("Fonts/bauhaus");
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    if (_spriteBatch != null)
+                    {
+                        _spriteBatch.Dispose();
+                        _spriteBatch = null;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Draws the system.
@@ -144,8 +168,8 @@ namespace Space.ComponentSystem.Systems
         {
             var size = _font.MeasureString(value) * scale;
             var texture = new RenderTarget2D(_spriteBatch.GraphicsDevice,
-                                             (int)System.Math.Ceiling(size.X),
-                                             (int)System.Math.Ceiling(size.Y));
+                                             (int)Math.Ceiling(size.X),
+                                             (int)Math.Ceiling(size.Y));
             var previousRenderTargets = _spriteBatch.GraphicsDevice.GetRenderTargets();
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
             _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
@@ -170,8 +194,8 @@ namespace Space.ComponentSystem.Systems
         {
             var size = _font.MeasureString(value) * scale;
             var texture = new RenderTarget2D(_spriteBatch.GraphicsDevice,
-                                             (int)System.Math.Ceiling(size.X),
-                                             (int)System.Math.Ceiling(size.Y));
+                                             (int)Math.Ceiling(size.X),
+                                             (int)Math.Ceiling(size.Y));
             var previousRenderTargets = _spriteBatch.GraphicsDevice.GetRenderTargets();
             _spriteBatch.GraphicsDevice.SetRenderTarget(texture);
             _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
@@ -213,8 +237,8 @@ namespace Space.ComponentSystem.Systems
                     Value = texture,
                     Color = color,
                     Position = position,
-                    TotalTimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond),
-                    TimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond)
+                    TotalTimeToLive = (uint)Math.Ceiling(duration * Settings.TicksPerSecond),
+                    TimeToLive = (uint)Math.Ceiling(duration * Settings.TicksPerSecond)
                 });
             }
         }
@@ -267,8 +291,8 @@ namespace Space.ComponentSystem.Systems
                     Value = texture,
                     Color = color,
                     Position = position,
-                    TotalTimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond),
-                    TimeToLive = (uint)System.Math.Ceiling(duration * Settings.TicksPerSecond)
+                    TotalTimeToLive = (uint)Math.Ceiling(duration * Settings.TicksPerSecond),
+                    TimeToLive = (uint)Math.Ceiling(duration * Settings.TicksPerSecond)
                 });
             }
         }

@@ -75,7 +75,7 @@ namespace Space.Tools.DataEditor
             {
                 try
                 {
-                    _circle = new FilledEllipse(_content, GraphicsDevice)
+                    _circle = new FilledEllipse(_content, GraphicsDeviceManager)
                     {
                         Gradient = 2,
                         Color = Color.SlateBlue * 0.5f
@@ -178,14 +178,14 @@ namespace Space.Tools.DataEditor
 
         protected override void Draw()
         {
-            GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
+            GraphicsDeviceManager.GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
             if (_factories == null)
             {
                 return;
             }
             if (_batch == null)
             {
-                _batch = new SpriteBatch(GraphicsDevice);
+                _batch = new SpriteBatch(GraphicsDeviceManager.GraphicsDevice);
             }
             _batch.Begin();
             foreach (var projectile in _projectiles)

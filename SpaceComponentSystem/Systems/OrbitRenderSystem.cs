@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class OrbitRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class OrbitRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Constants
 
@@ -52,20 +52,20 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The sprite batch to render the orbits into.
+        /// The spritebatch to use for rendering.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        private SpriteBatch _spriteBatch;
 
         /// <summary>
         /// Used to draw orbits.
         /// </summary>
-        private readonly Ellipse _ellipse;
+        private Ellipse _ellipse;
 
         /// <summary>
         /// Used to draw areas where gravitation force is stronger than ship's
         /// thrusters' force.
         /// </summary>
-        private readonly FilledEllipse _filledEllipse;
+        private FilledEllipse _filledEllipse;
 
         #endregion
 
@@ -78,35 +78,53 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
         
-        #region Constructor
+        #region Logic
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OrbitRenderSystem"/> class.
+        /// Handle a message of the specified type.
         /// </summary>
-        /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device.</param>
-        public OrbitRenderSystem(ContentManager content, GraphicsDevice graphics)
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
         {
-            _spriteBatch = new SpriteBatch(graphics);
-
-            _ellipse = new Ellipse(content, graphics)
             {
-                Thickness = OrbitThickness,
-                BlendState = BlendState.Additive
-            };
-            _filledEllipse = new FilledEllipse(content, graphics)
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+                    if (_ellipse == null)
+                    {
+                        _ellipse = new Ellipse(cm.Value.Content, cm.Value.Graphics)
+                        {
+                            Thickness = OrbitThickness,
+                            BlendState = BlendState.Additive
+                        };
+                        _ellipse.LoadContent();
+                    }
+                    if (_filledEllipse == null)
+                    {
+                        _filledEllipse = new FilledEllipse(cm.Value.Content, cm.Value.Graphics)
+                        {
+                            Gradient = DeadZoneDiffuseWidth,
+                            Color = DeadZoneColor,
+                            BlendState = BlendState.Additive
+                        };
+                        _filledEllipse.LoadContent();
+                    }
+                }
+            }
             {
-                Gradient = DeadZoneDiffuseWidth,
-                Color = DeadZoneColor,
-                BlendState = BlendState.Additive
-            };
-
-            Enabled = true;
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    if (_spriteBatch != null)
+                    {
+                        _spriteBatch.Dispose();
+                        _spriteBatch = null;
+                    }
+                }
+            }
         }
-
-        #endregion
-
-        #region Drawing
 
         /// <summary>
         /// Render our local radar system, with whatever detectables are close

@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -15,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Renders planets.
     /// </summary>
-    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>, IDrawingSystem
+    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>, IDrawingSystem, IMessagingSystem
     {
         #region Properties
 
@@ -32,36 +33,40 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The renderer we use to render our planet.
         /// </summary>
-        private static Planet _planet;
-
-        /// <summary>
-        /// The content manager used to load textures.
-        /// </summary>
-        private readonly ContentManager _content;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PlanetRenderSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
-        public PlanetRenderSystem(ContentManager content, GraphicsDevice graphics)
-        {
-            _content = content;
-            if (_planet == null)
-            {
-                _planet = new Planet(content, graphics);
-            }
-
-            Enabled = true;
-        }
+        private Planet _planet;
 
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    if (_planet == null)
+                    {
+                        _planet = new Planet(cm.Value.Content, cm.Value.Graphics);
+                        _planet.LoadContent();
+                    }
+                    foreach (var component in Components)
+                    {
+                        var factory = component.Factory;
+                        if (factory == null)
+                        {
+                            continue;
+                        }
+                        LoadPlanetTextures(factory, component, cm.Value.Content);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
@@ -105,26 +110,8 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Load the texture if we don't have it yet.
-            if (component.Albedo == null && !string.IsNullOrWhiteSpace(factory.Albedo))
-            {
-                component.Albedo = _content.Load<Texture2D>(factory.Albedo);
-            }
-            if (component.Normals == null && !string.IsNullOrWhiteSpace(factory.Normals))
-            {
-                component.Normals = _content.Load<Texture2D>(factory.Normals);
-            }
-            if (component.Specular == null && !string.IsNullOrWhiteSpace(factory.Specular))
-            {
-                component.Specular = _content.Load<Texture2D>(factory.Specular);
-            }
-            if (component.Lights == null && !string.IsNullOrWhiteSpace(factory.Lights))
-            {
-                component.Lights = _content.Load<Texture2D>(factory.Lights);
-            }
-            if (component.Clouds == null && !string.IsNullOrWhiteSpace(factory.Clouds))
-            {   
-                component.Clouds = _content.Load<Texture2D>(factory.Clouds);
-            }
+            var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+            LoadPlanetTextures(factory, component, graphicsSystem.Content);
 
             // The position and orientation we're rendering at and in.
             var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
@@ -173,6 +160,30 @@ namespace Space.ComponentSystem.Systems
             _planet.Draw();
         }
 
+        private static void LoadPlanetTextures(Factories.PlanetFactory factory, PlanetRenderer component, ContentManager content)
+        {
+            if (component.Albedo == null && !string.IsNullOrWhiteSpace(factory.Albedo))
+            {
+                component.Albedo = content.Load<Texture2D>(factory.Albedo);
+            }
+            if (component.Normals == null && !string.IsNullOrWhiteSpace(factory.Normals))
+            {
+                component.Normals = content.Load<Texture2D>(factory.Normals);
+            }
+            if (component.Specular == null && !string.IsNullOrWhiteSpace(factory.Specular))
+            {
+                component.Specular = content.Load<Texture2D>(factory.Specular);
+            }
+            if (component.Lights == null && !string.IsNullOrWhiteSpace(factory.Lights))
+            {
+                component.Lights = content.Load<Texture2D>(factory.Lights);
+            }
+            if (component.Clouds == null && !string.IsNullOrWhiteSpace(factory.Clouds))
+            {
+                component.Clouds = content.Load<Texture2D>(factory.Clouds);
+            }
+        }
+
         /// <summary>
         /// Utility method to find the sun we're rotating around.
         /// </summary>
@@ -199,30 +210,6 @@ namespace Space.ComponentSystem.Systems
         /// <param name="hasher">The hasher to use.</param>
         public override void Hash(Hasher hasher)
         {
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

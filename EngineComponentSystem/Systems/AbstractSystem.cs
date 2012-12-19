@@ -136,6 +136,9 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The copy.</returns>
         public virtual AbstractSystem NewInstance()
         {
+            // Not supported for presentation types.
+            Debug.Assert(!(this is IDrawingSystem));
+
             var copy = (AbstractSystem)MemberwiseClone();
 
             copy.Manager = null;
@@ -158,6 +161,9 @@ namespace Engine.ComponentSystem.Systems
         /// </remarks>
         public virtual void CopyInto(AbstractSystem into)
         {
+            // Not supported for presentation types.
+            Debug.Assert(!(this is IDrawingSystem));
+
             Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
             Debug.Assert(into != this);
 

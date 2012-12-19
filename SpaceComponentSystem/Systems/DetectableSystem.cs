@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 
@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Loads icons for detectable components.
     /// </summary>
-    public sealed class DetectableSystem : AbstractComponentSystem<Detectable>, IDrawingSystem
+    public sealed class DetectableSystem : AbstractComponentSystem<Detectable>, IDrawingSystem, IMessagingSystem
     {
         #region Constants
 
@@ -34,30 +34,26 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// Used for loading detectable icons.
-        /// </summary>
-        private readonly ContentManager _content;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DetectableSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content.</param>
-        public  DetectableSystem(ContentManager content)
-        {
-            _content = content;
-            Enabled = true;
-        }
-
-        #endregion
-
         #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    foreach (var component in Components)
+                    {
+                        component.Texture = cm.Value.Content.Load<Texture2D>(component.TextureName);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Loads textures for detectables.
@@ -71,7 +67,8 @@ namespace Space.ComponentSystem.Systems
                 // Load our texture, if it's not set.
                 if (component.Texture == null)
                 {
-                    component.Texture = _content.Load<Texture2D>(component.TextureName);
+                    var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                    component.Texture = graphicsSystem.Content.Load<Texture2D>(component.TextureName);
                 }
             }
         }
@@ -86,30 +83,6 @@ namespace Space.ComponentSystem.Systems
         /// <param name="hasher">The hasher to use.</param>
         public override void Hash(Hasher hasher)
         {
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

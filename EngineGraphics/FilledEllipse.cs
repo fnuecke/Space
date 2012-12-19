@@ -41,8 +41,8 @@ namespace Engine.Graphics
         /// Creates a new ellipse renderer for the given game.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
-        public FilledEllipse(ContentManager content, GraphicsDevice graphics)
+        /// <param name="graphics">The graphics device service.</param>
+        public FilledEllipse(ContentManager content, IGraphicsDeviceService graphics)
             : base(content, graphics, "Shaders/FilledCircle")
         {
             // Set defaults.

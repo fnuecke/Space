@@ -25,16 +25,12 @@ namespace ProjectMercury.EffectEditor
     /// </summary>
     abstract public class GraphicsDeviceControl : Control
     {
-        // However many GraphicsDeviceControl instances you have, they all share
-        // the same underlying GraphicsDevice, managed by this helper service.
-        GraphicsDeviceService graphicsDeviceService;
-
         /// <summary>
         /// Gets a GraphicsDevice that can be used to draw onto this control.
         /// </summary>
         public GraphicsDevice GraphicsDevice
         {
-            get { return graphicsDeviceService.GraphicsDevice; }
+            get { return _graphicsDeviceService.GraphicsDevice; }
         }
 
         /// <summary>
@@ -44,10 +40,14 @@ namespace ProjectMercury.EffectEditor
         /// </summary>
         public ServiceContainer Services
         {
-            get { return services; }
+            get { return _services; }
         }
 
-        ServiceContainer services = new ServiceContainer();
+        private readonly ServiceContainer _services = new ServiceContainer();
+
+        // However many GraphicsDeviceControl instances you have, they all share
+        // the same underlying GraphicsDevice, managed by this helper service.
+        private GraphicsDeviceService _graphicsDeviceService;
 
         /// <summary>
         /// Initializes the control.
@@ -57,12 +57,12 @@ namespace ProjectMercury.EffectEditor
             // Don't initialize the graphics device if we are running in the designer.
             if (!DesignMode)
             {
-                graphicsDeviceService = GraphicsDeviceService.AddRef(Handle,
+                _graphicsDeviceService = GraphicsDeviceService.AddRef(Handle,
                                                                      ClientSize.Width,
                                                                      ClientSize.Height);
 
                 // Register the service, so components like ContentManager can find it.
-                services.AddService<IGraphicsDeviceService>(graphicsDeviceService);
+                _services.AddService<IGraphicsDeviceService>(_graphicsDeviceService);
 
                 // Give derived classes a chance to initialize themselves.
                 Initialize();
@@ -76,10 +76,10 @@ namespace ProjectMercury.EffectEditor
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (graphicsDeviceService != null)
+            if (_graphicsDeviceService != null)
             {
-                graphicsDeviceService.Release(disposing);
-                graphicsDeviceService = null;
+                _graphicsDeviceService.Release(disposing);
+                _graphicsDeviceService = null;
             }
 
             base.Dispose(disposing);
@@ -113,7 +113,7 @@ namespace ProjectMercury.EffectEditor
         string BeginDraw()
         {
             // If we have no graphics device, we must be running in the designer.
-            if (graphicsDeviceService == null)
+            if (_graphicsDeviceService == null)
             {
                 return Text + "\n\n" + GetType();
             }
@@ -205,7 +205,7 @@ namespace ProjectMercury.EffectEditor
             {
                 try
                 {
-                    graphicsDeviceService.ResetDevice(ClientSize.Width,
+                    _graphicsDeviceService.ResetDevice(ClientSize.Width,
                                                       ClientSize.Height);
                 }
                 catch (Exception e)

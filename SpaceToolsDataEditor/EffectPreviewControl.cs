@@ -113,14 +113,14 @@ namespace Space.Tools.DataEditor
 
         protected override void Draw()
         {
-            GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
+            GraphicsDeviceManager.GraphicsDevice.Clear(Color.FromNonPremultiplied(64, 64, 64, 255));
             if (_effect == null)
             {
                 return;
             }
             if (_batch == null)
             {
-                _batch = new SpriteBatch(GraphicsDevice);
+                _batch = new SpriteBatch(GraphicsDeviceManager.GraphicsDevice);
             }
             FarTransform transform;
             transform.Matrix = Matrix.Identity;

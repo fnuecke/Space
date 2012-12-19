@@ -44,9 +44,9 @@ namespace Space.Graphics
         /// <summary>
         /// Initializes a new instance of the <see cref="Shield"/> class.
         /// </summary>
-        /// <param name="content">The content.</param>
-        /// <param name="graphics">The graphics.</param>
-        public Shield(ContentManager content, GraphicsDevice graphics)
+        /// <param name="content">The content manager.</param>
+        /// <param name="graphics">The graphics device service.</param>
+        public Shield(ContentManager content, IGraphicsDeviceService graphics)
             : base(content, graphics, "Shaders/Shield")
         {
         }

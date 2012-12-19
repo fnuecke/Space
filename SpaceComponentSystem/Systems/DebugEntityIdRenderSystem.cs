@@ -1,10 +1,10 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Renders entity ids at their position, if they have a position.
     /// </summary>
-    public sealed class DebugEntityIdRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class DebugEntityIdRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Properties
 
@@ -31,27 +31,12 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The spritebatch to use for rendering.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        private SpriteBatch _spriteBatch;
 
         /// <summary>
         /// The font to use for rendering.
         /// </summary>
-        private readonly SpriteFont _font;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DebugEntityIdRenderSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content manager.</param>
-        /// <param name="graphics">The graphics device.</param>
-        public DebugEntityIdRenderSystem(ContentManager content, GraphicsDevice graphics)
-        {
-            _spriteBatch = new SpriteBatch(graphics);
-            _font = content.Load<SpriteFont>("Fonts/ConsoleFont");
-        }
+        private SpriteFont _font;
 
         #endregion
 
@@ -85,6 +70,34 @@ namespace Space.ComponentSystem.Systems
                 }
             }
             _spriteBatch.End();
+        }
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+                    _font = cm.Value.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    if (_spriteBatch != null)
+                    {
+                        _spriteBatch.Dispose();
+                        _spriteBatch = null;
+                    }
+                }
+            }
         }
 
         #endregion

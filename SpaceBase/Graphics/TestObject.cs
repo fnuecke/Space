@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Engine.Graphics;
-using Microsoft.Xna.Framework;
+﻿using Engine.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -45,8 +40,8 @@ namespace Space.Graphics
         /// Initializes a new instance of the <see cref="Planet"/> class.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
-        public TestObject(ContentManager content, GraphicsDevice graphics)
+        /// <param name="graphics">The graphics device service.</param>
+        public TestObject(ContentManager content, IGraphicsDeviceService graphics)
             : base(content, graphics, "Shaders/TestObject")
         {
         }

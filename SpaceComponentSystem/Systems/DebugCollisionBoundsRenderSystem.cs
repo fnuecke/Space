@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
@@ -14,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// This system is used to draw boxes representing the collision bounds of entities.
     /// </summary>
-    public sealed class DebugCollisionBoundsRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class DebugCollisionBoundsRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -43,47 +42,41 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The renderer we use to render our bounds for box collidables.
         /// </summary>
-        private static AbstractShape _boxShape;
+        private AbstractShape _boxShape;
 
         /// <summary>
         /// The renderer we use to render our bounds for spherical collidables.
         /// </summary>
-        private static AbstractShape _sphereShape;
-
-        #endregion
-
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components when updating, to avoid
-        /// modifications to the list of components breaking the update.
-        /// </summary>
-        private ISet<int> _collidablesInView = new HashSet<int>();
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DebugCollisionBoundsRenderSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content.</param>
-        /// <param name="graphics">The graphics.</param>
-        public DebugCollisionBoundsRenderSystem(ContentManager content, GraphicsDevice graphics)
-        {
-            if (_boxShape == null)
-            {
-                _boxShape = new FilledRectangle(content, graphics);
-            }
-            if (_sphereShape == null)
-            {
-                _sphereShape = new FilledEllipse(content, graphics);
-            }
-        }
+        private AbstractShape _sphereShape;
 
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    if (_boxShape == null)
+                    {
+                        _boxShape = new FilledRectangle(cm.Value.Content, cm.Value.Graphics);
+                        _boxShape.LoadContent();
+                    }
+                    if (_sphereShape == null)
+                    {
+                        _sphereShape = new FilledEllipse(cm.Value.Content, cm.Value.Graphics);
+                        _sphereShape.LoadContent();
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Draws all collidable bounds in the viewport.
@@ -161,9 +154,6 @@ namespace Space.ComponentSystem.Systems
                 shape.SetSize(relativeBounds.Width, relativeBounds.Height);
                 shape.Draw();
             }
-
-            // Clear for next iteration.
-            _collidablesInView.Clear();
         }
 
         #endregion

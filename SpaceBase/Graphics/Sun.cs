@@ -133,18 +133,25 @@ namespace Space.Graphics
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics device to render to.</param>
-        public Sun(ContentManager content, GraphicsDevice graphics)
+        public Sun(ContentManager content, IGraphicsDeviceService graphics)
             : base(content, graphics, "Shaders/Sun")
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            graphics.DeviceReset += GraphicsOnDeviceReset;
+        }
+
+        public override void LoadContent()
+        {
+            base.LoadContent();
+
+            _spriteBatch = new SpriteBatch(Graphics.GraphicsDevice);
 
             // Load our textures.
-            _surface = content.Load<Texture2D>("Textures/Suns/sun_00");
-            _turbulenceOne = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence1");
-            _turbulenceTwo = content.Load<Texture2D>("Textures/Suns/sun_00_turbulence2");
-            //_turbulenceColor = content.Load<Texture2D>("Textures/Suns/sun_00_gradient");
-            _gaussianBlur = content.Load<Effect>("Shaders/SunBlur");
-            _additiveBlend = content.Load<Effect>("Shaders/SunBlend");
+            _surface = Content.Load<Texture2D>("Textures/Suns/sun_00");
+            _turbulenceOne = Content.Load<Texture2D>("Textures/Suns/sun_00_turbulence1");
+            _turbulenceTwo = Content.Load<Texture2D>("Textures/Suns/sun_00_turbulence2");
+            //_turbulenceColor = Content.Load<Texture2D>("Textures/Suns/sun_00_gradient");
+            _gaussianBlur = Content.Load<Effect>("Shaders/SunBlur");
+            _additiveBlend = Content.Load<Effect>("Shaders/SunBlend");
 
             // Apply texture parameters.
             Effect.Parameters["Surface"].SetValue(_surface);
@@ -155,7 +162,30 @@ namespace Space.Graphics
             RecreateRenderTargets();
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Graphics.DeviceReset -= GraphicsOnDeviceReset;
+                if (_surfaceSphere != null)
+                {
+                    _surfaceSphere.Dispose();
+                }
+                if (_turbulenceSphere != null)
+                {
+                    _turbulenceSphere.Dispose();
+                }
+                for (var i = 0; i < _mipmaps.Length; i++)
+                {
+                    if (_mipmaps[i] != null)
+                    {
+                        _mipmaps[i].Dispose();
+                    }
+                }
+            }
+        }
+
+        private void GraphicsOnDeviceReset(object sender, EventArgs eventArgs)
         {
             if (_surfaceSphere != null)
             {
@@ -173,39 +203,23 @@ namespace Space.Graphics
                 }
             }
 
-            //GC.SuppressFinalize(this);
+            RecreateRenderTargets();
         }
 
         private void RecreateRenderTargets()
         {
-            if (_surfaceSphere != null)
-            {
-                _surfaceSphere.Dispose();
-            }
-            if (_turbulenceSphere != null)
-            {
-                _turbulenceSphere.Dispose();
-            }
-            for (var i = 0; i < _mipmaps.Length; i++)
-            {
-                if (_mipmaps[i] != null)
-                {
-                    _mipmaps[i].Dispose();
-                }
-            }
-
             // Get settings. We use the whole screen to draw.
-            var pp = GraphicsDevice.PresentationParameters;
+            var pp = Graphics.GraphicsDevice.PresentationParameters;
 
             var width = pp.BackBufferWidth;
             var height = pp.BackBufferHeight;
 
             // Create a target for rendering the main sun texture.
-            _surfaceSphere = new RenderTarget2D(GraphicsDevice, width, height, false, pp.BackBufferFormat,
+            _surfaceSphere = new RenderTarget2D(Graphics.GraphicsDevice, width, height, false, pp.BackBufferFormat,
                                                 DepthFormat.None);
 
             // One for the turbulence.
-            _turbulenceSphere = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
+            _turbulenceSphere = new RenderTarget2D(Graphics.GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
                                                    DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
 
             // And one for the mipmaps of the whole thing.
@@ -221,7 +235,7 @@ namespace Space.Graphics
                 {
                     height = 1;
                 }
-                _mipmaps[i] = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
+                _mipmaps[i] = new RenderTarget2D(Graphics.GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
                                                  DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
             }
         }
@@ -238,19 +252,14 @@ namespace Space.Graphics
             // Update our paint canvas if necessary.
             RecomputeQuads();
 
-            // Recreate render targets as necessary.
-            if (_surfaceSphere.Width != GraphicsDevice.PresentationParameters.BackBufferWidth ||
-                _surfaceSphere.Height != GraphicsDevice.PresentationParameters.BackBufferHeight)
-            {
-                RecreateRenderTargets();
-            }
+            var device = Graphics.GraphicsDevice;
 
             // Save main render targets.
-            var previousRenderTargets = GraphicsDevice.GetRenderTargets();
+            var previousRenderTargets = device.GetRenderTargets();
 
             // Set the render target for our base sun image.
-            GraphicsDevice.SetRenderTarget(_surfaceSphere);
-            GraphicsDevice.Clear(Color.Transparent);
+            device.SetRenderTarget(_surfaceSphere);
+            device.Clear(Color.Transparent);
 
             AdjustParameters();
 
@@ -263,27 +272,27 @@ namespace Space.Graphics
 
             // And draw it.
             Effect.CurrentTechnique.Passes[0].Apply();
-            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
+            device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
 
             // Then get the turbulence.
-            GraphicsDevice.SetRenderTarget(_turbulenceSphere);
-            GraphicsDevice.Clear(Color.Transparent);
+            device.SetRenderTarget(_turbulenceSphere);
+            device.Clear(Color.Transparent);
 
             // And draw that, too.
             Effect.CurrentTechnique.Passes[1].Apply();
-            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
+            device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
 
             // Create the down-sampled versions.
-            GraphicsDevice.SetRenderTarget(_mipmaps[0]);
-            GraphicsDevice.Clear(Color.Transparent);
+            device.SetRenderTarget(_mipmaps[0]);
+            device.Clear(Color.Transparent);
             _gaussianBlur.Parameters["TextureSize"].SetValue(_turbulenceSphere.Width);
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, null, null, null, _gaussianBlur);
             _spriteBatch.Draw(_turbulenceSphere, _mipmaps[0].Bounds, Color.White);
             _spriteBatch.End();
             for (var i = 1; i < _mipmaps.Length; ++i)
             {
-                GraphicsDevice.SetRenderTarget(_mipmaps[i]);
-                GraphicsDevice.Clear(Color.Transparent);
+                device.SetRenderTarget(_mipmaps[i]);
+                device.Clear(Color.Transparent);
                 _gaussianBlur.Parameters["TextureSize"].SetValue(_mipmaps[i - 1].Width);
                 _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, null, null, null, _gaussianBlur);
                 _spriteBatch.Draw(_mipmaps[i - 1], _mipmaps[i].Bounds, Color.White);
@@ -293,18 +302,18 @@ namespace Space.Graphics
             // Add them up.
             for (var i = _mipmaps.Length - 2; i >= 0; --i)
             {
-                GraphicsDevice.SetRenderTarget(_mipmaps[i]);
+                device.SetRenderTarget(_mipmaps[i]);
                 _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, null, null, _additiveBlend);
                 _spriteBatch.Draw(_mipmaps[i + 1], _mipmaps[i].Bounds, Color.White);
                 _spriteBatch.End();
             }
-            GraphicsDevice.SetRenderTarget(_turbulenceSphere);
+            device.SetRenderTarget(_turbulenceSphere);
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, null, null, _additiveBlend);
             _spriteBatch.Draw(_mipmaps[0], _turbulenceSphere.Bounds, Color.White);
             _spriteBatch.End();
 
             // Restore render targets.
-            GraphicsDevice.SetRenderTargets(previousRenderTargets);
+            device.SetRenderTargets(previousRenderTargets);
 
             // Paint the base image and the HDR over it.
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);

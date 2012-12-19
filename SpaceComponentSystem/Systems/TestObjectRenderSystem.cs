@@ -47,13 +47,14 @@ namespace Space.ComponentSystem.Systems
         /// Initializes a new instance of the <see cref="SunRenderSystem"/> class.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
-        public TestObjectRenderSystem(ContentManager content, GraphicsDevice graphics)
+        /// <param name="graphics">The graphics device service.</param>
+        public TestObjectRenderSystem(ContentManager content, IGraphicsDeviceService graphics)
         {
             _content = content;
             if (_testObject == null)
             {
                 _testObject = new TestObject(content, graphics);
+                _testObject.LoadContent();
             }
 
             Enabled = true;

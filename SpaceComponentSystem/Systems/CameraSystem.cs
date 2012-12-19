@@ -177,7 +177,6 @@ namespace Space.ComponentSystem.Systems
         {
             _graphics = graphics;
             _services = services;
-            Enabled = true;
         }
 
         #endregion
@@ -361,30 +360,6 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
             var view = ComputeVisibleBounds();
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

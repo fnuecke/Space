@@ -1,11 +1,9 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Graphics;
 using Space.Util;
@@ -15,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Renders suns.
     /// </summary>
-    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>, IDrawingSystem
+    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>, IDrawingSystem, IMessagingSystem
     {
         #region Fields
 
@@ -36,26 +34,27 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Constructor
+        #region Logic
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SunRenderSystem"/> class.
+        /// Handle a message of the specified type.
         /// </summary>
-        /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to render to.</param>
-        public SunRenderSystem(ContentManager content, GraphicsDevice graphics)
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
         {
-            if (_sun == null)
             {
-                _sun = new Sun(content, graphics);
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    if (_sun == null)
+                    {
+                        _sun = new Sun(cm.Value.Content, cm.Value.Graphics);
+                        _sun.LoadContent();
+                    }
+                }
             }
-
-            Enabled = true;
         }
-
-        #endregion
-
-        #region Logic
 
         /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
@@ -118,30 +117,6 @@ namespace Space.ComponentSystem.Systems
         /// <param name="hasher">The hasher to use.</param>
         public override void Hash(Hasher hasher)
         {
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

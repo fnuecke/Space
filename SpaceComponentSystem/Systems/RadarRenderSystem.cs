@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// This system handles rendering whatever the local player's radar picks up.
     /// </summary>
-    public sealed class RadarRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class RadarRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Types
 
@@ -76,9 +76,9 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The sprite batch to render the orbits into.
+        /// The spritebatch to use for rendering.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        private SpriteBatch _spriteBatch;
 
         /// <summary>
         /// Background image for radar icons.
@@ -88,12 +88,12 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Background for rendering the distance to a target.
         /// </summary>
-        private readonly Texture2D _radarDistance;
+        private Texture2D _radarDistance;
 
         /// <summary>
         /// Font used to render the distance on radar icons.
         /// </summary>
-        private readonly SpriteFont _distanceFont;
+        private SpriteFont _distanceFont;
 
         #endregion
 
@@ -108,34 +108,7 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RadarRenderSystem"/> class.
-        /// </summary>
-        /// <param name="content">The content manager to use for loading assets.</param>
-        /// <param name="graphics">The graphics device to use for rendering.</param>
-        public RadarRenderSystem(ContentManager content, GraphicsDevice graphics)
-        {
-            _spriteBatch = new SpriteBatch(graphics);
-
-            _radarDirection[(int)RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
-            _radarDirection[(int)RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");
-            _radarDirection[(int)RadarDirection.Right] = content.Load<Texture2D>("Textures/Radar/right");
-            _radarDirection[(int)RadarDirection.Bottom] = content.Load<Texture2D>("Textures/Radar/bottom");
-            _radarDirection[(int)RadarDirection.TopLeft] = content.Load<Texture2D>("Textures/Radar/top_left");
-            _radarDirection[(int)RadarDirection.TopRight] = content.Load<Texture2D>("Textures/Radar/top_right");
-            _radarDirection[(int)RadarDirection.BottomLeft] = content.Load<Texture2D>("Textures/Radar/bottom_left");
-            _radarDirection[(int)RadarDirection.BottomRight] = content.Load<Texture2D>("Textures/Radar/bottom_right");
-            _radarDistance = content.Load<Texture2D>("Textures/Radar/distance");
-            _distanceFont = content.Load<SpriteFont>("Fonts/visitor");
-
-            Enabled = true;
-        }
-
-        #endregion
-
-        #region Drawing
+        #region Logic
 
         /// <summary>
         /// Render our local radar system, with whatever detectables are close
@@ -334,6 +307,44 @@ namespace Space.ComponentSystem.Systems
 
             // Clear the list for the next run.
             _reusableNeighborList.Clear();
+        }
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+
+                    _radarDirection[(int)RadarDirection.Top] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top");
+                    _radarDirection[(int)RadarDirection.Left] = cm.Value.Content.Load<Texture2D>("Textures/Radar/left");
+                    _radarDirection[(int)RadarDirection.Right] = cm.Value.Content.Load<Texture2D>("Textures/Radar/right");
+                    _radarDirection[(int)RadarDirection.Bottom] = cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom");
+                    _radarDirection[(int)RadarDirection.TopLeft] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top_left");
+                    _radarDirection[(int)RadarDirection.TopRight] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top_right");
+                    _radarDirection[(int)RadarDirection.BottomLeft] = cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_left");
+                    _radarDirection[(int)RadarDirection.BottomRight] = cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_right");
+                    _radarDistance = cm.Value.Content.Load<Texture2D>("Textures/Radar/distance");
+                    _distanceFont = cm.Value.Content.Load<SpriteFont>("Fonts/visitor");
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    if (_spriteBatch != null)
+                    {
+                        _spriteBatch.Dispose();
+                        _spriteBatch = null;
+                    }
+                }
+            }
         }
 
         /// <summary>

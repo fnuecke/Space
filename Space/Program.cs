@@ -101,7 +101,6 @@ namespace Space
         /// </summary>
         private InputManager _inputManager;
 
-        private RenderTarget2D _scene;
         private SpriteBatch _spriteBatch;
         private ScreenManager _screenManager;
         private GameConsole _console;
@@ -210,11 +209,6 @@ namespace Space
                 {
                     _soundBank.Dispose();
                 }
-
-                if (_scene != null)
-                {
-                    _scene.Dispose();
-                }
             }
 
             base.Dispose(disposing);
@@ -291,9 +285,6 @@ namespace Space
             // For graph data.
             _watch.Restart();
 
-            // Set our custom render target to render everything into an
-            // off-screen texture, first.
-            GraphicsDevice.SetRenderTarget(_scene);
             GraphicsDevice.Clear(Color.DarkSlateGray);
 
             // Draw world elements if we're in a game.
@@ -311,14 +302,6 @@ namespace Space
 
             // Draw some debug info on top of everything.
             DrawDebugInfo();
-
-            // Reset our graphics device (pop our off-screen render target).
-            GraphicsDevice.SetRenderTarget(null);
-
-            // Dump everything we rendered into our buffer to the screen.
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
-            _spriteBatch.Draw(_scene, GraphicsDevice.PresentationParameters.Bounds, Color.White);
-            _spriteBatch.End();
 
             // Grab actual graph data.
             _watch.Stop();
@@ -452,7 +435,13 @@ namespace Space
                     {
                         if (_indexRectangle == null)
                         {
-                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) { Color = Color.LightGreen * 0.75f, Thickness = 2f, BlendState = BlendState.Additive};
+                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDeviceManager)
+                            {
+                                Color = Color.LightGreen * 0.75f,
+                                Thickness = 2f,
+                                BlendState = BlendState.Additive
+                            };
+                            _indexRectangle.LoadContent();
                         }
                         _indexRectangle.SetTransform(camera.Transform.Matrix);
                         index.DrawIndex(_indexGroupMask, _indexRectangle, camera.Transform.Translation);

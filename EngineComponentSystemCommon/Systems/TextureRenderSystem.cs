@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -14,7 +14,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// Basic implementation of a render system. Subclasses may override the
     /// GetTranslation() method to implement camera positioning.
     /// </summary>
-    public abstract class TextureRenderSystem : AbstractComponentSystem<TextureRenderer>, IDrawingSystem
+    public abstract class TextureRenderSystem : AbstractComponentSystem<TextureRenderer>, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -43,12 +43,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// The sprite batch to render textures into.
         /// </summary>
-        protected readonly SpriteBatch SpriteBatch;
-
-        /// <summary>
-        /// The content manager used to load textures.
-        /// </summary>
-        protected readonly ContentManager Content;
+        protected SpriteBatch SpriteBatch;
 
         #endregion
 
@@ -57,18 +52,68 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="TextureRenderSystem"/> class.
         /// </summary>
-        /// <param name="content">The content manager.</param>
-        /// <param name="graphics">The graphics device.</param>
-        protected TextureRenderSystem(ContentManager content, GraphicsDevice graphics)
+        protected TextureRenderSystem()
         {
-            Content = content;
-            SpriteBatch = new SpriteBatch(graphics);
             Enabled = true;
         }
 
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    LoadContent(cm.Value.Content, cm.Value.Graphics);
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    UnloadContent();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the graphics device has been (re)created, and assets
+        /// should be loaded.
+        /// </summary>
+        /// <param name="content">The content manager.</param>
+        /// <param name="graphics">The graphics device service.</param>
+        protected virtual void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
+        {
+            SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
+            foreach (var component in Components)
+            {
+                if (!string.IsNullOrWhiteSpace(component.TextureName))
+                {
+                    component.Texture = content.Load<Texture2D>(component.TextureName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the graphics device is being disposed, and
+        /// any assets manually allocated should be disposed.
+        /// </summary>
+        protected virtual void UnloadContent()
+        {
+            if (SpriteBatch != null)
+            {
+                SpriteBatch.Dispose();
+                SpriteBatch = null;
+            }
+        }
 
         /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
@@ -115,9 +160,10 @@ namespace Engine.ComponentSystem.Common.Systems
         private void BeginDrawComponent(TextureRenderer component, FarPosition translation, InterpolationSystem interpolation, float layerDepth)
         {
             // Load the texture if it isn't already.
-            if (component.Texture == null)
+            if (component.Texture == null && !string.IsNullOrWhiteSpace(component.TextureName))
             {
-                component.Texture = Content.Load<Texture2D>(component.TextureName);
+                var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                component.Texture = graphicsSystem.Content.Load<Texture2D>(component.TextureName);
             }
 
             // Get interpolated position.
@@ -183,30 +229,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="hasher">The hasher to use.</param>
         public override void Hash(Hasher hasher)
         {
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

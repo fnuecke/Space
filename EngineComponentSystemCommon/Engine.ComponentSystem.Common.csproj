@@ -72,6 +72,7 @@
     <Compile Include="Components\EllipsePath.cs" />
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
+    <Compile Include="Components\GraphicsDeviceSystem.cs" />
     <Compile Include="Components\Index.cs" />
     <Compile Include="Components\Intersection.cs" />
     <Compile Include="Components\Owner.cs" />
@@ -82,6 +83,8 @@
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Components\Velocity.cs" />
     <Compile Include="Messages\EndCollision.cs" />
+    <Compile Include="Messages\GraphicsDeviceCreated.cs" />
+    <Compile Include="Messages\GraphicsDeviceDisposing.cs" />
     <Compile Include="Messages\IndexBoundsChanged.cs" />
     <Compile Include="Messages\BeginCollision.cs" />
     <Compile Include="Messages\IndexGroupsChanged.cs" />
