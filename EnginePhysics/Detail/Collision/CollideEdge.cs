@@ -19,13 +19,6 @@ namespace Engine.Physics.Detail.Collision
     /// </summary>
     internal static partial class Algorithms
     {
-        public static bool CollideCircleAndEdge(Fixture fixtureA, WorldTransform xfA,
-                                                Fixture fixtureB, WorldTransform xfB,
-                                                out Manifold manifold)
-        {
-            return CollideEdgeAndCircle(fixtureB, xfB, fixtureA, xfA, out manifold);
-        }
-
         // Compute contact points for edge versus circle.
         // This accounts for edge connectivity.
         public static bool CollideEdgeAndCircle(Fixture fixtureA, WorldTransform xfA,
@@ -171,13 +164,6 @@ namespace Engine.Physics.Detail.Collision
             manifold.Points.Item1.LocalPoint = circleB.Center;
 
             return true;
-        }
-
-        public static bool CollidePolygonAndEdge(Fixture fixtureA, WorldTransform xfA,
-                                                 Fixture fixtureB, WorldTransform xfB,
-                                                 out Manifold manifold)
-        {
-            return CollideEdgeAndPolygon(fixtureB, xfB, fixtureA, xfA, out manifold);
         }
 
         // This function collides and edge and a polygon.
@@ -546,32 +532,34 @@ namespace Engine.Physics.Detail.Collision
                 var i1 = bestIndex;
                 var i2 = i1 + 1 < tpc ? i1 + 1 : 0;
 
-                incidentEdge.Item1 = new ClipVertex
+                incidentEdge = new FixedArray2<ClipVertex>
                 {
-                    Vertex = tpv[i1],
-                    Id =
+                    Item1 = new ClipVertex
                     {
-                        Feature =
+                        Vertex = tpv[i1],
+                        Id =
                         {
-                            IndexA = 0,
-                            IndexB = (byte)i1,
-                            TypeA = (byte)ContactFeature.FeatureType.Face,
-                            TypeB = (byte)ContactFeature.FeatureType.Vertex
+                            Feature =
+                            {
+                                IndexA = 0,
+                                IndexB = (byte)i1,
+                                TypeA = (byte)ContactFeature.FeatureType.Face,
+                                TypeB = (byte)ContactFeature.FeatureType.Vertex
+                            }
                         }
-                    }
-                };
-
-                incidentEdge.Item2 = new ClipVertex
-                {
-                    Vertex = tpv[i2],
-                    Id =
+                    },
+                    Item2 = new ClipVertex
                     {
-                        Feature =
+                        Vertex = tpv[i2],
+                        Id =
                         {
-                            IndexA = 0,
-                            IndexB = (byte)i2,
-                            TypeA = (byte)ContactFeature.FeatureType.Face,
-                            TypeB = (byte)ContactFeature.FeatureType.Vertex
+                            Feature =
+                            {
+                                IndexA = 0,
+                                IndexB = (byte)i2,
+                                TypeA = (byte)ContactFeature.FeatureType.Face,
+                                TypeB = (byte)ContactFeature.FeatureType.Vertex
+                            }
                         }
                     }
                 };
@@ -597,32 +585,34 @@ namespace Engine.Physics.Detail.Collision
             {
                 manifold.Type = Manifold.ManifoldType.FaceB;
 
-                incidentEdge.Item1 = new ClipVertex
+                incidentEdge = new FixedArray2<ClipVertex>
                 {
-                    Vertex = v1,
-                    Id =
+                    Item1 = new ClipVertex
                     {
-                        Feature =
+                        Vertex = v1,
+                        Id =
                         {
-                            IndexA = 0,
-                            IndexB = (byte)primaryAxis.Index,
-                            TypeA = (byte)ContactFeature.FeatureType.Vertex,
-                            TypeB = (byte)ContactFeature.FeatureType.Face
+                            Feature =
+                            {
+                                IndexA = 0,
+                                IndexB = (byte)primaryAxis.Index,
+                                TypeA = (byte)ContactFeature.FeatureType.Vertex,
+                                TypeB = (byte)ContactFeature.FeatureType.Face
+                            }
                         }
-                    }
-                };
-
-                incidentEdge.Item2 = new ClipVertex
-                {
-                    Vertex = v2,
-                    Id =
+                    },
+                    Item2 = new ClipVertex
                     {
-                        Feature =
+                        Vertex = v2,
+                        Id =
                         {
-                            IndexA = 0,
-                            IndexB = (byte)primaryAxis.Index,
-                            TypeA = (byte)ContactFeature.FeatureType.Vertex,
-                            TypeB = (byte)ContactFeature.FeatureType.Face
+                            Feature =
+                            {
+                                IndexA = 0,
+                                IndexB = (byte)primaryAxis.Index,
+                                TypeA = (byte)ContactFeature.FeatureType.Vertex,
+                                TypeB = (byte)ContactFeature.FeatureType.Face
+                            }
                         }
                     }
                 };

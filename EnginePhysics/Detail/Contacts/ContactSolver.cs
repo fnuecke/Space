@@ -76,8 +76,8 @@ namespace Engine.Physics.Detail.Contacts
             {
                 var contact = _contacts[i];
 
-                var fixtureA = _manager.GetComponentById(contact.FixtureA) as Fixture;
-                var fixtureB = _manager.GetComponentById(contact.FixtureB) as Fixture;
+                var fixtureA = _manager.GetComponentById(contact.FixtureIdA) as Fixture;
+                var fixtureB = _manager.GetComponentById(contact.FixtureIdB) as Fixture;
 
                 System.Diagnostics.Debug.Assert(fixtureA != null);
                 System.Diagnostics.Debug.Assert(fixtureB != null);
@@ -213,10 +213,11 @@ namespace Engine.Physics.Detail.Contacts
                 xfB.Translation = cB - xfB.Rotation * localCenterB;
 
                 FixedArray2<WorldPoint> points;
-                InitializeWorldManifold(contact.Manifold, xfA, radiusA,
-                                        xfB, radiusB,
-                                        out vc.Normal,
-                                        out points);
+                Contact.ComputeWorldManifold(contact.Manifold,
+                                             xfA, radiusA,
+                                             xfB, radiusB,
+                                             out vc.Normal,
+                                             out points);
 
                 for (var j = 0; j < vc.PointCount; ++j)
                 {
@@ -283,69 +284,6 @@ namespace Engine.Physics.Detail.Contacts
                         vc.PointCount = 1;
                     }
                 }
-            }
-        }
-
-        private static void InitializeWorldManifold(Manifold manifold,
-                                                    WorldTransform xfA, float radiusA,
-                                                    WorldTransform xfB, float radiusB,
-                                                    out Vector2 normal,
-                                                    out FixedArray2<WorldPoint> points)
-        {
-            points = new FixedArray2<WorldPoint>(); // satisfy out
-            switch (manifold.Type)
-            {
-                case Manifold.ManifoldType.Circles:
-                {
-                    normal = Vector2.UnitX;
-                    var pointA = xfA.ToGlobal(manifold.LocalPoint);
-                    var pointB = xfB.ToGlobal(manifold.Points[0].LocalPoint);
-                    if (WorldPoint.DistanceSquared(pointA, pointB) > Settings.Epsilon * Settings.Epsilon)
-                    {
-                        normal = pointB - pointA;
-                        normal.Normalize();
-                    }
-
-                    var cA = pointA + radiusA * normal;
-                    var cB = pointB - radiusB * normal;
-                    points[0] = 0.5f * (cA + cB);
-                }
-                    break;
-
-                case Manifold.ManifoldType.FaceA:
-                {
-                    normal = xfA.Rotation * manifold.LocalNormal;
-                    var planePoint = xfA.ToGlobal(manifold.LocalPoint);
-
-                    for (var i = 0; i < manifold.PointCount; ++i)
-                    {
-                        var clipPoint = xfB.ToGlobal(manifold.Points[i].LocalPoint);
-                        var cA = clipPoint + (radiusA - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
-                        var cB = clipPoint - radiusB * normal;
-                        points[i] = 0.5f * (cA + cB);
-                    }
-                }
-                    break;
-
-                case Manifold.ManifoldType.FaceB:
-                {
-                    normal = xfB.Rotation * manifold.LocalNormal;
-                    var planePoint = xfB.ToGlobal(manifold.LocalPoint);
-
-                    for (var i = 0; i < manifold.PointCount; ++i)
-                    {
-                        var clipPoint = xfA.ToGlobal(manifold.Points[i].LocalPoint);
-                        var cB = clipPoint + (radiusB - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
-                        var cA = clipPoint - radiusA * normal;
-                        points[i] = 0.5f * (cA + cB);
-                    }
-
-                    // Ensure normal points from A to B.
-                    normal = -normal;
-                }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
         }
 

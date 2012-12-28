@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Physics.Components;
@@ -7,13 +8,15 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Physics.Systems
 {
-    public sealed class DebugPhysicsRenderSystem : AbstractComponentSystem<Body>, IDrawingSystem, IMessagingSystem
+    public sealed class DebugPhysicsRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         private static readonly Color DefaultShapeColor = new Color(0.9f, 0.7f, 0.7f);
         private static readonly Color InactiveShapeColor = new Color(0.5f, 0.5f, 0.3f);
         private static readonly Color KinematicShapeColor = new Color(0.5f, 0.5f, 0.9f);
         private static readonly Color SleepingShapeColor = new Color(0.6f, 0.6f, 0.6f);
         private static readonly Color StaticShapeColor = new Color(0.5f, 0.9f, 0.5f);
+        private static readonly Color ContactColor = Color.Yellow;
+        private static readonly Color ContactNormalColor = new Color(0.4f, 0.9f, 0.4f);
 
         /// <summary>
         /// Determines whether this system is enabled, i.e. whether it should draw.
@@ -42,7 +45,14 @@ namespace Engine.Physics.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            foreach (var body in Components)
+            var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
+            if (physics == null)
+            {
+                return;
+            }
+
+            // Render fixtures.
+            foreach (var body in physics.Bodies)
             {
                 // Get view transform based on body transform.
                 var view = Matrix.CreateRotationZ(body.Sweep.Angle) *
@@ -51,74 +61,103 @@ namespace Engine.Physics.Systems
                     Matrix.CreateScale(Scale);
                 _primitiveBatch.Begin(ref view);
 
-                // Get color to draw primitives in based on body state.
-                Color color;
-                if (!body.Enabled)
-                {
-                    color = InactiveShapeColor;
-                }
-                else if (body.Type == Body.BodyType.Static)
-                {
-                    color = StaticShapeColor;
-                }
-                else if (body.Type == Body.BodyType.Kinematic)
-                {
-                    color = KinematicShapeColor;
-                }
-                else if (!body.IsAwake)
-                {
-                    color = SleepingShapeColor;
-                } else
-                {
-                    color = DefaultShapeColor;
-                }
+                DrawBody(body);
 
-                // Draw the fixtures attached to this body.
-                foreach (Fixture component in Manager.GetComponents(body.Entity, Fixture.TypeId))
+                _primitiveBatch.End();
+            }
+
+            // Render contacts.
+            {
+                // Use global view transform for all contacts.
+                var view = Matrix.CreateTranslation(Offset.X, -Offset.Y, 0) *
+                    Matrix.CreateScale(Scale);
+                _primitiveBatch.Begin(ref view);
+                foreach (var contact in physics.Contacts)
                 {
-                    switch (component.Type)
-                    {
-                        case Fixture.FixtureType.Circle:
+                    DrawContact(contact);
+                }
+                _primitiveBatch.End();
+            }
+        }
+
+        private void DrawBody(Body body)
+        {
+            // Get color to draw primitives in based on body state.
+            Color color;
+            if (!body.Enabled)
+            {
+                color = InactiveShapeColor;
+            }
+            else if (body.Type == Body.BodyType.Static)
+            {
+                color = StaticShapeColor;
+            }
+            else if (body.Type == Body.BodyType.Kinematic)
+            {
+                color = KinematicShapeColor;
+            }
+            else if (!body.IsAwake)
+            {
+                color = SleepingShapeColor;
+            }
+            else
+            {
+                color = DefaultShapeColor;
+            }
+
+            // Draw the fixtures attached to this body.
+            foreach (Fixture component in Manager.GetComponents(body.Entity, Fixture.TypeId))
+            {
+                switch (component.Type)
+                {
+                    case Fixture.FixtureType.Circle:
                         {
                             var circle = component as CircleFixture;
                             System.Diagnostics.Debug.Assert(circle != null);
                             _primitiveBatch.DrawSolidCircle(circle.Center, circle.Radius, Vector2.UnitX, color);
                         }
-                            break;
-                        case Fixture.FixtureType.Edge:
+                        break;
+                    case Fixture.FixtureType.Edge:
                         {
                             var edge = component as EdgeFixture;
                             System.Diagnostics.Debug.Assert(edge != null);
                             _primitiveBatch.DrawSegment(edge.Vertex1, edge.Vertex2, color);
                         }
-                            break;
-                        case Fixture.FixtureType.Polygon:
+                        break;
+                    case Fixture.FixtureType.Polygon:
                         {
                             var polygon = component as PolygonFixture;
                             System.Diagnostics.Debug.Assert(polygon != null);
                             _primitiveBatch.DrawSolidPolygon(polygon.Vertices, polygon.Count, color);
                         }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
+            }
 
-                // Draw the transform at the center of mass.
+            // Draw the transform at the center of mass.
+            const float axisScale = 0.4f;
+            var p1 = body.Sweep.LocalCenter;
+            _primitiveBatch.DrawSegment(p1, p1 + Vector2.UnitX * axisScale, Color.Red);
+            _primitiveBatch.DrawSegment(p1, p1 + Vector2.UnitY * axisScale, Color.Green);
+        }
+
+        private void DrawContact(PhysicsSystem.IContact contact)
+        {
+            Vector2 normal;
+            IList<Vector2> points;
+            contact.ComputeWorldManifold(out normal, out points);
+
+            foreach (var point in points)
+            {
+                _primitiveBatch.DrawPoint(point, 0.1f, ContactColor);
 
                 const float axisScale = 0.4f;
-                var p1 = body.Sweep.LocalCenter;
-
-                //Vector2 p2 = p1 + axisScale * transform.R.Col1;
-                var p2 = p1 + Vector2.UnitX * axisScale;
-                _primitiveBatch.DrawSegment(p1, p2, Color.Red);
-
-                //p2 = p1 + axisScale * transform.R.Col2;
-                p2 = p1 + Vector2.UnitY * axisScale;
-                _primitiveBatch.DrawSegment(p1, p2, Color.Green);
-
-                _primitiveBatch.End();
+                var p2 = point + axisScale * normal;
+                _primitiveBatch.DrawSegment(point, p2, ContactNormalColor);
             }
+
         }
 
         /// <summary>

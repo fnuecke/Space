@@ -72,6 +72,31 @@ namespace Engine.Physics.Systems
         /// </summary>
         public bool IsLocked { get; private set; }
 
+        /// <summary>
+        /// Gets all bodies in the simulation.
+        /// </summary>
+        public IEnumerable<Body> Bodies
+        {
+            get { return Components; }
+        }
+
+        /// <summary>
+        /// Gets all active the contacts.
+        /// </summary>
+        public IEnumerable<IContact> Contacts
+        {
+            get
+            {
+                for (var i = _usedContacts; i >= 0; i = _contacts[i].Next)
+                {
+                    if (_contacts[i].IsTouching)
+                    {
+                        yield return _contacts[i];
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Fields
@@ -95,13 +120,12 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// List of active contacts between bodies (i.e. current active collisions).
         /// </summary>
-        private Contact[] _contacts = new Contact[64];
+        private Contact[] _contacts = new Contact[0];
 
         /// <summary>
-        /// List of contact edges, two per contact. This must be initialized to be
-        /// at least twice (ideally: exactly) as long as the contacts list.
+        /// List of contact edges, two per contact.
         /// </summary>
-        private ContactEdge[] _edges = new ContactEdge[128];
+        private ContactEdge[] _edges = new ContactEdge[0];
 
         /// <summary>
         /// The start of the linked list of used contacts.
@@ -115,7 +139,7 @@ namespace Engine.Physics.Systems
         /// intact when deleting contacts during interation of the active contact
         /// list.
         /// </summary>
-        private int _freeContacts;
+        private int _freeContacts = -1;
 
         /// <summary>
         /// The index structure we use for our broad phase. We don't use the index
@@ -165,7 +189,6 @@ namespace Engine.Physics.Systems
         {
             _timestep = timestep;
             _gravity = gravity;
-            InitializeContacts(0);
         }
 
         /// <summary>
@@ -415,7 +438,11 @@ namespace Engine.Physics.Systems
             for (var i = start; i < _contacts.Length; i++)
             {
                 System.Diagnostics.Debug.Assert(_contacts[i] == null);
-                _contacts[i] = new Contact {Previous = i + 1};
+                _contacts[i] = new Contact
+                {
+                    Manager = Manager,
+                    Previous = i + 1
+                };
             }
             for (var i = start * 2; i < _edges.Length; i++)
             {
@@ -459,8 +486,8 @@ namespace Engine.Physics.Systems
             var contact = _freeContacts;
             _freeContacts = _contacts[_freeContacts].Previous;
 
-            // Initialize with the basics.
-            _contacts[contact].Initialize(fixtureA, fixtureB);
+            // Initialize with the basics. This may swap the fixture order.
+            _contacts[contact].Initialize(ref fixtureA, ref fixtureB);
 
             var edgeA = contact * 2;
             var edgeB = contact * 2 + 1;
@@ -517,8 +544,8 @@ namespace Engine.Physics.Systems
         private void FreeContact(int contact)
         {
             // Get the actual components.
-            var fixtureA = Manager.GetComponentById(_contacts[contact].FixtureA) as Fixture;
-            var fixtureB = Manager.GetComponentById(_contacts[contact].FixtureB) as Fixture;
+            var fixtureA = Manager.GetComponentById(_contacts[contact].FixtureIdA) as Fixture;
+            var fixtureB = Manager.GetComponentById(_contacts[contact].FixtureIdB) as Fixture;
 
             System.Diagnostics.Debug.Assert(fixtureA != null);
             System.Diagnostics.Debug.Assert(fixtureB != null);
@@ -527,9 +554,7 @@ namespace Engine.Physics.Systems
             if (_contacts[contact].IsTouching)
             {
                 EndContact message;
-                message.ContactId = contact;
-                message.EntityA = fixtureA.Entity;
-                message.EntityB = fixtureB.Entity;
+                message.Contact = _contacts[contact];
                 Manager.SendMessage(message);
 
                 var bodyA = Manager.GetComponent(fixtureA.Entity, Body.TypeId) as Body;
@@ -621,8 +646,8 @@ namespace Engine.Physics.Systems
             // Check the list of contacts for actual collisions.
             for (var contact = _usedContacts; contact >= 0;)
             {
-                var fixtureIdA = _contacts[contact].FixtureA;
-                var fixtureIdB = _contacts[contact].FixtureB;
+                var fixtureIdA = _contacts[contact].FixtureIdA;
+                var fixtureIdB = _contacts[contact].FixtureIdB;
 
                 // Get the actual components.
                 var fixtureA = Manager.GetComponentById(fixtureIdA) as Fixture;
@@ -733,7 +758,7 @@ namespace Engine.Physics.Systems
                     }
 
                     // Check if the contact is already known.
-                    if (ContactExists(fixtureA.EdgeList, fixtureIdA, fixtureIdB))
+                    if (ContactExists(fixtureA.EdgeList, fixtureIdA, fixtureIdB, bodyB.Entity))
                     {
                         continue;
                     }
@@ -755,20 +780,32 @@ namespace Engine.Physics.Systems
         /// entityA &lt; entityB).
         /// </summary>
         /// <param name="edgeList">The edge list offset of a fixture.</param>
-        /// <param name="fixtureA">The entity A.</param>
-        /// <param name="fixtureB">The entity B.</param>
+        /// <param name="fixtureA">The first fixture.</param>
+        /// <param name="fixtureB">The second fixture.</param>
+        /// <param name="entityB">The second entity.</param>
         /// <returns></returns>
-        private bool ContactExists(int edgeList, int fixtureA, int fixtureB)
+        private bool ContactExists(int edgeList, int fixtureA, int fixtureB, int entityB)
         {
             for (var i = edgeList; i >= 0; i = _edges[i].Next)
             {
-                // Get the actual contact for that edge.
-                var contact = _edges[i].Parent;
+                // Only consider edges connected to the other body.
+                if (_edges[i].Other != entityB)
+                {
+                    continue;
+                }
 
-                // Compare (sorted) ids of involved entities to check if the contact
+                // Get the actual contact for that edge.
+                var contact = _contacts[_edges[i].Parent];
+
+                // Compare ids of involved fixtures to check if the contact
                 // represents the one we're create now.
-                if (_contacts[contact].FixtureA == fixtureA &&
-                    _contacts[contact].FixtureB == fixtureB)
+                if (contact.FixtureIdA == fixtureA &&
+                    contact.FixtureIdB == fixtureB)
+                {
+                    return true;
+                }
+                if (contact.FixtureIdA == fixtureB &&
+                    contact.FixtureIdB == fixtureA)
                 {
                     return true;
                 }
@@ -966,8 +1003,8 @@ namespace Engine.Physics.Systems
                     else
                     {
                         // Get actual fixture instances to get the actual bodies.
-                        var fA = Manager.GetComponentById(c.FixtureA) as Fixture;
-                        var fB = Manager.GetComponentById(c.FixtureB) as Fixture;
+                        var fA = Manager.GetComponentById(c.FixtureIdA) as Fixture;
+                        var fB = Manager.GetComponentById(c.FixtureIdB) as Fixture;
 
                         System.Diagnostics.Debug.Assert(fA != null);
                         System.Diagnostics.Debug.Assert(fB != null);
@@ -1054,8 +1091,8 @@ namespace Engine.Physics.Systems
 
                 {
                     // Advance the bodies to the TOI.
-                    var fA = Manager.GetComponentById(minContact.FixtureA) as Fixture;
-                    var fB = Manager.GetComponentById(minContact.FixtureB) as Fixture;
+                    var fA = Manager.GetComponentById(minContact.FixtureIdA) as Fixture;
+                    var fB = Manager.GetComponentById(minContact.FixtureIdB) as Fixture;
 
                     System.Diagnostics.Debug.Assert(fA != null);
                     System.Diagnostics.Debug.Assert(fB != null);
@@ -1066,8 +1103,8 @@ namespace Engine.Physics.Systems
                     System.Diagnostics.Debug.Assert(bA != null);
                     System.Diagnostics.Debug.Assert(bB != null);
 
-                    var backup1 = bA.Sweep;
-                    var backup2 = bB.Sweep;
+                    var backupA = bA.Sweep;
+                    var backupB = bB.Sweep;
 
                     bA.Advance(minAlpha);
                     bB.Advance(minAlpha);
@@ -1082,8 +1119,8 @@ namespace Engine.Physics.Systems
                     {
                         // Restore the sweeps.
                         minContact.IsEnabled = false;
-                        bA.Sweep = backup1;
-                        bB.Sweep = backup2;
+                        bA.Sweep = backupA;
+                        bB.Sweep = backupB;
                         bA.SynchronizeTransform();
                         bB.SynchronizeTransform();
                         continue;
@@ -1205,8 +1242,8 @@ namespace Engine.Physics.Systems
                     }
 
                     // Update the contact points
-                    var fA = Manager.GetComponentById(contact.FixtureA) as Fixture;
-                    var fB = Manager.GetComponentById(contact.FixtureB) as Fixture;
+                    var fA = Manager.GetComponentById(contact.FixtureIdA) as Fixture;
+                    var fB = Manager.GetComponentById(contact.FixtureIdB) as Fixture;
 
                     System.Diagnostics.Debug.Assert(fA != null);
                     System.Diagnostics.Debug.Assert(fB != null);
@@ -1401,8 +1438,10 @@ namespace Engine.Physics.Systems
 
             copy._index = new DynamicQuadTree<int>(16, 64);
             copy._changed = new HashSet<int>();
-            copy._contacts = new Contact[_contacts.Length];
-            copy._edges = new ContactEdge[_edges.Length];
+            copy._contacts = new Contact[0];
+            copy._edges = new ContactEdge[0];
+            copy._usedContacts = -1;
+            copy._freeContacts = 0;
 
             copy._island = null;
             copy._proxyA = new Algorithms.DistanceProxy();
@@ -1445,16 +1484,71 @@ namespace Engine.Physics.Systems
             {
                 copy._contacts = new Contact[_contacts.Length];
             }
-            _contacts.CopyTo(copy._contacts, 0);
+            for (var i = 0; i < _contacts.Length; ++i)
+            {
+                if (copy._contacts[i] == null)
+                {
+                    copy._contacts[i] = _contacts[i].NewInstance();
+                }
+                _contacts[i].CopyInto(copy._contacts[i]);
+                copy._contacts[i].Manager = copy.Manager;
+            }
 
             if (copy._edges.Length != _edges.Length)
             {
                 copy._edges = new ContactEdge[_edges.Length];
             }
-            _edges.CopyTo(copy._edges, 0);
+            for (var i = 0; i < _edges.Length; ++i)
+            {
+                if (copy._edges[i] == null)
+                {
+                    copy._edges[i] = _edges[i].NewInstance();
+                }
+                _edges[i].CopyInto(copy._edges[i]);
+            }
 
             copy._usedContacts = _usedContacts;
             copy._freeContacts = _freeContacts;
+        }
+
+        #endregion
+
+        #region Contact interface
+
+        /// <summary>
+        /// This interface is used to pass contact information outside the internal
+        /// state, for example for iteration of existing contacts or when firing
+        /// contact messages.
+        /// </summary>
+        public interface IContact
+        {
+            /// <summary>
+            /// Gets the first fixture involved in this contact.
+            /// </summary>
+            Fixture FixtureA { get; }
+
+            /// <summary>
+            /// Gets the second fixture involved in this contact.
+            /// </summary>
+            Fixture FixtureB { get; }
+
+            /// <summary>
+            /// Gets the first body involved in this contact.
+            /// </summary>
+            Body BodyA { get; }
+
+            /// <summary>
+            /// Gets the second body involved in this contact.
+            /// </summary>
+            Body BodyB { get; }
+
+            /// <summary>
+            /// Computes the world manifold data for this contact. This is relatively
+            /// expensive, so use with care.
+            /// </summary>
+            /// <param name="normal">The world contact normal.</param>
+            /// <param name="points">The contact points.</param>
+            void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points);
         }
 
         #endregion

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.Physics.Systems;
 
 namespace Engine.Physics.Messages
 {
@@ -8,25 +8,8 @@ namespace Engine.Physics.Messages
     public struct BeginContact
     {
         /// <summary>
-        /// A unique ID for a contact, which allows associating
-        /// begin and end events.
+        /// The contact has has become active.
         /// </summary>
-        public int ContactId;
-
-        /// <summary>
-        /// The first entity that was involved in the collision.
-        /// </summary>
-        public int EntityA;
-
-        /// <summary>
-        /// The second entity that was involved in the collision.
-        /// </summary>
-        public int EntityB;
-
-        /// <summary>
-        /// The normal giving the direction pointing from EntityA
-        /// to EntityB at the time the collision occurred.
-        /// </summary>
-        public Vector2 Normal;
+        public PhysicsSystem.IContact Contact;
     }
 }

@@ -186,8 +186,11 @@ namespace Engine.Physics.Detail.Collision
         public static Manifold ReadManifold(this Packet packet)
         {
             Manifold result;
-            result.Points.Item1 = packet.ReadManifoldPoint();
-            result.Points.Item2 = packet.ReadManifoldPoint();
+            result.Points = new FixedArray2<ManifoldPoint>
+            {
+                Item1 = packet.ReadManifoldPoint(),
+                Item2 = packet.ReadManifoldPoint()
+            };
             result.LocalNormal = packet.ReadVector2();
             result.LocalPoint = packet.ReadVector2();
             result.Type = (Manifold.ManifoldType)packet.ReadByte();

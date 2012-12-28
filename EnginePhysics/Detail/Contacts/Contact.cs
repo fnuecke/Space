@@ -1,9 +1,13 @@
-﻿using Engine.ComponentSystem;
+﻿using System;
+using System.Collections.Generic;
+using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Detail.Collision;
 using Engine.Physics.Detail.Math;
 using Engine.Physics.Messages;
+using Engine.Physics.Systems;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -19,48 +23,9 @@ using WorldBounds = Engine.Math.RectangleF;
 namespace Engine.Physics.Detail.Contacts
 {
     /// <summary>
-    /// Possible contact types (i.e. possible fixture type permutations).
-    /// </summary>
-    internal enum ContactType
-    {
-        /// <summary>
-        /// Circle collides with circle.
-        /// </summary>
-        Circle,
-
-        /// <summary>
-        /// Edge collides with edge. This is unused.
-        /// </summary>
-        Edge,
-
-        /// <summary>
-        /// Polygon collides with polygon.
-        /// </summary>
-        Polygon,
-
-        /// <summary>
-        /// Edge collides with circle.
-        /// </summary>
-        CircleEdge,
-        EdgeCircle,
-
-        /// <summary>
-        /// Edge collides with polygon.
-        /// </summary>
-        EdgePolygon,
-        PolygonEdge,
-
-        /// <summary>
-        /// Polygon collides with circle.
-        /// </summary>
-        CirclePolygon,
-        PolygonCircle
-    }
-
-    /// <summary>
     /// Represents a contact between two fixtures.
     /// </summary>
-    internal sealed class Contact : IPacketizable
+    internal sealed class Contact : PhysicsSystem.IContact, ICopyable<Contact>, IPacketizable
     {
         #region Linked list data (unused/free)
 
@@ -81,12 +46,12 @@ namespace Engine.Physics.Detail.Contacts
         /// <summary>
         /// Component id of the first fixture.
         /// </summary>
-        public int FixtureA;
+        public int FixtureIdA;
 
         /// <summary>
         /// Component id of the second fixture.
         /// </summary>
-        public int FixtureB;
+        public int FixtureIdB;
 
         /// <summary>
         /// The friction between the two fixtures.
@@ -139,21 +104,161 @@ namespace Engine.Physics.Detail.Contacts
 
         #endregion
 
+        #region Interface
+
+        /// <summary>
+        /// The manager of the simulation this contact lives in. Used to look up
+        /// involved members.
+        /// </summary>
+        public IManager Manager;
+
+        /// <summary>
+        /// Gets the first fixture involved in this contact.
+        /// </summary>
+        public Fixture FixtureA
+        {
+            get { return Manager.GetComponentById(FixtureIdA) as Fixture; }
+        }
+
+        /// <summary>
+        /// Gets the second fixture involved in this contact.
+        /// </summary>
+        public Fixture FixtureB
+        {
+            get { return Manager.GetComponentById(FixtureIdB) as Fixture; }
+        }
+
+        /// <summary>
+        /// Gets the first body involved in this contact.
+        /// </summary>
+        public Body BodyA
+        {
+            get { return Manager.GetComponent(FixtureA.Entity, Body.TypeId) as Body; }
+        }
+
+        /// <summary>
+        /// Gets the second body involved in this contact.
+        /// </summary>
+        public Body BodyB
+        {
+            get { return Manager.GetComponent(FixtureB.Entity, Body.TypeId) as Body; }
+        }
+
+        /// <summary>
+        /// Computes the world manifold data for this contact. This is relatively
+        /// expensive, so use with care.
+        /// </summary>
+        /// <param name="normal">The world contact normal.</param>
+        /// <param name="points">The contact points.</param>
+        public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
+        {
+            var transformA = BodyA.Transform;
+            var transformB = BodyB.Transform;
+            var radiusA = FixtureA.Radius;
+            var radiusB = FixtureB.Radius;
+            FixedArray2<WorldPoint> worldPoints;
+            ComputeWorldManifold(Manifold, transformA, radiusA, transformB, radiusB, out normal, out worldPoints);
+            worldPoints.Count = Manifold.PointCount;
+            points = worldPoints;
+        }
+
+        #endregion
+
         #region Logic
+
+        /// <summary>
+        /// Computes the world manifold data from the specified manifold with
+        /// the specified properties for the two involved objects.
+        /// </summary>
+        /// <param name="manifold">The local manifold.</param>
+        /// <param name="xfA">The transform of object A.</param>
+        /// <param name="radiusA">The radius of object A.</param>
+        /// <param name="xfB">The transform of object B.</param>
+        /// <param name="radiusB">The radius of object B.</param>
+        /// <param name="normal">The normal.</param>
+        /// <param name="points">The world contact points.</param>
+        public static void ComputeWorldManifold(Manifold manifold,
+                                                WorldTransform xfA, float radiusA,
+                                                WorldTransform xfB, float radiusB,
+                                                out Vector2 normal,
+                                                out FixedArray2<WorldPoint> points)
+        {
+            points = new FixedArray2<WorldPoint>(); // satisfy out
+            switch (manifold.Type)
+            {
+                case Manifold.ManifoldType.Circles:
+                {
+                    normal = Vector2.UnitX;
+                    var pointA = xfA.ToGlobal(manifold.LocalPoint);
+                    var pointB = xfB.ToGlobal(manifold.Points[0].LocalPoint);
+                    if (WorldPoint.DistanceSquared(pointA, pointB) > Settings.Epsilon * Settings.Epsilon)
+                    {
+                        normal = pointB - pointA;
+                        normal.Normalize();
+                    }
+
+                    var cA = pointA + radiusA * normal;
+                    var cB = pointB - radiusB * normal;
+                    points.Item1 = 0.5f * (cA + cB);
+                }
+                    break;
+
+                case Manifold.ManifoldType.FaceA:
+                {
+                    normal = xfA.Rotation * manifold.LocalNormal;
+                    var planePoint = xfA.ToGlobal(manifold.LocalPoint);
+
+                    for (var i = 0; i < manifold.PointCount; ++i)
+                    {
+                        var clipPoint = xfB.ToGlobal(manifold.Points[i].LocalPoint);
+                        var cA = clipPoint + (radiusA - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
+                        var cB = clipPoint - radiusB * normal;
+                        points[i] = 0.5f * (cA + cB);
+                    }
+                }
+                    break;
+
+                case Manifold.ManifoldType.FaceB:
+                {
+                    normal = xfB.Rotation * manifold.LocalNormal;
+                    var planePoint = xfB.ToGlobal(manifold.LocalPoint);
+
+                    for (var i = 0; i < manifold.PointCount; ++i)
+                    {
+                        var clipPoint = xfA.ToGlobal(manifold.Points[i].LocalPoint);
+                        var cB = clipPoint + (radiusB - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
+                        var cA = clipPoint - radiusA * normal;
+                        points[i] = 0.5f * (cA + cB);
+                    }
+
+                    // Ensure normal points from A to B.
+                    normal = -normal;
+                }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         /// <summary>
         /// Initializes the contact to represent a contact between the two specified fixtures.
         /// </summary>
         /// <param name="fixtureA">The first fixture.</param>
         /// <param name="fixtureB">The second fixture.</param>
-        public void Initialize(Fixture fixtureA, Fixture fixtureB)
+        public void Initialize(ref Fixture fixtureA, ref Fixture fixtureB)
         {
-            FixtureA = fixtureA.Id;
-            FixtureB = fixtureB.Id;
-            IsTouching = false;
+            if (SwapFixtures[(int)fixtureA.Type, (int)fixtureB.Type])
+            {
+                var tmp = fixtureA;
+                fixtureA = fixtureB;
+                fixtureB = tmp;
+            }
+            FixtureIdA = fixtureA.Id;
+            FixtureIdB = fixtureB.Id;
             _type = ContactTypes[(int)fixtureA.Type, (int)fixtureB.Type];
             Friction = MixFriction(fixtureA.Friction, fixtureB.Friction);
             Restitution = MixRestitution(fixtureA.Restitution, fixtureB.Restitution);
+            IsTouching = false;
         }
 
         /// <summary>
@@ -213,11 +318,7 @@ namespace Engine.Physics.Detail.Contacts
 
                     // Send message.
                     BeginContact message;
-                    message.ContactId = FixtureA ^ FixtureB;
-                    message.EntityA = fixtureA.Id;
-                    message.EntityB = fixtureB.Id;
-                    // TODO pass back some proxy that can be used to compute world space info as necessary?
-                    message.Normal = Vector2.Zero;
+                    message.Contact = this;
                     manager.SendMessage(message);
                 }
             }
@@ -235,12 +336,46 @@ namespace Engine.Physics.Detail.Contacts
 
                     // Send message.
                     EndContact message;
-                    message.ContactId = FixtureA ^ FixtureB;
-                    message.EntityA = fixtureA.Id;
-                    message.EntityB = fixtureB.Id;
+                    message.Contact = this;
                     manager.SendMessage(message);
                 }
             }
+        }
+
+        /// <summary>
+        /// Possible contact types (i.e. possible fixture type permutations).
+        /// </summary>
+        private enum ContactType
+        {
+            /// <summary>
+            /// Circle collides with circle.
+            /// </summary>
+            Circle,
+
+            /// <summary>
+            /// Edge collides with edge. This is unused.
+            /// </summary>
+            Edge,
+
+            /// <summary>
+            /// Polygon collides with polygon.
+            /// </summary>
+            Polygon,
+
+            /// <summary>
+            /// Edge collides with circle.
+            /// </summary>
+            EdgeCircle,
+
+            /// <summary>
+            /// Edge collides with polygon.
+            /// </summary>
+            EdgePolygon,
+
+            /// <summary>
+            /// Polygon collides with circle.
+            /// </summary>
+            PolygonCircle
         }
 
         /// <summary>
@@ -254,9 +389,9 @@ namespace Engine.Physics.Detail.Contacts
                 // B = Circle
                 ContactType.Circle,
                 // B = Edge
-                ContactType.CircleEdge,
+                ContactType.EdgeCircle,
                 // B = Polygon
-                ContactType.CirclePolygon
+                ContactType.PolygonCircle
             },
             // A = Edge
             {
@@ -272,9 +407,45 @@ namespace Engine.Physics.Detail.Contacts
                 // B = Circle
                 ContactType.PolygonCircle,
                 // B = Edge
-                ContactType.PolygonEdge,
+                ContactType.EdgePolygon,
                 // B = Polygon
                 ContactType.Polygon
+            }
+        };
+
+        /// <summary>
+        /// Lookup table marking whether fixtures should be stored in reverse
+        /// order. This is necessary for the collision detection routines that
+        /// depend on the order of shapes.
+        /// </summary>
+        private static readonly bool[,] SwapFixtures = new[,]
+        {
+            // A = Circle
+            {
+                // B = Circle
+                false,
+                // B = Edge
+                true,
+                // B = Polygon
+                true
+            },
+            // A = Edge
+            {
+                // B = Circle
+                false,
+                // B = Edge
+                false,
+                // B = Polygon
+                false
+            },
+            // A = Polygon
+            {
+                // B = Circle
+                false,
+                // B = Edge
+                true,
+                // B = Polygon
+                false
             }
         };
 
@@ -300,11 +471,8 @@ namespace Engine.Physics.Detail.Contacts
             Algorithms.CollideCircles,
             null, // Edge with edge is not supported (because edges have no volume).
             Algorithms.CollidePolygons,
-            Algorithms.CollideCircleAndEdge,
             Algorithms.CollideEdgeAndCircle,
             Algorithms.CollideEdgeAndPolygon,
-            Algorithms.CollidePolygonAndEdge,
-            Algorithms.CollideCircleAndPolygon,
             Algorithms.CollidePolygonAndCircle
         };
 
@@ -340,8 +508,8 @@ namespace Engine.Physics.Detail.Contacts
             return packet
                 .Write(Previous)
                 .Write(Next)
-                .Write(FixtureA)
-                .Write(FixtureB)
+                .Write(FixtureIdA)
+                .Write(FixtureIdB)
                 .Write(Friction)
                 .Write(Restitution)
                 .Write(IsTouching)
@@ -357,13 +525,49 @@ namespace Engine.Physics.Detail.Contacts
         {
             Previous = packet.ReadInt32();
             Next = packet.ReadInt32();
-            FixtureA = packet.ReadInt32();
-            FixtureB = packet.ReadInt32();
+            FixtureIdA = packet.ReadInt32();
+            FixtureIdB = packet.ReadInt32();
             Friction = packet.ReadSingle();
             Restitution = packet.ReadSingle();
             IsTouching = packet.ReadBoolean();
             Manifold = packet.ReadManifold();
             _type = (ContactType)packet.ReadByte();
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public Contact NewInstance()
+        {
+            return new Contact();
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public void CopyInto(Contact into)
+        {
+            into.Previous = Previous;
+            into.Next = Next;
+            into.FixtureIdA = FixtureIdA;
+            into.FixtureIdB = FixtureIdB;
+            into.Friction = Friction;
+            into.Restitution = Restitution;
+            into.IsTouching = IsTouching;
+            into.IsEnabled = IsEnabled;
+            into.Manifold = Manifold;
+            into._type = _type;
+            into.ToiCount = ToiCount;
+            into.HasCachedTOI = HasCachedTOI;
+            into.TOI = TOI;
         }
 
         #endregion
@@ -373,7 +577,7 @@ namespace Engine.Physics.Detail.Contacts
     /// Represents a connection between two (potentially) colliding
     /// objects.
     /// </summary>
-    internal sealed class ContactEdge : IPacketizable
+    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable
     {
         #region Fields
 
@@ -430,6 +634,32 @@ namespace Engine.Physics.Detail.Contacts
         }
 
         #endregion
-    }
 
+        #region Copying
+
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public ContactEdge NewInstance()
+        {
+            return new ContactEdge();
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public void CopyInto(ContactEdge into)
+        {
+            into.Parent = Parent;
+            into.Other = Other;
+            into.Previous = Previous;
+            into.Next = Next;
+        }
+
+        #endregion
+    }
 }

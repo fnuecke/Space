@@ -1,4 +1,6 @@
-﻿namespace Engine.Physics.Messages
+﻿using Engine.Physics.Systems;
+
+namespace Engine.Physics.Messages
 {
     /// <summary>
     /// Used to indicate a collision ended.
@@ -6,19 +8,8 @@
     public struct EndContact
     {
         /// <summary>
-        /// A unique ID for a contact, which allows associating
-        /// begin and end events.
+        /// The contact has has become inactive.
         /// </summary>
-        public int ContactId;
-
-        /// <summary>
-        /// The first entity that was involved in the collision.
-        /// </summary>
-        public int EntityA;
-
-        /// <summary>
-        /// The second entity that was involved in the collision.
-        /// </summary>
-        public int EntityB;
+        public PhysicsSystem.IContact Contact;
     }
 }

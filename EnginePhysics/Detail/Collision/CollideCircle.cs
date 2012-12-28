@@ -52,13 +52,6 @@ namespace Engine.Physics.Detail.Collision
             return true;
         }
 
-        public static bool CollideCircleAndPolygon(Fixture fixtureA, WorldTransform xfA,
-                                                   Fixture fixtureB, WorldTransform xfB,
-                                                   out Manifold manifold)
-        {
-            return CollidePolygonAndCircle(fixtureB, xfB, fixtureA, xfA, out manifold);
-        }
-
         public static bool CollidePolygonAndCircle(Fixture fixtureA, WorldTransform xfA,
                                                    Fixture fixtureB, WorldTransform xfB,
                                                    out Manifold manifold)
