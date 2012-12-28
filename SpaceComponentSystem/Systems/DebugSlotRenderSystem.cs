@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
@@ -130,30 +129,6 @@ namespace Space.ComponentSystem.Systems
                     _textures.Clear();
                 }
             }
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

@@ -833,7 +833,7 @@ namespace Engine.Collections
                                 node.LastEntry = entry.Previous;
                             }
 
-                            // ThenMove the entry to the end of the segment of the node
+                            // Then move the entry to the end of the segment of the node
                             // it goes into.
                             entry.Remove();
                             entry.InsertAfter(node.Children[cell].LastEntry);

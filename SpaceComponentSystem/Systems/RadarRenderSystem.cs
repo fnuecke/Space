@@ -437,29 +437,5 @@ namespace Space.ComponentSystem.Systems
         }
 
         #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
-        }
-
-        #endregion
     }
 }

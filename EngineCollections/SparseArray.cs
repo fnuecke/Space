@@ -1,13 +1,22 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Engine.Collections
 {
     /// <summary>
     /// Represents a sparse array, i.e. an allows indexing arbitrary positions in an
     /// array and resizes as necessary to insert.
+    /// 
+    /// <para>
+    /// The enumerator returned by this class will only return non-default values.
+    /// For class types this means it will return all non-null entries, for value
+    /// types it will return all entries that are not the default value for that
+    /// value type (e.g. it will skip all zeros for <c>T=int</c>).
+    /// </para>
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public sealed class SparseArray<T>
+    public sealed class SparseArray<T> : IEnumerable<T>
     {
         #region Fields
 
@@ -79,6 +88,48 @@ namespace Engine.Collections
             {
                 _data[i] = default(T);
             }
+        }
+
+        #endregion
+
+        #region Enumeration
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// It is important to note that this enumerator will skip entries
+        /// with default values for stored struct types (e.g. if T=int it
+        /// will skip all entries that are '0', even if set to be so).
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can
+        /// be used to iterate through the collection.
+        /// </returns>
+        /// <filterpriority>1</filterpriority>
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (var i = 0; i < _data.Length; i++)
+            {
+                if (!Equals(_data[i], default(T)))
+                {
+                    yield return _data[i];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// It is important to note that this enumerator will skip entries
+        /// with default values for stored struct types (e.g. if T=int it
+        /// will skip all entries that are '0', even if set to be so).
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be
+        /// used to iterate through the collection.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         #endregion

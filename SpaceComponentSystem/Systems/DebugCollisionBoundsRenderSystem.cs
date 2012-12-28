@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Collections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
@@ -49,6 +50,21 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private AbstractShape _sphereShape;
 
+        /// <summary>
+        /// The spritebatch to use for rendering.
+        /// </summary>
+        private SpriteBatch _spriteBatch;
+
+        /// <summary>
+        /// Arrow texture to render indication of where AI is headed.
+        /// </summary>
+        private Texture2D _arrow;
+
+        /// <summary>
+        /// Keeps track of active contacts, to allow rendering ongoing collisions.
+        /// </summary>
+        private readonly SparseArray<ContactInfo> _contacts = new SparseArray<ContactInfo>(64);
+
         #endregion
 
         #region Logic
@@ -74,6 +90,38 @@ namespace Space.ComponentSystem.Systems
                         _sphereShape = new FilledEllipse(cm.Value.Content, cm.Value.Graphics);
                         _sphereShape.LoadContent();
                     }
+                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+                    _arrow = cm.Value.Content.Load<Texture2D>("Textures/arrow");
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    if (_spriteBatch != null)
+                    {
+                        _spriteBatch.Dispose();
+                        _spriteBatch = null;
+                    }
+                }
+            }
+            {
+                var cm = message as BeginCollision?;
+                if (cm != null)
+                {
+                    _contacts[cm.Value.ContactId] = new ContactInfo
+                    {
+                        PositionA = ((Transform)Manager.GetComponent(cm.Value.EntityA, Transform.TypeId)).Translation,
+                        PositionB = ((Transform)Manager.GetComponent(cm.Value.EntityB, Transform.TypeId)).Translation,
+                        Normal = cm.Value.Normal
+                    };
+                }
+            }
+            {
+                var cm = message as EndCollision?;
+                if (cm != null)
+                {
+                    _contacts[cm.Value.ContactId] = null;
                 }
             }
         }
@@ -94,7 +142,7 @@ namespace Space.ComponentSystem.Systems
             _sphereShape.Transform = camera.Transform.Matrix;
 
             // Iterate over all visible collidables.
-            foreach (var entity in ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).VisibleEntities)
+            foreach (var entity in camera.VisibleEntities)
             {
                 var component = (Collidable)Manager.GetComponent(entity, Collidable.TypeId);
                 if (component == null)
@@ -154,30 +202,49 @@ namespace Space.ComponentSystem.Systems
                 shape.SetSize(relativeBounds.Width, relativeBounds.Height);
                 shape.Draw();
             }
+
+            // Render all active contacts.
+            var view = camera.ComputeVisibleBounds();
+            _spriteBatch.Begin();
+            foreach (var contact in _contacts)
+            {
+                // Skip entries we don't see anyway.
+                if (!view.Contains(contact.PositionA) &&
+                    !view.Contains(contact.PositionB))
+                {
+                    continue;
+                }
+
+                DrawArrow((Vector2)(contact.PositionA + translation), contact.Normal * 30, Color.Turquoise);
+            }
+            _spriteBatch.End();
+        }
+
+        private void DrawArrow(Vector2 start, Vector2 toEnd, Color color)
+        {
+            // Don't draw tiny arrows...
+            if (toEnd.LengthSquared() < 1f)
+            {
+                return;
+            }
+            _spriteBatch.Draw(_arrow, start, null, color,
+                              (float)Math.Atan2(toEnd.Y, toEnd.X),
+                              new Vector2(0, _arrow.Height / 2f),
+                              new Vector2(toEnd.Length() / _arrow.Width, 1),
+                              SpriteEffects.None, 0);
         }
 
         #endregion
 
-        #region Copying
+        #region Types
 
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
+        private sealed class ContactInfo
         {
-            throw new NotSupportedException();
-        }
+            public FarPosition PositionA;
 
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
+            public FarPosition PositionB;
+
+            public Vector2 Normal;
         }
 
         #endregion

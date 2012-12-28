@@ -10,9 +10,43 @@ namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// This system takes care of components that support collision (anything
-    /// that extends <c>AbstractCollidable</c>). It fetches the components
+    /// that extends <see cref="Collidable"/>). It fetches the components
     /// neighbors and checks their collision groups, keeping the number of
     /// actual collision checks that have to be performed low.
+    /// 
+    /// <para>
+    /// Collisions are handled in a way very much inspired by box 2D:
+    /// * In the index, entities are stored with 'inflated' bounds, i.e. the
+    /// rectangle in the index representing them is not their minimal bounding
+    /// box, but one that has been expanded slightly. Once by a fixed small
+    /// delta, which works against frequent updates due to tiny, wobbly motion,
+    /// as well as by a dynamic amount into the direction the entity is moving
+    /// in. Together with the fact that entities rarely stop instantly, this
+    /// works against frequent updates due to movement, but keeps the update
+    /// frequency rather constant (due to the dependency on the velocity).
+    /// * In each update we get the list of entities from the index that have
+    /// changed so much so that their expanded bounds have changed. This means
+    /// they now potentially collide with entities they did not before (bounds
+    /// may intersect with other bounds, now). For each such changed entity we
+    /// get the list of intersections with other bounds, and for each
+    /// intersection we declare a 'contact'. If there already is a contact for
+    /// the two intersecting entities we skip them.
+    /// * Each contact has two states: colliding and not colliding. This state
+    /// is updated each update, by querying the specific collision detection
+    /// methods of the two entities involved in the contact.
+    /// * When a contact state changed, we send a message to let other systems
+    /// know that a new collision took place, or that an active one stopped.
+    /// </para>
+    /// 
+    /// <para>
+    /// The lists for contacts and contact edges (an edge is a directed part of
+    /// a contact when it is in its colliding state, so there's one for each of
+    /// the two involved entities) are managed in a hybrid of a linked list and
+    /// an array list. This allows for the best of both worlds: very fast removal
+    /// and adding as well as indexed lookup of members. Essentially this is a
+    /// linked list with 'pointers' to the single nodes, but using structs,
+    /// which gives us nice memory locality.
+    /// </para>
     /// </summary>
     public sealed class CollisionSystem : AbstractSystem, IMessagingSystem, IUpdatingSystem
     {
@@ -173,7 +207,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 {
                     _edges[next].Previous = previous;
                 }
-
+                // Adjust list pointer as necessary.
                 if (collidableA.ContactList == edge)
                 {
                     collidableA.ContactList = next;
@@ -191,7 +225,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 {
                     _edges[next].Previous = previous;
                 }
-
+                // Adjust list pointer as necessary.
                 if (collidableB.ContactList == edge)
                 {
                     collidableB.ContactList = next;
@@ -405,6 +439,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
                         // Send message.
                         BeginCollision message;
+                        message.ContactId = i;
                         message.EntityA = entityA;
                         message.EntityB = entityB;
                         message.Normal = normal;
@@ -422,15 +457,17 @@ namespace Engine.ComponentSystem.Common.Systems
                     var boundsB = index.GetBounds(entityB, IndexGroupMask);
                     if (!boundsA.Intersects(boundsB))
                     {
+                        // No, we can free this contact.
                         FreeContact(i, collidableA, collidableB);
                     }
                     else if (_contacts[i].Intersecting)
                     {
-                        // Was intersecting, but no longer.
+                        // Yes, and the contact was active, but is no longer.
                         _contacts[i].Intersecting = false;
 
                         // Send message.
                         EndCollision message;
+                        message.ContactId = i;
                         message.EntityA = entityA;
                         message.EntityB = entityB;
                         Manager.SendMessage(message);
@@ -479,6 +516,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         {
                             // Contact was active, so send a message that the intersection ended.
                             EndCollision message;
+                            message.ContactId = i;
                             message.EntityA = _contacts[i].EntityA;
                             message.EntityB = _contacts[i].EntityB;
                             Manager.SendMessage(message);

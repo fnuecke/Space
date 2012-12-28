@@ -80,7 +80,7 @@ namespace Engine.ComponentSystem.Components
         /// Whether the component is enabled or not. Disabled components will
         /// not be handled in the component's system's <c>Update()</c> method.
         /// </summary>
-        public bool Enabled;
+        public virtual bool Enabled { get; set; }
 
         #endregion
 

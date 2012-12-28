@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 

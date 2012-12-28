@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -136,26 +137,14 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Copying
+        #region Serialization
 
         /// <summary>
-        /// Not supported by presentation types.
+        /// We're purely visual, so don't hash anything.
         /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override AbstractSystem NewInstance()
+        /// <param name="hasher">The hasher to use.</param>
+        public override void Hash(Hasher hasher)
         {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Not supported by presentation types.
-        /// </summary>
-        /// <returns>Never.</returns>
-        /// <exception cref="NotSupportedException">Always.</exception>
-        public override void CopyInto(AbstractSystem into)
-        {
-            throw new NotSupportedException();
         }
 
         #endregion

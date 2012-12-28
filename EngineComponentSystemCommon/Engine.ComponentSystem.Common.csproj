@@ -72,6 +72,7 @@
     <Compile Include="Components\EllipsePath.cs" />
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
+    <Compile Include="Messages\UpdateCollision.cs" />
     <Compile Include="Systems\GraphicsDeviceSystem.cs" />
     <Compile Include="Components\Index.cs" />
     <Compile Include="Components\Intersection.cs" />

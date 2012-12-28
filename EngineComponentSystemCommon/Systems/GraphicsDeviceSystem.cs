@@ -39,6 +39,14 @@ namespace Engine.ComponentSystem.Common.Systems
             get { return _content; }
         }
 
+        /// <summary>
+        /// The graphics device service used to keep track of our graphics device.
+        /// </summary>
+        public IGraphicsDeviceService Graphics
+        {
+            get { return _graphics; }
+        }
+
         #endregion
 
         #region Fields
