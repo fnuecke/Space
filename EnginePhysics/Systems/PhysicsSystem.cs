@@ -1212,7 +1212,7 @@ namespace Engine.Physics.Systems
                     System.Diagnostics.Debug.Assert(fB != null);
 
                     var bA = Manager.GetComponent(fA.Entity, Body.TypeId) as Body;
-                    var bB = Manager.GetComponent(fA.Entity, Body.TypeId) as Body;
+                    var bB = Manager.GetComponent(fB.Entity, Body.TypeId) as Body;
 
                     System.Diagnostics.Debug.Assert(bA != null);
                     System.Diagnostics.Debug.Assert(bB != null);
