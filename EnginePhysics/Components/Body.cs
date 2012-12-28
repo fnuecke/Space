@@ -76,30 +76,37 @@ namespace Engine.Physics.Components
             get { return base.Enabled; }
             set
             {
-                var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                System.Diagnostics.Debug.Assert(physics != null);
-                if (physics.IsLocked)
+                if (Manager != null)
                 {
-                    throw new System.InvalidOperationException("Cannot change enabled state during update.");
-                }
+                    var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
+                    System.Diagnostics.Debug.Assert(physics != null);
+                    if (physics.IsLocked)
+                    {
+                        throw new System.InvalidOperationException("Cannot change enabled state during update.");
+                    }
 
-                // Skip if nothing changed.
-                if (base.Enabled == value)
-                {
-                    return;
-                }
+                    // Skip if nothing changed.
+                    if (base.Enabled == value)
+                    {
+                        return;
+                    }
 
-                base.Enabled = value;
+                    base.Enabled = value;
 
-                if (value)
-                {
-                    // Mark so that contacts are created the next time step.
-                    physics.QueueForContactSearch(Entity);
+                    if (value)
+                    {
+                        // Mark so that contacts are created the next time step.
+                        physics.QueueForContactSearch(Entity);
+                    }
+                    else
+                    {
+                        // Free any contacts we're involved in.
+                        physics.RemoveContacts(Entity);
+                    }
                 }
                 else
                 {
-                    // Free any contacts we're involved in.
-                    physics.RemoveContacts(Entity);
+                    base.Enabled = value;
                 }
             }
         }
@@ -264,27 +271,7 @@ namespace Engine.Physics.Components
         public WorldPoint Position
         {
             get { return Transform.Translation; }
-            set
-            {
-                var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                System.Diagnostics.Debug.Assert(physics != null);
-                if (physics.IsLocked)
-                {
-                    throw new System.InvalidOperationException("Cannot manually change position during update.");
-                }
-
-                Transform.Translation = value;
-                Sweep.CenterOfMass = Transform.ToGlobal(Sweep.LocalCenter);
-                Sweep.CenterOfMass0 = Sweep.CenterOfMass;
-
-                foreach (Fixture fixture in Manager.GetComponents(Entity, Fixture.TypeId))
-                {
-                    fixture.Synchronize();
-                }
-
-                physics.RemoveContacts(Entity);
-                physics.QueueForContactSearch(Entity);
-            }
+            set { SetTransform(value, Angle); }
         }
 
         /// <summary>
@@ -298,27 +285,7 @@ namespace Engine.Physics.Components
         public float Angle
         {
             get { return Sweep.Angle; }
-            set
-            {
-                var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                System.Diagnostics.Debug.Assert(physics != null);
-                if (physics.IsLocked)
-                {
-                    throw new System.InvalidOperationException("Cannot manually change angle during update.");
-                }
-
-                Transform.Rotation.Set(value);
-                Sweep.Angle = value;
-                Sweep.Angle0 = value;
-
-                foreach (Fixture fixture in Manager.GetComponents(Entity, Fixture.TypeId))
-                {
-                    fixture.Synchronize();
-                }
-
-                physics.RemoveContacts(Entity);
-                physics.QueueForContactSearch(Entity);
-            }
+            set { SetTransform(Position, value); }
         }
 
         /// <summary>
@@ -860,6 +827,40 @@ namespace Engine.Physics.Components
                 _angularVelocity += InverseInertia * impulse;
             }
 	    }
+
+        /// <summary>
+        /// Sets the transform of this body, i.e. its world position and angle.
+        /// Use this when you need to set position and angle, as it is more
+        /// efficient than setting them separately via the properties.
+        /// Setting this breaks any contacts and wakes the other bodies.
+        /// Manipulating a body's transform may cause non-physical behavior.
+        /// </summary>
+        /// <param name="position">The new world position.</param>
+        /// <param name="angle">The new world angle.</param>
+        public void SetTransform(WorldPoint position, float angle)
+        {
+            var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
+            System.Diagnostics.Debug.Assert(physics != null);
+            if (physics.IsLocked)
+            {
+                throw new System.InvalidOperationException("Cannot manually change position during update.");
+            }
+
+            Transform.Translation = position;
+            Transform.Rotation.Set(angle);
+            Sweep.CenterOfMass = Transform.ToGlobal(Sweep.LocalCenter);
+            Sweep.CenterOfMass0 = Sweep.CenterOfMass;
+            Sweep.Angle = angle;
+            Sweep.Angle0 = angle;
+
+            foreach (Fixture fixture in Manager.GetComponents(Entity, Fixture.TypeId))
+            {
+                fixture.Synchronize();
+            }
+
+            physics.RemoveContacts(Entity);
+            physics.QueueForContactSearch(Entity);
+        }
 
         /// <summary>
         /// Sets the mass properties for this body, overriding properties from any

@@ -86,7 +86,7 @@
     <Compile Include="Detail\Contacts\ContactSolver.cs" />
     <Compile Include="Detail\Contacts\Contact.cs" />
     <Compile Include="Detail\Island.cs" />
-    <Compile Include="Systems\DebugPhysicsRenderSystem.cs" />
+    <Compile Include="Systems\AbstractDebugPhysicsRenderSystem.cs" />
     <Compile Include="Systems\PhysicsSystem.cs" />
     <Compile Include="Detail\Math\Sweep.cs" />
     <Compile Include="Detail\Settings.cs" />

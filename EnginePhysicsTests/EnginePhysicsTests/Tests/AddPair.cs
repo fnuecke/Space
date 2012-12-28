@@ -7,6 +7,11 @@ namespace EnginePhysicsTests.Tests
 {
     sealed class AddPair : AbstractTest
     {
+        public override bool StartPaused
+        {
+            get { return true; }
+        }
+
         protected override void Create()
         {
             var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
@@ -34,9 +39,7 @@ namespace EnginePhysicsTests.Tests
                                                worldPosition: new Vector2(-40, 5),
                                                isBullet: true,
                                                density: 1);
-                var body = Manager.GetComponent(box, Body.TypeId) as Body;
-                System.Diagnostics.Debug.Assert(body != null);
-                body.LinearVelocity = new Vector2(150, 0);
+                box.LinearVelocity = new Vector2(150, 0);
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Detail.Collision;
@@ -129,19 +130,19 @@ namespace Engine.Physics.Detail.Contacts
         }
 
         /// <summary>
-        /// Gets the first body involved in this contact.
+        /// Gets the normal impulse of the specified contact point (separation).
         /// </summary>
-        public Body BodyA
+        public float GetNormalImpulse(int point)
         {
-            get { return Manager.GetComponent(FixtureA.Entity, Body.TypeId) as Body; }
+            return Manifold.Points[point].NormalImpulse;
         }
 
         /// <summary>
-        /// Gets the second body involved in this contact.
+        /// Gets the tangent impulse of the specified contact point (friction).
         /// </summary>
-        public Body BodyB
+        public float GetTangentImpulse(int point)
         {
-            get { return Manager.GetComponent(FixtureB.Entity, Body.TypeId) as Body; }
+            return Manifold.Points[point].TangentImpulse;
         }
 
         /// <summary>
@@ -152,8 +153,21 @@ namespace Engine.Physics.Detail.Contacts
         /// <param name="points">The contact points.</param>
         public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
         {
-            var transformA = BodyA.Transform;
-            var transformB = BodyB.Transform;
+            if (Manifold.PointCount < 1)
+            {
+                normal = Vector2.Zero;
+                points = new FixedArray2<Vector2>();
+                return;
+            }
+
+            var bodyA = Manager.GetComponent(FixtureA.Entity, Body.TypeId) as Body;
+            var bodyB = Manager.GetComponent(FixtureB.Entity, Body.TypeId) as Body;
+
+            Debug.Assert(bodyA != null);
+            Debug.Assert(bodyB != null);
+
+            var transformA = bodyA.Transform;
+            var transformB = bodyB.Transform;
             var radiusA = FixtureA.Radius;
             var radiusB = FixtureB.Radius;
             FixedArray2<WorldPoint> worldPoints;
@@ -281,10 +295,10 @@ namespace Engine.Physics.Detail.Contacts
             if (ContactEvaluators[(int)_type](fixtureA, bodyA.Transform, fixtureB, bodyB.Transform, out Manifold))
             {
                 // The two are intersecting!
+                System.Diagnostics.Debug.Assert(Manifold.PointCount > 0);
 
                 // Match old contact ids to new contact ids and copy the
                 // stored impulses to warm start the solver.
-                System.Diagnostics.Debug.Assert(Manifold.PointCount > 0);
                 var i = 0;
                 do
                 {

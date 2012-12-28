@@ -89,10 +89,24 @@ namespace Engine.Physics.Systems
             {
                 for (var i = _usedContacts; i >= 0; i = _contacts[i].Next)
                 {
-                    if (_contacts[i].IsTouching)
+                    //if (_contacts[i].IsTouching)
                     {
                         yield return _contacts[i];
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the fixture bounding boxes for the debug renderer.
+        /// </summary>
+        internal IEnumerable<WorldBounds> FixtureBounds
+        {
+            get
+            {
+                foreach (var entry in _index)
+                {
+                    yield return entry.Item1;
                 }
             }
         }
@@ -243,6 +257,54 @@ namespace Engine.Physics.Systems
 
             // Done, unlock the system.
             IsLocked = false;
+        }
+
+        /// <summary>
+        /// Converts a point in simulation space to screen space. This is used to
+        /// avoid using a one to one scale for pixels to meters, which generally
+        /// not recommended by Box2D.
+        /// </summary>
+        /// <param name="point">The point in simulation space.</param>
+        /// <returns>The point in screen space.</returns>
+        public static float ToScreenUnits(float point)
+        {
+            return point * 100f;
+        }
+
+        /// <summary>
+        /// Converts a point in simulation space to screen space. This is used to
+        /// avoid using a one to one scale for pixels to meters, which generally
+        /// not recommended by Box2D.
+        /// </summary>
+        /// <param name="point">The point in simulation space.</param>
+        /// <returns>The point in screen space.</returns>
+        public static WorldPoint ToScreenUnits(WorldPoint point)
+        {
+            return point * 100f;
+        }
+
+        /// <summary>
+        /// Converts a point in screen space to simulation space. This is used to
+        /// avoid using a one to one scale for pixels to meters, which generally
+        /// not recommended by Box2D.
+        /// </summary>
+        /// <param name="point">The point in screen space.</param>
+        /// <returns>The point in simulation space.</returns>
+        public static float ToSimulationUnits(float point)
+        {
+            return point * (1f / 100f);
+        }
+
+        /// <summary>
+        /// Converts a point in screen space to simulation space. This is used to
+        /// avoid using a one to one scale for pixels to meters, which generally
+        /// not recommended by Box2D.
+        /// </summary>
+        /// <param name="point">The point in screen space.</param>
+        /// <returns>The point in simulation space.</returns>
+        public static WorldPoint ToSimulationUnits(WorldPoint point)
+        {
+            return point * (1f / 100f);
         }
 
         /// <summary>
@@ -1533,18 +1595,21 @@ namespace Engine.Physics.Systems
             Fixture FixtureB { get; }
 
             /// <summary>
-            /// Gets the first body involved in this contact.
+            /// Gets the normal impulse of the specified contact point (separation).
             /// </summary>
-            Body BodyA { get; }
+            float GetNormalImpulse(int point);
 
             /// <summary>
-            /// Gets the second body involved in this contact.
+            /// Gets the tangent impulse of the specified contact point (friction).
             /// </summary>
-            Body BodyB { get; }
+            float GetTangentImpulse(int point);
 
             /// <summary>
             /// Computes the world manifold data for this contact. This is relatively
             /// expensive, so use with care.
+            /// The normal applies for all contact points. The number of contact points
+            /// may vary. For an active contact it is one or two, for inactive contacts
+            /// it is zero.
             /// </summary>
             /// <param name="normal">The world contact normal.</param>
             /// <param name="points">The contact points.</param>

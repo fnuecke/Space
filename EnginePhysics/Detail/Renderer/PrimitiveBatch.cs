@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.Physics.Detail.Math;
+using Engine.Physics.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -7,23 +8,29 @@ namespace FarseerPhysics.DebugViews
 {
     internal class PrimitiveBatch : IDisposable
     {
+        public Matrix Projection
+        {
+            get { return _basicEffect.Projection; }
+            set { _basicEffect.Projection = value; }
+        }
+
         private const int DefaultBufferSize = 500;
 
         // a basic effect, which contains the shaders that we will use to draw our
         // primitives.
-        private BasicEffect _basicEffect;
+        private readonly BasicEffect _basicEffect;
 
         // the device that we will issue draw calls to.
-        private GraphicsDevice _device;
+        private readonly GraphicsDevice _device;
 
         // hasBegun is flipped to true once Begin is called, and is used to make
         // sure users don't call End before Begin is called.
         private bool _hasBegun;
 
         private bool _isDisposed;
-        private VertexPositionColor[] _lineVertices;
+        private readonly VertexPositionColor[] _lineVertices;
         private int _lineVertsCount;
-        private VertexPositionColor[] _triangleVertices;
+        private readonly VertexPositionColor[] _triangleVertices;
         private int _triangleVertsCount;
 
         private const int CircleSegments = 32;
@@ -54,8 +61,8 @@ namespace FarseerPhysics.DebugViews
             _basicEffect.VertexColorEnabled = true;
 
             var viewport = graphicsDevice.Viewport;
-            var projection = Matrix.CreateOrthographic(viewport.Width, viewport.Height, 0, 1);
-            SetProjection(ref projection);
+            var size = PhysicsSystem.ToSimulationUnits(new Vector2(viewport.Width, viewport.Height)) / 2;
+            Projection = Matrix.CreateOrthographicOffCenter(0, size.X, 0, size.Y, 0, 1);
         }
 
         #region IDisposable Members
@@ -67,11 +74,6 @@ namespace FarseerPhysics.DebugViews
         }
 
         #endregion
-
-        public void SetProjection(ref Matrix projection)
-        {
-            _basicEffect.Projection = projection;
-        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -165,6 +167,12 @@ namespace FarseerPhysics.DebugViews
             _hasBegun = false;
         }
 
+        private static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(new[]
+        {
+            new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+            new VertexElement(sizeof(float) * 3, VertexElementFormat.Color, VertexElementUsage.Color, 0)
+        });
+
         private void FlushTriangles()
         {
             if (!_hasBegun)
@@ -176,7 +184,8 @@ namespace FarseerPhysics.DebugViews
                 int primitiveCount = _triangleVertsCount / 3;
                 // submit the draw call to the graphics card
                 _device.SamplerStates[0] = SamplerState.AnisotropicClamp;
-                _device.DrawUserPrimitives(PrimitiveType.TriangleList, _triangleVertices, 0, primitiveCount);
+                Array.Reverse(_triangleVertices, 0, primitiveCount * 3);
+                _device.DrawUserPrimitives(PrimitiveType.TriangleList, _triangleVertices, 0, primitiveCount, VertexDeclaration);
                 _triangleVertsCount -= primitiveCount * 3;
             }
         }

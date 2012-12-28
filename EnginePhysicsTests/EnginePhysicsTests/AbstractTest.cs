@@ -16,6 +16,13 @@ namespace EnginePhysicsTests
         #region Properties
 
         /// <summary>
+        /// Gets a value indicating whether to start the test paused or not.
+        /// Computationally expensive tests should return true here, to avoid
+        /// locking up the application while cycling through tests.
+        /// </summary>
+        public virtual bool StartPaused { get { return false;} }
+
+        /// <summary>
         /// Gets the manager representing the system in which this test runs.
         /// </summary>
         protected IManager Manager { get; private set; }
@@ -31,19 +38,19 @@ namespace EnginePhysicsTests
         protected DebugPhysicsRenderSystem Renderer { get; private set; }
 
         /// <summary>
+        /// Gets the step count for the current test run.
+        /// </summary>
+        protected int StepCount { get; private set; }
+
+        /// <summary>
         /// Gets the mouse cursor position in world coordinates.
         /// </summary>
         protected WorldPoint MouseWorldPoint
         {
             get
             {
-                var viewport = _graphics.Graphics.GraphicsDevice.Viewport;
-                WorldPoint result;
-                result.X = Mouse.GetState().X - viewport.Width / 2;
-                result.Y = -(Mouse.GetState().Y - viewport.Height / 2);
-                result /= Renderer.Scale;
-                result.X -= Renderer.Offset.X;
-                result.Y += Renderer.Offset.Y;
+                var mouse = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+                var result = Renderer.ScreenToSimulation(mouse);
                 return result;
             }
         }
@@ -73,11 +80,6 @@ namespace EnginePhysicsTests
         private bool _dragging;
 
         /// <summary>
-        /// The last mouse state, to check for changes.
-        /// </summary>
-        private MouseState _lastMouseState;
-
-        /// <summary>
         /// The system providing information on the graphics device.
         /// </summary>
         private GraphicsDeviceSystem _graphics;
@@ -104,49 +106,6 @@ namespace EnginePhysicsTests
         /// </summary>
         public void Update()
         {
-            // Check for left clicks.
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed &&
-                _lastMouseState.LeftButton == ButtonState.Released)
-            {
-                OnLeftButtonDown();
-            }
-            else if (Mouse.GetState().LeftButton == ButtonState.Released &&
-                     _lastMouseState.LeftButton == ButtonState.Pressed)
-            {
-                OnLeftButtonUp();
-            }
-
-            // Check for right clicks.
-            if (Mouse.GetState().RightButton == ButtonState.Pressed &&
-                _lastMouseState.RightButton == ButtonState.Released)
-            {
-                OnRightButtonDown();
-            }
-            else if (Mouse.GetState().RightButton == ButtonState.Released &&
-                     _lastMouseState.RightButton == ButtonState.Pressed)
-            {
-                OnRightButtonUp();
-            }
-            
-            // Check for scrolling, used to zoom in or out.
-            if (Mouse.GetState().ScrollWheelValue > _lastMouseState.ScrollWheelValue)
-            {
-                Renderer.Scale *= 1.5f;
-            }
-            else if (Mouse.GetState().ScrollWheelValue < _lastMouseState.ScrollWheelValue)
-            {
-                Renderer.Scale /= 1.5f;
-            }
-            Renderer.Scale = MathHelper.Clamp(Renderer.Scale, 5, 50);
-
-            // Check for scrolling in the world.
-            if (_dragging)
-            {
-                var deltaX = Mouse.GetState().X - _lastMouseState.X;
-                var deltaY = Mouse.GetState().Y - _lastMouseState.Y;
-                Renderer.Offset += new Vector2(deltaX, deltaY) / Renderer.Scale;
-            }
-
             // Check if dragging a body.
             if (_pickedBody != null)
             {
@@ -157,8 +116,7 @@ namespace EnginePhysicsTests
                 _pickedBody.ApplyForce(direction * _force, pickWorldPoint);
             }
 
-            _lastMouseState = Mouse.GetState();
-
+            ++StepCount;
             Step();
         }
 
@@ -167,11 +125,27 @@ namespace EnginePhysicsTests
         #region Implementation Logic
 
         /// <summary>
+        /// Called when the specified key was pressed.
+        /// </summary>
+        /// <param name="key">The key that was pressed.</param>
+        public virtual void OnKeyDown(Keys key)
+        {
+        }
+
+        /// <summary>
+        /// Called when the specified key was released.
+        /// </summary>
+        /// <param name="key">The key that was released.</param>
+        public virtual void OnKeyUp(Keys key)
+        {
+        }
+
+        /// <summary>
         /// Called when the left button was pressed. In the abstract class this
         /// method initialized dragging shapes, so override and don't call to
         /// the base implementation to disable that behavior.
         /// </summary>
-        protected virtual void OnLeftButtonDown()
+        public virtual void OnLeftButtonDown()
         {
             var fixture = Physics.GetFixtureAt(MouseWorldPoint);
             if (fixture != null)
@@ -188,7 +162,7 @@ namespace EnginePhysicsTests
         /// method finishes dragging shapes, so override and don't call to the
         /// base implementation to disable that behavior.
         /// </summary>
-        protected virtual void OnLeftButtonUp()
+        public virtual void OnLeftButtonUp()
         {
             if (_pickedBody != null)
             {
@@ -203,7 +177,7 @@ namespace EnginePhysicsTests
         /// method initializes dragging the world/camera, so override and don't
         /// call to the base implementation to disable that behavior.
         /// </summary>
-        protected virtual void OnRightButtonDown()
+        public virtual void OnRightButtonDown()
         {
             _dragging = true;
         }
@@ -213,9 +187,45 @@ namespace EnginePhysicsTests
         /// method finishes dragging the world/camera, so override and don't
         /// call to the base implementation to disable that behavior.
         /// </summary>
-        protected virtual void OnRightButtonUp()
+        public virtual void OnRightButtonUp()
         {
             _dragging = false;
+        }
+
+        /// <summary>
+        /// Called when the mouse wheel was scrolled down. In the abstract class
+        /// this method causes zooming out, so override and don't call to the base
+        /// implementation to disable that behavior.
+        /// </summary>
+        public virtual void OnWheelDown()
+        {
+            Renderer.Scale /= 1.5f;
+        }
+
+        /// <summary>
+        /// Called when the mouse wheel was scrolled up. In the abstract class
+        /// this method causes zooming in, so override and don't call to the base
+        /// implementation to disable that behavior.
+        /// </summary>
+        public virtual void OnWheelUp()
+        {
+            Renderer.Scale *= 1.5f;
+        }
+
+        /// <summary>
+        /// Called when the mouse moved. In the abstract class this method causes
+        /// camera movement, so override and don't call to the base implementation
+        /// to disable that behavior.
+        /// </summary>
+        /// <param name="mousePosition">The new mouse position.</param>
+        /// <param name="delta">The position delta.</param>
+        public virtual void OnMouseMove(Vector2 mousePosition, Vector2 delta)
+        {
+            // Check for scrolling in the world.
+            if (_dragging)
+            {
+                Renderer.Offset += PhysicsSystem.ToSimulationUnits(delta) / Renderer.Scale;
+            }
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace EnginePhysicsTests.Tests
 
             for (var i = 0; i < 10; ++i)
             {
-                var entity = Manager.AddCircle(radius: 0.5f,
+                var circle = Manager.AddCircle(radius: 0.5f,
                                                type: Body.BodyType.Dynamic,
                                                localPosition: new Vector2(-0.5f, 0.5f),
                                                worldPosition:
@@ -22,7 +22,7 @@ namespace EnginePhysicsTests.Tests
                                                                1.05f + 2.5f * i),
                                                worldAngle: (float)random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
                                                density: 2);
-                Manager.AttachCircle(entity,
+                Manager.AttachCircle(circle,
                                      radius: 0.5f,
                                      localPosition: new Vector2(0.5f, 0.5f));
             }
@@ -30,14 +30,13 @@ namespace EnginePhysicsTests.Tests
             //*
             for (var i = 0; i < 10; ++i)
             {
-                var entity = Manager.AddRectangle(width: 0.5f, height: 1f,
-                                                  type: Body.BodyType.Dynamic,
-                                                  worldPosition:
-                                                      new Vector2((float)random.NextDouble(-0.1f, 0.1f) - 5.0f,
-                                                                  1.05f + 2.5f * i),
-                                                  worldAngle: (float)random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
-                                                  density: 2);
-                Manager.AttachRectangle(entity,
+                var position = new Vector2((float)random.NextDouble(-0.1f, 0.1f) - 5.0f, 1.05f + 2.5f * i);
+                var box = Manager.AddRectangle(width: 0.5f, height: 1f,
+                                               type: Body.BodyType.Dynamic,
+                                               worldPosition: position,
+                                               worldAngle: (float)random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
+                                               density: 2);
+                Manager.AttachRectangle(box,
                                         width: 0.5f, height: 1f,
                                         localPosition: new Vector2(0.0f, -0.5f),
                                         localAngle: MathHelper.PiOver2,
