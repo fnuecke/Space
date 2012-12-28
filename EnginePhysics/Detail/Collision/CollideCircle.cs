@@ -46,8 +46,8 @@ namespace Engine.Physics.Detail.Collision
             manifold.LocalPoint = circleA.Center;
             manifold.LocalNormal = Vector2.Zero;
             manifold.PointCount = 1;
-            manifold.Points.Item0.LocalPoint = circleB.Center;
-            manifold.Points.Item0.Id.Key = 0;
+            manifold.Points.Item1.LocalPoint = circleB.Center;
+            manifold.Points.Item1.Id.Key = 0;
 
             return true;
         }
@@ -107,12 +107,12 @@ namespace Engine.Physics.Detail.Collision
             var vertexA2 = verticesA[vertexIndexA2];
 
             // If the center is inside the polygon ...
-            if (separation < float.Epsilon)
+            if (separation < Settings.Epsilon)
             {
                 manifold.Type = Manifold.ManifoldType.FaceA;
                 manifold.PointCount = 1;
-                manifold.Points.Item0.LocalPoint = circleB.Center;
-                manifold.Points.Item0.Id.Key = 0;
+                manifold.Points.Item1.LocalPoint = circleB.Center;
+                manifold.Points.Item1.Id.Key = 0;
 
                 manifold.LocalNormal = normalsA[normalIndexA];
                 manifold.LocalPoint = 0.5f * (vertexA1 + vertexA2);
@@ -133,8 +133,8 @@ namespace Engine.Physics.Detail.Collision
 
                     manifold.Type = Manifold.ManifoldType.FaceA;
                     manifold.PointCount = 1;
-                    manifold.Points.Item0.LocalPoint = circleB.Center;
-                    manifold.Points.Item0.Id.Key = 0;
+                    manifold.Points.Item1.LocalPoint = circleB.Center;
+                    manifold.Points.Item1.Id.Key = 0;
 
                     manifold.LocalNormal = normalInA;
                     manifold.LocalPoint = vertexA1;
@@ -147,8 +147,8 @@ namespace Engine.Physics.Detail.Collision
                 {
                     manifold.Type = Manifold.ManifoldType.FaceA;
                     manifold.PointCount = 1;
-                    manifold.Points.Item0.LocalPoint = circleB.Center;
-                    manifold.Points.Item0.Id.Key = 0;
+                    manifold.Points.Item1.LocalPoint = circleB.Center;
+                    manifold.Points.Item1.Id.Key = 0;
 
                     manifold.LocalNormal = centerInA - vertexA2;
                     manifold.LocalNormal.Normalize();
@@ -163,8 +163,8 @@ namespace Engine.Physics.Detail.Collision
                 {
                     manifold.Type = Manifold.ManifoldType.FaceA;
                     manifold.PointCount = 1;
-                    manifold.Points.Item0.LocalPoint = circleB.Center;
-                    manifold.Points.Item0.Id.Key = 0;
+                    manifold.Points.Item1.LocalPoint = circleB.Center;
+                    manifold.Points.Item1.Id.Key = 0;
 
                     manifold.LocalNormal = normalsA[vertexIndexA1];
                     manifold.LocalPoint = faceCenter;

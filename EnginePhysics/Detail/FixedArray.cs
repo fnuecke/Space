@@ -11,7 +11,7 @@ namespace Engine.Physics.Detail
         /// <summary>
         /// The items of the array.
         /// </summary>
-        public T Item0, Item1;
+        public T Item1, Item2;
 
         /// <summary>
         /// Gets or sets the <see cref="T"/> at the specified index.
@@ -23,9 +23,9 @@ namespace Engine.Physics.Detail
                 switch (index)
                 {
                     case 0:
-                        return Item0;
-                    case 1:
                         return Item1;
+                    case 1:
+                        return Item2;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -35,10 +35,10 @@ namespace Engine.Physics.Detail
                 switch (index)
                 {
                     case 0:
-                        Item0 = value;
+                        Item1 = value;
                         break;
                     case 1:
-                        Item1 = value;
+                        Item2 = value;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -56,7 +56,7 @@ namespace Engine.Physics.Detail
         /// <summary>
         /// The items of the array.
         /// </summary>
-        public T Item0, Item1, Item2;
+        public T Item1, Item2, Item3;
 
         /// <summary>
         /// Gets or sets the <see cref="T"/> at the specified index.
@@ -68,11 +68,11 @@ namespace Engine.Physics.Detail
                 switch (index)
                 {
                     case 0:
-                        return Item0;
-                    case 1:
                         return Item1;
-                    case 2:
+                    case 1:
                         return Item2;
+                    case 2:
+                        return Item3;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -82,13 +82,13 @@ namespace Engine.Physics.Detail
                 switch (index)
                 {
                     case 0:
-                        Item0 = value;
-                        break;
-                    case 1:
                         Item1 = value;
                         break;
-                    case 2:
+                    case 1:
                         Item2 = value;
+                        break;
+                    case 2:
+                        Item3 = value;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

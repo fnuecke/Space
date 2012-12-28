@@ -90,9 +90,9 @@ namespace Engine.Physics.Detail.Collision
                 manifold.LocalPoint = p;
                 manifold.LocalNormal = Vector2.Zero;
                 manifold.PointCount = 1;
-                manifold.Points.Item0.Id.Key = 0;
-                manifold.Points.Item0.Id.Feature = cf;
-                manifold.Points.Item0.LocalPoint = circleB.Center;
+                manifold.Points.Item1.Id.Key = 0;
+                manifold.Points.Item1.Id.Feature = cf;
+                manifold.Points.Item1.LocalPoint = circleB.Center;
 
                 return true;
             }
@@ -130,9 +130,9 @@ namespace Engine.Physics.Detail.Collision
                 manifold.LocalPoint = p;
                 manifold.LocalNormal = Vector2.Zero;
                 manifold.PointCount = 1;
-                manifold.Points.Item0.Id.Key = 0;
-                manifold.Points.Item0.Id.Feature = cf;
-                manifold.Points.Item0.LocalPoint = circleB.Center;
+                manifold.Points.Item1.Id.Key = 0;
+                manifold.Points.Item1.Id.Feature = cf;
+                manifold.Points.Item1.LocalPoint = circleB.Center;
 
                 return true;
             }
@@ -166,9 +166,9 @@ namespace Engine.Physics.Detail.Collision
             manifold.LocalPoint = a;
             manifold.LocalNormal = n;
             manifold.PointCount = 1;
-            manifold.Points.Item0.Id.Key = 0;
-            manifold.Points.Item0.Id.Feature = cf;
-            manifold.Points.Item0.LocalPoint = circleB.Center;
+            manifold.Points.Item1.Id.Key = 0;
+            manifold.Points.Item1.Id.Feature = cf;
+            manifold.Points.Item1.LocalPoint = circleB.Center;
 
             return true;
         }
@@ -546,7 +546,7 @@ namespace Engine.Physics.Detail.Collision
                 var i1 = bestIndex;
                 var i2 = i1 + 1 < tpc ? i1 + 1 : 0;
 
-                incidentEdge.Item0 = new ClipVertex
+                incidentEdge.Item1 = new ClipVertex
                 {
                     Vertex = tpv[i1],
                     Id =
@@ -561,7 +561,7 @@ namespace Engine.Physics.Detail.Collision
                     }
                 };
 
-                incidentEdge.Item1 = new ClipVertex
+                incidentEdge.Item2 = new ClipVertex
                 {
                     Vertex = tpv[i2],
                     Id =
@@ -597,7 +597,7 @@ namespace Engine.Physics.Detail.Collision
             {
                 manifold.Type = Manifold.ManifoldType.FaceB;
 
-                incidentEdge.Item0 = new ClipVertex
+                incidentEdge.Item1 = new ClipVertex
                 {
                     Vertex = v1,
                     Id =
@@ -612,7 +612,7 @@ namespace Engine.Physics.Detail.Collision
                     }
                 };
 
-                incidentEdge.Item1 = new ClipVertex
+                incidentEdge.Item2 = new ClipVertex
                 {
                     Vertex = v2,
                     Id =

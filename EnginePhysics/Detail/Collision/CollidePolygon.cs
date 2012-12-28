@@ -128,7 +128,7 @@ namespace Engine.Physics.Detail.Collision
                 // polygon's frame of reference.
                 incidentEdge = new FixedArray2<ClipVertex>
                 {
-                    Item0 = new ClipVertex
+                    Item1 = new ClipVertex
                     {
                         //Vertex = xf2.ToGlobal(vertices2[i1]),
                         Vertex = transform21.ToOther(vertices2[index21]),
@@ -143,7 +143,7 @@ namespace Engine.Physics.Detail.Collision
                             }
                         }
                     },
-                    Item1 = new ClipVertex
+                    Item2 = new ClipVertex
                     {
                         //Vertex = xf2.ToGlobal(vertices2[i2]),
                         Vertex = transform21.ToOther(vertices2[index22]),

@@ -300,7 +300,7 @@ namespace Engine.Physics.Detail.Contacts
                     normal = Vector2.UnitX;
                     var pointA = xfA.ToGlobal(manifold.LocalPoint);
                     var pointB = xfB.ToGlobal(manifold.Points[0].LocalPoint);
-                    if (WorldPoint.DistanceSquared(pointA, pointB) > float.Epsilon * float.Epsilon)
+                    if (WorldPoint.DistanceSquared(pointA, pointB) > Settings.Epsilon * Settings.Epsilon)
                     {
                         normal = pointB - pointA;
                         normal.Normalize();
@@ -708,12 +708,12 @@ namespace Engine.Physics.Detail.Contacts
         {
             System.Diagnostics.Debug.Assert(vc.PointCount > 0);
 
-            manifold.Points.Item0.NormalImpulse = vc.Points[0].NormalImpulse;
-            manifold.Points.Item0.TangentImpulse = vc.Points[0].TangentImpulse;
+            manifold.Points.Item1.NormalImpulse = vc.Points[0].NormalImpulse;
+            manifold.Points.Item1.TangentImpulse = vc.Points[0].TangentImpulse;
             if (vc.PointCount > 1)
             {
-                manifold.Points.Item1.NormalImpulse = vc.Points[1].NormalImpulse;
-                manifold.Points.Item1.TangentImpulse = vc.Points[1].TangentImpulse;
+                manifold.Points.Item2.NormalImpulse = vc.Points[1].NormalImpulse;
+                manifold.Points.Item2.TangentImpulse = vc.Points[1].TangentImpulse;
             }
         }
 

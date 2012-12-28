@@ -178,7 +178,7 @@ namespace Engine.Physics.Components
                 var i1 = i;
                 var i2 = i + 1 < m ? i + 1 : 0;
                 var edge = Vertices[i2] - Vertices[i1];
-                System.Diagnostics.Debug.Assert(edge.LengthSquared() > float.Epsilon * float.Epsilon);
+                System.Diagnostics.Debug.Assert(edge.LengthSquared() > Settings.Epsilon * Settings.Epsilon);
                 Normals[i] = Vector2Util.Cross(edge, 1.0f);
                 Normals[i].Normalize();
             }
@@ -309,7 +309,7 @@ namespace Engine.Physics.Components
             mass = Density * area;
 
             // Center of mass
-            System.Diagnostics.Debug.Assert(area > float.Epsilon);
+            System.Diagnostics.Debug.Assert(area > Settings.Epsilon);
             centroid *= 1.0f / area;
             center = centroid + s;
 

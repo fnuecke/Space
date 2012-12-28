@@ -169,8 +169,8 @@ namespace Engine.Physics.Detail.Collision
         public static Packet Write(this Packet packet, Manifold data)
         {
             return packet
-                .Write(data.Points.Item0)
                 .Write(data.Points.Item1)
+                .Write(data.Points.Item2)
                 .Write(data.LocalNormal)
                 .Write(data.LocalPoint)
                 .Write((byte)data.Type)
@@ -186,8 +186,8 @@ namespace Engine.Physics.Detail.Collision
         public static Manifold ReadManifold(this Packet packet)
         {
             Manifold result;
-            result.Points.Item0 = packet.ReadManifoldPoint();
             result.Points.Item1 = packet.ReadManifoldPoint();
+            result.Points.Item2 = packet.ReadManifoldPoint();
             result.LocalNormal = packet.ReadVector2();
             result.LocalPoint = packet.ReadVector2();
             result.Type = (Manifold.ManifoldType)packet.ReadByte();

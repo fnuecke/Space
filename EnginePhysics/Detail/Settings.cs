@@ -7,6 +7,11 @@ namespace Engine.Physics.Detail
         #region General
 
         /// <summary>
+        /// An epsilon value used to cut off noise in a lot of places.
+        /// </summary>
+        public const float Epsilon = 1.192092896e-07f;
+
+        /// <summary>
         /// Number of velocity iterations to use in the solver. The suggested
         /// value by Box2D is 8.
         /// Using fewer iterations increases performance but accuracy suffers.

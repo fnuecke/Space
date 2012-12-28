@@ -42,6 +42,11 @@ namespace EnginePhysicsTests
         private int _currentTest;
 
         /// <summary>
+        /// Whether the simulation is currently allowed to run.
+        /// </summary>
+        private bool _running = false;
+
+        /// <summary>
         /// The manager in which the current test runs.
         /// </summary>
         private Manager _manager;
@@ -80,6 +85,7 @@ namespace EnginePhysicsTests
         {
             base.Update(gameTime);
 
+            // Switch test?
             if (KeyPressed(Keys.Right))
             {
                 LoadTest(_currentTest + 1);
@@ -89,15 +95,27 @@ namespace EnginePhysicsTests
                 LoadTest(_currentTest - 1);
             }
 
-            if (_manager != null)
+            // Toggle pause?
+            if (KeyPressed(Keys.P))
+            {
+                _running = !_running;
+            }
+
+            // Allow simulating?
+            if ((_running || KeyPressed(Keys.Space)) && _manager != null)
             {
                 _manager.Update(0);
-                Tests[_currentTest].Update();
             }
+
+            // Always run tests, to allow changing camera.
+            Tests[_currentTest].Update();
 
             _lastState = Keyboard.GetState();
         }
 
+        /// <summary>
+        /// Renders the current test scene.
+        /// </summary>
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);

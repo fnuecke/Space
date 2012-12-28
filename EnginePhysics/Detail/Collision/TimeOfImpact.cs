@@ -23,8 +23,6 @@ namespace Engine.Physics.Detail.Collision
                                         Sweep sweepA, Sweep sweepB,
                                         float tMax, out float t)
         {
-            const float tolerance = 0.25f * Settings.LinearSlop;
-
             // Large rotations can make the root finder fail, so we normalize the
             // sweep angles.
             sweepA.Normalize();
@@ -33,10 +31,11 @@ namespace Engine.Physics.Detail.Collision
             var totalRadius = proxyA.Radius + proxyB.Radius;
             var target = System.Math.Max(Settings.LinearSlop, totalRadius - 3.0f * Settings.LinearSlop);
 
+            const float tolerance = 0.25f * Settings.LinearSlop;
             System.Diagnostics.Debug.Assert(target > tolerance);
 
             // Prepare input for distance query.
-            var cache = new SimplexCache();
+            var cache = new SimplexCache{Count = 0};
 
             // The outer loop progressively attempts to compute new separating axes.
             // This loop terminates when an axis is repeated (no progress is made).
@@ -49,8 +48,7 @@ namespace Engine.Physics.Detail.Collision
 
                 // Get the distance between shapes. We can also use the results
                 // to get a separating axis.
-                float distance;
-                Distance(ref cache, proxyA, proxyB, xfA, xfB, out distance);
+                var distance = Distance(ref cache, proxyA, proxyB, xfA, xfB);
 
                 // If the shapes are overlapped, we give up on continuous collision.
                 if (distance <= 0.0f)
@@ -337,8 +335,8 @@ namespace Engine.Physics.Detail.Collision
                 if (count == 1)
                 {
                     f._type = Type.Points;
-                    var localPointA = f._proxyA.GetVertex(cache.IndexA[0]);
-                    var localPointB = f._proxyB.GetVertex(cache.IndexB[0]);
+                    var localPointA = f._proxyA.GetVertex(cache.IndexA.Item1);
+                    var localPointB = f._proxyB.GetVertex(cache.IndexB.Item1);
                     var pointA = xfA.ToGlobal(localPointA);
                     var pointB = xfB.ToGlobal(localPointB);
                     f._axis = (Vector2)(pointB - pointA);
@@ -346,12 +344,12 @@ namespace Engine.Physics.Detail.Collision
                     f._axis /= s;
                     f._localPoint = LocalPoint.Zero;
                 }
-                else if (cache.IndexA[0] == cache.IndexA[1])
+                else if (cache.IndexA.Item1 == cache.IndexA.Item2)
                 {
                     // Two points on B and one on A.
                     f._type = Type.FaceB;
-                    var localPointB1 = proxyB.GetVertex(cache.IndexB[0]);
-                    var localPointB2 = proxyB.GetVertex(cache.IndexB[1]);
+                    var localPointB1 = proxyB.GetVertex(cache.IndexB.Item1);
+                    var localPointB2 = proxyB.GetVertex(cache.IndexB.Item2);
 
                     f._axis = Vector2Util.Cross(localPointB2 - localPointB1, 1.0f);
                     f._axis.Normalize();
@@ -373,8 +371,8 @@ namespace Engine.Physics.Detail.Collision
                 {
                     // Two points on A and one or two points on B.
                     f._type = Type.FaceA;
-                    var localPointA1 = f._proxyA.GetVertex(cache.IndexA[0]);
-                    var localPointA2 = f._proxyA.GetVertex(cache.IndexA[1]);
+                    var localPointA1 = f._proxyA.GetVertex(cache.IndexA.Item1);
+                    var localPointA2 = f._proxyA.GetVertex(cache.IndexA.Item2);
 
                     f._axis = Vector2Util.Cross(localPointA2 - localPointA1, 1.0f);
                     f._axis.Normalize();
@@ -502,18 +500,14 @@ namespace Engine.Physics.Detail.Collision
             }
         }
 
-        private static void Distance(ref SimplexCache cache,
-                                     DistanceProxy proxyA, DistanceProxy proxyB,
-                                     WorldTransform transformA, WorldTransform transformB,
-                                     out float distance)
+        private static float Distance(ref SimplexCache cache,
+                                      DistanceProxy proxyA, DistanceProxy proxyB,
+                                      WorldTransform transformA, WorldTransform transformB)
         {
             // Initialize the simplex.
             Simplex simplex;
             Simplex.ReadCache(cache, proxyA, transformA, proxyB, transformB, out simplex);
-
-            // Get simplex vertices as an array.
-            var vertices = simplex.Vertices;
-
+            
             // These store the vertices of the last simplex so that we
             // can check for duplicates and prevent cycling.
             var saveA = new FixedArray3<int>();
@@ -526,8 +520,8 @@ namespace Engine.Physics.Detail.Collision
                 var saveCount = simplex.Count;
                 for (var i = 0; i < saveCount; ++i)
                 {
-                    saveA[i] = vertices[i].IndexA;
-                    saveB[i] = vertices[i].IndexB;
+                    saveA[i] = simplex.Vertices[i].IndexA;
+                    saveB[i] = simplex.Vertices[i].IndexB;
                 }
 
                 switch (simplex.Count)
@@ -557,7 +551,7 @@ namespace Engine.Physics.Detail.Collision
                 var d = simplex.GetSearchDirection();
 
                 // Ensure the search direction is numerically fit.
-                if (d.LengthSquared() < float.Epsilon * float.Epsilon)
+                if (d.LengthSquared() < Settings.Epsilon * Settings.Epsilon)
                 {
                     // The origin is probably contained by a line segment
                     // or triangle. Thus the shapes are overlapped.
@@ -576,7 +570,7 @@ namespace Engine.Physics.Detail.Collision
                 v.VertexB = transformB.ToGlobal(proxyB.GetVertex(v.IndexB));
                 v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
                 v.Alpha = 0;
-                vertices[simplex.Count] = v;
+                simplex.Vertices[simplex.Count] = v;
 
                 // Check for duplicate support points. This is the main termination criteria.
                 var duplicate = false;
@@ -599,13 +593,13 @@ namespace Engine.Physics.Detail.Collision
                 ++simplex.Count;
             }
 
+            // Cache the simplex.
+            simplex.WriteCache(ref cache);
+
             // Prepare output.
             WorldPoint pointA, pointB;
             simplex.GetWitnessPoints(out pointA, out pointB);
-            distance = WorldPoint.Distance(pointA, pointB);
-
-            // Cache the simplex.
-            simplex.WriteCache(ref cache);
+            return WorldPoint.Distance(pointA, pointB);
         }
 
         private struct Simplex
@@ -658,7 +652,7 @@ namespace Engine.Physics.Detail.Collision
                     v.VertexB = transformB.ToGlobal(proxyB.GetVertex(0));
                     v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
                     v.Alpha = 1.0f;
-                    simplex.Vertices[0] = v;
+                    simplex.Vertices.Item1 = v;
                     simplex.Count = 1;
                 }
             }
@@ -669,8 +663,8 @@ namespace Engine.Physics.Detail.Collision
                 cache.Count = (ushort)Count;
                 for (var i = 0; i < Count; ++i)
                 {
-                    cache.IndexA[i] = (byte)(Vertices[i].IndexA);
-                    cache.IndexB[i] = (byte)(Vertices[i].IndexB);
+                    cache.IndexA[i] = (byte)Vertices[i].IndexA;
+                    cache.IndexB[i] = (byte)Vertices[i].IndexB;
                 }
             }
 
@@ -679,12 +673,12 @@ namespace Engine.Physics.Detail.Collision
                 switch (Count)
                 {
                     case 1:
-                        return -Vertices[0].VertexDelta;
+                        return -Vertices.Item1.VertexDelta;
 
                     case 2:
                     {
-                        var e12 = Vertices[1].VertexDelta - Vertices[0].VertexDelta;
-                        var sgn = Vector2Util.Cross(e12, -Vertices[0].VertexDelta);
+                        var e12 = Vertices.Item2.VertexDelta - Vertices.Item1.VertexDelta;
+                        var sgn = Vector2Util.Cross(e12, -Vertices.Item1.VertexDelta);
                         if (sgn > 0.0f)
                         {
                             // Origin is left of e12.
@@ -710,21 +704,21 @@ namespace Engine.Physics.Detail.Collision
                         throw new ArgumentOutOfRangeException();
 
                     case 1:
-                        pA = Vertices[0].VertexA;
-                        pB = Vertices[0].VertexB;
+                        pA = Vertices.Item1.VertexA;
+                        pB = Vertices.Item1.VertexB;
                         break;
 
                     case 2:
-                        pA = Vertices[0].Alpha * Vertices[0].VertexA +
-                             Vertices[1].Alpha * Vertices[1].VertexA;
-                        pB = Vertices[0].Alpha * Vertices[0].VertexB +
-                             Vertices[1].Alpha * Vertices[1].VertexB;
+                        pA = Vertices.Item1.Alpha * Vertices.Item1.VertexA +
+                             Vertices.Item2.Alpha * Vertices.Item2.VertexA;
+                        pB = Vertices.Item1.Alpha * Vertices.Item1.VertexB +
+                             Vertices.Item2.Alpha * Vertices.Item2.VertexB;
                         break;
 
                     case 3:
-                        pA = Vertices[0].Alpha * Vertices[0].VertexA +
-                             Vertices[1].Alpha * Vertices[1].VertexA +
-                             Vertices[2].Alpha * Vertices[2].VertexA;
+                        pA = Vertices.Item1.Alpha * Vertices.Item1.VertexA +
+                             Vertices.Item2.Alpha * Vertices.Item2.VertexA +
+                             Vertices.Item3.Alpha * Vertices.Item3.VertexA;
                         pB = pA;
                         break;
 
@@ -744,11 +738,11 @@ namespace Engine.Physics.Detail.Collision
                         return 0.0f;
 
                     case 2:
-                        return LocalPoint.Distance(Vertices[0].VertexDelta, Vertices[1].VertexDelta);
+                        return LocalPoint.Distance(Vertices.Item1.VertexDelta, Vertices.Item2.VertexDelta);
 
                     case 3:
-                        return Vector2Util.Cross(Vertices[1].VertexDelta - Vertices[0].VertexDelta,
-                                                 Vertices[2].VertexDelta - Vertices[0].VertexDelta);
+                        return Vector2Util.Cross(Vertices.Item2.VertexDelta - Vertices.Item1.VertexDelta,
+                                                 Vertices.Item3.VertexDelta - Vertices.Item1.VertexDelta);
 
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -780,8 +774,8 @@ namespace Engine.Physics.Detail.Collision
             // a2 = d12_2 / d12
             public void Solve2()
             {
-                var w1 = Vertices[0].VertexDelta;
-                var w2 = Vertices[1].VertexDelta;
+                var w1 = Vertices.Item1.VertexDelta;
+                var w2 = Vertices.Item2.VertexDelta;
                 var e12 = w2 - w1;
 
                 // w1 region
@@ -789,7 +783,7 @@ namespace Engine.Physics.Detail.Collision
                 if (d12_2 <= 0.0f)
                 {
                     // a2 <= 0, so we clamp it to 0
-                    Vertices.Item0.Alpha = 1.0f;
+                    Vertices.Item1.Alpha = 1.0f;
                     Count = 1;
                     return;
                 }
@@ -799,16 +793,16 @@ namespace Engine.Physics.Detail.Collision
                 if (d12_1 <= 0.0f)
                 {
                     // a1 <= 0, so we clamp it to 0
-                    Vertices.Item1.Alpha = 1.0f;
+                    Vertices.Item2.Alpha = 1.0f;
                     Count = 1;
-                    Vertices[0] = Vertices[1];
+                    Vertices.Item1 = Vertices.Item2;
                     return;
                 }
 
                 // Must be in e12 region.
                 var inv_d12 = 1.0f / (d12_1 + d12_2);
-                Vertices.Item0.Alpha = d12_1 * inv_d12;
-                Vertices.Item0.Alpha = d12_2 * inv_d12;
+                Vertices.Item1.Alpha = d12_1 * inv_d12;
+                Vertices.Item2.Alpha = d12_2 * inv_d12;
                 Count = 2;
             }
 
@@ -819,9 +813,9 @@ namespace Engine.Physics.Detail.Collision
             // - inside the triangle
             public void Solve3()
             {
-                var w1 = Vertices[0].VertexDelta;
-                var w2 = Vertices[1].VertexDelta;
-                var w3 = Vertices[2].VertexDelta;
+                var w1 = Vertices.Item1.VertexDelta;
+                var w2 = Vertices.Item2.VertexDelta;
+                var w3 = Vertices.Item3.VertexDelta;
 
                 // Edge12
                 // [1      1     ][a1] = [1]
@@ -863,7 +857,7 @@ namespace Engine.Physics.Detail.Collision
                 // w1 region
                 if (d12_2 <= 0.0f && d13_2 <= 0.0f)
                 {
-                    Vertices.Item0.Alpha = 1.0f;
+                    Vertices.Item1.Alpha = 1.0f;
                     Count = 1;
                     return;
                 }
@@ -872,8 +866,8 @@ namespace Engine.Physics.Detail.Collision
                 if (d12_1 > 0.0f && d12_2 > 0.0f && d123_3 <= 0.0f)
                 {
                     var inv_d12 = 1.0f / (d12_1 + d12_2);
-                    Vertices.Item0.Alpha = d12_1 * inv_d12;
-                    Vertices.Item1.Alpha = d12_2 * inv_d12;
+                    Vertices.Item1.Alpha = d12_1 * inv_d12;
+                    Vertices.Item2.Alpha = d12_2 * inv_d12;
                     Count = 2;
                     return;
                 }
@@ -882,28 +876,28 @@ namespace Engine.Physics.Detail.Collision
                 if (d13_1 > 0.0f && d13_2 > 0.0f && d123_2 <= 0.0f)
                 {
                     var inv_d13 = 1.0f / (d13_1 + d13_2);
-                    Vertices.Item0.Alpha = d13_1 * inv_d13;
-                    Vertices.Item2.Alpha = d13_2 * inv_d13;
+                    Vertices.Item1.Alpha = d13_1 * inv_d13;
+                    Vertices.Item3.Alpha = d13_2 * inv_d13;
                     Count = 2;
-                    Vertices[1] = Vertices[2];
+                    Vertices.Item2 = Vertices.Item3;
                     return;
                 }
 
                 // w2 region
                 if (d12_1 <= 0.0f && d23_2 <= 0.0f)
                 {
-                    Vertices.Item1.Alpha = 1.0f;
+                    Vertices.Item2.Alpha = 1.0f;
                     Count = 1;
-                    Vertices[0] = Vertices[1];
+                    Vertices.Item1 = Vertices.Item2;
                     return;
                 }
 
                 // w3 region
                 if (d13_1 <= 0.0f && d23_1 <= 0.0f)
                 {
-                    Vertices.Item2.Alpha = 1.0f;
+                    Vertices.Item3.Alpha = 1.0f;
                     Count = 1;
-                    Vertices[0] = Vertices[2];
+                    Vertices.Item1 = Vertices.Item3;
                     return;
                 }
 
@@ -911,18 +905,18 @@ namespace Engine.Physics.Detail.Collision
                 if (d23_1 > 0.0f && d23_2 > 0.0f && d123_1 <= 0.0f)
                 {
                     var inv_d23 = 1.0f / (d23_1 + d23_2);
-                    Vertices.Item1.Alpha = d23_1 * inv_d23;
-                    Vertices.Item2.Alpha = d23_2 * inv_d23;
+                    Vertices.Item2.Alpha = d23_1 * inv_d23;
+                    Vertices.Item3.Alpha = d23_2 * inv_d23;
                     Count = 2;
-                    Vertices[0] = Vertices[2];
+                    Vertices.Item1 = Vertices.Item3;
                     return;
                 }
 
                 // Must be in triangle123
                 var inv_d123 = 1.0f / (d123_1 + d123_2 + d123_3);
-                Vertices.Item0.Alpha = d123_1 * inv_d123;
-                Vertices.Item1.Alpha = d123_2 * inv_d123;
-                Vertices.Item2.Alpha = d123_3 * inv_d123;
+                Vertices.Item1.Alpha = d123_1 * inv_d123;
+                Vertices.Item2.Alpha = d123_2 * inv_d123;
+                Vertices.Item3.Alpha = d123_3 * inv_d123;
                 Count = 3;
             }
         }
