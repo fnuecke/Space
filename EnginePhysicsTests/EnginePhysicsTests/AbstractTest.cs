@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.Physics.Components;
 using Engine.Physics.Systems;
+using Engine.Random;
 using Microsoft.Xna.Framework.Input;
 
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
@@ -26,6 +26,11 @@ namespace EnginePhysicsTests
         /// Gets the manager representing the system in which this test runs.
         /// </summary>
         protected IManager Manager { get; private set; }
+
+        /// <summary>
+        /// Gets a random number generator that may be used in tests.
+        /// </summary>
+        protected IUniformRandom Random { get { return _random; } }
 
         /// <summary>
         /// Gets the physics system that runs this test.
@@ -60,6 +65,11 @@ namespace EnginePhysicsTests
         #region Fields
 
         /// <summary>
+        /// Random number generator for tests.
+        /// </summary>
+        private readonly MersenneTwister _random = new MersenneTwister(0);
+
+        /// <summary>
         /// The body currently being dragged.
         /// </summary>
         private Body _pickedBody;
@@ -79,11 +89,6 @@ namespace EnginePhysicsTests
         /// </summary>
         private bool _dragging;
 
-        /// <summary>
-        /// The system providing information on the graphics device.
-        /// </summary>
-        private GraphicsDeviceSystem _graphics;
-
         #endregion
 
         #region Base Logic
@@ -97,7 +102,8 @@ namespace EnginePhysicsTests
             Manager = manager;
             Physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
             Renderer = Manager.GetSystem(Engine.ComponentSystem.Manager.GetSystemTypeId<DebugPhysicsRenderSystem>()) as DebugPhysicsRenderSystem;
-            _graphics = Manager.GetSystem(GraphicsDeviceSystem.TypeId) as GraphicsDeviceSystem;
+            _random.Seed(0);
+            StepCount = 0;
             Create();
         }
 
@@ -231,9 +237,7 @@ namespace EnginePhysicsTests
         /// <summary>
         /// Called when the scene should be set up (bodies and fixtures created).
         /// </summary>
-        protected virtual void Create()
-        {
-        }
+        protected abstract void Create();
 
         /// <summary>
         /// Called inbetween simulation updates.

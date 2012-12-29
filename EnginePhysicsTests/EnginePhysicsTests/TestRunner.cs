@@ -1,9 +1,12 @@
 using System;
+using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Physics.Systems;
 using EnginePhysicsTests.Tests;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace EnginePhysicsTests
@@ -28,12 +31,34 @@ namespace EnginePhysicsTests
             new ContinuousTest(),
             new BulletTest(),
             new SphereStack(),
+            new EdgeBenchmark(),
+            new EdgeBenchmarkWithCircles(),
         };
 
         /// <summary>
         /// The graphics device manager we use.
         /// </summary>
         private readonly GraphicsDeviceManager _graphics;
+
+        /// <summary>
+        /// The manager in which the current test runs.
+        /// </summary>
+        private readonly Manager _manager = new Manager();
+
+        /// <summary>
+        /// A string buffer used to accumulate text messages to print each frame.
+        /// </summary>
+        private static readonly StringBuilder StringBuffer = new StringBuilder();
+
+        /// <summary>
+        /// Used to render messages.
+        /// </summary>
+        private SpriteBatch _spriteBatch;
+
+        /// <summary>
+        /// The font to render messages with.
+        /// </summary>
+        private SpriteFont _font;
 
         /// <summary>
         /// The last keyboard state, used to check for changes.
@@ -61,11 +86,6 @@ namespace EnginePhysicsTests
         private bool _runOnce;
 
         /// <summary>
-        /// The manager in which the current test runs.
-        /// </summary>
-        private Manager _manager;
-
-        /// <summary>
         /// The physics system we use.
         /// </summary>
         private PhysicsSystem _physics;
@@ -81,6 +101,17 @@ namespace EnginePhysicsTests
         private bool _showHelp = true;
 
         #endregion
+
+        /// <summary>
+        /// Draws the string in the next draw call.
+        /// </summary>
+        /// <param name="format">The format string.</param>
+        /// <param name="args">The arguments to put into the format string.</param>
+        public static void DrawString(string format, params object[] args)
+        {
+            StringBuffer.AppendFormat(format, args);
+            StringBuffer.Append("\n");
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestRunner"/> class.
@@ -103,7 +134,9 @@ namespace EnginePhysicsTests
         /// </summary>
         protected override void LoadContent()
         {
-            _manager = new Manager();
+            _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
+            _font = new ResourceContentManager(Services, GameResource.ResourceManager).Load<SpriteFont>("ConsoleFont");
+
             _manager.AddSystem(_physics = new PhysicsSystem(1 / 60f, new Vector2(0, -10f)));
             _manager.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
             _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new Vector2(0, -12)});
@@ -200,6 +233,49 @@ namespace EnginePhysicsTests
                 _manager.Draw(0, 0);
             }
 
+            // Flush text from last time, to make sure test's text comes below our text.
+            if (StringBuffer.Length > 0)
+            {
+                _spriteBatch.Begin();
+                _spriteBatch.DrawString(_font, StringBuffer, new Vector2(20, 20), Color.White);
+                _spriteBatch.End();
+                StringBuffer.Clear();
+            }
+
+            if (_manager != null)
+            {
+                DrawString(Tests[_currentTest].GetType().Name);
+            }
+
+            if (!_running)
+            {
+                DrawString("****PAUSED**** (press P to toggle)");
+            }
+
+            if (_showHelp)
+            {
+                DrawString(
+@"
+Hotkeys:
+F1           - Toggles this help message.
+F2           - Toggles profiler information.
+F3           - Toggle joint rendering.
+F4           - Toggle contact points and normal rendering.
+F5           - Toggle contact point normal impulse rendering.
+F7           - Toggle center of mass rendering.
+F8           - Toggle bounding box rendering.
+
+Left Arrow   - Previous test.
+Right Arrow  - Next test.
+Space        - Pause or unpause simulation.
+Tab or Enter - Advance simulation one frame.
+R            - Reload current test (keeping pause state).");
+            }
+            else
+            {
+                DrawString("\nPress F1 for help.");
+            }
+
             base.Draw(gameTime);
         }
 
@@ -256,12 +332,13 @@ namespace EnginePhysicsTests
                     LoadTest(_currentTest - 1);
                     break;
 
-                case Keys.P:
+                case Keys.Space:
                     // Toggle pause.
                     _running = !_running;
                     break;
 
-                case Keys.Space:
+                case Keys.Tab:
+                case Keys.Enter:
                     // Manual step.
                     _runOnce = true;
                     break;
@@ -271,6 +348,10 @@ namespace EnginePhysicsTests
                     LoadTest(_currentTest, false);
                     break;
 
+                case Keys.F1:
+                    // Toggle help display.
+                    _showHelp = !_showHelp;
+                    break;
                 case Keys.F2:
                     // Toggle profiler information.
                     break;

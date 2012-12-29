@@ -1,5 +1,4 @@
 ﻿using Engine.Physics.Components;
-using Engine.Random;
 using Microsoft.Xna.Framework;
 
 namespace EnginePhysicsTests.Tests
@@ -8,8 +7,6 @@ namespace EnginePhysicsTests.Tests
     {
         protected override void Create()
         {
-            var random = new MersenneTwister(0);
-
             Manager.AddEdge(new Vector2(50.0f, 0.0f), new Vector2(-50.0f, 0.0f));
 
             for (var i = 0; i < 10; ++i)
@@ -18,23 +15,22 @@ namespace EnginePhysicsTests.Tests
                                                type: Body.BodyType.Dynamic,
                                                localPosition: new Vector2(-0.5f, 0.5f),
                                                worldPosition:
-                                                   new Vector2((float)random.NextDouble(-0.1f, 0.1f) + 5.0f,
+                                                   new Vector2((float)Random.NextDouble(-0.1f, 0.1f) + 5.0f,
                                                                1.05f + 2.5f * i),
-                                               worldAngle: (float)random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
+                                               worldAngle: (float)Random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
                                                density: 2);
                 Manager.AttachCircle(circle,
                                      radius: 0.5f,
                                      localPosition: new Vector2(0.5f, 0.5f));
             }
 
-            //*
             for (var i = 0; i < 10; ++i)
             {
-                var position = new Vector2((float)random.NextDouble(-0.1f, 0.1f) - 5.0f, 1.05f + 2.5f * i);
+                var position = new Vector2((float)Random.NextDouble(-0.1f, 0.1f) - 5.0f, 1.05f + 2.5f * i);
                 var box = Manager.AddRectangle(width: 0.5f, height: 1f,
                                                type: Body.BodyType.Dynamic,
                                                worldPosition: position,
-                                               worldAngle: (float)random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
+                                               worldAngle: (float)Random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
                                                density: 2);
                 Manager.AttachRectangle(box,
                                         width: 0.5f, height: 1f,
@@ -42,44 +38,38 @@ namespace EnginePhysicsTests.Tests
                                         localAngle: MathHelper.PiOver2,
                                         density: 2);
             }
-            //*/
 
-            //{
-            //    b2Transform xf1;
-            //    xf1.q.Set(0.3524f * b2_pi);
-            //    xf1.p = xf1.q.GetXAxis();
+            {
+                var xf1 = Matrix.CreateRotationZ(0.3524f * MathHelper.Pi);
+                xf1.Translation = new Vector3(Vector2.Transform(Vector2.UnitX, Quaternion.CreateFromRotationMatrix(xf1)), 0);
+                var triangle1 = new[]
+                {
+                    Vector2.Transform(new Vector2(-1.0f, 0.0f), xf1),
+                    Vector2.Transform(new Vector2(1.0f, 0.0f), xf1),
+                    Vector2.Transform(new Vector2(0.0f, 0.5f), xf1)
+                };
 
-            //    Vector2
-            //    vertices[3];
+                var xf2 = Matrix.CreateRotationZ(-0.3524f * MathHelper.Pi);
+                xf2.Translation = new Vector3(Vector2.Transform(-Vector2.UnitX, Quaternion.CreateFromRotationMatrix(xf2)), 0);
+                var triangle2 = new[]
+                {
+                    Vector2.Transform(new Vector2(-1.0f, 0.0f), xf2),
+                    Vector2.Transform(new Vector2(1.0f, 0.0f), xf2),
+                    Vector2.Transform(new Vector2(0.0f, 0.5f), xf2)
+                };
 
-            //    b2PolygonShape triangle1;
-            //    vertices[0] = b2Mul(xf1, Vector2(-1.0f, 0.0f));
-            //    vertices[1] = b2Mul(xf1, Vector2(1.0f, 0.0f));
-            //    vertices[2] = b2Mul(xf1, Vector2(0.0f, 0.5f));
-            //    triangle1.Set(vertices, 3);
+                for (var i = 0; i < 10; ++i)
+                {
+                    var x = (float)Random.NextDouble(-0.1f, 0.1f);
 
-            //    b2Transform xf2;
-            //    xf2.q.Set(-0.3524f * b2_pi);
-            //    xf2.p = -xf2.q.GetXAxis();
-
-            //    b2PolygonShape triangle2;
-            //    vertices[0] = b2Mul(xf2, Vector2(-1.0f, 0.0f));
-            //    vertices[1] = b2Mul(xf2, Vector2(1.0f, 0.0f));
-            //    vertices[2] = b2Mul(xf2, Vector2(0.0f, 0.5f));
-            //    triangle2.Set(vertices, 3);
-
-            //    for (int i = 0; i < 10; ++i)
-            //    {
-            //        float x = RandomFloat(-0.1f, 0.1f);
-            //        b2BodyDef bd;
-            //        bd.type = b2_dynamicBody;
-            //        bd.position.Set(x, 2.05f + 2.5f * i);
-            //        bd.angle = 0.0f;
-            //        b2Body* body = m_world->CreateBody(&bd);
-            //        body->CreateFixture(&triangle1, 2.0f);
-            //        body->CreateFixture(&triangle2, 2.0f);
-            //    }
-            //}
+                    var shape = Manager.AddPolygon(triangle1,
+                                                   type: Body.BodyType.Dynamic,
+                                                   worldPosition: new Vector2(x, 2.05f + 2.5f * i),
+                                                   density: 2);
+                    Manager.AttachPolygon(shape, triangle2,
+                                          density: 2);
+                }
+            }
 
             {
                 var entity = Manager.AddRectangle(width: 3, height: 0.3f,

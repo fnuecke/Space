@@ -1,6 +1,5 @@
 ﻿using Engine.Physics.Components;
 using Engine.Physics.Systems;
-using Engine.Random;
 using Microsoft.Xna.Framework;
 
 namespace EnginePhysicsTests.Tests
@@ -23,13 +22,12 @@ namespace EnginePhysicsTests.Tests
             const float minY = 4.0f;
             const float maxY = 6.0f;
 
-            var random = new MersenneTwister(0);
             for (var i = 0; i < 400; ++i)
             {
                 Manager.AddCircle(radius: 0.1f,
                                   type: Body.BodyType.Dynamic,
-                                  worldPosition: new Vector2((float)random.NextDouble(minX, maxX),
-                                                             (float)random.NextDouble(minY, maxY)),
+                                  worldPosition: new Vector2((float)Random.NextDouble(minX, maxX),
+                                                             (float)Random.NextDouble(minY, maxY)),
                                   density: 0.01f);
             }
 

@@ -1,12 +1,10 @@
 ﻿using Engine.Physics.Components;
-using Engine.Random;
 using Microsoft.Xna.Framework;
 
 namespace EnginePhysicsTests.Tests
 {
     sealed class ContinuousTest : AbstractTest
     {
-        private readonly MersenneTwister _random = new MersenneTwister(0);
         private Body _body;
 
         protected override void Create()
@@ -25,7 +23,7 @@ namespace EnginePhysicsTests.Tests
 
                 //m_angularVelocity = 46.661274f;
                 _body.LinearVelocity = new Vector2(0.0f, -100.0f);
-                _body.AngularVelocity = (float)_random.NextDouble(-50.0f, 50.0f);
+                _body.AngularVelocity = (float)Random.NextDouble(-50.0f, 50.0f);
             }
         }
 
@@ -33,7 +31,7 @@ namespace EnginePhysicsTests.Tests
         {
             _body.SetTransform(new Vector2(0.0f, 20.0f), 0.0f);
             _body.LinearVelocity = new Vector2(0.0f, -100.0f);
-            _body.AngularVelocity = (float)_random.NextDouble(-50.0f, 50.0f);
+            _body.AngularVelocity = (float)Random.NextDouble(-50.0f, 50.0f);
         }
 
         protected override void Step()

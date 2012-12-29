@@ -9,8 +9,8 @@ namespace EnginePhysicsTests.Tests
         {
             Manager.AddEdge(new Vector2(-40.0f, 0.0f), new Vector2(40.0f, 0.0f));
 
-            const int e_count = 10;
-            for (var i = 0; i < e_count; ++i)
+            const int count = 10;
+            for (var i = 0; i < count; ++i)
             {
                 var sphere = Manager.AddCircle(radius: 1,
                                                type: Body.BodyType.Dynamic,

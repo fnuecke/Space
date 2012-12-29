@@ -1,12 +1,10 @@
 ﻿using Engine.Physics.Components;
-using Engine.Random;
 using Microsoft.Xna.Framework;
 
 namespace EnginePhysicsTests.Tests
 {
     class BulletTest : AbstractTest
     {
-        private readonly MersenneTwister _random = new MersenneTwister(0);
         private Body _block;
         private Body _bullet;
 
@@ -42,7 +40,7 @@ namespace EnginePhysicsTests.Tests
             _block.LinearVelocity = Vector2.Zero;
             _block.AngularVelocity = 0;
 
-            var x = (float)_random.NextDouble(-1.0f, 1.0f);
+            var x = (float)Random.NextDouble(-1.0f, 1.0f);
             _bullet.SetTransform(new Vector2(x, 10.0f), 0);
             _bullet.LinearVelocity =  new Vector2(0.0f, -50.0f);
             _bullet.AngularVelocity = 0;

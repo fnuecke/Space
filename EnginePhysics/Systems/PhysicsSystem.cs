@@ -89,7 +89,7 @@ namespace Engine.Physics.Systems
             {
                 for (var i = _usedContacts; i >= 0; i = _contacts[i].Next)
                 {
-                    //if (_contacts[i].IsTouching)
+                    if (_contacts[i].IsTouching)
                     {
                         yield return _contacts[i];
                     }
