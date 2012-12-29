@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Detail.Contacts;
@@ -31,6 +32,14 @@ namespace Engine.Physics.Detail
         public IEnumerable<Body> Bodies
         {
             get { return _bodies; }
+        }
+
+        /// <summary>
+        /// Gets the list of processed bodie, set via <see cref="MarkProcessed(Engine.Physics.Components.Body)"/>.
+        /// </summary>
+        public IEnumerable<Body> ProcessedBodies
+        {
+            get { return _processedBodies; }
         }
 
         /// <summary>
@@ -202,7 +211,7 @@ namespace Engine.Physics.Detail
         /// </summary>
         public void UnmarkStaticBodies()
         {
-            _processedBodies.RemoveWhere(x => x.Type == Body.BodyType.Static);
+            _processedBodies.RemoveWhere(x => x._type == Body.BodyType.Static);
         }
 
         /// <summary>
@@ -239,14 +248,14 @@ namespace Engine.Physics.Detail
 
                 var c = b.Sweep.CenterOfMass;
                 var a = b.Sweep.Angle;
-                var v = b.LinearVelocity;
-                var w = b.AngularVelocity;
+                var v = b._linearVelocity;
+                var w = b._angularVelocity;
 
                 // Store positions for continuous collision.
                 b.Sweep.CenterOfMass0 = b.Sweep.CenterOfMass;
                 b.Sweep.Angle0 = b.Sweep.Angle;
 
-                if (b.Type == Body.BodyType.Dynamic)
+                if (b._type == Body.BodyType.Dynamic)
                 {
                     // Integrate velocities.
                     v += h * (gravity + b.InverseMass * b.Force);
@@ -259,8 +268,8 @@ namespace Engine.Physics.Detail
                     // v2 = exp(-c * dt) * v1
                     // Taylor expansion:
                     // v2 = (1.0f - c * dt) * v1
-                    v *= MathHelper.Clamp(1.0f - h * b.LinearDamping, 0.0f, 1.0f);
-                    w *= MathHelper.Clamp(1.0f - h * b.AngularDamping, 0.0f, 1.0f);
+                    v *= MathHelper.Clamp(1.0f - h * b._linearDamping, 0.0f, 1.0f);
+                    w *= MathHelper.Clamp(1.0f - h * b._angularDamping, 0.0f, 1.0f);
                 }
 
                 _positions[i].Point = c;
@@ -338,8 +347,8 @@ namespace Engine.Physics.Detail
                 var body = _bodies[i];
                 body.Sweep.CenterOfMass = _positions[i].Point;
                 body.Sweep.Angle = _positions[i].Angle;
-                body.LinearVelocity = _velocities[i].LinearVelocity;
-                body.AngularVelocity = _velocities[i].AngularVelocity;
+                body._linearVelocity = _velocities[i].LinearVelocity;
+                body._angularVelocity = _velocities[i].AngularVelocity;
                 body.SynchronizeTransform();
             }
 
@@ -351,13 +360,13 @@ namespace Engine.Physics.Detail
             for (var i = 0; i < _bodies.Count; ++i)
             {
                 var b = _bodies[i];
-                if (b.Type == Body.BodyType.Static)
+                if (b._type == Body.BodyType.Static)
                 {
                     continue;
                 }
 
-                if (!b.AllowSleep || b.AngularVelocity * b.AngularVelocity > angTolSqr ||
-                    Vector2.Dot(b.LinearVelocity, b.LinearVelocity) > linTolSqr)
+                if (!b._allowSleep || b._angularVelocity * b._angularVelocity > angTolSqr ||
+                    Vector2.Dot(b._linearVelocity, b._linearVelocity) > linTolSqr)
                 {
                     b.SleepTime = 0.0f;
                     minSleepTime = 0.0f;
@@ -393,8 +402,8 @@ namespace Engine.Physics.Detail
                 var b = _bodies[i];
                 _positions[i].Point = b.Sweep.CenterOfMass;
                 _positions[i].Angle = b.Sweep.Angle;
-                _velocities[i].LinearVelocity = b.LinearVelocity;
-                _velocities[i].AngularVelocity = b.AngularVelocity;
+                _velocities[i].LinearVelocity = b._linearVelocity;
+                _velocities[i].AngularVelocity = b._angularVelocity;
             }
 
             // Initialize solver for current step.
@@ -466,8 +475,8 @@ namespace Engine.Physics.Detail
                 var body = _bodies[i];
                 body.Sweep.CenterOfMass = c;
                 body.Sweep.Angle = a;
-                body.LinearVelocity = v;
-                body.AngularVelocity = w;
+                body._linearVelocity = v;
+                body._angularVelocity = w;
                 body.SynchronizeTransform();
             }
         }

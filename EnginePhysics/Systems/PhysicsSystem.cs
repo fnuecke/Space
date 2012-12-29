@@ -738,8 +738,8 @@ namespace Engine.Physics.Systems
                 // Skip contacts for sleeping or static bodies and keep them
                 // alive (until the non-static body wakes up -- there are no
                 // contacts between two static bodies).
-                var activeA = bodyA.IsAwake && bodyA.Type != Body.BodyType.Static;
-                var activeB = bodyB.IsAwake && bodyB.Type != Body.BodyType.Static;
+                var activeA = bodyA.IsAwake && bodyA._type != Body.BodyType.Static;
+                var activeB = bodyB.IsAwake && bodyB._type != Body.BodyType.Static;
                 if (!activeA && !activeB)
                 {
                     // Continue with next contact.
@@ -898,13 +898,21 @@ namespace Engine.Physics.Systems
 
             // Build and simulate all awake islands.
             var stack = new Stack<Body>(Components.Count);
-            foreach (var seed in Components)
+            // We explicitly want to traverse the body list backwards,
+            // to somewhat emulate Box2D's behavior (because the component
+            // list is sorted by the individual components' ids this will
+            // fall apart after a couple of deletions, but some tests won't
+            // work right otherwise (e.g. sphere stack, where the order does
+            // in fact matter, because the solver otherwise has to solve the
+            // stack bottom to top, resulting in a very slow solving process).
+            for (var seedIndex = Components.Count - 1; seedIndex >= 0; --seedIndex)
             {
+                var seed = Components[seedIndex];
                 // Skip disabled, sleeping, already processed and static bodies.
                 if (!seed.Enabled ||
                     !seed.IsAwake ||
                     _island.IsProcessed(seed) ||
-                    seed.Type == Body.BodyType.Static)
+                    seed._type == Body.BodyType.Static)
                 {
                     continue;
                 }
@@ -934,7 +942,7 @@ namespace Engine.Physics.Systems
 
                     // To keep islands as small as possible, we don't
                     // propagate islands across static bodies.
-                    if (body.Type == Body.BodyType.Static)
+                    if (body._type == Body.BodyType.Static)
                     {
                         continue;
                     }
@@ -988,18 +996,9 @@ namespace Engine.Physics.Systems
             }
 
             // Synchronize fixtures, check for out of range bodies.
-            foreach (var body in Components)
+            // If a body was not in an island then it did not move.
+            foreach (var body in _island.ProcessedBodies)
             {
-                // If a body was not in an island then it did not move.
-                if (!_island.IsProcessed(body))
-                {
-                    continue;
-                }
-
-                // Static bodies are unmarked after each solve, so we should have exited
-                // from the if above already.
-                System.Diagnostics.Debug.Assert(body.Type != Body.BodyType.Static);
-
                 // Update fixtures (for broad-phase).
                 body.SynchronizeFixtures();
             }
@@ -1077,22 +1076,22 @@ namespace Engine.Physics.Systems
                         System.Diagnostics.Debug.Assert(bA != null);
                         System.Diagnostics.Debug.Assert(bB != null);
 
-                        var typeA = bA.Type;
-                        var typeB = bB.Type;
+                        var typeA = bA._type;
+                        var typeB = bB._type;
 
                         System.Diagnostics.Debug.Assert(typeA == Body.BodyType.Dynamic || typeB == Body.BodyType.Dynamic);
 
                         // Is at least one body active (awake and dynamic or kinematic)?
-                        var activeA = bA.IsAwake && typeA != Body.BodyType.Static;
-                        var activeB = bB.IsAwake && typeB != Body.BodyType.Static;
+                        var activeA = bA._isAwake && typeA != Body.BodyType.Static;
+                        var activeB = bB._isAwake && typeB != Body.BodyType.Static;
                         if (!activeA && !activeB)
                         {
                             continue;
                         }
 
                         // Are these two non-bullet dynamic bodies?
-                        var collideA = bA.IsBullet || typeA != Body.BodyType.Dynamic;
-                        var collideB = bB.IsBullet || typeB != Body.BodyType.Dynamic;
+                        var collideA = bA._isBullet || typeA != Body.BodyType.Dynamic;
+                        var collideB = bB._isBullet || typeB != Body.BodyType.Dynamic;
                         if (!collideA && !collideB)
                         {
                             continue;
@@ -1218,7 +1217,7 @@ namespace Engine.Physics.Systems
                     foreach (var body in _island.Bodies)
                     {
                         // If it's not a dynamic body, we didn't move it.
-                        if (body.Type != Body.BodyType.Dynamic)
+                        if (body._type != Body.BodyType.Dynamic)
                         {
                             continue;
                         }
@@ -1250,7 +1249,7 @@ namespace Engine.Physics.Systems
         private void AddConnectedBodiesForTOI(Body body, float minAlpha)
         {
             // We only handle TOI from the dynamic side.
-            if (body.Type != Body.BodyType.Dynamic)
+            if (body._type != Body.BodyType.Dynamic)
             {
                 return;
             }
@@ -1290,7 +1289,7 @@ namespace Engine.Physics.Systems
                     }
 
                     // Only add static, kinematic, or bullet bodies.
-                    if (other.Type == Body.BodyType.Dynamic &&
+                    if (other._type == Body.BodyType.Dynamic &&
                         !body.IsBullet && !other.IsBullet)
                     {
                         continue;
@@ -1345,7 +1344,7 @@ namespace Engine.Physics.Systems
                     }
 
                     // Wake it up if necessary.
-                    if (other.Type != Body.BodyType.Static)
+                    if (other._type != Body.BodyType.Static)
                     {
                         other.IsAwake = true;
                     }

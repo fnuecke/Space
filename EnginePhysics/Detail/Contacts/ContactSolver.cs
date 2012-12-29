@@ -123,35 +123,14 @@ namespace Engine.Physics.Detail.Contacts
                 pc.RadiusB = fixtureB.Radius;
                 pc.Type = contact.Manifold.Type;
 
-                var vcp = vc.Points[0];
-
-                if (_step.IsWarmStarting)
+                for (var j = 0; j < pointCount; ++j)
                 {
-                    vcp.NormalImpulse = contact.Manifold.Points[0].NormalImpulse;
-                    vcp.TangentImpulse = contact.Manifold.Points[0].TangentImpulse;
-                }
-                else
-                {
-                    vcp.NormalImpulse = 0.0f;
-                    vcp.TangentImpulse = 0.0f;
-                }
-
-                vcp.RelativeA = Vector2.Zero;
-                vcp.RelativeB = Vector2.Zero;
-                vcp.NormalMass = 0.0f;
-                vcp.TangentMass = 0.0f;
-                vcp.VelocityBias = 0.0f;
-
-                pc.LocalPoints[0] = contact.Manifold.Points[0].LocalPoint;
-
-                if (pointCount > 1)
-                {
-                    vcp = vc.Points[1];
+                    var vcp = vc.Points[j];
 
                     if (_step.IsWarmStarting)
                     {
-                        vcp.NormalImpulse = contact.Manifold.Points[1].NormalImpulse;
-                        vcp.TangentImpulse = contact.Manifold.Points[1].TangentImpulse;
+                        vcp.NormalImpulse = contact.Manifold.Points[j].NormalImpulse;
+                        vcp.TangentImpulse = contact.Manifold.Points[j].TangentImpulse;
                     }
                     else
                     {
@@ -165,7 +144,7 @@ namespace Engine.Physics.Detail.Contacts
                     vcp.TangentMass = 0.0f;
                     vcp.VelocityBias = 0.0f;
 
-                    pc.LocalPoints[1] = contact.Manifold.Points[1].LocalPoint;
+                    pc.LocalPoints[j] = contact.Manifold.Points[j].LocalPoint;
                 }
             }
         }

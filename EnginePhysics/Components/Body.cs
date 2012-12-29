@@ -183,21 +183,21 @@ namespace Engine.Physics.Components
         /// </summary>
         public bool IsAwake
         {
-            get { return _awake; }
+            get { return _isAwake; }
             internal set
             {
                 if (value)
                 {
-                    if (!_awake)
+                    if (!_isAwake)
                     {
-                        _awake = true;
+                        _isAwake = true;
                         SleepTime = 0.0f;
                     }
                 }
                 else
                 {
                     // Forcibly null any velocity when putting a body to sleep.
-                    _awake = false;
+                    _isAwake = false;
                     _linearVelocity = Vector2.Zero;
                     _angularVelocity = 0.0f;
                     Force = Vector2.Zero;
@@ -395,22 +395,22 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The type of this body.
         /// </summary>
-        private BodyType _type;
+        internal BodyType _type;
 
         /// <summary>
         /// Whether this body is allowed to sleep.
         /// </summary>
-        private bool _allowSleep = true;
+        internal bool _allowSleep = true;
 
         /// <summary>
         /// Tracks whether this body is awake or not.
         /// </summary>
-        private bool _awake = true;
+        internal bool _isAwake = true;
 
         /// <summary>
         /// Whether this body should act as a bullet, if dynamic.
         /// </summary>
-        private bool _isBullet;
+        internal bool _isBullet;
 
         /// <summary>
         /// The collision groups the body is in, as a bit mask.
@@ -436,12 +436,12 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The linear velocity of the body, i.e. the directed speed at which it moves.
         /// </summary>
-        private Vector2 _linearVelocity;
+        internal Vector2 _linearVelocity;
 
         /// <summary>
         /// The angular velocity of this body, i.e. how fast it spins.
         /// </summary>
-        private float _angularVelocity;
+        internal float _angularVelocity;
 
         /// <summary>
         /// The force to apply to this body in the next update. This is reset
@@ -478,12 +478,12 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The linear damping of the body.
         /// </summary>
-        private float _linearDamping;
+        internal float _linearDamping;
 
         /// <summary>
         /// The angular damping of the body.
         /// </summary>
-        private float _angularDamping;
+        internal float _angularDamping;
 
         /// <summary>
         /// Accumulates the total time the body has not moved (angular and
@@ -512,7 +512,7 @@ namespace Engine.Physics.Components
             _type = otherBody._type;
             _collisionGroups = otherBody._collisionGroups;
             _allowSleep = otherBody._allowSleep;
-            _awake = otherBody._awake;
+            _isAwake = otherBody._isAwake;
             _isBullet = otherBody._isBullet;
             _mass = otherBody._mass;
             _inertia = otherBody._inertia;
@@ -606,7 +606,7 @@ namespace Engine.Physics.Components
 
             _collisionGroups = 0;
             _allowSleep = true;
-            _awake = true;
+            _isAwake = true;
             _isBullet = false;
             _mass = 0;
             _inertia = 0;
@@ -1076,7 +1076,7 @@ namespace Engine.Physics.Components
             return base.Packetize(packet)
                 .Write((byte)_type)
                 .Write(_allowSleep)
-                .Write(_awake)
+                .Write(_isAwake)
                 .Write(_isBullet)
                 .Write(_collisionGroups)
                 .Write(Transform)
@@ -1104,7 +1104,7 @@ namespace Engine.Physics.Components
 
             _type = (BodyType)packet.ReadByte();
             _allowSleep = packet.ReadBoolean();
-            _awake = packet.ReadBoolean();
+            _isAwake = packet.ReadBoolean();
             _isBullet = packet.ReadBoolean();
             _collisionGroups = packet.ReadUInt32();
             Transform = packet.ReadWorldTransform();
@@ -1136,7 +1136,7 @@ namespace Engine.Physics.Components
             hasher
                 .Put((byte)_type)
                 .Put(_allowSleep)
-                .Put(_awake)
+                .Put(_isAwake)
                 .Put(_isBullet)
                 .Put(_collisionGroups)
                 .Put(Transform) // TODO

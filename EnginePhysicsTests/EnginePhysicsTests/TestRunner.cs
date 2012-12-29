@@ -249,7 +249,7 @@ namespace EnginePhysicsTests
 
             if (!_running)
             {
-                DrawString("****PAUSED**** (press P to toggle)");
+                DrawString("****PAUSED**** (press Space to toggle)");
             }
 
             if (_showHelp)
