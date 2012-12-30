@@ -1,11 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.Graphics;
 using Engine.Physics.Components;
-using FarseerPhysics.DebugViews;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+using WorldTransform = Engine.FarMath.FarTransform;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+using WorldTransform = Microsoft.Xna.Framework.Matrix;
+#endif
 
 namespace Engine.Physics.Systems
 {
@@ -122,7 +131,7 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// Keep a reference to the graphics device for projecting/unprojecting.
         /// </summary>
-        private GraphicsDevice _graphics;
+        private GraphicsDevice _graphicsDevice;
 
         /// <summary>
         /// The primitive batch we use to render shapes.
@@ -141,7 +150,7 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// Gets the display transform (camera position/rotation).
         /// </summary>
-        protected abstract Matrix GetTransform();
+        protected abstract WorldTransform GetTransform();
 
         #endregion
 
@@ -152,10 +161,18 @@ namespace Engine.Physics.Systems
         /// </summary>
         /// <param name="point">The point in simulation space.</param>
         /// <returns>The unprojected point.</returns>
-        public Vector2 ScreenToSimulation(Vector2 point)
+        public WorldPoint ScreenToSimulation(Vector2 point)
         {
-            var unprojected = _graphics.Viewport.Unproject(new Vector3(point, 0), _primitiveBatch.Projection, ComputeViewMatrix(), Matrix.Identity);
-            return new Vector2(unprojected.X, unprojected.Y);
+            var viewport = _graphicsDevice.Viewport;
+            var projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, 0, viewport.Height, 0, 1);
+            var view = ComputeViewTransform();
+#if FARMATH
+            var unprojected = _graphicsDevice.Viewport.Unproject(new Vector3(point, 0), projection, view.Matrix, Matrix.Identity);
+            return PhysicsSystem.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y)) - view.Translation;
+#else
+            var unprojected = _graphicsDevice.Viewport.Unproject(new Vector3(point, 0), projection, view, Matrix.Identity);
+            return PhysicsSystem.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y));
+#endif
         }
 
         /// <summary>
@@ -163,9 +180,16 @@ namespace Engine.Physics.Systems
         /// </summary>
         /// <param name="point">The point in screen space.</param>
         /// <returns>The projected point.</returns>
-        public Vector2 SimulationToScreen(Vector2 point)
+        public Vector2 SimulationToScreen(WorldPoint point)
         {
-            var projected = _graphics.Viewport.Project(new Vector3(point, 0), _primitiveBatch.Projection, ComputeViewMatrix(), Matrix.Identity);
+            var viewport = _graphicsDevice.Viewport;
+            var projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, 0, viewport.Height, 0, 1);
+            var view = ComputeViewTransform();
+#if FARMATH
+            var projected = _graphicsDevice.Viewport.Project(new Vector3(PhysicsSystem.ToScreenUnits((Vector2)(point + view.Translation)), 0), projection, view.Matrix, Matrix.Identity);
+#else
+            var projected = _graphicsDevice.Viewport.Project(new Vector3(PhysicsSystem.ToScreenUnits(point), 0), projection, view, Matrix.Identity);
+#endif
             return new Vector2(projected.X, projected.Y);
         }
 
@@ -173,14 +197,19 @@ namespace Engine.Physics.Systems
         /// Computes the view matrix.
         /// </summary>
         /// <returns></returns>
-        private Matrix ComputeViewMatrix()
+        private WorldTransform ComputeViewTransform()
         {
             var scale = GetScale();
-            var viewport = new Vector2(_graphics.Viewport.Width, _graphics.Viewport.Height);
-            viewport = PhysicsSystem.ToSimulationUnits(viewport);
-            return GetTransform() *
-                Matrix.CreateTranslation(viewport.X / (scale * 4f), viewport.Y / (scale * 4f), 0) *
-                Matrix.CreateScale(scale);
+            var view = GetTransform();
+            var world = Matrix.CreateTranslation(_graphicsDevice.Viewport.Width / 2f,
+                                                 _graphicsDevice.Viewport.Height / 2f, 0);
+#if FARMATH
+            view.Translation /= 100f;
+            view.Matrix = view.Matrix * Matrix.CreateScale(scale) * world;
+            return view;
+#else
+            return view * Matrix.CreateScale(scale) * world;
+#endif
         }
 
         #endregion
@@ -208,24 +237,27 @@ namespace Engine.Physics.Systems
             }
 
             // Compute view matrix.
-            var view = ComputeViewMatrix();
+            var view = ComputeViewTransform();
 
             // Render fixture bounds.
             if (RenderFixtureBounds)
             {
-                var vertices = new Vector2[4];
-                _primitiveBatch.Begin(ref view);
+#if FARMATH
+                _primitiveBatch.Begin(view.Matrix);
+#else
+                _primitiveBatch.Begin(view);
+#endif
                 foreach (var aabb in physics.FixtureBounds)
                 {
-                    vertices[0].X = aabb.Left;
-                    vertices[0].Y = aabb.Top;
-                    vertices[1].X = aabb.Right;
-                    vertices[1].Y = aabb.Top;
-                    vertices[2].X = aabb.Right;
-                    vertices[2].Y = aabb.Bottom;
-                    vertices[3].X = aabb.Left;
-                    vertices[3].Y = aabb.Bottom;
-                    _primitiveBatch.DrawPolygon(vertices, 4, FixtureBoundsColor);
+#if FARMATH
+                    var center = (Vector2)(aabb.Center + view.Translation);
+#else
+                    var center = aabb.Center;
+#endif
+                    _primitiveBatch.DrawRectangle(PhysicsSystem.ToScreenUnits(center),
+                                                  PhysicsSystem.ToScreenUnits(aabb.Width),
+                                                  PhysicsSystem.ToScreenUnits(aabb.Height),
+                                                  FixtureBoundsColor);
                 }
                 _primitiveBatch.End();
             }
@@ -236,13 +268,22 @@ namespace Engine.Physics.Systems
                 foreach (var body in physics.Bodies)
                 {
                     // Get model transform based on body transform.
+
+#if FARMATH
+                    var bodyTanslation = (Vector2)(body.Transform.Translation + view.Translation);
                     var model = Matrix.CreateRotationZ(body.Sweep.Angle) *
-                                Matrix.CreateTranslation(body.Transform.Translation.X, body.Transform.Translation.Y, 0);
+                                Matrix.CreateTranslation(PhysicsSystem.ToScreenUnits(bodyTanslation.X),
+                                                         PhysicsSystem.ToScreenUnits(bodyTanslation.Y), 0);
+                    _primitiveBatch.Begin(model * view.Matrix);
+                    DrawBody(body, PhysicsSystem.ToScreenUnits);
+#else
+                    var model = Matrix.CreateRotationZ(body.Sweep.Angle) *
+                                Matrix.CreateTranslation(PhysicsSystem.ToScreenUnits(body.Transform.Translation.X),
+                                                         PhysicsSystem.ToScreenUnits(body.Transform.Translation.Y), 0);
+                    _primitiveBatch.Begin(model * view);
 
-                    var modelView = model * view;
-                    _primitiveBatch.Begin(ref modelView);
-
-                    DrawBody(body);
+                    DrawBody(body, PhysicsSystem.ToScreenUnits);
+#endif
 
                     _primitiveBatch.End();
                 }
@@ -251,16 +292,24 @@ namespace Engine.Physics.Systems
             // Render contacts.
             if (RenderContactPoints || RenderContactNormals || RenderContactPointNormalImpulse)
             {
-                _primitiveBatch.Begin(ref view);
+#if FARMATH
+                _primitiveBatch.Begin(view.Matrix);
+#else
+                _primitiveBatch.Begin(view);
+#endif
                 foreach (var contact in physics.Contacts)
                 {
-                    DrawContact(contact);
+#if FARMATH
+                    DrawContact(contact, v => PhysicsSystem.ToScreenUnits((Vector2)(v + view.Translation)));
+#else
+                    DrawContact(contact, PhysicsSystem.ToScreenUnits);
+#endif
                 }
                 _primitiveBatch.End();
             }
         }
 
-        private void DrawBody(Body body)
+        private void DrawBody(Body body, Func<Vector2, Vector2> toScreen)
         {
             // Draw the fixtures attached to this body.
             if (RenderFixtures)
@@ -297,21 +346,28 @@ namespace Engine.Physics.Systems
                         {
                             var circle = component as CircleFixture;
                             System.Diagnostics.Debug.Assert(circle != null);
-                            _primitiveBatch.DrawSolidCircle(circle.Center, circle.Radius, Vector2.UnitX, color);
+                            _primitiveBatch.DrawSolidCircle(toScreen(circle.Center),
+                                                            PhysicsSystem.ToScreenUnits(circle.Radius),
+                                                            color);
                         }
                             break;
                         case Fixture.FixtureType.Edge:
                         {
                             var edge = component as EdgeFixture;
                             System.Diagnostics.Debug.Assert(edge != null);
-                            _primitiveBatch.DrawSegment(edge.Vertex1, edge.Vertex2, color);
+                            _primitiveBatch.DrawLine(toScreen(edge.Vertex1),
+                                                     toScreen(edge.Vertex2),
+                                                     color);
                         }
                             break;
                         case Fixture.FixtureType.Polygon:
                         {
                             var polygon = component as PolygonFixture;
                             System.Diagnostics.Debug.Assert(polygon != null);
-                            _primitiveBatch.DrawSolidPolygon(polygon.Vertices, polygon.Count, color);
+                            _primitiveBatch.DrawFilledPolygon(polygon.Vertices
+                                                                 .Take(polygon.Count)
+                                                                 .Select(toScreen).ToList(),
+                                                             color);
                         }
                             break;
                         default:
@@ -323,36 +379,41 @@ namespace Engine.Physics.Systems
             // Draw the transform at the center of mass.
             if (RenderCenterOfMass)
             {
-                var p1 = body.Sweep.LocalCenter;
-                _primitiveBatch.DrawSegment(p1, p1 + Vector2.UnitX * AxisScale, Color.Red);
-                _primitiveBatch.DrawSegment(p1, p1 + Vector2.UnitY * AxisScale, Color.Green);
+                var p1 = toScreen(body.Sweep.LocalCenter);
+                // We want to use the normal (untransformed in FarValue case) method
+                // for mapping to screen space when computing our axis length.
+                _primitiveBatch.DrawLine(p1, p1 + PhysicsSystem.ToScreenUnits(Vector2.UnitX * AxisScale), Color.Red);
+                _primitiveBatch.DrawLine(p1, p1 + PhysicsSystem.ToScreenUnits(Vector2.UnitY * AxisScale), Color.Blue);
             }
         }
 
-        private void DrawContact(PhysicsSystem.IContact contact)
+        private void DrawContact(PhysicsSystem.IContact contact, Func<WorldPoint, Vector2> toScreen)
         {
             Vector2 normal;
-            IList<Vector2> points;
+            IList<WorldPoint> points;
             contact.ComputeWorldManifold(out normal, out points);
 
             for (var i = 0; i < points.Count; ++i)
             {
-                var point = points[i];
+                var point = toScreen(points[i]);
 
                 if (RenderContactPoints)
                 {
-                    _primitiveBatch.DrawPoint(point, 0.1f, ContactColor);
+                    _primitiveBatch.DrawFilledRectangle(point, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), ContactColor);
                 }
 
                 if (RenderContactNormals)
                 {
-                    _primitiveBatch.DrawSegment(point, point + NormalScale * normal, ContactNormalColor);
+                    // We want to use the normal (untransformed in FarValue case) method
+                    // for mapping to screen space when computing our axis length.
+                    _primitiveBatch.DrawLine(point, point + PhysicsSystem.ToScreenUnits(normal * NormalScale), ContactNormalColor);
                 }
 
                 if (RenderContactPointNormalImpulse)
                 {
-                    _primitiveBatch.DrawSegment(point, point + ImpulseScale * normal * contact.GetNormalImpulse(i),
-                                                ContactNormalImpulseColor);
+                    // We want to use the normal (untransformed in FarValue case) method
+                    // for mapping to screen space when computing our axis length.
+                    _primitiveBatch.DrawLine(point, point + PhysicsSystem.ToScreenUnits(normal * contact.GetNormalImpulse(i) * ImpulseScale), ContactNormalImpulseColor);
                 }
             }
         }
@@ -372,15 +433,15 @@ namespace Engine.Physics.Systems
                 var cm = message as GraphicsDeviceCreated?;
                 if (cm != null)
                 {
-                    _graphics = cm.Value.Graphics.GraphicsDevice;
-                    _primitiveBatch = new PrimitiveBatch(_graphics);
+                    _graphicsDevice = cm.Value.Graphics.GraphicsDevice;
+                    _primitiveBatch = new PrimitiveBatch(_graphicsDevice);
                 }
             }
             {
                 var cm = message as GraphicsDeviceDisposing?;
                 if (cm != null)
                 {
-                    _graphics = null;
+                    _graphicsDevice = null;
                     if (_primitiveBatch != null)
                     {
                         _primitiveBatch.Dispose();

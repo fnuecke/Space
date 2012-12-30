@@ -2,12 +2,8 @@
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Engine.FarMath.FarPosition;
-using WorldBounds = Engine.FarMath.FarRectangle;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using WorldBounds = Engine.Math.RectangleF;
 #endif
 
 namespace Engine.Physics.Detail.Collision

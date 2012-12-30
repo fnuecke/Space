@@ -8,11 +8,9 @@ using Microsoft.Xna.Framework;
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
 #endif
 
@@ -165,18 +163,19 @@ namespace Engine.Physics.Components
 	        var v1 = transform.ToGlobal(Vertex1);
 	        var v2 = transform.ToGlobal(Vertex2);
 
-	        var lower = WorldPoint.Min(v1, v2);
-	        var upper = WorldPoint.Max(v1, v2);
+            var lowerX = (v1.X < v2.X) ? v1.X : v2.X;
+            var lowerY = (v1.Y < v2.Y) ? v1.Y : v2.Y;
+            var upperX = (v1.X > v2.X) ? v1.X : v2.X;
+            var upperY = (v1.Y > v2.Y) ? v1.Y : v2.Y;
 
-            Vector2 size;
-            size.X = (float)(upper.X - lower.X) + 2 * Radius;
-            size.Y = (float)(upper.Y - lower.Y) + 2 * Radius;
+            var sizeX = (float)(upperX - lowerX) + 2 * Radius;
+            var sizeY = (float)(upperY - lowerY) + 2 * Radius;
             
             WorldBounds bounds;
-            bounds.X = lower.X - Radius;
-            bounds.Y = lower.Y - Radius;
-            bounds.Width = size.X;
-            bounds.Height = size.Y;
+            bounds.X = lowerX - Radius;
+            bounds.Y = lowerY - Radius;
+            bounds.Width = sizeX;
+            bounds.Height = sizeY;
             return bounds;
         }
         

@@ -2,15 +2,24 @@
 using Engine.Physics.Components;
 using Microsoft.Xna.Framework;
 
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
+
 namespace EnginePhysicsTests.Tests
 {
-    sealed class EdgeBenchmark : AbstractTest
+    internal sealed class EdgeBenchmark : AbstractTest
     {
         private int _count;
 
         private const float W = 1.0f;
+
         private const float T = 2.0f;
+
         private static readonly float B = W / (2.0f + (float)Math.Sqrt(T));
+
         private static readonly float S = (float)Math.Sqrt(T) * B;
 
         private static readonly Vector2[] PolyShape = new[]
@@ -60,7 +69,7 @@ namespace EnginePhysicsTests.Tests
 
                 Manager.AddPolygon(vertices: PolyShape,
                                    type: Body.BodyType.Dynamic,
-                                   worldPosition: new Vector2(x, y),
+                                   worldPosition: new WorldPoint(x, y),
                                    density: 20, friction: 0.3f);
             }
         }

@@ -11,11 +11,9 @@ using Microsoft.Xna.Framework;
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
 #endif
 
@@ -333,8 +331,10 @@ namespace Engine.Physics.Components
             for (var i = 1; i < Count; ++i)
             {
                 var v = transform.ToGlobal(Vertices[i]);
-                lower = WorldPoint.Min(lower, v);
-                upper = WorldPoint.Max(upper, v);
+                lower.X = (lower.X < v.X) ? lower.X : v.X;
+                lower.Y = (lower.Y < v.Y) ? lower.Y : v.Y;
+                upper.X = (upper.X > v.X) ? upper.X : v.X;
+                upper.Y = (upper.Y > v.Y) ? upper.Y : v.Y;
             }
 
             Vector2 size;

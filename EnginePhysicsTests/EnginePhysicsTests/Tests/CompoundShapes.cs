@@ -1,9 +1,15 @@
 ﻿using Engine.Physics.Components;
 using Microsoft.Xna.Framework;
 
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
+
 namespace EnginePhysicsTests.Tests
 {
-    sealed class CompoundShapes : AbstractTest
+    internal sealed class CompoundShapes : AbstractTest
     {
         protected override void Create()
         {
@@ -15,8 +21,8 @@ namespace EnginePhysicsTests.Tests
                                                type: Body.BodyType.Dynamic,
                                                localPosition: new Vector2(-0.5f, 0.5f),
                                                worldPosition:
-                                                   new Vector2((float)Random.NextDouble(-0.1f, 0.1f) + 5.0f,
-                                                               1.05f + 2.5f * i),
+                                                   new WorldPoint((float)Random.NextDouble(-0.1f, 0.1f) + 5.0f,
+                                                                  1.05f + 2.5f * i),
                                                worldAngle: (float)Random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
                                                density: 2);
                 Manager.AttachCircle(circle,
@@ -26,7 +32,7 @@ namespace EnginePhysicsTests.Tests
 
             for (var i = 0; i < 10; ++i)
             {
-                var position = new Vector2((float)Random.NextDouble(-0.1f, 0.1f) - 5.0f, 1.05f + 2.5f * i);
+                var position = new WorldPoint((float)Random.NextDouble(-0.1f, 0.1f) - 5.0f, 1.05f + 2.5f * i);
                 var box = Manager.AddRectangle(width: 0.5f, height: 1f,
                                                type: Body.BodyType.Dynamic,
                                                worldPosition: position,
@@ -41,7 +47,8 @@ namespace EnginePhysicsTests.Tests
 
             {
                 var xf1 = Matrix.CreateRotationZ(0.3524f * MathHelper.Pi);
-                xf1.Translation = new Vector3(Vector2.Transform(Vector2.UnitX, Quaternion.CreateFromRotationMatrix(xf1)), 0);
+                xf1.Translation = new Vector3(
+                    Vector2.Transform(Vector2.UnitX, Quaternion.CreateFromRotationMatrix(xf1)), 0);
                 var triangle1 = new[]
                 {
                     Vector2.Transform(new Vector2(-1.0f, 0.0f), xf1),
@@ -50,7 +57,8 @@ namespace EnginePhysicsTests.Tests
                 };
 
                 var xf2 = Matrix.CreateRotationZ(-0.3524f * MathHelper.Pi);
-                xf2.Translation = new Vector3(Vector2.Transform(-Vector2.UnitX, Quaternion.CreateFromRotationMatrix(xf2)), 0);
+                xf2.Translation =
+                    new Vector3(Vector2.Transform(-Vector2.UnitX, Quaternion.CreateFromRotationMatrix(xf2)), 0);
                 var triangle2 = new[]
                 {
                     Vector2.Transform(new Vector2(-1.0f, 0.0f), xf2),
@@ -64,7 +72,7 @@ namespace EnginePhysicsTests.Tests
 
                     var shape = Manager.AddPolygon(triangle1,
                                                    type: Body.BodyType.Dynamic,
-                                                   worldPosition: new Vector2(x, 2.05f + 2.5f * i),
+                                                   worldPosition: new WorldPoint(x, 2.05f + 2.5f * i),
                                                    density: 2);
                     Manager.AttachPolygon(shape, triangle2,
                                           density: 2);
@@ -74,7 +82,7 @@ namespace EnginePhysicsTests.Tests
             {
                 var entity = Manager.AddRectangle(width: 3, height: 0.3f,
                                                   type: Body.BodyType.Dynamic,
-                                                  worldPosition: new Vector2(0, 2),
+                                                  worldPosition: new WorldPoint(0, 2),
                                                   density: 4);
                 Manager.AttachRectangle(entity,
                                         width: 0.3f, height: 5.4f,

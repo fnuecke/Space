@@ -12,13 +12,9 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
-using WorldBounds = Engine.FarMath.FarRectangle;
 #else
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using WorldBounds = Engine.Math.RectangleF;
 #endif
 
 namespace Engine.Physics.Detail.Contacts
@@ -156,7 +152,7 @@ namespace Engine.Physics.Detail.Contacts
             if (Manifold.PointCount < 1)
             {
                 normal = Vector2.Zero;
-                points = new FixedArray2<Vector2>();
+                points = new FixedArray2<WorldPoint>();
                 return;
             }
 
@@ -205,9 +201,9 @@ namespace Engine.Physics.Detail.Contacts
                     normal = Vector2.UnitX;
                     var pointA = xfA.ToGlobal(manifold.LocalPoint);
                     var pointB = xfB.ToGlobal(manifold.Points[0].LocalPoint);
-                    if (WorldPoint.DistanceSquared(pointA, pointB) > Settings.Epsilon * Settings.Epsilon)
+                    if (((Vector2)(pointB - pointA)).LengthSquared() > Settings.Epsilon * Settings.Epsilon)
                     {
-                        normal = pointB - pointA;
+                        normal = (Vector2)(pointB - pointA);
                         normal.Normalize();
                     }
 

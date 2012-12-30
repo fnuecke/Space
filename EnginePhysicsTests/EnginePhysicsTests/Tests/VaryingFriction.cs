@@ -1,9 +1,15 @@
 ﻿using Engine.Physics.Components;
 using Microsoft.Xna.Framework;
 
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
+
 namespace EnginePhysicsTests.Tests
 {
-    sealed class VaryingFriction : AbstractTest
+    internal sealed class VaryingFriction : AbstractTest
     {
         protected override void Create()
         {
@@ -38,7 +44,7 @@ namespace EnginePhysicsTests.Tests
             {
                 Manager.AddRectangle(width: 1, height: 1,
                                      type: Body.BodyType.Dynamic,
-                                     worldPosition: new Vector2(-15.0f + 4.0f * i, 28.0f),
+                                     worldPosition: new WorldPoint(-15.0f + 4.0f * i, 28.0f),
                                      density: 25,
                                      friction: frictions[i]);
             }

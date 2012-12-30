@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectGuid>{5AAEB62A-1CA3-45E7-8E71-12DEC5F9B65B}</ProjectGuid>
+    <ProjectGuid>{6EC688B2-76A7-4C91-A07C-53BA8E45C341}</ProjectGuid>
     <ProjectTypeGuids>{6D335F3A-9D43-41b4-9D22-F6F17C4BE596};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -14,7 +14,7 @@
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
     <XnaProfile>Reach</XnaProfile>
-    <XnaCrossPlatformGroupID>8fda596f-d4aa-4009-bba0-083842e29d39</XnaCrossPlatformGroupID>
+    <XnaCrossPlatformGroupID>6a048ec3-78d9-436e-8124-1d8297298f93</XnaCrossPlatformGroupID>
     <XnaOutputType>Game</XnaOutputType>
     <ApplicationIcon>Game.ico</ApplicationIcon>
     <Thumbnail>GameThumbnail.png</Thumbnail>
@@ -39,7 +39,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS FARMATH</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -80,29 +80,61 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractTest.cs" />
-    <Compile Include="DebugPhysicsRenderSystem.cs" />
-    <Compile Include="GameResource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>GameResource.resx</DependentUpon>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\AbstractTest.cs">
+      <Link>AbstractTest.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\DebugPhysicsRenderSystem.cs">
+      <Link>DebugPhysicsRenderSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\GameResource.Designer.cs">
+      <Link>GameResource.Designer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Program.cs">
+      <Link>Program.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\TestRunner.cs">
+      <Link>TestRunner.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\AddPair.cs">
+      <Link>Tests\AddPair.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\BulletTest.cs">
+      <Link>Tests\BulletTest.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\CharacterCollision.cs">
+      <Link>Tests\CharacterCollision.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\CompoundShapes.cs">
+      <Link>Tests\CompoundShapes.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\Confined.cs">
+      <Link>Tests\Confined.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\ContinuousTest.cs">
+      <Link>Tests\ContinuousTest.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\EdgeBenchmark.cs">
+      <Link>Tests\EdgeBenchmark.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\EdgeBenchmarkWithCircles.cs">
+      <Link>Tests\EdgeBenchmarkWithCircles.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\Pyramid.cs">
+      <Link>Tests\Pyramid.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\SphereStack.cs">
+      <Link>Tests\SphereStack.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\VaryingFriction.cs">
+      <Link>Tests\VaryingFriction.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\VaryingRestitution.cs">
+      <Link>Tests\VaryingRestitution.cs</Link>
+    </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\VerticalStack.cs">
+      <Link>Tests\VerticalStack.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="TestRunner.cs" />
-    <Compile Include="Tests\AddPair.cs" />
-    <Compile Include="Tests\BulletTest.cs" />
-    <Compile Include="Tests\CharacterCollision.cs" />
-    <Compile Include="Tests\CompoundShapes.cs" />
-    <Compile Include="Tests\Confined.cs" />
-    <Compile Include="Tests\ContinuousTest.cs" />
-    <Compile Include="Tests\EdgeBenchmarkWithCircles.cs" />
-    <Compile Include="Tests\EdgeBenchmark.cs" />
-    <Compile Include="Tests\Pyramid.cs" />
-    <Compile Include="Tests\SphereStack.cs" />
-    <Compile Include="Tests\VaryingFriction.cs" />
-    <Compile Include="Tests\VaryingRestitution.cs" />
-    <Compile Include="Tests\VerticalStack.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
@@ -136,6 +168,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\EnginePhysicsTests\EnginePhysicsTests\GameResource.resx">
+      <Link>GameResource.resx</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
       <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
       <Name>Engine.ComponentSystem.Common</Name>
@@ -144,9 +181,13 @@
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\EnginePhysics\Engine.Physics.csproj">
-      <Project>{69F7346B-8904-4AEA-BA38-0F5D5BAEDD3A}</Project>
-      <Name>Engine.Physics</Name>
+    <ProjectReference Include="..\..\EngineFarMath\Engine.FarMath.csproj">
+      <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
+      <Name>Engine.FarMath</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EngineFarPhysics\Engine.FarPhysics.csproj">
+      <Project>{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}</Project>
+      <Name>Engine.FarPhysics</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\EngineRandom\Engine.Random.csproj">
       <Project>{ABEE1E15-1CDA-4BD1-B37B-3500D27A8A7E}</Project>
@@ -160,15 +201,6 @@
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="GameResource.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>GameResource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ConsoleFont.xnb" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />

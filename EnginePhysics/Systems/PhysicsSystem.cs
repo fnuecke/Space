@@ -4,7 +4,6 @@ using System.Linq;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.Math;
 using Engine.Physics.Components;
 using Engine.Physics.Detail;
 using Engine.Physics.Detail.Collision;
@@ -15,10 +14,14 @@ using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
+using Engine.FarMath;
+
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
+using Engine.Math;
+
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
@@ -161,9 +164,9 @@ namespace Engine.Physics.Systems
         /// body (and the index system only tracks complete entities).
         /// </summary>
 #if FARMATH
-        private IIndex<int, RectangleF, WorldPoint> _index = new SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
+        private IIndex<int, WorldBounds, WorldPoint> _index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
 #else
-        private IIndex<int, RectangleF, WorldPoint> _index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
+        private IIndex<int, WorldBounds, WorldPoint> _index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
 #endif
 
         /// <summary>
@@ -278,7 +281,7 @@ namespace Engine.Physics.Systems
         /// </summary>
         /// <param name="point">The point in simulation space.</param>
         /// <returns>The point in screen space.</returns>
-        public static WorldPoint ToScreenUnits(WorldPoint point)
+        public static Vector2 ToScreenUnits(Vector2 point)
         {
             return point * 100f;
         }
@@ -302,7 +305,7 @@ namespace Engine.Physics.Systems
         /// </summary>
         /// <param name="point">The point in screen space.</param>
         /// <returns>The point in simulation space.</returns>
-        public static WorldPoint ToSimulationUnits(WorldPoint point)
+        public static Vector2 ToSimulationUnits(Vector2 point)
         {
             return point * (1f / 100f);
         }
@@ -382,7 +385,7 @@ namespace Engine.Physics.Systems
         /// <param name="bounds">The new bounds of the fixture.</param>
         /// <param name="delta">How much the fixture has moved.</param>
         /// <param name="fixtureId">The id of the fixture.</param>
-        internal void UpdateIndex(RectangleF bounds, Vector2 delta, int fixtureId)
+        internal void UpdateIndex(WorldBounds bounds, Vector2 delta, int fixtureId)
         {
             if (_index.Update(bounds, delta, fixtureId))
             {
@@ -1449,7 +1452,11 @@ namespace Engine.Physics.Systems
             var indexCount = packet.ReadInt32();
             for (var i = 0; i < indexCount; i++)
             {
+#if FARMATH
+                var bounds = packet.ReadFarRectangle();
+#else
                 var bounds = packet.ReadRectangleF();
+#endif
                 var id = packet.ReadInt32();
                 _index.Add(bounds, id);
             }
@@ -1497,7 +1504,11 @@ namespace Engine.Physics.Systems
 
             var copy = (PhysicsSystem)base.NewInstance();
 
-            copy._index = new DynamicQuadTree<int>(16, 64);
+#if FARMATH
+            copy._index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
+#else
+            copy._index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
+#endif
             copy._changed = new HashSet<int>();
             copy._contacts = new Contact[0];
             copy._edges = new ContactEdge[0];

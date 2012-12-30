@@ -6,11 +6,9 @@ using Microsoft.Xna.Framework;
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
-using WorldBounds = Engine.FarMath.FarRectangle;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using WorldBounds = Engine.Math.RectangleF;
 #endif
 
 namespace Engine.Physics.Detail.Collision
@@ -597,9 +595,7 @@ namespace Engine.Physics.Detail.Collision
             simplex.WriteCache(ref cache);
 
             // Prepare output.
-            WorldPoint pointA, pointB;
-            simplex.GetWitnessPoints(out pointA, out pointB);
-            return WorldPoint.Distance(pointA, pointB);
+            return simplex.GetWitnessPointDistance();
         }
 
         private struct Simplex
@@ -696,31 +692,21 @@ namespace Engine.Physics.Detail.Collision
                 }
             }
 
-            public void GetWitnessPoints(out WorldPoint pA, out WorldPoint pB)
+            public float GetWitnessPointDistance()
             {
                 switch (Count)
                 {
-                    case 0:
-                        throw new ArgumentOutOfRangeException();
-
                     case 1:
-                        pA = Vertices.Item1.VertexA;
-                        pB = Vertices.Item1.VertexB;
-                        break;
+                        return ((Vector2)(Vertices.Item1.VertexB - Vertices.Item1.VertexA)).Length();
 
                     case 2:
-                        pA = Vertices.Item1.Alpha * Vertices.Item1.VertexA +
-                             Vertices.Item2.Alpha * Vertices.Item2.VertexA;
-                        pB = Vertices.Item1.Alpha * Vertices.Item1.VertexB +
-                             Vertices.Item2.Alpha * Vertices.Item2.VertexB;
-                        break;
+                        return ((Vector2)((Vertices.Item1.Alpha * Vertices.Item1.VertexB +
+                                           Vertices.Item2.Alpha * Vertices.Item2.VertexB) -
+                                          (Vertices.Item1.Alpha * Vertices.Item1.VertexA +
+                                           Vertices.Item2.Alpha * Vertices.Item2.VertexA))).Length();
 
                     case 3:
-                        pA = Vertices.Item1.Alpha * Vertices.Item1.VertexA +
-                             Vertices.Item2.Alpha * Vertices.Item2.VertexA +
-                             Vertices.Item3.Alpha * Vertices.Item3.VertexA;
-                        pB = pA;
-                        break;
+                        return 0;
 
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -731,9 +717,6 @@ namespace Engine.Physics.Detail.Collision
             {
                 switch (Count)
                 {
-                    case 0:
-                        throw new ArgumentOutOfRangeException();
-
                     case 1:
                         return 0.0f;
 

@@ -1,9 +1,15 @@
 ﻿using Engine.Physics.Components;
 using Microsoft.Xna.Framework;
 
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
+
 namespace EnginePhysicsTests.Tests
 {
-    sealed class ContinuousTest : AbstractTest
+    internal sealed class ContinuousTest : AbstractTest
     {
         private Body _body;
 
@@ -18,7 +24,7 @@ namespace EnginePhysicsTests.Tests
             {
                 _body = Manager.AddRectangle(width: 4, height: 0.2f,
                                              type: Body.BodyType.Dynamic,
-                                             worldPosition: new Vector2(0, 20),
+                                             worldPosition: new WorldPoint(0, 20),
                                              density: 1);
 
                 //m_angularVelocity = 46.661274f;
@@ -27,9 +33,9 @@ namespace EnginePhysicsTests.Tests
             }
         }
 
-        void Launch()
+        private void Launch()
         {
-            _body.SetTransform(new Vector2(0.0f, 20.0f), 0.0f);
+            _body.SetTransform(new WorldPoint(0.0f, 20.0f), 0.0f);
             _body.LinearVelocity = new Vector2(0.0f, -100.0f);
             _body.AngularVelocity = (float)Random.NextDouble(-50.0f, 50.0f);
         }

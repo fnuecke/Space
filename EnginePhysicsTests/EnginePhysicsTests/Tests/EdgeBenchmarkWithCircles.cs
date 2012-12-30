@@ -2,9 +2,15 @@
 using Engine.Physics.Components;
 using Microsoft.Xna.Framework;
 
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
+
 namespace EnginePhysicsTests.Tests
 {
-    sealed class EdgeBenchmarkWithCircles : AbstractTest
+    internal sealed class EdgeBenchmarkWithCircles : AbstractTest
     {
         private int _count;
 
@@ -43,7 +49,7 @@ namespace EnginePhysicsTests.Tests
 
                 Manager.AddCircle(radius: 0.5f,
                                   type: Body.BodyType.Dynamic,
-                                  worldPosition: new Vector2(x, y),
+                                  worldPosition: new WorldPoint(x, y),
                                   density: 20, friction: 0.3f);
             }
         }

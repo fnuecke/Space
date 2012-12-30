@@ -3,11 +3,18 @@ using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Physics.Systems;
+using Engine.Physics.Tests;
 using EnginePhysicsTests.Tests;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
 
 namespace EnginePhysicsTests
 {
@@ -139,7 +146,7 @@ namespace EnginePhysicsTests
 
             _manager.AddSystem(_physics = new PhysicsSystem(1 / 60f, new Vector2(0, -10f)));
             _manager.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
-            _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new Vector2(0, -12)});
+            _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
             _renderer.RenderFixtures = true;
 
@@ -298,7 +305,7 @@ R            - Reload current test (keeping pause state).");
             _physics.Gravity = new Vector2(0, -10);
             if (reset)
             {
-                _renderer.Offset = new Vector2(0, -12);
+                _renderer.Offset = new WorldPoint(0, -12);
                 _renderer.Scale = 0.1f;
             }
 

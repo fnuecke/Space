@@ -1,19 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Detail.Contacts;
 using Microsoft.Xna.Framework;
-
-#if FARMATH
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Engine.FarMath.FarPosition;
-using WorldBounds = Engine.FarMath.FarRectangle;
-#else
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using WorldBounds = Engine.Math.RectangleF;
-#endif
 
 namespace Engine.Physics.Detail
 {

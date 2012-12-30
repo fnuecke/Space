@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectGuid>{69F7346B-8904-4AEA-BA38-0F5D5BAEDD3A}</ProjectGuid>
+    <ProjectGuid>{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}</ProjectGuid>
     <ProjectTypeGuids>{6D335F3A-9D43-41b4-9D22-F6F17C4BE596};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -14,7 +14,7 @@
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
     <XnaProfile>Reach</XnaProfile>
-    <XnaCrossPlatformGroupID>84263680-a703-4d41-ab1d-8e1f71f9842e</XnaCrossPlatformGroupID>
+    <XnaCrossPlatformGroupID>22767e62-613c-4ed0-ae79-e9f59e57ca55</XnaCrossPlatformGroupID>
     <XnaOutputType>Library</XnaOutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -22,14 +22,13 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS FARMATH FARMATH_AUTO_NORMALIZE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>x86</PlatformTarget>
     <XnaCompressContent>false</XnaCompressContent>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -42,12 +41,9 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>x86</PlatformTarget>
     <XnaCompressContent>true</XnaCompressContent>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="mscorlib">
       <Private>False</Private>
@@ -61,33 +57,85 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\Body.cs" />
-    <Compile Include="Components\Chain.cs" />
-    <Compile Include="Components\CircleFixture.cs" />
-    <Compile Include="Components\EdgeFixture.cs" />
-    <Compile Include="Components\Factory.cs" />
-    <Compile Include="Components\Fixture.cs" />
-    <Compile Include="Components\PolygonFixture.cs" />
-    <Compile Include="Detail\Collision\TimeOfImpact.cs" />
-    <Compile Include="Detail\Collision\Manifold.cs" />
-    <Compile Include="Detail\FixedArray.cs" />
-    <Compile Include="Detail\Math\Transform.cs" />
-    <Compile Include="Detail\Math\Vector2.cs" />
-    <Compile Include="Messages\BeginContact.cs" />
-    <Compile Include="Messages\EndContact.cs" />
+    <Compile Include="..\EnginePhysics\Components\Body.cs">
+      <Link>Components\Body.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Components\Chain.cs">
+      <Link>Components\Chain.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Components\CircleFixture.cs">
+      <Link>Components\CircleFixture.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Components\EdgeFixture.cs">
+      <Link>Components\EdgeFixture.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Components\Factory.cs">
+      <Link>Components\Factory.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Components\Fixture.cs">
+      <Link>Components\Fixture.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Components\PolygonFixture.cs">
+      <Link>Components\PolygonFixture.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Collision\CollideCircle.cs">
+      <Link>Detail\Collision\CollideCircle.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Collision\CollideEdge.cs">
+      <Link>Detail\Collision\CollideEdge.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Collision\CollidePolygon.cs">
+      <Link>Detail\Collision\CollidePolygon.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Collision\CollideUtil.cs">
+      <Link>Detail\Collision\CollideUtil.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Collision\Manifold.cs">
+      <Link>Detail\Collision\Manifold.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Collision\TimeOfImpact.cs">
+      <Link>Detail\Collision\TimeOfImpact.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Contacts\Contact.cs">
+      <Link>Detail\Contacts\Contact.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Contacts\ContactSolver.cs">
+      <Link>Detail\Contacts\ContactSolver.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\FixedArray.cs">
+      <Link>Detail\FixedArray.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Island.cs">
+      <Link>Detail\Island.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Math\Sweep.cs">
+      <Link>Detail\Math\Sweep.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Math\Transform.cs">
+      <Link>Detail\Math\Transform.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Math\Vector2.cs">
+      <Link>Detail\Math\Vector2.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\Settings.cs">
+      <Link>Detail\Settings.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Detail\TimeStep.cs">
+      <Link>Detail\TimeStep.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Messages\BeginContact.cs">
+      <Link>Messages\BeginContact.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Messages\EndContact.cs">
+      <Link>Messages\EndContact.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Systems\AbstractDebugPhysicsRenderSystem.cs">
+      <Link>Systems\AbstractDebugPhysicsRenderSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Systems\PhysicsSystem.cs">
+      <Link>Systems\PhysicsSystem.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Detail\Collision\CollideCircle.cs" />
-    <Compile Include="Detail\Collision\CollideEdge.cs" />
-    <Compile Include="Detail\Collision\CollidePolygon.cs" />
-    <Compile Include="Detail\Collision\CollideUtil.cs" />
-    <Compile Include="Detail\Contacts\ContactSolver.cs" />
-    <Compile Include="Detail\Contacts\Contact.cs" />
-    <Compile Include="Detail\Island.cs" />
-    <Compile Include="Systems\AbstractDebugPhysicsRenderSystem.cs" />
-    <Compile Include="Systems\PhysicsSystem.cs" />
-    <Compile Include="Detail\Math\Sweep.cs" />
-    <Compile Include="Detail\Settings.cs" />
-    <Compile Include="Detail\TimeStep.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
@@ -102,6 +150,14 @@
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineFarCollections\Engine.FarCollections.csproj">
+      <Project>{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}</Project>
+      <Name>Engine.FarCollections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
+      <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
+      <Name>Engine.FarMath</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
       <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>

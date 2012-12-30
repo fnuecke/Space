@@ -1,9 +1,15 @@
 ﻿using Engine.Physics.Components;
 using Microsoft.Xna.Framework;
 
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
+
 namespace EnginePhysicsTests.Tests
 {
-    class SphereStack : AbstractTest
+    internal class SphereStack : AbstractTest
     {
         protected override void Create()
         {
@@ -14,7 +20,7 @@ namespace EnginePhysicsTests.Tests
             {
                 var sphere = Manager.AddCircle(radius: 1,
                                                type: Body.BodyType.Dynamic,
-                                               worldPosition: new Vector2(0, 4.0f + 3.0f * i),
+                                               worldPosition: new WorldPoint(0, 4.0f + 3.0f * i),
                                                density: 1);
                 sphere.LinearVelocity = new Vector2(0.0f, -50.0f);
             }

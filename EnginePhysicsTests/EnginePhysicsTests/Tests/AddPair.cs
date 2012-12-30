@@ -2,9 +2,15 @@
 using Engine.Physics.Systems;
 using Microsoft.Xna.Framework;
 
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
+
 namespace EnginePhysicsTests.Tests
 {
-    sealed class AddPair : AbstractTest
+    internal sealed class AddPair : AbstractTest
     {
         public override bool StartPaused
         {
@@ -26,15 +32,15 @@ namespace EnginePhysicsTests.Tests
             {
                 Manager.AddCircle(radius: 0.1f,
                                   type: Body.BodyType.Dynamic,
-                                  worldPosition: new Vector2((float)Random.NextDouble(minX, maxX),
-                                                             (float)Random.NextDouble(minY, maxY)),
+                                  worldPosition: new WorldPoint((float)Random.NextDouble(minX, maxX),
+                                                                (float)Random.NextDouble(minY, maxY)),
                                   density: 0.01f);
             }
 
             {
                 var box = Manager.AddRectangle(width: 3, height: 3,
                                                type: Body.BodyType.Dynamic,
-                                               worldPosition: new Vector2(-40, 5),
+                                               worldPosition: new WorldPoint(-40, 5),
                                                isBullet: true,
                                                density: 1);
                 box.LinearVelocity = new Vector2(150, 0);

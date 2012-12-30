@@ -7,13 +7,9 @@ using Engine.Physics.Detail.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
-using WorldBounds = Engine.FarMath.FarRectangle;
 #else
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using WorldBounds = Engine.Math.RectangleF;
 #endif
 
 namespace Engine.Physics.Detail.Contacts
@@ -102,10 +98,8 @@ namespace Engine.Physics.Detail.Contacts
                 vc.InvInertiaB = bodyB.InverseInertia;
                 vc.ContactIndex = i;
                 vc.PointCount = contact.Manifold.PointCount;
-                vc.K.ex = Vector2.Zero;
-                vc.K.ey = Vector2.Zero;
-                vc.NormalMass.ex = Vector2.Zero;
-                vc.NormalMass.ey = Vector2.Zero;
+                vc.K = Mat22.Zero;
+                vc.NormalMass = Mat22.Zero;
 
                 var pc = _positionConstraints[i];
                 pc.IndexA = bodyA.IslandIndex;
@@ -250,10 +244,10 @@ namespace Engine.Physics.Detail.Contacts
                     if (k11 * k11 < maxConditionNumber * (k11 * k22 - k12 * k12))
                     {
                         // K is safe to invert.
-                        vc.K.ex.X = k11;
-                        vc.K.ex.Y = k12;
-                        vc.K.ey.X = k12;
-                        vc.K.ey.Y = k22;
+                        vc.K.Column1.X = k11;
+                        vc.K.Column1.Y = k12;
+                        vc.K.Column2.X = k12;
+                        vc.K.Column2.Y = k22;
                         vc.NormalMass = vc.K.GetInverse();
                     }
                     else
@@ -497,7 +491,7 @@ namespace Engine.Physics.Detail.Contacts
                         //
                         x.X = - cp1.NormalMass * b.X;
                         x.Y = 0.0f;
-                        vn2 = vc.K.ex.Y * x.X + b.Y;
+                        vn2 = vc.K.Column1.Y * x.X + b.Y;
 
                         if (x.X >= 0.0f && vn2 >= 0.0f)
                         {
@@ -538,7 +532,7 @@ namespace Engine.Physics.Detail.Contacts
                         //
                         x.X = 0.0f;
                         x.Y = - cp2.NormalMass * b.Y;
-                        vn1 = vc.K.ey.X * x.Y + b.X;
+                        vn1 = vc.K.Column2.X * x.Y + b.X;
 
                         if (x.Y >= 0.0f && vn1 >= 0.0f)
                         {
@@ -647,10 +641,10 @@ namespace Engine.Physics.Detail.Contacts
                 {
                     var pointA = xfA.ToGlobal(pc.LocalPoint);
                     var pointB = xfB.ToGlobal(pc.LocalPoints[0]);
-                    normal = pointB - pointA;
+                    normal = (Vector2)(pointB - pointA);
                     normal.Normalize();
                     point = 0.5f * (pointA + pointB);
-                    separation = Vector2.Dot(pointB - pointA, normal) - pc.RadiusA - pc.RadiusB;
+                    separation = Vector2.Dot((Vector2)(pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
                 }
                     break;
 

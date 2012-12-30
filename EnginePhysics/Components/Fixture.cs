@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Math;
 using Engine.Physics.Detail.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
@@ -9,11 +8,10 @@ using Microsoft.Xna.Framework;
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
+using Engine.Math; //< For RectangleF Serializer and Packet extension methods.
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
 #endif
 
@@ -268,7 +266,7 @@ namespace Engine.Physics.Components
         internal void Synchronize(WorldTransform transform1, WorldTransform transform2)
         {
             // Compute an AABB that covers the swept shape (may miss some rotation effect).
-            var bounds = RectangleF.Union(ComputeBounds(transform1), ComputeBounds(transform2));
+            var bounds = WorldBounds.Union(ComputeBounds(transform1), ComputeBounds(transform2));
 
             // Compute the displacement of the shape.
             var delta = (Vector2)(transform2.Translation - transform1.Translation);

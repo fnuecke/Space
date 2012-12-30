@@ -3,13 +3,13 @@ using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
+using Engine.FarMath; //< For Serializer and Packetizer extension methods.
+
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
-using WorldBounds = Engine.FarMath.FarRectangle;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using WorldBounds = Engine.Math.RectangleF;
 #endif
 
 namespace Engine.Physics.Detail.Math
@@ -124,8 +124,13 @@ namespace Engine.Physics.Detail.Math
         {
             Sweep result;
             result.LocalCenter = packet.ReadVector2();
+#if FARMATH
+            result.CenterOfMass0 = packet.ReadFarPosition();
+            result.CenterOfMass = packet.ReadFarPosition();
+#else
             result.CenterOfMass0 = packet.ReadVector2();
             result.CenterOfMass = packet.ReadVector2();
+#endif
             result.Angle0 = packet.ReadSingle();
             result.Angle = packet.ReadSingle();
             result.Alpha0 = packet.ReadSingle();

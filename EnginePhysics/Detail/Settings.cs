@@ -2,6 +2,10 @@
 
 namespace Engine.Physics.Detail
 {
+    /// <summary>
+    /// This class holds some global constants that control the behavior of
+    /// our physics simulation.
+    /// </summary>
     internal static class Settings
     {
         #region General

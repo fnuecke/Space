@@ -3,11 +3,16 @@ using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Systems;
 using Engine.Random;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
+#if FARMATH
+using LocalPoint = Microsoft.Xna.Framework.Vector2;
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using Microsoft.Xna.Framework;
+#endif
 
 namespace EnginePhysicsTests
 {
@@ -55,8 +60,7 @@ namespace EnginePhysicsTests
             get
             {
                 var mouse = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
-                var result = Renderer.ScreenToSimulation(mouse);
-                return result;
+                return Renderer.ScreenToSimulation(mouse);
             }
         }
 
@@ -230,7 +234,7 @@ namespace EnginePhysicsTests
             // Check for scrolling in the world.
             if (_dragging)
             {
-                Renderer.Offset += PhysicsSystem.ToSimulationUnits(delta) / Renderer.Scale;
+                Renderer.Offset += delta / Renderer.Scale;
             }
         }
 

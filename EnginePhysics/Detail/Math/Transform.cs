@@ -1,15 +1,14 @@
 ﻿using Engine.Serialization;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
+using Engine.FarMath; //< For Serializer and Packetizer extension methods.
+
 using WorldPoint = Engine.FarMath.FarPosition;
-using WorldBounds = Engine.FarMath.FarRectangle;
 #else
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
+using Engine.XnaExtensions;
+
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
-using WorldBounds = Engine.Math.RectangleF;
 #endif
 
 namespace Engine.Physics.Detail.Math
@@ -68,9 +67,9 @@ namespace Engine.Physics.Detail.Math
             Rotation result;
             result.Sin = -q.Sin;
             result.Cos = q.Cos;
-	        return result;
+            return result;
         }
-        
+
         /// <summary>
         /// Rotate a vector.
         /// </summary>
@@ -180,7 +179,7 @@ namespace Engine.Physics.Detail.Math
         /// <summary>
         /// The translation in world coordinates.
         /// </summary>
-        public Vector2 Translation;
+        public WorldPoint Translation;
 
         /// <summary>
         /// The global rotation.
@@ -192,9 +191,9 @@ namespace Engine.Physics.Detail.Math
         /// </summary>
         /// <param name="v">The local coordinate to transform.</param>
         /// <returns>The transformed coordinate (a global coordinate).</returns>
-        public Vector2 ToGlobal(Vector2 v)
+        public WorldPoint ToGlobal(Vector2 v)
         {
-            Vector2 result;
+            WorldPoint result;
             result.X = (Rotation.Cos * v.X - Rotation.Sin * v.Y) + Translation.X;
             result.Y = (Rotation.Sin * v.X + Rotation.Cos * v.Y) + Translation.Y;
             return result;
@@ -207,7 +206,7 @@ namespace Engine.Physics.Detail.Math
         /// <returns>
         /// The result of the inverse transform (a local coordiante).
         /// </returns>
-        public Vector2 ToLocal(Vector2 v)
+        public Vector2 ToLocal(WorldPoint v)
         {
             var px = (float)(v.X - Translation.X);
             var py = (float)(v.Y - Translation.Y);
@@ -231,9 +230,9 @@ namespace Engine.Physics.Detail.Math
             // v2 = A.q' * (B.q * v1 + B.p - A.p)
             //    = A.q' * B.q * v1 + A.q' * (B.p - A.p)
             LocalTransform result;
-	        result.Rotation = -Rotation * xf.Rotation;
-	        result.Translation = -Rotation * (Vector2)(xf.Translation - Translation);
-	        return result;
+            result.Rotation = -Rotation * xf.Rotation;
+            result.Translation = -Rotation * (Vector2)(xf.Translation - Translation);
+            return result;
         }
     }
 
@@ -242,33 +241,64 @@ namespace Engine.Physics.Detail.Math
     /// </summary>
     internal struct Mat22
     {
-        public Vector2 ex, ey;
+        /// <summary>
+        /// Gets the zero matrix.
+        /// </summary>
+        public static Mat22 Zero
+        {
+            get { return ImmutableZero; }
+        }
 
-	    public Mat22 GetInverse()
-	    {
-	        var a = ex.X;
-	        var b = ey.X;
-	        var c = ex.Y;
-            var d = ey.Y;
-		    Mat22 B;
-		    var det = a * d - b * c;
-		    if (det != 0.0f)
-		    {
-			    det = 1.0f / det;
-		    }
-		    B.ex.X =  det * d;	B.ey.X = -det * b;
-		    B.ex.Y = -det * c;	B.ey.Y =  det * a;
-		    return B;
-	    }
+        private static readonly Mat22 ImmutableZero = new Mat22
+        {
+            Column1 = Vector2.Zero,
+            Column2 = Vector2.Zero
+        };
 
+        /// <summary>
+        /// The columns of this matrix.
+        /// </summary>
+        public Vector2 Column1, Column2;
+
+        /// <summary>
+        /// Computes the inverse of this matrix.
+        /// </summary>
+        /// <returns>The inverse matrix.</returns>
+        public Mat22 GetInverse()
+        {
+            var a = Column1.X;
+            var b = Column2.X;
+            var c = Column1.Y;
+            var d = Column2.Y;
+
+            var det = a * d - b * c;
+            if (det == 0.0f)
+            {
+                return Zero;
+            }
+            det = 1.0f / det;
+
+            Mat22 result;
+            result.Column1.X = det * d;
+            result.Column2.X = -det * b;
+            result.Column1.Y = -det * c;
+            result.Column2.Y = det * a;
+            return result;
+        }
+
+        /// <summary>
         /// Multiply a matrix times a vector. If a rotation matrix is provided,
         /// then this transforms the vector from one frame to another.
-        public static Vector2 operator*(Mat22 A, Vector2 v)
-	    {
-	        Vector2 result;
-	        result.X = A.ex.X * v.X + A.ey.X * v.Y;
-	        result.Y = A.ex.Y * v.X + A.ey.Y * v.Y;
-	        return result;
+        /// </summary>
+        /// <param name="xf">The transformation matrix.</param>
+        /// <param name="v">The vector to transform.</param>
+        /// <returns></returns>
+        public static Vector2 operator *(Mat22 xf, Vector2 v)
+        {
+            Vector2 result;
+            result.X = xf.Column1.X * v.X + xf.Column2.X * v.Y;
+            result.Y = xf.Column1.Y * v.X + xf.Column2.Y * v.Y;
+            return result;
         }
     }
 
@@ -296,7 +326,11 @@ namespace Engine.Physics.Detail.Math
         public static WorldTransform ReadWorldTransform(this Packet packet)
         {
             WorldTransform result;
+#if FARMATH
+            result.Translation = packet.ReadFarPosition();
+#else
             result.Translation = packet.ReadVector2();
+#endif
             result.Rotation = packet.ReadRotation();
             return result;
         }

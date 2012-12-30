@@ -103,6 +103,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Physics", "EnginePhy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Physics.Tests", "EnginePhysicsTests\EnginePhysicsTests\Engine.Physics.Tests.csproj", "{5AAEB62A-1CA3-45E7-8E71-12DEC5F9B65B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarPhysics", "EngineFarPhysics\Engine.FarPhysics.csproj", "{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarPhysics.Tests", "EngineFarPhysicsTests\EngineFarPhysicsTests\Engine.FarPhysics.Tests.csproj", "{6EC688B2-76A7-4C91-A07C-53BA8E45C341}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (TSS Threading)|Any CPU = Debug (TSS Threading)|Any CPU
@@ -1171,6 +1175,46 @@ Global
 		{5AAEB62A-1CA3-45E7-8E71-12DEC5F9B65B}.Release|Mixed Platforms.Build.0 = Release|x86
 		{5AAEB62A-1CA3-45E7-8E71-12DEC5F9B65B}.Release|x86.ActiveCfg = Release|x86
 		{5AAEB62A-1CA3-45E7-8E71-12DEC5F9B65B}.Release|x86.Build.0 = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug (TSS Threading)|Mixed Platforms.ActiveCfg = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug (TSS Threading)|Mixed Platforms.Build.0 = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug|x86.ActiveCfg = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Debug|x86.Build.0 = Debug|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release (TSS Threading)|Mixed Platforms.ActiveCfg = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release (TSS Threading)|Mixed Platforms.Build.0 = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release (TSS Threading)|x86.Build.0 = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release|Any CPU.ActiveCfg = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release|Mixed Platforms.Build.0 = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release|x86.ActiveCfg = Release|x86
+		{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}.Release|x86.Build.0 = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug (TSS Threading)|Mixed Platforms.ActiveCfg = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug (TSS Threading)|Mixed Platforms.Build.0 = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug|x86.ActiveCfg = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Debug|x86.Build.0 = Debug|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release (TSS Threading)|Mixed Platforms.ActiveCfg = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release (TSS Threading)|Mixed Platforms.Build.0 = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release (TSS Threading)|x86.Build.0 = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release|Any CPU.ActiveCfg = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release|Mixed Platforms.Build.0 = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release|x86.ActiveCfg = Release|x86
+		{6EC688B2-76A7-4C91-A07C-53BA8E45C341}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
