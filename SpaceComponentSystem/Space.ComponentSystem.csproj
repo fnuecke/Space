@@ -155,6 +155,7 @@
     <Compile Include="Systems\FloatingTextSystem.cs" />
     <Compile Include="Systems\FreezeOnHitSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />
+    <Compile Include="Systems\InformationDisplaySystem.cs" />
     <Compile Include="Systems\LocalPlayerSystem.cs" />
     <Compile Include="Systems\OrbitRenderSystem.cs" />
     <Compile Include="Systems\OverTimeDamageApplyingSystem.cs" />
@@ -180,6 +181,7 @@
     <Compile Include="Systems\TestObjectRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Systems\WeaponControlSystem.cs" />
+    <Compile Include="Util\IInformation.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
     <Compile Include="Factories\SensorFactory.cs" />

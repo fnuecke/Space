@@ -5,6 +5,8 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Systems;
+using Space.ComponentSystem.Util;
 
 namespace Space.ComponentSystem.Components
 {
@@ -13,7 +15,7 @@ namespace Space.ComponentSystem.Components
     /// facade to centralize common tasks for retrieving information on
     /// ships.
     /// </summary>
-    public sealed class ShipInfo : Component
+    public sealed class ShipInfo : Component,IInformation
     {
         #region Type ID
 
@@ -34,6 +36,22 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
+        //standard initialization
+        public ShipInfo Initialize()
+        {
+            if (Manager == null)
+            {
+                return this;
+            } //we dont know if this is a player ship... therefore just add it and later say not display          
+            var Info = (InformationDisplaySystem)Manager.GetSystem(InformationDisplaySystem.TypeId);
+            if (Info != null)
+            {
+                 Info.addInformation(this);
+
+            }
+            return this;
+        }
+        
         /// <summary>
         /// Initialize the component by using another instance of its type.
         /// </summary>
@@ -394,5 +412,28 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        string[] IInformation.getDisplayText()
+        {
+            return ToString().Split(',');
+        }
+
+        Color IInformation.getDisplayColor()
+        {
+            return Color.LightSalmon;
+        }
+
+        bool IInformation.shallDraw()
+        {
+             var avatar = (Avatar)Manager.GetComponent(Entity,Avatar.TypeId);
+            if(avatar!=null)
+            {
+               if (avatar.PlayerNumber+1 == ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

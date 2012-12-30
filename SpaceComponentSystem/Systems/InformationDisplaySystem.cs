@@ -1,0 +1,156 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Engine.ComponentSystem.Systems;
+using Microsoft.Xna.Framework.Graphics;
+using Engine.ComponentSystem.Common.Messages;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Util;
+
+namespace Space.ComponentSystem.Systems
+{
+    public class InformationDisplaySystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+        #region Fields
+        public bool Enabled { get; set; }
+        /// <summary>
+        /// The sprite batch to render textures into.
+        /// </summary>
+        protected SpriteBatch SpriteBatch;
+
+        protected SpriteFont Font;
+
+        protected List<IInformation> Informations = new List<IInformation>();
+        #endregion
+
+
+        #region Logic
+
+        public void addInformation(IInformation info)
+        {
+            if (Informations.Contains(info))
+            {
+                //throw exception?
+                return;
+            }
+            Informations.Add(info);
+
+        }
+
+
+        public void removeInformation(IInformation info)
+        {
+            if (Informations.Contains(info))
+            {
+                Informations.Remove(info);
+                return;
+            }
+            //Throw exception?
+        }
+
+        /// <summary>
+        /// Handle a message of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public void Receive<T>(T message) where T : struct
+        {
+            {
+                var cm = message as GraphicsDeviceCreated?;
+                if (cm != null)
+                {
+                    LoadContent(cm.Value.Content, cm.Value.Graphics);
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceDisposing?;
+                if (cm != null)
+                {
+                    UnloadContent();
+                }
+            }
+            {
+                var cm = message as GraphicsDeviceReset?;
+                if (cm != null)
+                {
+                    UnloadContent();
+                    LoadContent(cm.Value.Content, cm.Value.Graphics);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the graphics device has been (re)created, and assets
+        /// should be loaded.
+        /// </summary>
+        /// <param name="content">The content manager.</param>
+        /// <param name="graphics">The graphics device service.</param>
+        protected virtual void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
+        {
+            SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
+            Font = content.Load<SpriteFont>("Fonts/visitor");
+           
+        }
+
+        /// <summary>
+        /// Called when the graphics device is being disposed, and
+        /// any assets manually allocated should be disposed.
+        /// </summary>
+        protected virtual void UnloadContent()
+        {
+            if (SpriteBatch != null)
+            {
+                SpriteBatch.Dispose();
+                SpriteBatch = null;
+                
+            }
+        }
+        /// <summary>
+        /// Draw all Informations that are in the list. Remove the ones we don't need
+        /// </summary>
+        /// <param name="frame"></param>
+        /// <param name="elapsedMilliseconds"></param>
+        public void Draw(long frame, float elapsedMilliseconds)
+        {
+            
+            SpriteBatch.Begin();
+            int rowNumber = 0;
+            
+            var newList = new List<IInformation>();
+            foreach (var info in Informations)
+            {
+                if (!info.shallDraw())//check if we shall draw this information
+                {
+                    continue;
+                }
+                
+                var output = info.getDisplayText();//get text
+                foreach (var text in output)
+                {
+                    var position = new Vector2(100, 20 + 20 * rowNumber++);
+                    Vector2 FontOrigin = Font.MeasureString(text) / 2;
+                    SpriteBatch.DrawString(Font, text, position, info.getDisplayColor());
+                }
+                newList.Add(info);//only keep things to draw (may be sometime different aproach but for now this is the best I can think of)
+            }
+            Informations = newList;
+            
+
+            SpriteBatch.End();
+        }
+
+        #endregion
+
+        
+    }
+}

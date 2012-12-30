@@ -269,7 +269,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/ship", true);
 
             // Controllers for maneuvering and shooting.
-            manager.AddComponent<ShipInfo>(entity);
+            manager.AddComponent<ShipInfo>(entity).Initialize();
 
             // Create equipment slot.
             manager.AddComponent<SpaceItemSlot>(entity).Initialize(Fuselage.TypeId);
