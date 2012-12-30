@@ -22,7 +22,7 @@ namespace Engine.Physics.Tests
     /// </summary>
     internal sealed class TestRunner : Game
     {
-        #region Fields
+        #region Constants
 
         /// <summary>
         /// The list of known tests between we can cycle.
@@ -42,6 +42,15 @@ namespace Engine.Physics.Tests
             new CharacterCollision(),
             new VerticalStack(),
         };
+
+        /// <summary>
+        /// The updates per second to perform on the simulation.
+        /// </summary>
+        private const float UpdatesPerSecond = 60;
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// The graphics device manager we use.
@@ -108,6 +117,11 @@ namespace Engine.Physics.Tests
         /// </summary>
         private bool _showHelp = true;
 
+        /// <summary>
+        /// The accumulated elapsed time since the last simulation update.
+        /// </summary>
+        private float _elapsedTimeAccumulator;
+
         #endregion
 
         /// <summary>
@@ -145,7 +159,7 @@ namespace Engine.Physics.Tests
             _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
             _font = new ResourceContentManager(Services, GameResource.ResourceManager).Load<SpriteFont>("ConsoleFont");
 
-            _manager.AddSystem(_physics = new PhysicsSystem(1 / 60f, new Vector2(0, -10f)));
+            _manager.AddSystem(_physics = new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
             _manager.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
             _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
@@ -262,9 +276,16 @@ R            - Reload current test (keeping pause state).");
             // Allow simulating?
             if ((_running || _runOnce) && _manager != null)
             {
-                _manager.Update(0);
+                _elapsedTimeAccumulator += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (_elapsedTimeAccumulator >= 1000f / UpdatesPerSecond)
+                {
+                    _manager.Update(0);
+                    _runOnce = false;
+                    _elapsedTimeAccumulator = 0;
+                }
+                // Always update the tests, regardless of tick rate, for
+                // proper text rendering.
                 Tests[_currentTest].Update();
-                _runOnce = false;
             }
         }
 
