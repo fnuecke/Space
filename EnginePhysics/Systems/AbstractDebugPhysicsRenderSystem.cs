@@ -152,6 +152,16 @@ namespace Engine.Physics.Systems
         /// </summary>
         protected abstract WorldTransform GetTransform();
 
+        protected virtual IEnumerable<Body> GetVisibleBodies()
+        {
+            return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Bodies;
+        }
+
+        protected virtual IEnumerable<PhysicsSystem.IContact> GetVisibleContacts()
+        {
+            return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Contacts;
+        }
+
         #endregion
 
         #region Accessors
@@ -265,7 +275,7 @@ namespace Engine.Physics.Systems
             // Render fixtures.
             if (RenderFixtures || RenderCenterOfMass)
             {
-                foreach (var body in physics.Bodies)
+                foreach (var body in GetVisibleBodies())
                 {
                     // Get model transform based on body transform.
 
@@ -297,7 +307,7 @@ namespace Engine.Physics.Systems
 #else
                 _primitiveBatch.Begin(view);
 #endif
-                foreach (var contact in physics.Contacts)
+                foreach (var contact in GetVisibleContacts())
                 {
 #if FARMATH
                     DrawContact(contact, v => PhysicsSystem.ToScreenUnits((Vector2)(v + view.Translation)));
