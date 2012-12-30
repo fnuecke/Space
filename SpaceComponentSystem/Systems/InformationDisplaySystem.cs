@@ -13,6 +13,9 @@ using Engine.ComponentSystem.RPG.Components;
 
 namespace Space.ComponentSystem.Systems
 {
+    /// <summary>
+    /// This System is used to easily display text. A System that wants to be displayed must Implement the IInformation interface.
+    /// </summary>
     public class InformationDisplaySystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
@@ -24,20 +27,34 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
         #region Fields
+
+        /// <summary>
+        /// Wether this System shall be called for rendering or not
+        /// </summary>
         public bool Enabled { get; set; }
         /// <summary>
         /// The sprite batch to render textures into.
         /// </summary>
         protected SpriteBatch SpriteBatch;
 
+        /// <summary>
+        /// The Font to render with
+        /// </summary>
         protected SpriteFont Font;
 
+        /// <summary>
+        /// A List of all IInformations to display. Currently not working
+        /// </summary>
         protected List<IInformation> Informations = new List<IInformation>();//not used maybe some different aproach?
         #endregion
 
 
         #region Logic
 
+        /// <summary>
+        /// Adds an IInformation to the list
+        /// </summary>
+        /// <param name="info"></param>
         public void addInformation(IInformation info)
         {
             if (Informations.Contains(info))
@@ -49,7 +66,10 @@ namespace Space.ComponentSystem.Systems
 
         }
 
-
+        /// <summary>
+        /// Removes an IInformation from the List of displayed Informations
+        /// </summary>
+        /// <param name="info"></param>
         public void removeInformation(IInformation info)
         {
             if (Informations.Contains(info))
@@ -101,7 +121,7 @@ namespace Space.ComponentSystem.Systems
         {
             SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
             Font = content.Load<SpriteFont>("Fonts/visitor");
-           
+
         }
 
         /// <summary>
@@ -114,11 +134,11 @@ namespace Space.ComponentSystem.Systems
             {
                 SpriteBatch.Dispose();
                 SpriteBatch = null;
-                
+
             }
         }
         /// <summary>
-        /// Draw all Informations that are in the list. Remove the ones we don't need
+        /// Draw all Informations 
         /// </summary>
         /// <param name="frame"></param>
         /// <param name="elapsedMilliseconds"></param>
@@ -143,7 +163,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     continue;
                 }
-                
+
                 var output = info.getDisplayText();//get text
                 foreach (var text in output)
                 {
@@ -153,14 +173,11 @@ namespace Space.ComponentSystem.Systems
                 }
 
             }
-            
-            
-
             SpriteBatch.End();
         }
 
         #endregion
 
-        
+
     }
 }
