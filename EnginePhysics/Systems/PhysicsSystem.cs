@@ -166,7 +166,8 @@ namespace Engine.Physics.Systems
 #if FARMATH
         private IIndex<int, WorldBounds, WorldPoint> _index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
 #else
-        private IIndex<int, WorldBounds, WorldPoint> _index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
+        private IIndex<int, WorldBounds, WorldPoint> _index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension,
+                                                                                       Settings.AabbMultiplier);
 #endif
 
         /// <summary>
@@ -325,8 +326,7 @@ namespace Engine.Physics.Systems
                 // Get the fixture and its body.
                 var fixture = Manager.GetComponentById(value) as Fixture;
                 System.Diagnostics.Debug.Assert(fixture != null);
-                var body = Manager.GetComponent(fixture.Entity, Body.TypeId) as Body;
-                System.Diagnostics.Debug.Assert(body != null);
+                var body = fixture.Body;
 
                 // Check if it's an actual hit.
                 if (fixture.TestPoint(body.GetLocalPoint(worldPoint)))
@@ -416,7 +416,7 @@ namespace Engine.Physics.Systems
             }
             else if (fixture != null)
             {
-                body = Manager.GetComponent(fixture.Entity, Body.TypeId) as Body;
+                body = fixture.Body;
                 if (body == null)
                 {
                     throw new InvalidOperationException("Fixtures must be added to entities that already have a body.");
@@ -465,11 +465,9 @@ namespace Engine.Physics.Systems
 
             if (body != null)
             {
-                // Remove all fixtures if a body is removed.
-                foreach (Fixture f in Manager.GetComponents(component.Entity, Fixture.TypeId).ToList())
-                {
-                    Manager.RemoveComponent(f);
-                }
+                // Remove all fixtures if a body is removed (to list because the
+                // enumeration otherwise changes while being enumerated).
+                body.Fixtures.ToList().ForEach(Manager.RemoveComponent);
             }
             else if (fixture != null)
             {
@@ -622,11 +620,8 @@ namespace Engine.Physics.Systems
                 message.Contact = _contacts[contact];
                 Manager.SendMessage(message);
 
-                var bodyA = Manager.GetComponent(fixtureA.Entity, Body.TypeId) as Body;
-                var bodyB = Manager.GetComponent(fixtureB.Entity, Body.TypeId) as Body;
-
-                System.Diagnostics.Debug.Assert(bodyA != null);
-                System.Diagnostics.Debug.Assert(bodyB != null);
+                var bodyA = fixtureA.Body;
+                var bodyB = fixtureB.Body;
 
                 bodyA.IsAwake = true;
                 bodyB.IsAwake = true;
@@ -709,29 +704,25 @@ namespace Engine.Physics.Systems
         private void UpdateContacts()
         {
             // Check the list of contacts for actual collisions.
-            for (var contact = _usedContacts; contact >= 0;)
+            for (var contactId = _usedContacts; contactId >= 0;)
             {
-                var fixtureIdA = _contacts[contact].FixtureIdA;
-                var fixtureIdB = _contacts[contact].FixtureIdB;
+                var contact = _contacts[contactId];
 
                 // Get the actual components.
-                var fixtureA = Manager.GetComponentById(fixtureIdA) as Fixture;
-                var fixtureB = Manager.GetComponentById(fixtureIdB) as Fixture;
-
-                System.Diagnostics.Debug.Assert(fixtureA != null);
-                System.Diagnostics.Debug.Assert(fixtureB != null);
+                var fixtureA = contact.FixtureA;
+                var fixtureB = contact.FixtureB;
 
                 // Get the actual collidable information for more filtering.
-                var bodyA = (Body)Manager.GetComponent(fixtureA.Entity, Body.TypeId);
-                var bodyB = (Body)Manager.GetComponent(fixtureB.Entity, Body.TypeId);
+                var bodyA = fixtureA.Body;
+                var bodyB = fixtureB.Body;
 
                 // See if the collision is still valid.
                 if (!bodyA.ShouldCollide(bodyB))
                 {
                     // No longer valid, free this contact.
-                    var oldContact = contact;
-                    contact = _contacts[contact].Next;
-                    FreeContact(oldContact);
+                    var oldContactId = contactId;
+                    contactId = contact.Next;
+                    FreeContact(oldContactId);
                     continue;
                 }
 
@@ -746,27 +737,32 @@ namespace Engine.Physics.Systems
                 if (!activeA && !activeB)
                 {
                     // Continue with next contact.
-                    contact = _contacts[contact].Next;
+                    contactId = contact.Next;
                     continue;
                 }
 
                 // Test for actual collision. First check via the index.
-                if (!_index[fixtureIdA].Intersects(_index[fixtureIdB]))
+                if (!_index[fixtureA.Id].Intersects(_index[fixtureB.Id]))
                 {
                     // Contact stopped being valid, free it.
-                    var oldContact = contact;
-                    contact = _contacts[contact].Next;
+                    var oldContact = contactId;
+                    contactId = contact.Next;
                     FreeContact(oldContact);
                     continue;
                 }
 
                 // Contact is still valid, continue with narrow phase, which tests
                 // for detailed collision based on the shapes of the fixtures, and
-                // computes the contact manifold.
-                _contacts[contact].Update(Manager, fixtureA, fixtureB, bodyA, bodyB);
+                // computes the contact manifold. We pass the proxy singletons along
+                // case we have sensors, which use the distance function to test for
+                // overlap. This way we don't have to keep static instances around
+                // yet also don't have to create new instance all the time -- which
+                // we want to avoid to allow running multiple simulations in parallel
+                // on different threads for example.
+                contact.Update(fixtureA, fixtureB, bodyA, bodyB, _proxyA, _proxyB);
 
                 // Continue with next contact.
-                contact = _contacts[contact].Next;
+                contactId = contact.Next;
             }
         }
 
@@ -801,8 +797,8 @@ namespace Engine.Physics.Systems
                     System.Diagnostics.Debug.Assert(fixtureB != null);
 
                     // Get the actual collidable information for more filtering.
-                    var bodyA = (Body)Manager.GetComponent(fixtureA.Entity, Body.TypeId);
-                    var bodyB = (Body)Manager.GetComponent(fixtureB.Entity, Body.TypeId);
+                    var bodyA = fixtureA.Body;
+                    var bodyB = fixtureB.Body;
 
                     // Skip if fixtures belong to the same body.
                     if (bodyA.Id == bodyB.Id)
@@ -831,9 +827,12 @@ namespace Engine.Physics.Systems
                     // Not known, create new contact.
                     AllocateContact(fixtureA, fixtureB);
 
-                    // Make sure the two involved bodies are awake.
-                    bodyA.IsAwake = true;
-                    bodyB.IsAwake = true;
+                    // Make sure the two involved bodies are awake if there's no sensor.
+                    if (!fixtureA._isSensor && !fixtureB._isSensor)
+                    {
+                        bodyA.IsAwake = true;
+                        bodyB.IsAwake = true;
+                    }
                 }
                 neighbors.Clear();
             }
@@ -893,7 +892,7 @@ namespace Engine.Physics.Systems
             // Make sure we have an island (may be lost during copying).
             if (_island == null)
             {
-                _island = new Island(Manager);
+                _island = new Island();
             }
 
             // Size the island for the worst case.
@@ -953,7 +952,7 @@ namespace Engine.Physics.Systems
                     // Search all contacts connected to this body. We store the start of the
                     // contact lists in the fixtures that the are related to, so we first
                     // need to iterate the fixtures.
-                    foreach (Fixture fixture in Manager.GetComponents(body.Entity, Fixture.TypeId))
+                    foreach (Fixture fixture in body.Fixtures)
                     {
                         // Then we loop the list of contact edges in the fixture.
                         for (var i = fixture.EdgeList; i >= 0; i = _edges[i].Next)
@@ -965,6 +964,13 @@ namespace Engine.Physics.Systems
                             if (!contact.IsEnabled ||
                                 !contact.IsTouching ||
                                 _island.IsProcessed(contact))
+                            {
+                                continue;
+                            }
+
+                            // Skip sensors.
+                            if (contact.FixtureA._isSensor ||
+                                contact.FixtureB._isSensor)
                             {
                                 continue;
                             }
@@ -1067,17 +1073,17 @@ namespace Engine.Physics.Systems
                     else
                     {
                         // Get actual fixture instances to get the actual bodies.
-                        var fA = Manager.GetComponentById(c.FixtureIdA) as Fixture;
-                        var fB = Manager.GetComponentById(c.FixtureIdB) as Fixture;
+                        var fA = c.FixtureA;
+                        var fB = c.FixtureB;
 
-                        System.Diagnostics.Debug.Assert(fA != null);
-                        System.Diagnostics.Debug.Assert(fB != null);
+                        // Skip sensors.
+                        if (fA._isSensor || fB._isSensor)
+                        {
+                            continue;
+                        }
 
-                        var bA = Manager.GetComponent(fA.Entity, Body.TypeId) as Body;
-                        var bB = Manager.GetComponent(fB.Entity, Body.TypeId) as Body;
-
-                        System.Diagnostics.Debug.Assert(bA != null);
-                        System.Diagnostics.Debug.Assert(bB != null);
+                        var bA = fA.Body;
+                        var bB = fB.Body;
 
                         var typeA = bA._type;
                         var typeB = bB._type;
@@ -1155,17 +1161,11 @@ namespace Engine.Physics.Systems
 
                 {
                     // Advance the bodies to the TOI.
-                    var fA = Manager.GetComponentById(minContact.FixtureIdA) as Fixture;
-                    var fB = Manager.GetComponentById(minContact.FixtureIdB) as Fixture;
+                    var fA = minContact.FixtureA;
+                    var fB = minContact.FixtureB;
 
-                    System.Diagnostics.Debug.Assert(fA != null);
-                    System.Diagnostics.Debug.Assert(fB != null);
-
-                    var bA = Manager.GetComponent(fA.Entity, Body.TypeId) as Body;
-                    var bB = Manager.GetComponent(fB.Entity, Body.TypeId) as Body;
-
-                    System.Diagnostics.Debug.Assert(bA != null);
-                    System.Diagnostics.Debug.Assert(bB != null);
+                    var bA = fA.Body;
+                    var bB = fB.Body;
 
                     var backupA = bA.Sweep;
                     var backupB = bB.Sweep;
@@ -1174,7 +1174,7 @@ namespace Engine.Physics.Systems
                     bB.Advance(minAlpha);
 
                     // The TOI contact likely has some new contact points.
-                    minContact.Update(Manager, fA, fB, bA, bB);
+                    minContact.Update(fA, fB, bA, bB, _proxyA, _proxyB);
                     minContact.HasCachedTOI = false;
                     ++minContact.ToiCount;
 
@@ -1228,7 +1228,7 @@ namespace Engine.Physics.Systems
                         body.SynchronizeFixtures();
 
                         // Invalidate all contact TOIs on this displaced body.
-                        foreach (Fixture fixture in Manager.GetComponents(body.Entity, Fixture.TypeId))
+                        foreach (Fixture fixture in body.Fixtures)
                         {
                             for (var edge = fixture.EdgeList; edge >= 0; edge = _edges[edge].Next)
                             {
@@ -1258,7 +1258,7 @@ namespace Engine.Physics.Systems
             }
 
             // Get all fixtures for this body.
-            foreach (Fixture fixture in Manager.GetComponents(body.Entity, Fixture.TypeId))
+            foreach (Fixture fixture in body.Fixtures)
             {
                 // Then we loop the list of contact edges in the fixtures.
                 for (var i = fixture.EdgeList; i >= 0; i = _edges[i].Next)
@@ -1284,16 +1284,20 @@ namespace Engine.Physics.Systems
                     var other = Manager.GetComponent(edge.Other, Body.TypeId) as Body;
 
                     System.Diagnostics.Debug.Assert(other != null);
-
-                    // Skip disabled bodies.
-                    if (!other.Enabled)
-                    {
-                        continue;
-                    }
+                    System.Diagnostics.Debug.Assert(other.Enabled, "Contact to disabled body.");
 
                     // Only add static, kinematic, or bullet bodies.
                     if (other._type == Body.BodyType.Dynamic &&
                         !body.IsBullet && !other.IsBullet)
+                    {
+                        continue;
+                    }
+
+                    var fA = contact.FixtureA;
+                    var fB = contact.FixtureB;
+
+                    // Skip sensors.
+                    if (fA._isSensor || fB._isSensor)
                     {
                         continue;
                     }
@@ -1305,20 +1309,8 @@ namespace Engine.Physics.Systems
                         other.Advance(minAlpha);
                     }
 
-                    // Update the contact points
-                    var fA = Manager.GetComponentById(contact.FixtureIdA) as Fixture;
-                    var fB = Manager.GetComponentById(contact.FixtureIdB) as Fixture;
-
-                    System.Diagnostics.Debug.Assert(fA != null);
-                    System.Diagnostics.Debug.Assert(fB != null);
-
-                    var bA = Manager.GetComponent(fA.Entity, Body.TypeId) as Body;
-                    var bB = Manager.GetComponent(fB.Entity, Body.TypeId) as Body;
-
-                    System.Diagnostics.Debug.Assert(bA != null);
-                    System.Diagnostics.Debug.Assert(bB != null);
-
-                    contact.Update(Manager, fA, fB, bA, bB);
+                    // Update the contact points.
+                    contact.Update(fA, fB, fA.Body, fB.Body, _proxyA, _proxyB);
 
                     // Was the contact disabled by the user?
                     if (!contact.IsEnabled)

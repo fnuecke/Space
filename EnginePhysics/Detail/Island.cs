@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Detail.Contacts;
 using Microsoft.Xna.Framework;
@@ -94,10 +93,9 @@ namespace Engine.Physics.Detail
         /// <summary>
         /// Initializes a new instance of the <see cref="Island"/> class.
         /// </summary>
-        /// <param name="manager">The manager.</param>
-        public Island(IManager manager)
+        public Island()
         {
-            _solver = new ContactSolver(manager, _contacts);
+            _solver = new ContactSolver(_contacts);
         }
 
         /// <summary>

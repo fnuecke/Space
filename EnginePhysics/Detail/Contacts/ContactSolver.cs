@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem;
-using Engine.Physics.Components;
+using Engine.Collections;
 using Engine.Physics.Detail.Collision;
 using Engine.Physics.Detail.Math;
 using Microsoft.Xna.Framework;
@@ -20,8 +19,6 @@ namespace Engine.Physics.Detail.Contacts
     /// </summary>
     internal sealed class ContactSolver
     {
-        private readonly IManager _manager;
-
         private readonly IList<Contact> _contacts;
 
         private ContactPositionConstraint[] _positionConstraints = new ContactPositionConstraint[0];
@@ -34,9 +31,8 @@ namespace Engine.Physics.Detail.Contacts
 
         private TimeStep _step;
 
-        public ContactSolver(IManager manager, IList<Contact> contacts)
+        public ContactSolver(IList<Contact> contacts)
         {
-            _manager = manager;
             _contacts = contacts;
         }
 
@@ -72,17 +68,11 @@ namespace Engine.Physics.Detail.Contacts
             {
                 var contact = _contacts[i];
 
-                var fixtureA = _manager.GetComponentById(contact.FixtureIdA) as Fixture;
-                var fixtureB = _manager.GetComponentById(contact.FixtureIdB) as Fixture;
+                var fixtureA = contact.FixtureA;
+                var fixtureB = contact.FixtureB;
 
-                System.Diagnostics.Debug.Assert(fixtureA != null);
-                System.Diagnostics.Debug.Assert(fixtureB != null);
-
-                var bodyA = _manager.GetComponent(fixtureA.Entity, Body.TypeId) as Body;
-                var bodyB = _manager.GetComponent(fixtureB.Entity, Body.TypeId) as Body;
-
-                System.Diagnostics.Debug.Assert(bodyA != null);
-                System.Diagnostics.Debug.Assert(bodyB != null);
+                var bodyA = fixtureA.Body;
+                var bodyB = fixtureB.Body;
 
                 var pointCount = contact.Manifold.PointCount;
                 System.Diagnostics.Debug.Assert(pointCount > 0);
@@ -470,15 +460,15 @@ namespace Engine.Physics.Detail.Contacts
 
 #if B2_DEBUG_SOLVER
     // Postconditions
-					            dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-					            dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
+                                dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
+                                dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
 
-					            // Compute normal velocity
-					            vn1 = b2Dot(dv1, normal);
-					            vn2 = b2Dot(dv2, normal);
+                                // Compute normal velocity
+                                vn1 = b2Dot(dv1, normal);
+                                vn2 = b2Dot(dv2, normal);
 
-					            b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-					            b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
+                                b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
+                                b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
             #endif
                             break;
                         }
@@ -513,12 +503,12 @@ namespace Engine.Physics.Detail.Contacts
 
 #if B2_DEBUG_SOLVER
     // Postconditions
-					            dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
+                                dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
 
-					            // Compute normal velocity
-					            vn1 = b2Dot(dv1, normal);
+                                // Compute normal velocity
+                                vn1 = b2Dot(dv1, normal);
                                 
-					            b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
+                                b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
 #endif
                             break;
                         }
@@ -554,12 +544,12 @@ namespace Engine.Physics.Detail.Contacts
 
 #if B2_DEBUG_SOLVER
     // Postconditions
-					            dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
+                                dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
 
-					            // Compute normal velocity
-					            vn2 = b2Dot(dv2, normal);
+                                // Compute normal velocity
+                                vn2 = b2Dot(dv2, normal);
 
-					            b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
+                                b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
             #endif
                             break;
                         }

@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bag.cs" />
+    <Compile Include="FixedArray.cs" />
     <Compile Include="IntersectionExtensions.cs">
       <SubType>Code</SubType>
     </Compile>

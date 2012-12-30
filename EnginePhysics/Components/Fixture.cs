@@ -10,7 +10,6 @@ using Microsoft.Xna.Framework;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
-using Engine.Math; //< For RectangleF Serializer and Packet extension methods.
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
 #endif
@@ -72,8 +71,33 @@ namespace Engine.Physics.Components
         #region Properties
 
         /// <summary>
+        /// Gets the body this fixture is attached to.
+        /// </summary>
+        public Body Body
+        {
+            get { return Manager.GetComponent(Entity, Body.TypeId) as Body; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is sensor
+        /// or not (solid or not). Changing this value will wake up the body.
+        /// </summary>
+        public bool IsSensor
+        {
+            get { return _isSensor; }
+            set
+            {
+                if (_isSensor != value)
+                {
+                    _isSensor = value;
+                    Body.IsAwake = true;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the density of this fixture. This will not automatically
-        /// adjust the mass of the body. You must call <see cref="Body.ResetMassData"/>Data
+        /// adjust the mass of the body. You must call <see cref="Components.Body.ResetMassData"/>
         /// to update the body's mass.
         /// </summary>
         public float Density
@@ -83,7 +107,7 @@ namespace Engine.Physics.Components
             {
                 System.Diagnostics.Debug.Assert(value >= 0);
 
-                if (((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked)
+                if (Simulation.IsLocked)
                 {
                     throw new InvalidOperationException("Cannot change density during update.");
                 }
@@ -101,7 +125,7 @@ namespace Engine.Physics.Components
             get { return _friction; }
             set
             {
-                if (((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked)
+                if (Simulation.IsLocked)
                 {
                     throw new InvalidOperationException("Cannot change friction during update.");
                 }
@@ -119,13 +143,21 @@ namespace Engine.Physics.Components
             get { return _restitution; }
             set
             {
-                if (((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked)
+                if (Simulation.IsLocked)
                 {
                     throw new InvalidOperationException("Cannot change restitution during update.");
                 }
 
                 _restitution = value;
             }
+        }
+
+        /// <summary>
+        /// Gets the physics system driving the simulation we're part of.
+        /// </summary>
+        private PhysicsSystem Simulation
+        {
+            get { return Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem; }
         }
 
         #endregion
@@ -149,6 +181,12 @@ namespace Engine.Physics.Components
         /// Start of the list of contacts this collidable is involved in.
         /// </summary>
         internal int EdgeList = -1;
+
+        /// <summary>
+        /// Whether this fixture is a sensor or not (solver won't try to handle
+        /// collisions).
+        /// </summary>
+        internal bool _isSensor;
 
         /// <summary>
         /// The density of the shape this fixture represents.
@@ -200,7 +238,7 @@ namespace Engine.Physics.Components
         /// <summary>
         /// Initialize the component with the specified values. Note that this
         /// does not automatically change the mass of the body. You have to call
-        /// <see cref="Body.ResetMassData"/> to update it.
+        /// <see cref="Components.Body.ResetMassData"/> to update it.
         /// </summary>
         /// <param name="density">The density.</param>
         /// <param name="friction">The friction.</param>
@@ -272,11 +310,7 @@ namespace Engine.Physics.Components
             var delta = (Vector2)(transform2.Translation - transform1.Translation);
 
             // Update the index.
-            var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-
-            System.Diagnostics.Debug.Assert(physics != null);
-
-            physics.UpdateIndex(bounds, delta, Id);
+            Simulation.UpdateIndex(bounds, delta, Id);
         }
 
         /// <summary>
@@ -284,13 +318,7 @@ namespace Engine.Physics.Components
         /// </summary>
         internal void Synchronize()
         {
-            var body = Manager.GetComponent(Entity, Body.TypeId) as Body;
-            var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-
-            System.Diagnostics.Debug.Assert(body != null);
-            System.Diagnostics.Debug.Assert(physics != null);
-
-            physics.UpdateIndex(ComputeBounds(body.Transform), Vector2.Zero, Id);
+            Simulation.UpdateIndex(ComputeBounds(Body.Transform), Vector2.Zero, Id);
         }
 
         #endregion

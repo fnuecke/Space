@@ -102,9 +102,6 @@
     <Compile Include="..\EnginePhysics\Detail\Contacts\ContactSolver.cs">
       <Link>Detail\Contacts\ContactSolver.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\FixedArray.cs">
-      <Link>Detail\FixedArray.cs</Link>
-    </Compile>
     <Compile Include="..\EnginePhysics\Detail\Island.cs">
       <Link>Detail\Island.cs</Link>
     </Compile>
@@ -128,6 +125,9 @@
     </Compile>
     <Compile Include="..\EnginePhysics\Messages\EndContact.cs">
       <Link>Messages\EndContact.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Messages\PreSolve.cs">
+      <Link>Messages\PreSolve.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Systems\AbstractDebugPhysicsRenderSystem.cs">
       <Link>Systems\AbstractDebugPhysicsRenderSystem.cs</Link>

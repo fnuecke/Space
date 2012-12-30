@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.Physics.Detail.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
@@ -404,6 +405,14 @@ namespace Engine.Physics.Components
         public float Inertia
         {
             get { return _inertia + _mass * Vector2.Dot(Sweep.LocalCenter, Sweep.LocalCenter); }
+        }
+
+        /// <summary>
+        /// Gets the list of fixtures attached to this body.
+        /// </summary>
+        public IEnumerable<Component> Fixtures
+        {
+            get { return Manager.GetComponents(Entity, Fixture.TypeId); }
         }
 
         #endregion
@@ -883,7 +892,7 @@ namespace Engine.Physics.Components
             Sweep.Angle = angle;
             Sweep.Angle0 = angle;
 
-            foreach (Fixture fixture in Manager.GetComponents(Entity, Fixture.TypeId))
+            foreach (Fixture fixture in Fixtures)
             {
                 fixture.Synchronize();
             }
@@ -973,16 +982,16 @@ namespace Engine.Physics.Components
 
             // Accumulate mass over all fixtures.
             var localCenter = Vector2.Zero;
-            foreach (Fixture f in Manager.GetComponents(Entity, Fixture.TypeId))
+            foreach (Fixture fixture in Fixtures)
             {
-                if (f.Density == 0)
+                if (fixture.Density == 0)
                 {
                     continue;
                 }
 
                 float mass, inertia;
                 Vector2 center;
-                f.GetMassData(out mass, out center, out inertia);
+                fixture.GetMassData(out mass, out center, out inertia);
                 _mass += mass;
                 localCenter += mass * center;
                 _inertia += inertia;
@@ -1050,7 +1059,7 @@ namespace Engine.Physics.Components
             xf0.Translation = Sweep.CenterOfMass0 - xf0.Rotation * Sweep.LocalCenter;
 
             // Update all fixtures on this body in the index.
-            foreach (Fixture fixture in Manager.GetComponents(Entity, Fixture.TypeId))
+            foreach (Fixture fixture in Fixtures)
             {
                 fixture.Synchronize(xf0, Transform);
             }

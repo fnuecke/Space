@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Engine.Collections;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Detail.Collision;
@@ -156,16 +156,13 @@ namespace Engine.Physics.Detail.Contacts
                 return;
             }
 
-            var bodyA = Manager.GetComponent(FixtureA.Entity, Body.TypeId) as Body;
-            var bodyB = Manager.GetComponent(FixtureB.Entity, Body.TypeId) as Body;
-
-            Debug.Assert(bodyA != null);
-            Debug.Assert(bodyB != null);
-
+            var bodyA = FixtureA.Body;
+            var bodyB = FixtureB.Body;
             var transformA = bodyA.Transform;
             var transformB = bodyB.Transform;
             var radiusA = FixtureA.Radius;
             var radiusB = FixtureB.Radius;
+
             FixedArray2<WorldPoint> worldPoints;
             ComputeWorldManifold(Manifold, transformA, radiusA, transformB, radiusB, out normal, out worldPoints);
             worldPoints.Count = Manifold.PointCount;
@@ -210,8 +207,8 @@ namespace Engine.Physics.Detail.Contacts
                     var cA = pointA + radiusA * normal;
                     var cB = pointB - radiusB * normal;
                     points.Item1 = 0.5f * (cA + cB);
-                }
                     break;
+                }
 
                 case Manifold.ManifoldType.FaceA:
                 {
@@ -225,8 +222,8 @@ namespace Engine.Physics.Detail.Contacts
                         var cB = clipPoint - radiusB * normal;
                         points[i] = 0.5f * (cA + cB);
                     }
-                }
                     break;
+                }
 
                 case Manifold.ManifoldType.FaceB:
                 {
@@ -243,8 +240,8 @@ namespace Engine.Physics.Detail.Contacts
 
                     // Ensure normal points from A to B.
                     normal = -normal;
-                }
                     break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -274,29 +271,54 @@ namespace Engine.Physics.Detail.Contacts
         /// <summary>
         /// Updates the contact manifold and touching status.
         /// </summary>
-        /// <param name="manager">The manager to send messages to (contact begin/end).</param>
         /// <param name="fixtureA">The first involved fixture.</param>
         /// <param name="fixtureB">The second involved fixture.</param>
         /// <param name="bodyA">The first involved body.</param>
         /// <param name="bodyB">The second involved body.</param>
-        public void Update(IManager manager, Fixture fixtureA, Fixture fixtureB, Body bodyA, Body bodyB)
+        /// <param name="proxyA">The distance proxy ro use for the first fixture.</param>
+        /// <param name="proxyB">The distance proxy ro use for the first fixture.</param>
+        /// <remarks>
+        /// We pass the proxy singletons along to avoid having to recreate them
+        /// or store static versions in the collision module. This is not exactly
+        /// nice, but at least it avoid running into issues when running multiple
+        /// simulations at a time (in different threads).
+        /// </remarks>
+        public void Update(Fixture fixtureA, Fixture fixtureB,
+                           Body bodyA, Body bodyB,
+                           Algorithms.DistanceProxy proxyA, Algorithms.DistanceProxy proxyB)
         {
             // Note: do not assume the fixture AABBs are overlapping or are valid.
             var oldManifold = Manifold;
 
             // Re-enable this contact.
             IsEnabled = true;
+            
+            // Check if a sensor is involved.
+            var sensor = fixtureA._isSensor || fixtureB._isSensor;
 
-            // Update the contact manifold and touching status.
-            if (ContactEvaluators[(int)_type](fixtureA, bodyA.Transform, fixtureB, bodyB.Transform, out Manifold))
+            // See how we need to update this contact.
+            bool nowTouching, wasTouching = IsTouching;
+            if (sensor)
             {
-                // The two are intersecting!
-                System.Diagnostics.Debug.Assert(Manifold.PointCount > 0);
+                // Sensors don't generate manifolds.
+                Manifold.PointCount = 0;
+
+                // Just check if the fixtures overlap.
+                proxyA.Set(fixtureA);
+                proxyB.Set(fixtureB);
+                nowTouching = Algorithms.TestOverlap(proxyA, proxyB,
+                                                     bodyA.Transform, bodyB.Transform);
+            }
+            else
+            {
+                // Update the contact manifold and touching status.
+                nowTouching = ContactEvaluators[(int)_type](fixtureA, bodyA.Transform,
+                                                            fixtureB, bodyB.Transform,
+                                                            out Manifold);
 
                 // Match old contact ids to new contact ids and copy the
                 // stored impulses to warm start the solver.
-                var i = 0;
-                do
+                for (var i = 0; i < Manifold.PointCount; ++i)
                 {
                     var p = Manifold.Points[i];
                     p.NormalImpulse = 0;
@@ -314,41 +336,42 @@ namespace Engine.Physics.Detail.Contacts
                     }
 
                     Manifold.Points[i] = p;
-                } while (++i < Manifold.PointCount);
+                }
 
-                // See if anything changed.
-                if (!IsTouching)
+                // Make sure the two involved bodies are awake if something changed.
+                if (nowTouching != wasTouching)
                 {
-                    // Got a new intersection.
-                    IsTouching = true;
-
-                    // Make sure the two involved bodies are awake.
                     bodyA.IsAwake = true;
                     bodyB.IsAwake = true;
-
-                    // Send message.
-                    BeginContact message;
-                    message.Contact = this;
-                    manager.SendMessage(message);
                 }
             }
-            else
+
+            // Update our flag.
+            IsTouching = nowTouching;
+
+            // See if anything changed.
+            if (!nowTouching && wasTouching)
             {
-                // Not intersecting. See if anything changed.
-                if (IsTouching)
-                {
-                    // Yes, and the contact was active, but is no longer.
-                    IsTouching = false;
+                // Yes, and the contact was active, but is no longer.
+                EndContact message;
+                message.Contact = this;
+                Manager.SendMessage(message);
+            }
+            else if (nowTouching && !wasTouching)
+            {
+                // Got a new intersection.
+                BeginContact message;
+                message.Contact = this;
+                Manager.SendMessage(message);
+            }
 
-                    // Make sure the two involved bodies are awake.
-                    bodyA.IsAwake = true;
-                    bodyB.IsAwake = true;
-
-                    // Send message.
-                    EndContact message;
-                    message.Contact = this;
-                    manager.SendMessage(message);
-                }
+            // Send presolve message if we're not a sensor.
+            if (!sensor && IsTouching)
+            {
+                PreSolve message;
+                message.Contact = this;
+                message.OldManifold = oldManifold;
+                Manager.SendMessage(message);
             }
         }
 

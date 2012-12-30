@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.Collections;
+using Engine.Physics.Detail.Math;
+using Microsoft.Xna.Framework;
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
@@ -8,8 +10,26 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Detail.Collision
 {
+    /// <summary>
+    /// Utility methods of the collision module.
+    /// </summary>
     internal static partial class Algorithms
     {
+        /// <summary>
+        /// Tests whether two shapes overlap, using their distance proxies.
+        /// </summary>
+        /// <param name="proxyA">The proxy for the first shape.</param>
+        /// <param name="proxyB">The proxy for the second shape.</param>
+        /// <param name="transformA">The transform of the first shape.</param>
+        /// <param name="transformB">The transform of the second shape.</param>
+        /// <returns></returns>
+        internal static bool TestOverlap(DistanceProxy proxyA, DistanceProxy proxyB,
+                                         WorldTransform transformA, WorldTransform transformB)
+        {
+            var cache = new SimplexCache {Count = 0};
+            return Distance(ref cache, proxyA, proxyB, transformA, transformB, true) < 10 * Settings.Epsilon;
+        }
+
         /// Clipping for contact manifolds.
         private static int ClipSegmentToLine(out FixedArray2<ClipVertex> vOut, FixedArray2<ClipVertex> vIn,
                                              Vector2 normal, float offset, int vertexIndexA)

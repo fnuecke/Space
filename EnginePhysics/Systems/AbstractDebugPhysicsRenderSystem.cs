@@ -338,13 +338,13 @@ namespace Engine.Physics.Systems
                 }
 
                 // Get all fixtures attached to this body.
-                foreach (Fixture component in Manager.GetComponents(body.Entity, Fixture.TypeId))
+                foreach (Fixture fixture in body.Fixtures)
                 {
-                    switch (component.Type)
+                    switch (fixture.Type)
                     {
                         case Fixture.FixtureType.Circle:
                         {
-                            var circle = component as CircleFixture;
+                            var circle = fixture as CircleFixture;
                             System.Diagnostics.Debug.Assert(circle != null);
                             _primitiveBatch.DrawSolidCircle(toScreen(circle.Center),
                                                             PhysicsSystem.ToScreenUnits(circle.Radius),
@@ -353,7 +353,7 @@ namespace Engine.Physics.Systems
                             break;
                         case Fixture.FixtureType.Edge:
                         {
-                            var edge = component as EdgeFixture;
+                            var edge = fixture as EdgeFixture;
                             System.Diagnostics.Debug.Assert(edge != null);
                             _primitiveBatch.DrawLine(toScreen(edge.Vertex1),
                                                      toScreen(edge.Vertex2),
@@ -362,7 +362,7 @@ namespace Engine.Physics.Systems
                             break;
                         case Fixture.FixtureType.Polygon:
                         {
-                            var polygon = component as PolygonFixture;
+                            var polygon = fixture as PolygonFixture;
                             System.Diagnostics.Debug.Assert(polygon != null);
                             _primitiveBatch.DrawFilledPolygon(polygon.Vertices
                                                                  .Take(polygon.Count)

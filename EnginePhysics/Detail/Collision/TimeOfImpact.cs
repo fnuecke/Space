@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Collections;
 using Engine.Physics.Components;
 using Engine.Physics.Detail.Math;
 using Microsoft.Xna.Framework;
@@ -500,7 +501,8 @@ namespace Engine.Physics.Detail.Collision
 
         private static float Distance(ref SimplexCache cache,
                                       DistanceProxy proxyA, DistanceProxy proxyB,
-                                      WorldTransform transformA, WorldTransform transformB)
+                                      WorldTransform transformA, WorldTransform transformB,
+                                      bool useRadii = false)
         {
             // Initialize the simplex.
             Simplex simplex;
@@ -595,7 +597,27 @@ namespace Engine.Physics.Detail.Collision
             simplex.WriteCache(ref cache);
 
             // Prepare output.
-            return simplex.GetWitnessPointDistance();
+            var distance = simplex.GetWitnessPointDistance();
+
+            // Apply radii if requested.
+            if (useRadii)
+            {
+                var rA = proxyA.Radius;
+                var rB = proxyB.Radius;
+
+                if (distance > rA + rB && distance > Settings.Epsilon)
+                {
+                    // Shapes are still not overlapped.
+                    return distance - (rA + rB);
+                }
+                else
+                {
+                    // Shapes are overlapped when radii are considered.
+                    return 0.0f;
+                }
+            }
+
+            return distance;
         }
 
         private struct Simplex

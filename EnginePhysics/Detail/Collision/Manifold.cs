@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Engine.Collections;
 using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;

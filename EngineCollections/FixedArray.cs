@@ -2,13 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Engine.Physics.Detail
+namespace Engine.Collections
 {
     /// <summary>
     /// Utility class providing a fixed size array as a struct.
     /// </summary>
     /// <typeparam name="T">The type stored in the array.</typeparam>
-    internal struct FixedArray2<T> : IList<T>
+    public struct FixedArray2<T> : IList<T>
     {
         /// <summary>
         /// The items of the array.
@@ -235,7 +235,7 @@ namespace Engine.Physics.Detail
     /// Utility class providing a fixed size array as a struct.
     /// </summary>
     /// <typeparam name="T">The type stored in the array.</typeparam>
-    internal struct FixedArray3<T> : IList<T>
+    public struct FixedArray3<T> : IList<T>
     {
         /// <summary>
         /// The items of the array.
