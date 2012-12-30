@@ -45,13 +45,10 @@
   <ItemGroup>
     <Compile Include="Base\Serialization\AbstractSerializationTest.cs" />
     <Compile Include="Base\Util\AbstractCopyableTest.cs" />
-    <Compile Include="ComponentSystem\Common\Components\AbstractCollidableSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\AbstractComponentSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\AbstractItemSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\AccelerationSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\AvatarSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Common\Components\CollidableBoxSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Common\Components\CollidableSphereSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\EllipsePathSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\ExpirationSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\FrictionSerializationTest.cs" />
@@ -62,7 +59,6 @@
     <Compile Include="ComponentSystem\Common\Systems\AbstractSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\AccelerationSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\AvatarSystemCopyTest.cs" />
-    <Compile Include="ComponentSystem\Common\Systems\CollisionSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\VelocitySystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\EllipsePathSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\ExpirationSystemCopyTest.cs" />

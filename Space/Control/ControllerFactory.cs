@@ -298,6 +298,8 @@ namespace Space.Control
                     new ShieldRenderSystem {Enabled = true},
                     new CameraCenteredParticleEffectSystem(simulationFps) {Enabled = true},
 
+                    new InformationDisplaySystem{Enabled =true},
+
                     // Perform post processing on the rendered scene.
                     new PostProcessingPostRenderSystem
                     {

@@ -5,6 +5,8 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Systems;
+using Space.ComponentSystem.Util;
 
 namespace Space.ComponentSystem.Components
 {
@@ -13,7 +15,7 @@ namespace Space.ComponentSystem.Components
     /// facade to centralize common tasks for retrieving information on
     /// ships.
     /// </summary>
-    public sealed class ShipInfo : Component
+    public sealed class ShipInfo : Component,IInformation
     {
         #region Type ID
 
@@ -34,6 +36,8 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
+    
+        
         /// <summary>
         /// Initialize the component by using another instance of its type.
         /// </summary>
@@ -394,5 +398,26 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        string[] IInformation.getDisplayText()
+        {
+            return ToString().Split(',');
+        }
+
+        Color IInformation.getDisplayColor()
+        {
+            return Color.LightSalmon;
+        }
+
+        bool IInformation.shallDraw()
+        {
+             
+               if (Entity == ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar)
+                {
+                    return true;
+                }
+            
+            return false;
+        }
     }
 }

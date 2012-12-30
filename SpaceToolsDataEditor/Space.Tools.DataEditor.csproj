@@ -291,6 +291,10 @@
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineFarPhysics\Engine.FarPhysics.csproj">
+      <Project>{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}</Project>
+      <Name>Engine.FarPhysics</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
       <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
       <Name>Engine.Graphics</Name>
