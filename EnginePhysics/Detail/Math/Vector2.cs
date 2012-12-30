@@ -15,7 +15,7 @@ namespace Engine.Physics.Detail.Math
         /// <returns>The cross product of the two.</returns>
         public static float Cross(Vector2 a, Vector2 b)
         {
-	        return a.X * b.Y - a.Y * b.X;
+            return a.X * b.Y - a.Y * b.X;
         }
 
         /// <summary>

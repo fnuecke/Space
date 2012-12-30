@@ -15,13 +15,11 @@ using Microsoft.Xna.Framework;
 
 #if FARMATH
 using Engine.FarMath;
-
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
 using Engine.Math;
-
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;

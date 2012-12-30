@@ -62,7 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\Body.cs" />
-    <Compile Include="Components\Chain.cs" />
     <Compile Include="Components\CircleFixture.cs" />
     <Compile Include="Components\EdgeFixture.cs" />
     <Compile Include="Components\Factory.cs" />

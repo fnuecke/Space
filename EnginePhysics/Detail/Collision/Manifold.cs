@@ -29,43 +29,43 @@ namespace Engine.Physics.Detail.Collision
         /// Possibly types of manifolds, i.e. what kind of overlap it
         /// represents (between what kind of shapes).
         /// </summary>
-	    public enum ManifoldType
-	    {
-		    Circles,
-		    FaceA,
-		    FaceB
-	    }
+        public enum ManifoldType
+        {
+            Circles,
+            FaceA,
+            FaceB
+        }
 
         /// <summary>
         /// The points of contact.
         /// </summary>
-	    public FixedArray2<ManifoldPoint> Points;
+        public FixedArray2<ManifoldPoint> Points;
 
         /// <summary>
-	    /// Usage depends on manifold type:
+        /// Usage depends on manifold type:
         /// -Circles: not used.
         /// -FaceA: the normal on polygonA.
         /// -FaceB: the normal on polygonB.
         /// </summary>
-	    public Vector2 LocalNormal;
+        public Vector2 LocalNormal;
 
-	    /// <summary>
-	    /// Usage depends on manifold type:
+        /// <summary>
+        /// Usage depends on manifold type:
         /// -Circles: the local center of circleA.
         /// -FaceA: the center of faceA.
         /// -FaceB: the center of faceB.
-	    /// </summary>
+        /// </summary>
         public LocalPoint LocalPoint;
 
         /// <summary>
         /// The type of this manifold.
         /// </summary>
-	    public ManifoldType Type;
+        public ManifoldType Type;
 
         /// <summary>
         /// The number of manifold points.
         /// </summary>
-	    public int PointCount;
+        public int PointCount;
     }
     
     /// <summary>
@@ -90,17 +90,17 @@ namespace Engine.Physics.Detail.Collision
         /// <summary>
         /// The non-penetration impulse.
         /// </summary>
-	    public float NormalImpulse;
+        public float NormalImpulse;
 
         /// <summary>
         /// The friction impulse.
         /// </summary>
-	    public float TangentImpulse;
+        public float TangentImpulse;
 
         /// <summary>
         /// Uniquely identifies a contact point between two shapes.
         /// </summary>
-	    public ContactID Id;
+        public ContactID Id;
     }
     
     /// <summary>
@@ -129,31 +129,31 @@ namespace Engine.Physics.Detail.Collision
         /// <summary>
         /// Possible feature types.
         /// </summary>
-	    public enum FeatureType
-	    {
-		    Vertex = 0,
-		    Face = 1
-	    }
+        public enum FeatureType
+        {
+            Vertex = 0,
+            Face = 1
+        }
 
         /// <summary>
         /// Feature index on shapeA.
         /// </summary>
-	    public byte IndexA;
+        public byte IndexA;
 
         /// <summary>
         /// Feature index on shapeB.
         /// </summary>
-	    public byte IndexB;
+        public byte IndexB;
 
         /// <summary>
         /// The feature type on shapeA.
         /// </summary>
-	    public byte TypeA;
+        public byte TypeA;
 
         /// <summary>
         /// The feature type on shapeB.
         /// </summary>
-	    public byte TypeB;
+        public byte TypeB;
     }
 
     internal static class ManifoldPacketExtensions

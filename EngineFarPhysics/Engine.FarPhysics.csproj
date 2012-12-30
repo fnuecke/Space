@@ -60,9 +60,6 @@
     <Compile Include="..\EnginePhysics\Components\Body.cs">
       <Link>Components\Body.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Components\Chain.cs">
-      <Link>Components\Chain.cs</Link>
-    </Compile>
     <Compile Include="..\EnginePhysics\Components\CircleFixture.cs">
       <Link>Components\CircleFixture.cs</Link>
     </Compile>

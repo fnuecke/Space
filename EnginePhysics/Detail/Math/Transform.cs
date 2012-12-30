@@ -3,11 +3,9 @@ using Microsoft.Xna.Framework;
 
 #if FARMATH
 using Engine.FarMath; //< For Serializer and Packetizer extension methods.
-
 using WorldPoint = Engine.FarMath.FarPosition;
 #else
 using Engine.XnaExtensions;
-
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
