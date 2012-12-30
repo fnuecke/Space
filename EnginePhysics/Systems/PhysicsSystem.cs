@@ -413,6 +413,11 @@ namespace Engine.Physics.Systems
                 {
                     throw new InvalidOperationException("There must only be one body component per entity.");
                 }
+
+                // All green, we can save our base class some work by just
+                // passing this on in here (because it'll check again if
+                // the component is a body).
+                base.OnComponentAdded(component);
             }
             else if (fixture != null)
             {
@@ -420,12 +425,6 @@ namespace Engine.Physics.Systems
                 if (body == null)
                 {
                     throw new InvalidOperationException("Fixtures must be added to entities that already have a body.");
-                }
-
-                // Recompute mass for our body, if we have density.
-                if (fixture.Density > 0)
-                {
-                    body.ResetMassData();
                 }
 
                 // Add it to our index.
@@ -443,9 +442,6 @@ namespace Engine.Physics.Systems
                     _newFixtureAdded = true;
                 }
             }
-
-            // All checks passed, continue with parent.
-            base.OnComponentAdded(component);
         }
 
         /// <summary>
@@ -461,13 +457,18 @@ namespace Engine.Physics.Systems
                 throw new InvalidOperationException("Must not add or remove bodies and fixtures during update.");
             }
 
-            base.OnComponentRemoved(component);
 
             if (body != null)
             {
                 // Remove all fixtures if a body is removed (to list because the
-                // enumeration otherwise changes while being enumerated).
+                // enumeration otherwise changes while being enumerated). This
+                // will in turn delete all contacts with this body.
                 body.Fixtures.ToList().ForEach(Manager.RemoveComponent);
+
+                // Remove from parent list. As with the added handler, we save
+                // our base class some work because it only cares for body
+                // components anyway, so we just pass this on in here.
+                base.OnComponentRemoved(component);
             }
             else if (fixture != null)
             {
@@ -607,11 +608,8 @@ namespace Engine.Physics.Systems
         private void FreeContact(int contact)
         {
             // Get the actual components.
-            var fixtureA = Manager.GetComponentById(_contacts[contact].FixtureIdA) as Fixture;
-            var fixtureB = Manager.GetComponentById(_contacts[contact].FixtureIdB) as Fixture;
-
-            System.Diagnostics.Debug.Assert(fixtureA != null);
-            System.Diagnostics.Debug.Assert(fixtureB != null);
+            var fixtureA = _contacts[contact].FixtureA;
+            var fixtureB = _contacts[contact].FixtureB;
 
             // Send message if this contact was active.
             if (_contacts[contact].IsTouching)
@@ -620,11 +618,12 @@ namespace Engine.Physics.Systems
                 message.Contact = _contacts[contact];
                 Manager.SendMessage(message);
 
-                var bodyA = fixtureA.Body;
-                var bodyB = fixtureB.Body;
-
-                bodyA.IsAwake = true;
-                bodyB.IsAwake = true;
+                // Wake up the bodies, if there's no sensor.
+                if (!fixtureA._isSensor && !fixtureB._isSensor)
+                {
+                    fixtureA.Body.IsAwake = true;
+                    fixtureB.Body.IsAwake = true;
+                }
             }
 
             // Remove from local edge lists.

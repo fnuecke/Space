@@ -40,6 +40,7 @@ namespace Engine.Physics.Tests
             new EdgeBenchmark(),
             new EdgeBenchmarkWithCircles(),
             new CharacterCollision(),
+            new VerticalStack(),
         };
 
         /// <summary>
