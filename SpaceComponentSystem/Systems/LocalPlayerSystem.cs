@@ -3,7 +3,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.Session;
 
 namespace Space.ComponentSystem.Systems
-
 {
     /// <summary>
     /// Utility class providing information on who the local player is
