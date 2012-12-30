@@ -36,21 +36,7 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        //standard initialization
-        public ShipInfo Initialize()
-        {
-            if (Manager == null)
-            {
-                return this;
-            } //we dont know if this is a player ship... therefore just add it and later say not display          
-            var Info = (InformationDisplaySystem)Manager.GetSystem(InformationDisplaySystem.TypeId);
-            if (Info != null)
-            {
-                 Info.addInformation(this);
-
-            }
-            return this;
-        }
+    
         
         /// <summary>
         /// Initialize the component by using another instance of its type.
@@ -425,14 +411,12 @@ namespace Space.ComponentSystem.Components
 
         bool IInformation.shallDraw()
         {
-             var avatar = (Avatar)Manager.GetComponent(Entity,Avatar.TypeId);
-            if(avatar!=null)
-            {
-               if (avatar.PlayerNumber+1 == ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar)
+             
+               if (Entity == ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar)
                 {
                     return true;
                 }
-            }
+            
             return false;
         }
     }

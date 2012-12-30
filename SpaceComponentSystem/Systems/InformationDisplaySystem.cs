@@ -8,6 +8,8 @@ using Engine.ComponentSystem.Common.Messages;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Util;
+using Space.ComponentSystem.Components;
+using Engine.ComponentSystem.RPG.Components;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -30,7 +32,7 @@ namespace Space.ComponentSystem.Systems
 
         protected SpriteFont Font;
 
-        protected List<IInformation> Informations = new List<IInformation>();
+        protected List<IInformation> Informations = new List<IInformation>();//not used maybe some different aproach?
         #endregion
 
 
@@ -122,12 +124,20 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds"></param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            
+
+            var newList = new List<IInformation>();
+            var localEntity = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
+
+            var shipInfo = (ShipInfo)Manager.GetComponent(localEntity, ShipInfo.TypeId);
+            if (shipInfo != null)
+            {
+                newList.Add(shipInfo);
+            }
+
+
             SpriteBatch.Begin();
             int rowNumber = 0;
-            
-            var newList = new List<IInformation>();
-            foreach (var info in Informations)
+            foreach (var info in newList)
             {
                 if (!info.shallDraw())//check if we shall draw this information
                 {
@@ -141,9 +151,9 @@ namespace Space.ComponentSystem.Systems
                     Vector2 FontOrigin = Font.MeasureString(text) / 2;
                     SpriteBatch.DrawString(Font, text, position, info.getDisplayColor());
                 }
-                newList.Add(info);//only keep things to draw (may be sometime different aproach but for now this is the best I can think of)
+
             }
-            Informations = newList;
+            
             
 
             SpriteBatch.End();

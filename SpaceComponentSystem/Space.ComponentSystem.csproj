@@ -181,7 +181,6 @@
     <Compile Include="Systems\TestObjectRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Systems\WeaponControlSystem.cs" />
-    <Compile Include="Util\IInformation.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
     <Compile Include="Factories\SensorFactory.cs" />
