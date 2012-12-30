@@ -11,7 +11,7 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldTransform = Microsoft.Xna.Framework.Matrix;
 #endif
 
-namespace EnginePhysicsTests
+namespace Engine.Physics.Tests
 {
     /// <summary>
     /// This implementation plays camera for the test framework.

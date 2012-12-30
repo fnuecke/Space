@@ -8,7 +8,7 @@ using WorldPoint = Engine.FarMath.FarPosition;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace EnginePhysicsTests.Tests
+namespace Engine.Physics.Tests.Tests
 {
     internal sealed class EdgeBenchmarkWithCircles : AbstractTest
     {

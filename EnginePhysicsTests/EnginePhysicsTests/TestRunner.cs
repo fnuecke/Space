@@ -3,8 +3,7 @@ using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Physics.Systems;
-using Engine.Physics.Tests;
-using EnginePhysicsTests.Tests;
+using Engine.Physics.Tests.Tests;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,7 +15,7 @@ using WorldPoint = Engine.FarMath.FarPosition;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace EnginePhysicsTests
+namespace Engine.Physics.Tests
 {
     /// <summary>
     /// Test runner framework, knows tests and switches between them.
@@ -40,6 +39,7 @@ namespace EnginePhysicsTests
             new SphereStack(),
             new EdgeBenchmark(),
             new EdgeBenchmarkWithCircles(),
+            new CharacterCollision(),
         };
 
         /// <summary>
@@ -219,35 +219,7 @@ namespace EnginePhysicsTests
             _lastKeyboardState = Keyboard.GetState();
             _lastMouseState = mouseState;
 
-            // Allow simulating?
-            if ((_running || _runOnce) && _manager != null)
-            {
-                _manager.Update(0);
-                Tests[_currentTest].Update();
-                _runOnce = false;
-            }
-        }
-
-        /// <summary>
-        /// Renders the current test scene.
-        /// </summary>
-        protected override void Draw(GameTime gameTime)
-        {
-            GraphicsDevice.Clear(Color.Black);
-
-            if (_manager != null)
-            {
-                _manager.Draw(0, 0);
-            }
-
-            // Flush text from last time, to make sure test's text comes below our text.
-            if (StringBuffer.Length > 0)
-            {
-                _spriteBatch.Begin();
-                _spriteBatch.DrawString(_font, StringBuffer, new Vector2(20, 20), Color.White);
-                _spriteBatch.End();
-                StringBuffer.Clear();
-            }
+            StringBuffer.Clear();
 
             if (_manager != null)
             {
@@ -283,7 +255,38 @@ R            - Reload current test (keeping pause state).");
                 DrawString("\nPress F1 for help.");
             }
 
+            // Newline before any text current test may want to display.
+            DrawString("");
+
+            // Allow simulating?
+            if ((_running || _runOnce) && _manager != null)
+            {
+                _manager.Update(0);
+                Tests[_currentTest].Update();
+                _runOnce = false;
+            }
+        }
+
+        /// <summary>
+        /// Renders the current test scene.
+        /// </summary>
+        protected override void Draw(GameTime gameTime)
+        {
             base.Draw(gameTime);
+
+            GraphicsDevice.Clear(Color.Black);
+
+            if (_manager != null)
+            {
+                _manager.Draw(0, 0);
+            }
+
+            if (StringBuffer.Length > 0)
+            {
+                _spriteBatch.Begin();
+                _spriteBatch.DrawString(_font, StringBuffer, new Vector2(20, 20), Color.White);
+                _spriteBatch.End();
+            }
         }
 
         /// <summary>

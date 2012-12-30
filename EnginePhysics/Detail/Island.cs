@@ -354,7 +354,7 @@ namespace Engine.Physics.Detail
                     continue;
                 }
 
-                if (!b._allowSleep || b._angularVelocity * b._angularVelocity > angTolSqr ||
+                if (!b._isSleepAllowed || b._angularVelocity * b._angularVelocity > angTolSqr ||
                     Vector2.Dot(b._linearVelocity, b._linearVelocity) > linTolSqr)
                 {
                     b.SleepTime = 0.0f;

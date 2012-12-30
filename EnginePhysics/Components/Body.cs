@@ -160,9 +160,9 @@ namespace Engine.Physics.Components
         /// Gets or sets a value indicating whether this body is allowed to enter
         /// sleep state when it is not moving.
         /// </summary>
-        public bool AllowSleep
+        public bool IsSleepAllowed
         {
-            get { return _allowSleep; }
+            get { return _isSleepAllowed; }
             set
             {
                 var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
@@ -172,7 +172,7 @@ namespace Engine.Physics.Components
                     throw new System.InvalidOperationException("Cannot change sleep allowed flag during update.");
                 }
                 
-                _allowSleep = value;
+                _isSleepAllowed = value;
             }
         }
 
@@ -201,6 +201,26 @@ namespace Engine.Physics.Components
                     Force = Vector2.Zero;
                     Torque = 0.0f;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Get or set whether this body has a fixed rotation. Changing this
+        /// value causes the mass to be reset.
+        /// </summary>
+        public bool IsRotationFixed
+        {
+            get { return _isRotationFixed; }
+            set
+            {
+                if (_isRotationFixed == value)
+                {
+                    return;
+                }
+
+                _isRotationFixed = value;
+                _angularVelocity = 0.0f;
+                ResetMassData();
             }
         }
 
@@ -398,12 +418,17 @@ namespace Engine.Physics.Components
         /// <summary>
         /// Whether this body is allowed to sleep.
         /// </summary>
-        internal bool _allowSleep = true;
+        internal bool _isSleepAllowed = true;
 
         /// <summary>
         /// Tracks whether this body is awake or not.
         /// </summary>
         internal bool _isAwake = true;
+
+        /// <summary>
+        /// Whether the rotation for this body is fixed or not.
+        /// </summary>
+        internal bool _isRotationFixed;
 
         /// <summary>
         /// Whether this body should act as a bullet, if dynamic.
@@ -509,7 +534,7 @@ namespace Engine.Physics.Components
 
             _type = otherBody._type;
             _collisionGroups = otherBody._collisionGroups;
-            _allowSleep = otherBody._allowSleep;
+            _isSleepAllowed = otherBody._isSleepAllowed;
             _isAwake = otherBody._isAwake;
             _isBullet = otherBody._isBullet;
             _mass = otherBody._mass;
@@ -530,7 +555,9 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Initializes the body with the specified type.
+        /// Initializes the body with the specified type. This will not trigger
+        /// mass recomputation, you will have to call <see cref="ResetMassData"/>
+        /// to trigger that yourself.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns></returns>
@@ -560,15 +587,19 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Initializes the body with the specified flags.
+        /// Initializes the body with the specified flags. This will not trigger
+        /// mass recomputation, you will have to call <see cref="ResetMassData"/>
+        /// to trigger that yourself.
         /// </summary>
+        /// <param name="fixedRotation">Whether the rotation of this body is fixed.</param>
         /// <param name="isBullet">Whether to set the body as a bullet.</param>
         /// <param name="allowSleep">Whether to allow the body to sleep.</param>
         /// <returns></returns>
-        public Body Initialize(bool isBullet, bool allowSleep = true)
+        public Body Initialize(bool fixedRotation, bool isBullet, bool allowSleep)
         {
+            _isRotationFixed = fixedRotation;
             _isBullet = isBullet;
-            _allowSleep = allowSleep;
+            _isSleepAllowed = allowSleep;
 
             return this;
         }
@@ -603,8 +634,9 @@ namespace Engine.Physics.Components
             base.Reset();
 
             _collisionGroups = 0;
-            _allowSleep = true;
+            _isSleepAllowed = true;
             _isAwake = true;
+            _isRotationFixed = false;
             _isBullet = false;
             _mass = 0;
             _inertia = 0;
@@ -768,7 +800,7 @@ namespace Engine.Physics.Components
             {
                 Torque += torque;
             }
-	    }
+        }
 
         /// <summary>
         /// Apply an impulse at a point. This immediately modifies the velocity.
@@ -785,7 +817,7 @@ namespace Engine.Physics.Components
             {
                 return;
             }
-	        
+            
             // Wake up as necessary.
             if (wake && !IsAwake)
             {
@@ -798,7 +830,7 @@ namespace Engine.Physics.Components
                 _linearVelocity += InverseMass * impulse;
                 _angularVelocity += InverseInertia * Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), impulse);
             }
-	    }
+        }
 
         /// <summary>
         /// Apply an angular impulse.
@@ -824,7 +856,7 @@ namespace Engine.Physics.Components
             {
                 _angularVelocity += InverseInertia * impulse;
             }
-	    }
+        }
 
         /// <summary>
         /// Sets the transform of this body, i.e. its world position and angle.
@@ -969,7 +1001,7 @@ namespace Engine.Physics.Components
                 localCenter *= InverseMass;
             }
 
-            if (_inertia <= 0)
+            if (_isRotationFixed || _inertia <= 0)
             {
                 _inertia = 0;
                 InverseInertia = 0;
@@ -1030,11 +1062,11 @@ namespace Engine.Physics.Components
         /// <param name="alpha">The time to advance.</param>
         internal void Advance(float alpha)
         {
-	        Sweep.Advance(alpha);
-	        Sweep.CenterOfMass = Sweep.CenterOfMass0;
-	        Sweep.Angle = Sweep.Angle0;
-	        Transform.Rotation.Set(Sweep.Angle);
-	        Transform.Translation = Sweep.CenterOfMass - Transform.Rotation * Sweep.LocalCenter;
+            Sweep.Advance(alpha);
+            Sweep.CenterOfMass = Sweep.CenterOfMass0;
+            Sweep.Angle = Sweep.Angle0;
+            Transform.Rotation.Set(Sweep.Angle);
+            Transform.Translation = Sweep.CenterOfMass - Transform.Rotation * Sweep.LocalCenter;
         }
 
         /// <summary>
@@ -1073,8 +1105,9 @@ namespace Engine.Physics.Components
 
             return base.Packetize(packet)
                 .Write((byte)_type)
-                .Write(_allowSleep)
+                .Write(_isSleepAllowed)
                 .Write(_isAwake)
+                .Write(_isRotationFixed)
                 .Write(_isBullet)
                 .Write(_collisionGroups)
                 .Write(Transform)
@@ -1101,8 +1134,9 @@ namespace Engine.Physics.Components
             base.Depacketize(packet);
 
             _type = (BodyType)packet.ReadByte();
-            _allowSleep = packet.ReadBoolean();
+            _isSleepAllowed = packet.ReadBoolean();
             _isAwake = packet.ReadBoolean();
+            _isRotationFixed = packet.ReadBoolean();
             _isBullet = packet.ReadBoolean();
             _collisionGroups = packet.ReadUInt32();
             Transform = packet.ReadWorldTransform();
@@ -1133,7 +1167,7 @@ namespace Engine.Physics.Components
 
             hasher
                 .Put((byte)_type)
-                .Put(_allowSleep)
+                .Put(_isSleepAllowed)
                 .Put(_isAwake)
                 .Put(_isBullet)
                 .Put(_collisionGroups)

@@ -206,7 +206,7 @@ namespace Engine.Physics.Components
         /// <param name="friction">The friction.</param>
         /// <param name="restitution">The restitution.</param>
         /// <returns></returns>
-        public Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0)
+        public virtual Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0)
         {
             _density = density;
             _friction = friction;

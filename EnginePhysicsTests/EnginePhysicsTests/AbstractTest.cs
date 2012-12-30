@@ -14,7 +14,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace EnginePhysicsTests
+namespace Engine.Physics.Tests
 {
     internal abstract class AbstractTest
     {
@@ -236,6 +236,16 @@ namespace EnginePhysicsTests
             {
                 Renderer.Offset += delta / Renderer.Scale;
             }
+        }
+
+        /// <summary>
+        /// Shortcut for drawing strings via <see cref="TestRunner.DrawString"/>.
+        /// </summary>
+        /// <param name="format">The format string.</param>
+        /// <param name="args">The arguments, if any.</param>
+        protected static void DrawString(string format, params object[] args)
+        {
+            TestRunner.DrawString(format, args);
         }
 
         /// <summary>

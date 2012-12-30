@@ -1,4 +1,4 @@
-﻿namespace EnginePhysicsTests.Tests
+﻿namespace Engine.Physics.Tests.Tests
 {
     class VerticalStack : AbstractTest
     {

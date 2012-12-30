@@ -1,4 +1,4 @@
-namespace EnginePhysicsTests
+namespace Engine.Physics.Tests
 {
 #if WINDOWS || XBOX
     static class Program

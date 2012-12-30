@@ -89,6 +89,23 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
+        /// Initialize the component with the specified values. Note that this
+        /// does not automatically change the mass of the body. You have to call
+        /// <see cref="Body.ResetMassData"/> to update it.
+        /// </summary>
+        /// <param name="density">The density.</param>
+        /// <param name="friction">The friction.</param>
+        /// <param name="restitution">The restitution.</param>
+        /// <returns></returns>
+        public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0)
+        {
+            System.Diagnostics.Debug.Assert(density == 0);
+            base.Initialize(0, friction, restitution);
+
+            return this;
+        }
+
+        /// <summary>
         /// Initializes the specified vertices. This uses ghost vertices.
         /// </summary>
         /// <param name="v0">The first ghost vertex.</param>
@@ -160,8 +177,8 @@ namespace Engine.Physics.Components
         /// </returns>
         internal override WorldBounds ComputeBounds(WorldTransform transform)
         {
-	        var v1 = transform.ToGlobal(Vertex1);
-	        var v2 = transform.ToGlobal(Vertex2);
+            var v1 = transform.ToGlobal(Vertex1);
+            var v2 = transform.ToGlobal(Vertex2);
 
             var lowerX = (v1.X < v2.X) ? v1.X : v2.X;
             var lowerY = (v1.Y < v2.Y) ? v1.Y : v2.Y;
