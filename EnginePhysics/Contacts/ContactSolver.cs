@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Collections;
-using Engine.Physics.Detail.Collision;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Collision;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -11,7 +11,7 @@ using WorldPoint = Engine.FarMath.FarPosition;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Contacts
+namespace Engine.Physics.Contacts
 {
     /// <summary>
     /// This class contains the actual logic for solving velocity and position

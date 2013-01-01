@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Engine.Collections;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
-using Engine.Physics.Detail.Collision;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Collision;
+using Engine.Physics.Math;
 using Engine.Physics.Messages;
 using Engine.Physics.Systems;
 using Engine.Serialization;
@@ -17,7 +17,7 @@ using WorldPoint = Engine.FarMath.FarPosition;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Contacts
+namespace Engine.Physics.Contacts
 {
     /// <summary>
     /// Represents a contact between two fixtures.

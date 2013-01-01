@@ -10,7 +10,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Collision
+namespace Engine.Physics.Collision
 {
     /// <summary>
     /// A manifold for two touching convex shapes.

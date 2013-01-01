@@ -6,7 +6,7 @@ using WorldPoint = Engine.FarMath.FarPosition;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail
+namespace Engine.Physics
 {
     /// <summary>
     /// Used by solver, generated in step and substeps.

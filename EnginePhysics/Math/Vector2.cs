@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Engine.Physics.Detail.Math
+namespace Engine.Physics.Math
 {
     /// <summary>
     /// Implements cross product for 2D-Vectors.

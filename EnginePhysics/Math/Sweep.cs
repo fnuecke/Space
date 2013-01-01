@@ -11,7 +11,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Math
+namespace Engine.Physics.Math
 {
     /// <summary>
     /// This describes the motion of a body/shape for TOI computation.

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
 using Engine.XnaExtensions;
@@ -41,6 +41,9 @@ namespace Engine.Physics.Components
 
         #region Types
 
+        /// <summary>
+        /// The available body types.
+        /// </summary>
         public enum BodyType
         {
             /// <summary>

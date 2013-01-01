@@ -1,7 +1,7 @@
 ﻿using System;
 using Engine.Collections;
 using Engine.Physics.Components;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -12,7 +12,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Collision
+namespace Engine.Physics.Collision
 {
     internal static partial class Algorithms
     {

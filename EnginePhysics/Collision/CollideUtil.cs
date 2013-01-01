@@ -1,5 +1,5 @@
 ﻿using Engine.Collections;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -8,7 +8,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Collision
+namespace Engine.Physics.Collision
 {
     /// <summary>
     /// Utility methods of the collision module.

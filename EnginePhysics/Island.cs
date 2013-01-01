@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Engine.Physics.Components;
-using Engine.Physics.Detail.Contacts;
+using Engine.Physics.Contacts;
 using Microsoft.Xna.Framework;
 
-namespace Engine.Physics.Detail
+namespace Engine.Physics
 {
     /// <summary>
     /// This class represents a graph made up from bodies as vertices and the

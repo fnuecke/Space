@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem;
-using Engine.Physics.Detail;
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;

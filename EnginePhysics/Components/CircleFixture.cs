@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;

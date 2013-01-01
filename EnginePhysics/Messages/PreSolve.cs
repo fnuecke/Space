@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.Collections;
-using Engine.Physics.Detail.Collision;
+using Engine.Physics.Collision;
 using Engine.Physics.Systems;
 using Microsoft.Xna.Framework;
 
@@ -50,10 +50,10 @@ namespace Engine.Physics.Messages
             var radiusB = Contact.FixtureB.Radius;
 
             FixedArray2<WorldPoint> worldPoints;
-            Detail.Contacts.Contact.ComputeWorldManifold(OldManifold,
-                                                         transformA, radiusA,
-                                                         transformB, radiusB,
-                                                         out normal, out worldPoints);
+            Contacts.Contact.ComputeWorldManifold(OldManifold,
+                                                  transformA, radiusA,
+                                                  transformB, radiusB,
+                                                  out normal, out worldPoints);
             worldPoints.Count = OldManifold.PointCount;
             points = worldPoints;
         }

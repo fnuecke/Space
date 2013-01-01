@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;

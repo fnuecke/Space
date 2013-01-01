@@ -66,27 +66,28 @@
     <Compile Include="Components\EdgeFixture.cs" />
     <Compile Include="Components\Factory.cs" />
     <Compile Include="Components\Fixture.cs" />
+    <Compile Include="Joints\Joint.cs" />
     <Compile Include="Components\PolygonFixture.cs" />
-    <Compile Include="Detail\Collision\TimeOfImpact.cs" />
-    <Compile Include="Detail\Collision\Manifold.cs" />
-    <Compile Include="Detail\Math\Transform.cs" />
-    <Compile Include="Detail\Math\Vector2.cs" />
+    <Compile Include="Collision\TimeOfImpact.cs" />
+    <Compile Include="Collision\Manifold.cs" />
+    <Compile Include="Math\Transform.cs" />
+    <Compile Include="Math\Vector2.cs" />
     <Compile Include="Messages\BeginContact.cs" />
     <Compile Include="Messages\EndContact.cs" />
     <Compile Include="Messages\PreSolve.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Detail\Collision\CollideCircle.cs" />
-    <Compile Include="Detail\Collision\CollideEdge.cs" />
-    <Compile Include="Detail\Collision\CollidePolygon.cs" />
-    <Compile Include="Detail\Collision\CollideUtil.cs" />
-    <Compile Include="Detail\Contacts\ContactSolver.cs" />
-    <Compile Include="Detail\Contacts\Contact.cs" />
-    <Compile Include="Detail\Island.cs" />
+    <Compile Include="Collision\CollideCircle.cs" />
+    <Compile Include="Collision\CollideEdge.cs" />
+    <Compile Include="Collision\CollidePolygon.cs" />
+    <Compile Include="Collision\CollideUtil.cs" />
+    <Compile Include="Contacts\ContactSolver.cs" />
+    <Compile Include="Contacts\Contact.cs" />
+    <Compile Include="Island.cs" />
     <Compile Include="Systems\AbstractDebugPhysicsRenderSystem.cs" />
     <Compile Include="Systems\PhysicsSystem.cs" />
-    <Compile Include="Detail\Math\Sweep.cs" />
-    <Compile Include="Detail\Settings.cs" />
-    <Compile Include="Detail\TimeStep.cs" />
+    <Compile Include="Math\Sweep.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="TimeStep.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

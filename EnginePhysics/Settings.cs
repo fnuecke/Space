@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Engine.Physics.Detail
+namespace Engine.Physics
 {
     /// <summary>
     /// This class holds some global constants that control the behavior of

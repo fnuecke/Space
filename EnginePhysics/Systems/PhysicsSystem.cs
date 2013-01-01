@@ -4,10 +4,10 @@ using System.Linq;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Physics.Collision;
 using Engine.Physics.Components;
-using Engine.Physics.Detail;
-using Engine.Physics.Detail.Collision;
-using Engine.Physics.Detail.Contacts;
+using Engine.Physics.Contacts;
+using Engine.Physics.Joints;
 using Engine.Physics.Messages;
 using Engine.Serialization;
 using Engine.XnaExtensions;
@@ -400,9 +400,10 @@ namespace Engine.Physics.Systems
         {
             var fixture = component as Fixture;
             var body = component as Body;
-            if ((body != null || fixture != null) && IsLocked)
+            var joint = component as Joint;
+            if ((body != null || fixture != null || joint != null) && IsLocked)
             {
-                throw new InvalidOperationException("Must not add or remove bodies and fixtures during update.");
+                throw new InvalidOperationException("Must not add bodies, fixtures or joints during update.");
             }
 
             if (body != null)
@@ -450,9 +451,10 @@ namespace Engine.Physics.Systems
         {
             var fixture = component as Fixture;
             var body = component as Body;
-            if ((body != null || fixture != null) && IsLocked)
+            var joint = component as Joint;
+            if ((body != null || fixture != null || joint != null) && IsLocked)
             {
-                throw new InvalidOperationException("Must not add or remove bodies and fixtures during update.");
+                throw new InvalidOperationException("Must not remove bodies, fixtures or joints during update.");
             }
 
 

@@ -75,47 +75,47 @@
     <Compile Include="..\EnginePhysics\Components\PolygonFixture.cs">
       <Link>Components\PolygonFixture.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollideCircle.cs">
-      <Link>Detail\Collision\CollideCircle.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollideCircle.cs">
+      <Link>Collision\CollideCircle.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollideEdge.cs">
-      <Link>Detail\Collision\CollideEdge.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollideEdge.cs">
+      <Link>Collision\CollideEdge.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollidePolygon.cs">
-      <Link>Detail\Collision\CollidePolygon.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollidePolygon.cs">
+      <Link>Collision\CollidePolygon.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollideUtil.cs">
-      <Link>Detail\Collision\CollideUtil.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollideUtil.cs">
+      <Link>Collision\CollideUtil.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\Manifold.cs">
-      <Link>Detail\Collision\Manifold.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\Manifold.cs">
+      <Link>Collision\Manifold.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\TimeOfImpact.cs">
-      <Link>Detail\Collision\TimeOfImpact.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\TimeOfImpact.cs">
+      <Link>Collision\TimeOfImpact.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Contacts\Contact.cs">
-      <Link>Detail\Contacts\Contact.cs</Link>
+    <Compile Include="..\EnginePhysics\Contacts\Contact.cs">
+      <Link>Contacts\Contact.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Contacts\ContactSolver.cs">
-      <Link>Detail\Contacts\ContactSolver.cs</Link>
+    <Compile Include="..\EnginePhysics\Contacts\ContactSolver.cs">
+      <Link>Contacts\ContactSolver.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Island.cs">
-      <Link>Detail\Island.cs</Link>
+    <Compile Include="..\EnginePhysics\Island.cs">
+      <Link>Island.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Math\Sweep.cs">
-      <Link>Detail\Math\Sweep.cs</Link>
+    <Compile Include="..\EnginePhysics\Math\Sweep.cs">
+      <Link>Math\Sweep.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Math\Transform.cs">
-      <Link>Detail\Math\Transform.cs</Link>
+    <Compile Include="..\EnginePhysics\Math\Transform.cs">
+      <Link>Math\Transform.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Math\Vector2.cs">
-      <Link>Detail\Math\Vector2.cs</Link>
+    <Compile Include="..\EnginePhysics\Math\Vector2.cs">
+      <Link>Math\Vector2.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Settings.cs">
-      <Link>Detail\Settings.cs</Link>
+    <Compile Include="..\EnginePhysics\Settings.cs">
+      <Link>Settings.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\TimeStep.cs">
-      <Link>Detail\TimeStep.cs</Link>
+    <Compile Include="..\EnginePhysics\TimeStep.cs">
+      <Link>TimeStep.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Messages\BeginContact.cs">
       <Link>Messages\BeginContact.cs</Link>

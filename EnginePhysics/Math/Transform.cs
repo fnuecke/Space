@@ -9,7 +9,7 @@ using Engine.XnaExtensions;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Math
+namespace Engine.Physics.Math
 {
     /// <summary>
     /// Represents a 2D-rotation.
