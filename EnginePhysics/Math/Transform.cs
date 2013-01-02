@@ -32,6 +32,16 @@ namespace Engine.Physics.Math
         public float Sin, Cos;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Rotation"/> struct.
+        /// </summary>
+        /// <param name="angle">The angle.</param>
+        public Rotation(float angle)
+        {
+            Sin = (float)System.Math.Sin(angle);
+            Cos = (float)System.Math.Cos(angle);
+        }
+
+        /// <summary>
         /// Set using an angle in radians.
         /// </summary>
         /// <param name="angle">the angle to set to.</param>

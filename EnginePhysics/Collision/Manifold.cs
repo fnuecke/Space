@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using Engine.Collections;
 using Engine.Serialization;
 using Engine.XnaExtensions;
@@ -66,6 +67,24 @@ namespace Engine.Physics.Collision
         /// The number of manifold points.
         /// </summary>
         public int PointCount;
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "{Manifold: Type=" + Type +
+                   ", PointCount=" + PointCount +
+                   (PointCount > 0
+                        ? ("LocalNormal=" + LocalNormal.X.ToString(CultureInfo.InvariantCulture) + ":" + LocalNormal.Y.ToString(CultureInfo.InvariantCulture) +
+                           ", LocalPoint=" + LocalPoint.X.ToString(CultureInfo.InvariantCulture) + ":" + LocalPoint.Y.ToString(CultureInfo.InvariantCulture) +
+                           ", Point1=" + Points.Item1 +
+                           (PointCount > 1 ? ("Point2=" + Points.Item2) : ""))
+                        : "");
+        }
     }
     
     /// <summary>
@@ -101,6 +120,20 @@ namespace Engine.Physics.Collision
         /// Uniquely identifies a contact point between two shapes.
         /// </summary>
         public ContactID Id;
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "{Id=" + Id.Key +
+                ", LocalPoint=" + LocalPoint.X.ToString(CultureInfo.InvariantCulture) + LocalPoint.Y.ToString(CultureInfo.InvariantCulture) +
+                ", NormalImpulse=" + NormalImpulse.ToString(CultureInfo.InvariantCulture) +
+                ", TangentImpulse=" + TangentImpulse.ToString(CultureInfo.InvariantCulture);
+        }
     }
     
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Engine.Collections;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
@@ -69,6 +70,12 @@ namespace Engine.Physics.Contacts
         /// Whether this contact is currently enabled.
         /// </summary>
         public bool IsEnabled;
+
+        /// <summary>
+        /// Whether the contact is flagged for refiltering (from changes
+        /// to the involved bodies, e.g. from adding joints).
+        /// </summary>
+        public bool ShouldFilter;
 
         /// <summary>
         /// The contact manifold for this contact.
@@ -294,7 +301,7 @@ namespace Engine.Physics.Contacts
             IsEnabled = true;
             
             // Check if a sensor is involved.
-            var sensor = fixtureA._isSensor || fixtureB._isSensor;
+            var sensor = fixtureA.IsSensorInternal || fixtureB.IsSensorInternal;
 
             // See how we need to update this contact.
             bool nowTouching, wasTouching = IsTouching;
@@ -598,9 +605,30 @@ namespace Engine.Physics.Contacts
             into.IsEnabled = IsEnabled;
             into.Manifold = Manifold;
             into._type = _type;
-            into.ToiCount = ToiCount;
-            into.HasCachedTOI = HasCachedTOI;
-            into.TOI = TOI;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "Contact: Type=" + _type +
+                ", Previous=" + Previous +
+                ", Next=" + Next +
+                ", FixtureA=" + FixtureIdA +
+                ", FixtureB=" + FixtureIdB +
+                ", Friction=" + Friction.ToString(CultureInfo.InvariantCulture) +
+                ", Restitution=" + Restitution.ToString(CultureInfo.InvariantCulture) +
+                ", IsTouching=" + IsTouching +
+                ", IsEnabled=" + IsEnabled +
+                ", Manifold=" + Manifold;
         }
 
         #endregion
@@ -610,14 +638,14 @@ namespace Engine.Physics.Contacts
     /// Represents a connection between two (potentially) colliding
     /// objects.
     /// </summary>
-    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable
+    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable, IHashable
     {
         #region Fields
 
         /// <summary>
         /// The index of the actual contact.
         /// </summary>
-        public int Parent;
+        public int Contact;
 
         /// <summary>
         /// The id of the other entity involved in this contact.
@@ -648,7 +676,7 @@ namespace Engine.Physics.Contacts
         public Packet Packetize(Packet packet)
         {
             return packet
-                .Write(Parent)
+                .Write(Contact)
                 .Write(Other)
                 .Write(Previous)
                 .Write(Next);
@@ -660,10 +688,24 @@ namespace Engine.Physics.Contacts
         /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
-            Parent = packet.ReadInt32();
+            Contact = packet.ReadInt32();
             Other = packet.ReadInt32();
             Previous = packet.ReadInt32();
             Next = packet.ReadInt32();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
+        {
+            hasher
+                .Put(Contact)
+                .Put(Other)
+                .Put(Previous)
+                .Put(Next);
         }
 
         #endregion
@@ -687,10 +729,28 @@ namespace Engine.Physics.Contacts
         /// <returns>The copy.</returns>
         public void CopyInto(ContactEdge into)
         {
-            into.Parent = Parent;
+            into.Contact = Contact;
             into.Other = Other;
             into.Previous = Previous;
             into.Next = Next;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "ContactEdge: Contact=" + Contact +
+                ", Other=" + Other +
+                ", Previous=" + Previous +
+                ", Next=" + Next;
         }
 
         #endregion

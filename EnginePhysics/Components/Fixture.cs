@@ -79,17 +79,40 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
+        /// This bit mask representing the collision groups this component is
+        /// part of. Components sharing at least one group will not be tested
+        /// against each other.
+        /// </summary>
+        public uint CollisionGroups
+        {
+            get { return CollisionGroupsInternal; }
+            set
+            {
+                // Skip if nothing changed.
+                if (CollisionGroupsInternal == value)
+                {
+                    return;
+                }
+
+                CollisionGroupsInternal = value;
+
+                // Mark this fixture as changed to look for new contacts.
+                Simulation.Refilter(this);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is sensor
         /// or not (solid or not). Changing this value will wake up the body.
         /// </summary>
         public bool IsSensor
         {
-            get { return _isSensor; }
+            get { return IsSensorInternal; }
             set
             {
-                if (_isSensor != value)
+                if (IsSensorInternal != value)
                 {
-                    _isSensor = value;
+                    IsSensorInternal = value;
                     Body.IsAwake = true;
                 }
             }
@@ -178,15 +201,15 @@ namespace Engine.Physics.Components
         internal float Radius;
 
         /// <summary>
-        /// Start of the list of contacts this collidable is involved in.
+        /// The collision groups the body is in, as a bit mask.
         /// </summary>
-        internal int EdgeList = -1;
+        internal uint CollisionGroupsInternal;
 
         /// <summary>
         /// Whether this fixture is a sensor or not (solver won't try to handle
         /// collisions).
         /// </summary>
-        internal bool _isSensor;
+        internal bool IsSensorInternal;
 
         /// <summary>
         /// The density of the shape this fixture represents.
@@ -227,10 +250,11 @@ namespace Engine.Physics.Components
 
             var otherFixture = (Fixture)other;
             Radius = otherFixture.Radius;
+            CollisionGroupsInternal = otherFixture.CollisionGroupsInternal;
+            IsSensorInternal = otherFixture.IsSensorInternal;
             _density = otherFixture._density;
             _friction = otherFixture._friction;
             _restitution = otherFixture._restitution;
-            EdgeList = otherFixture.EdgeList;
 
             return this;
         }
@@ -243,9 +267,13 @@ namespace Engine.Physics.Components
         /// <param name="density">The density.</param>
         /// <param name="friction">The friction.</param>
         /// <param name="restitution">The restitution.</param>
+        /// <param name="isSensor">if set to <c>true</c> this fixture is marked as a sensor.</param>
+        /// <param name="collisionGroups">The collision groups for this fixture.</param>
         /// <returns></returns>
-        public virtual Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0)
+        public virtual Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
         {
+            CollisionGroupsInternal = collisionGroups;
+            IsSensorInternal = isSensor;
             _density = density;
             _friction = friction;
             _restitution = restitution;
@@ -262,10 +290,11 @@ namespace Engine.Physics.Components
             base.Reset();
 
             Radius = 0;
+            CollisionGroupsInternal = 0;
+            IsSensorInternal = false;
             _density = 0;
             _friction = 0.2f;
             _restitution = 0;
-            EdgeList = -1;
         }
 
         #endregion
@@ -310,7 +339,7 @@ namespace Engine.Physics.Components
             var delta = (Vector2)(transform2.Translation - transform1.Translation);
 
             // Update the index.
-            Simulation.UpdateIndex(bounds, delta, Id);
+            Simulation.Synchronize(bounds, delta, Id);
         }
 
         /// <summary>
@@ -318,7 +347,7 @@ namespace Engine.Physics.Components
         /// </summary>
         internal void Synchronize()
         {
-            Simulation.UpdateIndex(ComputeBounds(Body.Transform), Vector2.Zero, Id);
+            Simulation.Synchronize(ComputeBounds(Body.Transform), Vector2.Zero, Id);
         }
 
         #endregion
@@ -334,12 +363,15 @@ namespace Engine.Physics.Components
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
+            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
+
             return base.Packetize(packet)
                 .Write(Radius)
+                .Write(CollisionGroupsInternal)
+                .Write(IsSensorInternal)
                 .Write(_density)
                 .Write(_friction)
-                .Write(_restitution)
-                .Write(EdgeList);
+                .Write(_restitution);
         }
 
         /// <summary>
@@ -348,13 +380,16 @@ namespace Engine.Physics.Components
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
+            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
+
             base.Depacketize(packet);
 
             Radius = packet.ReadSingle();
+            CollisionGroupsInternal = packet.ReadUInt32();
+            IsSensorInternal = packet.ReadBoolean();
             _density = packet.ReadSingle();
             _friction = packet.ReadSingle();
             _restitution = packet.ReadSingle();
-            EdgeList = packet.ReadInt32();
         }
 
         /// <summary>
@@ -364,13 +399,17 @@ namespace Engine.Physics.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
+            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
+
             base.Hash(hasher);
+
             hasher
                 .Put(Radius)
+                .Put(CollisionGroupsInternal)
+                .Put(IsSensorInternal)
                 .Put(_density)
                 .Put(_friction)
-                .Put(_restitution)
-                .Put(EdgeList);
+                .Put(_restitution);
         }
 
         #endregion
@@ -387,10 +426,11 @@ namespace Engine.Physics.Components
         {
             return base.ToString() +
                    ", Radius=" + Radius.ToString(CultureInfo.InvariantCulture) +
+                   ", CollisionGroups=" + CollisionGroupsInternal +
+                   ", IsSensor=" + IsSensorInternal +
                    ", Density=" + _density.ToString(CultureInfo.InvariantCulture) +
                    ", Friction=" + _friction.ToString(CultureInfo.InvariantCulture) +
-                   ", Restitution=" + _restitution.ToString(CultureInfo.InvariantCulture) +
-                   ", EdgeList=" + EdgeList;
+                   ", Restitution=" + _restitution.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

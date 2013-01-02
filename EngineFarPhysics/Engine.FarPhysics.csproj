@@ -57,6 +57,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\EnginePhysics\ComponentFactory.cs">
+      <Link>ComponentFactory.cs</Link>
+    </Compile>
     <Compile Include="..\EnginePhysics\Components\Body.cs">
       <Link>Components\Body.cs</Link>
     </Compile>
@@ -65,9 +68,6 @@
     </Compile>
     <Compile Include="..\EnginePhysics\Components\EdgeFixture.cs">
       <Link>Components\EdgeFixture.cs</Link>
-    </Compile>
-    <Compile Include="..\EnginePhysics\Components\Factory.cs">
-      <Link>Components\Factory.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Components\Fixture.cs">
       <Link>Components\Fixture.cs</Link>
@@ -101,6 +101,15 @@
     </Compile>
     <Compile Include="..\EnginePhysics\Island.cs">
       <Link>Island.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\JointFactory.cs">
+      <Link>JointFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\Joint.cs">
+      <Link>Joints\Joint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\MouseJoint.cs">
+      <Link>Joints\MouseJoint.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Math\Sweep.cs">
       <Link>Math\Sweep.cs</Link>

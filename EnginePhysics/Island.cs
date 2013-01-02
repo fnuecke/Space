@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.Physics.Components;
 using Engine.Physics.Contacts;
+using Engine.Physics.Joints;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Physics
@@ -67,14 +68,25 @@ namespace Engine.Physics
         private readonly HashSet<Contact> _processedContacts = new HashSet<Contact>();
 
         /// <summary>
+        /// This is used to flag joints as processed, to avoid double work when
+        /// building islands.
+        /// </summary>
+        private readonly HashSet<Joint> _processedJoints = new HashSet<Joint>();
+
+        /// <summary>
         /// The list of bodies in this island.
         /// </summary>
-        private readonly List<Body> _bodies = new List<Body>(64);
+        private readonly List<Body> _bodies = new List<Body>();
 
         /// <summary>
         /// The list of contacts in this island.
         /// </summary>
         private readonly List<Contact> _contacts = new List<Contact>();
+
+        /// <summary>
+        /// The list of joints in this island.
+        /// </summary>
+        private readonly List<Joint> _joints = new List<Joint>();
 
         /// <summary>
         /// Position buffer for solver.
@@ -103,14 +115,17 @@ namespace Engine.Physics
         /// </summary>
         /// <param name="bodyCapacity">The required body capacity.</param>
         /// <param name="contactCapacity">The required contact capacity.</param>
-        public void Reset(int bodyCapacity, int contactCapacity)
+        /// <param name="jointCapacity">The required joint capacity.</param>
+        public void Reset(int bodyCapacity, int contactCapacity, int jointCapacity)
         {
             Clear();
             UnmarkAllBodies();
             UnmarkAllContacts();
+            UnmarkAllJoints();
 
             _bodies.Capacity = System.Math.Max(_bodies.Capacity, bodyCapacity);
             _contacts.Capacity = System.Math.Max(_contacts.Capacity, contactCapacity);
+            _joints.Capacity = System.Math.Max(_joints.Capacity, jointCapacity);
 
             if (bodyCapacity > _positions.Length)
             {
@@ -132,6 +147,7 @@ namespace Engine.Physics
         {
             _bodies.Clear();
             _contacts.Clear();
+            _joints.Clear();
         }
 
         /// <summary>
@@ -152,6 +168,14 @@ namespace Engine.Physics
         }
 
         /// <summary>
+        /// Adds the specified joint to the island.
+        /// </summary>
+        public void Add(Joint joint)
+        {
+            _joints.Add(joint);
+        }
+
+        /// <summary>
         /// Marks the specified body as processed, to avoid double work.
         /// </summary>
         public void MarkProcessed(Body body)
@@ -165,6 +189,14 @@ namespace Engine.Physics
         public void MarkProcessed(Contact contact)
         {
             _processedContacts.Add(contact);
+        }
+
+        /// <summary>
+        /// Marks the joint as processed, to avoid double work.
+        /// </summary>
+        public void MarkProcessed(Joint joint)
+        {
+            _processedJoints.Add(joint);
         }
 
         /// <summary>
@@ -184,6 +216,14 @@ namespace Engine.Physics
         }
 
         /// <summary>
+        /// Determines whether the specified joint is already processed.
+        /// </summary>
+        public bool IsProcessed(Joint joint)
+        {
+            return _processedJoints.Contains(joint);
+        }
+
+        /// <summary>
         /// Clears all bodies from being marked as processed so they can
         /// be processed again with other islands.
         /// </summary>
@@ -198,7 +238,7 @@ namespace Engine.Physics
         /// </summary>
         public void UnmarkStaticBodies()
         {
-            _processedBodies.RemoveWhere(x => x._type == Body.BodyType.Static);
+            _processedBodies.RemoveWhere(x => x.TypeInternal == Body.BodyType.Static);
         }
 
         /// <summary>
@@ -215,6 +255,14 @@ namespace Engine.Physics
         private void UnmarkAllContacts()
         {
             _processedContacts.Clear();
+        }
+
+        /// <summary>
+        /// Clears all joints from being marked as processed.
+        /// </summary>
+        private void UnmarkAllJoints()
+        {
+            _processedJoints.Clear();
         }
 
         #endregion
@@ -235,14 +283,14 @@ namespace Engine.Physics
 
                 var c = b.Sweep.CenterOfMass;
                 var a = b.Sweep.Angle;
-                var v = b._linearVelocity;
-                var w = b._angularVelocity;
+                var v = b.LinearVelocityInternal;
+                var w = b.AngularVelocityInternal;
 
                 // Store positions for continuous collision.
                 b.Sweep.CenterOfMass0 = b.Sweep.CenterOfMass;
                 b.Sweep.Angle0 = b.Sweep.Angle;
 
-                if (b._type == Body.BodyType.Dynamic)
+                if (b.TypeInternal == Body.BodyType.Dynamic)
                 {
                     // Integrate velocities.
                     v += h * (gravity + b.InverseMass * b.Force);
@@ -255,8 +303,8 @@ namespace Engine.Physics
                     // v2 = exp(-c * dt) * v1
                     // Taylor expansion:
                     // v2 = (1.0f - c * dt) * v1
-                    v *= MathHelper.Clamp(1.0f - h * b._linearDamping, 0.0f, 1.0f);
-                    w *= MathHelper.Clamp(1.0f - h * b._angularDamping, 0.0f, 1.0f);
+                    v *= MathHelper.Clamp(1.0f - h * b.LinearDampingInternal, 0.0f, 1.0f);
+                    w *= MathHelper.Clamp(1.0f - h * b.AngularDampingInternal, 0.0f, 1.0f);
                 }
 
                 _positions[i].Point = c;
@@ -274,9 +322,18 @@ namespace Engine.Physics
                 _solver.WarmStart();
             }
 
+            foreach (var joint in _joints)
+            {
+                joint.InitializeVelocityConstraints(step, _positions, _velocities);
+            }
+
             // Solve velocity constraints
             for (var i = 0; i < Settings.VelocityIterations; ++i)
             {
+                foreach (var joint in _joints)
+                {
+                    joint.SolveVelocityConstraints(step, _positions, _velocities);
+                }
                 _solver.SolveVelocityConstraints();
             }
 
@@ -317,13 +374,20 @@ namespace Engine.Physics
             }
 
             // Solve position constraints
-            var positionSolved = false;
+            var positionsSolved = false;
             for (var i = 0; i < Settings.PositionIterations; ++i)
             {
-                if (_solver.SolvePositionConstraints())
+                var contactsFinished = _solver.SolvePositionConstraints();
+                var jointsFinished = true;
+                foreach (var joint in _joints)
+                {
+                    jointsFinished = jointsFinished &&
+                                     joint.SolvePositionConstraints(step, _positions, _velocities);
+                }
+                if (contactsFinished && jointsFinished)
                 {
                     // Exit early if the position errors are small.
-                    positionSolved = true;
+                    positionsSolved = true;
                     break;
                 }
             }
@@ -334,8 +398,8 @@ namespace Engine.Physics
                 var body = _bodies[i];
                 body.Sweep.CenterOfMass = _positions[i].Point;
                 body.Sweep.Angle = _positions[i].Angle;
-                body._linearVelocity = _velocities[i].LinearVelocity;
-                body._angularVelocity = _velocities[i].AngularVelocity;
+                body.LinearVelocityInternal = _velocities[i].LinearVelocity;
+                body.AngularVelocityInternal = _velocities[i].AngularVelocity;
                 body.SynchronizeTransform();
             }
 
@@ -347,13 +411,13 @@ namespace Engine.Physics
             for (var i = 0; i < _bodies.Count; ++i)
             {
                 var b = _bodies[i];
-                if (b._type == Body.BodyType.Static)
+                if (b.TypeInternal == Body.BodyType.Static)
                 {
                     continue;
                 }
 
-                if (!b._isSleepAllowed || b._angularVelocity * b._angularVelocity > angTolSqr ||
-                    Vector2.Dot(b._linearVelocity, b._linearVelocity) > linTolSqr)
+                if (!b.IsSleepAllowedInternal || b.AngularVelocityInternal * b.AngularVelocityInternal > angTolSqr ||
+                    Vector2.Dot(b.LinearVelocityInternal, b.LinearVelocityInternal) > linTolSqr)
                 {
                     b.SleepTime = 0.0f;
                     minSleepTime = 0.0f;
@@ -365,7 +429,7 @@ namespace Engine.Physics
                 }
             }
 
-            if (minSleepTime >= Settings.TimeToSleep && positionSolved)
+            if (minSleepTime >= Settings.TimeToSleep && positionsSolved)
             {
                 for (var i = 0; i < _bodies.Count; ++i)
                 {
@@ -389,8 +453,8 @@ namespace Engine.Physics
                 var b = _bodies[i];
                 _positions[i].Point = b.Sweep.CenterOfMass;
                 _positions[i].Angle = b.Sweep.Angle;
-                _velocities[i].LinearVelocity = b._linearVelocity;
-                _velocities[i].AngularVelocity = b._angularVelocity;
+                _velocities[i].LinearVelocity = b.LinearVelocityInternal;
+                _velocities[i].AngularVelocity = b.AngularVelocityInternal;
             }
 
             // Initialize solver for current step.
@@ -462,8 +526,8 @@ namespace Engine.Physics
                 var body = _bodies[i];
                 body.Sweep.CenterOfMass = c;
                 body.Sweep.Angle = a;
-                body._linearVelocity = v;
-                body._angularVelocity = w;
+                body.LinearVelocityInternal = v;
+                body.AngularVelocityInternal = w;
                 body.SynchronizeTransform();
             }
         }

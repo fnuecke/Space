@@ -96,10 +96,11 @@ namespace Engine.Physics.Components
         /// <param name="friction">The friction.</param>
         /// <param name="restitution">The restitution.</param>
         /// <returns></returns>
-        public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0)
+        public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
         {
+            // Edges can't have density because they have no area.
             System.Diagnostics.Debug.Assert(density == 0);
-            base.Initialize(0, friction, restitution);
+            base.Initialize(0, friction, restitution, isSensor, collisionGroups);
 
             return this;
         }

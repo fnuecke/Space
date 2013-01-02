@@ -389,6 +389,7 @@ R            - Reload current test (keeping pause state).");
                     break;
                 case Keys.F3:
                     // Toggle joints.
+                    _renderer.RenderJoints = !_renderer.RenderJoints;
                     break;
                 case Keys.F4:
                     // Toggle contact point and normals.

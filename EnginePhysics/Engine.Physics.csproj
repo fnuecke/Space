@@ -64,12 +64,14 @@
     <Compile Include="Components\Body.cs" />
     <Compile Include="Components\CircleFixture.cs" />
     <Compile Include="Components\EdgeFixture.cs" />
-    <Compile Include="Components\Factory.cs" />
+    <Compile Include="ComponentFactory.cs" />
     <Compile Include="Components\Fixture.cs" />
+    <Compile Include="JointFactory.cs" />
     <Compile Include="Joints\Joint.cs" />
     <Compile Include="Components\PolygonFixture.cs" />
     <Compile Include="Collision\TimeOfImpact.cs" />
     <Compile Include="Collision\Manifold.cs" />
+    <Compile Include="Joints\MouseJoint.cs" />
     <Compile Include="Math\Transform.cs" />
     <Compile Include="Math\Vector2.cs" />
     <Compile Include="Messages\BeginContact.cs" />

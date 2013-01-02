@@ -1,5 +1,9 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem;
 using Engine.Physics.Components;
+using Engine.Physics.Systems;
+using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -15,27 +19,12 @@ namespace Engine.Physics.Joints
     /// <summary>
     /// Base class for joints. Joint components (when connecting two bodies,
     /// and not a body and the world) always exist in pairs, with one per
-    /// attached body.
+    /// attached body. Joints are not components, because they do not belong
+    /// to one entity alone in all cases. Often they will belong to two,
+    /// that being the two entities (bodies) they are attached to.
     /// </summary>
-    public abstract class Joint : Component
+    public abstract class Joint : ICopyable<Joint>, IPacketizable, IHashable
     {
-        #region Type ID
-
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
-        public static readonly int TypeId = CreateTypeId();
-
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
-        public override int GetTypeId()
-        {
-            return TypeId;
-        }
-
-        #endregion
-
         #region Types
 
         /// <summary>
@@ -62,27 +51,19 @@ namespace Engine.Physics.Joints
         #region Properties
 
         /// <summary>
-        /// Get the type of the concrete joint.
-        /// </summary>
-        public JointType Type
-        {
-            get { return _type; }
-        }
-
-        /// <summary>
-        /// Get the first body attached to this joint.
+        /// Get the first body this joint is attached to.
         /// </summary>
         public Body BodyA
         {
-            get { return _bodyAId != 0 ? Manager.GetComponent(_bodyAId, Body.TypeId) as Body : null; }
+            get { return _bodyIdA != 0 ? _manager.GetComponentById(_bodyIdA) as Body : null; }
         }
 
         /// <summary>
-        /// Get the second body attached to this joint.
+        /// Get the second body this joint is attached to.
         /// </summary>
         public Body BodyB
         {
-            get { return _bodyBId != 0 ? Manager.GetComponent(_bodyBId, Body.TypeId) as Body : null; }
+            get { return _bodyIdB != 0 ? _manager.GetComponentById(_bodyIdB) as Body : null; }
         }
 
         /// <summary>
@@ -99,22 +80,30 @@ namespace Engine.Physics.Joints
 
         #region Fields
 
-        private readonly JointType _type;
+        /// <summary>
+        /// The type of this joint.
+        /// </summary>
+        internal readonly JointType Type;
 
         /// <summary>
-        /// The ID of the joint component on the other body's entity.
+        /// The manager of the component system the bodies of this joint live in.
         /// </summary>
-        private int _otherJointId;
+        private IManager _manager;
+
+        /// <summary>
+        /// Used for the global doubly linked list of joints.
+        /// </summary>
+        internal int Next, Previous;
 
         /// <summary>
         /// The IDs of the two bodies this joint is attached to.
         /// </summary>
-        private int _bodyAId, _bodyBId;
+        private int _bodyIdA, _bodyIdB;
 
         /// <summary>
         /// Set this flag to true if the attached bodies should collide.
         /// </summary>
-        internal bool _collideConnected;
+        internal bool CollideConnected;
 
         #endregion
 
@@ -126,39 +115,39 @@ namespace Engine.Physics.Joints
         /// <param name="type">The type.</param>
         protected Joint(JointType type)
         {
-            _type = type;
+            Type = type;
         }
 
         /// <summary>
-        /// Initialize the component by using another instance of its type.
+        /// Initializes the joint to the specified properties.
         /// </summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body to attach to.</param>
+        /// <param name="bodyB">The second body to attach to.</param>
+        /// <param name="collideConnected">if set to <c>true</c> [collide connected].</param>
+        internal void Initialize(IManager manager, Body bodyA, Body bodyB, bool collideConnected)
         {
-            base.Initialize(other);
-
-            var otherJoint = (Joint)other;
-            _otherJointId = otherJoint._otherJointId;
-            _bodyAId = otherJoint._bodyAId;
-            _bodyBId = otherJoint._bodyBId;
-            _collideConnected = otherJoint._collideConnected;
-
-            return this;
+            _manager = manager;
+            _bodyIdA = bodyA != null ? bodyA.Id : 0;
+            _bodyIdB = bodyB != null ? bodyB.Id : 0;
+            CollideConnected = collideConnected;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
-        public override void Reset()
+        public void Destroy()
         {
-            base.Reset();
+            if (_manager == null)
+            {
+                throw new InvalidOperationException("Joint was already removed.");
+            }
 
-            _otherJointId = 0;
-            _bodyAId = 0;
-            _bodyBId = 0;
-            _collideConnected = false;
+            var physics = _manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
+            System.Diagnostics.Debug.Assert(physics != null);
+            physics.DestroyJoint(Previous, Next);
+
+            _manager = null;
+            _bodyIdA = 0;
+            _bodyIdB = 0;
+            CollideConnected = false;
         }
 
         #endregion
@@ -209,9 +198,223 @@ namespace Engine.Physics.Joints
 
         #region Serialization / Hashing
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        public Packet Packetize(Packet packet)
+        {
+            return packet
+                .Write(Next)
+                .Write(Previous)
+                .Write(_bodyIdA)
+                .Write(_bodyIdB)
+                .Write(CollideConnected);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void Depacketize(Packet packet)
+        {
+            Next = packet.ReadInt32();
+            Previous = packet.ReadInt32();
+            _bodyIdA = packet.ReadInt32();
+            _bodyIdB = packet.ReadInt32();
+            CollideConnected = packet.ReadBoolean();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
+        {
+            hasher
+                .Put(Next)
+                .Put(Previous)
+                .Put(_bodyIdA)
+                .Put(_bodyIdB)
+                .Put(CollideConnected);
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public Joint NewInstance()
+        {
+            var copy = (Joint)MemberwiseClone();
+
+            copy._manager = null;
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public void CopyInto(Joint into)
+        {
+            into.Next = Next;
+            into.Previous = Previous;
+            into._bodyIdA = _bodyIdA;
+            into._bodyIdB = _bodyIdB;
+            into.CollideConnected = CollideConnected;
+        }
+
         #endregion
 
         #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return GetType().Name + ": JointType=" + Type +
+                ", Next=" + Next +
+                ", Previous=" + Previous +
+                ", BodyA=" + _bodyIdA +
+                ", BodyB=" + _bodyIdB +
+                ", CollideConnected=" + CollideConnected;
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Represents a connection between up to two entities a joint is attached to.
+    /// If the joint is only attached to one real entity, the other end is usually
+    /// attached to the "world", and <see cref="Other"/> will be zero.
+    /// </summary>
+    internal sealed class JointEdge : ICopyable<JointEdge>, IPacketizable, IHashable
+    {
+        #region Fields
+
+        /// <summary>
+        /// The index of the actual joint.
+        /// </summary>
+        public int Joint;
+
+        /// <summary>
+        /// The id of the other entity this edge's joint is attached to.
+        /// </summary>
+        public int Other;
+
+        /// <summary>
+        /// The index of the previous joint edge, for the entity this
+        /// edge belongs to.
+        /// </summary>
+        public int Previous;
+
+        /// <summary>
+        /// The index of the next joint edge, for the entity this
+        /// edge belongs to.
+        /// </summary>
+        public int Next;
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        public Packet Packetize(Packet packet)
+        {
+            return packet
+                .Write(Joint)
+                .Write(Other)
+                .Write(Previous)
+                .Write(Next);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void Depacketize(Packet packet)
+        {
+            Joint = packet.ReadInt32();
+            Other = packet.ReadInt32();
+            Previous = packet.ReadInt32();
+            Next = packet.ReadInt32();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
+        {
+            hasher
+                .Put(Joint)
+                .Put(Other)
+                .Put(Previous)
+                .Put(Next);
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public JointEdge NewInstance()
+        {
+            return new JointEdge();
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public void CopyInto(JointEdge into)
+        {
+            into.Joint = Joint;
+            into.Other = Other;
+            into.Previous = Previous;
+            into.Next = Next;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "JointEdge: Joint=" + Joint +
+                ", Other=" + Other +
+                ", Previous=" + Previous +
+                ", Next=" + Next;
+        }
 
         #endregion
     }
