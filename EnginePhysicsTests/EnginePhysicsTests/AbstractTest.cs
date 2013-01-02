@@ -1,5 +1,4 @@
 ﻿using Engine.ComponentSystem;
-using Engine.Physics.Joints;
 using Engine.Physics.Systems;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -58,8 +57,8 @@ namespace Engine.Physics.Tests
         {
             get
             {
-                var mouse = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
-                return Renderer.ScreenToSimulation(mouse);
+                return Renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
+                                                               Mouse.GetState().Y));
             }
         }
 
@@ -71,11 +70,6 @@ namespace Engine.Physics.Tests
         /// Random number generator for tests.
         /// </summary>
         private readonly MersenneTwister _random = new MersenneTwister(0);
-
-        /// <summary>
-        /// The mouse joint used for dragging bodies around.
-        /// </summary>
-        private MouseJoint _mouseJoint;
 
         /// <summary>
         /// Whether we're currently dragging the world around (moving the camera).
@@ -136,16 +130,6 @@ namespace Engine.Physics.Tests
         /// </summary>
         public virtual void OnLeftButtonDown()
         {
-            if (_mouseJoint != null)
-            {
-                _mouseJoint.Destroy();
-                _mouseJoint = null;
-            }
-            var fixture = Physics.GetFixtureAt(MouseWorldPoint);
-            if (fixture != null)
-            {
-                _mouseJoint = Manager.AddMouseJoint(fixture.Body, MouseWorldPoint, maxForce: fixture.Body.Mass * 1000);
-            }
         }
 
         /// <summary>
@@ -155,11 +139,6 @@ namespace Engine.Physics.Tests
         /// </summary>
         public virtual void OnLeftButtonUp()
         {
-            if (_mouseJoint != null)
-            {
-                _mouseJoint.Destroy();
-                _mouseJoint = null;
-            }
         }
 
         /// <summary>
@@ -211,13 +190,6 @@ namespace Engine.Physics.Tests
         /// <param name="delta">The position delta.</param>
         public virtual void OnMouseMove(Vector2 mousePosition, Vector2 delta)
         {
-            // Check if dragging a body. If so update the target.
-            if (_mouseJoint != null)
-            {
-                _mouseJoint.Target = MouseWorldPoint;
-            }
-
-
             // Check for scrolling in the world.
             if (_dragging)
             {

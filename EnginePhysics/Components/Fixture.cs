@@ -380,8 +380,6 @@ namespace Engine.Physics.Components
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
-            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
-
             base.Depacketize(packet);
 
             Radius = packet.ReadSingle();

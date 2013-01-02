@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Engine.FarMath;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -13,6 +14,7 @@ using TPoint = Engine.FarMath.FarPosition;
 using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
 #else
+using Engine.Math;
 using TPoint = Microsoft.Xna.Framework.Vector2;
 using TSingle = System.Single;
 using TRectangle = Engine.Math.RectangleF;
@@ -32,7 +34,7 @@ namespace Engine.Collections
     /// values for better performance.
     /// </summary>
     /// <typeparam name="T">The type to store in the index.</typeparam>
-    public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>
+    public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable
     {
         #region Constants
 
@@ -62,26 +64,38 @@ namespace Engine.Collections
         #region Fields
 
         /// <summary>
+        /// A callback that can be used to write an object stored in the tree to
+        /// a packet for serialization.
+        /// </summary>
+        private readonly Action<Packet, T> _packetizer;
+
+        /// <summary>
+        /// A callback that can be used to read an object stored in the tree from
+        /// a packet for deserialization.
+        /// </summary>
+        private readonly Func<Packet, T> _depacketizer;
+
+        /// <summary>
         /// The max entries per node in quad trees.
         /// </summary>
-        private readonly int _maxEntriesPerNode;
+        private int _maxEntriesPerNode;
 
         /// <summary>
         /// The min node bounds for nodes in quad trees.
         /// </summary>
-        private readonly float _minNodeBounds;
+        private float _minNodeBounds;
 
         /// <summary>
         /// Amount by which to oversize entry bounds to allow for small movement
         /// the item without having to update the tree. Idea taken from Box2D.
         /// </summary>
-        private readonly float _boundExtension;
+        private float _boundExtension;
 
         /// <summary>
         /// Amount by which to oversize entry bounds in the direction they moved
         /// during an update, to predict future movement. Idea taken from Box2D.
         /// </summary>
-        private readonly float _movingBoundMultiplier;
+        private float _movingBoundMultiplier;
 
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
@@ -104,12 +118,26 @@ namespace Engine.Collections
         /// <param name="minNodeBounds">The min node bounds for nodes in quad trees.</param>
         /// <param name="boundExtension">The amount by which to fatten bounds.</param>
         /// <param name="movingBoundMultiplier">The amount with which to multiply movement delta for fattening.</param>
-        public SpatialHashedQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
+        /// <param name="packetizer">A function that can be used to packetize the
+        /// type stored in the tree.</param>
+        /// <param name="depacketizer">A function that can be used to depacketize
+        /// the type stored in the tree.</param>
+        public SpatialHashedQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f, Action<Packet, T> packetizer = null, Func<Packet, T> depacketizer = null)
         {
+            if (maxEntriesPerNode < 1)
+            {
+                throw new ArgumentException("Split count must be larger than zero.", "maxEntriesPerNode");
+            }
+            if (minNodeBounds <= 0f)
+            {
+                throw new ArgumentException("Bucket size must be larger than zero.", "minNodeBounds");
+            }
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
             _boundExtension = boundExtension;
             _movingBoundMultiplier = movingBoundMultiplier;
+            _packetizer = packetizer;
+            _depacketizer = depacketizer;
         }
 
         #endregion
@@ -141,7 +169,9 @@ namespace Engine.Collections
                 if (!_entries.ContainsKey(cell.Item1))
                 {
                     // No need to extend again, we already did.
-                    _entries.Add(cell.Item1, new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
+                    _entries.Add(cell.Item1,
+                                 new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f,
+                                                                    _packetizer, _depacketizer));
                 }
 
                 // Convert the item bounds to the tree's local coordinate space.
@@ -283,7 +313,9 @@ namespace Engine.Collections
                 if (!_entries.ContainsKey(cell.Item1))
                 {
                     // No need to extend again, we already did.
-                    _entries.Add(cell.Item1, new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
+                    _entries.Add(cell.Item1,
+                                 new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f,
+                                                                    _packetizer, _depacketizer));
                 }
 
                 // Convert the item bounds to the tree's local coordinate space.
@@ -744,6 +776,86 @@ namespace Engine.Collections
                 center.X = segmentX * CellSize;
                 center.Y = segmentY * CellSize;
                 yield return Tuple.Create(center, entry.Value);
+            }
+        }
+
+        #endregion
+
+        #region Serialization
+        
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        public Packet Packetize(Packet packet)
+        {
+            if (_packetizer == null)
+            {
+                throw new InvalidOperationException("No serializer specified.");
+            }
+
+            packet
+                .Write(_maxEntriesPerNode)
+                .Write(_minNodeBounds)
+                .Write(_boundExtension)
+                .Write(_movingBoundMultiplier)
+                .Write(_entries.Count);
+
+            foreach (var entry in _entries)
+            {
+                packet.Write(entry.Key);
+                packet.Write(entry.Value);
+            }
+
+            packet.Write(_entryBounds.Count);
+            foreach (var entry in _entryBounds)
+            {
+                _packetizer(packet, entry.Key);
+                packet.Write(entry.Value);
+            }
+
+            return packet;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void Depacketize(Packet packet)
+        {
+            if (_depacketizer == null)
+            {
+                throw new InvalidOperationException("No deserializer specified.");
+            }
+
+            _maxEntriesPerNode = packet.ReadInt32();
+            _minNodeBounds = packet.ReadSingle();
+            _boundExtension = packet.ReadSingle();
+            _movingBoundMultiplier = packet.ReadSingle();
+
+            _entries.Clear();
+            var cellCount = packet.ReadInt32();
+            for (var i = 0; i < cellCount; ++i)
+            {
+                var cellId = packet.ReadUInt64();
+                var tree = new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, _boundExtension,
+                                                              _movingBoundMultiplier, _packetizer, _depacketizer);
+                packet.ReadPacketizableInto(ref tree);
+                _entries.Add(cellId, tree);
+            }
+
+            _entryBounds.Clear();
+            var entryCount = packet.ReadInt32();
+            for (var i = 0; i < entryCount; ++i)
+            {
+                var key = _depacketizer(packet);
+#if FARMATH
+                var value = packet.ReadFarRectangle();
+#else
+                var value = packet.ReadRectangleF();
+#endif
+                _entryBounds[key] = value;
             }
         }
 

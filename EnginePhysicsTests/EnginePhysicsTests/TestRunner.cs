@@ -2,8 +2,10 @@ using System;
 using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.Physics.Joints;
 using Engine.Physics.Systems;
 using Engine.Physics.Tests.Tests;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -121,6 +123,21 @@ namespace Engine.Physics.Tests
         /// The accumulated elapsed time since the last simulation update.
         /// </summary>
         private float _elapsedTimeAccumulator;
+
+        /// <summary>
+        /// The mouse joint used for dragging bodies around.
+        /// </summary>
+        private MouseJoint _mouseJoint;
+
+        /// <summary>
+        /// A serialized snapshot of the scene.
+        /// </summary>
+        private Packet _snapshot;
+
+        /// <summary>
+        /// The hash of the simulation when the snapshot was created.
+        /// </summary>
+        private int _snapshotHash;
 
         #endregion
 
@@ -263,7 +280,9 @@ Left Arrow   - Previous test.
 Right Arrow  - Next test.
 Space        - Pause or unpause simulation.
 Tab or Enter - Advance simulation one frame.
-R            - Reload current test (keeping pause state).");
+R            - Reload current test (keeping pause state).
+K            - Create snapshot (for testing serialization).
+L            - Load snapshot created with K.");
             }
             else
             {
@@ -325,14 +344,16 @@ R            - Reload current test (keeping pause state).");
                 return;
             }
 
-            // Clear our system.
+            // Clear our system, drop snapshot, clear references.
             _manager.Clear();
             _physics.Gravity = new Vector2(0, -10);
             if (reset)
             {
                 _renderer.Offset = new WorldPoint(0, -12);
                 _renderer.Scale = 0.1f;
+                _snapshot = null;
             }
+            _mouseJoint = null;
 
             // Wrap the number to the valid range.
             _currentTest = (number + Tests.Length) % Tests.Length;
@@ -378,6 +399,38 @@ R            - Reload current test (keeping pause state).");
                 case Keys.R:
                     // Reset current test but keep camera and run settings.
                     LoadTest(_currentTest, false);
+                    break;
+
+                case Keys.K:
+                    // Create a snapshot via serialization.
+                    if (_manager != null)
+                    {
+                        // Kill the mouse joint because deserializing it would
+                        // cause a joint that we do not control anymore.
+                        if (_mouseJoint != null)
+                        {
+                            _mouseJoint.Destroy();
+                            _mouseJoint = null;
+                        }
+                        _snapshot = new Packet();
+                        _manager.Packetize(_snapshot);
+                        var hasher = new Hasher();
+                        _manager.Hash(hasher);
+                        _snapshotHash = hasher.Value;
+                    }
+                    break;
+                case Keys.L:
+                    // Load a previously created snapshot.
+                    if (_snapshot != null)
+                    {
+                        // Reset test and stuff to avoid invalid references.
+                        LoadTest(_currentTest, false);
+                        _snapshot.Reset();
+                        _manager.Depacketize(_snapshot);
+                        var hasher = new Hasher();
+                        _manager.Hash(hasher);
+                        System.Diagnostics.Debug.Assert(_snapshotHash == hasher.Value);
+                    }
                     break;
 
                 case Keys.F1:
@@ -435,6 +488,18 @@ R            - Reload current test (keeping pause state).");
         {
             if (_manager != null)
             {
+                if (_mouseJoint != null)
+                {
+                    _mouseJoint.Destroy();
+                    _mouseJoint = null;
+                }
+                var mouseWorldPoint = _renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
+                                                                               Mouse.GetState().Y));
+                var fixture = _physics.GetFixtureAt(mouseWorldPoint);
+                if (fixture != null)
+                {
+                    _mouseJoint = _manager.AddMouseJoint(fixture.Body, mouseWorldPoint, maxForce: fixture.Body.Mass * 1000);
+                }
                 Tests[_currentTest].OnLeftButtonDown();
             }
         }
@@ -446,6 +511,11 @@ R            - Reload current test (keeping pause state).");
         {
             if (_manager != null)
             {
+                if (_mouseJoint != null)
+                {
+                    _mouseJoint.Destroy();
+                    _mouseJoint = null;
+                }
                 Tests[_currentTest].OnLeftButtonUp();
             }
         }
@@ -498,6 +568,14 @@ R            - Reload current test (keeping pause state).");
         {
             if (_manager != null)
             {
+                // Check if dragging a body. If so update the target.
+                if (_mouseJoint != null)
+                {
+                    var mouseWorldPoint = _renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
+                                                                                   Mouse.GetState().Y));
+                    _mouseJoint.Target = mouseWorldPoint;
+                }
+
                 Tests[_currentTest].OnMouseMove(mousePosition, delta);
             }
         }

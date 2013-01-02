@@ -19,7 +19,6 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
-using Engine.Math;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
@@ -202,11 +201,13 @@ namespace Engine.Physics.Systems
         /// body (and the index system only tracks complete entities).
         /// </summary>
 #if FARMATH
-        private IIndex<int, WorldBounds, WorldPoint> _index =
-            new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
+        private FarCollections.SpatialHashedQuadTree<int> _index =
+            new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #else
-        private IIndex<int, WorldBounds, WorldPoint> _index =
-            new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
+        private DynamicQuadTree<int> _index =
+            new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #endif
 
         /// <summary>
@@ -858,7 +859,7 @@ namespace Engine.Physics.Systems
         /// <param name="bodyA">The first body.</param>
         /// <param name="bodyB">The second body.</param>
         /// <param name="collideConnected">Whether to collide the connected bodies.</param>
-        internal Joint CreateJoint(Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = false)
+        internal Joint CreateJoint(Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = true)
         {
             // We need at least one body to attach the joint to.
             System.Diagnostics.Debug.Assert(bodyA != null || bodyB != null);
@@ -893,27 +894,37 @@ namespace Engine.Physics.Systems
                 switch (type)
                 {
                     case Joint.JointType.Revolute:
+                        _joints[joint] = new RevoluteJoint();
                         break;
                     case Joint.JointType.Prismatic:
+                        _joints[joint] = new PrismaticJoint();
                         break;
                     case Joint.JointType.Distance:
+                        _joints[joint] = new DistanceJoint();
                         break;
                     case Joint.JointType.Pulley:
+                        _joints[joint] = new PulleyJoint();
                         break;
                     case Joint.JointType.Mouse:
                         _joints[joint] = new MouseJoint();
                         break;
                     case Joint.JointType.Gear:
+                        _joints[joint] = new GearJoint();
                         break;
                     case Joint.JointType.Wheel:
+                        _joints[joint] = new WheelJoint();
                         break;
                     case Joint.JointType.Weld:
+                        _joints[joint] = new WeldJoint();
                         break;
                     case Joint.JointType.Friction:
+                        _joints[joint] = new FrictionJoint();
                         break;
                     case Joint.JointType.Rope:
+                        _joints[joint] = new RopeJoint();
                         break;
                     case Joint.JointType.Motor:
+                        _joints[joint] = new MotorJoint();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException("type");
@@ -1131,16 +1142,6 @@ namespace Engine.Physics.Systems
                 get { throw new NotSupportedException(); }
             }
 
-            internal override Vector2 GetReactionForce(float inverseDeltaT)
-            {
-                throw new NotSupportedException();
-            }
-
-            internal override float GetReactionTorque(float inverseDeltaT)
-            {
-                throw new NotSupportedException();
-            }
-
             internal override void InitializeVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
             {
                 throw new NotSupportedException();
@@ -1316,6 +1317,7 @@ namespace Engine.Physics.Systems
                 }
                 neighbors.Clear();
             }
+            _touched.Clear();
         }
 
         /// <summary>
@@ -1927,12 +1929,26 @@ namespace Engine.Physics.Systems
 
             packet.Write(_freeContacts);
 
-            packet.Write(_index.Count);
-            foreach (var entry in _index)
+            packet.Write(_jointCount);
+
+            packet.Write(_joints.Length);
+            for (var i = 0; i < _joints.Length; i++)
             {
-                packet.Write(entry.Item1);
-                packet.Write(entry.Item2);
+                packet.WriteWithTypeInfo(_joints[i]);
+                packet.Write(_joints[i].Manager != null);
             }
+
+            packet.Write(_jointEdges.Length);
+            for (var i = 0; i < _jointEdges.Length; i++)
+            {
+                packet.Write(_jointEdges[i]);
+            }
+
+            packet.Write(_usedJoints);
+
+            packet.Write(_freeJoints);
+
+            packet.Write(_index);
 
             packet.Write(_touched.Count);
             foreach (var entry in _touched)
@@ -1951,8 +1967,6 @@ namespace Engine.Physics.Systems
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
-            System.Diagnostics.Debug.Assert(!IsLocked);
-
             base.Depacketize(packet);
 
             _timestep = packet.ReadSingle();
@@ -1964,12 +1978,20 @@ namespace Engine.Physics.Systems
             _contacts = new Contact[packet.ReadInt32()];
             for (var i = 0; i < _contacts.Length; i++)
             {
+                if (_contacts[i] == null)
+                {
+                    _contacts[i] = new Contact {Manager = Manager};
+                }
                 packet.ReadPacketizableInto(ref _contacts[i]);
             }
 
             _contactEdges = new ContactEdge[packet.ReadInt32()];
             for (var i = 0; i < _contactEdges.Length; i++)
             {
+                if (_contactEdges[i] == null)
+                {
+                    _contactEdges[i] = new ContactEdge();
+                }
                 packet.ReadPacketizableInto(ref _contactEdges[i]);
             }
 
@@ -1977,27 +1999,44 @@ namespace Engine.Physics.Systems
 
             _freeContacts = packet.ReadInt32();
 
-            _index.Clear();
-            var indexCount = packet.ReadInt32();
-            for (var i = 0; i < indexCount; i++)
+            _jointCount = packet.ReadInt32();
+
+            _joints = new Joint[packet.ReadInt32()];
+            for (var i = 0; i < _joints.Length; i++)
             {
-#if FARMATH
-                var bounds = packet.ReadFarRectangle();
-#else
-                var bounds = packet.ReadRectangleF();
-#endif
-                var id = packet.ReadInt32();
-                _index.Add(bounds, id);
+                _joints[i] = packet.ReadPacketizableWithTypeInfo<Joint>();
+                if (packet.ReadBoolean())
+                {
+                    _joints[i].Manager = Manager;
+                }
             }
 
+            _jointEdges = new JointEdge[packet.ReadInt32()];
+            for (var i = 0; i < _jointEdges.Length; i++)
+            {
+                if (_jointEdges[i] == null)
+                {
+                    _jointEdges[i] = new JointEdge();
+                }
+                packet.ReadPacketizableInto(ref _jointEdges[i]);
+            }
+
+            _usedJoints = packet.ReadInt32();
+
+            _freeJoints = packet.ReadInt32();
+
+            packet.ReadPacketizableInto(ref _index);
+
             _touched.Clear();
-            var changedCount = packet.ReadInt32();
-            for (var i = 0; i < changedCount; i++)
+            var touchedCount = packet.ReadInt32();
+            for (var i = 0; i < touchedCount; ++i)
             {
                 _touched.Add(packet.ReadInt32());
             }
 
             _findContactsBeforeNextUpdate = packet.ReadBoolean();
+
+            _island = new Island();
         }
 
         /// <summary>
@@ -2011,9 +2050,36 @@ namespace Engine.Physics.Systems
 
             base.Hash(hasher);
 
-            // TODO
+            hasher.Put(_timestep);
+            hasher.Put(_gravity);
+
+            hasher.Put(_contactCount);
+            for (var i = 0; i < _contacts.Length; ++i)
+            {
+                _contacts[i].Hash(hasher);
+            }
+            for (var i = 0; i < _contactEdges.Length; ++i)
+            {
+                _contactEdges[i].Hash(hasher);
+            }
             hasher.Put(_usedContacts);
             hasher.Put(_freeContacts);
+
+            hasher.Put(_jointCount);
+            for (var i = 0; i < _joints.Length; ++i)
+            {
+                _joints[i].Hash(hasher);
+            }
+            for (var i = 0; i < _jointEdges.Length; ++i)
+            {
+                _jointEdges[i].Hash(hasher);
+            }
+            hasher.Put(_usedJoints);
+            hasher.Put(_freeJoints);
+
+            hasher.Put(_index.Count);
+            hasher.Put(_touched.Count);
+            hasher.Put(_findContactsBeforeNextUpdate);
         }
 
         #endregion
@@ -2033,16 +2099,20 @@ namespace Engine.Physics.Systems
 
             var copy = (PhysicsSystem)base.NewInstance();
 
-#if FARMATH
-            copy._index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
-#else
-            copy._index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier);
-#endif
-            copy._touched = new HashSet<int>();
             copy._contacts = new Contact[0];
             copy._contactEdges = new ContactEdge[0];
-            copy._usedContacts = -1;
-            copy._freeContacts = 0;
+
+            copy._joints = new Joint[0];
+            copy._jointEdges = new JointEdge[0];
+
+#if FARMATH
+            copy._index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
+#else
+            copy._index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
+#endif
+            copy._touched = new HashSet<int>();
 
             copy._island = null;
             copy._proxyA = new Algorithms.DistanceProxy();
@@ -2071,16 +2141,7 @@ namespace Engine.Physics.Systems
             copy._timestep = _timestep;
             copy._gravity = _gravity;
 
-            copy._index.Clear();
-            foreach (var entry in _index)
-            {
-                copy._index.Add(entry.Item1, entry.Item2);
-            }
-
-            copy._touched.Clear();
-            copy._touched.UnionWith(_touched);
-            copy._findContactsBeforeNextUpdate = _findContactsBeforeNextUpdate;
-
+            copy._contactCount = _contactCount;
             if (copy._contacts.Length != _contacts.Length)
             {
                 copy._contacts = new Contact[_contacts.Length];
@@ -2110,6 +2171,50 @@ namespace Engine.Physics.Systems
 
             copy._usedContacts = _usedContacts;
             copy._freeContacts = _freeContacts;
+
+            copy._jointCount = _jointCount;
+            if (copy._joints.Length != _joints.Length)
+            {
+                copy._joints = new Joint[_joints.Length];
+            }
+            for (var i = 0; i < _joints.Length; ++i)
+            {
+                if (copy._joints[i] == null)
+                {
+                    copy._joints[i] = _joints[i].NewInstance();
+                }
+                _joints[i].CopyInto(copy._joints[i]);
+                if (_joints[i].Manager != null)
+                {
+                    copy._joints[i].Manager = copy.Manager;
+                }
+            }
+
+            if (copy._jointEdges.Length != _jointEdges.Length)
+            {
+                copy._jointEdges = new JointEdge[_jointEdges.Length];
+            }
+            for (var i = 0; i < _jointEdges.Length; ++i)
+            {
+                if (copy._jointEdges[i] == null)
+                {
+                    copy._jointEdges[i] = _jointEdges[i].NewInstance();
+                }
+                _jointEdges[i].CopyInto(copy._jointEdges[i]);
+            }
+
+            copy._usedJoints = _usedJoints;
+            copy._freeJoints = _freeJoints;
+
+            copy._index.Clear();
+            foreach (var entry in _index)
+            {
+                copy._index.Add(entry.Item1, entry.Item2);
+            }
+
+            copy._touched.Clear();
+            copy._touched.UnionWith(_touched);
+            copy._findContactsBeforeNextUpdate = _findContactsBeforeNextUpdate;
         }
 
         #endregion

@@ -23,7 +23,7 @@ namespace Engine.Physics.Contacts
     /// <summary>
     /// Represents a contact between two fixtures.
     /// </summary>
-    internal sealed class Contact : PhysicsSystem.IContact, ICopyable<Contact>, IPacketizable
+    internal sealed class Contact : PhysicsSystem.IContact, ICopyable<Contact>, IPacketizable, IHashable
     {
         #region Linked list data (unused/free)
 
@@ -553,6 +553,7 @@ namespace Engine.Physics.Contacts
                 .Write(Friction)
                 .Write(Restitution)
                 .Write(IsTouching)
+                .Write(ShouldFilter)
                 .Write(Manifold)
                 .Write((byte)_type);
         }
@@ -570,8 +571,29 @@ namespace Engine.Physics.Contacts
             Friction = packet.ReadSingle();
             Restitution = packet.ReadSingle();
             IsTouching = packet.ReadBoolean();
+            ShouldFilter = packet.ReadBoolean();
             Manifold = packet.ReadManifold();
             _type = (ContactType)packet.ReadByte();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
+        {
+            hasher
+                .Put(Previous)
+                .Put(Next)
+                .Put(FixtureIdA)
+                .Put(FixtureIdB)
+                .Put(Friction)
+                .Put(Restitution)
+                .Put(IsTouching)
+                .Put(ShouldFilter)
+                .Put(Manifold)
+                .Put((byte)_type);
         }
 
         #endregion

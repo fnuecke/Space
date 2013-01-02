@@ -2,11 +2,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using Engine.Math;
+using Engine.Serialization;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
 #if FARMATH
 using Engine.Collections;
+using Engine.FarMath;
 using TPoint = Engine.FarMath.FarPosition;
 using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
@@ -56,7 +60,7 @@ namespace Engine.Collections
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>
+    public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable
     {
         #region Properties
 
@@ -73,27 +77,39 @@ namespace Engine.Collections
         #region Fields
 
         /// <summary>
+        /// A callback that can be used to write an object stored in the tree to
+        /// a packet for serialization.
+        /// </summary>
+        private readonly Action<Packet, T> _packetizer;
+
+        /// <summary>
+        /// A callback that can be used to read an object stored in the tree from
+        /// a packet for deserialization.
+        /// </summary>
+        private readonly Func<Packet, T> _depacketizer;
+
+        /// <summary>
         /// The number of items in a single cell allowed before we try splitting it.
         /// </summary>
-        private readonly int _maxEntriesPerNode;
+        private int _maxEntriesPerNode;
 
         /// <summary>
         /// The minimum bounds size of a node along an axis, used to stop splitting
         /// at a defined accuracy.
         /// </summary>
-        private readonly float _minNodeBounds;
+        private float _minNodeBounds;
 
         /// <summary>
         /// Amount by which to oversize entry bounds to allow for small movement
         /// the item without having to update the tree. Idea taken from Box2D.
         /// </summary>
-        private readonly float _boundExtension;
+        private float _boundExtension;
 
         /// <summary>
         /// Amount by which to oversize entry bounds in the direction they moved
         /// during an update, to predict future movement. Idea taken from Box2D.
         /// </summary>
-        private readonly float _movingBoundMultiplier;
+        private float _movingBoundMultiplier;
 
         /// <summary>
         /// The current bounds of the tree. This is a dynamic value, adjusted
@@ -128,11 +144,15 @@ namespace Engine.Collections
         /// <param name="boundExtension">The amount by which to inflate bounds.</param>
         /// <param name="movingBoundMultiplier">The multiplier for moving bound
         /// displacement used for predictive bound inflation.</param>
+        /// <param name="packetizer">A function that can be used to packetize the
+        /// type stored in the tree.</param>
+        /// <param name="depacketizer">A function that can be used to depacketize
+        /// the type stored in the tree.</param>
         /// <exception cref="T:System.ArgumentException">
         /// One or both of the specified parameters are invalid (must be larger
         /// than zero).
         ///   </exception>
-        public DynamicQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
+        public DynamicQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f, Action<Packet, T> packetizer = null, Func<Packet, T> depacketizer = null)
         {
             if (maxEntriesPerNode < 1)
             {
@@ -146,6 +166,8 @@ namespace Engine.Collections
             _minNodeBounds = minNodeBounds;
             _boundExtension = boundExtension;
             _movingBoundMultiplier = movingBoundMultiplier;
+            _packetizer = packetizer;
+            _depacketizer = depacketizer;
 
             Clear();
         }
@@ -515,6 +537,225 @@ namespace Engine.Collections
 
                 // Return data for this node.
                 yield return Tuple.Create(bounds, node.GetEntryEnumerable());
+            }
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        public Packet Packetize(Packet packet)
+        {
+            if (_packetizer == null)
+            {
+                throw new InvalidOperationException("No serializer specified.");
+            }
+
+            packet
+                .Write(_maxEntriesPerNode)
+                .Write(_minNodeBounds)
+                .Write(_boundExtension)
+                .Write(_movingBoundMultiplier)
+                .Write(_bounds)
+                .Write(_values.Count);
+
+            // Entry serialization as a two step process: first write the values and
+            // bounds which will allow us to generate the entry objects when deserializing.
+            foreach (var entry in _values.Values)
+            {
+                _packetizer(packet, entry.Value);
+                packet.Write(entry.Bounds);
+            }
+            // In the second pass, write the keys of the referenced other entries,
+            // which can then be filled in into the created objects.
+            foreach (var entry in _values.Values)
+            {
+                _packetizer(packet, entry.Value);
+                if (entry.Next != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, entry.Next.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+                if (entry.Previous != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, entry.Previous.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+            }
+
+            var stack = new Stack<Node>();
+            stack.Push(_root);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+
+                packet.Write(node.EntryCount);
+
+                if (node.FirstChildEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.FirstChildEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                if (node.LastChildEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.LastChildEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                if (node.FirstEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.FirstEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                if (node.LastEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.LastEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (node.Children[i] != null)
+                    {
+                        packet.Write(true);
+                        stack.Push(node.Children[i]);
+                    }
+                    else
+                    {
+                        packet.Write(false);
+                    }
+                }
+            }
+
+            return packet;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void Depacketize(Packet packet)
+        {
+            if (_depacketizer == null)
+            {
+                throw new InvalidOperationException("No deserializer specified.");
+            }
+
+            _maxEntriesPerNode = packet.ReadInt32();
+            _minNodeBounds = packet.ReadSingle();
+            _boundExtension = packet.ReadSingle();
+            _movingBoundMultiplier = packet.ReadSingle();
+#if FARMATH
+            _bounds = packet.ReadFarRectangle();
+#else
+            _bounds = packet.ReadRectangleF();
+#endif
+
+            _values.Clear();
+            var count = packet.ReadInt32();
+            for (var i = 0; i < count; ++i)
+            {
+                var value = _depacketizer(packet);
+#if FARMATH
+                var bounds = packet.ReadFarRectangle();
+#else
+                var bounds = packet.ReadRectangleF();
+
+                Debug.Assert(!float.IsNaN(bounds.X));
+                Debug.Assert(!float.IsNaN(bounds.Y));
+                Debug.Assert(!float.IsNaN(bounds.Width));
+                Debug.Assert(!float.IsNaN(bounds.Height));
+#endif
+
+                var entry = new Entry {Bounds = bounds, Value = value};
+                _values[value] = entry;
+            }
+            for (var i = 0; i < count; ++i)
+            {
+                var current = _depacketizer(packet);
+                if (packet.ReadBoolean())
+                {
+                    // Got a next value.
+                    var next = _depacketizer(packet);
+                    _values[current].Next = _values[next];
+                }
+                if (packet.ReadBoolean())
+                {
+                    // Got a previous value.
+                    var previous = _depacketizer(packet);
+                    _values[current].Previous = _values[previous];
+                }
+            }
+
+            var stack = new Stack<Tuple<Node, int>>();
+            _root = new Node();
+            DepacketizeNode(packet, _root, stack);
+            while (stack.Count > 0)
+            {
+                var pair = stack.Pop();
+                var parent = pair.Item1;
+                var childIndex = pair.Item2;
+                var child = parent.Children[childIndex] = new Node {Parent = parent};
+                DepacketizeNode(packet, child, stack);
+            }
+        }
+
+        private void DepacketizeNode(Packet packet, Node node, Stack<Tuple<Node, int>> stack)
+        {
+            node.EntryCount = packet.ReadInt32();
+            if (packet.ReadBoolean())
+            {
+                node.FirstChildEntry = _values[_depacketizer(packet)];
+            }
+            if (packet.ReadBoolean())
+            {
+                node.LastChildEntry = _values[_depacketizer(packet)];
+            }
+            if (packet.ReadBoolean())
+            {
+                node.FirstEntry = _values[_depacketizer(packet)];
+            }
+            if (packet.ReadBoolean())
+            {
+                node.LastEntry = _values[_depacketizer(packet)];
+            }
+            for (var i = 0; i < 4; ++i)
+            {
+                if (packet.ReadBoolean())
+                {
+                    stack.Push(Tuple.Create(node, i));
+                }
             }
         }
 

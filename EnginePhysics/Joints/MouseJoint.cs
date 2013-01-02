@@ -108,8 +108,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes a new instance of the <see cref="MouseJoint"/> class.
         /// </summary>
-        internal MouseJoint()
-            : base(JointType.Mouse)
+        public MouseJoint() : base(JointType.Mouse)
         {
         }
 
@@ -154,26 +153,6 @@ namespace Engine.Physics.Joints
         // J = [I r_skew]
         // Identity used:
         // w k % (rx i + ry j) = w * (-ry i + rx j)
-
-        /// <summary>
-        /// Get the reaction force on bodyB at the joint anchor in Newtons.
-        /// </summary>
-        /// <param name="inverseDeltaT">The inverse time step.</param>
-        /// <returns>The reaction force on the second body.</returns>
-        internal override Vector2 GetReactionForce(float inverseDeltaT)
-        {
-            return inverseDeltaT * _impulse;
-        }
-
-        /// <summary>
-        /// Get the reaction torque on the second body in N*m.
-        /// </summary>
-        /// <param name="inverseDeltaT">The inverse time step.</param>
-        /// <returns>The reaction torque.</returns>
-        internal override float GetReactionTorque(float inverseDeltaT)
-        {
-            return 0;
-        }
 
         /// <summary>
         /// Initializes the velocity constraints.

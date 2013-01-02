@@ -212,15 +212,15 @@ namespace Engine.Physics.Components
         /// </summary>
         public bool IsRotationFixed
         {
-            get { return _isRotationFixedInternal; }
+            get { return _isRotationFixed; }
             set
             {
-                if (_isRotationFixedInternal == value)
+                if (_isRotationFixed == value)
                 {
                     return;
                 }
 
-                _isRotationFixedInternal = value;
+                _isRotationFixed = value;
 
                 AngularVelocityInternal = 0.0f;
 
@@ -408,7 +408,7 @@ namespace Engine.Physics.Components
         /// <summary>
         /// Whether the rotation for this body is fixed or not.
         /// </summary>
-        private bool _isRotationFixedInternal;
+        private bool _isRotationFixed;
 
         /// <summary>
         /// Whether this body should act as a bullet, if dynamic.
@@ -521,7 +521,7 @@ namespace Engine.Physics.Components
             TypeInternal = otherBody.TypeInternal;
             IsSleepAllowedInternal = otherBody.IsSleepAllowedInternal;
             IsAwakeInternal = otherBody.IsAwakeInternal;
-            _isRotationFixedInternal = otherBody._isRotationFixedInternal;
+            _isRotationFixed = otherBody._isRotationFixed;
             IsBulletInternal = otherBody.IsBulletInternal;
             IslandIndex = otherBody.IslandIndex;
             Transform = otherBody.Transform;
@@ -573,7 +573,7 @@ namespace Engine.Physics.Components
                 InverseMass = 1.0f;
             }
 
-            _isRotationFixedInternal = fixedRotation;
+            _isRotationFixed = fixedRotation;
             IsBulletInternal = isBullet;
             IsSleepAllowedInternal = allowSleep;
 
@@ -604,7 +604,7 @@ namespace Engine.Physics.Components
 
             IsSleepAllowedInternal = true;
             IsAwakeInternal = true;
-            _isRotationFixedInternal = false;
+            _isRotationFixed = false;
             IsBulletInternal = false;
             IslandIndex = 0;
             Transform = WorldTransform.Identity;
@@ -968,7 +968,7 @@ namespace Engine.Physics.Components
                 localCenter *= InverseMass;
             }
 
-            if (_isRotationFixedInternal || _inertia <= 0)
+            if (_isRotationFixed || _inertia <= 0)
             {
                 _inertia = 0;
                 InverseInertia = 0;
@@ -1059,7 +1059,7 @@ namespace Engine.Physics.Components
                 .Write((byte)TypeInternal)
                 .Write(IsSleepAllowedInternal)
                 .Write(IsAwakeInternal)
-                .Write(_isRotationFixedInternal)
+                .Write(_isRotationFixed)
                 .Write(IsBulletInternal)
                 .Write(IslandIndex)
                 .Write(Transform)
@@ -1083,14 +1083,12 @@ namespace Engine.Physics.Components
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
-            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
-
             base.Depacketize(packet);
 
             TypeInternal = (BodyType)packet.ReadByte();
             IsSleepAllowedInternal = packet.ReadBoolean();
             IsAwakeInternal = packet.ReadBoolean();
-            _isRotationFixedInternal = packet.ReadBoolean();
+            _isRotationFixed = packet.ReadBoolean();
             IsBulletInternal = packet.ReadBoolean();
             IslandIndex = packet.ReadInt32();
             Transform = packet.ReadWorldTransform();
@@ -1102,9 +1100,23 @@ namespace Engine.Physics.Components
             JointList = packet.ReadInt32();
             ContactList = packet.ReadInt32();
             MassInternal = packet.ReadSingle();
-            InverseMass = 1 / MassInternal;
+            if (MassInternal > 0)
+            {
+                InverseMass = 1 / MassInternal;
+            }
+            else
+            {
+                InverseMass = 0;
+            }
             _inertia = packet.ReadSingle();
-            InverseInertia = 1 / _inertia;
+            if (_inertia > 0)
+            {
+                InverseInertia = 1 / _inertia;
+            }
+            else
+            {
+                InverseInertia = 0;
+            }
             LinearDampingInternal = packet.ReadSingle();
             AngularDampingInternal = packet.ReadSingle();
             SleepTime = packet.ReadSingle();

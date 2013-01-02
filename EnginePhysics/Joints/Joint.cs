@@ -4,7 +4,6 @@ using Engine.Physics.Components;
 using Engine.Physics.Systems;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
@@ -55,7 +54,7 @@ namespace Engine.Physics.Joints
         /// </summary>
         public Body BodyA
         {
-            get { return _bodyIdA != 0 ? _manager.GetComponentById(_bodyIdA) as Body : null; }
+            get { return _bodyIdA != 0 ? Manager.GetComponentById(_bodyIdA) as Body : null; }
         }
 
         /// <summary>
@@ -63,7 +62,7 @@ namespace Engine.Physics.Joints
         /// </summary>
         public Body BodyB
         {
-            get { return _bodyIdB != 0 ? _manager.GetComponentById(_bodyIdB) as Body : null; }
+            get { return _bodyIdB != 0 ? Manager.GetComponentById(_bodyIdB) as Body : null; }
         }
 
         /// <summary>
@@ -88,7 +87,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// The manager of the component system the bodies of this joint live in.
         /// </summary>
-        private IManager _manager;
+        internal IManager Manager;
 
         /// <summary>
         /// Used for the global doubly linked list of joints.
@@ -103,7 +102,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Set this flag to true if the attached bodies should collide.
         /// </summary>
-        internal bool CollideConnected;
+        internal bool CollideConnected = true;
 
         #endregion
 
@@ -127,7 +126,7 @@ namespace Engine.Physics.Joints
         /// <param name="collideConnected">if set to <c>true</c> [collide connected].</param>
         internal void Initialize(IManager manager, Body bodyA, Body bodyB, bool collideConnected)
         {
-            _manager = manager;
+            Manager = manager;
             _bodyIdA = bodyA != null ? bodyA.Id : 0;
             _bodyIdB = bodyB != null ? bodyB.Id : 0;
             CollideConnected = collideConnected;
@@ -135,38 +134,24 @@ namespace Engine.Physics.Joints
 
         public void Destroy()
         {
-            if (_manager == null)
+            if (Manager == null)
             {
                 throw new InvalidOperationException("Joint was already removed.");
             }
 
-            var physics = _manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
+            var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
             System.Diagnostics.Debug.Assert(physics != null);
             physics.DestroyJoint(Previous, Next);
 
-            _manager = null;
+            Manager = null;
             _bodyIdA = 0;
             _bodyIdB = 0;
-            CollideConnected = false;
+            CollideConnected = true;
         }
 
         #endregion
 
         #region Logic
-
-        /// <summary>
-        /// Get the reaction force on bodyB at the joint anchor in Newtons.
-        /// </summary>
-        /// <param name="inverseDeltaT">The inverse time step.</param>
-        /// <returns>The reaction force on the second body.</returns>
-        internal abstract Vector2 GetReactionForce(float inverseDeltaT);
-
-        /// <summary>
-        /// Get the reaction torque on the second body in N*m.
-        /// </summary>
-        /// <param name="inverseDeltaT">The inverse time step.</param>
-        /// <returns>The reaction torque.</returns>
-        internal abstract float GetReactionTorque(float inverseDeltaT);
 
         /// <summary>
         /// Initializes the velocity constraints.
@@ -254,7 +239,7 @@ namespace Engine.Physics.Joints
         {
             var copy = (Joint)MemberwiseClone();
 
-            copy._manager = null;
+            copy.Manager = null;
 
             return copy;
         }

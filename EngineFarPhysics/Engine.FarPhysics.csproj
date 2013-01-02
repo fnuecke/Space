@@ -105,11 +105,41 @@
     <Compile Include="..\EnginePhysics\JointFactory.cs">
       <Link>JointFactory.cs</Link>
     </Compile>
+    <Compile Include="..\EnginePhysics\Joints\DistanceJoint.cs">
+      <Link>Joints\DistanceJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\FrictionJoint.cs">
+      <Link>Joints\FrictionJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\GearJoint.cs">
+      <Link>Joints\GearJoint.cs</Link>
+    </Compile>
     <Compile Include="..\EnginePhysics\Joints\Joint.cs">
       <Link>Joints\Joint.cs</Link>
     </Compile>
+    <Compile Include="..\EnginePhysics\Joints\MotorJoint.cs">
+      <Link>Joints\MotorJoint.cs</Link>
+    </Compile>
     <Compile Include="..\EnginePhysics\Joints\MouseJoint.cs">
       <Link>Joints\MouseJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\PrismaticJoint.cs">
+      <Link>Joints\PrismaticJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\PulleyJoint.cs">
+      <Link>Joints\PulleyJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\RevoluteJoint.cs">
+      <Link>Joints\RevoluteJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\RopeJoint.cs">
+      <Link>Joints\RopeJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\WeldJoint.cs">
+      <Link>Joints\WeldJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\WheelJoint.cs">
+      <Link>Joints\WheelJoint.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Math\Sweep.cs">
       <Link>Math\Sweep.cs</Link>
