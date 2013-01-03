@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Physics.Collision;
@@ -14,7 +13,6 @@ using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using Engine.FarMath;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
@@ -205,8 +203,8 @@ namespace Engine.Physics.Systems
             new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
                 (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #else
-        private DynamicQuadTree<int> _index =
-            new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+        private Collections.DynamicQuadTree<int> _index =
+            new Collections.DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
                 (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #endif
 
@@ -2111,7 +2109,7 @@ namespace Engine.Physics.Systems
             copy._index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
                 (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #else
-            copy._index = new DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+            copy._index = new Collections.DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
                 (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #endif
             copy._touched = new HashSet<int>();

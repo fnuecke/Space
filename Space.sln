@@ -729,6 +729,7 @@ Global
 		{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
 		{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}.Debug|x86.ActiveCfg = Debug|x86
 		{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{78FF6B04-AC47-45B3-A4E9-D3B9059F1FF5}.Release (TSS Threading)|Mixed Platforms.ActiveCfg = Release|x86

@@ -95,6 +95,8 @@ namespace Engine.Physics.Components
         /// <param name="density">The density.</param>
         /// <param name="friction">The friction.</param>
         /// <param name="restitution">The restitution.</param>
+        /// <param name="isSensor">if set to <c>true</c> this fixture is marked as a sensor.</param>
+        /// <param name="collisionGroups">The collision groups for this fixture.</param>
         /// <returns></returns>
         public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
         {

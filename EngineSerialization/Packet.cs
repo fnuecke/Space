@@ -714,7 +714,7 @@ namespace Engine.Serialization
         /// <returns>The read value (which may be null).</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public T ReadPacketizableInto<T>(ref T existingInstance)
+        public void ReadPacketizableInto<T>(ref T existingInstance)
             where T : IPacketizable
         {
             using (var packet = ReadPacket())
@@ -722,11 +722,13 @@ namespace Engine.Serialization
                 if (packet == null)
                 {
                     Debug.Assert(!typeof(ValueType).IsAssignableFrom(typeof(T)), "Got a null value for a value type.");
-                    return default(T);
+                    existingInstance = default(T);
                 }
-                existingInstance.Depacketize(packet);
+                else
+                {
+                    existingInstance.Depacketize(packet);
+                }
             }
-            return existingInstance;
         }
 
         /// <summary>
@@ -744,7 +746,7 @@ namespace Engine.Serialization
             where T : IPacketizable, new()
         {
             var instance = new T();
-            instance = ReadPacketizableInto(ref instance);
+            ReadPacketizableInto(ref instance);
             return instance;
         }
 
@@ -1133,7 +1135,7 @@ namespace Engine.Serialization
         {
             if (HasInt32())
             {
-                return Available >= sizeof(int) + System.Math.Max(0, PeekInt32());
+                return Available >= sizeof(int) + Math.Max(0, PeekInt32());
             }
             return false;
         }

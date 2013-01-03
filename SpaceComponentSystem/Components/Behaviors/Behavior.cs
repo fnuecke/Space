@@ -560,7 +560,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         #endregion
 
         #region Debugging
-#if DEBUG
 
         private Vector2 _lastEscape;
 
@@ -569,6 +568,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         private Vector2 _lastCohesion;
 
         private Vector2 _lastFormation;
+
+#if DEBUG
 
         public Vector2 GetLastEscape()
         {
