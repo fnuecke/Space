@@ -83,7 +83,7 @@
     <Compile Include="Joints\WeldJoint.cs" />
     <Compile Include="Joints\WheelJoint.cs" />
     <Compile Include="Math\Transform.cs" />
-    <Compile Include="Math\Vector2.cs" />
+    <Compile Include="Math\Vector.cs" />
     <Compile Include="Messages\BeginContact.cs" />
     <Compile Include="Messages\EndContact.cs" />
     <Compile Include="Messages\PreSolve.cs" />

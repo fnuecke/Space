@@ -147,8 +147,8 @@
     <Compile Include="..\EnginePhysics\Math\Transform.cs">
       <Link>Math\Transform.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Math\Vector2.cs">
-      <Link>Math\Vector2.cs</Link>
+    <Compile Include="..\EnginePhysics\Math\Vector.cs">
+      <Link>Math\Vector.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Settings.cs">
       <Link>Settings.cs</Link>
