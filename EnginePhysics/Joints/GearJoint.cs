@@ -1,5 +1,7 @@
-﻿using Engine.Physics.Components;
+﻿using System.Globalization;
+using Engine.Physics.Components;
 using Engine.Physics.Math;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -436,6 +438,150 @@ namespace Engine.Physics.Joints
 
             // TODO_ERIN not implemented
             return linearError < Settings.LinearSlop;
+        }
+
+        #endregion
+
+        #region Serialization / Hashing
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Serialization.Packet Packetize(Serialization.Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write((byte)_typeA)
+                .Write((byte)_typeB)
+                .Write(_bodyIdC)
+                .Write(_bodyIdD)
+                .Write(_localAnchorA)
+                .Write(_localAnchorB)
+                .Write(_localAnchorC)
+                .Write(_localAnchorD)
+                .Write(_localAxisC)
+                .Write(_localAxisD)
+                .Write(_referenceAngleA)
+                .Write(_referenceAngleB)
+                .Write(_constant)
+                .Write(_ratio)
+                .Write(_impulse);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Serialization.Packet packet)
+        {
+            base.Depacketize(packet);
+
+            _typeA = (JointType)packet.ReadByte();
+            _typeB = (JointType)packet.ReadByte();
+            _bodyIdC = packet.ReadInt32();
+            _bodyIdD = packet.ReadInt32();
+            _localAnchorA = packet.ReadVector2();
+            _localAnchorB = packet.ReadVector2();
+            _localAnchorC = packet.ReadVector2();
+            _localAnchorD = packet.ReadVector2();
+            _localAxisC = packet.ReadVector2();
+            _localAxisD = packet.ReadVector2();
+            _referenceAngleA = packet.ReadSingle();
+            _referenceAngleB = packet.ReadSingle();
+            _constant = packet.ReadSingle();
+            _ratio = packet.ReadSingle();
+            _impulse = packet.ReadSingle();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Serialization.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher
+                .Put((byte)_typeA)
+                .Put((byte)_typeB)
+                .Put(_bodyIdC)
+                .Put(_bodyIdD)
+                .Put(_localAnchorA)
+                .Put(_localAnchorB)
+                .Put(_localAnchorC)
+                .Put(_localAnchorD)
+                .Put(_localAxisC)
+                .Put(_localAxisD)
+                .Put(_referenceAngleA)
+                .Put(_referenceAngleB)
+                .Put(_constant)
+                .Put(_ratio)
+                .Put(_impulse);
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        public override void CopyInto(Joint into)
+        {
+            base.CopyInto(into);
+
+            var copy = (GearJoint)into;
+
+            copy._typeA = _typeA;
+            copy._typeB = _typeB;
+            copy._bodyIdC = _bodyIdC;
+            copy._bodyIdD = _bodyIdD;
+            copy._localAnchorA = _localAnchorA;
+            copy._localAnchorB = _localAnchorB;
+            copy._localAnchorC = _localAnchorC;
+            copy._localAnchorD = _localAnchorD;
+            copy._localAxisC = _localAxisC;
+            copy._localAxisD = _localAxisD;
+            copy._referenceAngleA = _referenceAngleA;
+            copy._referenceAngleB = _referenceAngleB;
+            copy._constant = _constant;
+            copy._ratio = _ratio;
+            copy._impulse = _impulse;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() +
+                ", TypeA=" + _typeA +
+                ", TypeB=" + _typeB +
+                ", BodyC=" + _bodyIdC +
+                ", BodyD=" + _bodyIdD +
+                ", LocalAnchorA=" + _localAnchorA.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorA.Y.ToString(CultureInfo.InvariantCulture) +
+                ", LocalAnchorB=" + _localAnchorB.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorB.Y.ToString(CultureInfo.InvariantCulture) +
+                ", LocalAnchorC=" + _localAnchorC.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorC.Y.ToString(CultureInfo.InvariantCulture) +
+                ", LocalAnchorD=" + _localAnchorD.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorD.Y.ToString(CultureInfo.InvariantCulture) +
+                ", LocalAxisC=" + _localAxisC.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAxisC.Y.ToString(CultureInfo.InvariantCulture) +
+                ", LocalAxisD=" + _localAxisD.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAxisD.Y.ToString(CultureInfo.InvariantCulture) +
+                ", ReferenceAngleA=" + _referenceAngleA.ToString(CultureInfo.InvariantCulture) +
+                ", ReferenceAngleB=" + _referenceAngleB.ToString(CultureInfo.InvariantCulture) +
+                ", Constant=" + _constant.ToString(CultureInfo.InvariantCulture) +
+                ", Ratio=" + _ratio.ToString(CultureInfo.InvariantCulture) +
+                ", Impulse=" + _impulse.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

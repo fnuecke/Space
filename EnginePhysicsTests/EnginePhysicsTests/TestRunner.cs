@@ -118,7 +118,7 @@ namespace Engine.Physics.Tests
         /// <summary>
         /// Whether to render the help text.
         /// </summary>
-        private bool _showHelp = true;
+        private bool _showHelp;
 
         /// <summary>
         /// The accumulated elapsed time since the last simulation update.

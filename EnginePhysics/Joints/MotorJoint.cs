@@ -1,4 +1,6 @@
-﻿using Engine.Physics.Math;
+﻿using System.Globalization;
+using Engine.Physics.Math;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -341,6 +343,110 @@ namespace Engine.Physics.Joints
         internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
             return true;
+        }
+
+        #endregion
+
+        #region Serialization / Hashing
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Serialization.Packet Packetize(Serialization.Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(_linearOffset)
+                .Write(_angularOffset)
+                .Write(_linearImpulse)
+                .Write(_angularImpulse)
+                .Write(_maxForce)
+                .Write(_maxTorque)
+                .Write(_correctionFactor);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Serialization.Packet packet)
+        {
+            base.Depacketize(packet);
+
+            _linearOffset = packet.ReadVector2();
+            _angularOffset = packet.ReadSingle();
+            _linearImpulse = packet.ReadVector2();
+            _angularImpulse = packet.ReadSingle();
+            _maxForce = packet.ReadSingle();
+            _maxTorque = packet.ReadSingle();
+            _correctionFactor = packet.ReadSingle();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Serialization.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher
+                .Put(_linearOffset)
+                .Put(_angularOffset)
+                .Put(_linearImpulse)
+                .Put(_angularImpulse)
+                .Put(_maxForce)
+                .Put(_maxTorque)
+                .Put(_correctionFactor);
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        public override void CopyInto(Joint into)
+        {
+            base.CopyInto(into);
+
+            var copy = (MotorJoint)into;
+
+            copy._linearOffset = _linearOffset;
+            copy._angularOffset = _angularOffset;
+            copy._linearImpulse = _linearImpulse;
+            copy._angularImpulse = _angularImpulse;
+            copy._maxForce = _maxForce;
+            copy._maxTorque = _maxTorque;
+            copy._correctionFactor = _correctionFactor;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() +
+                ", LinearOffset=" + _linearOffset.X.ToString(CultureInfo.InvariantCulture) + ":" + _linearOffset.Y.ToString(CultureInfo.InvariantCulture) +
+                ", AngularOffset=" + _angularOffset.ToString(CultureInfo.InvariantCulture) +
+                ", LinearImpulse=" + _linearImpulse.X.ToString(CultureInfo.InvariantCulture) + ":" + _linearImpulse.Y.ToString(CultureInfo.InvariantCulture) +
+                ", AngularImpulse=" + _angularImpulse.ToString(CultureInfo.InvariantCulture) +
+                ", MaxForce=" + _maxForce.ToString(CultureInfo.InvariantCulture) +
+                ", MaxTorque=" + _maxTorque.ToString(CultureInfo.InvariantCulture) +
+                ", CorrectionFactor=" + _correctionFactor.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

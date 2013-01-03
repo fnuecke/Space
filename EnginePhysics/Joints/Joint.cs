@@ -199,7 +199,7 @@ namespace Engine.Physics.Joints
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
-        public Packet Packetize(Packet packet)
+        public virtual Packet Packetize(Packet packet)
         {
             return packet
                 .Write(Next)
@@ -213,7 +213,7 @@ namespace Engine.Physics.Joints
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public virtual void Depacketize(Packet packet)
         {
             Next = packet.ReadInt32();
             Previous = packet.ReadInt32();
@@ -227,7 +227,7 @@ namespace Engine.Physics.Joints
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
+        public virtual void Hash(Hasher hasher)
         {
             hasher
                 .Put(Next)
@@ -246,7 +246,7 @@ namespace Engine.Physics.Joints
         /// references with this instance.
         /// </summary>
         /// <returns>The copy.</returns>
-        public Joint NewInstance()
+        public virtual Joint NewInstance()
         {
             var copy = (Joint)MemberwiseClone();
 
@@ -260,7 +260,7 @@ namespace Engine.Physics.Joints
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public void CopyInto(Joint into)
+        public virtual void CopyInto(Joint into)
         {
             into.Next = Next;
             into.Previous = Previous;

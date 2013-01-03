@@ -1,4 +1,6 @@
-﻿using Engine.Physics.Math;
+﻿using System.Globalization;
+using Engine.Physics.Math;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -64,25 +66,25 @@ namespace Engine.Physics.Joints
 
         #region Solver shared
 
-        private float _frequency;
-
-        private float _dampingRatio;
-
-        private float _bias;
-
         private LocalPoint _localAnchorA;
 
         private LocalPoint _localAnchorB;
 
-        private float _gamma;
-
-        private float _impulse;
-
         private float _length;
+
+        private float _frequency;
+
+        private float _dampingRatio;
+
+        private float _impulse; // kept across updates for warm starting
 
         #endregion
 
         #region Solver temp
+
+        private float _bias;
+
+        private float _gamma;
 
         private int _indexA;
 
@@ -364,6 +366,105 @@ namespace Engine.Physics.Joints
             positions[_indexB].Angle = aB;
 
             return System.Math.Abs(c) < Settings.LinearSlop;
+        }
+
+        #endregion
+
+        #region Serialization / Hashing
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Serialization.Packet Packetize(Serialization.Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(_localAnchorA)
+                .Write(_localAnchorB)
+                .Write(_length)
+                .Write(_frequency)
+                .Write(_dampingRatio)
+                .Write(_impulse);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Serialization.Packet packet)
+        {
+            base.Depacketize(packet);
+
+            _localAnchorA = packet.ReadVector2();
+            _localAnchorB = packet.ReadVector2();
+            _length = packet.ReadSingle();
+            _frequency = packet.ReadSingle();
+            _dampingRatio = packet.ReadSingle();
+            _impulse = packet.ReadSingle();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Serialization.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher
+                .Put(_localAnchorA)
+                .Put(_localAnchorB)
+                .Put(_length)
+                .Put(_frequency)
+                .Put(_dampingRatio)
+                .Put(_impulse);
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        public override void CopyInto(Joint into)
+        {
+            base.CopyInto(into);
+
+            var copy = (DistanceJoint)into;
+
+            copy._localAnchorA = _localAnchorA;
+            copy._localAnchorB = _localAnchorB;
+            copy._length = _length;
+            copy._frequency = _frequency;
+            copy._dampingRatio = _dampingRatio;
+            copy._impulse = _impulse;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() +
+                   ", LocalAnchorA=" + _localAnchorA.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorA.Y.ToString(CultureInfo.InvariantCulture) +
+                   ", LocalAnchorB=" + _localAnchorB.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorB.Y.ToString(CultureInfo.InvariantCulture) +
+                   ", Length=" + _length.ToString(CultureInfo.InvariantCulture) +
+                   ", Frequency=" + _frequency.ToString(CultureInfo.InvariantCulture) +
+                   ", DampingRatio=" + _dampingRatio.ToString(CultureInfo.InvariantCulture) +
+                   ", Impulse=" + _impulse.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion
