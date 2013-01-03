@@ -6,6 +6,7 @@ using Engine.Physics.Joints;
 using Engine.Physics.Systems;
 using Engine.Physics.Tests.Tests;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -139,6 +140,11 @@ namespace Engine.Physics.Tests
         /// </summary>
         private int _snapshotHash;
 
+        /// <summary>
+        /// The zipped size of the snapshot.
+        /// </summary>
+        private int _snapshotCompressedSize;
+
         #endregion
 
         /// <summary>
@@ -256,6 +262,15 @@ namespace Engine.Physics.Tests
             if (_manager != null)
             {
                 DrawString(Tests[_currentTest].GetType().Name);
+            }
+
+            if (_snapshot != null)
+            {
+                DrawString("Got a save state: [{0}] @ {1:0.00}KB ({3:0.00}% compressed @ {2:0.00}KB)",
+                    _snapshotHash,
+                    (_snapshot.Length / 1024f),
+                    (_snapshotCompressedSize / 1024f),
+                    100f * _snapshotCompressedSize / _snapshot.Length);
             }
 
             if (!_running)
@@ -417,6 +432,7 @@ L            - Load snapshot created with K.");
                         var hasher = new Hasher();
                         _manager.Hash(hasher);
                         _snapshotHash = hasher.Value;
+                        _snapshotCompressedSize = SimpleCompression.Compress(_snapshot.GetBuffer()).Length;
                     }
                     break;
                 case Keys.L:

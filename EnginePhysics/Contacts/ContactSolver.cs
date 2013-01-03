@@ -88,8 +88,8 @@ namespace Engine.Physics.Contacts
                 vc.InvInertiaB = bodyB.InverseInertia;
                 vc.ContactIndex = i;
                 vc.PointCount = contact.Manifold.PointCount;
-                vc.K = Mat22.Zero;
-                vc.NormalMass = Mat22.Zero;
+                vc.K = Matrix22.Zero;
+                vc.NormalMass = Matrix22.Zero;
 
                 var pc = _positionConstraints[i];
                 pc.IndexA = bodyA.IslandIndex;
@@ -328,7 +328,7 @@ namespace Engine.Physics.Contacts
                     var vt = Vector2.Dot(dv, tangent);
                     var lambda = vcp.TangentMass * (-vt);
 
-                    // b2Clamp the accumulated force
+                    // Clamp the accumulated force
                     var maxFriction = friction * vcp.NormalImpulse;
                     var newImpulse = MathHelper.Clamp(vcp.TangentImpulse + lambda, -maxFriction, maxFriction);
                     lambda = newImpulse - vcp.TangentImpulse;
@@ -356,7 +356,7 @@ namespace Engine.Physics.Contacts
                     var vn = Vector2.Dot(dv, normal);
                     var lambda = -vcp.NormalMass * (vn - vcp.VelocityBias);
 
-                    // b2Clamp the accumulated impulse
+                    // Clamp the accumulated impulse
                     var newImpulse = System.Math.Max(vcp.NormalImpulse + lambda, 0.0f);
                     lambda = newImpulse - vcp.NormalImpulse;
                     vcp.NormalImpulse = newImpulse;
@@ -457,19 +457,6 @@ namespace Engine.Physics.Contacts
                             // Accumulate
                             cp1.NormalImpulse = x.X;
                             cp2.NormalImpulse = x.Y;
-
-#if B2_DEBUG_SOLVER
-    // Postconditions
-                                dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-                                dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
-
-                                // Compute normal velocity
-                                vn1 = b2Dot(dv1, normal);
-                                vn2 = b2Dot(dv2, normal);
-
-                                b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-                                b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
-            #endif
                             break;
                         }
 
@@ -500,16 +487,6 @@ namespace Engine.Physics.Contacts
                             // Accumulate
                             cp1.NormalImpulse = x.X;
                             cp2.NormalImpulse = x.Y;
-
-#if B2_DEBUG_SOLVER
-    // Postconditions
-                                dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-
-                                // Compute normal velocity
-                                vn1 = b2Dot(dv1, normal);
-                                
-                                b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-#endif
                             break;
                         }
 
@@ -541,16 +518,6 @@ namespace Engine.Physics.Contacts
                             // Accumulate
                             cp1.NormalImpulse = x.X;
                             cp2.NormalImpulse = x.Y;
-
-#if B2_DEBUG_SOLVER
-    // Postconditions
-                                dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
-
-                                // Compute normal velocity
-                                vn2 = b2Dot(dv2, normal);
-
-                                b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
-            #endif
                             break;
                         }
 
@@ -740,8 +707,8 @@ namespace Engine.Physics.Contacts
                 _positions[indexB].Angle = aB;
             }
 
-            // We can't expect minSpeparation >= -b2_linearSlop because we don't
-            // push the separation above -b2_linearSlop.
+            // We can't expect minSpeparation >= -Settings.LinearSlop because we don't
+            // push the separation above -Settings.LinearSlop.
             return minSeparation >= -3.0f * Settings.LinearSlop;
         }
 
@@ -830,8 +797,8 @@ namespace Engine.Physics.Contacts
                 _positions[indexB].Angle = aB;
             }
 
-            // We can't expect minSpeparation >= -b2_linearSlop because we don't
-            // push the separation above -b2_linearSlop.
+            // We can't expect minSpeparation >= -Settings.LinearSlop because we don't
+            // push the separation above -Settings.LinearSlop.
             return minSeparation >= -1.5f * Settings.LinearSlop;
         }
 
@@ -870,9 +837,9 @@ namespace Engine.Physics.Contacts
 
             public Vector2 Normal;
 
-            public Mat22 NormalMass;
+            public Matrix22 NormalMass;
 
-            public Mat22 K;
+            public Matrix22 K;
 
             public int IndexA;
 

@@ -47,5 +47,37 @@ namespace Engine.Physics.Math
             result.Y = s * v.X;
             return result;
         }
+
+        /// <summary>
+        /// Sets the specified values for the vector.
+        /// </summary>
+        /// <param name="v">The vector to set.</param>
+        /// <param name="x">The x value.</param>
+        /// <param name="y">The y value.</param>
+        public static void Set(out Vector2 v, float x, float y)
+        {
+            v.X = x;
+            v.Y = y;
+        }
+    }
+
+    /// <summary>
+    /// Utility for 3D vectors.
+    /// </summary>
+    internal static class Vector3Util
+    {
+        /// <summary>
+        /// Sets the specified values for the vector.
+        /// </summary>
+        /// <param name="v">The vector to set.</param>
+        /// <param name="x">The x value.</param>
+        /// <param name="y">The y value.</param>
+        /// <param name="z">The z value.</param>
+        public static void Set(out Vector3 v, float x, float y, float z)
+        {
+            v.X = x;
+            v.Y = y;
+            v.Z = z;
+        }
     }
 }

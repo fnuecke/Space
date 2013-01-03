@@ -45,6 +45,17 @@ namespace Engine.Physics.Joints
             Motor
         }
 
+        /// <summary>
+        /// Limit states for joints that have limits.
+        /// </summary>
+        protected enum LimitState
+        {
+            Inactive,
+            AtLower,
+            AtUpper,
+            Equal
+        }
+
         #endregion
 
         #region Properties

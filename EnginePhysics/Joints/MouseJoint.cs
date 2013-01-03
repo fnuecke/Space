@@ -20,7 +20,7 @@ namespace Engine.Physics.Joints
     public sealed class MouseJoint : Joint
     {
         #region Properties
-        
+
         /// <summary>
         /// Get the anchor point on the first body in world coordinates.
         /// </summary>
@@ -60,7 +60,7 @@ namespace Engine.Physics.Joints
         }
 
         /// <summary>
-        /// Gets or sets the update frequency.
+        /// Gets or sets the update frequency in Hz.
         /// </summary>
         public float Frequency
         {
@@ -82,24 +82,42 @@ namespace Engine.Physics.Joints
         #region Fields
 
         private LocalPoint _localAnchorB;
+
         private WorldPoint _targetA;
+
         private float _frequency;
+
         private float _dampingRatio;
+
         private float _beta;
 
-        // Solver shared
+        #region Solver shared
+        
         private Vector2 _impulse;
+
         private float _maxForce;
+
         private float _gamma;
 
-        // Solver temp
+        #endregion
+
+        #region Solver temp
+        
         private int _indexB;
-        private LocalPoint _rotatedB;
+
+        private LocalPoint _rB;
+
         private LocalPoint _localCenterB;
+
         private float _inverseMassB;
+
         private float _inverseInertiaB;
-        private Mat22 _mass;
+
+        private Matrix22 _mass;
+
         private Vector2 _c;
+
+        #endregion
 
         #endregion
 
@@ -108,6 +126,9 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes a new instance of the <see cref="MouseJoint"/> class.
         /// </summary>
+        /// <remarks>
+        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        /// </remarks>
         public MouseJoint() : base(JointType.Mouse)
         {
         }
@@ -121,7 +142,7 @@ namespace Engine.Physics.Joints
         /// <param name="maxForce">The maximum constraint force that can be exerted
         /// to move the candidate body. Usually you will express as some multiple
         /// of the weight (multiplier * mass * gravity).</param>
-        /// <param name="frequency">The response speed.</param>
+        /// <param name="frequency">The response speed in Hz.</param>
         /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
         internal void Initialize(WorldPoint target, float maxForce, float frequency, float dampingRatio)
         {
@@ -183,35 +204,37 @@ namespace Engine.Physics.Joints
             var d = 2.0f * mass * _dampingRatio * omega;
 
             // Spring stiffness
-            var k = mass * (omega * omega);
+            var s = mass * (omega * omega);
 
             // magic formulas
             // gamma has units of inverse mass.
             // beta has units of inverse time.
             var h = step.DeltaT;
-            System.Diagnostics.Debug.Assert(d + h * k > Settings.Epsilon);
-            _gamma = h * (d + h * k);
+            System.Diagnostics.Debug.Assert(d + h * s > Settings.Epsilon);
+            _gamma = h * (d + h * s);
+            // ReSharper disable CompareOfFloatsByEqualityOperator
             if (_gamma != 0.0f)
             {
                 _gamma = 1.0f / _gamma;
             }
-            _beta = h * k * _gamma;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+            _beta = h * s * _gamma;
 
             // Compute the effective mass matrix.
-            _rotatedB = qB * (_localAnchorB - _localCenterB);
+            _rB = qB * (_localAnchorB - _localCenterB);
 
             // K    = [(1/m1 + 1/m2) * eye(2) - skew(r1) * invI1 * skew(r1) - skew(r2) * invI2 * skew(r2)]
-            //      = [1/m1+1/m2     0    ] + invI1 * [r1.y*r1.y -r1.x*r1.y] + invI2 * [r1.y*r1.y -r1.x*r1.y]
-            //        [    0     1/m1+1/m2]           [-r1.x*r1.y r1.x*r1.x]           [-r1.x*r1.y r1.x*r1.x]
-            Mat22 K;
-            K.Column1.X = _inverseMassB + _inverseInertiaB * _rotatedB.Y * _rotatedB.Y + _gamma;
-            K.Column1.Y = -_inverseInertiaB * _rotatedB.X * _rotatedB.Y;
-            K.Column2.X = K.Column1.Y;
-            K.Column2.Y = _inverseMassB + _inverseInertiaB * _rotatedB.X * _rotatedB.X + _gamma;
+            //      = [1/m1+1/m2     0    ] + invI1 * [r1.Y*r1.Y -r1.X*r1.Y] + invI2 * [r1.Y*r1.Y -r1.X*r1.Y]
+            //        [    0     1/m1+1/m2]           [-r1.X*r1.Y r1.X*r1.X]           [-r1.X*r1.Y r1.X*r1.X]
+            Matrix22 k;
+            k.Column1.X = _inverseMassB + _inverseInertiaB * _rB.Y * _rB.Y + _gamma;
+            k.Column1.Y = -_inverseInertiaB * _rB.X * _rB.Y;
+            k.Column2.X = k.Column1.Y;
+            k.Column2.Y = _inverseMassB + _inverseInertiaB * _rB.X * _rB.X + _gamma;
 
-            _mass = K.GetInverse();
+            _mass = k.GetInverse();
 
-            _c = (Vector2)(cB - _targetA) + _rotatedB;
+            _c = (Vector2)(cB - _targetA) + _rB;
             _c *= _beta;
 
             // Cheat with some damping
@@ -220,7 +243,7 @@ namespace Engine.Physics.Joints
             if (step.IsWarmStarting)
             {
                 vB += _inverseMassB * _impulse;
-                wB += _inverseInertiaB * Vector2Util.Cross(_rotatedB, _impulse);
+                wB += _inverseInertiaB * Vector2Util.Cross(_rB, _impulse);
             }
             else
             {
@@ -243,8 +266,8 @@ namespace Engine.Physics.Joints
             var wB = velocities[_indexB].AngularVelocity;
 
             // Cdot = v + cross(w, r)
-            var dot = vB + Vector2Util.Cross(wB, _rotatedB);
-            var impulse = _mass * -(dot + _c + _gamma * _impulse);
+            var cdot = vB + Vector2Util.Cross(wB, _rB);
+            var impulse = _mass * -(cdot + _c + _gamma * _impulse);
 
             var oldImpulse = _impulse;
             _impulse += impulse;
@@ -256,7 +279,7 @@ namespace Engine.Physics.Joints
             impulse = _impulse - oldImpulse;
 
             vB += _inverseMassB * impulse;
-            wB += _inverseInertiaB * Vector2Util.Cross(_rotatedB, impulse);
+            wB += _inverseInertiaB * Vector2Util.Cross(_rB, impulse);
 
             velocities[_indexB].LinearVelocity = vB;
             velocities[_indexB].AngularVelocity = wB;

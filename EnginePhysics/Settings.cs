@@ -115,7 +115,7 @@ namespace Engine.Physics
         /// The maximum angular position correction used when solving constraints. This helps to
         /// prevent overshoot.
         /// </summary>
-        public const float b2_maxAngularCorrection = 8f / 180f * MathHelper.Pi;
+        public const float MaxAngularCorrection = 8f / 180f * MathHelper.Pi;
 
         /// <summary>
         /// The maximum linear velocity of a body. This limit is very large and is used

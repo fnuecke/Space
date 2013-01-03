@@ -285,6 +285,7 @@ namespace Engine.Physics.Systems
             // Build our time step information.
             TimeStep step;
             step.DeltaT = _timestep;
+            step.InverseDeltaT = 1.0f / step.DeltaT;
             step.IsWarmStarting = true;
 
             // Find islands, integrate and solve constraints.
@@ -1758,6 +1759,7 @@ namespace Engine.Physics.Systems
 
                     TimeStep subStep;
                     subStep.DeltaT = (1.0f - minAlpha) * step.DeltaT;
+                    subStep.InverseDeltaT = 1.0f / subStep.DeltaT;
                     subStep.IsWarmStarting = false;
                     _island.SolveTOI(subStep, bA.IslandIndex, bB.IslandIndex);
 

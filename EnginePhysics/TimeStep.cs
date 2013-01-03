@@ -14,9 +14,9 @@ namespace Engine.Physics
     internal struct TimeStep
     {
         /// <summary>
-        /// The time step.
+        /// The time step and its inverse.
         /// </summary>
-        public float DeltaT;
+        public float DeltaT, InverseDeltaT;
 
         /// <summary>
         /// Whether the solver is warm starting or not.

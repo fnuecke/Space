@@ -241,8 +241,8 @@ namespace Engine.Physics.Components
             // Let rho be the polygon density in mass per unit area.
             // Then:
             // mass = rho * int(dA)
-            // centroid.x = (1/mass) * rho * int(x * dA)
-            // centroid.y = (1/mass) * rho * int(y * dA)
+            // centroid.X = (1/mass) * rho * int(x * dA)
+            // centroid.Y = (1/mass) * rho * int(y * dA)
             // I = rho * int((x*x + y*y) * dA)
             //
             // We can compute these integrals by summing all the integrals

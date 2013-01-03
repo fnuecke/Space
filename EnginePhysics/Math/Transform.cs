@@ -247,17 +247,17 @@ namespace Engine.Physics.Math
     /// <summary>
     /// A 2-by-2 matrix. Stored in column-major order.
     /// </summary>
-    internal struct Mat22
+    internal struct Matrix22
     {
         /// <summary>
         /// Gets the zero matrix.
         /// </summary>
-        public static Mat22 Zero
+        public static Matrix22 Zero
         {
             get { return ImmutableZero; }
         }
 
-        private static readonly Mat22 ImmutableZero = new Mat22
+        private static readonly Matrix22 ImmutableZero = new Matrix22
         {
             Column1 = Vector2.Zero,
             Column2 = Vector2.Zero
@@ -272,7 +272,7 @@ namespace Engine.Physics.Math
         /// Computes the inverse of this matrix.
         /// </summary>
         /// <returns>The inverse matrix.</returns>
-        public Mat22 GetInverse()
+        public Matrix22 GetInverse()
         {
             var a = Column1.X;
             var b = Column2.X;
@@ -280,17 +280,42 @@ namespace Engine.Physics.Math
             var d = Column2.Y;
 
             var det = a * d - b * c;
+            // ReSharper disable CompareOfFloatsByEqualityOperator
             if (det == 0.0f)
             {
                 return Zero;
             }
+            // ReSharper restore CompareOfFloatsByEqualityOperator
             det = 1.0f / det;
 
-            Mat22 result;
+            Matrix22 result;
             result.Column1.X = det * d;
             result.Column2.X = -det * b;
             result.Column1.Y = -det * c;
             result.Column2.Y = det * a;
+            return result;
+        }
+        
+        /// <summary>
+        /// Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector.
+        /// This is more efficient than computing the inverse in one-shot cases.
+        /// </summary>
+        public Vector2 Solve(Vector2 v)
+        {
+            var a11 = Column1.X;
+            var a12 = Column2.X;
+            var a21 = Column1.Y;
+            var a22 = Column2.Y;
+            var det = a11 * a22 - a12 * a21;
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (det != 0.0f)
+            {
+                det = 1.0f / det;
+            }
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+            Vector2 result;
+            result.X = det * (a22 * v.X - a12 * v.Y);
+            result.Y = det * (a11 * v.Y - a21 * v.X);
             return result;
         }
 
@@ -301,12 +326,141 @@ namespace Engine.Physics.Math
         /// <param name="xf">The transformation matrix.</param>
         /// <param name="v">The vector to transform.</param>
         /// <returns></returns>
-        public static Vector2 operator *(Mat22 xf, Vector2 v)
+        public static Vector2 operator *(Matrix22 xf, Vector2 v)
         {
             Vector2 result;
             result.X = xf.Column1.X * v.X + xf.Column2.X * v.Y;
             result.Y = xf.Column1.Y * v.X + xf.Column2.Y * v.Y;
             return result;
+        }
+    }
+
+    /// <summary>
+    /// A 3-by-3 matrix. Stored in column-major order.
+    /// </summary>
+    internal struct Matrix33
+    {
+        /// <summary>
+        /// The columns of this matrix.
+        /// </summary>
+        public Vector3 Column1, Column2, Column3;
+
+        /// <summary>
+        /// Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector.
+        /// This is more efficient than computing the inverse in one-shot cases.
+        /// </summary>
+        public Vector3 Solve33(Vector3 v)
+        {
+            var det = Vector3.Dot(Column1, Vector3.Cross(Column2, Column3));
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (det != 0.0f)
+            {
+                det = 1.0f / det;
+            }
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+            Vector3 result;
+            result.X = det * Vector3.Dot(v, Vector3.Cross(Column2, Column3));
+            result.Y = det * Vector3.Dot(Column1, Vector3.Cross(v, Column3));
+            result.Z = det * Vector3.Dot(Column1, Vector3.Cross(Column2, v));
+            return result;
+        }
+
+        /// <summary>
+        /// Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector.
+        /// This is more efficient than computing the inverse in one-shot cases.
+        /// Solve only the upper 2-by-2 matrix equation.
+        /// </summary>
+        public Vector2 Solve22(Vector2 v)
+        {
+            var a11 = Column1.X;
+            var a12 = Column2.X;
+            var a21 = Column1.Y;
+            var a22 = Column2.Y;
+            var det = a11 * a22 - a12 * a21;
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (det != 0.0f)
+            {
+                det = 1.0f / det;
+            }
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+            Vector2 result;
+            result.X = det * (a22 * v.X - a12 * v.Y);
+            result.Y = det * (a11 * v.Y - a21 * v.X);
+            return result;
+        }
+
+        /// <summary>
+        /// Get the inverse of this matrix as a 2-by-2.
+        /// Returns the zero matrix if singular.
+        /// </summary>
+        public void GetInverse22(out Matrix33 m)
+        {
+            var a = Column1.X;
+            var b = Column2.X;
+            var c = Column1.Y;
+            var d = Column2.Y;
+            var det = a * d - b * c;
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (det != 0.0f)
+            {
+                det = 1.0f / det;
+            }
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+
+            m.Column1.X = det * d; m.Column2.X = -det * b; m.Column1.Z = 0.0f;
+            m.Column1.Y = -det * c; m.Column2.Y = det * a; m.Column2.Z = 0.0f;
+            m.Column3.X = 0.0f; m.Column3.Y = 0.0f; m.Column3.Z = 0.0f;
+        }
+
+        /// <summary>
+        /// Get the symmetric inverse of this matrix as a 3-by-3.
+        /// Returns the zero matrix if singular.
+        /// </summary>
+        public void GetSymInverse33(out Matrix33 m)
+        {
+            var det = Vector3.Dot(Column1, Vector3.Cross(Column2, Column3));
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (det != 0.0f)
+            {
+                det = 1.0f / det;
+            }
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+
+            var a11 = Column1.X;
+            var a12 = Column2.X;
+            var a13 = Column3.X;
+            var a22 = Column2.Y;
+            var a23 = Column3.Y;
+            var a33 = Column3.Z;
+
+            m.Column1.X = det * (a22 * a33 - a23 * a23);
+            m.Column1.Y = det * (a13 * a23 - a12 * a33);
+            m.Column1.Z = det * (a12 * a23 - a13 * a22);
+
+            m.Column2.X = m.Column1.Y;
+            m.Column2.Y = det * (a11 * a33 - a13 * a13);
+            m.Column2.Z = det * (a13 * a12 - a11 * a23);
+
+            m.Column3.X = m.Column1.Z;
+            m.Column3.Y = m.Column2.Z;
+            m.Column3.Z = det * (a11 * a22 - a12 * a12);
+        }
+
+        /// <summary>
+        /// Multiply a matrix times a vector.
+        /// </summary>
+        public static Vector3 operator*(Matrix33 m, Vector3 v)
+        {
+            return v.X * m.Column1 + v.Y * m.Column2 + v.Z * m.Column3;
+        }
+
+        /// <summary>
+        /// Multiply a matrix times a vector.
+        /// </summary>
+        public static Vector2 operator*(Matrix33 m, Vector2 v)
+        {
+            return new Vector2(m.Column1.X * v.X + m.Column2.X * v.Y,
+                               m.Column1.Y * v.X + m.Column2.Y * v.Y);
         }
     }
 
