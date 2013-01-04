@@ -55,13 +55,11 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// The content manager used to load our assets.
         /// </summary>
-        [PacketizerIgnore]
         private readonly ContentManager _content;
 
         /// <summary>
         /// The graphics device service used to keep track of our graphics device.
         /// </summary>
-        [PacketizerIgnore]
         private readonly IGraphicsDeviceService _graphics;
 
         #endregion

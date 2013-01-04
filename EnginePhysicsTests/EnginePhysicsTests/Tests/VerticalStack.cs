@@ -45,7 +45,7 @@ namespace Engine.Physics.Tests.Tests
             switch (key)
             {
                 case Keys.OemComma:
-                    if (_bullet != 0)
+                    if (Manager.HasEntity(_bullet))
                     {
                         Manager.RemoveEntity(_bullet);
                         _bullet = 0;

@@ -113,7 +113,7 @@ namespace Engine.Physics.Contacts
         /// The manager of the simulation this contact lives in. Used to look up
         /// involved members.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         public IManager Manager;
 
         /// <summary>
@@ -505,16 +505,7 @@ namespace Engine.Physics.Contacts
         /// <returns>The copy.</returns>
         public void CopyInto(Contact into)
         {
-            into.Previous = Previous;
-            into.Next = Next;
-            into.FixtureIdA = FixtureIdA;
-            into.FixtureIdB = FixtureIdB;
-            into.Friction = Friction;
-            into.Restitution = Restitution;
-            into.IsTouching = IsTouching;
-            into.IsEnabled = IsEnabled;
-            into.Manifold = Manifold;
-            into._type = _type;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion
@@ -613,10 +604,7 @@ namespace Engine.Physics.Contacts
         /// <returns>The copy.</returns>
         public void CopyInto(ContactEdge into)
         {
-            into.Contact = Contact;
-            into.Other = Other;
-            into.Previous = Previous;
-            into.Next = Next;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

@@ -49,7 +49,7 @@ namespace Space.ComponentSystem.Systems
         /// are in a changed state (deviating from the one that would be
         /// procedurally generated).
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private Dictionary<ulong, CellInfo> _cellInfo = new Dictionary<ulong, CellInfo>();
 
         #endregion
@@ -306,8 +306,6 @@ namespace Space.ComponentSystem.Systems
             base.CopyInto(into);
 
             var copy = (UniverseSystem)into;
-
-            copy.WorldSeed = WorldSeed;
 
             copy._cellInfo.Clear();
             foreach (var cellInfo in _cellInfo)

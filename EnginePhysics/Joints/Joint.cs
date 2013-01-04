@@ -99,7 +99,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// The manager of the component system the bodies of this joint live in.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         internal IManager Manager;
 
         /// <summary>
@@ -236,11 +236,7 @@ namespace Engine.Physics.Joints
         /// <returns>The copy.</returns>
         public virtual void CopyInto(Joint into)
         {
-            into.Next = Next;
-            into.Previous = Previous;
-            into._bodyIdA = _bodyIdA;
-            into._bodyIdB = _bodyIdB;
-            into.CollideConnected = CollideConnected;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion
@@ -336,10 +332,7 @@ namespace Engine.Physics.Joints
         /// <returns>The copy.</returns>
         public void CopyInto(JointEdge into)
         {
-            into.Joint = Joint;
-            into.Other = Other;
-            into.Previous = Previous;
-            into.Next = Next;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

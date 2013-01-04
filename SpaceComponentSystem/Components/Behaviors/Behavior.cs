@@ -539,10 +539,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <returns>The copy.</returns>
         public virtual void CopyInto(Behavior into)
         {
-            Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
-            Debug.Assert(into != this);
-
-            into._ticksToWait = _ticksToWait;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

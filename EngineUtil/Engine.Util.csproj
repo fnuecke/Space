@@ -58,6 +58,7 @@
     <Compile Include="Angle.cs" />
     <Compile Include="BitwiseMagic.cs" />
     <Compile Include="Compression.cs" />
+    <Compile Include="Copyable.cs" />
     <Compile Include="Direction.cs" />
     <Compile Include="ICopyable.cs" />
     <Compile Include="IdManager.cs" />

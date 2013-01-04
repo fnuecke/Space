@@ -92,7 +92,8 @@ namespace Space.Session
         /// <summary>
         /// The serialized character data.
         /// </summary>
-        private Packet _data = new Packet();
+        [PacketizerCreate]
+        private Packet _data;
 
         #endregion
 

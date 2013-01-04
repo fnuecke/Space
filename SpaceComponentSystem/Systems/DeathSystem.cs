@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
@@ -29,6 +30,7 @@ namespace Space.ComponentSystem.Systems
         /// List of entities to kill when we update. This is accumulated from
         /// translation events, to allow thread safe removal in one go.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private HashSet<int> _entitiesToRemove = new HashSet<int>();
 
         #endregion
@@ -150,6 +152,25 @@ namespace Space.ComponentSystem.Systems
             copy._entitiesToRemove = new HashSet<int>();
 
             return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <param name="into">The instance to copy into.</param>
+        public override void CopyInto(AbstractSystem into)
+        {
+            base.CopyInto(into);
+
+            var copy = (DeathSystem)into;
+
+            copy._entitiesToRemove.Clear();
+            copy._entitiesToRemove.UnionWith(_entitiesToRemove);
         }
 
         #endregion

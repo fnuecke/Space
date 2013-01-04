@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Engine.Session;
 
 namespace Space.ComponentSystem.Systems
@@ -28,6 +29,7 @@ namespace Space.ComponentSystem.Systems
         /// an invalid value (zero) in case the player currently does not
         /// have an avatar, or the session was closed.
         /// </summary>
+        [PacketizerIgnore]
         public int LocalPlayerAvatar { get; private set; }
 
         #endregion
@@ -37,6 +39,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The session this system belongs to, for fetching the local player.
         /// </summary>
+        [PacketizerIgnore]
         private readonly IClientSession _session;
 
         #endregion

@@ -313,19 +313,6 @@ namespace Space.Tools.DataEditor
                     _ellipse.Draw();
                 }
             }
-
-            public override void Hash(Hasher hasher)
-            {
-            }
-
-            public override AbstractSystem NewInstance()
-            {
-                throw new NotSupportedException();
-            }
-            public override void CopyInto(AbstractSystem into)
-            {
-                throw new NotSupportedException();
-            }
         }
     }
 }

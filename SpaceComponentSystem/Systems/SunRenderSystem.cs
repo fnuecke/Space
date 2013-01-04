@@ -2,7 +2,6 @@
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Graphics;
@@ -105,18 +104,6 @@ namespace Space.ComponentSystem.Systems
 
             // And draw it.
             _sun.Draw();
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// We're purely visual, so don't hash anything.
-        /// </summary>
-        /// <param name="hasher">The hasher to use.</param>
-        public override void Hash(Hasher hasher)
-        {
         }
 
         #endregion

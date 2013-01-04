@@ -9,19 +9,22 @@ namespace Engine.Serialization
 {
     /// <summary>
     /// Use this attribute to mark properties or fields as to be ignored when
-    /// copying the object to another instance.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class CopyIgnoreAttribute : Attribute
-    {
-    }
-
-    /// <summary>
-    /// Use this attribute to mark properties or fields as to be ignored when
     /// packetizing or depacketzing an object.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public sealed class PacketizerIgnoreAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Use this attribute to mark properties or fields as to be created when
+    /// depacketzing an object. Normally packetizables are read using
+    /// <see cref="Packetizable.ReadPacketizableInto"/> to minimize allocations,
+    /// but sometimes it cannot be guaranteed that an instance will already
+    /// exist. In these cases specify this attribute.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class PacketizerCreateAttribute : Attribute
     {
     }
 
@@ -76,47 +79,6 @@ namespace Engine.Serialization
     /// </summary>
     public static class Packetizable
     {
-        /// <summary>
-        /// Generates a function that will copy all public and private instance fields,
-        /// including backing fields for auto properties, from one instance of a type
-        /// into the other. It will skip any fields (and properties) that are marked
-        /// with the <see cref="CopyIgnoreAttribute"/> attribute.
-        /// </summary>
-        /// <typeparam name="T">The type to generate the method for.</typeparam>
-        /// <returns>
-        /// A delegate for the generated method.
-        /// </returns>
-        public static Action<T, T> CopyInto<T>()
-        {
-            // Must not be null for the following. This is used to provide a context
-            // for the generated method, which will avoid a number of costly security
-            // checks, which could slow down the generated method immensly.
-            var declaringType = MethodBase.GetCurrentMethod().DeclaringType;
-            if (declaringType == null)
-            {
-                return null;
-            }
-
-            // Generate dynamic method for the specified type.
-            var m = new DynamicMethod("CopyInto", null, new[] {typeof(T), typeof(T)}, declaringType, true);
-            var g = m.GetILGenerator();
-
-            // Copy all instance fields.
-            foreach (var f in GetAllFields(typeof(T), typeof(CopyIgnoreAttribute)))
-            {
-                g.Emit(OpCodes.Ldarg_1);
-                g.Emit(OpCodes.Ldarg_0);
-                g.Emit(OpCodes.Ldfld, f);
-                g.Emit(OpCodes.Stfld, f);
-            }
-
-            // Finish our dynamic function by returning.
-            g.Emit(OpCodes.Ret);
-
-            // Create an instance of our dynamic method (as a delegate) and return it.
-            return (Action<T, T>)m.CreateDelegate(typeof(Action<T, T>));
-        }
-
         #region Serialization
 
         /// <summary>
@@ -152,7 +114,6 @@ namespace Engine.Serialization
                 // Packetize all fields, then give the object a chance to do manual
                 // serialization, e.g. of collections and such.
                 GetPacketizer(data.GetType())(packet, data);
-                //data.Packetize(packet);
                 return packet;
             }
             return packet.Write(false);
@@ -188,7 +149,6 @@ namespace Engine.Serialization
                 // Packetize all fields, then give the object a chance to do manual
                 // serialization, e.g. of collections and such.
                 GetPacketizer(type)(packet, data);
-                //data.Packetize(packet);
                 return packet;
             }
             return packet.Write((Type)null);
@@ -241,9 +201,7 @@ namespace Engine.Serialization
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
                 var result = new T();
-                //result.PreDepacketize(packet);
                 GetDepacketizer(typeof(T))(packet, result);
-                //result.PostDepacketize(packet);
                 return result;
             }
             return null;
@@ -270,9 +228,7 @@ namespace Engine.Serialization
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
                 var result = (T)Activator.CreateInstance(type);
-                //result.PreDepacketize(packet);
                 GetDepacketizer(type)(packet, result);
-                //result.PostDepacketize(packet);
                 return result;
             }
             return null;
@@ -294,9 +250,7 @@ namespace Engine.Serialization
             {
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
-                //result.PreDepacketize(packet);
                 GetDepacketizer(result.GetType())(packet, result);
-                //result.PostDepacketize(packet);
                 return packet;
             }
             throw new InvalidOperationException("Cannot read 'null' into existing instance.");
@@ -307,12 +261,6 @@ namespace Engine.Serialization
         #region Internals
 
         /// <summary>
-        /// Cached list of type packetizers, to avoid rebuilding the methods over and over.
-        /// </summary>
-        private static readonly Dictionary<Type, Tuple<Packetize, Depacketize>> PacketizerCache =
-            new Dictionary<Type, Tuple<Packetize, Depacketize>>();
-
-        /// <summary>
         /// Signature of a packetizing function.
         /// </summary>
         private delegate Packet Packetize(Packet packet, IPacketizable data);
@@ -321,6 +269,18 @@ namespace Engine.Serialization
         /// Signature of a depacketizing function.
         /// </summary>
         private delegate Packet Depacketize(Packet packet, IPacketizable data);
+
+        /// <summary>
+        /// Cached list of type packetizers, to avoid rebuilding the methods over and over.
+        /// </summary>
+        private static readonly Dictionary<Type, Tuple<Packetize, Depacketize>> PacketizerCache =
+            new Dictionary<Type, Tuple<Packetize, Depacketize>>();
+
+        /// <summary>
+        /// List of types providing serialization/deserialization methods for the
+        /// <see cref="Packet"/> class.
+        /// </summary>
+        private static readonly HashSet<Type> Packetizers = new HashSet<Type>();
 
         /// <summary>
         /// Gets the packetizer from the cache, or creates it if it doesn't exist yet
@@ -397,6 +357,8 @@ namespace Engine.Serialization
             var writePacketizable = typeof(Packetizable)
                 .GetMethod("Write").MakeGenericMethod(type);
             var readPacketizable = typeof(Packetizable)
+                .GetMethod("ReadPacketizable", new[] {typeof(Packet)});
+            var readPacketizableInto = typeof(Packetizable)
                 .GetMethod("ReadPacketizableInto", new[] { typeof(Packet), typeof(IPacketizable) });
 
             // Generate dynamic methods for the specified type.
@@ -430,7 +392,7 @@ namespace Engine.Serialization
             depacketizeGenerator.Emit(OpCodes.Ldarg_0);
 
             // Handle all instance fields.
-            foreach (var f in GetAllFields(type, typeof(PacketizerIgnoreAttribute)))
+            foreach (var f in GetAllFields(type))
             {
                 // Find a write and read function for the type.
                 if (typeof(IPacketizable).IsAssignableFrom(f.FieldType))
@@ -444,8 +406,19 @@ namespace Engine.Serialization
 
                     // Build deserializer part.
                     depacketizeGenerator.Emit(OpCodes.Ldarg_1);
-                    depacketizeGenerator.Emit(OpCodes.Ldfld, f);
-                    depacketizeGenerator.EmitCall(OpCodes.Call, readPacketizable, null);
+                    if (f.IsDefined(typeof(PacketizerCreateAttribute), true))
+                    {
+                        // Data should be read by creating a new instance.
+                        depacketizeGenerator.Emit(OpCodes.Ldarg_0);
+                        depacketizeGenerator.EmitCall(OpCodes.Call, readPacketizable.MakeGenericMethod(f.FieldType), null);
+                        depacketizeGenerator.Emit(OpCodes.Stfld, f);
+                    }
+                    else
+                    {
+                        // Data should be read into existing instance.
+                        depacketizeGenerator.Emit(OpCodes.Ldfld, f);
+                        depacketizeGenerator.EmitCall(OpCodes.Call, readPacketizableInto, null);
+                    }
                 }
                 else if (f.FieldType.IsEnum || f.FieldType == typeof(Enum))
                 {
@@ -527,12 +500,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// List of types providing serialization/deserialization methods for the
-        /// <see cref="Packet"/> class.
-        /// </summary>
-        private static readonly HashSet<Type> Packetizers = new HashSet<Type>();
-
-        /// <summary>
         /// Used to find a Packet.Write overload for the specified type.
         /// </summary>
         private static MethodInfo FindWriteMethod(Type type)
@@ -586,15 +553,13 @@ namespace Engine.Serialization
         /// <summary>
         /// Utility method the gets a list of all fields in a type, including
         /// this in its base classes all the way up the hierarchy. Fields with
-        /// the specified <paramref name="ignoreMarker"/> attribute are not
-        /// returned. This will also include automatially generated field
-        /// backing properties, unless the property has said attribute.
+        /// the <see cref="PacketizerIgnoreAttribute"/> are not returned. This will
+        /// also include automatially generated field backing properties, unless
+        /// the property has said attribute.
         /// </summary>
         /// <param name="type">The type to start parsing at.</param>
-        /// <param name="ignoreMarker">The attribute type used to mark fields
-        /// as ignored.</param>
         /// <returns>The list of all relevant fields.</returns>
-        private static IEnumerable<FieldInfo> GetAllFields(Type type, Type ignoreMarker)
+        private static IEnumerable<FieldInfo> GetAllFields(Type type)
         {
             // Start with an empty set, then chain as we walk up the hierarchy.
             var result = Enumerable.Empty<FieldInfo>();
@@ -615,7 +580,7 @@ namespace Engine.Serialization
                         // - fields that are compiler generated. We will scan for them below,
                         // when we parse the properties.
                         .Where(f => f.DeclaringType == t &&
-                                    !f.IsDefined(ignoreMarker, true) &&
+                                    !f.IsDefined(typeof(PacketizerIgnoreAttribute), true) &&
                                     !f.IsDefined(typeof(CompilerGeneratedAttribute), false)));
 
                 // Look for properties with automatically generated backing fields.
@@ -629,7 +594,7 @@ namespace Engine.Serialization
                         // - properties that do not have an automatically generated backing field
                         //   (which we can deduce from the getter/setter being compiler generated).
                         .Where(p => p.DeclaringType == t &&
-                                    !p.IsDefined(ignoreMarker, true) &&
+                                    !p.IsDefined(typeof(PacketizerIgnoreAttribute), true) &&
                                     (p.GetGetMethod(true) ?? p.GetSetMethod(true))
                                         .IsDefined(typeof(CompilerGeneratedAttribute), false))
                         // Get the backing field. There is no "hard link" we can follow, but the

@@ -105,13 +105,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <returns>The copy.</returns>
         public void CopyInto(AttributeModifier<TAttribute> into)
         {
-            Debug.Assert(into != this);
-
-            var copy = (AttributeModifier<TAttribute>)MemberwiseClone();
-
-            copy.Type = Type;
-            copy.ComputationType = ComputationType;
-            copy.Value = Value;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
+using Engine.Util;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -30,7 +31,7 @@ namespace Space.ComponentSystem.Systems
         /// (after a cell was toggled to 'living'). This is used to
         /// spread the spawning across several frames to reduce freezes.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private List<Tuple<ulong, int>> _cellSpawns = new List<Tuple<ulong, int>>();
 
         #endregion
@@ -376,7 +377,6 @@ namespace Space.ComponentSystem.Systems
 
             var copy = (ShipSpawnSystem)into;
 
-            _random.CopyInto(copy._random);
             copy._cellSpawns.Clear();
             copy._cellSpawns.AddRange(_cellSpawns);
         }

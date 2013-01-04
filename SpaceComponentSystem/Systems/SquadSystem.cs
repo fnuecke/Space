@@ -40,7 +40,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The list of actual squads, mapping squad id to squad data.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private SparseArray<SquadData> _squads = new SparseArray<SquadData>();
 
         #endregion
@@ -351,7 +351,6 @@ namespace Space.ComponentSystem.Systems
 
             var copy = (SquadSystem)into;
 
-            _squadIds.CopyInto(copy._squadIds);
             foreach (var id in _squadIds)
             {
                 copy._squads[id] = new SquadData

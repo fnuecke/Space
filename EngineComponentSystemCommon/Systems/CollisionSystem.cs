@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -70,13 +71,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// List of active contacts between collidables (i.e. current active collisions).
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private Contact[] _contacts = new Contact[DefaultContactCapacity];
 
         /// <summary>
         /// List of contact edges, two per contact.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private ContactEdge[] _edges = new ContactEdge[DefaultContactCapacity * 2];
 
         /// <summary>
@@ -693,9 +694,6 @@ namespace Engine.ComponentSystem.Common.Systems
                 copy._edges = new ContactEdge[_edges.Length];
             }
             _edges.CopyTo(copy._edges, 0);
-
-            copy._usedContacts = _usedContacts;
-            copy._freeContacts = _freeContacts;
         }
 
         #endregion

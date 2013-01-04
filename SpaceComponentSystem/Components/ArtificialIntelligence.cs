@@ -198,18 +198,7 @@ namespace Space.ComponentSystem.Components
             /// <returns>The copy.</returns>
             public void CopyInto(AIConfiguration into)
             {
-                into.AggroRange = AggroRange;
-                into.MaxEscapeCheckDistance = MaxEscapeCheckDistance;
-                into.MinDistanceToDamagers = MinDistanceToDamagers;
-                into.MinMultipleOfPointOfNoReturn = MinMultipleOfPointOfNoReturn;
-                into.EnemySeparation = EnemySeparation;
-                into.FlockingThreshold = FlockingThreshold;
-                into.FlockingSeparation = FlockingSeparation;
-                into.VegetativeUrgencyDistance = VegetativeUrgencyDistance;
-                into.VegetativeWeight = VegetativeWeight;
-                into.WeaponRangeEpsilon = WeaponRangeEpsilon;
-                into.WeaponFiringAngle = WeaponFiringAngle;
-                into.ChaseDistance = ChaseDistance;
+                Copyable.CopyInto(this, into);
             }
 
             #endregion

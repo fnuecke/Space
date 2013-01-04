@@ -3,7 +3,6 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -226,18 +225,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </summary>
         /// <returns>The transformation.</returns>
         protected abstract FarTransform GetTransform();
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// We're purely visual, so don't hash anything.
-        /// </summary>
-        /// <param name="hasher">The hasher to use.</param>
-        public override void Hash(Hasher hasher)
-        {
-        }
 
         #endregion
     }

@@ -220,24 +220,6 @@ namespace Space.ComponentSystem.Systems
             return copy;
         }
 
-        /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
-        /// </summary>
-        /// <param name="into">The instance to copy into.</param>
-        public override void CopyInto(AbstractSystem into)
-        {
-            base.CopyInto(into);
-
-            var copy = (DamageSystem)into;
-
-            _random.CopyInto(copy._random);
-        }
-
         #endregion
     }
 }

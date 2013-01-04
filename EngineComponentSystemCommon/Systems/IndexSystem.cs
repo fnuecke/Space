@@ -11,6 +11,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -132,13 +133,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The actual indexes we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private IIndex<int, FarRectangle, FarPosition>[] _trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
 
         /// <summary>
         /// List of entities for which the index entry changed in the last update.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private HashSet<int> _changed = new HashSet<int>();
 
         #endregion
@@ -599,9 +600,6 @@ namespace Engine.ComponentSystem.Common.Systems
             base.CopyInto(into);
 
             var copy = (IndexSystem)into;
-
-            copy._maxEntriesPerNode = _maxEntriesPerNode;
-            copy._minNodeBounds = _minNodeBounds;
 
             foreach (var tree in copy._trees)
             {

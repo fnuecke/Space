@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -542,9 +543,14 @@ namespace Engine.ComponentSystem
             // Write systems, with their types, as these will only be read back
             // via <c>ReadPacketizableInto()</c> to keep some variables that
             // can only passed in the constructor.
-            packet.Write(_systems.Count);
+            packet.Write(_systems.Count(s => !(s is IDrawingSystem)));
             for (int i = 0, j = _systems.Count; i < j; ++i)
             {
+                // Don't serialize presentation systems.
+                if (_systems[i] is IDrawingSystem)
+                {
+                    continue;
+                }
                 packet.Write(_systems[i].GetType());
                 packet.Write(_systems[i]);
             }
@@ -638,6 +644,11 @@ namespace Engine.ComponentSystem
         {
             foreach (var system in _systems)
             {
+                // Don't hash presentation systems.
+                if (system is IDrawingSystem)
+                {
+                    continue;
+                }
                 system.Hash(hasher);
             }
             foreach (var component in Components)

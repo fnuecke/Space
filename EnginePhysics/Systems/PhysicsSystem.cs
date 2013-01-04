@@ -9,6 +9,7 @@ using Engine.Physics.Contacts;
 using Engine.Physics.Joints;
 using Engine.Physics.Messages;
 using Engine.Serialization;
+using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -146,13 +147,13 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// List of active contacts between bodies (i.e. current active collisions).
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private Contact[] _contacts = new Contact[0];
 
         /// <summary>
         /// List of contact edges, two per contact.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private ContactEdge[] _contactEdges = new ContactEdge[0];
 
         /// <summary>
@@ -177,14 +178,14 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// List of all joints in the simulation.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private Joint[] _joints = new Joint[0];
 
         /// <summary>
         /// List of joint edges, two per joint (although sometimes only one might
         /// actually be used).
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private JointEdge[] _jointEdges = new JointEdge[0];
 
         /// <summary>
@@ -202,6 +203,7 @@ namespace Engine.Physics.Systems
         /// system because we want to track the individual fixtures, not the complete
         /// body (and the index system only tracks complete entities).
         /// </summary>
+        [CopyIgnore]
 #if FARMATH
         private FarCollections.SpatialHashedQuadTree<int> _index =
             new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
@@ -216,7 +218,7 @@ namespace Engine.Physics.Systems
         /// The list of fixtures that have changed since the last update, i.e. for
         /// which we need to scan for new/lost contacts.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private ISet<int> _touched = new HashSet<int>();
 
         /// <summary>
@@ -228,14 +230,14 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// Reused every update for solving simulation constraints.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private Island _island;
 
         /// <summary>
         /// Proxies for fixtures used in time of impact computation. We keep those two
         /// instances alive to avoid producing garbage.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private Algorithms.DistanceProxy _proxyA = new Algorithms.DistanceProxy(),
                                          _proxyB = new Algorithms.DistanceProxy();
 
@@ -2101,10 +2103,6 @@ namespace Engine.Physics.Systems
 
             var copy = (PhysicsSystem)into;
 
-            copy._timestep = _timestep;
-            copy._gravity = _gravity;
-
-            copy._contactCount = _contactCount;
             if (copy._contacts.Length != _contacts.Length)
             {
                 copy._contacts = new Contact[_contacts.Length];
@@ -2132,10 +2130,6 @@ namespace Engine.Physics.Systems
                 _contactEdges[i].CopyInto(copy._contactEdges[i]);
             }
 
-            copy._usedContacts = _usedContacts;
-            copy._freeContacts = _freeContacts;
-
-            copy._jointCount = _jointCount;
             if (copy._joints.Length != _joints.Length)
             {
                 copy._joints = new Joint[_joints.Length];
@@ -2166,9 +2160,6 @@ namespace Engine.Physics.Systems
                 _jointEdges[i].CopyInto(copy._jointEdges[i]);
             }
 
-            copy._usedJoints = _usedJoints;
-            copy._freeJoints = _freeJoints;
-
             copy._index.Clear();
             foreach (var entry in _index)
             {
@@ -2177,7 +2168,6 @@ namespace Engine.Physics.Systems
 
             copy._touched.Clear();
             copy._touched.UnionWith(_touched);
-            copy._findContactsBeforeNextUpdate = _findContactsBeforeNextUpdate;
         }
 
         #endregion

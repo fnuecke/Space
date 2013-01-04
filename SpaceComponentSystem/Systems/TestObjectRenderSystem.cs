@@ -1,8 +1,6 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -29,6 +27,7 @@ namespace Space.ComponentSystem.Systems
         /// The content manager used to load textures.
         /// </summary>
         private readonly ContentManager _content;
+
         #endregion
 
         #region Properties
@@ -116,18 +115,6 @@ namespace Space.ComponentSystem.Systems
             
             // And draw it.
             _testObject.Draw();
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// We're purely visual, so don't hash anything.
-        /// </summary>
-        /// <param name="hasher">The hasher to use.</param>
-        public override void Hash(Hasher hasher)
-        {
         }
 
         #endregion
