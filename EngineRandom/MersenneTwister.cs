@@ -325,6 +325,7 @@ namespace Engine.Random
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             for (var i = 0; i < N; i++)
@@ -336,18 +337,10 @@ namespace Engine.Random
 
         /// <summary>
         /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void PreDepacketize(Packet packet)
-        {
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet. This is called
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public void PostDepacketize(Packet packet)
         {
             for (var i = 0; i < N; i++)

@@ -331,6 +331,7 @@ namespace Engine.Simulation
         /// Serialize a simulation to a packet.
         /// </summary>
         /// <param name="packet">the packet to write the data to.</param>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             // Write the trailing simulation. We can reconstruct the newer ones
@@ -361,18 +362,10 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void PreDepacketize(Packet packet)
-        {
-        }
-
-        /// <summary>
         /// Deserialize a simulation from a packet.
         /// </summary>
         /// <param name="packet">The packet to read the data from.</param>
+        [PostDepacketize]
         public void PostDepacketize(Packet packet)
         {
             // Unwrap the trailing state and mirror it to all the newer ones.
@@ -988,38 +981,6 @@ namespace Engine.Simulation
             #endregion
 
             #region Serialization / Hashing
-
-            /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>
-            /// The packet after writing.
-            /// </returns>
-            Packet IPacketizable.Packetize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet. This is called
-            /// before automatic depacketization is performed.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            void IPacketizable.PreDepacketize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet. This is called
-            /// after automatic depacketization has been performed.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            void IPacketizable.PostDepacketize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
 
             /// <summary>
             /// Write a complete entity, meaning all its components, to the

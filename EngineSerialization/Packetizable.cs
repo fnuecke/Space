@@ -26,8 +26,53 @@ namespace Engine.Serialization
     }
 
     /// <summary>
-    /// This provides factory methods for generating dynamic functions taking
-    /// care of the most common serialization cases.
+    /// Use this attribute to mark a method that should be called after
+    /// packetizing an object, for example to allow specialized packetizing.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class PacketizeAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Use this attribute to mark a method that should be called before
+    /// depacketizing an object, for example to allow cleanup.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class PreDepacketizeAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Use this attribute to mark a method that should be called after
+    /// depacketizing an object, for example to allow specialized depacketizing.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class PostDepacketizeAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// The serialization framework works in its core by generating dynamic
+    /// functions for each type that it is called for. These functions are
+    /// cached. This way the expensive process of analyzing what to serialize
+    /// via reflection is only performed once.
+    /// 
+    /// There are two ways for packetizing an object, which depends on whether
+    /// it is a value type or a class type. Value type objects must be written
+    /// to a packet using overloads of the <c>Packet.Write</c> function, and
+    /// read back using overloads of the <c>Packet.Read</c> function or the
+    /// <c>Packet.Read[TypeName]</c> functions. For the dynamic packetizer to
+    /// recognize a type it must provide the first two overloads as extension
+    /// methods for <see cref="Packet"/>.
+    /// 
+    /// Class types can be written if they implement <see cref="IPacketizable"/>.
+    /// In that case, when written with <see cref="Write{T}"/>, their dynamic
+    /// packetizer function will be used, which will in turn check for member
+    /// fields that are <see cref="IPacketizable"/> (and thus recurse), or
+    /// value types for which an overload is known. If a member is either a
+    /// value type with for which no overload was found, or a class type that
+    /// is not packetizable an exception will be thrown.
     /// </summary>
     public static class Packetizable
     {
@@ -72,6 +117,8 @@ namespace Engine.Serialization
             return (Action<T, T>)m.CreateDelegate(typeof(Action<T, T>));
         }
 
+        #region Serialization
+
         /// <summary>
         /// Adds a namespace with <c>Packet.Write</c> and <c>Packet.Read</c> overloads
         /// for handling one or more value types. This allows the automatic packetizer
@@ -104,7 +151,9 @@ namespace Engine.Serialization
                 packet.Write(true);
                 // Packetize all fields, then give the object a chance to do manual
                 // serialization, e.g. of collections and such.
-                return data.Packetize(GetPacketizer(data.GetType())(packet, data));
+                GetPacketizer(data.GetType())(packet, data);
+                //data.Packetize(packet);
+                return packet;
             }
             return packet.Write(false);
         }
@@ -138,7 +187,9 @@ namespace Engine.Serialization
 
                 // Packetize all fields, then give the object a chance to do manual
                 // serialization, e.g. of collections and such.
-                return data.Packetize(GetPacketizer(type)(packet, data));
+                GetPacketizer(type)(packet, data);
+                //data.Packetize(packet);
+                return packet;
             }
             return packet.Write((Type)null);
         }
@@ -190,9 +241,9 @@ namespace Engine.Serialization
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
                 var result = new T();
-                result.PreDepacketize(packet);
+                //result.PreDepacketize(packet);
                 GetDepacketizer(typeof(T))(packet, result);
-                result.PostDepacketize(packet);
+                //result.PostDepacketize(packet);
                 return result;
             }
             return null;
@@ -219,9 +270,9 @@ namespace Engine.Serialization
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
                 var result = (T)Activator.CreateInstance(type);
-                result.PreDepacketize(packet);
+                //result.PreDepacketize(packet);
                 GetDepacketizer(type)(packet, result);
-                result.PostDepacketize(packet);
+                //result.PostDepacketize(packet);
                 return result;
             }
             return null;
@@ -243,13 +294,15 @@ namespace Engine.Serialization
             {
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
-                result.PreDepacketize(packet);
+                //result.PreDepacketize(packet);
                 GetDepacketizer(result.GetType())(packet, result);
-                result.PostDepacketize(packet);
+                //result.PostDepacketize(packet);
                 return packet;
             }
             throw new InvalidOperationException("Cannot read 'null' into existing instance.");
         }
+
+        #endregion
 
         #region Internals
 
@@ -313,10 +366,12 @@ namespace Engine.Serialization
         /// specified packet. The other will read the written data back into the fields
         /// they came from. It will skip any fields (and properties) that are marked
         /// with the <see cref="PacketizerIgnoreAttribute"/> attribute.
-        /// This function may indirectly recurse. It calls the <see cref="IPacketizable.Packetize"/>
-        /// method of any <see cref="IPacketizable"/>s it encounteres, which may in turn
-        /// call a realization of this function. If a value does not implement the
-        /// interface, it will only be handled if there is a known <c>Write</c> overload
+        /// This function may indirectly recurse. It calls any methods with the
+        /// <see cref="PacketizeAttribute"/> attribute after serialization, and any
+        /// methods with the <see cref="PreDepacketizeAttribute"/> before as well as
+        /// those with the <see cref="PostDepacketizeAttribute"/> after depacketizing
+        /// from a packet, respectively. If a value does not implement <see cref="IPacketizable"/>,
+        /// it will only be handled if there is a known <c>Write</c> overload
         /// for <see cref="Packet"/>. Otherwise an exception is thrown.
         /// </summary>
         /// <param name="type">The type to generate the packetizer for.</param>
@@ -335,32 +390,44 @@ namespace Engine.Serialization
             }
 
             // Invariant method shortcuts.
-            var writeInt32 = typeof(Packet).GetMethod("Write", new[] {typeof(int)});
-            var readInt32 = typeof(Packet).GetMethod("Read", new[] {typeof(int).MakeByRefType()});
-            var writePacketizable = typeof(Packetizable).GetMethod("Write").MakeGenericMethod(type);
-            var readPacketizable = typeof(Packetizable).GetMethod("ReadPacketizableInto", new[] { typeof(Packet), typeof(IPacketizable) });
+            var writeInt32 = typeof(Packet)
+                .GetMethod("Write", new[] { typeof(int) });
+            var readInt32 = typeof(Packet)
+                .GetMethod("Read", new[] { typeof(int).MakeByRefType() });
+            var writePacketizable = typeof(Packetizable)
+                .GetMethod("Write").MakeGenericMethod(type);
+            var readPacketizable = typeof(Packetizable)
+                .GetMethod("ReadPacketizableInto", new[] { typeof(Packet), typeof(IPacketizable) });
 
             // Generate dynamic methods for the specified type.
             var packetizeMethod = new DynamicMethod(
                 "Packetize", typeof(Packet), new[] { typeof(Packet), typeof(IPacketizable) }, declaringType, true);
-            var packetizeGenerator = packetizeMethod.GetILGenerator();
             var depacketizeMethod = new DynamicMethod(
                 "Depacketize", typeof(Packet), new[] { typeof(Packet), typeof(IPacketizable) }, declaringType, true);
+
+            // Get the code generators.
+            var packetizeGenerator = packetizeMethod.GetILGenerator();
             var depacketizeGenerator = depacketizeMethod.GetILGenerator();
+
+            // Call pre-depacketize method for depacketization if a callback exists, to
+            // allow some cleanup where necessary.
+            foreach (var callback in type
+                .GetMethods(BindingFlags.Instance |
+                            BindingFlags.Public)
+                .Where(m => m.IsDefined(typeof(PreDepacketizeAttribute), true) &&
+                            m.GetParameters().Length == 0 &&
+                            m.ReturnType == typeof(void)))
+            {
+                depacketizeGenerator.Emit(OpCodes.Ldarg_1);
+                depacketizeGenerator.EmitCall(OpCodes.Callvirt, callback, null);
+            }
 
             // Load packet as onto the stack. This will always remain the lowest entry on
             // the stack of our packetizer. This is an optimization the compiler could not
             // even do, because the returned packet reference may theoretically differ. In
             // practice it never will/must, though.
             packetizeGenerator.Emit(OpCodes.Ldarg_0);
-            // -> 1: packet
             depacketizeGenerator.Emit(OpCodes.Ldarg_0);
-            // -> 1: packet
-
-#if DEBUG
-            //packetizeGenerator.EmitWriteLine("BEGIN Packetize " + type.Name);
-            //depacketizeGenerator.EmitWriteLine("BEGIN Depacketize " + type.Name);
-#endif
 
             // Handle all instance fields.
             foreach (var f in GetAllFields(type, typeof(PacketizerIgnoreAttribute)))
@@ -368,47 +435,31 @@ namespace Engine.Serialization
                 // Find a write and read function for the type.
                 if (typeof(IPacketizable).IsAssignableFrom(f.FieldType))
                 {
+                    // Got a packetizable, call our own write method with it.
+
                     // Build serializer part.
-                    // -> 1: packet -- already on the stack.
                     packetizeGenerator.Emit(OpCodes.Ldarg_1);
-                    // -> 2: object -- to get field.
                     packetizeGenerator.Emit(OpCodes.Ldfld, f);
-                    // -> 2: field -- as argument for call.
                     packetizeGenerator.EmitCall(OpCodes.Call, writePacketizable, null);
-                    // -> 1: packet
 
                     // Build deserializer part.
-                    // -> 1: packet -- already on the stack.
                     depacketizeGenerator.Emit(OpCodes.Ldarg_1);
-                    // -> 2: object -- to get field to set after call.
                     depacketizeGenerator.Emit(OpCodes.Ldfld, f);
-                    // -> 2: field ref
                     depacketizeGenerator.EmitCall(OpCodes.Call, readPacketizable, null);
-                    // -> 1: packet
                 }
                 else if (f.FieldType.IsEnum)
                 {
-                    // Special treatment for enums. Convert the to integer.
+                    // Special treatment for enums -- treat them as integer.
 
                     // Build serializer part.
-                    // -> 1: packet -- already on the stack.
                     packetizeGenerator.Emit(OpCodes.Ldarg_1);
-                    // -> 2: object -- to get field.
                     packetizeGenerator.Emit(OpCodes.Ldfld, f);
-                    // -> 2: field -- now convert enum to integer.
-                    packetizeGenerator.Emit(OpCodes.Conv_I4);
-                    // -> 2: int -- as argument for call.
                     packetizeGenerator.EmitCall(OpCodes.Call, writeInt32, null);
-                    // -> 1: packet
 
                     // Build deserializer part.
-                    // -> 1: packet -- already on the stack.
                     depacketizeGenerator.Emit(OpCodes.Ldarg_1);
-                    // -> 2: object -- to get field to set after call.
                     depacketizeGenerator.Emit(OpCodes.Ldflda, f);
-                    // -> 2: field ref
                     depacketizeGenerator.EmitCall(OpCodes.Call, readInt32, null);
-                    // -> 1: packet
                 }
                 else
                 {
@@ -423,76 +474,51 @@ namespace Engine.Serialization
                     }
 
                     // Build serializer part.
-                    // -> 1: packet -- already on the stack.
                     packetizeGenerator.Emit(OpCodes.Ldarg_1);
-                    // -> 2: object -- to get field.
                     packetizeGenerator.Emit(OpCodes.Ldfld, f);
-                    // -> 2: field -- as argument for call.
                     packetizeGenerator.EmitCall(OpCodes.Call, writeType, null);
-                    // -> 1: packet
 
                     // Build deserializer part.
-                    // -> 1: packet -- already on the stack.
                     depacketizeGenerator.Emit(OpCodes.Ldarg_1);
-                    // -> 2: object -- to get field to set after call.
                     depacketizeGenerator.Emit(OpCodes.Ldflda, f);
-                    // -> 2: field ref
                     depacketizeGenerator.EmitCall(OpCodes.Call, readType, null);
-                    // -> 1: packet
                 }
             }
 
-#if DEBUG
-            //var totalBytes = packetizeGenerator.DeclareLocal(typeof(int));
-            //packetizeGenerator.Emit(OpCodes.Dup);
-            //// -> 2: packet
-            //packetizeGenerator.EmitCall(OpCodes.Call, typeof(Packet).GetProperty("Length").GetGetMethod(), null);
-            //// -> 2: length
-            //packetizeGenerator.Emit(OpCodes.Stloc, totalBytes);
-            //// -> 1: packet
-            //packetizeGenerator.Emit(OpCodes.Ldstr, "Total bytes written: {0}");
-            //// -> 2: format string
-            //packetizeGenerator.Emit(OpCodes.Ldloc, totalBytes);
-            //// -> 3: length
-            //packetizeGenerator.Emit(OpCodes.Box, typeof(int));
-            //// -> 3: boxed length
-            //packetizeGenerator.EmitCall(OpCodes.Call, typeof(Console).GetMethod("WriteLine", new[] { typeof(string), typeof(object) }), null);
-            //// -> 1: packet
+            // Call post-packetize method for packetization if a callback exists, to
+            // allow some specialized packetization where necessary.
+            foreach (var callback in type
+                .GetMethods(BindingFlags.Instance |
+                            BindingFlags.Public)
+                .Where(m => m.IsDefined(typeof(PacketizeAttribute), true) &&
+                            m.GetParameters().Length == 1 &&
+                            m.GetParameters()[0].ParameterType == typeof(Packet) &&
+                            m.ReturnType == typeof(Packet)))
+            {
+                packetizeGenerator.Emit(OpCodes.Ldarg_1);
+                packetizeGenerator.Emit(OpCodes.Ldarg_0);
+                packetizeGenerator.EmitCall(OpCodes.Callvirt, callback, null);
+                packetizeGenerator.Emit(OpCodes.Pop);
+            }
 
-            //var packet = depacketizeGenerator.DeclareLocal(typeof(Packet));
-            //var readBytes = depacketizeGenerator.DeclareLocal(typeof(int));
-            //depacketizeGenerator.Emit(OpCodes.Stloc, packet);
-            //depacketizeGenerator.Emit(OpCodes.Ldloc, packet);
-            //depacketizeGenerator.Emit(OpCodes.Dup);
-            //// -> 2: packet
-            //depacketizeGenerator.EmitCall(OpCodes.Call, typeof(Packet).GetProperty("Length").GetGetMethod(), null);
-            //// -> 2: length
-            //depacketizeGenerator.Emit(OpCodes.Ldloc, packet);
-            //// -> 3: packet
-            //depacketizeGenerator.EmitCall(OpCodes.Call, typeof(Packet).GetProperty("Available").GetGetMethod(), null);
-            //// -> 3: available
-            //depacketizeGenerator.Emit(OpCodes.Sub);
-            //// -> 2: length - available := read
-            //depacketizeGenerator.Emit(OpCodes.Stloc, readBytes);
-            //// -> 1: packet
-            //depacketizeGenerator.Emit(OpCodes.Ldstr, "Total bytes read: {0}");
-            //// -> 2: format
-            //depacketizeGenerator.Emit(OpCodes.Ldloc, readBytes);
-            //// -> 3: read
-            //depacketizeGenerator.Emit(OpCodes.Box, typeof(int));
-            //// -> 3: boxed read
-            //depacketizeGenerator.EmitCall(OpCodes.Call, typeof(Console).GetMethod("WriteLine", new[] { typeof(string), typeof(object) }), null);
-            //// -> 1: packet
-
-            //packetizeGenerator.EmitWriteLine("END Packetize " + type.Name);
-            //depacketizeGenerator.EmitWriteLine("END Depacketize " + type.Name);
-#endif
+            // Call post-depacketize method for depacketization if a callback exists, to
+            // allow some specialized depacketization where necessary.
+            foreach (var callback in type
+                .GetMethods(BindingFlags.Instance |
+                            BindingFlags.Public)
+                .Where(m => m.IsDefined(typeof(PostDepacketizeAttribute), true) &&
+                            m.GetParameters().Length == 1 &&
+                            m.GetParameters()[0].ParameterType == typeof(Packet) &&
+                            m.ReturnType == typeof(void)))
+            {
+                depacketizeGenerator.Emit(OpCodes.Ldarg_1);
+                depacketizeGenerator.Emit(OpCodes.Ldarg_0);
+                depacketizeGenerator.EmitCall(OpCodes.Callvirt, callback, null);
+            }
 
             // Finish our dynamic functions by returning.
             packetizeGenerator.Emit(OpCodes.Ret);
-            // -> 0
             depacketizeGenerator.Emit(OpCodes.Ret);
-            // -> 0
 
             // Create an instances of our dynamic methods (as delegates) and return them.
             var packetizer = (Packetize)packetizeMethod.CreateDelegate(typeof(Packetize));
@@ -512,20 +538,22 @@ namespace Engine.Serialization
         private static MethodInfo FindWriteMethod(Type type)
         {
             // Look for built-in methods.
-            var packetizer = typeof(Packet).GetMethod("Write", new[] { type });
-            if (packetizer != null && packetizer.ReturnType == typeof(Packet))
             {
-                return packetizer;
-            }
-            // Look for extension methods.
-            foreach (var group in Packetizers)
-            {
-                packetizer = group.GetMethod("Write", new[] {typeof(Packet), type});
+                var packetizer = typeof(Packet).GetMethod("Write", new[] {type});
                 if (packetizer != null && packetizer.ReturnType == typeof(Packet))
                 {
                     return packetizer;
                 }
-                
+            }
+            // Look for extension methods.
+            foreach (var group in Packetizers)
+            {
+                var packetizer = group.GetMethod("Write", new[] {typeof(Packet), type});
+                if (packetizer != null && packetizer.ReturnType == typeof(Packet))
+                {
+                    return packetizer;
+                }
+
             }
             return null;
         }
@@ -536,15 +564,17 @@ namespace Engine.Serialization
         private static MethodInfo FindReadMethod(Type type)
         {
             // Look for built-in methods.
-            var depacketizer = typeof(Packet).GetMethod("Read", new[] { type.MakeByRefType() });
-            if (depacketizer != null)
             {
-                return depacketizer;
+                var depacketizer = typeof(Packet).GetMethod("Read", new[] {type.MakeByRefType()});
+                if (depacketizer != null)
+                {
+                    return depacketizer;
+                }
             }
             // Look for extension methods.
             foreach (var group in Packetizers)
             {
-                depacketizer = group.GetMethod("Read", new[] {typeof(Packet), type.MakeByRefType()});
+                var depacketizer = group.GetMethod("Read", new[] {typeof(Packet), type.MakeByRefType()});
                 if (depacketizer != null)
                 {
                     return depacketizer;
@@ -585,7 +615,7 @@ namespace Engine.Serialization
                         // - fields that are compiler generated. We will scan for them below,
                         // when we parse the properties.
                         .Where(f => f.DeclaringType == t &&
-                                    !f.IsDefined(ignoreMarker, false) &&
+                                    !f.IsDefined(ignoreMarker, true) &&
                                     !f.IsDefined(typeof(CompilerGeneratedAttribute), false)));
 
                 // Look for properties with automatically generated backing fields.
@@ -599,7 +629,7 @@ namespace Engine.Serialization
                         // - properties that do not have an automatically generated backing field
                         //   (which we can deduce from the getter/setter being compiler generated).
                         .Where(p => p.DeclaringType == t &&
-                                    !p.IsDefined(ignoreMarker, false) &&
+                                    !p.IsDefined(ignoreMarker, true) &&
                                     (p.GetGetMethod(true) ?? p.GetSetMethod(true))
                                         .IsDefined(typeof(CompilerGeneratedAttribute), false))
                         // Get the backing field. There is no "hard link" we can follow, but the

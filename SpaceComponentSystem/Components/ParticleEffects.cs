@@ -201,6 +201,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public override Packet Packetize(Packet packet)
         {
             base.Packetize(packet);
@@ -214,6 +215,7 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public override void PostDepacketize(Packet packet)
         {
             base.PostDepacketize(packet);
@@ -303,19 +305,6 @@ namespace Space.ComponentSystem.Components
             /// The intensity of the effect (relative scale).
             /// </summary>
             public float Intensity;
-
-            public Packet Packetize(Packet packet)
-            {
-                return packet;
-            }
-
-            public void PreDepacketize(Packet packet)
-            {
-            }
-
-            public void PostDepacketize(Packet packet)
-            {
-            }
         }
 
         #endregion

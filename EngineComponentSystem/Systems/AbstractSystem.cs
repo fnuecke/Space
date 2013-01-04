@@ -100,6 +100,7 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public virtual Packet Packetize(Packet packet)
         {
             return packet;
@@ -110,16 +111,8 @@ namespace Engine.ComponentSystem.Systems
         /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public virtual void PreDepacketize(Packet packet)
-        {
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public virtual void PostDepacketize(Packet packet)
+        [PostDepacketize]
+        public virtual void Depacketize(Packet packet)
         {
         }
 

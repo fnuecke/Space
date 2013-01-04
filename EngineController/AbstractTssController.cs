@@ -385,36 +385,6 @@ namespace Engine.Controller
             #region Serialization / Hashing
 
             /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>The packet after writing.</returns>
-            public Packet Packetize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet. This is called
-            /// before automatic depacketization is performed.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public void PreDepacketize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet. This is called
-            /// after automatic depacketization has been performed.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public void PostDepacketize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
             /// Push some unique data of the object to the given hasher,
             /// to contribute to the generated hash.
             /// </summary>

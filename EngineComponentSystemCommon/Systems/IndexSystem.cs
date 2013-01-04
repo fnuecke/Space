@@ -505,9 +505,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// to true.
         /// </remarks>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void Depacketize(Packet packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             for (var i = 0; i < _trees.Length; ++i)
             {

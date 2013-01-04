@@ -104,41 +104,49 @@ namespace Engine.Physics.Systems
         /// <value>
         /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PacketizerIgnore]
         public bool Enabled { get; set; }
 
         /// <summary>
         /// Gets or sets whether to render fixture shapes.
         /// </summary>
+        [PacketizerIgnore]
         public bool RenderFixtures { get; set; }
 
         /// <summary>
         /// Gets or sets whether to render fixture bounding boxes.
         /// </summary>
+        [PacketizerIgnore]
         public bool RenderFixtureBounds { get; set; }
 
         /// <summary>
         /// Gets or sets whether to render the center of mass of bodies.
         /// </summary>
+        [PacketizerIgnore]
         public bool RenderCenterOfMass { get; set; }
 
         /// <summary>
         /// Gets or sets whether to render contact points.
         /// </summary>
+        [PacketizerIgnore]
         public bool RenderContactPoints { get; set; }
 
         /// <summary>
         /// Gets or sets whether to render contact normals.
         /// </summary>
+        [PacketizerIgnore]
         public bool RenderContactNormals { get; set; }
 
         /// <summary>
         /// Gets or sets whether to render contact points' normal impulse.
         /// </summary>
+        [PacketizerIgnore]
         public bool RenderContactPointNormalImpulse { get; set; }
 
         /// <summary>
         /// Gets or sets whether to render joint edges.
         /// </summary>
+        [PacketizerIgnore]
         public bool RenderJoints { get; set; }
 
         #endregion

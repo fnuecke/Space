@@ -313,17 +313,6 @@ namespace Engine.ComponentSystem.Common.Components
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void PreDepacketize(Packet packet)
-        {
-            Debug.Assert(!_translationChanged);
-
-            base.PreDepacketize(packet);
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>

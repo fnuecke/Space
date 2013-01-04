@@ -552,6 +552,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             if (_packetizer == null)
@@ -660,18 +661,10 @@ namespace Engine.Collections
 
         /// <summary>
         /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void PreDepacketize(Packet packet)
-        {
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet. This is called
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public void PostDepacketize(Packet packet)
         {
             if (_depacketizer == null)

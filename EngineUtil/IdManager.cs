@@ -117,6 +117,7 @@ namespace Engine.Util
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             packet.Write(_reusableIds.Count);
@@ -129,19 +130,12 @@ namespace Engine.Util
         }
 
         /// <summary>
-        /// Pres the packetize.
-        /// </summary>
-        /// <param name="packet">The packet.</param>
-        public void PreDepacketize(Packet packet)
-        {
-        }
-
-        /// <summary>
         /// Bring the object to the state in the given packet. This is called
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void PostDepacketize(Packet packet)
+        [PostDepacketize]
+        public void Depacketize(Packet packet)
         {
             _reusableIds.Clear();
             var numReusableIds = packet.ReadInt32();

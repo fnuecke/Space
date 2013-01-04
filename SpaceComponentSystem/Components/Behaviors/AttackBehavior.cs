@@ -246,9 +246,9 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void Depacketize(Packet packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             if (packet.ReadBoolean())
             {

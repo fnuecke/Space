@@ -118,7 +118,7 @@ namespace Engine.Tests.ComponentSystem
             var component = manager1.AddComponent<TestComponent>(entity);
 
             var packet = new Packet();
-            manager1.Packetize(packet);
+            packet.Write(manager1);
 
             packet.Reset();
 

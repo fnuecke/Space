@@ -1945,9 +1945,9 @@ namespace Engine.Physics.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void Depacketize(Packet packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             _contacts = new Contact[packet.ReadInt32()];
             _contactEdges = new ContactEdge[_contacts.Length * 2];

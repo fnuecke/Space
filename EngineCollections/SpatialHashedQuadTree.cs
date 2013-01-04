@@ -102,8 +102,8 @@ namespace Engine.Collections
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
-        [PacketizerIgnore]
-        private readonly Dictionary<ulong, DynamicQuadTree<T>> _entries = new Dictionary<ulong, DynamicQuadTree<T>>();
+        [PacketizerIgnore] private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries =
+            new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
 
         /// <summary>
         /// Maps entries back to their bounds, for removal.
@@ -769,7 +769,7 @@ namespace Engine.Collections
         /// This is mainly intended for debugging purposes, to allow rendering
         /// the tree bounds.
         /// </remarks>
-        public IEnumerable<Tuple<TPoint, DynamicQuadTree<T>>> GetTreeEnumerable()
+        public IEnumerable<Tuple<TPoint, Collections.DynamicQuadTree<T>>> GetTreeEnumerable()
         {
             foreach (var entry in _entries)
             {
@@ -792,6 +792,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             if (_packetizer == null)
@@ -815,20 +816,13 @@ namespace Engine.Collections
 
             return packet;
         }
-        /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void PreDepacketize(Packet packet)
-        {
-        }
 
         /// <summary>
         /// Bring the object to the state in the given packet. This is called
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public void PostDepacketize(Packet packet)
         {
             if (_depacketizer == null)
@@ -841,8 +835,8 @@ namespace Engine.Collections
             for (var i = 0; i < cellCount; ++i)
             {
                 var cellId = packet.ReadUInt64();
-                var tree = new DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, _boundExtension,
-                                                  _movingBoundMultiplier, _packetizer, _depacketizer);
+                var tree = new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, _boundExtension,
+                                                              _movingBoundMultiplier, _packetizer, _depacketizer);
                 packet.ReadPacketizableInto(tree);
                 _entries.Add(cellId, tree);
             }

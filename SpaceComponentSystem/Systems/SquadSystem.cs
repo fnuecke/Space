@@ -398,9 +398,9 @@ namespace Space.ComponentSystem.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void Depacketize(Packet packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             for (var i = 0; i < _squadIds.Count; i++)
             {
@@ -461,32 +461,6 @@ namespace Space.ComponentSystem.Systems
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
-            }
-
-            /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>The packet after writing.</returns>
-            public virtual Packet Packetize(Packet packet)
-            {
-                return packet;
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public virtual void PreDepacketize(Packet packet)
-            {
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public virtual void PostDepacketize(Packet packet)
-            {
             }
 
             /// <summary>

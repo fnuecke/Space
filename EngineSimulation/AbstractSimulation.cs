@@ -109,6 +109,7 @@ namespace Engine.Simulation
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public virtual Packet Packetize(Packet packet)
         {
             // Then serialize all pending commands for the next frame.
@@ -118,18 +119,10 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public virtual void PreDepacketize(Packet packet)
-        {
-        }
-
-        /// <summary>
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public virtual void PostDepacketize(Packet packet)
         {
             // Continue with reading the list of commands.

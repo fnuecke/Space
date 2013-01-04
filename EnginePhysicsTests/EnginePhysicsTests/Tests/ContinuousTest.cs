@@ -11,7 +11,7 @@ namespace Engine.Physics.Tests.Tests
 {
     internal sealed class ContinuousTest : AbstractTest
     {
-        private Body _body;
+        private int _entity;
 
         protected override void Create()
         {
@@ -22,22 +22,25 @@ namespace Engine.Physics.Tests.Tests
             }
 
             {
-                _body = Manager.AddRectangle(width: 4, height: 0.2f,
-                                             type: Body.BodyType.Dynamic,
-                                             worldPosition: new WorldPoint(0, 20),
-                                             density: 1);
+                var body = Manager.AddRectangle(width: 4, height: 0.2f,
+                                                type: Body.BodyType.Dynamic,
+                                                worldPosition: new WorldPoint(0, 20),
+                                                density: 1);
 
                 //m_angularVelocity = 46.661274f;
-                _body.LinearVelocity = new Vector2(0.0f, -100.0f);
-                _body.AngularVelocity = (float)Random.NextDouble(-50.0f, 50.0f);
+                body.LinearVelocity = new Vector2(0.0f, -100.0f);
+                body.AngularVelocity = (float)Random.NextDouble(-50.0f, 50.0f);
+
+                _entity = body.Entity;
             }
         }
 
         private void Launch()
         {
-            _body.SetTransform(new WorldPoint(0.0f, 20.0f), 0.0f);
-            _body.LinearVelocity = new Vector2(0.0f, -100.0f);
-            _body.AngularVelocity = (float)Random.NextDouble(-50.0f, 50.0f);
+            var body = (Body)Manager.GetComponent(_entity, Body.TypeId);
+            body.SetTransform(new WorldPoint(0.0f, 20.0f), 0.0f);
+            body.LinearVelocity = new Vector2(0.0f, -100.0f);
+            body.AngularVelocity = (float)Random.NextDouble(-50.0f, 50.0f);
         }
 
         protected override void Step()

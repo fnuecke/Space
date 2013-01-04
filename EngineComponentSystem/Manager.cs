@@ -524,6 +524,7 @@ namespace Engine.ComponentSystem
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             // Write the components, which are enough to implicitly restore the
@@ -555,8 +556,8 @@ namespace Engine.ComponentSystem
         /// Bring the object to the state in the given packet. This is called
         /// before automatic depacketization is performed.
         /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void PreDepacketize(Packet packet)
+        [PreDepacketize]
+        public void PreDepacketize()
         {
             // Release all current objects.
             foreach (var entity in _entityIds)
@@ -576,6 +577,7 @@ namespace Engine.ComponentSystem
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public void PostDepacketize(Packet packet)
         {
             // Read back all components, fill in entity info as well, as that

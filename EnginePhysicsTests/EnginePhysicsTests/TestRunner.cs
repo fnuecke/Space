@@ -440,7 +440,8 @@ L            - Load snapshot created with K.");
                     if (_snapshot != null)
                     {
                         // Reset test and stuff to avoid invalid references.
-                        LoadTest(_currentTest, false);
+                        //LoadTest(_currentTest, false);
+                        _mouseJoint = null;
                         _snapshot.Reset();
                         _snapshot.ReadPacketizableInto(_manager);
                         var hasher = new Hasher();

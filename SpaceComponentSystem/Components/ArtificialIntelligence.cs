@@ -217,36 +217,6 @@ namespace Space.ComponentSystem.Components
             #region Serialization / Hashing
             
             /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>
-            /// The packet after writing.
-            /// </returns>
-            public Packet Packetize(Packet packet)
-            {
-                return packet;
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet. This is called
-            /// before automatic depacketization is performed.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public void PreDepacketize(Packet packet)
-            {
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet. This is called
-            /// after automatic depacketization has been performed.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public void PostDepacketize(Packet packet)
-            {
-            }
-
-            /// <summary>
             /// Push some unique data of the object to the given hasher,
             /// to contribute to the generated hash.
             /// </summary>
