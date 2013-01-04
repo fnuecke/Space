@@ -427,6 +427,210 @@ namespace Engine.Serialization
         /// <summary>
         /// Reads a boolean value.
         /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out bool data)
+        {
+            data = ReadBoolean();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a byte value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out byte data)
+        {
+            data = ReadByte();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a single value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out float data)
+        {
+            data = ReadSingle();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a double value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out double data)
+        {
+            data = ReadDouble();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads an int16 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out short data)
+        {
+            data = ReadInt16();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads an int32 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out int data)
+        {
+            data = ReadInt32();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads an int64 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out long data)
+        {
+            data = ReadInt64();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a uint16 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out ushort data)
+        {
+            data = ReadUInt16();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a uint32 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out uint data)
+        {
+            data = ReadUInt32();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a uint64 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out ulong data)
+        {
+            data = ReadUInt64();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a byte array.
+        /// 
+        /// <para>
+        /// May yield <c>null</c>.
+        /// </para>
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out byte[] data)
+        {
+            data = ReadByteArray();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a byte array.
+        /// </summary>
+        /// <param name="buffer">The buffer to write to.</param>
+        /// <param name="offset">The offset to start writing at.</param>
+        /// <param name="count">The number of bytes to read.</param>
+        /// <param name="length">The number of bytes read.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(byte[] buffer, int offset, int count, out int length)
+        {
+            length = ReadByteArray(buffer, offset, count);
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a string value using UTF8 encoding.
+        /// </summary>
+        /// <param name="data">The read value</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out string data)
+        {
+            data = ReadString();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a type value using its assembly qualified name for lookup.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The type is not known in the
+        /// local assembly.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out Type data)
+        {
+            data = ReadType();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a packet.
+        /// 
+        /// <para>
+        /// May yield <c>null</c>.
+        /// </para>
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out Packet data)
+        {
+            data = ReadPacket();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a boolean value.
+        /// </summary>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>

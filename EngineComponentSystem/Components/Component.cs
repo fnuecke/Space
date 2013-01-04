@@ -58,6 +58,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The manager the component lives in.
         /// </summary>
+        [PacketizerIgnore]
         public IManager Manager { get; internal set; }
 
         /// <summary>

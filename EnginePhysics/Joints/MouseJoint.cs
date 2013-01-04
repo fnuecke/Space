@@ -1,7 +1,10 @@
-﻿using Engine.Physics.Math;
+﻿using System.Globalization;
+using Engine.Physics.Math;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
+using Engine.FarMath;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 #else
@@ -81,6 +84,8 @@ namespace Engine.Physics.Joints
 
         #region Fields
 
+        #region Solver shared
+        
         private LocalPoint _localAnchorB;
 
         private WorldPoint _targetA;
@@ -89,20 +94,18 @@ namespace Engine.Physics.Joints
 
         private float _dampingRatio;
 
-        private float _beta;
-
-        #region Solver shared
-        
-        private Vector2 _impulse;
-
         private float _maxForce;
 
-        private float _gamma;
+        private Vector2 _impulse;
 
         #endregion
 
         #region Solver temp
         
+        private float _gamma;
+
+        private float _beta;
+
         private int _indexB;
 
         private LocalPoint _rB;
@@ -311,7 +314,13 @@ namespace Engine.Physics.Joints
         /// </returns>
         public override Serialization.Packet Packetize(Serialization.Packet packet)
         {
-            return base.Packetize(packet);
+            return base.Packetize(packet)
+                .Write(_localAnchorB)
+                .Write(_targetA)
+                .Write(_frequency)
+                .Write(_dampingRatio)
+                .Write(_maxForce)
+                .Write(_impulse);
         }
 
         /// <summary>
@@ -321,6 +330,17 @@ namespace Engine.Physics.Joints
         public override void Depacketize(Serialization.Packet packet)
         {
             base.Depacketize(packet);
+
+            _localAnchorB = packet.ReadVector2();
+#if FARMATH
+            _targetA = packet.ReadFarPosition();
+#else
+            _targetA = packet.ReadVector2();
+#endif
+            _frequency = packet.ReadSingle();
+            _dampingRatio = packet.ReadSingle();
+            _maxForce = packet.ReadSingle();
+            _impulse = packet.ReadVector2();
         }
 
         /// <summary>
@@ -331,6 +351,14 @@ namespace Engine.Physics.Joints
         public override void Hash(Serialization.Hasher hasher)
         {
             base.Hash(hasher);
+
+            hasher
+                .Put(_localAnchorB)
+                .Put(_targetA)
+                .Put(_frequency)
+                .Put(_dampingRatio)
+                .Put(_maxForce)
+                .Put(_impulse);
         }
 
         #endregion
@@ -344,6 +372,15 @@ namespace Engine.Physics.Joints
         public override void CopyInto(Joint into)
         {
             base.CopyInto(into);
+
+            var copy = (MouseJoint)into;
+
+            copy._localAnchorB = _localAnchorB;
+            copy._targetA = _targetA;
+            copy._frequency = _frequency;
+            copy._dampingRatio = _dampingRatio;
+            copy._maxForce = _maxForce;
+            copy._impulse = _impulse;
         }
 
         #endregion
@@ -358,7 +395,17 @@ namespace Engine.Physics.Joints
         /// </returns>
         public override string ToString()
         {
-            return base.ToString();
+            return base.ToString() +
+                ", LocalAnchorB=" + _localAnchorB.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorB.Y.ToString(CultureInfo.InvariantCulture) +
+#if FARMATH
+                ", TargetA=" + _targetA.X.ToString() + ":" + _targetA.Y.ToString() +
+#else
+                ", TargetA=" + _targetA.X.ToString(CultureInfo.InvariantCulture) + ":" + _targetA.Y.ToString(CultureInfo.InvariantCulture) +
+#endif
+                ", Frequency=" + _frequency.ToString(CultureInfo.InvariantCulture) +
+                ", DamingRatio=" + _dampingRatio.ToString(CultureInfo.InvariantCulture) +
+                ", MaxForce=" + _maxForce.ToString(CultureInfo.InvariantCulture) +
+                ", Impulse=" + _impulse.X.ToString(CultureInfo.InvariantCulture) + ":" + _impulse.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion
