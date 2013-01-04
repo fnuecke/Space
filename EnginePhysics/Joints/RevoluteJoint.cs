@@ -13,6 +13,14 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
+    /// <summary>
+    /// A revolute joint constrains two bodies to share a common point while they
+    /// are free to rotate about the point. The relative rotation about the shared
+    /// point is the joint angle. You can limit the relative rotation with
+    /// a joint limit that specifies a lower and upper angle. You can use a motor
+    /// to drive the relative rotation about the shared point. A maximum motor torque
+    /// is provided so that infinite forces are not generated.
+    /// </summary>
     public sealed class RevoluteJoint : Joint
     {
         #region Properties
@@ -49,78 +57,51 @@ namespace Engine.Physics.Joints
             get { return _localAnchorB; }
         }
 
+        /// <summary>
         /// Get the reference angle.
+        /// </summary>
         public float ReferenceAngle
         {
             get { return _referenceAngle; }
         }
 
+        /// <summary>
+        /// Get the current joint angle in radians.
+        /// </summary>
         public float JointAngle
         {
-            get
-            {
-                var bA = BodyA;
-                var bB = BodyB;
-                return bB.Sweep.Angle - bA.Sweep.Angle - _referenceAngle;
-            }
+            get { return BodyB.Sweep.Angle - BodyA.Sweep.Angle - _referenceAngle; }
         }
 
+        /// <summary>
+        /// Get the current joint angle speed in radians per second.
+        /// </summary>
         public float JointSpeed
         {
-            get
-            {
-                var bA = BodyA;
-                var bB = BodyB;
-                return bB.AngularVelocityInternal - bA.AngularVelocityInternal;
-            }
+            get { return BodyB.AngularVelocityInternal - BodyA.AngularVelocityInternal; }
         }
 
-        public bool IsMotorEnabled
+        /// <summary>
+        /// Set/Get the lower joint limit in radians.
+        /// </summary>
+        public float LowerLimit
         {
-            get { return _enableMotor; }
-            set
-            {
-                if (value != _enableMotor)
-                {
-                    BodyA.IsAwake = true;
-                    BodyB.IsAwake = true;
-                    _enableMotor = value;
-                }
-            }
+            get { return _lowerAngle; }
+            set { SetLimits(value, _upperAngle); }
         }
 
-        public float MotorSpeed
+        /// <summary>
+        /// Set/Get the upper joint limit in radians.
+        /// </summary>
+        public float UpperLimit
         {
-            get { return _motorSpeed; }
-            set
-            {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
-                if (value != _motorSpeed)
-                {
-                    BodyA.IsAwake = true;
-                    BodyB.IsAwake = true;
-                    _motorSpeed = value;
-                }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
-            }
+            get { return _upperAngle; }
+            set { SetLimits(_lowerAngle, value); }
         }
 
-        public float MaxMotorTorque
-        {
-            get { return _maxMotorTorque; }
-            set
-            {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
-                if (value != _maxMotorTorque)
-                {
-                    BodyA.IsAwake = true;
-                    BodyB.IsAwake = true;
-                    _maxMotorTorque = value;
-                }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
-            }
-        }
-
+        /// <summary>
+        /// Set/Get whether the lower and upper angle limits are used.
+        /// </summary>
         public bool IsLimitEnabled
         {
             get { return _enableLimit; }
@@ -137,16 +118,59 @@ namespace Engine.Physics.Joints
             }
         }
 
-        public float LowerLimit
+        /// <summary>
+        /// Set/Get the motor speed in radians per second.
+        /// </summary>
+        public float MotorSpeed
         {
-            get { return _lowerAngle; }
-            set { SetLimits(value, _upperAngle); }
+            get { return _motorSpeed; }
+            set
+            {
+                // ReSharper disable CompareOfFloatsByEqualityOperator
+                if (value != _motorSpeed)
+                {
+                    BodyA.IsAwake = true;
+                    BodyB.IsAwake = true;
+                    _motorSpeed = value;
+                }
+                // ReSharper restore CompareOfFloatsByEqualityOperator
+            }
         }
 
-        public float UpperLimit
+        /// <summary>
+        /// Set/Get the maximum motor torque, usually in N-m.
+        /// </summary>
+        public float MaxMotorTorque
         {
-            get { return _upperAngle; }
-            set { SetLimits(_lowerAngle, value); }
+            get { return _maxMotorTorque; }
+            set
+            {
+                // ReSharper disable CompareOfFloatsByEqualityOperator
+                if (value != _maxMotorTorque)
+                {
+                    BodyA.IsAwake = true;
+                    BodyB.IsAwake = true;
+                    _maxMotorTorque = value;
+                }
+                // ReSharper restore CompareOfFloatsByEqualityOperator
+            }
+        }
+
+        /// <summary>
+        /// Set/Get whether the motor is enabled.
+        /// </summary>
+        public bool IsMotorEnabled
+        {
+            get { return _enableMotor; }
+            set
+            {
+                if (value != _enableMotor)
+                {
+                    BodyA.IsAwake = true;
+                    BodyB.IsAwake = true;
+                    _enableMotor = value;
+                }
+            }
         }
 
         #endregion
@@ -175,6 +199,8 @@ namespace Engine.Physics.Joints
 
         private float _upperAngle;
 
+        private LimitState _limitState;
+
         private struct SolverTemp
         {
             public int IndexA;
@@ -200,12 +226,9 @@ namespace Engine.Physics.Joints
             public Matrix33 Mass; // effective mass for point-to-point constraint.
 
             public float MotorMass; // effective mass for motor/limit angular constraint.
-
-            public LimitState LimitState;
         }
 
-        [PacketizerIgnore]
-        private SolverTemp _tmp;
+        [PacketizerIgnore] private SolverTemp _tmp;
 
         #endregion
 
@@ -224,8 +247,21 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(WorldPoint anchor, float lowerAngle = 0, float upperAngle = 0, float maxMotorTorque = 0,
+                                 float motorSpeed = 0, bool enableLimit = false, bool enableMotor = false)
         {
+            _localAnchorA = BodyA.GetLocalPoint(anchor);
+            _localAnchorB = BodyB.GetLocalPoint(anchor);
+            _referenceAngle = BodyB.Angle - BodyA.Angle;
+
+            _lowerAngle = lowerAngle;
+            _upperAngle = upperAngle;
+            _maxMotorTorque = maxMotorTorque;
+            _motorSpeed = motorSpeed;
+            _enableLimit = enableLimit;
+            _enableMotor = enableMotor;
+
+            _limitState = LimitState.Inactive;
         }
 
         #endregion
@@ -346,33 +382,33 @@ namespace Engine.Physics.Joints
                 float jointAngle = aB - aA - _referenceAngle;
                 if (System.Math.Abs(_upperAngle - _lowerAngle) < 2.0f * Settings.AngularSlop)
                 {
-                    _tmp.LimitState = LimitState.Equal;
+                    _limitState = LimitState.Equal;
                 }
                 else if (jointAngle <= _lowerAngle)
                 {
-                    if (_tmp.LimitState != LimitState.AtLower)
+                    if (_limitState != LimitState.AtLower)
                     {
                         _impulse.Z = 0.0f;
                     }
-                    _tmp.LimitState = LimitState.AtLower;
+                    _limitState = LimitState.AtLower;
                 }
                 else if (jointAngle >= _upperAngle)
                 {
-                    if (_tmp.LimitState != LimitState.AtUpper)
+                    if (_limitState != LimitState.AtUpper)
                     {
                         _impulse.Z = 0.0f;
                     }
-                    _tmp.LimitState = LimitState.AtUpper;
+                    _limitState = LimitState.AtUpper;
                 }
                 else
                 {
-                    _tmp.LimitState = LimitState.Inactive;
+                    _limitState = LimitState.Inactive;
                     _impulse.Z = 0.0f;
                 }
             }
             else
             {
-                _tmp.LimitState = LimitState.Inactive;
+                _limitState = LimitState.Inactive;
             }
 
             if (step.IsWarmStarting)
@@ -420,7 +456,7 @@ namespace Engine.Physics.Joints
             // ReSharper restore CompareOfFloatsByEqualityOperator
 
             // Solve motor constraint.
-            if (_enableMotor && _tmp.LimitState != LimitState.Equal && fixedRotation == false)
+            if (_enableMotor && _limitState != LimitState.Equal && fixedRotation == false)
             {
                 var cdot = wB - wA - _motorSpeed;
                 var impulse = -_tmp.MotorMass * cdot;
@@ -434,7 +470,7 @@ namespace Engine.Physics.Joints
             }
 
             // Solve limit constraint.
-            if (_enableLimit && _tmp.LimitState != LimitState.Inactive && fixedRotation == false)
+            if (_enableLimit && _limitState != LimitState.Inactive && fixedRotation == false)
             {
                 var cdot1 = vB + Vector2Util.Cross(wB, _tmp.RotB) - vA - Vector2Util.Cross(wA, _tmp.RotA);
                 var cdot2 = wB - wA;
@@ -442,11 +478,11 @@ namespace Engine.Physics.Joints
 
                 var impulse = -_tmp.Mass.Solve33(cdot);
 
-                if (_tmp.LimitState == LimitState.Equal)
+                if (_limitState == LimitState.Equal)
                 {
                     _impulse += impulse;
                 }
-                else if (_tmp.LimitState == LimitState.AtLower)
+                else if (_limitState == LimitState.AtLower)
                 {
                     var newImpulse = _impulse.Z + impulse.Z;
                     if (newImpulse < 0.0f)
@@ -465,7 +501,7 @@ namespace Engine.Physics.Joints
                         _impulse += impulse;
                     }
                 }
-                else if (_tmp.LimitState == LimitState.AtUpper)
+                else if (_limitState == LimitState.AtUpper)
                 {
                     var newImpulse = _impulse.Z + impulse.Z;
                     if (newImpulse > 0.0f)
@@ -541,12 +577,12 @@ namespace Engine.Physics.Joints
             // ReSharper restore CompareOfFloatsByEqualityOperator
 
             // Solve angular limit constraint.
-            if (_enableLimit && _tmp.LimitState != LimitState.Inactive && fixedRotation == false)
+            if (_enableLimit && _limitState != LimitState.Inactive && fixedRotation == false)
             {
                 var angle = aB - aA - _referenceAngle;
                 var limitImpulse = 0.0f;
 
-                if (_tmp.LimitState == LimitState.Equal)
+                if (_limitState == LimitState.Equal)
                 {
                     // Prevent large angular corrections
                     var c = MathHelper.Clamp(angle - _lowerAngle, -Settings.MaxAngularCorrection,
@@ -554,7 +590,7 @@ namespace Engine.Physics.Joints
                     limitImpulse = -_tmp.MotorMass * c;
                     angularError = System.Math.Abs(c);
                 }
-                else if (_tmp.LimitState == LimitState.AtLower)
+                else if (_limitState == LimitState.AtLower)
                 {
                     var c = angle - _lowerAngle;
                     angularError = -c;
@@ -563,7 +599,7 @@ namespace Engine.Physics.Joints
                     c = MathHelper.Clamp(c + Settings.AngularSlop, -Settings.MaxAngularCorrection, 0.0f);
                     limitImpulse = -_tmp.MotorMass * c;
                 }
-                else if (_tmp.LimitState == LimitState.AtUpper)
+                else if (_limitState == LimitState.AtUpper)
                 {
                     var c = angle - _upperAngle;
                     angularError = c;
@@ -627,19 +663,6 @@ namespace Engine.Physics.Joints
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        public override void CopyInto(Joint into)
-        {
-            base.CopyInto(into);
         }
 
         #endregion

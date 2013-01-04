@@ -128,17 +128,16 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes the specified local anchor A.
         /// </summary>
-        /// <param name="localAnchorA">The local anchor point relative to the first body's origin.</param>
-        /// <param name="localAnchorB">The local anchor point relative to the second body's origin.</param>
-        /// <param name="length">The natural length between the anchor points.</param>
+        /// <param name="anchorA">The world anchor point for the first body.</param>
+        /// <param name="anchorB">The world anchor point for the second body.</param>
         /// <param name="frequency">The mass-spring-damper frequency in Hertz. A value of 0 disables softness.</param>
         /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
-        internal void Initialize(LocalPoint localAnchorA, LocalPoint localAnchorB,
-                                 float length, float frequency, float dampingRatio)
+        internal void Initialize(WorldPoint anchorA, WorldPoint anchorB,
+                                 float frequency, float dampingRatio)
         {
-            _localAnchorA = localAnchorA;
-            _localAnchorB = localAnchorB;
-            _length = System.Math.Max(0.1f, length);
+            _localAnchorA = BodyA.GetLocalPoint(anchorA);
+            _localAnchorB = BodyB.GetLocalPoint(anchorB);
+            _length = System.Math.Max(0.1f, LocalPoint.Distance(_localAnchorA, _localAnchorB));
             _frequency = System.Math.Max(0, frequency);
             _dampingRatio = System.Math.Max(0, dampingRatio);
         }

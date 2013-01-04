@@ -64,8 +64,9 @@
     <Compile Include="Components\Body.cs" />
     <Compile Include="Components\CircleFixture.cs" />
     <Compile Include="Components\EdgeFixture.cs" />
-    <Compile Include="ComponentFactory.cs" />
+    <Compile Include="BodyFactory.cs" />
     <Compile Include="Components\Fixture.cs" />
+    <Compile Include="FixtureFactory.cs" />
     <Compile Include="JointFactory.cs" />
     <Compile Include="Joints\DistanceJoint.cs" />
     <Compile Include="Joints\FrictionJoint.cs" />

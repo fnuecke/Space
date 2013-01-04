@@ -13,6 +13,12 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
+    /// <summary>
+    /// A prismatic joint. This joint provides one degree of freedom: translation
+    /// along an axis fixed in bodyA. Relative rotation is prevented. You can
+    /// use a joint limit to restrict the range of motion and a joint motor to
+    /// drive the motion or to model joint friction.
+    /// </summary>
     public sealed class PrismaticJoint : Joint
     {
         #region Properties
@@ -47,6 +53,64 @@ namespace Engine.Physics.Joints
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
+        }
+
+        /// <summary>
+        /// The local joint axis relative to the first body.
+        /// </summary>
+        public Vector2 LocalAxisA
+        {
+            get { return _localXAxisA; }
+        }
+
+        /// <summary>
+        /// Get the reference angle.
+        /// </summary>
+        public float ReferenceAngle
+        {
+            get { return _referenceAngle; }
+        }
+
+        /// <summary>
+        /// Get the current joint translation, usually in meters.
+        /// </summary>
+        public float JointTranslation
+        {
+            get
+            {
+                var pA = BodyA.GetWorldPoint(_localAnchorA);
+                var pB = BodyB.GetWorldPoint(_localAnchorB);
+                var d = (Vector2)(pB - pA);
+                var axis = BodyA.GetWorldVector(_localXAxisA);
+                return Vector2.Dot(d, axis);
+            }
+        }
+
+        /// <summary>
+        /// Get the current joint translation speed, usually in meters per second.
+        /// </summary>
+        public float JointSpeed
+        {
+            get
+            {
+                var bA = BodyA;
+                var bB = BodyB;
+
+                var rA = bA.Transform.Rotation * (_localAnchorA - bA.Sweep.LocalCenter);
+                var rB = bB.Transform.Rotation * (_localAnchorB - bB.Sweep.LocalCenter);
+                var p1 = bA.Sweep.CenterOfMass + rA;
+                var p2 = bB.Sweep.CenterOfMass + rB;
+                var d = (Vector2)(p2 - p1);
+                var axis = bA.Transform.Rotation * _localXAxisA;
+
+                var vA = bA.LinearVelocityInternal;
+                var vB = bB.LinearVelocityInternal;
+                var wA = bA.AngularVelocityInternal;
+                var wB = bB.AngularVelocityInternal;
+
+                return Vector2.Dot(d, Vector2Util.Cross(wA, axis)) +
+                       Vector2.Dot(axis, vB + Vector2Util.Cross(wB, rB) - vA - Vector2Util.Cross(wA, rA));
+            }
         }
 
         /// <summary>
@@ -201,8 +265,7 @@ namespace Engine.Physics.Joints
             public float MotorMass;
         }
 
-        [PacketizerIgnore]
-        private SolverTemp _tmp;
+        [PacketizerIgnore] private SolverTemp _tmp;
 
         #endregion
 
@@ -221,8 +284,26 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(WorldPoint anchor, Vector2 axis, float lowerTranslation = 0, float upperTranslation = 0,
+                                 float maxMotorForce = 0, float motorSpeed = 0, bool enableLimit = false,
+                                 bool enableMotor = false)
         {
+            _localAnchorA = BodyA.GetLocalPoint(anchor);
+            _localAnchorB = BodyB.GetLocalPoint(anchor);
+            _localXAxisA = BodyA.GetLocalVector(axis);
+            _localXAxisA.Normalize();
+            _localYAxisA = Vector2Util.Cross(1.0f, _localXAxisA);
+            _referenceAngle = BodyB.Angle - BodyA.Angle;
+            _lowerTranslation = lowerTranslation;
+            _upperTranslation = upperTranslation;
+            _maxMotorForce = maxMotorForce;
+            _motorSpeed = motorSpeed;
+            _enableLimit = enableLimit;
+            _enableMotor = enableMotor;
+
+            _impulse = Vector3.Zero;
+            _motorImpulse = 0.0f;
+            _limitState = LimitState.Inactive;
         }
 
         #endregion
