@@ -12,7 +12,7 @@ namespace Engine.Session
 {
     public sealed class HybridServerSession<TPlayerData>
         : AbstractHybridSession, IServerSession
-        where TPlayerData : IPacketizable, new()
+        where TPlayerData : class, IPacketizable, new()
     {
         #region Logger
 

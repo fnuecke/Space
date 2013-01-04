@@ -10,7 +10,7 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
     public sealed class SimpleClientController<TPlayerData> : AbstractTssClient
-        where TPlayerData : IPacketizable, new()
+        where TPlayerData : class, IPacketizable, new()
     {
         #region Constructor
 

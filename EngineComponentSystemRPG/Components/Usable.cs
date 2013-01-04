@@ -80,28 +80,11 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Serialization
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
+        public override void Hash(Hasher hasher)
         {
-            return base.Packetize(packet)
-                .Write(Enum.GetName(typeof(TResponse), Response));
-        }
+            base.Hash(hasher);
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Response = (TResponse)Enum.Parse(typeof(TResponse), packet.ReadString());
+            hasher.Put(Response.ToString());
         }
 
         #endregion

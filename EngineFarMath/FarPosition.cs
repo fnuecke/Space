@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Engine.FarMath
@@ -51,6 +52,11 @@ namespace Engine.FarMath
         #endregion
 
         #region Constructor
+
+        static FarPosition()
+        {
+            Packetizable.AddValueTypeOverloads(typeof(PacketFarMathExtensions));
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FarPosition"/> struct.

@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
 using Engine.Physics.Components;
 using Engine.Physics.Joints;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -147,11 +148,13 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// Keep a reference to the graphics device for projecting/unprojecting.
         /// </summary>
+        [PacketizerIgnore]
         private GraphicsDevice _graphicsDevice;
 
         /// <summary>
         /// The primitive batch we use to render shapes.
         /// </summary>
+        [PacketizerIgnore]
         private PrimitiveBatch _primitiveBatch;
 
         #endregion

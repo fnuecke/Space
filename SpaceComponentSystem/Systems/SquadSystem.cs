@@ -40,6 +40,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The list of actual squads, mapping squad id to squad data.
         /// </summary>
+        [PacketizerIgnore]
         private SparseArray<SquadData> _squads = new SparseArray<SquadData>();
 
         #endregion
@@ -377,8 +378,6 @@ namespace Space.ComponentSystem.Systems
         {
             base.Packetize(packet);
 
-            packet.Write(_squadIds);
-            packet.Write(_squadIds.Count);
             foreach (var id in _squadIds)
             {
                 packet.Write(id);
@@ -399,11 +398,10 @@ namespace Space.ComponentSystem.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            packet.ReadPacketizableInto(ref _squadIds);
             for (var i = 0; i < _squadIds.Count; i++)
             {
                 var id = packet.ReadInt32();
@@ -479,15 +477,24 @@ namespace Space.ComponentSystem.Systems
             /// Bring the object to the state in the given packet.
             /// </summary>
             /// <param name="packet">The packet to read from.</param>
-            public virtual void Depacketize(Packet packet)
+            public virtual void PreDepacketize(Packet packet)
             {
             }
 
             /// <summary>
-            /// A simple wrapper for paramaterless formation implementations.
+            /// Bring the object to the state in the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
+            public virtual void PostDepacketize(Packet packet)
+            {
+            }
+
+            /// <summary>
+            /// A simple wrapper for parameterless formation implementations.
             /// </summary>
             private sealed class SimpleFormation : AbstractFormation
             {
+                [PacketizerIgnore]
                 private readonly IEnumerable<Vector2> _enumerable;
 
                 public SimpleFormation(IEnumerable<Vector2> formation)

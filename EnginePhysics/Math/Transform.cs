@@ -170,6 +170,11 @@ namespace Engine.Physics.Math
     /// </summary>
     internal struct WorldTransform
     {
+        static WorldTransform()
+        {
+            Packetizable.AddValueTypeOverloads(typeof(PacketTransformExtensions));
+        }
+
         /// <summary>
         /// Gets the identity transform.
         /// </summary>
@@ -477,6 +482,19 @@ namespace Engine.Physics.Math
         public static Packet Write(this Packet packet, WorldTransform data)
         {
             return packet.Write(data.Translation).Write(data.Rotation);
+        }
+
+        /// <summary>
+        /// Reads a world transform value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out WorldTransform data)
+        {
+            data = packet.ReadWorldTransform();
+            return packet;
         }
 
         /// <summary>

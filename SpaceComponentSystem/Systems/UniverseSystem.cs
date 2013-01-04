@@ -49,6 +49,7 @@ namespace Space.ComponentSystem.Systems
         /// are in a changed state (deviating from the one that would be
         /// procedurally generated).
         /// </summary>
+        [PacketizerIgnore]
         private Dictionary<ulong, CellInfo> _cellInfo = new Dictionary<ulong, CellInfo>();
 
         #endregion
@@ -225,7 +226,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns></returns>
         public override Packet Packetize(Packet packet)
         {
-            packet.Write(WorldSeed);
+            base.Packetize(packet);
 
             packet.Write(_cellInfo.Count);
             foreach (var item in _cellInfo)
@@ -241,9 +242,9 @@ namespace Space.ComponentSystem.Systems
         /// Depacketizes the specified packet.
         /// </summary>
         /// <param name="packet">The packet.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            WorldSeed = packet.ReadUInt64();
+            base.PostDepacketize(packet);
 
             _cellInfo.Clear();
             var numCells = packet.ReadInt32();
@@ -365,6 +366,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
+            [PacketizerIgnore]
             public List<int> Stations = new List<int>();
 
             #endregion
@@ -409,21 +411,25 @@ namespace Space.ComponentSystem.Systems
             /// </returns>
             public Packet Packetize(Packet packet)
             {
-                return packet
-                    .Write(Dirty)
-                    .Write((int)_faction)
-                    .Write(_techLevel);
+                return packet;
             }
 
             /// <summary>
-            /// Bring the object to the state in the given packet.
+            /// Bring the object to the state in the given packet. This is called
+            /// before automatic depacketization is performed.
             /// </summary>
             /// <param name="packet">The packet to read from.</param>
-            public void Depacketize(Packet packet)
+            public void PreDepacketize(Packet packet)
             {
-                Dirty = packet.ReadBoolean();
-                _faction = (Factions)packet.ReadInt32();
-                _techLevel = packet.ReadInt32();
+            }
+
+            /// <summary>
+            /// Bring the object to the state in the given packet. This is called
+            /// after automatic depacketization has been performed.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
+            public void PostDepacketize(Packet packet)
+            {
             }
 
             /// <summary>

@@ -1,4 +1,5 @@
 ﻿using Engine.Physics.Math;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -98,8 +99,6 @@ namespace Engine.Physics.Joints
 
         #region Fields
 
-        #region Solver shared
-
         private WorldPoint _groundAnchorA;
 
         private WorldPoint _groundAnchorB;
@@ -118,37 +117,37 @@ namespace Engine.Physics.Joints
 
         private float _impulse;
 
-        #endregion
+        private struct SolverTemp
+        {
+            public int IndexA;
 
-        #region Solver temp
+            public int IndexB;
 
-        private int _indexA;
+            public Vector2 AxisA;
 
-        private int _indexB;
+            public Vector2 AxisB;
 
-        private Vector2 _uA;
+            public Vector2 RotA;
 
-        private Vector2 _uB;
+            public Vector2 RotB;
 
-        private Vector2 _rA;
+            public LocalPoint LocalCenterA;
 
-        private Vector2 _rB;
+            public LocalPoint LocalCenterB;
 
-        private LocalPoint _localCenterA;
+            public float InverseMassA;
 
-        private LocalPoint _localCenterB;
+            public float InverseMassB;
 
-        private float _inverseMassA;
+            public float InverseInertiaA;
 
-        private float _inverseMassB;
+            public float InverseInertiaB;
 
-        private float _inverseInertiaA;
+            public float Mass;
+        }
 
-        private float _inverseInertiaB;
-
-        private float _mass;
-
-        #endregion
+        [PacketizerIgnore]
+        private SolverTemp _tmp;
 
         #endregion
 
@@ -195,90 +194,90 @@ namespace Engine.Physics.Joints
         /// <param name="velocities">The velocities of the related bodies.</param>
         internal override void InitializeVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            _indexA = BodyA.IslandIndex;
-            _indexB = BodyB.IslandIndex;
-            _localCenterA = BodyA.Sweep.LocalCenter;
-            _localCenterB = BodyB.Sweep.LocalCenter;
-            _inverseMassA = BodyA.InverseMass;
-            _inverseMassB = BodyB.InverseMass;
-            _inverseInertiaA = BodyA.InverseInertia;
-            _inverseInertiaB = BodyB.InverseInertia;
+            _tmp.IndexA = BodyA.IslandIndex;
+            _tmp.IndexB = BodyB.IslandIndex;
+            _tmp.LocalCenterA = BodyA.Sweep.LocalCenter;
+            _tmp.LocalCenterB = BodyB.Sweep.LocalCenter;
+            _tmp.InverseMassA = BodyA.InverseMass;
+            _tmp.InverseMassB = BodyB.InverseMass;
+            _tmp.InverseInertiaA = BodyA.InverseInertia;
+            _tmp.InverseInertiaB = BodyB.InverseInertia;
 
-            var cA = positions[_indexA].Point;
-            var aA = positions[_indexA].Angle;
-            var vA = velocities[_indexA].LinearVelocity;
-            var wA = velocities[_indexA].AngularVelocity;
+            var cA = positions[_tmp.IndexA].Point;
+            var aA = positions[_tmp.IndexA].Angle;
+            var vA = velocities[_tmp.IndexA].LinearVelocity;
+            var wA = velocities[_tmp.IndexA].AngularVelocity;
 
-            var cB = positions[_indexB].Point;
-            var aB = positions[_indexB].Angle;
-            var vB = velocities[_indexB].LinearVelocity;
-            var wB = velocities[_indexB].AngularVelocity;
+            var cB = positions[_tmp.IndexB].Point;
+            var aB = positions[_tmp.IndexB].Angle;
+            var vB = velocities[_tmp.IndexB].LinearVelocity;
+            var wB = velocities[_tmp.IndexB].AngularVelocity;
 
             var qA = new Rotation(aA);
             var qB = new Rotation(aB);
 
-            _rA = qA * (_localAnchorA - _localCenterA);
-            _rB = qB * (_localAnchorB - _localCenterB);
+            _tmp.RotA = qA * (_localAnchorA - _tmp.LocalCenterA);
+            _tmp.RotB = qB * (_localAnchorB - _tmp.LocalCenterB);
 
             // Get the pulley axes.
-            _uA = (Vector2)(cA - _groundAnchorA) + _rA;
-            _uB = (Vector2)(cB - _groundAnchorB) + _rB;
+            _tmp.AxisA = (Vector2)(cA - _groundAnchorA) + _tmp.RotA;
+            _tmp.AxisB = (Vector2)(cB - _groundAnchorB) + _tmp.RotB;
 
-            var lengthA = _uA.Length();
-            var lengthB = _uB.Length();
+            var lengthA = _tmp.AxisA.Length();
+            var lengthB = _tmp.AxisB.Length();
 
             if (lengthA > 10.0f * Settings.LinearSlop)
             {
-                _uA *= 1.0f / lengthA;
+                _tmp.AxisA *= 1.0f / lengthA;
             }
             else
             {
-                _uA = Vector2.Zero;
+                _tmp.AxisA = Vector2.Zero;
             }
 
             if (lengthB > 10.0f * Settings.LinearSlop)
             {
-                _uB *= 1.0f / lengthB;
+                _tmp.AxisB *= 1.0f / lengthB;
             }
             else
             {
-                _uB = Vector2.Zero;
+                _tmp.AxisB = Vector2.Zero;
             }
 
             // Compute effective mass.
-            float ruA = Vector2Util.Cross(_rA, _uA);
-            float ruB = Vector2Util.Cross(_rB, _uB);
+            float ruA = Vector2Util.Cross(_tmp.RotA, _tmp.AxisA);
+            float ruB = Vector2Util.Cross(_tmp.RotB, _tmp.AxisB);
 
-            float mA = _inverseMassA + _inverseInertiaA * ruA * ruA;
-            float mB = _inverseMassB + _inverseInertiaB * ruB * ruB;
+            float mA = _tmp.InverseMassA + _tmp.InverseInertiaA * ruA * ruA;
+            float mB = _tmp.InverseMassB + _tmp.InverseInertiaB * ruB * ruB;
 
-            _mass = mA + _ratio * _ratio * mB;
+            _tmp.Mass = mA + _ratio * _ratio * mB;
 
-            if (_mass > 0.0f)
+            if (_tmp.Mass > 0.0f)
             {
-                _mass = 1.0f / _mass;
+                _tmp.Mass = 1.0f / _tmp.Mass;
             }
 
             if (step.IsWarmStarting)
             {
                 // Warm starting.
-                var pA = -(_impulse) * _uA;
-                var pB = (-_ratio * _impulse) * _uB;
+                var pA = -(_impulse) * _tmp.AxisA;
+                var pB = (-_ratio * _impulse) * _tmp.AxisB;
 
-                vA += _inverseMassA * pA;
-                wA += _inverseInertiaA * Vector2Util.Cross(_rA, pA);
-                vB += _inverseMassB * pB;
-                wB += _inverseInertiaB * Vector2Util.Cross(_rB, pB);
+                vA += _tmp.InverseMassA * pA;
+                wA += _tmp.InverseInertiaA * Vector2Util.Cross(_tmp.RotA, pA);
+                vB += _tmp.InverseMassB * pB;
+                wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, pB);
             }
             else
             {
                 _impulse = 0.0f;
             }
 
-            velocities[_indexA].LinearVelocity = vA;
-            velocities[_indexA].AngularVelocity = wA;
-            velocities[_indexB].LinearVelocity = vB;
-            velocities[_indexB].AngularVelocity = wB;
+            velocities[_tmp.IndexA].LinearVelocity = vA;
+            velocities[_tmp.IndexA].AngularVelocity = wA;
+            velocities[_tmp.IndexB].LinearVelocity = vB;
+            velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
         /// <summary>
@@ -289,29 +288,29 @@ namespace Engine.Physics.Joints
         /// <param name="velocities">The velocities of the related bodies.</param>
         internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            var vA = velocities[_indexA].LinearVelocity;
-            var wA = velocities[_indexA].AngularVelocity;
-            var vB = velocities[_indexB].LinearVelocity;
-            var wB = velocities[_indexB].AngularVelocity;
+            var vA = velocities[_tmp.IndexA].LinearVelocity;
+            var wA = velocities[_tmp.IndexA].AngularVelocity;
+            var vB = velocities[_tmp.IndexB].LinearVelocity;
+            var wB = velocities[_tmp.IndexB].AngularVelocity;
 
-            var vpA = vA + Vector2Util.Cross(wA, _rA);
-            var vpB = vB + Vector2Util.Cross(wB, _rB);
+            var vpA = vA + Vector2Util.Cross(wA, _tmp.RotA);
+            var vpB = vB + Vector2Util.Cross(wB, _tmp.RotB);
 
-            var cdot = -Vector2.Dot(_uA, vpA) - _ratio * Vector2.Dot(_uB, vpB);
-            var impulse = -_mass * cdot;
+            var cdot = -Vector2.Dot(_tmp.AxisA, vpA) - _ratio * Vector2.Dot(_tmp.AxisB, vpB);
+            var impulse = -_tmp.Mass * cdot;
             _impulse += impulse;
 
-            var pA = -impulse * _uA;
-            var pB = -_ratio * impulse * _uB;
-            vA += _inverseMassA * pA;
-            wA += _inverseInertiaA * Vector2Util.Cross(_rA, pA);
-            vB += _inverseMassB * pB;
-            wB += _inverseInertiaB * Vector2Util.Cross(_rB, pB);
+            var pA = -impulse * _tmp.AxisA;
+            var pB = -_ratio * impulse * _tmp.AxisB;
+            vA += _tmp.InverseMassA * pA;
+            wA += _tmp.InverseInertiaA * Vector2Util.Cross(_tmp.RotA, pA);
+            vB += _tmp.InverseMassB * pB;
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, pB);
 
-            velocities[_indexA].LinearVelocity = vA;
-            velocities[_indexA].AngularVelocity = wA;
-            velocities[_indexB].LinearVelocity = vB;
-            velocities[_indexB].AngularVelocity = wB;
+            velocities[_tmp.IndexA].LinearVelocity = vA;
+            velocities[_tmp.IndexA].AngularVelocity = wA;
+            velocities[_tmp.IndexB].LinearVelocity = vB;
+            velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
         /// <summary>
@@ -324,16 +323,16 @@ namespace Engine.Physics.Joints
         /// <returns><c>true</c> if the position errors are within tolerance.</returns>
         internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            var cA = positions[_indexA].Point;
-            var aA = positions[_indexA].Angle;
-            var cB = positions[_indexB].Point;
-            var aB = positions[_indexB].Angle;
+            var cA = positions[_tmp.IndexA].Point;
+            var aA = positions[_tmp.IndexA].Angle;
+            var cB = positions[_tmp.IndexB].Point;
+            var aB = positions[_tmp.IndexB].Angle;
 
             var qA = new Rotation(aA);
             var qB = new Rotation(aB);
 
-            var rA = qA * (_localAnchorA - _localCenterA);
-            var rB = qB * (_localAnchorB - _localCenterB);
+            var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
+            var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
 
             // Get the pulley axes.
             var uA = (Vector2)(cA - _groundAnchorA) + rA;
@@ -364,8 +363,8 @@ namespace Engine.Physics.Joints
             var ruA = Vector2Util.Cross(rA, uA);
             var ruB = Vector2Util.Cross(rB, uB);
 
-            var mA = _inverseMassA + _inverseInertiaA * ruA * ruA;
-            var mB = _inverseMassB + _inverseInertiaB * ruB * ruB;
+            var mA = _tmp.InverseMassA + _tmp.InverseInertiaA * ruA * ruA;
+            var mB = _tmp.InverseMassB + _tmp.InverseInertiaB * ruB * ruB;
 
             var mass = mA + _ratio * _ratio * mB;
 
@@ -382,15 +381,15 @@ namespace Engine.Physics.Joints
             var pA = -impulse * uA;
             var pB = -_ratio * impulse * uB;
 
-            cA += _inverseMassA * pA;
-            aA += _inverseInertiaA * Vector2Util.Cross(rA, pA);
-            cB += _inverseMassB * pB;
-            aB += _inverseInertiaB * Vector2Util.Cross(rB, pB);
+            cA += _tmp.InverseMassA * pA;
+            aA += _tmp.InverseInertiaA * Vector2Util.Cross(rA, pA);
+            cB += _tmp.InverseMassB * pB;
+            aB += _tmp.InverseInertiaB * Vector2Util.Cross(rB, pB);
 
-            positions[_indexA].Point = cA;
-            positions[_indexA].Angle = aA;
-            positions[_indexB].Point = cB;
-            positions[_indexB].Angle = aB;
+            positions[_tmp.IndexA].Point = cA;
+            positions[_tmp.IndexA].Angle = aA;
+            positions[_tmp.IndexB].Point = cB;
+            positions[_tmp.IndexB].Angle = aB;
 
             return linearError < Settings.LinearSlop;
         }
@@ -400,32 +399,11 @@ namespace Engine.Physics.Joints
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Serialization.Packet Packetize(Serialization.Packet packet)
-        {
-            return base.Packetize(packet);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Serialization.Packet packet)
-        {
-            base.Depacketize(packet);
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Serialization.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
         }

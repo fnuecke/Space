@@ -50,10 +50,9 @@ namespace Engine.Physics.Messages
             var radiusB = Contact.FixtureB.Radius;
 
             FixedArray2<WorldPoint> worldPoints;
-            Contacts.Contact.ComputeWorldManifold(OldManifold,
-                                                  transformA, radiusA,
-                                                  transformB, radiusB,
-                                                  out normal, out worldPoints);
+            OldManifold.ComputeWorldManifold(transformA, radiusA,
+                                             transformB, radiusB,
+                                             out normal, out worldPoints);
             worldPoints.Count = OldManifold.PointCount;
             points = worldPoints;
         }

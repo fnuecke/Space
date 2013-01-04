@@ -9,7 +9,7 @@ using Engine.Serialization;
 namespace Engine.Session
 {
     public sealed class HybridClientSession<TPlayerData> : AbstractHybridSession, IClientSession
-        where TPlayerData : IPacketizable, new()
+        where TPlayerData : class, IPacketizable, new()
     {
         #region Logger
 

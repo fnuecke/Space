@@ -95,36 +95,42 @@ namespace Engine.ComponentSystem.Common.Components
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
+        [PacketizerIgnore]
         internal float PrecomputedA;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
+        [PacketizerIgnore]
         internal float PrecomputedB;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
+        [PacketizerIgnore]
         internal float PrecomputedC;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
+        [PacketizerIgnore]
         internal float PrecomputedD;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
+        [PacketizerIgnore]
         internal float PrecomputedE;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
+        [PacketizerIgnore]
         internal float PrecomputedF;
 
         /// <summary>
@@ -238,37 +244,14 @@ namespace Engine.ComponentSystem.Common.Components
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(_angle)
-                .Write(_majorRadius)
-                .Write(_minorRadius)
-                .Write(CenterEntityId)
-                .Write(Period)
-                .Write(PeriodOffset);
-        }
-
-        /// <summary>
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            Angle = packet.ReadSingle();
-            MajorRadius = packet.ReadSingle();
-            MinorRadius = packet.ReadSingle();
-            CenterEntityId = packet.ReadInt32();
-            Period = packet.ReadSingle();
-            PeriodOffset = packet.ReadSingle();
+            Precompute();
         }
 
         /// <summary>

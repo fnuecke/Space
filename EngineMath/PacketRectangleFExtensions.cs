@@ -2,7 +2,7 @@
 
 namespace Engine.Math
 {
-    public static class RectangleFPacketExtensions
+    public static class PacketRectangleFExtensions
     {
         /// <summary>
         /// Writes the specified rectangle value.
@@ -13,6 +13,19 @@ namespace Engine.Math
         public static Packet Write(this Packet packet, RectangleF data)
         {
             return packet.Write(data.X).Write(data.Y).Write(data.Width).Write(data.Height);
+        }
+
+        /// <summary>
+        /// Reads a rectangle value.
+        /// </summary>
+        /// <param name="result">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out RectangleF result)
+        {
+            result = packet.ReadRectangleF();
+            return packet;
         }
 
         /// <summary>

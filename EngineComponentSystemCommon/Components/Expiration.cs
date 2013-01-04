@@ -78,30 +78,6 @@ namespace Engine.ComponentSystem.Common.Components
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Serialization.Packet Packetize(Serialization.Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(TimeToLive);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Serialization.Packet packet)
-        {
-            base.Depacketize(packet);
-            
-            TimeToLive = packet.ReadInt32();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>

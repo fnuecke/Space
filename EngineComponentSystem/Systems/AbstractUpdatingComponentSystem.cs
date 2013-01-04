@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -17,6 +18,7 @@ namespace Engine.ComponentSystem.Systems
         /// Reused for iterating components when updating, to avoid
         /// modifications to the list of components breaking the update.
         /// </summary>
+        [PacketizerIgnore]
         private List<TComponent> _updatingComponents = new List<TComponent>();
 
         #endregion

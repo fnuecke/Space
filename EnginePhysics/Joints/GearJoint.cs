@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Engine.Physics.Components;
 using Engine.Physics.Math;
+using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -79,8 +80,6 @@ namespace Engine.Physics.Joints
 
         #region Fields
 
-        #region Solver shared
-
         private JointType _typeA;
 
         private JointType _typeB;
@@ -111,25 +110,25 @@ namespace Engine.Physics.Joints
 
         private float _impulse;
 
-        #endregion
+        private struct SolverTemp
+        {
+            public int IndexA, IndexB, IndexC, IndexD;
 
-        #region Solver temp
+            public LocalPoint LcA, LcB, LcC, LcD;
 
-        private int _indexA, _indexB, _indexC, _indexD;
+            public float InverseMassA, InverseMassB, InverseMassC, InverseMassD;
 
-        private LocalPoint _lcA, _lcB, _lcC, _lcD;
+            public float InverseInertiaA, InverseInertiaB, InverseInertiaC, InverseInertiaD;
 
-        private float _mA, _mB, _mC, _mD;
+            public Vector2 JvAC, JvBD;
 
-        private float _iA, _iB, _iC, _iD;
+            public float JwA, JwB, JwC, JwD;
 
-        private Vector2 _JvAC, _JvBD;
+            public float Mass;
+        }
 
-        private float _JwA, _JwB, _JwC, _JwD;
-
-        private float _mass;
-
-        #endregion
+        [PacketizerIgnore]
+        private SolverTemp _tmp;
 
         #endregion
 
@@ -183,109 +182,109 @@ namespace Engine.Physics.Joints
         /// <param name="velocities">The velocities of the related bodies.</param>
         internal override void InitializeVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            _indexA = BodyA.IslandIndex;
-            _indexB = BodyB.IslandIndex;
-            _indexC = BodyC.IslandIndex;
-            _indexD = BodyD.IslandIndex;
-            _lcA = BodyA.Sweep.LocalCenter;
-            _lcB = BodyB.Sweep.LocalCenter;
-            _lcC = BodyC.Sweep.LocalCenter;
-            _lcD = BodyD.Sweep.LocalCenter;
-            _mA = BodyA.InverseMass;
-            _mB = BodyB.InverseMass;
-            _mC = BodyC.InverseMass;
-            _mD = BodyD.InverseMass;
-            _iA = BodyA.InverseInertia;
-            _iB = BodyB.InverseInertia;
-            _iC = BodyC.InverseInertia;
-            _iD = BodyD.InverseInertia;
+            _tmp.IndexA = BodyA.IslandIndex;
+            _tmp.IndexB = BodyB.IslandIndex;
+            _tmp.IndexC = BodyC.IslandIndex;
+            _tmp.IndexD = BodyD.IslandIndex;
+            _tmp.LcA = BodyA.Sweep.LocalCenter;
+            _tmp.LcB = BodyB.Sweep.LocalCenter;
+            _tmp.LcC = BodyC.Sweep.LocalCenter;
+            _tmp.LcD = BodyD.Sweep.LocalCenter;
+            _tmp.InverseMassA = BodyA.InverseMass;
+            _tmp.InverseMassB = BodyB.InverseMass;
+            _tmp.InverseMassC = BodyC.InverseMass;
+            _tmp.InverseMassD = BodyD.InverseMass;
+            _tmp.InverseInertiaA = BodyA.InverseInertia;
+            _tmp.InverseInertiaB = BodyB.InverseInertia;
+            _tmp.InverseInertiaC = BodyC.InverseInertia;
+            _tmp.InverseInertiaD = BodyD.InverseInertia;
 
-            var aA = positions[_indexA].Angle;
-            var vA = velocities[_indexA].LinearVelocity;
-            var wA = velocities[_indexA].AngularVelocity;
+            var aA = positions[_tmp.IndexA].Angle;
+            var vA = velocities[_tmp.IndexA].LinearVelocity;
+            var wA = velocities[_tmp.IndexA].AngularVelocity;
 
-            var aB = positions[_indexB].Angle;
-            var vB = velocities[_indexB].LinearVelocity;
-            var wB = velocities[_indexB].AngularVelocity;
+            var aB = positions[_tmp.IndexB].Angle;
+            var vB = velocities[_tmp.IndexB].LinearVelocity;
+            var wB = velocities[_tmp.IndexB].AngularVelocity;
 
-            var aC = positions[_indexC].Angle;
-            var vC = velocities[_indexC].LinearVelocity;
-            var wC = velocities[_indexC].AngularVelocity;
+            var aC = positions[_tmp.IndexC].Angle;
+            var vC = velocities[_tmp.IndexC].LinearVelocity;
+            var wC = velocities[_tmp.IndexC].AngularVelocity;
 
-            var aD = positions[_indexD].Angle;
-            var vD = velocities[_indexD].LinearVelocity;
-            var wD = velocities[_indexD].AngularVelocity;
+            var aD = positions[_tmp.IndexD].Angle;
+            var vD = velocities[_tmp.IndexD].LinearVelocity;
+            var wD = velocities[_tmp.IndexD].AngularVelocity;
 
             var qA = new Rotation(aA);
             var qB = new Rotation(aB);
             var qC = new Rotation(aC);
             var qD = new Rotation(aD);
 
-            _mass = 0.0f;
+            _tmp.Mass = 0.0f;
 
             if (_typeA == JointType.Revolute)
             {
-                _JvAC = Vector2.Zero;
-                _JwA = 1.0f;
-                _JwC = 1.0f;
-                _mass += _iA + _iC;
+                _tmp.JvAC = Vector2.Zero;
+                _tmp.JwA = 1.0f;
+                _tmp.JwC = 1.0f;
+                _tmp.Mass += _tmp.InverseInertiaA + _tmp.InverseInertiaC;
             }
             else
             {
                 var u = qC * _localAxisC;
-                var rC = qC * (_localAnchorC - _lcC);
-                var rA = qA * (_localAnchorA - _lcA);
-                _JvAC = u;
-                _JwC = Vector2Util.Cross(rC, u);
-                _JwA = Vector2Util.Cross(rA, u);
-                _mass += _mC + _mA + _iC * _JwC * _JwC + _iA * _JwA * _JwA;
+                var rC = qC * (_localAnchorC - _tmp.LcC);
+                var rA = qA * (_localAnchorA - _tmp.LcA);
+                _tmp.JvAC = u;
+                _tmp.JwC = Vector2Util.Cross(rC, u);
+                _tmp.JwA = Vector2Util.Cross(rA, u);
+                _tmp.Mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * _tmp.JwC * _tmp.JwC + _tmp.InverseInertiaA * _tmp.JwA * _tmp.JwA;
             }
 
             if (_typeB == JointType.Revolute)
             {
-                _JvBD = Vector2.Zero;
-                _JwB = _ratio;
-                _JwD = _ratio;
-                _mass += _ratio * _ratio * (_iB + _iD);
+                _tmp.JvBD = Vector2.Zero;
+                _tmp.JwB = _ratio;
+                _tmp.JwD = _ratio;
+                _tmp.Mass += _ratio * _ratio * (_tmp.InverseInertiaB + _tmp.InverseInertiaD);
             }
             else
             {
                 var u = qD * _localAxisD;
-                var rD = qD * (_localAnchorD - _lcD);
-                var rB = qB * (_localAnchorB - _lcB);
-                _JvBD = _ratio * u;
-                _JwD = _ratio * Vector2Util.Cross(rD, u);
-                _JwB = _ratio * Vector2Util.Cross(rB, u);
-                _mass += _ratio * _ratio * (_mD + _mB) + _iD * _JwD * _JwD + _iB * _JwB * _JwB;
+                var rD = qD * (_localAnchorD - _tmp.LcD);
+                var rB = qB * (_localAnchorB - _tmp.LcB);
+                _tmp.JvBD = _ratio * u;
+                _tmp.JwD = _ratio * Vector2Util.Cross(rD, u);
+                _tmp.JwB = _ratio * Vector2Util.Cross(rB, u);
+                _tmp.Mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) + _tmp.InverseInertiaD * _tmp.JwD * _tmp.JwD + _tmp.InverseInertiaB * _tmp.JwB * _tmp.JwB;
             }
 
             // Compute effective mass.
-            _mass = _mass > 0.0f ? 1.0f / _mass : 0.0f;
+            _tmp.Mass = _tmp.Mass > 0.0f ? 1.0f / _tmp.Mass : 0.0f;
 
             if (step.IsWarmStarting)
             {
-                vA += (_mA * _impulse) * _JvAC;
-                wA += _iA * _impulse * _JwA;
-                vB += (_mB * _impulse) * _JvBD;
-                wB += _iB * _impulse * _JwB;
-                vC -= (_mC * _impulse) * _JvAC;
-                wC -= _iC * _impulse * _JwC;
-                vD -= (_mD * _impulse) * _JvBD;
-                wD -= _iD * _impulse * _JwD;
+                vA += (_tmp.InverseMassA * _impulse) * _tmp.JvAC;
+                wA += _tmp.InverseInertiaA * _impulse * _tmp.JwA;
+                vB += (_tmp.InverseMassB * _impulse) * _tmp.JvBD;
+                wB += _tmp.InverseInertiaB * _impulse * _tmp.JwB;
+                vC -= (_tmp.InverseMassC * _impulse) * _tmp.JvAC;
+                wC -= _tmp.InverseInertiaC * _impulse * _tmp.JwC;
+                vD -= (_tmp.InverseMassD * _impulse) * _tmp.JvBD;
+                wD -= _tmp.InverseInertiaD * _impulse * _tmp.JwD;
             }
             else
             {
                 _impulse = 0.0f;
             }
 
-            velocities[_indexA].LinearVelocity = vA;
-            velocities[_indexA].AngularVelocity = wA;
-            velocities[_indexB].LinearVelocity = vB;
-            velocities[_indexB].AngularVelocity = wB;
-            velocities[_indexC].LinearVelocity = vC;
-            velocities[_indexC].AngularVelocity = wC;
-            velocities[_indexD].LinearVelocity = vD;
-            velocities[_indexD].AngularVelocity = wD;
+            velocities[_tmp.IndexA].LinearVelocity = vA;
+            velocities[_tmp.IndexA].AngularVelocity = wA;
+            velocities[_tmp.IndexB].LinearVelocity = vB;
+            velocities[_tmp.IndexB].AngularVelocity = wB;
+            velocities[_tmp.IndexC].LinearVelocity = vC;
+            velocities[_tmp.IndexC].AngularVelocity = wC;
+            velocities[_tmp.IndexD].LinearVelocity = vD;
+            velocities[_tmp.IndexD].AngularVelocity = wD;
         }
 
         /// <summary>
@@ -296,38 +295,38 @@ namespace Engine.Physics.Joints
         /// <param name="velocities">The velocities of the related bodies.</param>
         internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            var vA = velocities[_indexA].LinearVelocity;
-            var wA = velocities[_indexA].AngularVelocity;
-            var vB = velocities[_indexB].LinearVelocity;
-            var wB = velocities[_indexB].AngularVelocity;
-            var vC = velocities[_indexC].LinearVelocity;
-            var wC = velocities[_indexC].AngularVelocity;
-            var vD = velocities[_indexD].LinearVelocity;
-            var wD = velocities[_indexD].AngularVelocity;
+            var vA = velocities[_tmp.IndexA].LinearVelocity;
+            var wA = velocities[_tmp.IndexA].AngularVelocity;
+            var vB = velocities[_tmp.IndexB].LinearVelocity;
+            var wB = velocities[_tmp.IndexB].AngularVelocity;
+            var vC = velocities[_tmp.IndexC].LinearVelocity;
+            var wC = velocities[_tmp.IndexC].AngularVelocity;
+            var vD = velocities[_tmp.IndexD].LinearVelocity;
+            var wD = velocities[_tmp.IndexD].AngularVelocity;
 
-            var cdot = Vector2.Dot(_JvAC, vA - vC) + Vector2.Dot(_JvBD, vB - vD);
-            cdot += (_JwA * wA - _JwC * wC) + (_JwB * wB - _JwD * wD);
+            var cdot = Vector2.Dot(_tmp.JvAC, vA - vC) + Vector2.Dot(_tmp.JvBD, vB - vD);
+            cdot += (_tmp.JwA * wA - _tmp.JwC * wC) + (_tmp.JwB * wB - _tmp.JwD * wD);
 
-            var impulse = -_mass * cdot;
+            var impulse = -_tmp.Mass * cdot;
             _impulse += impulse;
 
-            vA += (_mA * impulse) * _JvAC;
-            wA += _iA * impulse * _JwA;
-            vB += (_mB * impulse) * _JvBD;
-            wB += _iB * impulse * _JwB;
-            vC -= (_mC * impulse) * _JvAC;
-            wC -= _iC * impulse * _JwC;
-            vD -= (_mD * impulse) * _JvBD;
-            wD -= _iD * impulse * _JwD;
+            vA += (_tmp.InverseMassA * impulse) * _tmp.JvAC;
+            wA += _tmp.InverseInertiaA * impulse * _tmp.JwA;
+            vB += (_tmp.InverseMassB * impulse) * _tmp.JvBD;
+            wB += _tmp.InverseInertiaB * impulse * _tmp.JwB;
+            vC -= (_tmp.InverseMassC * impulse) * _tmp.JvAC;
+            wC -= _tmp.InverseInertiaC * impulse * _tmp.JwC;
+            vD -= (_tmp.InverseMassD * impulse) * _tmp.JvBD;
+            wD -= _tmp.InverseInertiaD * impulse * _tmp.JwD;
 
-            velocities[_indexA].LinearVelocity = vA;
-            velocities[_indexA].AngularVelocity = wA;
-            velocities[_indexB].LinearVelocity = vB;
-            velocities[_indexB].AngularVelocity = wB;
-            velocities[_indexC].LinearVelocity = vC;
-            velocities[_indexC].AngularVelocity = wC;
-            velocities[_indexD].LinearVelocity = vD;
-            velocities[_indexD].AngularVelocity = wD;
+            velocities[_tmp.IndexA].LinearVelocity = vA;
+            velocities[_tmp.IndexA].AngularVelocity = wA;
+            velocities[_tmp.IndexB].LinearVelocity = vB;
+            velocities[_tmp.IndexB].AngularVelocity = wB;
+            velocities[_tmp.IndexC].LinearVelocity = vC;
+            velocities[_tmp.IndexC].AngularVelocity = wC;
+            velocities[_tmp.IndexD].LinearVelocity = vD;
+            velocities[_tmp.IndexD].AngularVelocity = wD;
         }
 
         /// <summary>
@@ -340,14 +339,14 @@ namespace Engine.Physics.Joints
         /// <returns><c>true</c> if the position errors are within tolerance.</returns>
         internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            var cA = positions[_indexA].Point;
-            var aA = positions[_indexA].Angle;
-            var cB = positions[_indexB].Point;
-            var aB = positions[_indexB].Angle;
-            var cC = positions[_indexC].Point;
-            var aC = positions[_indexC].Angle;
-            var cD = positions[_indexD].Point;
-            var aD = positions[_indexD].Angle;
+            var cA = positions[_tmp.IndexA].Point;
+            var aA = positions[_tmp.IndexA].Angle;
+            var cB = positions[_tmp.IndexB].Point;
+            var aB = positions[_tmp.IndexB].Angle;
+            var cC = positions[_tmp.IndexC].Point;
+            var aC = positions[_tmp.IndexC].Angle;
+            var cD = positions[_tmp.IndexD].Point;
+            var aD = positions[_tmp.IndexD].Angle;
 
             var qA = new Rotation(aA);
             var qB = new Rotation(aB);
@@ -367,21 +366,21 @@ namespace Engine.Physics.Joints
                 JvAC = Vector2.Zero;
                 JwA = 1.0f;
                 JwC = 1.0f;
-                mass += _iA + _iC;
+                mass += _tmp.InverseInertiaA + _tmp.InverseInertiaC;
 
                 coordinateA = aA - aC - _referenceAngleA;
             }
             else
             {
                 var u = qC * _localAxisC;
-                var rC = qC * (_localAnchorC - _lcC);
-                var rA = qA * (_localAnchorA - _lcA);
+                var rC = qC * (_localAnchorC - _tmp.LcC);
+                var rA = qA * (_localAnchorA - _tmp.LcA);
                 JvAC = u;
                 JwC = Vector2Util.Cross(rC, u);
                 JwA = Vector2Util.Cross(rA, u);
-                mass += _mC + _mA + _iC * JwC * JwC + _iA * JwA * JwA;
+                mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * JwC * JwC + _tmp.InverseInertiaA * JwA * JwA;
 
-                var pC = _localAnchorC - _lcC;
+                var pC = _localAnchorC - _tmp.LcC;
                 var pA = -qC * (rA + (Vector2)(cA - cC));
                 coordinateA = Vector2.Dot(pA - pC, _localAxisC);
             }
@@ -391,21 +390,21 @@ namespace Engine.Physics.Joints
                 JvBD = Vector2.Zero;
                 JwB = _ratio;
                 JwD = _ratio;
-                mass += _ratio * _ratio * (_iB + _iD);
+                mass += _ratio * _ratio * (_tmp.InverseInertiaB + _tmp.InverseInertiaD);
 
                 coordinateB = aB - aD - _referenceAngleB;
             }
             else
             {
                 var u = qD * _localAxisD;
-                var rD = qD * (_localAnchorD - _lcD);
-                var rB = qB * (_localAnchorB - _lcB);
+                var rD = qD * (_localAnchorD - _tmp.LcD);
+                var rB = qB * (_localAnchorB - _tmp.LcB);
                 JvBD = _ratio * u;
                 JwD = _ratio * Vector2Util.Cross(rD, u);
                 JwB = _ratio * Vector2Util.Cross(rB, u);
-                mass += _ratio * _ratio * (_mD + _mB) + _iD * JwD * JwD + _iB * JwB * JwB;
+                mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) + _tmp.InverseInertiaD * JwD * JwD + _tmp.InverseInertiaB * JwB * JwB;
 
-                var pD = _localAnchorD - _lcD;
+                var pD = _localAnchorD - _tmp.LcD;
                 var pB = -qD * (rB + (Vector2)(cB - cD));
                 coordinateB = Vector2.Dot(pB - pD, _localAxisD);
             }
@@ -418,23 +417,23 @@ namespace Engine.Physics.Joints
                 impulse = -c / mass;
             }
 
-            cA += _mA * impulse * JvAC;
-            aA += _iA * impulse * JwA;
-            cB += _mB * impulse * JvBD;
-            aB += _iB * impulse * JwB;
-            cC -= _mC * impulse * JvAC;
-            aC -= _iC * impulse * JwC;
-            cD -= _mD * impulse * JvBD;
-            aD -= _iD * impulse * JwD;
+            cA += _tmp.InverseMassA * impulse * JvAC;
+            aA += _tmp.InverseInertiaA * impulse * JwA;
+            cB += _tmp.InverseMassB * impulse * JvBD;
+            aB += _tmp.InverseInertiaB * impulse * JwB;
+            cC -= _tmp.InverseMassC * impulse * JvAC;
+            aC -= _tmp.InverseInertiaC * impulse * JwC;
+            cD -= _tmp.InverseMassD * impulse * JvBD;
+            aD -= _tmp.InverseInertiaD * impulse * JwD;
 
-            positions[_indexA].Point = cA;
-            positions[_indexA].Angle = aA;
-            positions[_indexB].Point = cB;
-            positions[_indexB].Angle = aB;
-            positions[_indexC].Point = cC;
-            positions[_indexC].Angle = aC;
-            positions[_indexD].Point = cD;
-            positions[_indexD].Angle = aD;
+            positions[_tmp.IndexA].Point = cA;
+            positions[_tmp.IndexA].Angle = aA;
+            positions[_tmp.IndexB].Point = cB;
+            positions[_tmp.IndexB].Angle = aB;
+            positions[_tmp.IndexC].Point = cC;
+            positions[_tmp.IndexC].Angle = aC;
+            positions[_tmp.IndexD].Point = cD;
+            positions[_tmp.IndexD].Angle = aD;
 
             // TODO_ERIN not implemented
             return linearError < Settings.LinearSlop;
@@ -445,63 +444,11 @@ namespace Engine.Physics.Joints
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Serialization.Packet Packetize(Serialization.Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write((byte)_typeA)
-                .Write((byte)_typeB)
-                .Write(_bodyIdC)
-                .Write(_bodyIdD)
-                .Write(_localAnchorA)
-                .Write(_localAnchorB)
-                .Write(_localAnchorC)
-                .Write(_localAnchorD)
-                .Write(_localAxisC)
-                .Write(_localAxisD)
-                .Write(_referenceAngleA)
-                .Write(_referenceAngleB)
-                .Write(_constant)
-                .Write(_ratio)
-                .Write(_impulse);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Serialization.Packet packet)
-        {
-            base.Depacketize(packet);
-
-            _typeA = (JointType)packet.ReadByte();
-            _typeB = (JointType)packet.ReadByte();
-            _bodyIdC = packet.ReadInt32();
-            _bodyIdD = packet.ReadInt32();
-            _localAnchorA = packet.ReadVector2();
-            _localAnchorB = packet.ReadVector2();
-            _localAnchorC = packet.ReadVector2();
-            _localAnchorD = packet.ReadVector2();
-            _localAxisC = packet.ReadVector2();
-            _localAxisD = packet.ReadVector2();
-            _referenceAngleA = packet.ReadSingle();
-            _referenceAngleB = packet.ReadSingle();
-            _constant = packet.ReadSingle();
-            _ratio = packet.ReadSingle();
-            _impulse = packet.ReadSingle();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Serialization.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 

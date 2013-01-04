@@ -160,6 +160,10 @@
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
+      <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
+      <Name>Engine.XnaExtensions</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="GameResource.resx">

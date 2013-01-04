@@ -18,6 +18,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         protected List<TComponent> Components = new List<TComponent>();
 
         #endregion

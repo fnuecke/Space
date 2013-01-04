@@ -428,7 +428,7 @@ L            - Load snapshot created with K.");
                             _mouseJoint = null;
                         }
                         _snapshot = new Packet();
-                        _manager.Packetize(_snapshot);
+                        _snapshot.Write(_manager);
                         var hasher = new Hasher();
                         _manager.Hash(hasher);
                         _snapshotHash = hasher.Value;
@@ -442,7 +442,7 @@ L            - Load snapshot created with K.");
                         // Reset test and stuff to avoid invalid references.
                         LoadTest(_currentTest, false);
                         _snapshot.Reset();
-                        _manager.Depacketize(_snapshot);
+                        _snapshot.ReadPacketizableInto(_manager);
                         var hasher = new Hasher();
                         _manager.Hash(hasher);
                         System.Diagnostics.Debug.Assert(_snapshotHash == hasher.Value);

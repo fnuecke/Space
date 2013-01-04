@@ -25,6 +25,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Cooldowns of known weapon components.
         /// </summary>
+        [PacketizerIgnore]
         private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
 
         /// <summary>
@@ -37,6 +38,7 @@ namespace Space.ComponentSystem.Systems
         /// the creation has do be done synchronously because the manager is
         /// not thread safe.
         /// </summary>
+        [PacketizerIgnore]
         private List<PendingProjectile> _projectilesToCreate = new List<PendingProjectile>(16);
 
         #endregion
@@ -47,6 +49,7 @@ namespace Space.ComponentSystem.Systems
         /// Used to iterate the cooldown mapping. We change it (by changing single fields,
         /// which seems to suffice) so we can't directly iterate over the key collection.
         /// </summary>
+        [PacketizerIgnore]
         private List<int> _reusableEntities = new List<int>();
 
         #endregion
@@ -244,8 +247,6 @@ namespace Space.ComponentSystem.Systems
                 packet.Write(kv.Value);
             }
 
-            packet.Write(_random);
-
             return packet;
         }
 
@@ -253,9 +254,9 @@ namespace Space.ComponentSystem.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             _cooldowns.Clear();
             var numCooldowns = packet.ReadInt32();
@@ -265,8 +266,6 @@ namespace Space.ComponentSystem.Systems
                 var value = packet.ReadInt32();
                 _cooldowns.Add(key, value);
             }
-
-            packet.ReadPacketizableInto(ref _random);
         }
 
         /// <summary>

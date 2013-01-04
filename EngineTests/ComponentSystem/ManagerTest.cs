@@ -121,8 +121,8 @@ namespace Engine.Tests.ComponentSystem
             manager1.Packetize(packet);
 
             packet.Reset();
-            
-            manager2.Depacketize(packet);
+
+            packet.ReadPacketizableInto(manager2);
 
             Assert.True(manager2.HasEntity(entity));
             Assert.True(manager2.HasComponent(component.Id));

@@ -146,11 +146,13 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// List of active contacts between bodies (i.e. current active collisions).
         /// </summary>
+        [PacketizerIgnore]
         private Contact[] _contacts = new Contact[0];
 
         /// <summary>
         /// List of contact edges, two per contact.
         /// </summary>
+        [PacketizerIgnore]
         private ContactEdge[] _contactEdges = new ContactEdge[0];
 
         /// <summary>
@@ -175,12 +177,14 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// List of all joints in the simulation.
         /// </summary>
+        [PacketizerIgnore]
         private Joint[] _joints = new Joint[0];
 
         /// <summary>
         /// List of joint edges, two per joint (although sometimes only one might
         /// actually be used).
         /// </summary>
+        [PacketizerIgnore]
         private JointEdge[] _jointEdges = new JointEdge[0];
 
         /// <summary>
@@ -212,6 +216,7 @@ namespace Engine.Physics.Systems
         /// The list of fixtures that have changed since the last update, i.e. for
         /// which we need to scan for new/lost contacts.
         /// </summary>
+        [PacketizerIgnore]
         private ISet<int> _touched = new HashSet<int>();
 
         /// <summary>
@@ -223,12 +228,14 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// Reused every update for solving simulation constraints.
         /// </summary>
+        [PacketizerIgnore]
         private Island _island;
 
         /// <summary>
         /// Proxies for fixtures used in time of impact computation. We keep those two
         /// instances alive to avoid producing garbage.
         /// </summary>
+        [PacketizerIgnore]
         private Algorithms.DistanceProxy _proxyA = new Algorithms.DistanceProxy(),
                                          _proxyB = new Algorithms.DistanceProxy();
 
@@ -1907,56 +1914,29 @@ namespace Engine.Physics.Systems
 
             base.Packetize(packet);
 
-            packet.Write(_timestep);
-
-            packet.Write(_gravity);
-
-            packet.Write(_contactCount);
-
             packet.Write(_contacts.Length);
-            for (var i = 0; i < _contacts.Length; i++)
+            for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
             {
-                packet.Write(_contacts[i]);
+                packet.Write(contact);
+                packet.Write(_contacts[contact]);
+                packet.Write(_contactEdges[contact * 2]);
+                packet.Write(_contactEdges[contact * 2 + 1]);
             }
-
-            packet.Write(_contactEdges.Length);
-            for (var i = 0; i < _contactEdges.Length; i++)
-            {
-                packet.Write(_contactEdges[i]);
-            }
-
-            packet.Write(_usedContacts);
-
-            packet.Write(_freeContacts);
-
-            packet.Write(_jointCount);
 
             packet.Write(_joints.Length);
-            for (var i = 0; i < _joints.Length; i++)
+            for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
             {
-                packet.WriteWithTypeInfo(_joints[i]);
-                packet.Write(_joints[i].Manager != null);
+                packet.Write(joint);
+                packet.WriteWithTypeInfo(_joints[joint]);
+                packet.Write(_jointEdges[joint * 2]);
+                packet.Write(_jointEdges[joint * 2 + 1]);
             }
-
-            packet.Write(_jointEdges.Length);
-            for (var i = 0; i < _jointEdges.Length; i++)
-            {
-                packet.Write(_jointEdges[i]);
-            }
-
-            packet.Write(_usedJoints);
-
-            packet.Write(_freeJoints);
-
-            packet.Write(_index);
 
             packet.Write(_touched.Count);
             foreach (var entry in _touched)
             {
                 packet.Write(entry);
             }
-
-            packet.Write(_findContactsBeforeNextUpdate);
 
             return packet;
         }
@@ -1965,67 +1945,60 @@ namespace Engine.Physics.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
-
-            _timestep = packet.ReadSingle();
-
-            _gravity = packet.ReadVector2();
-
-            _contactCount = packet.ReadInt32();
+            base.PostDepacketize(packet);
 
             _contacts = new Contact[packet.ReadInt32()];
-            for (var i = 0; i < _contacts.Length; i++)
+            _contactEdges = new ContactEdge[_contacts.Length * 2];
+            for (var i = 0; i < _contactCount; ++i)
             {
-                if (_contacts[i] == null)
-                {
-                    _contacts[i] = new Contact {Manager = Manager};
-                }
-                packet.ReadPacketizableInto(ref _contacts[i]);
+                var contact = packet.ReadInt32();
+                _contacts[contact] = new Contact {Manager = Manager};
+                packet.ReadPacketizableInto(_contacts[contact]);
+                _contactEdges[contact * 2] = packet.ReadPacketizable<ContactEdge>();
+                _contactEdges[contact * 2 + 1] = packet.ReadPacketizable<ContactEdge>();
             }
-
-            _contactEdges = new ContactEdge[packet.ReadInt32()];
-            for (var i = 0; i < _contactEdges.Length; i++)
+            _freeContacts = -1;
+            for (var contact = 0; contact < _contacts.Length; contact++)
             {
-                if (_contactEdges[i] == null)
+                if (_contacts[contact] == null)
                 {
-                    _contactEdges[i] = new ContactEdge();
+                    _contacts[contact] = new Contact
+                    {
+                        Manager = Manager,
+                        Previous = _freeContacts
+                    };
+                    _contactEdges[contact * 2] = new ContactEdge();
+                    _contactEdges[contact * 2 + 1] = new ContactEdge();
+                    _freeContacts = contact;
                 }
-                packet.ReadPacketizableInto(ref _contactEdges[i]);
             }
-
-            _usedContacts = packet.ReadInt32();
-
-            _freeContacts = packet.ReadInt32();
-
-            _jointCount = packet.ReadInt32();
 
             _joints = new Joint[packet.ReadInt32()];
-            for (var i = 0; i < _joints.Length; i++)
+            _jointEdges = new JointEdge[_joints.Length * 2];
+            for (var i = 0; i < _jointCount; ++i)
             {
-                _joints[i] = packet.ReadPacketizableWithTypeInfo<Joint>();
-                if (packet.ReadBoolean())
+                var joint = packet.ReadInt32();
+                _joints[joint] = packet.ReadPacketizableWithTypeInfo<Joint>();
+                _jointEdges[joint * 2] = packet.ReadPacketizable<JointEdge>();
+                _jointEdges[joint * 2 + 1] = packet.ReadPacketizable<JointEdge>();
+            }
+            _freeJoints = -1;
+            for (var joint = 0; joint < _joints.Length; joint++)
+            {
+                if (_joints[joint] == null)
                 {
-                    _joints[i].Manager = Manager;
+                    _joints[joint] = new NullJoint
+                    {
+                        Manager = Manager,
+                        Previous = _freeJoints
+                    };
+                    _jointEdges[joint * 2] = new JointEdge();
+                    _jointEdges[joint * 2 + 1] = new JointEdge();
+                    _freeJoints = joint;
                 }
             }
-
-            _jointEdges = new JointEdge[packet.ReadInt32()];
-            for (var i = 0; i < _jointEdges.Length; i++)
-            {
-                if (_jointEdges[i] == null)
-                {
-                    _jointEdges[i] = new JointEdge();
-                }
-                packet.ReadPacketizableInto(ref _jointEdges[i]);
-            }
-
-            _usedJoints = packet.ReadInt32();
-
-            _freeJoints = packet.ReadInt32();
-
-            packet.ReadPacketizableInto(ref _index);
 
             _touched.Clear();
             var touchedCount = packet.ReadInt32();
@@ -2033,8 +2006,6 @@ namespace Engine.Physics.Systems
             {
                 _touched.Add(packet.ReadInt32());
             }
-
-            _findContactsBeforeNextUpdate = packet.ReadBoolean();
 
             _island = new Island();
         }
@@ -2054,28 +2025,20 @@ namespace Engine.Physics.Systems
             hasher.Put(_gravity);
 
             hasher.Put(_contactCount);
-            for (var i = 0; i < _contacts.Length; ++i)
+            for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
             {
-                _contacts[i].Hash(hasher);
+                _contacts[contact].Hash(hasher);
+                _contactEdges[contact * 2].Hash(hasher);
+                _contactEdges[contact * 2 + 1].Hash(hasher);
             }
-            for (var i = 0; i < _contactEdges.Length; ++i)
-            {
-                _contactEdges[i].Hash(hasher);
-            }
-            hasher.Put(_usedContacts);
-            hasher.Put(_freeContacts);
 
             hasher.Put(_jointCount);
-            for (var i = 0; i < _joints.Length; ++i)
+            for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
             {
-                _joints[i].Hash(hasher);
+                _joints[joint].Hash(hasher);
+                _jointEdges[joint * 2].Hash(hasher);
+                _jointEdges[joint * 2 + 1].Hash(hasher);
             }
-            for (var i = 0; i < _jointEdges.Length; ++i)
-            {
-                _jointEdges[i].Hash(hasher);
-            }
-            hasher.Put(_usedJoints);
-            hasher.Put(_freeJoints);
 
             hasher.Put(_index.Count);
             hasher.Put(_touched.Count);

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Engine.Physics.Math;
+using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -84,8 +85,6 @@ namespace Engine.Physics.Joints
 
         #region Fields
 
-        #region Solver shared
-        
         private LocalPoint _localAnchorB;
 
         private WorldPoint _targetA;
@@ -98,29 +97,29 @@ namespace Engine.Physics.Joints
 
         private Vector2 _impulse;
 
-        #endregion
+        private struct SolverTemp
+        {
+            public float Gamma;
 
-        #region Solver temp
-        
-        private float _gamma;
+            public float Beta;
 
-        private float _beta;
+            public int IndexB;
 
-        private int _indexB;
+            public LocalPoint RotB;
 
-        private LocalPoint _rB;
+            public LocalPoint LocalCenterB;
 
-        private LocalPoint _localCenterB;
+            public float InverseMassB;
 
-        private float _inverseMassB;
+            public float InverseInertiaB;
 
-        private float _inverseInertiaB;
+            public Matrix22 Mass;
 
-        private Matrix22 _mass;
+            public Vector2 C;
+        }
 
-        private Vector2 _c;
-
-        #endregion
+        [PacketizerIgnore]
+        private SolverTemp _tmp;
 
         #endregion
 
@@ -162,8 +161,8 @@ namespace Engine.Physics.Joints
             _frequency = System.Math.Max(0, frequency);
             _dampingRatio = System.Math.Max(0, dampingRatio);
 
-            _beta = 0.0f;
-            _gamma = 0.0f;
+            _tmp.Beta = 0.0f;
+            _tmp.Gamma = 0.0f;
         }
 
         #endregion
@@ -186,15 +185,15 @@ namespace Engine.Physics.Joints
         /// <param name="velocities">The velocities of the related bodies.</param>
         internal override void InitializeVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            _indexB = BodyB.IslandIndex;
-            _localCenterB = BodyB.Sweep.LocalCenter;
-            _inverseMassB = BodyB.InverseMass;
-            _inverseInertiaB = BodyB.InverseInertia;
+            _tmp.IndexB = BodyB.IslandIndex;
+            _tmp.LocalCenterB = BodyB.Sweep.LocalCenter;
+            _tmp.InverseMassB = BodyB.InverseMass;
+            _tmp.InverseInertiaB = BodyB.InverseInertia;
 
-            var cB = positions[_indexB].Point;
-            var aB = positions[_indexB].Angle;
-            var vB = velocities[_indexB].LinearVelocity;
-            var wB = velocities[_indexB].AngularVelocity;
+            var cB = positions[_tmp.IndexB].Point;
+            var aB = positions[_tmp.IndexB].Angle;
+            var vB = velocities[_tmp.IndexB].LinearVelocity;
+            var wB = velocities[_tmp.IndexB].AngularVelocity;
 
             var qB = new Rotation(aB);
 
@@ -214,47 +213,47 @@ namespace Engine.Physics.Joints
             // beta has units of inverse time.
             var h = step.DeltaT;
             System.Diagnostics.Debug.Assert(d + h * s > Settings.Epsilon);
-            _gamma = h * (d + h * s);
+            _tmp.Gamma = h * (d + h * s);
             // ReSharper disable CompareOfFloatsByEqualityOperator
-            if (_gamma != 0.0f)
+            if (_tmp.Gamma != 0.0f)
             {
-                _gamma = 1.0f / _gamma;
+                _tmp.Gamma = 1.0f / _tmp.Gamma;
             }
             // ReSharper restore CompareOfFloatsByEqualityOperator
-            _beta = h * s * _gamma;
+            _tmp.Beta = h * s * _tmp.Gamma;
 
             // Compute the effective mass matrix.
-            _rB = qB * (_localAnchorB - _localCenterB);
+            _tmp.RotB = qB * (_localAnchorB - _tmp.LocalCenterB);
 
             // K    = [(1/m1 + 1/m2) * eye(2) - skew(r1) * invI1 * skew(r1) - skew(r2) * invI2 * skew(r2)]
             //      = [1/m1+1/m2     0    ] + invI1 * [r1.Y*r1.Y -r1.X*r1.Y] + invI2 * [r1.Y*r1.Y -r1.X*r1.Y]
             //        [    0     1/m1+1/m2]           [-r1.X*r1.Y r1.X*r1.X]           [-r1.X*r1.Y r1.X*r1.X]
             Matrix22 k;
-            k.Column1.X = _inverseMassB + _inverseInertiaB * _rB.Y * _rB.Y + _gamma;
-            k.Column1.Y = -_inverseInertiaB * _rB.X * _rB.Y;
+            k.Column1.X = _tmp.InverseMassB + _tmp.InverseInertiaB * _tmp.RotB.Y * _tmp.RotB.Y + _tmp.Gamma;
+            k.Column1.Y = -_tmp.InverseInertiaB * _tmp.RotB.X * _tmp.RotB.Y;
             k.Column2.X = k.Column1.Y;
-            k.Column2.Y = _inverseMassB + _inverseInertiaB * _rB.X * _rB.X + _gamma;
+            k.Column2.Y = _tmp.InverseMassB + _tmp.InverseInertiaB * _tmp.RotB.X * _tmp.RotB.X + _tmp.Gamma;
 
-            _mass = k.GetInverse();
+            _tmp.Mass = k.GetInverse();
 
-            _c = (Vector2)(cB - _targetA) + _rB;
-            _c *= _beta;
+            _tmp.C = (Vector2)(cB - _targetA) + _tmp.RotB;
+            _tmp.C *= _tmp.Beta;
 
             // Cheat with some damping
             wB *= 0.98f;
 
             if (step.IsWarmStarting)
             {
-                vB += _inverseMassB * _impulse;
-                wB += _inverseInertiaB * Vector2Util.Cross(_rB, _impulse);
+                vB += _tmp.InverseMassB * _impulse;
+                wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, _impulse);
             }
             else
             {
                 _impulse = Vector2.Zero;
             }
 
-            velocities[_indexB].LinearVelocity = vB;
-            velocities[_indexB].AngularVelocity = wB;
+            velocities[_tmp.IndexB].LinearVelocity = vB;
+            velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
         /// <summary>
@@ -265,12 +264,12 @@ namespace Engine.Physics.Joints
         /// <param name="velocities">The velocities of the related bodies.</param>
         internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
-            var vB = velocities[_indexB].LinearVelocity;
-            var wB = velocities[_indexB].AngularVelocity;
+            var vB = velocities[_tmp.IndexB].LinearVelocity;
+            var wB = velocities[_tmp.IndexB].AngularVelocity;
 
             // Cdot = v + cross(w, r)
-            var cdot = vB + Vector2Util.Cross(wB, _rB);
-            var impulse = _mass * -(cdot + _c + _gamma * _impulse);
+            var cdot = vB + Vector2Util.Cross(wB, _tmp.RotB);
+            var impulse = _tmp.Mass * -(cdot + _tmp.C + _tmp.Gamma * _impulse);
 
             var oldImpulse = _impulse;
             _impulse += impulse;
@@ -281,11 +280,11 @@ namespace Engine.Physics.Joints
             }
             impulse = _impulse - oldImpulse;
 
-            vB += _inverseMassB * impulse;
-            wB += _inverseInertiaB * Vector2Util.Cross(_rB, impulse);
+            vB += _tmp.InverseMassB * impulse;
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, impulse);
 
-            velocities[_indexB].LinearVelocity = vB;
-            velocities[_indexB].AngularVelocity = wB;
+            velocities[_tmp.IndexB].LinearVelocity = vB;
+            velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
         /// <summary>
@@ -306,49 +305,11 @@ namespace Engine.Physics.Joints
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Serialization.Packet Packetize(Serialization.Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(_localAnchorB)
-                .Write(_targetA)
-                .Write(_frequency)
-                .Write(_dampingRatio)
-                .Write(_maxForce)
-                .Write(_impulse);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Serialization.Packet packet)
-        {
-            base.Depacketize(packet);
-
-            _localAnchorB = packet.ReadVector2();
-#if FARMATH
-            _targetA = packet.ReadFarPosition();
-#else
-            _targetA = packet.ReadVector2();
-#endif
-            _frequency = packet.ReadSingle();
-            _dampingRatio = packet.ReadSingle();
-            _maxForce = packet.ReadSingle();
-            _impulse = packet.ReadVector2();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Serialization.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 

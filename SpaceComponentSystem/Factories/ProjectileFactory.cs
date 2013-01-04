@@ -8,7 +8,6 @@ using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Engine.Serialization;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
@@ -417,42 +416,25 @@ namespace Space.ComponentSystem.Factories
         /// </returns>
         public Packet Packetize(Packet packet)
         {
-            packet.Write(_model);
-            packet.Write(_effect);
-            packet.Write(_effectOffset);
-            packet.Write(_collisionRadius);
-            packet.Write(_canBeShot);
-
-            packet.Write(_initialVelocity);
-            packet.Write(_initialDirection);
-            packet.Write(_accelerationDirection);
-            packet.Write(_accelerationForce);
-
-            packet.Write(_friction);
-            packet.Write(_timeToLive);
-            
             return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
         {
-            _model = packet.ReadString();
-            _effect = packet.ReadString();
-            _effectOffset = packet.ReadVector2();
-            _collisionRadius = packet.ReadSingle();
-            _canBeShot = packet.ReadBoolean();
+        }
 
-            _initialVelocity = packet.ReadPacketizable<FloatInterval>();
-            _initialDirection = packet.ReadPacketizable<FloatInterval>();
-            _accelerationDirection = packet.ReadPacketizable<FloatInterval>();
-            _accelerationForce = packet.ReadPacketizable<FloatInterval>();
-
-            _friction = packet.ReadSingle();
-            _timeToLive = packet.ReadSingle();
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
         }
 
         /// <summary>

@@ -75,30 +75,6 @@ namespace Engine.ComponentSystem.Common.Components
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(SoundName);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            SoundName = packet.ReadString();
-        }
-
-        /// <summary>
         /// Suppress hashing as this component has no influence on other
         /// components and actual simulation logic.
         /// </summary>

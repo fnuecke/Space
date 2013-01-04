@@ -67,12 +67,14 @@ namespace Engine.Collections
         /// A callback that can be used to write an object stored in the tree to
         /// a packet for serialization.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Action<Packet, T> _packetizer;
 
         /// <summary>
         /// A callback that can be used to read an object stored in the tree from
         /// a packet for deserialization.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Func<Packet, T> _depacketizer;
 
         /// <summary>
@@ -100,11 +102,13 @@ namespace Engine.Collections
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
-        private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries = new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
+        [PacketizerIgnore]
+        private readonly Dictionary<ulong, DynamicQuadTree<T>> _entries = new Dictionary<ulong, DynamicQuadTree<T>>();
 
         /// <summary>
         /// Maps entries back to their bounds, for removal.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Dictionary<T, TRectangle> _entryBounds = new Dictionary<T, TRectangle>();
         
         #endregion
@@ -765,7 +769,7 @@ namespace Engine.Collections
         /// This is mainly intended for debugging purposes, to allow rendering
         /// the tree bounds.
         /// </remarks>
-        public IEnumerable<Tuple<TPoint, Collections.DynamicQuadTree<T>>> GetTreeEnumerable()
+        public IEnumerable<Tuple<TPoint, DynamicQuadTree<T>>> GetTreeEnumerable()
         {
             foreach (var entry in _entries)
             {
@@ -795,13 +799,7 @@ namespace Engine.Collections
                 throw new InvalidOperationException("No serializer specified.");
             }
 
-            packet
-                .Write(_maxEntriesPerNode)
-                .Write(_minNodeBounds)
-                .Write(_boundExtension)
-                .Write(_movingBoundMultiplier)
-                .Write(_entries.Count);
-
+            packet.Write(_entries.Count);
             foreach (var entry in _entries)
             {
                 packet.Write(entry.Key);
@@ -817,31 +815,35 @@ namespace Engine.Collections
 
             return packet;
         }
-
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
+        {
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
         {
             if (_depacketizer == null)
             {
                 throw new InvalidOperationException("No deserializer specified.");
             }
 
-            _maxEntriesPerNode = packet.ReadInt32();
-            _minNodeBounds = packet.ReadSingle();
-            _boundExtension = packet.ReadSingle();
-            _movingBoundMultiplier = packet.ReadSingle();
-
             _entries.Clear();
             var cellCount = packet.ReadInt32();
             for (var i = 0; i < cellCount; ++i)
             {
                 var cellId = packet.ReadUInt64();
-                var tree = new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, _boundExtension,
-                                                              _movingBoundMultiplier, _packetizer, _depacketizer);
-                packet.ReadPacketizableInto(ref tree);
+                var tree = new DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, _boundExtension,
+                                                  _movingBoundMultiplier, _packetizer, _depacketizer);
+                packet.ReadPacketizableInto(tree);
                 _entries.Add(cellId, tree);
             }
 

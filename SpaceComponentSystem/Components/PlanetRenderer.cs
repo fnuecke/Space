@@ -36,6 +36,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The factory of this planet, it's "type".
         /// </summary>
+        [PacketizerIgnore]
         public PlanetFactory Factory;
 
         /// <summary>
@@ -51,26 +52,31 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
+        [PacketizerIgnore]
         public Texture2D Albedo;
 
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
+        [PacketizerIgnore]
         public Texture2D Normals;
 
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
+        [PacketizerIgnore]
         public Texture2D Specular;
 
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
+        [PacketizerIgnore]
         public Texture2D Lights;
 
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
+        [PacketizerIgnore]
         public Texture2D Clouds;
 
         #endregion
@@ -146,22 +152,18 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Factory.Name)
-                .Write(Radius)
-                .Write(SurfaceRotation);
+                .Write(Factory.Name);
         }
 
         /// <summary>
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             Factory = FactoryLibrary.GetFactory(packet.ReadString()) as PlanetFactory;
-            Radius = packet.ReadSingle();
-            SurfaceRotation = packet.ReadSingle();
 
             Albedo = null;
             Normals = null;

@@ -30,6 +30,7 @@ namespace Space.ComponentSystem.Systems
         /// (after a cell was toggled to 'living'). This is used to
         /// spread the spawning across several frames to reduce freezes.
         /// </summary>
+        [PacketizerIgnore]
         private List<Tuple<ulong, int>> _cellSpawns = new List<Tuple<ulong, int>>();
 
         #endregion
@@ -293,7 +294,6 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            packet.Write(_random);
             packet.Write(_cellSpawns.Count);
             for (var i = 0; i < _cellSpawns.Count; i++)
             {
@@ -307,9 +307,8 @@ namespace Space.ComponentSystem.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            packet.ReadPacketizableInto(ref _random);
             _cellSpawns.Clear();
             var spawnCount = packet.ReadInt32();
             for (var i = 0; i < spawnCount; i++)

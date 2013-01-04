@@ -21,6 +21,11 @@ namespace Engine.Physics.Math
     /// </summary>
     internal struct Sweep
     {
+        static Sweep()
+        {
+            Packetizable.AddValueTypeOverloads(typeof(PacketSweepExtensions));
+        }
+
         #region Fields
 
         /// <summary>
@@ -114,7 +119,20 @@ namespace Engine.Physics.Math
         }
 
         /// <summary>
-        /// Reads a Sweep value.
+        /// Reads a sweep value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out Sweep data)
+        {
+            data = packet.ReadSweep();
+            return packet;
+        }
+
+        /// <summary>
+        /// Reads a sweep value.
         /// </summary>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough

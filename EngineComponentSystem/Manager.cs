@@ -80,36 +80,43 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// List of systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
 
         /// <summary>
         /// List of all updating systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<IUpdatingSystem> _updatingSystems = new List<IUpdatingSystem>();
 
         /// <summary>
         /// List of all messaging systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<IMessagingSystem> _messagingSystems = new List<IMessagingSystem>();
 
         /// <summary>
         /// List of all drawing systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
 
         /// <summary>
         /// Lookup table for quick access to systems by their type id.
         /// </summary>
+        [PacketizerIgnore]
         private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
 
         /// <summary>
         /// Keeps track of entity->component relationships.
         /// </summary>
+        [PacketizerIgnore]
         private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
 
         /// <summary>
         /// Lookup table for quick access to components by their id.
         /// </summary>
+        [PacketizerIgnore]
         private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
         #endregion
@@ -519,16 +526,14 @@ namespace Engine.ComponentSystem
         /// </returns>
         public Packet Packetize(Packet packet)
         {
-            // Write the managers for used ids.
-            packet.Write(_entityIds);
-            packet.Write(_componentIds);
-
             // Write the components, which are enough to implicitly restore the
             // entity to component mapping as well, so we don't need to write
             // the entity mapping.
             packet.Write(_componentIds.Count);
             foreach (var component in Components)
             {
+                // Store type manually to allow going through object pool on
+                // deserialization.
                 packet.Write(component.GetType());
                 packet.Write(component);
             }
@@ -547,10 +552,11 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
         {
             // Release all current objects.
             foreach (var entity in _entityIds)
@@ -563,11 +569,15 @@ namespace Engine.ComponentSystem
                 ReleaseComponent(component);
             }
             _components.Clear();
+        }
 
-            // Get the managers for ids (restores "known" ids before restoring components).
-            packet.ReadPacketizableInto(ref _entityIds);
-            packet.ReadPacketizableInto(ref _componentIds);
-
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
             var numComponents = packet.ReadInt32();
@@ -575,7 +585,7 @@ namespace Engine.ComponentSystem
             {
                 var type = packet.ReadType();
                 var component = AllocateComponent(type);
-                packet.ReadPacketizableInto(ref component);
+                packet.ReadPacketizableInto(component);
                 component.Manager = this;
                 _components[component.Id] = component;
 
@@ -607,7 +617,7 @@ namespace Engine.ComponentSystem
                     throw new PacketException("Could not depacketize system of unknown type " + type.FullName);
                 }
                 var instance = _systemsByTypeId[GetSystemTypeId(type)];
-                packet.ReadPacketizableInto(ref instance);
+                packet.ReadPacketizableInto(instance);
             }
 
             // All done, send message to allow post-processing.

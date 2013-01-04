@@ -176,11 +176,10 @@ namespace Engine.Physics.Contacts
                 xfB.Translation = cB - xfB.Rotation * localCenterB;
 
                 FixedArray2<WorldPoint> points;
-                Contact.ComputeWorldManifold(contact.Manifold,
-                                             xfA, radiusA,
-                                             xfB, radiusB,
-                                             out vc.Normal,
-                                             out points);
+                contact.Manifold.ComputeWorldManifold(xfA, radiusA,
+                                                      xfB, radiusB,
+                                                      out vc.Normal,
+                                                      out points);
 
                 for (var j = 0; j < vc.PointCount; ++j)
                 {

@@ -21,7 +21,7 @@ namespace Engine.Controller
     /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
     public sealed class ThinClientController<TPlayerData>
         : AbstractController<IClientSession, FrameCommand>, IClientController<FrameCommand>
-        where TPlayerData : IPacketizable, new()
+        where TPlayerData : class, IPacketizable, new()
     {
         #region Properties
         

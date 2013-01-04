@@ -34,6 +34,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// A list of components which should be disabled while dead.
         /// </summary>
+        [PacketizerIgnore]
         public readonly List<int> ComponentsToDisable = new List<int>();
 
         /// <summary>
@@ -165,11 +166,6 @@ namespace Space.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(Delay);
-            packet.Write(Position);
-            packet.Write(RelativeHealth);
-            packet.Write(RelativeEnergy);
-
             packet.Write(ComponentsToDisable.Count);
             foreach (var componentType in ComponentsToDisable)
             {
@@ -183,14 +179,9 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
-
-            Delay = packet.ReadInt32();
-            Position = packet.ReadFarPosition();
-            RelativeHealth = packet.ReadSingle();
-            RelativeEnergy = packet.ReadSingle();
+            base.PostDepacketize(packet);
 
             ComponentsToDisable.Clear();
             var numComponents = packet.ReadInt32();

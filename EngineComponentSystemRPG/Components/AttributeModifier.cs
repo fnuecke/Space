@@ -76,26 +76,28 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Write the object's state to the given packet.
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(Enum.GetName(typeof(TAttribute), Type))
-                .Write((byte)ComputationType)
-                .Write(Value);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
         {
-            Type = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
-            ComputationType = (AttributeComputationType)packet.ReadByte();
-            Value = packet.ReadSingle();
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
         }
 
         /// <summary>

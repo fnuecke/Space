@@ -79,12 +79,14 @@ namespace Engine.Collections
         /// A callback that can be used to write an object stored in the tree to
         /// a packet for serialization.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Action<Packet, T> _packetizer;
 
         /// <summary>
         /// A callback that can be used to read an object stored in the tree from
         /// a packet for deserialization.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Func<Packet, T> _depacketizer;
 
         /// <summary>
@@ -119,12 +121,14 @@ namespace Engine.Collections
         /// <summary>
         /// The root node of the tree.
         /// </summary>
+        [PacketizerIgnore]
         private Node _root;
 
         /// <summary>
         /// Mapping back from value to entry, for faster value to entry lookup
         /// when removing or updating items.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Dictionary<T, Entry> _values = new Dictionary<T, Entry>();
 
         #endregion
@@ -555,13 +559,7 @@ namespace Engine.Collections
                 throw new InvalidOperationException("No serializer specified.");
             }
 
-            packet
-                .Write(_maxEntriesPerNode)
-                .Write(_minNodeBounds)
-                .Write(_boundExtension)
-                .Write(_movingBoundMultiplier)
-                .Write(_bounds)
-                .Write(_values.Count);
+            packet.Write(_values.Count);
 
             // Entry serialization as a two step process: first write the values and
             // bounds which will allow us to generate the entry objects when deserializing.
@@ -661,25 +659,25 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
+        {
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
         {
             if (_depacketizer == null)
             {
                 throw new InvalidOperationException("No deserializer specified.");
             }
-
-            _maxEntriesPerNode = packet.ReadInt32();
-            _minNodeBounds = packet.ReadSingle();
-            _boundExtension = packet.ReadSingle();
-            _movingBoundMultiplier = packet.ReadSingle();
-#if FARMATH
-            _bounds = packet.ReadFarRectangle();
-#else
-            _bounds = packet.ReadRectangleF();
-#endif
 
             _values.Clear();
             var count = packet.ReadInt32();
@@ -730,6 +728,9 @@ namespace Engine.Collections
             }
         }
 
+        /// <summary>
+        /// Utility method for parsing data from a single node.
+        /// </summary>
         private void DepacketizeNode(Packet packet, Node node, Stack<Tuple<Node, int>> stack)
         {
             node.EntryCount = packet.ReadInt32();

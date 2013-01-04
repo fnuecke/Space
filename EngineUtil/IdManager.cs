@@ -23,11 +23,13 @@ namespace Engine.Util
         }
 
         #endregion
+
         #region Fields
 
         /// <summary>
         /// The list of ids that were released and may be reused.
         /// </summary>
+        [PacketizerIgnore]
         private SortedSet<int> _reusableIds = new SortedSet<int>();
 
         /// <summary>
@@ -117,9 +119,7 @@ namespace Engine.Util
         /// <returns>The packet after writing.</returns>
         public Packet Packetize(Packet packet)
         {
-            packet
-                .Write(_nextId)
-                .Write(_reusableIds.Count);
+            packet.Write(_reusableIds.Count);
             foreach (var reusableId in _reusableIds)
             {
                 packet.Write(reusableId);
@@ -129,13 +129,20 @@ namespace Engine.Util
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Pres the packetize.
+        /// </summary>
+        /// <param name="packet">The packet.</param>
+        public void PreDepacketize(Packet packet)
+        {
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PostDepacketize(Packet packet)
         {
-            _nextId = packet.ReadInt32();
-
             _reusableIds.Clear();
             var numReusableIds = packet.ReadInt32();
             for (var i = 0; i < numReusableIds; i++)

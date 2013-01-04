@@ -49,6 +49,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
+        [PacketizerIgnore]
         public Texture2D Texture;
 
         /// <summary>
@@ -112,29 +113,14 @@ namespace Space.ComponentSystem.Components
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(TextureName)
-                .Write(RotateIcon);
-        }
-
-        /// <summary>
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            TextureName = packet.ReadString();
-            RotateIcon = packet.ReadBoolean();
+            Texture = null;
         }
 
         #endregion

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,7 +12,7 @@ namespace Engine.Serialization
     /// program structure, i.e. the caller must know what the next thing to
     /// read should be.
     /// </summary>
-    public sealed class Packet : IDisposable, IEquatable<Packet>
+    public sealed class Packet : IDisposable, IEquatable<Packet>, IPacketizable
     {
         #region Properties
 
@@ -275,86 +274,17 @@ namespace Engine.Serialization
         /// <summary>
         /// Writes the specified type using its assembly qualified name.
         /// </summary>
-        /// <param name="type">The value to write.</param>
+        /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Type type)
+        public Packet Write(Type data)
         {
-            if (type == null)
+            if (data == null)
             {
                 return Write((string)null);
             }
             else
             {
-                return Write(type.AssemblyQualifiedName);
-            }
-        }
-
-        /// <summary>
-        /// Writes the specified packet.
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Packet data)
-        {
-            return Write((byte[])data);
-        }
-
-        /// <summary>
-        /// Writes the specified object.
-        /// 
-        /// <para>
-        /// Must be read back using one of the <see cref="ReadPacketizable{T}"/>
-        /// overloads.
-        /// </para>
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(IPacketizable data)
-        {
-            if (data == null)
-            {
-                return Write((Packet)null);
-            }
-            else
-            {
-                using (var packet = new Packet())
-                {
-                    return Write(data.Packetize(packet));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Writes the specified object with its type info, meaning to
-        /// know the actual underlying type is not necessary for reading.
-        /// 
-        /// <para>
-        /// Must byte read back using <see cref="ReadPacketizableWithTypeInfo{T}"/>.
-        /// </para>
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet WriteWithTypeInfo(IPacketizable data)
-        {
-            if (data == null)
-            {
-                return Write((Type)null);
-            }
-            else
-            {
-                return Write(data.GetType()).Write(data);   
+                return Write(data.AssemblyQualifiedName);
             }
         }
 
@@ -372,7 +302,7 @@ namespace Engine.Serialization
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write<T>(ICollection<T> data)
-            where T : IPacketizable
+            where T : class, IPacketizable
         {
             if (data == null)
             {
@@ -383,7 +313,7 @@ namespace Engine.Serialization
                 Write(data.Count);
                 foreach (var item in data)
                 {
-                    Write(item);
+                    this.Write(item);
                 }
                 return this;
             }
@@ -403,7 +333,7 @@ namespace Engine.Serialization
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public Packet WriteWithTypeInfo<T>(ICollection<T> data)
-            where T : IPacketizable
+            where T : class, IPacketizable
         {
             if (data == null)
             {
@@ -414,7 +344,7 @@ namespace Engine.Serialization
                 Write(data.Count);
                 foreach (var item in data)
                 {
-                    WriteWithTypeInfo(item);
+                    this.WriteWithTypeInfo(item);
                 }
                 return this;
             }
@@ -908,81 +838,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Reads an object into the specified existing instance.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">The type of object being read.</typeparam>
-        /// <returns>The read value (which may be null).</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public void ReadPacketizableInto<T>(ref T existingInstance)
-            where T : IPacketizable
-        {
-            using (var packet = ReadPacket())
-            {
-                if (packet == null)
-                {
-                    Debug.Assert(!typeof(ValueType).IsAssignableFrom(typeof(T)), "Got a null value for a value type.");
-                    existingInstance = default(T);
-                }
-                else
-                {
-                    existingInstance.Depacketize(packet);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Reads an object value of the given type.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">The type of the object to read.</typeparam>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public T ReadPacketizable<T>()
-            where T : IPacketizable, new()
-        {
-            var instance = new T();
-            ReadPacketizableInto(ref instance);
-            return instance;
-        }
-
-        /// <summary>
-        /// Reads an object value of an arbitrary type, which should be a
-        /// subtype of the specified type parameter.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">Supertype of the type actually being read.</typeparam>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public T ReadPacketizableWithTypeInfo<T>()
-            where T : IPacketizable
-        {
-            var type = ReadType();
-            if (type == null)
-            {
-                return default(T);
-            }
-            else
-            {
-                var instance = (T)Activator.CreateInstance(type);
-                ReadPacketizableInto(ref instance);
-                return instance;
-            }
-        }
-
-        /// <summary>
         /// Reads an object collections.
         /// 
         /// <para>
@@ -994,9 +849,9 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         public T[] ReadPacketizables<T>()
-            where T : IPacketizable, new()
+            where T : class, IPacketizable, new()
         {
-            return ReadPacketizables(ReadPacketizable<T>);
+            return ReadPacketizables(Packetizable.ReadPacketizable<T>);
         }
 
         /// <summary>
@@ -1012,9 +867,9 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         public T[] ReadPacketizablesWithTypeInfo<T>()
-            where T : IPacketizable
+            where T : class, IPacketizable
         {
-            return ReadPacketizables(ReadPacketizableWithTypeInfo<T>);
+            return ReadPacketizables(Packetizable.ReadPacketizableWithTypeInfo<T>);
         }
 
         /// <summary>
@@ -1024,7 +879,7 @@ namespace Engine.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private T[] ReadPacketizables<T>(Func<T> reader)
+        private T[] ReadPacketizables<T>(Func<Packet, T> reader)
             where T : IPacketizable
         {
             var numPacketizables = ReadInt32();
@@ -1035,9 +890,9 @@ namespace Engine.Serialization
             else
             {
                 var result = new T[numPacketizables];
-                for (int i = 0; i < numPacketizables; i++)
+                for (var i = 0; i < numPacketizables; i++)
                 {
-                    result[i] = reader();
+                    result[i] = reader(this);
                 }
                 return result;
             }
@@ -1425,6 +1280,42 @@ namespace Engine.Serialization
             }
         }
 
+        #endregion
+
+        #region Serialization
+        
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        public Packet Packetize(Packet packet)
+        {
+            return packet.Write(_stream.ToArray());
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PreDepacketize(Packet packet)
+        {
+            _stream.Dispose();
+            _stream = null;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
+            var data = packet.ReadByteArray();
+            _stream = new MemoryStream(data ?? new byte[0], false);
+        }
+        
         #endregion
     }
 }

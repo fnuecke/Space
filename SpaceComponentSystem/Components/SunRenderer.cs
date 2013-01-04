@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
@@ -114,38 +113,6 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Radius)
-                .Write(Tint)
-                .Write(SurfaceRotation)
-                .Write(PrimaryTurbulenceRotation)
-                .Write(SecondaryTurbulenceRotation);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Radius = packet.ReadSingle();
-            Tint = packet.ReadColor();
-            SurfaceRotation = packet.ReadVector2();
-            PrimaryTurbulenceRotation = packet.ReadVector2();
-            SecondaryTurbulenceRotation = packet.ReadVector2();
-        }
 
         /// <summary>
         /// Suppress hashing as this component has no influence on other

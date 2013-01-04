@@ -118,8 +118,9 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>
-        ///   A list of items currently in this inventory.
+        /// A list of items currently in this inventory.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<int> _items = new List<int>();
 
         /// <summary>
@@ -502,8 +503,6 @@ namespace Engine.ComponentSystem.RPG.Components
                 packet.Write(itemEntry);
             }
 
-            packet.Write(_isFixed);
-
             return packet;
         }
 
@@ -511,9 +510,9 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet"> The packet to read from. </param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             _items.Clear();
             var capacity = packet.ReadInt32();
@@ -529,8 +528,6 @@ namespace Engine.ComponentSystem.RPG.Components
                 var index = packet.ReadInt32();
                 _items[index] = packet.ReadInt32();
             }
-
-            _isFixed = packet.ReadBoolean();
         }
 
         #endregion

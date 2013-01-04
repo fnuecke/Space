@@ -191,6 +191,7 @@ namespace Engine.Physics.Components
         /// The type of this fixture, for fast evaluation method lookup in
         /// contact creation.
         /// </summary>
+        [PacketizerIgnore]
         internal readonly FixtureType Type;
 
         /// <summary>
@@ -365,29 +366,7 @@ namespace Engine.Physics.Components
         {
             System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
 
-            return base.Packetize(packet)
-                .Write(Radius)
-                .Write(CollisionGroupsInternal)
-                .Write(IsSensorInternal)
-                .Write(_density)
-                .Write(_friction)
-                .Write(_restitution);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Radius = packet.ReadSingle();
-            CollisionGroupsInternal = packet.ReadUInt32();
-            IsSensorInternal = packet.ReadBoolean();
-            _density = packet.ReadSingle();
-            _friction = packet.ReadSingle();
-            _restitution = packet.ReadSingle();
+            return base.Packetize(packet);
         }
 
         /// <summary>

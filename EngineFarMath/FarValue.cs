@@ -15,7 +15,7 @@ namespace Engine.FarMath
     /// that otherwise might use normal floating point types.
     /// </para>
     /// </summary>
-    public struct FarValue : IComparable<FarValue>, IEquatable<FarValue>, IPacketizable, IHashable
+    public struct FarValue : IComparable<FarValue>, IEquatable<FarValue>, IHashable
     {
         #region Constants
 
@@ -101,6 +101,11 @@ namespace Engine.FarMath
         #endregion
 
         #region Constructor
+
+        static FarValue()
+        {
+            Packetizable.AddValueTypeOverloads(typeof(PacketFarMathExtensions));
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FarValue"/> struct.
@@ -897,29 +902,6 @@ namespace Engine.FarMath
         #endregion
 
         #region Serialization / Hashing
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public Packet Packetize(Packet packet)
-        {
-            packet.Write(_segment);
-            packet.Write(_offset);
-
-            return packet;
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            _segment = packet.ReadInt32();
-            _offset = packet.ReadSingle();
-        }
 
         /// <summary>
         /// Push some unique data of the object to the given hasher,

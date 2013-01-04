@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using Engine.Collections;
 using Engine.ComponentSystem;
@@ -114,6 +113,7 @@ namespace Engine.Physics.Contacts
         /// The manager of the simulation this contact lives in. Used to look up
         /// involved members.
         /// </summary>
+        [PacketizerIgnore]
         public IManager Manager;
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace Engine.Physics.Contacts
             var radiusB = FixtureB.Radius;
 
             FixedArray2<WorldPoint> worldPoints;
-            ComputeWorldManifold(Manifold, transformA, radiusA, transformB, radiusB, out normal, out worldPoints);
+            Manifold.ComputeWorldManifold(transformA, radiusA, transformB, radiusB, out normal, out worldPoints);
             worldPoints.Count = Manifold.PointCount;
             points = worldPoints;
         }
@@ -179,80 +179,6 @@ namespace Engine.Physics.Contacts
         #endregion
 
         #region Logic
-
-        /// <summary>
-        /// Computes the world manifold data from the specified manifold with
-        /// the specified properties for the two involved objects.
-        /// </summary>
-        /// <param name="manifold">The local manifold.</param>
-        /// <param name="xfA">The transform of object A.</param>
-        /// <param name="radiusA">The radius of object A.</param>
-        /// <param name="xfB">The transform of object B.</param>
-        /// <param name="radiusB">The radius of object B.</param>
-        /// <param name="normal">The normal.</param>
-        /// <param name="points">The world contact points.</param>
-        public static void ComputeWorldManifold(Manifold manifold,
-                                                WorldTransform xfA, float radiusA,
-                                                WorldTransform xfB, float radiusB,
-                                                out Vector2 normal,
-                                                out FixedArray2<WorldPoint> points)
-        {
-            points = new FixedArray2<WorldPoint>(); // satisfy out
-            switch (manifold.Type)
-            {
-                case Manifold.ManifoldType.Circles:
-                {
-                    normal = Vector2.UnitX;
-                    var pointA = xfA.ToGlobal(manifold.LocalPoint);
-                    var pointB = xfB.ToGlobal(manifold.Points[0].LocalPoint);
-                    if (((Vector2)(pointB - pointA)).LengthSquared() > Settings.Epsilon * Settings.Epsilon)
-                    {
-                        normal = (Vector2)(pointB - pointA);
-                        normal.Normalize();
-                    }
-
-                    var cA = pointA + radiusA * normal;
-                    var cB = pointB - radiusB * normal;
-                    points.Item1 = 0.5f * (cA + cB);
-                    break;
-                }
-
-                case Manifold.ManifoldType.FaceA:
-                {
-                    normal = xfA.Rotation * manifold.LocalNormal;
-                    var planePoint = xfA.ToGlobal(manifold.LocalPoint);
-
-                    for (var i = 0; i < manifold.PointCount; ++i)
-                    {
-                        var clipPoint = xfB.ToGlobal(manifold.Points[i].LocalPoint);
-                        var cA = clipPoint + (radiusA - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
-                        var cB = clipPoint - radiusB * normal;
-                        points[i] = 0.5f * (cA + cB);
-                    }
-                    break;
-                }
-
-                case Manifold.ManifoldType.FaceB:
-                {
-                    normal = xfB.Rotation * manifold.LocalNormal;
-                    var planePoint = xfB.ToGlobal(manifold.LocalPoint);
-
-                    for (var i = 0; i < manifold.PointCount; ++i)
-                    {
-                        var clipPoint = xfA.ToGlobal(manifold.Points[i].LocalPoint);
-                        var cB = clipPoint + (radiusB - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
-                        var cA = clipPoint - radiusA * normal;
-                        points[i] = 0.5f * (cA + cB);
-                    }
-
-                    // Ensure normal points from A to B.
-                    normal = -normal;
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
 
         /// <summary>
         /// Initializes the contact to represent a contact between the two specified fixtures.
@@ -545,35 +471,25 @@ namespace Engine.Physics.Contacts
         /// <returns>The packet after writing.</returns>
         public Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(Previous)
-                .Write(Next)
-                .Write(FixtureIdA)
-                .Write(FixtureIdB)
-                .Write(Friction)
-                .Write(Restitution)
-                .Write(IsTouching)
-                .Write(ShouldFilter)
-                .Write(Manifold)
-                .Write((byte)_type);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
         {
-            Previous = packet.ReadInt32();
-            Next = packet.ReadInt32();
-            FixtureIdA = packet.ReadInt32();
-            FixtureIdB = packet.ReadInt32();
-            Friction = packet.ReadSingle();
-            Restitution = packet.ReadSingle();
-            IsTouching = packet.ReadBoolean();
-            ShouldFilter = packet.ReadBoolean();
-            Manifold = packet.ReadManifold();
-            _type = (ContactType)packet.ReadByte();
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
         }
 
         /// <summary>
@@ -697,23 +613,25 @@ namespace Engine.Physics.Contacts
         /// <returns>The packet after writing.</returns>
         public Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(Contact)
-                .Write(Other)
-                .Write(Previous)
-                .Write(Next);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
         {
-            Contact = packet.ReadInt32();
-            Other = packet.ReadInt32();
-            Previous = packet.ReadInt32();
-            Next = packet.ReadInt32();
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
         }
 
         /// <summary>

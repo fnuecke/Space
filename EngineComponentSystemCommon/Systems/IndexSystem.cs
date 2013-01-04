@@ -132,11 +132,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The actual indexes we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
+        [PacketizerIgnore]
         private IIndex<int, FarRectangle, FarPosition>[] _trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
 
         /// <summary>
         /// List of entities for which the index entry changed in the last update.
         /// </summary>
+        [PacketizerIgnore]
         private HashSet<int> _changed = new HashSet<int>();
 
         #endregion
@@ -486,6 +488,11 @@ namespace Engine.ComponentSystem.Common.Systems
                     packet.Write(tuple.Item2);
                 }
             }
+            packet.Write(_changed.Count);
+            foreach (var entity in _changed)
+            {
+                packet.Write(entity);
+            }
 
             return packet;
         }
@@ -498,9 +505,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// to true.
         /// </remarks>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             for (var i = 0; i < _trees.Length; ++i)
             {
@@ -523,6 +530,13 @@ namespace Engine.ComponentSystem.Common.Systems
                     var entity = packet.ReadInt32();
                     _trees[i].Add(bounds, entity);
                 }
+            }
+
+            _changed.Clear();
+            var changedCount = packet.ReadInt32();
+            for (var i = 0; i < changedCount; i++)
+            {
+                _changed.Add(packet.ReadInt32());
             }
         }
 

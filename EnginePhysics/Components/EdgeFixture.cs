@@ -203,40 +203,6 @@ namespace Engine.Physics.Components
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Vertex0)
-                .Write(Vertex1)
-                .Write(Vertex2)
-                .Write(Vertex3)
-                .Write(HasVertex0)
-                .Write(HasVertex3);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Vertex0 = packet.ReadVector2();
-            Vertex1 = packet.ReadVector2();
-            Vertex2 = packet.ReadVector2();
-            Vertex3 = packet.ReadVector2();
-            HasVertex0 = packet.ReadBoolean();
-            HasVertex3 = packet.ReadBoolean();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>

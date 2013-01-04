@@ -1,6 +1,4 @@
-﻿using Engine.Serialization;
-using Engine.Simulation.Commands;
-using Engine.XnaExtensions;
+﻿using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
 
 namespace Space.Simulation.Commands
@@ -113,36 +111,6 @@ namespace Space.Simulation.Commands
         public PlayerInputCommand()
             : this(PlayerInputCommandType.None, Vector2.Zero)
         {
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write((byte)Input)
-                .Write(Value);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Input = (PlayerInputCommandType)packet.ReadByte();
-            Value = packet.ReadVector2();
         }
 
         #endregion

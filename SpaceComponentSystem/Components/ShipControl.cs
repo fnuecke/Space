@@ -152,42 +152,6 @@ namespace Space.ComponentSystem.Components
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Stabilizing)
-                .Write(Shooting)
-                .Write(ShieldsActive)
-                .Write(DirectedAcceleration)
-                .Write(TargetRotation)
-                .Write(TargetRotationChanged)
-                .Write(PreviousRotation);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Stabilizing = packet.ReadBoolean();
-            Shooting = packet.ReadBoolean();
-            ShieldsActive = packet.ReadBoolean();
-            DirectedAcceleration = packet.ReadVector2();
-            TargetRotation = packet.ReadSingle();
-            TargetRotationChanged = packet.ReadBoolean();
-            PreviousRotation = packet.ReadSingle();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>

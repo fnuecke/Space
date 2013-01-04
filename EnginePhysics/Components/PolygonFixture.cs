@@ -29,11 +29,13 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The vertices that make up this polygon.
         /// </summary>
+        [PacketizerIgnore]
         internal readonly LocalPoint[] Vertices = new LocalPoint[Settings.MaxPolygonVertices];
 
         /// <summary>
         /// The surface normals of the edges of this polygon.
         /// </summary>
+        [PacketizerIgnore]
         internal readonly Vector2[] Normals = new Vector2[Settings.MaxPolygonVertices];
 
         /// <summary>
@@ -401,14 +403,11 @@ namespace Engine.Physics.Components
         {
             base.Packetize(packet);
 
-            packet.Write(Count);
             for (var i = 0; i < Count; ++i)
             {
                 packet.Write(Vertices[i]);
                 packet.Write(Normals[i]);
             }
-
-            packet.Write(Centroid);
 
             return packet;
         }
@@ -417,18 +416,15 @@ namespace Engine.Physics.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            Count = packet.ReadInt32();
             for (var i = 0; i < Count; ++i)
             {
                 Vertices[i] = packet.ReadVector2();
                 Normals[i] = packet.ReadVector2();
             }
-
-            Centroid = packet.ReadVector2();
         }
 
         /// <summary>

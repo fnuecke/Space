@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem;
@@ -120,7 +121,7 @@ namespace Space.Session
         {
             if (InvalidCharPattern.IsMatch(name))
             {
-                throw new ArgumentException("Invalid profile name, contains invalid character.", "name");
+                throw new ArgumentException(@"Invalid profile name, contains invalid character.", "name");
             }
 
             // Save name and class, initialization will be done when restore
@@ -144,7 +145,7 @@ namespace Space.Session
         {
             if (InvalidCharPattern.IsMatch(name))
             {
-                throw new ArgumentException("Invalid profile name, contains invalid character.", "name");
+                throw new ArgumentException(@"Invalid profile name, contains invalid character.", "name");
             }
 
             // Figure out the path, check if it's valid.
@@ -154,7 +155,7 @@ namespace Space.Session
 
             if (!File.Exists(profilePath))
             {
-                throw new ArgumentException("Invalid profile name, no such file.", "name");
+                throw new ArgumentException(@"Invalid profile name, no such file.", "name");
             }
 
             try
@@ -311,7 +312,7 @@ namespace Space.Session
         {
             if (avatar < 1)
             {
-                throw new ArgumentException("Invalid avatar specified.", "avatar");
+                throw new ArgumentException(@"Invalid avatar specified.", "avatar");
             }
             if (manager == null)
             {
@@ -333,7 +334,7 @@ namespace Space.Session
                 equipment == null ||
                 inventory == null)
             {
-                throw new ArgumentException("Invalid avatar specified.", "avatar");
+                throw new ArgumentException(@"Invalid avatar specified.", "avatar");
             }
 
             // Make the actual snapshot via serialization.
@@ -553,10 +554,7 @@ namespace Space.Session
                     // Queue reads for all child slots, unless this item failed loading.
                     if (newItemId > 0)
                     {
-                        foreach (var component in manager.GetComponents(newItemId, ItemSlot.TypeId))
-                        {
-                            ++slotsRemaining;
-                        }
+                        slotsRemaining += manager.GetComponents(newItemId, ItemSlot.TypeId).Count();
                     }
 
                     // Add mapping for this entry.
@@ -658,25 +656,25 @@ namespace Space.Session
         /// </returns>
         public Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(Name)
-                .Write((byte)PlayerClass)
-                .Write(_data);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
         {
-            Name = packet.ReadString();
-            PlayerClass = (PlayerClassType)packet.ReadByte();
-            if (_data != null)
-            {
-                _data.Dispose();
-            }
-            _data = packet.ReadPacket();
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
         }
 
         #endregion

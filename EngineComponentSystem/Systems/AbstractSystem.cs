@@ -38,6 +38,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         public IManager Manager { get; set; }
 
         #endregion
@@ -105,14 +106,20 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
-        /// <remarks>
-        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        /// to true.
-        /// </remarks>
         /// <param name="packet">The packet to read from.</param>
-        public virtual void Depacketize(Packet packet)
+        public virtual void PreDepacketize(Packet packet)
+        {
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public virtual void PostDepacketize(Packet packet)
         {
         }
 

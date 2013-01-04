@@ -1055,71 +1055,7 @@ namespace Engine.Physics.Components
         {
             System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
 
-            return base.Packetize(packet)
-                .Write((byte)TypeInternal)
-                .Write(IsSleepAllowedInternal)
-                .Write(IsAwakeInternal)
-                .Write(_isRotationFixed)
-                .Write(IsBulletInternal)
-                .Write(IslandIndex)
-                .Write(Transform)
-                .Write(Sweep)
-                .Write(LinearVelocityInternal)
-                .Write(AngularVelocityInternal)
-                .Write(Force)
-                .Write(Torque)
-                .Write(JointList)
-                .Write(ContactList)
-                .Write(MassInternal)
-                .Write(_inertia)
-                .Write(LinearDampingInternal)
-                .Write(AngularDampingInternal)
-                .Write(SleepTime);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            TypeInternal = (BodyType)packet.ReadByte();
-            IsSleepAllowedInternal = packet.ReadBoolean();
-            IsAwakeInternal = packet.ReadBoolean();
-            _isRotationFixed = packet.ReadBoolean();
-            IsBulletInternal = packet.ReadBoolean();
-            IslandIndex = packet.ReadInt32();
-            Transform = packet.ReadWorldTransform();
-            Sweep = packet.ReadSweep();
-            LinearVelocityInternal = packet.ReadVector2();
-            AngularVelocityInternal = packet.ReadSingle();
-            Force = packet.ReadVector2();
-            Torque = packet.ReadSingle();
-            JointList = packet.ReadInt32();
-            ContactList = packet.ReadInt32();
-            MassInternal = packet.ReadSingle();
-            if (MassInternal > 0)
-            {
-                InverseMass = 1 / MassInternal;
-            }
-            else
-            {
-                InverseMass = 0;
-            }
-            _inertia = packet.ReadSingle();
-            if (_inertia > 0)
-            {
-                InverseInertia = 1 / _inertia;
-            }
-            else
-            {
-                InverseInertia = 0;
-            }
-            LinearDampingInternal = packet.ReadSingle();
-            AngularDampingInternal = packet.ReadSingle();
-            SleepTime = packet.ReadSingle();
+            return base.Packetize(packet);
         }
 
         /// <summary>

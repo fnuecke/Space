@@ -26,6 +26,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <summary>
         /// The AI component this behavior belongs to.
         /// </summary>
+        [PacketizerIgnore]
         protected readonly ArtificialIntelligence AI;
 
         /// <summary>
@@ -35,11 +36,13 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// The "owner" of this instance is the AI component we belong to,
         /// so we do not need to take care of serialization or copying.
         /// </remarks>
+        [PacketizerIgnore]
         protected readonly IUniformRandom Random;
 
         /// <summary>
         /// The poll rate in ticks how often to update this behavior.
         /// </summary>
+        [PacketizerIgnore]
         private readonly int _pollRate;
 
         /// <summary>
@@ -492,17 +495,25 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </returns>
         public virtual Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(_ticksToWait);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public virtual void Depacketize(Packet packet)
+        public virtual void PreDepacketize(Packet packet)
         {
-            _ticksToWait = packet.ReadInt32();
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public virtual void PostDepacketize(Packet packet)
+        {
         }
 
         /// <summary>
@@ -512,7 +523,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <param name="hasher">The hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
-            hasher.Put(_pollRate);
             hasher.Put(_ticksToWait);
         }
 

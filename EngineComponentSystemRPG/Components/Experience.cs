@@ -118,9 +118,14 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>
-        /// The current level.
+        /// The multiplier used for computing required experience for level up.
         /// </summary>
-        private int _level = 1;
+        private float _multiplier;
+
+        /// <summary>
+        /// The exponent used for computing required experience for level up.
+        /// </summary>
+        private float _exponent;
 
         /// <summary>
         /// The maximum level that can be reached.
@@ -133,24 +138,22 @@ namespace Engine.ComponentSystem.RPG.Components
         private int _value;
 
         /// <summary>
+        /// The current level.
+        /// </summary>
+        [PacketizerIgnore]
+        private int _level = 1;
+
+        /// <summary>
         /// Experience required to reach current level.
         /// </summary>
+        [PacketizerIgnore]
         private int _currentLevelValue;
 
         /// <summary>
         /// Experience required to reach next level.
         /// </summary>
+        [PacketizerIgnore]
         private int _nextLevelValue;
-
-        /// <summary>
-        /// The multiplier used for computing required experience for level up.
-        /// </summary>
-        private float _multiplier;
-
-        /// <summary>
-        /// The exponent used for computing required experience for level up.
-        /// </summary>
-        private float _exponent;
 
         #endregion
 
@@ -216,33 +219,13 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(_maxLevel)
-                .Write(_value)
-                .Write(_multiplier)
-                .Write(_exponent);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
-
-            _maxLevel = packet.ReadInt32();
-            _value = packet.ReadInt32();
-            _multiplier = packet.ReadSingle();
-            _exponent = packet.ReadSingle();
+            base.PostDepacketize(packet);
 
             _level = 1 + (int)System.Math.Pow(_value / _multiplier, 1f / _exponent);
             _currentLevelValue = (int)(_multiplier * System.Math.Pow(_level - 1, _exponent));

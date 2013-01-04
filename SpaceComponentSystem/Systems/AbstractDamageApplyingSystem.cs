@@ -87,33 +87,5 @@ namespace Space.ComponentSystem.Systems
         }
 
         #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Random);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Engine.Serialization.Packet packet)
-        {
-            base.Depacketize(packet);
-
-            packet.ReadPacketizableInto(ref Random);
-        }
-
-        #endregion
     }
 }

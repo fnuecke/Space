@@ -93,11 +93,13 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// The type of this joint.
         /// </summary>
+        [PacketizerIgnore]
         internal readonly JointType Type;
 
         /// <summary>
         /// The manager of the component system the bodies of this joint live in.
         /// </summary>
+        [PacketizerIgnore]
         internal IManager Manager;
 
         /// <summary>
@@ -201,25 +203,25 @@ namespace Engine.Physics.Joints
         /// <returns>The packet after writing.</returns>
         public virtual Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(Next)
-                .Write(Previous)
-                .Write(_bodyIdA)
-                .Write(_bodyIdB)
-                .Write(CollideConnected);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public virtual void Depacketize(Packet packet)
+        public virtual void PreDepacketize(Packet packet)
         {
-            Next = packet.ReadInt32();
-            Previous = packet.ReadInt32();
-            _bodyIdA = packet.ReadInt32();
-            _bodyIdB = packet.ReadInt32();
-            CollideConnected = packet.ReadBoolean();
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public virtual void PostDepacketize(Packet packet)
+        {
         }
 
         /// <summary>
@@ -334,23 +336,25 @@ namespace Engine.Physics.Joints
         /// <returns>The packet after writing.</returns>
         public Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(Joint)
-                .Write(Other)
-                .Write(Previous)
-                .Write(Next);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public void PreDepacketize(Packet packet)
         {
-            Joint = packet.ReadInt32();
-            Other = packet.ReadInt32();
-            Previous = packet.ReadInt32();
-            Next = packet.ReadInt32();
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void PostDepacketize(Packet packet)
+        {
         }
 
         /// <summary>

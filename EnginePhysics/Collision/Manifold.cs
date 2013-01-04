@@ -1,14 +1,18 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Engine.Collections;
+using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
+using WorldPoint = Engine.FarMath.FarPosition;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
 namespace Engine.Physics.Collision
@@ -26,6 +30,11 @@ namespace Engine.Physics.Collision
     /// </summary>
     internal struct Manifold
     {
+        static Manifold()
+        {
+            Packetizable.AddValueTypeOverloads(typeof(PacketManifoldExtensions));
+        }
+
         /// <summary>
         /// Possibly types of manifolds, i.e. what kind of overlap it
         /// represents (between what kind of shapes).
@@ -67,6 +76,78 @@ namespace Engine.Physics.Collision
         /// The number of manifold points.
         /// </summary>
         public int PointCount;
+
+        /// <summary>
+        /// Computes the world manifold data from this manifold with
+        /// the specified properties for the two involved objects.
+        /// </summary>
+        /// <param name="xfA">The transform of object A.</param>
+        /// <param name="radiusA">The radius of object A.</param>
+        /// <param name="xfB">The transform of object B.</param>
+        /// <param name="radiusB">The radius of object B.</param>
+        /// <param name="normal">The normal.</param>
+        /// <param name="points">The world contact points.</param>
+        public void ComputeWorldManifold(WorldTransform xfA, float radiusA,
+                                         WorldTransform xfB, float radiusB,
+                                         out Vector2 normal,
+                                         out FixedArray2<WorldPoint> points)
+        {
+            points = new FixedArray2<WorldPoint>(); // satisfy out
+            switch (Type)
+            {
+                case ManifoldType.Circles:
+                    {
+                        normal = Vector2.UnitX;
+                        var pointA = xfA.ToGlobal(LocalPoint);
+                        var pointB = xfB.ToGlobal(Points[0].LocalPoint);
+                        if (((Vector2)(pointB - pointA)).LengthSquared() > Settings.Epsilon * Settings.Epsilon)
+                        {
+                            normal = (Vector2)(pointB - pointA);
+                            normal.Normalize();
+                        }
+
+                        var cA = pointA + radiusA * normal;
+                        var cB = pointB - radiusB * normal;
+                        points.Item1 = 0.5f * (cA + cB);
+                        break;
+                    }
+
+                case ManifoldType.FaceA:
+                    {
+                        normal = xfA.Rotation * LocalNormal;
+                        var planePoint = xfA.ToGlobal(LocalPoint);
+
+                        for (var i = 0; i < PointCount; ++i)
+                        {
+                            var clipPoint = xfB.ToGlobal(Points[i].LocalPoint);
+                            var cA = clipPoint + (radiusA - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
+                            var cB = clipPoint - radiusB * normal;
+                            points[i] = 0.5f * (cA + cB);
+                        }
+                        break;
+                    }
+
+                case ManifoldType.FaceB:
+                    {
+                        normal = xfB.Rotation * LocalNormal;
+                        var planePoint = xfB.ToGlobal(LocalPoint);
+
+                        for (var i = 0; i < PointCount; ++i)
+                        {
+                            var clipPoint = xfA.ToGlobal(Points[i].LocalPoint);
+                            var cB = clipPoint + (radiusB - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
+                            var cA = clipPoint - radiusA * normal;
+                            points[i] = 0.5f * (cA + cB);
+                        }
+
+                        // Ensure normal points from A to B.
+                        normal = -normal;
+                        break;
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -205,6 +286,19 @@ namespace Engine.Physics.Collision
                 .Write(data.LocalPoint)
                 .Write((byte)data.Type)
                 .Write(data.PointCount);
+        }
+        
+        /// <summary>
+        /// Reads a Manifold value.
+        /// </summary>
+        /// <param name="result">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out Manifold result)
+        {
+            result = packet.ReadManifold();
+            return packet;
         }
 
         /// <summary>

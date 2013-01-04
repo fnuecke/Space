@@ -2,7 +2,7 @@
 
 namespace Engine.Math
 {
-    public static class RectangleFHasherExtensions
+    public static class HasherRectangleFExtensions
     {
         /// <summary>
         /// Put the specified value to the data of which the hash
