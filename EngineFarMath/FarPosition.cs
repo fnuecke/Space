@@ -172,6 +172,32 @@ namespace Engine.FarMath
         #region Methods
 
         /// <summary>
+        /// Calculates the distance between two points.
+        /// </summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>
+        /// The distance between the two points.
+        /// </returns>
+        public static float Distance(FarPosition value1, FarPosition value2)
+        {
+            return ((Vector2)(value2 - value1)).Length();
+        }
+
+        /// <summary>
+        /// Calculates the squared distance between two points.
+        /// </summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>
+        /// The squared distance between the two points.
+        /// </returns>
+        public static float DistanceSquared(FarPosition value1, FarPosition value2)
+        {
+            return ((Vector2)(value1 - value2)).LengthSquared();
+        }
+
+        /// <summary>
         /// Returns the component-wise minimum of the two specified values.
         /// </summary>
         /// <param name="value1">The first value.</param>

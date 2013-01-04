@@ -81,7 +81,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Check if we've traveled too far.
             if (_start.HasValue)
             {
-                if (((Vector2)(position - _start.Value)).LengthSquared() > AI.Configuration.ChaseDistance * AI.Configuration.ChaseDistance)
+                if (FarPosition.DistanceSquared(_start.Value, position) > AI.Configuration.ChaseDistance * AI.Configuration.ChaseDistance)
                 {
                     // Yeah, that's it, let's give up and return to what we
                     // were doing before.

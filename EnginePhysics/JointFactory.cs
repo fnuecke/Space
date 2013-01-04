@@ -53,7 +53,7 @@ namespace Engine.Physics
             {
                 throw new ArgumentNullException("bodyB");
             }
-            if (((Vector2)(anchorA - anchorB)).LengthSquared() < Settings.LinearSlop * Settings.LinearSlop)
+            if (WorldPoint.DistanceSquared(anchorA, anchorB) < Settings.LinearSlop * Settings.LinearSlop)
             {
                 throw new ArgumentException("Points are too close together.");
             }
@@ -85,7 +85,9 @@ namespace Engine.Physics
         /// <param name="enableLimit">Whether to enable the lower and upper angle limits.</param>
         /// <param name="enableMotor">Whether to enable the motor.</param>
         /// <param name="collideConnected">Whether the two bodies still collide.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// The created joint.
+        /// </returns>
         public static RevoluteJoint AddRevoluteJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchor, float lowerAngle = 0, float upperAngle = 0, float maxMotorTorque = 0, float motorSpeed = 0, bool enableLimit = false, bool enableMotor = false, bool collideConnected = false)
         {
             if (bodyA == null)
@@ -123,7 +125,9 @@ namespace Engine.Physics
         /// <param name="enableLimit">Whether to enable the translation limits.</param>
         /// <param name="enableMotor">Whether to enable the motor.</param>
         /// <param name="collideConnected">Whether the two bodies still collide.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// The created joint.
+        /// </returns>
         public static PrismaticJoint AddPrismaticJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchor, Vector2 axis, float lowerTranslation = 0, float upperTranslation = 0, float maxMotorForce = 0, float motorSpeed = 0, bool enableLimit = false, bool enableMotor = false, bool collideConnected = false)
         {
             if (bodyA == null)
@@ -136,9 +140,52 @@ namespace Engine.Physics
             }
 
             var joint = (PrismaticJoint)manager.GetSimulation()
-                .CreateJoint(Joint.JointType.Revolute, bodyA, bodyB, collideConnected);
+                .CreateJoint(Joint.JointType.Prismatic, bodyA, bodyB, collideConnected);
 
             joint.Initialize(anchor, axis, lowerTranslation, upperTranslation, maxMotorForce, motorSpeed, enableLimit, enableMotor);
+
+            return joint;
+        }
+
+        /// <summary>
+        /// Adds a pulley joint. The pulley joint is connected to two bodies and two fixed
+        /// ground points. The pulley supports a ratio such that:
+        /// length1 + ratio * length2 &lt;= constant
+        /// Thus, the force transmitted is scaled by the ratio.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="bodyB">The second body.</param>
+        /// <param name="groundAnchorA">The first ground anchor, in world coordinates.</param>
+        /// <param name="groundAnchorB">The second ground anchor, in world coordinates.</param>
+        /// <param name="anchorA">The anchor for the first body, in world coordinates.</param>
+        /// <param name="anchorB">The anchor for the second body, in world coordinates.</param>
+        /// <param name="ratio">The transmission ratio.</param>
+        /// <param name="collideConnected">Whether the two bodies still collide.</param>
+        /// <returns>
+        /// The created joint.
+        /// </returns>
+        /// <remarks>
+        /// Warning: the pulley joint can get a bit squirrelly by itself. They often
+        /// work better when combined with prismatic joints. You should also cover the
+        /// the anchor points with static shapes to prevent one side from going to
+        /// zero length.
+        /// </remarks>
+        public static PulleyJoint AddPulleyJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint groundAnchorA, WorldPoint groundAnchorB, WorldPoint anchorA, WorldPoint anchorB, float ratio = 1, bool collideConnected = true)
+        {
+            if (bodyA == null)
+            {
+                throw new ArgumentNullException("bodyA");
+            }
+            if (bodyB == null)
+            {
+                throw new ArgumentNullException("bodyB");
+            }
+
+            var joint = (PulleyJoint)manager.GetSimulation()
+                .CreateJoint(Joint.JointType.Pulley, bodyA, bodyB, collideConnected);
+
+            joint.Initialize(groundAnchorA, groundAnchorB, anchorA, anchorB, ratio);
 
             return joint;
         }
@@ -158,7 +205,9 @@ namespace Engine.Physics
         /// of the weight (multiplier * mass * gravity).</param>
         /// <param name="frequency">The response speed in Hz.</param>
         /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
-        /// <returns>The created joint.</returns>
+        /// <returns>
+        /// The created joint.
+        /// </returns>
         public static MouseJoint AddMouseJoint(this IManager manager, Body body, WorldPoint target, float maxForce = 0, float frequency = 5, float dampingRatio = 0.7f)
         {
             if (body == null)

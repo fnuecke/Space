@@ -2,7 +2,6 @@
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
-using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -66,7 +65,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         protected override bool UpdateInternal()
         {
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            if (((Vector2)(Target - position)).LengthSquared() < ReachedEpsilon * ReachedEpsilon)
+            if (FarPosition.DistanceSquared(position, Target) < ReachedEpsilon * ReachedEpsilon)
             {
                 // We have reached our target, pop self.
                 AI.PopBehavior();

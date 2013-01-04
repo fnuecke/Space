@@ -290,7 +290,7 @@ namespace Space.ComponentSystem.Systems
                 var neighborMass = neighborGravitation.Mass;
                 var dangerPoint = (float)Math.Sqrt(mass * neighborMass / (maxAcceleration * 0.4f * Settings.TicksPerSecond)) + DeadZoneDiffuseWidth;
                 _filledEllipse.Center = direction + center;
-                var distToCenter = (center - _filledEllipse.Center).Length();
+                var distToCenter = Vector2.Distance(_filledEllipse.Center, center);
                 // Check if we're potentially seeing the marker.
                 if (radius >= distToCenter - dangerPoint)
                 {

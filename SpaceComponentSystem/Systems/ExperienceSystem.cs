@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
@@ -100,7 +101,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Limit to one system size (radius: cell size / 2).
-                var distance = ((Vector2)(killedPos.Translation - transform.Translation)).Length();
+                var distance = FarPosition.Distance(transform.Translation, killedPos.Translation);
                 if (distance > range)
                 {
                     // Too far away, this one gets nothing.

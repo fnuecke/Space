@@ -1,4 +1,5 @@
-﻿using Engine.Physics.Math;
+﻿using System;
+using Engine.Physics.Math;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -12,6 +13,16 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
+    /// <summary>
+    /// The pulley joint is connected to two bodies and two fixed ground points.
+    /// The pulley supports a ratio such that:
+    /// length1 + ratio * length2 &lt;= constant
+    /// Thus, the force transmitted is scaled by the ratio.
+    /// Warning: the pulley joint can get a bit squirrelly by itself. They often
+    /// work better when combined with prismatic joints. You should also cover the
+    /// the anchor points with static shapes to prevent one side from going to
+    /// zero length.
+    /// </summary>
     public sealed class PulleyJoint : Joint
     {
         #region Properties
@@ -48,51 +59,60 @@ namespace Engine.Physics.Joints
             get { return _localAnchorB; }
         }
 
+        /// <summary>
+        /// Get the first ground anchor.
+        /// </summary>
         public WorldPoint GroundAnchorA
         {
             get { return _groundAnchorA; }
         }
 
+        /// <summary>
+        /// Get the second ground anchor.
+        /// </summary>
         public WorldPoint GroundAnchorB
         {
             get { return _groundAnchorB; }
         }
 
+        /// <summary>
+        /// Get the original length of the segment attached to the first body.
+        /// </summary>
         public float LengthA
         {
             get { return _lengthA; }
         }
 
+        /// <summary>
+        /// Get the original length of the segment attached to the second body.
+        /// </summary>
         public float LengthB
         {
             get { return _lengthB; }
         }
 
+        /// <summary>
+        /// Get the pulley ratio.
+        /// </summary>
         public float Ratio
         {
             get { return _ratio; }
         }
 
+        /// <summary>
+        /// Get the current length of the segment attached to the first body.
+        /// </summary>
         public float CurrentLengthA
         {
-            get
-            {
-                var p = BodyA.GetWorldPoint(_localAnchorA);
-                var s = _groundAnchorA;
-                var d = (Vector2)(p - s);
-                return d.Length();
-            }
+            get { return WorldPoint.Distance(_groundAnchorA, BodyA.GetWorldPoint(_localAnchorA)); }
         }
 
+        /// <summary>
+        /// Get the current length of the segment attached to the second body.
+        /// </summary>
         public float CurrentLengthB
         {
-            get
-            {
-                var p = BodyB.GetWorldPoint(_localAnchorB);
-                var s = _groundAnchorB;
-                var d = (Vector2)(p - s);
-                return d.Length();
-            }
+            get { return WorldPoint.Distance(_groundAnchorB, BodyB.GetWorldPoint(_localAnchorB)); }
         }
 
         #endregion
@@ -166,8 +186,24 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(WorldPoint groundAnchorA, WorldPoint groundAnchorB, WorldPoint anchorA, WorldPoint anchorB, float ratio)
         {
+            if (ratio == 0.0f)
+            {
+                throw new ArgumentException("Ratio must not be zero.", "ratio");
+            }
+
+            _groundAnchorA = groundAnchorA;
+            _groundAnchorB = groundAnchorB;
+            _localAnchorA = BodyA.GetLocalPoint(anchorA);
+            _localAnchorB = BodyB.GetLocalPoint(anchorB);
+            _lengthA = WorldPoint.Distance(groundAnchorA, anchorA);
+            _lengthB = WorldPoint.Distance(groundAnchorB, anchorB);
+
+            _ratio = ratio;
+
+            _constant = _lengthA + _ratio * _lengthB;
+            _impulse = 0;
         }
 
         #endregion

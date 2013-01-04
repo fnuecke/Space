@@ -100,7 +100,7 @@ namespace Engine.Physics.Collision
                         normal = Vector2.UnitX;
                         var pointA = xfA.ToGlobal(LocalPoint);
                         var pointB = xfB.ToGlobal(Points[0].LocalPoint);
-                        if (((Vector2)(pointB - pointA)).LengthSquared() > Settings.Epsilon * Settings.Epsilon)
+                        if (WorldPoint.DistanceSquared(pointA, pointB) > Settings.Epsilon * Settings.Epsilon)
                         {
                             normal = (Vector2)(pointB - pointA);
                             normal.Normalize();

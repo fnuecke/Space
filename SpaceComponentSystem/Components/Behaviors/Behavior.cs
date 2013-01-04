@@ -272,7 +272,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 {
                     // It's an enemy. Check the distance.
                     var enemyPosition = ((Transform)AI.Manager.GetComponent(filteredNeighbor, Transform.TypeId)).Translation;
-                    var distance = ((Vector2)(position - enemyPosition)).LengthSquared();
+                    var distance = FarPosition.Distance(enemyPosition, position);
                     if (distance < closestDistance)
                     {
                         closest = filteredNeighbor;

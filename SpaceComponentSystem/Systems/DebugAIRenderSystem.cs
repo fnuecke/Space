@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;

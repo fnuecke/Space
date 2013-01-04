@@ -719,13 +719,13 @@ namespace Engine.Physics.Collision
                 switch (Count)
                 {
                     case 1:
-                        return ((Vector2)(Vertices.Item1.VertexB - Vertices.Item1.VertexA)).Length();
+                        return WorldPoint.Distance(Vertices.Item1.VertexA, Vertices.Item1.VertexB);
 
                     case 2:
-                        return ((Vector2)((Vertices.Item1.Alpha * Vertices.Item1.VertexB +
-                                           Vertices.Item2.Alpha * Vertices.Item2.VertexB) -
-                                          (Vertices.Item1.Alpha * Vertices.Item1.VertexA +
-                                           Vertices.Item2.Alpha * Vertices.Item2.VertexA))).Length();
+                        return WorldPoint.Distance((Vertices.Item1.Alpha * Vertices.Item1.VertexA +
+                                                    Vertices.Item2.Alpha * Vertices.Item2.VertexA),
+                                                   (Vertices.Item1.Alpha * Vertices.Item1.VertexB +
+                                                    Vertices.Item2.Alpha * Vertices.Item2.VertexB));
 
                     case 3:
                         return 0;
