@@ -92,7 +92,7 @@ namespace Space.Session
         /// <summary>
         /// The serialized character data.
         /// </summary>
-        private Packet _data;
+        private Packet _data = new Packet();
 
         #endregion
 

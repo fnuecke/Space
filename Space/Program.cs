@@ -6,6 +6,7 @@ using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Graphics;
 using Engine.Math;
+using Engine.Serialization;
 using Engine.Session;
 using Engine.Util;
 using Engine.XnaExtensions;
@@ -181,6 +182,9 @@ namespace Space
 
             // Create our own, localized content manager.
             Content = new LocalizedContentManager(Services) {RootDirectory = "data"};
+
+            // Register packet overloads for XNA value types.
+            Packetizable.AddValueTypeOverloads(typeof(PacketXnaExtensions));
         }
 
         protected override void Dispose(bool disposing)

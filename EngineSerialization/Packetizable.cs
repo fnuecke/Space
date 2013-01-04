@@ -447,7 +447,7 @@ namespace Engine.Serialization
                     depacketizeGenerator.Emit(OpCodes.Ldfld, f);
                     depacketizeGenerator.EmitCall(OpCodes.Call, readPacketizable, null);
                 }
-                else if (f.FieldType.IsEnum)
+                else if (f.FieldType.IsEnum || f.FieldType == typeof(Enum))
                 {
                     // Special treatment for enums -- treat them as integer.
 
@@ -470,7 +470,7 @@ namespace Engine.Serialization
                     // Make sure we can handle this type.
                     if (writeType == null || readType == null)
                     {
-                        throw new ArgumentException(string.Format("Cannot build serializer for this type, could not find write method for field '{0}' of type '{1}'.", f.Name, f.FieldType.Name));
+                        throw new ArgumentException(string.Format("Cannot build packetizer for type {0}, could not find write method for field '{1}' of type '{2}'.", type.Name, f.Name, f.FieldType.Name));
                     }
 
                     // Build serializer part.

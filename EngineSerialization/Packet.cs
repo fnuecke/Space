@@ -33,6 +33,7 @@ namespace Engine.Serialization
         /// <summary>
         /// The underlying memory stream used for buffering.
         /// </summary>
+        [PacketizerIgnore]
         private MemoryStream _stream;
 
         #endregion
@@ -542,23 +543,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Reads a packet.
-        /// 
-        /// <para>
-        /// May yield <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out Packet data)
-        {
-            data = ReadPacket();
-            return this;
-        }
-
-        /// <summary>
         /// Reads a boolean value.
         /// </summary>
         /// <returns>The read value.</returns>
@@ -819,25 +803,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Reads a packet.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public Packet ReadPacket()
-        {
-            if (!HasPacket())
-            {
-                throw new PacketException("Cannot read packet.");
-            }
-            return (Packet)ReadByteArray();
-        }
-
-        /// <summary>
         /// Reads an object collections.
         /// 
         /// <para>
@@ -1061,24 +1026,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Reads a packet without moving ahead the read pointer.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public Packet PeekPacket()
-        {
-            var position = _stream.Position;
-            var result = ReadPacket();
-            _stream.Position = position;
-            return result;
-        }
-
-        /// <summary>
         /// Reads a string value using UTF8 encoding without moving ahead the read pointer.
         /// </summary>
         /// <returns>The read value.</returns>
@@ -1200,15 +1147,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Determines whether enough data is available to read a packet.
-        /// </summary>
-        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
-        public bool HasPacket()
-        {
-            return HasByteArray();
-        }
-
-        /// <summary>
         /// Determines whether enough data is available to read a string value.
         /// </summary>
         /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
@@ -1289,6 +1227,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             return packet.Write(_stream.ToArray());
@@ -1298,8 +1237,8 @@ namespace Engine.Serialization
         /// Bring the object to the state in the given packet. This is called
         /// before automatic depacketization is performed.
         /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void PreDepacketize(Packet packet)
+        [PreDepacketize]
+        public void PreDepacketize()
         {
             _stream.Dispose();
             _stream = null;
@@ -1310,6 +1249,7 @@ namespace Engine.Serialization
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public void PostDepacketize(Packet packet)
         {
             var data = packet.ReadByteArray();
