@@ -49,70 +49,48 @@ namespace Engine.Physics
 
         #region Fields
 
-        /// <summary>
-        /// The solver that does the actual work. We keep a copy that we re-use
-        /// every update.
-        /// </summary>
+        /// <summary>The solver that does the actual work. We keep a copy that we re-use
+        /// every update.</summary>
         private readonly ContactSolver _solver;
 
-        /// <summary>
-        /// This list is used to flag bodies as processed, to avoid double work
-        /// when building islands.
-        /// </summary>
+        /// <summary>This list is used to flag bodies as processed, to avoid double work
+        /// when building islands.</summary>
         private readonly HashSet<Body> _processedBodies = new HashSet<Body>();
 
-        /// <summary>
-        /// This is used to flag contacts as processed, to avoid double work when
-        /// building islands.
-        /// </summary>
+        /// <summary>This is used to flag contacts as processed, to avoid double work when
+        /// building islands.</summary>
         private readonly HashSet<Contact> _processedContacts = new HashSet<Contact>();
 
-        /// <summary>
-        /// This is used to flag joints as processed, to avoid double work when
-        /// building islands.
-        /// </summary>
+        /// <summary>This is used to flag joints as processed, to avoid double work when
+        /// building islands.</summary>
         private readonly HashSet<Joint> _processedJoints = new HashSet<Joint>();
 
-        /// <summary>
-        /// The list of bodies in this island.
-        /// </summary>
+        /// <summary>The list of bodies in this island.</summary>
         private readonly List<Body> _bodies = new List<Body>();
 
-        /// <summary>
-        /// The list of contacts in this island.
-        /// </summary>
+        /// <summary>The list of contacts in this island.</summary>
         private readonly List<Contact> _contacts = new List<Contact>();
 
-        /// <summary>
-        /// The list of joints in this island.
-        /// </summary>
+        /// <summary>The list of joints in this island.</summary>
         private readonly List<Joint> _joints = new List<Joint>();
 
-        /// <summary>
-        /// Position buffer for solver.
-        /// </summary>
+        /// <summary>Position buffer for solver.</summary>
         private Position[] _positions = new Position[0];
 
-        /// <summary>
-        /// Velocity buffer for solver.
-        /// </summary>
+        /// <summary>Velocity buffer for solver.</summary>
         private Velocity[] _velocities = new Velocity[0];
 
         #endregion
 
         #region Initialization
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Island"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Island"/> class.</summary>
         public Island()
         {
             _solver = new ContactSolver(_contacts);
         }
 
-        /// <summary>
-        /// Resets the island and ensures the specified capacities.
-        /// </summary>
+        /// <summary>Resets the island and ensures the specified capacities.</summary>
         /// <param name="bodyCapacity">The required body capacity.</param>
         /// <param name="contactCapacity">The required contact capacity.</param>
         /// <param name="jointCapacity">The required joint capacity.</param>
@@ -140,9 +118,7 @@ namespace Engine.Physics
 
         #region Accessors
 
-        /// <summary>
-        /// Clears the island of all bodies and contacts.
-        /// </summary>
+        /// <summary>Clears the island of all bodies and contacts.</summary>
         public void Clear()
         {
             _bodies.Clear();
@@ -150,83 +126,75 @@ namespace Engine.Physics
             _joints.Clear();
         }
 
-        /// <summary>
-        /// Adds the specified body to the island.
-        /// </summary>
+        /// <summary>Adds the specified body to the island.</summary>
+        /// <param name="body">The body.</param>
         public void Add(Body body)
         {
             body.IslandIndex = _bodies.Count;
             _bodies.Add(body);
         }
 
-        /// <summary>
-        /// Adds the specified contact to the island.
-        /// </summary>
+        /// <summary>Adds the specified contact to the island.</summary>
+        /// <param name="contact">The contact.</param>
         public void Add(Contact contact)
         {
             _contacts.Add(contact);
         }
 
-        /// <summary>
-        /// Adds the specified joint to the island.
-        /// </summary>
+        /// <summary>Adds the specified joint to the island.</summary>
+        /// <param name="joint">The joint.</param>
         public void Add(Joint joint)
         {
             _joints.Add(joint);
         }
 
-        /// <summary>
-        /// Marks the specified body as processed, to avoid double work.
-        /// </summary>
+        /// <summary>Marks the specified body as processed, to avoid double work.</summary>
+        /// <param name="body">The body.</param>
         public void MarkProcessed(Body body)
         {
             _processedBodies.Add(body);
         }
 
-        /// <summary>
-        /// Marks the contact as processed, to avoid double work.
-        /// </summary>
+        /// <summary>Marks the contact as processed, to avoid double work.</summary>
+        /// <param name="contact">The contact.</param>
         public void MarkProcessed(Contact contact)
         {
             _processedContacts.Add(contact);
         }
 
-        /// <summary>
-        /// Marks the joint as processed, to avoid double work.
-        /// </summary>
+        /// <summary>Marks the joint as processed, to avoid double work.</summary>
+        /// <param name="joint">The joint.</param>
         public void MarkProcessed(Joint joint)
         {
             _processedJoints.Add(joint);
         }
 
-        /// <summary>
-        /// Determines whether the specified body is already processed.
-        /// </summary>
+        /// <summary>Determines whether the specified body is already processed.</summary>
+        /// <param name="body">The body.</param>
+        /// <returns><c>true</c> if the specified body is processed; otherwise, <c>false</c>.</returns>
         public bool IsProcessed(Body body)
         {
             return _processedBodies.Contains(body);
         }
 
-        /// <summary>
-        /// Determines whether the specified contact is already processed.
-        /// </summary>
+        /// <summary>Determines whether the specified contact is already processed.</summary>
+        /// <param name="contact">The contact.</param>
+        /// <returns><c>true</c> if the specified contact is processed; otherwise, <c>false</c>.</returns>
         public bool IsProcessed(Contact contact)
         {
             return _processedContacts.Contains(contact);
         }
 
-        /// <summary>
-        /// Determines whether the specified joint is already processed.
-        /// </summary>
+        /// <summary>Determines whether the specified joint is already processed.</summary>
+        /// <param name="joint">The joint.</param>
+        /// <returns><c>true</c> if the specified joint is processed; otherwise, <c>false</c>.</returns>
         public bool IsProcessed(Joint joint)
         {
             return _processedJoints.Contains(joint);
         }
 
-        /// <summary>
-        /// Clears all bodies from being marked as processed so they can
-        /// be processed again with other islands.
-        /// </summary>
+        /// <summary>Clears all bodies from being marked as processed so they can
+        /// be processed again with other islands.</summary>
         public void UnmarkAllBodies()
         {
             _processedBodies.Clear();
@@ -241,25 +209,20 @@ namespace Engine.Physics
             _processedBodies.RemoveWhere(x => x.TypeInternal == Body.BodyType.Static);
         }
 
-        /// <summary>
-        /// Clears the specified contact from being marked as processed.
-        /// </summary>
+        /// <summary>Clears the specified contact from being marked as processed.</summary>
+        /// <param name="contact">The contact.</param>
         public void UnmarkContact(Contact contact)
         {
             _processedContacts.Remove(contact);
         }
 
-        /// <summary>
-        /// Clears all contacts from being marked as processed.
-        /// </summary>
+        /// <summary>Clears all contacts from being marked as processed.</summary>
         private void UnmarkAllContacts()
         {
             _processedContacts.Clear();
         }
 
-        /// <summary>
-        /// Clears all joints from being marked as processed.
-        /// </summary>
+        /// <summary>Clears all joints from being marked as processed.</summary>
         private void UnmarkAllJoints()
         {
             _processedJoints.Clear();
@@ -269,9 +232,9 @@ namespace Engine.Physics
 
         #region Logic
 
-        /// <summary>
-        /// Perform normal solve step.
-        /// </summary>
+        /// <summary>Perform normal solve step.</summary>
+        /// <param name="step">The time step information.</param>
+        /// <param name="gravity">The global gravity.</param>
         public void Solve(TimeStep step, Vector2 gravity)
         {
             var h = step.DeltaT;
@@ -439,9 +402,10 @@ namespace Engine.Physics
             }
         }
 
-        /// <summary>
-        /// Perform continuous solve step.
-        /// </summary>
+        /// <summary>Perform continuous solve step.</summary>
+        /// <param name="subStep">The sub step information.</param>
+        /// <param name="toiIndexA">The island index of the first involved body.</param>
+        /// <param name="toiIndexB">The island index of the second involved body.</param>
         public void SolveTOI(TimeStep subStep, int toiIndexA, int toiIndexB)
         {
             System.Diagnostics.Debug.Assert(toiIndexA < _bodies.Count);

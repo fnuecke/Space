@@ -262,8 +262,44 @@ namespace Engine.Physics
         }
 
         /// <summary>
-        /// Gets the simulation for the specified manager.
+        /// Adds a wheel joint. This joint provides two degrees of freedom:
+        /// translation along an axis fixed in the first body and rotation in the
+        /// plane. You can use a joint limit to restrict the range of motion and a
+        /// joint motor to drive the rotation or to model rotational friction.
+        /// This joint is designed for vehicle suspensions.
         /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body (the wheel).</param>
+        /// <param name="bodyB">The second body (the car).</param>
+        /// <param name="anchor">The anchor on the first body in world coordiantes.</param>
+        /// <param name="axis">The connection axis in world space.</param>
+        /// <param name="frequency">The suspension frequency, zero indicates no suspension.</param>
+        /// <param name="dampingRatio">The suspension damping ratio, one indicates critical damping.</param>
+        /// <param name="maxMotorTorque">The maximum motor torque, usually in N-m.</param>
+        /// <param name="motorSpeed">The desired motor speed in radians per second.</param>
+        /// <param name="enableMotor">Whether to initially enable the motor..</param>
+        /// <param name="collideConnected">Whether the two bodies still collide.</param>
+        /// <returns>The created joint.</returns>
+        public static WheelJoint AddWheelJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchor, Vector2 axis, float frequency = 2, float dampingRatio = 0.7f, float maxMotorTorque = 0, float motorSpeed = 0, bool enableMotor = false, bool collideConnected = false)
+        {
+            if (bodyA == null)
+            {
+                throw new ArgumentNullException("bodyA");
+            }
+            if (bodyB == null)
+            {
+                throw new ArgumentNullException("bodyB");
+            }
+
+            var joint = (WheelJoint)manager.GetSimulation()
+                                         .CreateJoint(Joint.JointType.Wheel, bodyA, bodyB, collideConnected);
+
+            joint.Initialize(bodyA, bodyB, anchor, axis, frequency, dampingRatio, maxMotorTorque, motorSpeed, enableMotor);
+
+            return joint;
+        }
+
+        /// <summary>Gets the simulation for the specified manager.</summary>
         private static PhysicsSystem GetSimulation(this IManager manager)
         {
             return manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;

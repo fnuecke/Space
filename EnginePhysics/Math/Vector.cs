@@ -7,9 +7,7 @@ namespace Engine.Physics.Math
     /// </summary>
     internal static class Vector2Util
     {
-        /// <summary>
-        /// Perform the cross product on two vectors. In 2D this produces a scalar.
-        /// </summary>
+        /// <summary>Perform the cross product on two vectors. In 2D this produces a scalar.</summary>
         /// <param name="a">The first vector.</param>
         /// <param name="b">The second vector.</param>
         /// <returns>The cross product of the two.</returns>
@@ -18,10 +16,8 @@ namespace Engine.Physics.Math
             return a.X * b.Y - a.Y * b.X;
         }
 
-        /// <summary>
-        /// Perform the cross product on a vector and a scalar. In 2D this produces
-        /// a vector.
-        /// </summary>
+        /// <summary>Perform the cross product on a vector and a scalar. In 2D this produces
+        /// a vector.</summary>
         /// <param name="v">The vector.</param>
         /// <param name="s">The scalar.</param>
         /// <returns>The cross product of the two.</returns>
@@ -33,10 +29,8 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>
-        /// Perform the cross product on a scalar and a vector. In 2D this produces
-        /// a vector.
-        /// </summary>
+        /// <summary>Perform the cross product on a scalar and a vector. In 2D this produces
+        /// a vector.</summary>
         /// <param name="s">The scalar.</param>
         /// <param name="v">The vector.</param>
         /// <returns>The cross product of the two.</returns>
@@ -48,9 +42,7 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>
-        /// Sets the specified values for the vector.
-        /// </summary>
+        /// <summary>Sets the specified values for the vector.</summary>
         /// <param name="v">The vector to set.</param>
         /// <param name="x">The x value.</param>
         /// <param name="y">The y value.</param>
@@ -66,9 +58,7 @@ namespace Engine.Physics.Math
     /// </summary>
     internal static class Vector3Util
     {
-        /// <summary>
-        /// Sets the specified values for the vector.
-        /// </summary>
+        /// <summary>Sets the specified values for the vector.</summary>
         /// <param name="v">The vector to set.</param>
         /// <param name="x">The x value.</param>
         /// <param name="y">The y value.</param>

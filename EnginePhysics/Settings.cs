@@ -10,9 +10,7 @@ namespace Engine.Physics
     {
         #region General
 
-        /// <summary>
-        /// An epsilon value used to cut off noise in a lot of places.
-        /// </summary>
+        /// <summary>An epsilon value used to cut off noise in a lot of places.</summary>
         public const float Epsilon = 1.192092896e-07f;
 
         /// <summary>
@@ -85,18 +83,14 @@ namespace Engine.Physics
         /// </summary>
         public const float PolygonRadius = 2f * 0.005f;
 
-        /// <summary>
-        /// Maximum number of sub-steps per contact in continuous physics simulation.
-        /// </summary>
+        /// <summary>Maximum number of sub-steps per contact in continuous physics simulation.</summary>
         public const int MaxSubSteps = 8;
 
         #endregion
 
         #region Dynamics
 
-        /// <summary>
-        /// Maximum number of contacts to be handled to solve a TOI impact.
-        /// </summary>
+        /// <summary>Maximum number of contacts to be handled to solve a TOI impact.</summary>
         public const int MaxTOIContacts = 32;
 
         /// <summary>
@@ -140,19 +134,13 @@ namespace Engine.Physics
 
         #region Sleep
 
-        /// <summary>
-        /// The time that a body must be still before it will go to sleep.
-        /// </summary>
+        /// <summary>The time that a body must be still before it will go to sleep.</summary>
         public const float TimeToSleep = 0.5f;
 
-        /// <summary>
-        /// A body cannot sleep if its linear velocity is above this tolerance.
-        /// </summary>
+        /// <summary>A body cannot sleep if its linear velocity is above this tolerance.</summary>
         public const float LinearSleepTolerance = 0.01f;
 
-        /// <summary>
-        /// A body cannot sleep if its angular velocity is above this tolerance.
-        /// </summary>
+        /// <summary>A body cannot sleep if its angular velocity is above this tolerance.</summary>
         public const float AngularSleepTolerance = 2f / 180f * MathHelper.Pi;
 
         #endregion

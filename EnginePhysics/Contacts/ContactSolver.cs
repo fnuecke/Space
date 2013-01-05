@@ -184,9 +184,11 @@ namespace Engine.Physics.Contacts
                 for (var j = 0; j < vc.PointCount; ++j)
                 {
                     var vcp = vc.Points[j];
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     vcp.RelativeA = (Vector2)(points[j] - cA);
                     vcp.RelativeB = (Vector2)(points[j] - cB);
+// ReSharper restore RedundantCast
 
                     var rnA = Vector2Util.Cross(vcp.RelativeA, vc.Normal);
                     var rnB = Vector2Util.Cross(vcp.RelativeB, vc.Normal);
@@ -597,10 +599,14 @@ namespace Engine.Physics.Contacts
                 {
                     var pointA = xfA.ToGlobal(pc.LocalPoint);
                     var pointB = xfB.ToGlobal(pc.LocalPoints[0]);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     normal = (Vector2)(pointB - pointA);
+// ReSharper restore RedundantCast
                     normal.Normalize();
                     point = 0.5f * (pointA + pointB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     separation = Vector2.Dot((Vector2)(pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
+// ReSharper restore RedundantCast
                 }
                     break;
 
@@ -610,7 +616,9 @@ namespace Engine.Physics.Contacts
                     var planePoint = xfA.ToGlobal(pc.LocalPoint);
 
                     var clipPoint = xfB.ToGlobal(pc.LocalPoints[index]);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     separation = Vector2.Dot((Vector2)(clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+// ReSharper restore RedundantCast
                     point = clipPoint;
                 }
                     break;
@@ -621,7 +629,9 @@ namespace Engine.Physics.Contacts
                     var planePoint = xfB.ToGlobal(pc.LocalPoint);
 
                     var clipPoint = xfA.ToGlobal(pc.LocalPoints[index]);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     separation = Vector2.Dot((Vector2)(clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+// ReSharper restore RedundantCast
                     point = clipPoint;
 
                     // Ensure normal points from A to B
@@ -672,9 +682,11 @@ namespace Engine.Physics.Contacts
                     WorldPoint point;
                     float separation;
                     InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     var rA = (Vector2)(point - cA);
                     var rB = (Vector2)(point - cB);
+// ReSharper restore RedundantCast
 
                     // Track max constraint error.
                     minSeparation = System.Math.Min(minSeparation, separation);
@@ -762,9 +774,11 @@ namespace Engine.Physics.Contacts
                     WorldPoint point;
                     float separation;
                     InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     var rA = (Vector2)(point - cA);
                     var rB = (Vector2)(point - cB);
+// ReSharper restore RedundantCast
 
                     // Track max constraint error.
                     minSeparation = System.Math.Min(minSeparation, separation);

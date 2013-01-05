@@ -215,12 +215,12 @@ namespace Engine.Physics.Joints
             var h = step.DeltaT;
             System.Diagnostics.Debug.Assert(d + h * s > Settings.Epsilon);
             _tmp.Gamma = h * (d + h * s);
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (_tmp.Gamma != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 _tmp.Gamma = 1.0f / _tmp.Gamma;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
             _tmp.Beta = h * s * _tmp.Gamma;
 
             // Compute the effective mass matrix.
@@ -236,8 +236,10 @@ namespace Engine.Physics.Joints
             k.Column2.Y = _tmp.InverseMassB + _tmp.InverseInertiaB * _tmp.RotB.X * _tmp.RotB.X + _tmp.Gamma;
 
             _tmp.Mass = k.GetInverse();
-
+            
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             _tmp.C = (Vector2)(cB - _targetA) + _tmp.RotB;
+// ReSharper restore RedundantCast
             _tmp.C *= _tmp.Beta;
 
             // Cheat with some damping

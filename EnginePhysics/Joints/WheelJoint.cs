@@ -1,4 +1,5 @@
-﻿using Engine.Physics.Math;
+﻿using Engine.Physics.Components;
+using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -72,11 +73,12 @@ namespace Engine.Physics.Joints
 
                 var pA = bA.GetWorldPoint(_localAnchorA);
                 var pB = bB.GetWorldPoint(_localAnchorB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var d = (Vector2)(pB - pA);
+// ReSharper restore RedundantCast
                 var axis = bA.GetWorldVector(_localXAxisA);
 
-                float translation = Vector2.Dot(d, axis);
-                return translation;
+                return Vector2.Dot(d, axis);
             }
         }
 
@@ -113,14 +115,14 @@ namespace Engine.Physics.Joints
             get { return _motorSpeed; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value != _motorSpeed)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _motorSpeed = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
@@ -132,14 +134,14 @@ namespace Engine.Physics.Joints
             get { return _maxMotorTorque; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value != _maxMotorTorque)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _maxMotorTorque = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
@@ -207,11 +209,11 @@ namespace Engine.Physics.Joints
 
             public float InverseInertiaB;
 
-            public Vector2 _ax, _ay;
+            public Vector2 Ax, Ay;
 
-            public float _sAx, _sBx;
+            public float SAx, SBx;
 
-            public float _sAy, _sBy;
+            public float SAy, SBy;
 
             public float Mass;
 
@@ -244,8 +246,23 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(Body bodyA, Body bodyB, WorldPoint anchor, Vector2 axis, float frequency, float dampingRatio, float maxMotorTorque, float motorSpeed, bool enableMotor)
         {
+            _localAnchorA = BodyA.GetLocalPoint(anchor);
+            _localAnchorB = BodyB.GetLocalPoint(anchor);
+            _localXAxisA = BodyA.GetLocalVector(axis);
+            _localYAxisA = Vector2Util.Cross(1.0f, _localXAxisA);
+            
+            _frequency = frequency;
+            _dampingRatio = dampingRatio;
+
+            _maxMotorTorque = maxMotorTorque;
+            _motorSpeed = motorSpeed;
+            _enableMotor = enableMotor;
+
+            _impulse = 0;
+            _motorImpulse = 0;
+            _springImpulse = 0;
         }
 
         #endregion
@@ -306,15 +323,17 @@ namespace Engine.Physics.Joints
             // Compute the effective masses.
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var d = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
 
             // Point to line constraint
             {
-                _tmp._ay = qA * _localYAxisA;
-                _tmp._sAy = Vector2Util.Cross(d + rA, _tmp._ay);
-                _tmp._sBy = Vector2Util.Cross(rB, _tmp._ay);
+                _tmp.Ay = qA * _localYAxisA;
+                _tmp.SAy = Vector2Util.Cross(d + rA, _tmp.Ay);
+                _tmp.SBy = Vector2Util.Cross(rB, _tmp.Ay);
 
-                _tmp.Mass = mA + mB + iA * _tmp._sAy * _tmp._sAy + iB * _tmp._sBy * _tmp._sBy;
+                _tmp.Mass = mA + mB + iA * _tmp.SAy * _tmp.SAy + iB * _tmp.SBy * _tmp.SBy;
 
                 if (_tmp.Mass > 0.0f)
                 {
@@ -328,17 +347,17 @@ namespace Engine.Physics.Joints
             _tmp.Gamma = 0.0f;
             if (_frequency > 0.0f)
             {
-                _tmp._ax = qA * _localXAxisA;
-                _tmp._sAx = Vector2Util.Cross(d + rA, _tmp._ax);
-                _tmp._sBx = Vector2Util.Cross(rB, _tmp._ax);
+                _tmp.Ax = qA * _localXAxisA;
+                _tmp.SAx = Vector2Util.Cross(d + rA, _tmp.Ax);
+                _tmp.SBx = Vector2Util.Cross(rB, _tmp.Ax);
 
-                var invMass = mA + mB + iA * _tmp._sAx * _tmp._sAx + iB * _tmp._sBx * _tmp._sBx;
+                var invMass = mA + mB + iA * _tmp.SAx * _tmp.SAx + iB * _tmp.SBx * _tmp.SBx;
 
                 if (invMass > 0.0f)
                 {
                     _tmp.SpringMass = 1.0f / invMass;
 
-                    var c = Vector2.Dot(d, _tmp._ax);
+                    var c = Vector2.Dot(d, _tmp.Ax);
 
                     // Frequency
                     var omega = 2.0f * MathHelper.Pi * _frequency;
@@ -388,9 +407,9 @@ namespace Engine.Physics.Joints
 
             if (step.IsWarmStarting)
             {
-                var p = _impulse * _tmp._ay + _springImpulse * _tmp._ax;
-                var lA = _impulse * _tmp._sAy + _springImpulse * _tmp._sAx + _motorImpulse;
-                var lB = _impulse * _tmp._sBy + _springImpulse * _tmp._sBx + _motorImpulse;
+                var p = _impulse * _tmp.Ay + _springImpulse * _tmp.Ax;
+                var lA = _impulse * _tmp.SAy + _springImpulse * _tmp.SAx + _motorImpulse;
+                var lB = _impulse * _tmp.SBy + _springImpulse * _tmp.SBx + _motorImpulse;
 
                 vA -= _tmp.InverseMassA * p;
                 wA -= _tmp.InverseInertiaA * lA;
@@ -431,13 +450,13 @@ namespace Engine.Physics.Joints
 
             // Solve spring constraint
             {
-                var cdot = Vector2.Dot(_tmp._ax, vB - vA) + _tmp._sBx * wB - _tmp._sAx * wA;
+                var cdot = Vector2.Dot(_tmp.Ax, vB - vA) + _tmp.SBx * wB - _tmp.SAx * wA;
                 var impulse = -_tmp.SpringMass * (cdot + _tmp.Bias + _tmp.Gamma * _springImpulse);
                 _springImpulse += impulse;
 
-                var p = impulse * _tmp._ax;
-                var lA = impulse * _tmp._sAx;
-                var lB = impulse * _tmp._sBx;
+                var p = impulse * _tmp.Ax;
+                var lA = impulse * _tmp.SAx;
+                var lB = impulse * _tmp.SBx;
 
                 vA -= mA * p;
                 wA -= iA * lA;
@@ -462,13 +481,13 @@ namespace Engine.Physics.Joints
 
             // Solve point to line constraint
             {
-                var cdot = Vector2.Dot(_tmp._ay, vB - vA) + _tmp._sBy * wB - _tmp._sAy * wA;
+                var cdot = Vector2.Dot(_tmp.Ay, vB - vA) + _tmp.SBy * wB - _tmp.SAy * wA;
                 var impulse = -_tmp.Mass * cdot;
                 _impulse += impulse;
 
-                var p = impulse * _tmp._ay;
-                var lA = impulse * _tmp._sAy;
-                var lB = impulse * _tmp._sBy;
+                var p = impulse * _tmp.Ay;
+                var lA = impulse * _tmp.SAy;
+                var lB = impulse * _tmp.SBy;
 
                 vA -= mA * p;
                 wA -= iA * lA;
@@ -503,7 +522,9 @@ namespace Engine.Physics.Joints
 
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var d = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
 
             var ay = qA * _localYAxisA;
 
@@ -512,11 +533,12 @@ namespace Engine.Physics.Joints
 
             var c = Vector2.Dot(d, ay);
 
-            var k = _tmp.InverseMassA + _tmp.InverseMassB + _tmp.InverseInertiaA * _tmp._sAy * _tmp._sAy + _tmp.InverseInertiaB * _tmp._sBy * _tmp._sBy;
+            var k = _tmp.InverseMassA + _tmp.InverseMassB + _tmp.InverseInertiaA * _tmp.SAy * _tmp.SAy + _tmp.InverseInertiaB * _tmp.SBy * _tmp.SBy;
 
             float impulse;
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (k != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 impulse = - c / k;
             }
@@ -524,7 +546,6 @@ namespace Engine.Physics.Joints
             {
                 impulse = 0.0f;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
 
             var p = impulse * ay;
             var lA = impulse * sAy;

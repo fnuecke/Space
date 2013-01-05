@@ -202,7 +202,9 @@ namespace Engine.Physics.Joints
                 _localAxisC = prismatic.LocalAxisA;
 
                 var pC = _localAnchorC;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var pA = -xfC.Rotation * ((xfA.Rotation * _localAnchorA) + (Vector2)(xfA.Translation - xfC.Translation));
+// ReSharper restore RedundantCast
                 coordinateA = Vector2.Dot(pA - pC, _localAxisC);
             }
 
@@ -234,7 +236,9 @@ namespace Engine.Physics.Joints
                 _localAxisD = prismatic.LocalAxisA;
 
                 var pD = _localAnchorD;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var pB = -xfD.Rotation * ((xfB.Rotation * _localAnchorB) + (Vector2)(xfB.Translation - xfD.Translation));
+// ReSharper restore RedundantCast
                 coordinateB = Vector2.Dot(pB - pD, _localAxisD);
             }
 
@@ -474,7 +478,9 @@ namespace Engine.Physics.Joints
                 mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * JwC * JwC + _tmp.InverseInertiaA * JwA * JwA;
 
                 var pC = _localAnchorC - _tmp.LcC;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var pA = -qC * (rA + (Vector2)(cA - cC));
+// ReSharper restore RedundantCast
                 coordinateA = Vector2.Dot(pA - pC, _localAxisC);
             }
 
@@ -498,7 +504,9 @@ namespace Engine.Physics.Joints
                 mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) + _tmp.InverseInertiaD * JwD * JwD + _tmp.InverseInertiaB * JwB * JwB;
 
                 var pD = _localAnchorD - _tmp.LcD;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var pB = -qD * (rB + (Vector2)(cB - cD));
+// ReSharper restore RedundantCast
                 coordinateB = Vector2.Dot(pB - pD, _localAxisD);
             }
 

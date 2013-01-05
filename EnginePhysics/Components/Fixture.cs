@@ -337,7 +337,9 @@ namespace Engine.Physics.Components
             var bounds = WorldBounds.Union(ComputeBounds(transform1), ComputeBounds(transform2));
 
             // Compute the displacement of the shape.
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var delta = (Vector2)(transform2.Translation - transform1.Translation);
+// ReSharper restore RedundantCast
 
             // Update the index.
             Simulation.Synchronize(bounds, delta, Id);

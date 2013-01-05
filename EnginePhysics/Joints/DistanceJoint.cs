@@ -194,7 +194,9 @@ namespace Engine.Physics.Joints
 
             _tmp.RotA = qA * (_localAnchorA - _tmp.LocalCenterA);
             _tmp.RotB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             _tmp.U = (Vector2)(cB - cA) + (_tmp.RotB - _tmp.RotA);
+// ReSharper restore RedundantCast
 
             // Handle singularity.
             var length = _tmp.U.Length();
@@ -213,8 +215,9 @@ namespace Engine.Physics.Joints
                           _tmp.InverseInertiaB * crBu * crBu;
 
             // Compute the effective mass matrix.
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (invMass != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 _tmp.Mass = 1.0f / invMass;
             }
@@ -222,7 +225,6 @@ namespace Engine.Physics.Joints
             {
                 _tmp.Mass = 0.0f;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
 
             if (_frequency > 0.0f)
             {
@@ -240,17 +242,18 @@ namespace Engine.Physics.Joints
                 // magic formulas
                 var h = step.DeltaT;
                 _tmp.Gamma = h * (d + h * k);
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (_tmp.Gamma != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     _tmp.Gamma = 1.0f / _tmp.Gamma;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
                 _tmp.Bias = c * h * k * _tmp.Gamma;
 
                 invMass += _tmp.Gamma;
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (invMass != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     _tmp.Mass = 1.0f / invMass;
                 }
@@ -258,7 +261,6 @@ namespace Engine.Physics.Joints
                 {
                     _tmp.Mass = 0.0f;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
             else
             {
@@ -344,7 +346,9 @@ namespace Engine.Physics.Joints
 
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var u = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
 
             var length = u.Length();
             u /= length;

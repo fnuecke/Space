@@ -11,14 +11,10 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Math
 {
-    /// <summary>
-    /// Represents a 2D-rotation.
-    /// </summary>
+    /// <summary>Represents a 2D-rotation.</summary>
     internal struct Rotation
     {
-        /// <summary>
-        /// Gets the identity rotation.
-        /// </summary>
+        /// <summary>Gets the identity rotation.</summary>
         public static Rotation Identity
         {
             get { return ImmutableIdentity; }
@@ -26,14 +22,10 @@ namespace Engine.Physics.Math
 
         private static readonly Rotation ImmutableIdentity = new Rotation {Sin = 0, Cos = 1};
 
-        /// <summary>
-        /// Sine and cosine of the rotation.
-        /// </summary>
+        /// <summary>Sine and cosine of the rotation.</summary>
         public float Sin, Cos;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Rotation"/> struct.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Rotation"/> struct.</summary>
         /// <param name="angle">The angle.</param>
         public Rotation(float angle)
         {
@@ -41,9 +33,7 @@ namespace Engine.Physics.Math
             Cos = (float)System.Math.Cos(angle);
         }
 
-        /// <summary>
-        /// Set using an angle in radians.
-        /// </summary>
+        /// <summary>Set using an angle in radians.</summary>
         /// <param name="angle">the angle to set to.</param>
         public void Set(float angle)
         {
@@ -51,9 +41,7 @@ namespace Engine.Physics.Math
             Cos = (float)System.Math.Cos(angle);
         }
 
-        /// <summary>
-        /// Get the angle of the rotation in radians.
-        /// </summary>
+        /// <summary>Get the angle of the rotation in radians.</summary>
         /// <returns>The rotation in radians.</returns>
         public float GetAngle()
         {
@@ -121,19 +109,13 @@ namespace Engine.Physics.Math
     /// </summary>
     internal struct LocalTransform
     {
-        /// <summary>
-        /// The translation in relative coordinates.
-        /// </summary>
+        /// <summary>The translation in relative coordinates.</summary>
         public Vector2 Translation;
 
-        /// <summary>
-        /// The relative rotation.
-        /// </summary>
+        /// <summary>The relative rotation.</summary>
         public Rotation Rotation;
 
-        /// <summary>
-        /// Transforms a local coordinate to another frame of reference.
-        /// </summary>
+        /// <summary>Transforms a local coordinate to another frame of reference.</summary>
         /// <param name="v">The local coordinate to transform.</param>
         /// <returns>The transformed coordinate (a global coordinate).</returns>
         public Vector2 ToOther(Vector2 v)
@@ -149,9 +131,7 @@ namespace Engine.Physics.Math
         /// to its original frame of reference.
         /// </summary>
         /// <param name="v">The world coordinate to apply the inverse transform to.</param>
-        /// <returns>
-        /// The result of the inverse transform (a local coordiante).
-        /// </returns>
+        /// <returns>The result of the inverse transform (a local coordiante).</returns>
         public Vector2 FromOther(Vector2 v)
         {
             var px = v.X - Translation.X;
@@ -175,9 +155,7 @@ namespace Engine.Physics.Math
             Packetizable.AddValueTypeOverloads(typeof(PacketTransformExtensions));
         }
 
-        /// <summary>
-        /// Gets the identity transform.
-        /// </summary>
+        /// <summary>Gets the identity transform.</summary>
         public static WorldTransform Identity
         {
             get { return ImmutableIdentity; }
@@ -189,19 +167,13 @@ namespace Engine.Physics.Math
             Rotation = Rotation.Identity
         };
 
-        /// <summary>
-        /// The translation in world coordinates.
-        /// </summary>
+        /// <summary>The translation in world coordinates.</summary>
         public WorldPoint Translation;
 
-        /// <summary>
-        /// The global rotation.
-        /// </summary>
+        /// <summary>The global rotation.</summary>
         public Rotation Rotation;
 
-        /// <summary>
-        /// Transforms a local coordinate to a global one.
-        /// </summary>
+        /// <summary>Transforms a local coordinate to a global one.</summary>
         /// <param name="v">The local coordinate to transform.</param>
         /// <returns>The transformed coordinate (a global coordinate).</returns>
         public WorldPoint ToGlobal(Vector2 v)
@@ -212,17 +184,15 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>
-        /// Transforms a global coordinate to a local one.
-        /// </summary>
+        /// <summary>Transforms a global coordinate to a local one.</summary>
         /// <param name="v">The world coordinate to apply the inverse transform to.</param>
-        /// <returns>
-        /// The result of the inverse transform (a local coordiante).
-        /// </returns>
+        /// <returns>The result of the inverse transform (a local coordiante).</returns>
         public Vector2 ToLocal(WorldPoint v)
         {
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var px = (float)(v.X - Translation.X);
             var py = (float)(v.Y - Translation.Y);
+// ReSharper restore RedundantCast
 
             Vector2 result;
             result.X = Rotation.Cos * px + Rotation.Sin * py;
@@ -244,19 +214,17 @@ namespace Engine.Physics.Math
             //    = A.q' * B.q * v1 + A.q' * (B.p - A.p)
             LocalTransform result;
             result.Rotation = -Rotation * xf.Rotation;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             result.Translation = -Rotation * (Vector2)(xf.Translation - Translation);
+// ReSharper restore RedundantCast
             return result;
         }
     }
 
-    /// <summary>
-    /// A 2-by-2 matrix. Stored in column-major order.
-    /// </summary>
+    /// <summary>A 2-by-2 matrix. Stored in column-major order.</summary>
     internal struct Matrix22
     {
-        /// <summary>
-        /// Gets the zero matrix.
-        /// </summary>
+        /// <summary>Gets the zero matrix.</summary>
         public static Matrix22 Zero
         {
             get { return ImmutableZero; }
@@ -268,14 +236,10 @@ namespace Engine.Physics.Math
             Column2 = Vector2.Zero
         };
 
-        /// <summary>
-        /// The columns of this matrix.
-        /// </summary>
+        /// <summary>The columns of this matrix.</summary>
         public Vector2 Column1, Column2;
 
-        /// <summary>
-        /// Computes the inverse of this matrix.
-        /// </summary>
+        /// <summary>Computes the inverse of this matrix.</summary>
         /// <returns>The inverse matrix.</returns>
         public Matrix22 GetInverse()
         {
@@ -285,12 +249,12 @@ namespace Engine.Physics.Math
             var d = Column2.Y;
 
             var det = a * d - b * c;
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (det == 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 return Zero;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
             det = 1.0f / det;
 
             Matrix22 result;
@@ -300,7 +264,7 @@ namespace Engine.Physics.Math
             result.Column2.Y = det * a;
             return result;
         }
-        
+
         /// <summary>
         /// Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector.
         /// This is more efficient than computing the inverse in one-shot cases.
@@ -312,12 +276,12 @@ namespace Engine.Physics.Math
             var a21 = Column1.Y;
             var a22 = Column2.Y;
             var det = a11 * a22 - a12 * a21;
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (det != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 det = 1.0f / det;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
             Vector2 result;
             result.X = det * (a22 * v.X - a12 * v.Y);
             result.Y = det * (a11 * v.Y - a21 * v.X);
@@ -330,7 +294,6 @@ namespace Engine.Physics.Math
         /// </summary>
         /// <param name="xf">The transformation matrix.</param>
         /// <param name="v">The vector to transform.</param>
-        /// <returns></returns>
         public static Vector2 operator *(Matrix22 xf, Vector2 v)
         {
             Vector2 result;
@@ -340,14 +303,10 @@ namespace Engine.Physics.Math
         }
     }
 
-    /// <summary>
-    /// A 3-by-3 matrix. Stored in column-major order.
-    /// </summary>
+    /// <summary>A 3-by-3 matrix. Stored in column-major order.</summary>
     internal struct Matrix33
     {
-        /// <summary>
-        /// The columns of this matrix.
-        /// </summary>
+        /// <summary>The columns of this matrix.</summary>
         public Vector3 Column1, Column2, Column3;
 
         /// <summary>
@@ -357,12 +316,12 @@ namespace Engine.Physics.Math
         public Vector3 Solve33(Vector3 v)
         {
             var det = Vector3.Dot(Column1, Vector3.Cross(Column2, Column3));
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (det != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 det = 1.0f / det;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
             Vector3 result;
             result.X = det * Vector3.Dot(v, Vector3.Cross(Column2, Column3));
             result.Y = det * Vector3.Dot(Column1, Vector3.Cross(v, Column3));
@@ -382,22 +341,20 @@ namespace Engine.Physics.Math
             var a21 = Column1.Y;
             var a22 = Column2.Y;
             var det = a11 * a22 - a12 * a21;
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (det != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 det = 1.0f / det;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
             Vector2 result;
             result.X = det * (a22 * v.X - a12 * v.Y);
             result.Y = det * (a11 * v.Y - a21 * v.X);
             return result;
         }
 
-        /// <summary>
-        /// Get the inverse of this matrix as a 2-by-2.
-        /// Returns the zero matrix if singular.
-        /// </summary>
+        /// <summary>Get the inverse of this matrix as a 2-by-2.
+        /// Returns the zero matrix if singular.</summary>
         public void GetInverse22(out Matrix33 m)
         {
             var a = Column1.X;
@@ -405,31 +362,29 @@ namespace Engine.Physics.Math
             var c = Column1.Y;
             var d = Column2.Y;
             var det = a * d - b * c;
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (det != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 det = 1.0f / det;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
 
             m.Column1.X = det * d; m.Column2.X = -det * b; m.Column1.Z = 0.0f;
             m.Column1.Y = -det * c; m.Column2.Y = det * a; m.Column2.Z = 0.0f;
             m.Column3.X = 0.0f; m.Column3.Y = 0.0f; m.Column3.Z = 0.0f;
         }
 
-        /// <summary>
-        /// Get the symmetric inverse of this matrix as a 3-by-3.
-        /// Returns the zero matrix if singular.
-        /// </summary>
+        /// <summary>Get the symmetric inverse of this matrix as a 3-by-3.
+        /// Returns the zero matrix if singular.</summary>
         public void GetSymInverse33(out Matrix33 m)
         {
             var det = Vector3.Dot(Column1, Vector3.Cross(Column2, Column3));
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator
             if (det != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 det = 1.0f / det;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
 
             var a11 = Column1.X;
             var a12 = Column2.X;
@@ -451,17 +406,19 @@ namespace Engine.Physics.Math
             m.Column3.Z = det * (a11 * a22 - a12 * a12);
         }
 
-        /// <summary>
-        /// Multiply a matrix times a vector.
-        /// </summary>
+        /// <summary>Multiply a matrix times a vector.</summary>
+        /// <param name="m">The matrix.</param>
+        /// <param name="v">The vector.</param>
+        /// <returns>The result of the multiplication.</returns>
         public static Vector3 operator*(Matrix33 m, Vector3 v)
         {
             return v.X * m.Column1 + v.Y * m.Column2 + v.Z * m.Column3;
         }
 
-        /// <summary>
-        /// Multiply a matrix times a vector.
-        /// </summary>
+        /// <summary>Multiply a matrix times a vector.</summary>
+        /// <param name="m">The matrix.</param>
+        /// <param name="v">The vector.</param>
+        /// <returns>The result of the multiplication.</returns>
         public static Vector2 operator*(Matrix33 m, Vector2 v)
         {
             return new Vector2(m.Column1.X * v.X + m.Column2.X * v.Y,
@@ -469,14 +426,11 @@ namespace Engine.Physics.Math
         }
     }
 
-    /// <summary>
-    /// Packet write and read methods for math types.
-    /// </summary>
+    /// <summary>Packet write and read methods for math types.</summary>
     internal static class PacketTransformExtensions
     {
-        /// <summary>
-        /// Writes the specified world transform value.
-        /// </summary>
+        /// <summary>Writes the specified world transform value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public static Packet Write(this Packet packet, WorldTransform data)
@@ -484,22 +438,20 @@ namespace Engine.Physics.Math
             return packet.Write(data.Translation).Write(data.Rotation);
         }
 
-        /// <summary>
-        /// Reads a world transform value.
-        /// </summary>
+        /// <summary>Reads a world transform value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
         public static Packet Read(this Packet packet, out WorldTransform data)
         {
             data = packet.ReadWorldTransform();
             return packet;
         }
 
-        /// <summary>
-        /// Reads a world transform value.
-        /// </summary>
+        /// <summary>Reads a world transform value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
@@ -515,9 +467,8 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>
-        /// Writes the specified rotation value.
-        /// </summary>
+        /// <summary>Writes the specified rotation value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         private static Packet Write(this Packet packet, Rotation data)
@@ -525,9 +476,8 @@ namespace Engine.Physics.Math
             return packet.Write(data.Sin).Write(data.Cos);
         }
 
-        /// <summary>
-        /// Reads a rotation value.
-        /// </summary>
+        /// <summary>Reads a rotation value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
@@ -545,10 +495,8 @@ namespace Engine.Physics.Math
     /// </summary>
     internal static class HasherTransformExtensions
     {
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
+        /// <summary>Put the specified value to the data of which the hash
+        /// gets computed.</summary>
         /// <param name="hasher">The hasher to use.</param>
         /// <param name="value">the data to add.</param>
         /// <returns>a reference to the hasher, for chaining.</returns>

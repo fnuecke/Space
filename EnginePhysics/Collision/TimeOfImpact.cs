@@ -338,7 +338,9 @@ namespace Engine.Physics.Collision
                     var localPointB = f._proxyB.GetVertex(cache.IndexB.Item1);
                     var pointA = xfA.ToGlobal(localPointA);
                     var pointB = xfB.ToGlobal(localPointB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     f._axis = (Vector2)(pointB - pointA);
+// ReSharper restore RedundantCast
                     var s = f._axis.Length();
                     f._axis /= s;
                     f._localPoint = LocalPoint.Zero;
@@ -359,8 +361,10 @@ namespace Engine.Physics.Collision
 
                     var localPointA = proxyA.GetVertex(cache.IndexA[0]);
                     var pointA = xfA.ToGlobal(localPointA);
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     var s = Vector2.Dot((Vector2)(pointA - pointB), normal);
+// ReSharper restore RedundantCast
                     if (s < 0.0f)
                     {
                         f._axis = -f._axis;
@@ -382,8 +386,10 @@ namespace Engine.Physics.Collision
 
                     var localPointB = f._proxyB.GetVertex(cache.IndexB[0]);
                     var pointB = xfB.ToGlobal(localPointB);
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     var s = Vector2.Dot((Vector2)(pointB - pointA), normal);
+// ReSharper restore RedundantCast
                     if (s < 0.0f)
                     {
                         f._axis = -f._axis;
@@ -412,8 +418,10 @@ namespace Engine.Physics.Collision
 
                         var pointA = xfA.ToGlobal(localPointA);
                         var pointB = xfB.ToGlobal(localPointB);
-
+                        
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                         return Vector2.Dot((Vector2)(pointB - pointA), _axis);
+// ReSharper restore RedundantCast
                     }
 
                     case Type.FaceA:
@@ -428,8 +436,10 @@ namespace Engine.Physics.Collision
 
                         var localPointB = _proxyB.GetVertex(indexB);
                         var pointB = xfB.ToGlobal(localPointB);
-
+                        
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                         return Vector2.Dot((Vector2)(pointB - pointA), normal);
+// ReSharper restore RedundantCast
                     }
 
                     case Type.FaceB:
@@ -444,8 +454,10 @@ namespace Engine.Physics.Collision
 
                         var localPointA = _proxyA.GetVertex(indexA);
                         var pointA = xfA.ToGlobal(localPointA);
-
+                        
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                         return Vector2.Dot((Vector2)(pointA - pointB), normal);
+// ReSharper restore RedundantCast
                     }
 
                     default:
@@ -468,7 +480,9 @@ namespace Engine.Physics.Collision
 
                         var pointA = xfA.ToGlobal(localPointA);
                         var pointB = xfB.ToGlobal(localPointB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                         return Vector2.Dot((Vector2)(pointB - pointA), _axis);
+// ReSharper restore RedundantCast
                     }
 
                     case Type.FaceA:
@@ -478,8 +492,10 @@ namespace Engine.Physics.Collision
 
                         var localPointB = _proxyB.GetVertex(indexB);
                         var pointB = xfB.ToGlobal(localPointB);
-
+                        
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                         return Vector2.Dot((Vector2)(pointB - pointA), normal);
+// ReSharper restore RedundantCast
                     }
 
                     case Type.FaceB:
@@ -489,8 +505,10 @@ namespace Engine.Physics.Collision
 
                         var localPointA = _proxyA.GetVertex(indexA);
                         var pointA = xfA.ToGlobal(localPointA);
-
+                        
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                         return Vector2.Dot((Vector2)(pointA - pointB), normal);
+// ReSharper restore RedundantCast
                     }
 
                     default:
@@ -568,7 +586,9 @@ namespace Engine.Physics.Collision
                 v.IndexB = proxyB.GetSupport(-transformB.Rotation * d);
                 v.VertexA = transformA.ToGlobal(proxyA.GetVertex(v.IndexA));
                 v.VertexB = transformB.ToGlobal(proxyB.GetVertex(v.IndexB));
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
+// ReSharper restore RedundantCast
                 v.Alpha = 0;
                 simplex.Vertices[simplex.Count] = v;
 
@@ -642,7 +662,9 @@ namespace Engine.Physics.Collision
                     v.IndexB = cache.IndexB[i];
                     v.VertexA = transformA.ToGlobal(proxyA.GetVertex(v.IndexA));
                     v.VertexB = transformB.ToGlobal(proxyB.GetVertex(v.IndexB));
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
+// ReSharper restore RedundantCast
                     v.Alpha = 0.0f;
                     simplex.Vertices[i] = v;
                 }
@@ -668,7 +690,9 @@ namespace Engine.Physics.Collision
                     v.IndexB = 0;
                     v.VertexA = transformA.ToGlobal(proxyA.GetVertex(0));
                     v.VertexB = transformB.ToGlobal(proxyB.GetVertex(0));
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
+// ReSharper restore RedundantCast
                     v.Alpha = 1.0f;
                     simplex.Vertices.Item1 = v;
                     simplex.Count = 1;

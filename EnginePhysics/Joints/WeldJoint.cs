@@ -239,17 +239,18 @@ namespace Engine.Physics.Joints
                 // magic formulas
                 var h = step.DeltaT;
                 _tmp.Gamma = h * (d + h * s);
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (_tmp.Gamma != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     _tmp.Gamma = 1.0f / _tmp.Gamma;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
                 _tmp.Bias = c * h * s * _tmp.Gamma;
 
                 invM += _tmp.Gamma;
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (invM != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     _tmp.Mass.Column3.Z = 1.0f / invM;
                 }
@@ -257,7 +258,6 @@ namespace Engine.Physics.Joints
                 {
                     _tmp.Mass.Column3.Z = 0.0f;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
             else
             {
@@ -394,7 +394,9 @@ namespace Engine.Physics.Joints
 
             if (_frequency > 0.0f)
             {
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var c1 = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
 
                 positionError = c1.Length();
                 angularError = 0.0f;
@@ -409,7 +411,9 @@ namespace Engine.Physics.Joints
             }
             else
             {
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var c1 = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
                 var c2 = aB - aA - _referenceAngle;
 
                 positionError = c1.Length();

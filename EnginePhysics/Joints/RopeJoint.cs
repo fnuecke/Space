@@ -167,7 +167,9 @@ namespace Engine.Physics.Joints
 
             _tmp.RotA = qA * (_localAnchorA - _tmp.LocalCenterA);
             _tmp.RotB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             _tmp.Axis = (Vector2)(cB - cA) + (_tmp.RotB - _tmp.RotA);
+// ReSharper restore RedundantCast
 
             _length = _tmp.Axis.Length();
 
@@ -188,8 +190,9 @@ namespace Engine.Physics.Joints
             var crB = Vector2Util.Cross(_tmp.RotB, _tmp.Axis);
             var invMass = _tmp.InverseMassA + _tmp.InverseInertiaA * crA * crA + _tmp.InverseMassB + _tmp.InverseInertiaB * crB * crB;
 
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (invMass != 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 _tmp.Mass = 1.0f / invMass;
             }
@@ -197,7 +200,6 @@ namespace Engine.Physics.Joints
             {
                 _tmp.Mass = 0.0f;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
 
             if (step.IsWarmStarting)
             {
@@ -280,7 +282,9 @@ namespace Engine.Physics.Joints
 
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var u = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
 
             var length = u.Length();
             u /= length;

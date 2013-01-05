@@ -27,10 +27,8 @@ namespace Engine.Physics.Messages
         /// </summary>
         internal Manifold OldManifold;
 
-        /// <summary>
-        /// Computes the world manifold data for this contact. This is relatively
-        /// expensive, so use with care.
-        /// </summary>
+        /// <summary>Computes the world manifold data for this contact. This is relatively
+        /// expensive, so use with care.</summary>
         /// <param name="normal">The world contact normal.</param>
         /// <param name="points">The contact points.</param>
         public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)

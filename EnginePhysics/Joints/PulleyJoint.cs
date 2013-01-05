@@ -189,7 +189,9 @@ namespace Engine.Physics.Joints
         /// </summary>
         internal void Initialize(WorldPoint groundAnchorA, WorldPoint groundAnchorB, WorldPoint anchorA, WorldPoint anchorB, float ratio)
         {
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (ratio == 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 throw new ArgumentException("Ratio must not be zero.", "ratio");
             }
@@ -257,8 +259,10 @@ namespace Engine.Physics.Joints
             _tmp.RotB = qB * (_localAnchorB - _tmp.LocalCenterB);
 
             // Get the pulley axes.
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             _tmp.AxisA = (Vector2)(cA - _groundAnchorA) + _tmp.RotA;
             _tmp.AxisB = (Vector2)(cB - _groundAnchorB) + _tmp.RotB;
+// ReSharper restore RedundantCast
 
             var lengthA = _tmp.AxisA.Length();
             var lengthB = _tmp.AxisB.Length();
@@ -372,8 +376,10 @@ namespace Engine.Physics.Joints
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
 
             // Get the pulley axes.
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var uA = (Vector2)(cA - _groundAnchorA) + rA;
             var uB = (Vector2)(cB - _groundAnchorB) + rB;
+// ReSharper restore RedundantCast
 
             var lengthA = uA.Length();
             var lengthB = uB.Length();

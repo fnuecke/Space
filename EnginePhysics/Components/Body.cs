@@ -43,9 +43,7 @@ namespace Engine.Physics.Components
 
         #region Types
 
-        /// <summary>
-        /// The available body types.
-        /// </summary>
+        /// <summary>The available body types.</summary>
         public enum BodyType
         {
             /// <summary>
@@ -682,7 +680,9 @@ namespace Engine.Physics.Components
         /// <returns>The world velocity of a point.</returns>
         public Vector2 GetLinearVelocityFromWorldPoint(WorldPoint worldPoint)
         {
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             return LinearVelocityInternal + Vector2Util.Cross(AngularVelocityInternal, (Vector2)(worldPoint - Sweep.CenterOfMass));
+// ReSharper restore RedundantCast
         }
 
         /// <summary>
@@ -721,7 +721,9 @@ namespace Engine.Physics.Components
             if (IsAwake)
             {
                 Force += force;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 Torque += Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), force);
+// ReSharper restore RedundantCast
             }
         }
 
@@ -805,7 +807,9 @@ namespace Engine.Physics.Components
             if (IsAwake)
             {
                 LinearVelocityInternal += InverseMass * impulse;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 AngularVelocityInternal += InverseInertia * Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), impulse);
+// ReSharper restore RedundantCast
             }
         }
 
@@ -917,7 +921,9 @@ namespace Engine.Physics.Components
             Sweep.CenterOfMass0 = Sweep.CenterOfMass = Transform.ToGlobal(Sweep.LocalCenter);
 
             // Update center of mass velocity.
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             LinearVelocityInternal += Vector2Util.Cross(AngularVelocityInternal, (Vector2)(Sweep.CenterOfMass - oldCenter));
+// ReSharper restore RedundantCast
         }
 
         /// <summary>
@@ -949,7 +955,9 @@ namespace Engine.Physics.Components
             var localCenter = Vector2.Zero;
             foreach (Fixture fixture in Fixtures)
             {
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (fixture.Density == 0)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     continue;
                 }
@@ -993,7 +1001,9 @@ namespace Engine.Physics.Components
             Sweep.CenterOfMass0 = Sweep.CenterOfMass = Transform.ToGlobal(Sweep.LocalCenter);
 
             // Update center of mass velocity.
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             LinearVelocityInternal += Vector2Util.Cross(AngularVelocityInternal, (Vector2)(Sweep.CenterOfMass - oldCenter));
+// ReSharper restore RedundantCast
         }
 
         /// <summary>

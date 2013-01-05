@@ -17,9 +17,7 @@ namespace Engine.Physics
     {
         #region Circle
 
-        /// <summary>
-        /// Attaches a circle fixture to the specified entity.
-        /// </summary>
+        /// <summary>Attaches a circle fixture to the specified entity.</summary>
         /// <param name="manager">The manager the entity resides in.</param>
         /// <param name="body">The body to attach the fixture to.</param>
         /// <param name="localPosition">The center of the circle relative to the body's local origin.</param>
@@ -31,9 +29,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// The created fixture.
-        /// </returns>
+        /// <returns>The created fixture.</returns>
         public static CircleFixture AttachCircle(this IManager manager, Body body, LocalPoint localPosition,
                                                  float radius, float density = 0, float friction = 0.2f,
                                                  float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
@@ -56,9 +52,7 @@ namespace Engine.Physics
             return fixture;
         }
 
-        /// <summary>
-        /// Attaches a circle fixture to the specified entity.
-        /// </summary>
+        /// <summary>Attaches a circle fixture to the specified entity.</summary>
         /// <param name="manager">The manager the entity resides in.</param>
         /// <param name="body">The body to attach the fixture to.</param>
         /// <param name="radius">The radius of the circle.</param>
@@ -69,9 +63,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// The created fixture.
-        /// </returns>
+        /// <returns>The created fixture.</returns>
         public static CircleFixture AttachCircle(this IManager manager, Body body, float radius, float density = 0,
                                                  float friction = 0.2f, float restitution = 0, bool isSensor = false,
                                                  uint collisionGroups = 0)
@@ -84,9 +76,7 @@ namespace Engine.Physics
 
         #region Edge
 
-        /// <summary>
-        /// Attaches an edge fixture to the specified entity.
-        /// </summary>
+        /// <summary>Attaches an edge fixture to the specified entity.</summary>
         /// <param name="manager">The manager the entity resides in.</param>
         /// <param name="body">The body to attach the fixture to.</param>
         /// <param name="localStart">The start point of the edge relative to the body's local origin.</param>
@@ -97,9 +87,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// The created fixture.
-        /// </returns>
+        /// <returns>The created fixture.</returns>
         public static EdgeFixture AttachEdge(this IManager manager, Body body, LocalPoint localStart,
                                              LocalPoint localEnd, float friction = 0.2f, float restitution = 0,
                                              bool isSensor = false, uint collisionGroups = 0)
@@ -117,9 +105,7 @@ namespace Engine.Physics
             return fixture;
         }
 
-        /// <summary>
-        /// Attaches an edge fixture to the specified entity.
-        /// </summary>
+        /// <summary>Attaches an edge fixture to the specified entity.</summary>
         /// <param name="manager">The manager the entity resides in.</param>
         /// <param name="body">The body to attach the fixture to.</param>
         /// <param name="ghostStart">The ghost point for the start point, for chained edges.</param>
@@ -132,9 +118,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// The created fixture.
-        /// </returns>
+        /// <returns>The created fixture.</returns>
         public static EdgeFixture AttachEdge(this IManager manager, Body body, LocalPoint ghostStart,
                                              LocalPoint localStart, LocalPoint localEnd, LocalPoint ghostEnd,
                                              float friction = 0.2f, float restitution = 0, bool isSensor = false,
@@ -200,9 +184,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// A proxy object that may be used to interact with the created chain.
-        /// </returns>
+        /// <returns>A proxy object that may be used to interact with the created chain.</returns>
         public static Chain AttachChain(this IManager manager, Body body, IList<LocalPoint> vertices,
                                         float friction = 0.2f, float restitution = 0, bool isSensor = false,
                                         uint collisionGroups = 0)
@@ -295,9 +277,7 @@ namespace Engine.Physics
 
         #region Polygon
 
-        /// <summary>
-        /// Attaches a polygon fixture to the specified entity.
-        /// </summary>
+        /// <summary>Attaches a polygon fixture to the specified entity.</summary>
         /// <param name="manager">The manager the entity resides in.</param>
         /// <param name="body">The body to attach the fixture to.</param>
         /// <param name="vertices">The vertices relative to the body's local origin.</param>
@@ -308,9 +288,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// The created fixture.
-        /// </returns>
+        /// <returns>The created fixture.</returns>
         public static PolygonFixture AttachPolygon(this IManager manager, Body body, IList<LocalPoint> vertices,
                                                    float density = 0, float friction = 0.2f, float restitution = 0,
                                                    bool isSensor = false, uint collisionGroups = 0)
@@ -337,9 +315,7 @@ namespace Engine.Physics
             return fixture;
         }
 
-        /// <summary>
-        /// Attaches a rectangle fixture to the specified entity.
-        /// </summary>
+        /// <summary>Attaches a rectangle fixture to the specified entity.</summary>
         /// <param name="manager">The manager the entity resides in.</param>
         /// <param name="body">The body to attach the fixture to.</param>
         /// <param name="width">The width of the rectangle.</param>
@@ -351,9 +327,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// The created fixture.
-        /// </returns>
+        /// <returns>The created fixture.</returns>
         public static PolygonFixture AttachRectangle(this IManager manager, Body body, float width, float height,
                                                      float density = 0, float friction = 0.2f, float restitution = 0,
                                                      bool isSensor = false, uint collisionGroups = 0)
@@ -382,9 +356,7 @@ namespace Engine.Physics
             return manager.AttachPolygon(body, vertices, density, friction, restitution, isSensor, collisionGroups);
         }
 
-        /// <summary>
-        /// Attaches a rectangle fixture to the specified entity.
-        /// </summary>
+        /// <summary>Attaches a rectangle fixture to the specified entity.</summary>
         /// <param name="manager">The manager the entity resides in.</param>
         /// <param name="body">The body to attach the fixture to.</param>
         /// <param name="width">The width of the rectangle.</param>
@@ -398,9 +370,7 @@ namespace Engine.Physics
         /// as a sensor (i.e. it will fire collision events but the collision
         /// will not be handled by the solver).</param>
         /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns>
-        /// The created fixture.
-        /// </returns>
+        /// <returns>The created fixture.</returns>
         public static PolygonFixture AttachRectangle(this IManager manager, Body body, float width, float height,
                                                      LocalPoint localPosition, float localAngle = 0, float density = 0,
                                                      float friction = 0.2f, float restitution = 0, bool isSensor = false,
@@ -452,9 +422,7 @@ namespace Engine.Physics
     /// </summary>
     public sealed class Chain
     {
-        /// <summary>
-        /// Gets the body that this chain is attached to.
-        /// </summary>
+        /// <summary>Gets the body that this chain is attached to.</summary>
         public Body Body
         {
             get { return _body; }
@@ -502,19 +470,13 @@ namespace Engine.Physics
             }
         }
 
-        /// <summary>
-        /// The body this chain is attached to.
-        /// </summary>
+        /// <summary>The body this chain is attached to.</summary>
         private readonly Body _body;
 
-        /// <summary>
-        /// The head and tail edge fixtures of this chain.
-        /// </summary>
+        /// <summary>The head and tail edge fixtures of this chain.</summary>
         private readonly EdgeFixture _head, _tail;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Chain"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Chain"/> class.</summary>
         /// <param name="body">The body the chain is attached to.</param>
         /// <param name="head">The head link of the chain.</param>
         /// <param name="tail">The tail link of the chain.</param>

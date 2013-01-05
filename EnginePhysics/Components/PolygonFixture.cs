@@ -115,7 +115,9 @@ namespace Engine.Physics.Components
             for (var i = 1; i < points.Count; ++i)
             {
                 var x = ps[i].X;
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (x > x0 || (x == x0 && ps[i].Y < ps[i0].Y))
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     i0 = i;
                     x0 = x;
@@ -148,7 +150,9 @@ namespace Engine.Physics.Components
                     }
 
                     // Collinearity check
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                     if (c == 0.0f && v.LengthSquared() > r.LengthSquared())
+// ReSharper restore CompareOfFloatsByEqualityOperator
                     {
                         ie = j;
                     }
@@ -339,8 +343,10 @@ namespace Engine.Physics.Components
             }
 
             Vector2 size;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             size.X = (float)(upper.X - lower.X) + 2 * Radius;
             size.Y = (float)(upper.Y - lower.Y) + 2 * Radius;
+// ReSharper restore RedundantCast
 
             WorldBounds bounds;
             bounds.X = lower.X - Radius;

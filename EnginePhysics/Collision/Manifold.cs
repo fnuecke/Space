@@ -35,10 +35,8 @@ namespace Engine.Physics.Collision
             Packetizable.AddValueTypeOverloads(typeof(PacketManifoldExtensions));
         }
 
-        /// <summary>
-        /// Possibly types of manifolds, i.e. what kind of overlap it
-        /// represents (between what kind of shapes).
-        /// </summary>
+        /// <summary>Possibly types of manifolds, i.e. what kind of overlap it
+        /// represents (between what kind of shapes).</summary>
         public enum ManifoldType
         {
             Circles,
@@ -46,9 +44,7 @@ namespace Engine.Physics.Collision
             FaceB
         }
 
-        /// <summary>
-        /// The points of contact.
-        /// </summary>
+        /// <summary>The points of contact.</summary>
         public FixedArray2<ManifoldPoint> Points;
 
         /// <summary>
@@ -67,14 +63,10 @@ namespace Engine.Physics.Collision
         /// </summary>
         public LocalPoint LocalPoint;
 
-        /// <summary>
-        /// The type of this manifold.
-        /// </summary>
+        /// <summary>The type of this manifold.</summary>
         public ManifoldType Type;
 
-        /// <summary>
-        /// The number of manifold points.
-        /// </summary>
+        /// <summary>The number of manifold points.</summary>
         public int PointCount;
 
         /// <summary>
@@ -102,7 +94,9 @@ namespace Engine.Physics.Collision
                         var pointB = xfB.ToGlobal(Points[0].LocalPoint);
                         if (WorldPoint.DistanceSquared(pointA, pointB) > Settings.Epsilon * Settings.Epsilon)
                         {
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                             normal = (Vector2)(pointB - pointA);
+// ReSharper restore RedundantCast
                             normal.Normalize();
                         }
 
@@ -120,7 +114,9 @@ namespace Engine.Physics.Collision
                         for (var i = 0; i < PointCount; ++i)
                         {
                             var clipPoint = xfB.ToGlobal(Points[i].LocalPoint);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                             var cA = clipPoint + (radiusA - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
+// ReSharper restore RedundantCast
                             var cB = clipPoint - radiusB * normal;
                             points[i] = 0.5f * (cA + cB);
                         }
@@ -135,7 +131,9 @@ namespace Engine.Physics.Collision
                         for (var i = 0; i < PointCount; ++i)
                         {
                             var clipPoint = xfA.ToGlobal(Points[i].LocalPoint);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                             var cB = clipPoint + (radiusB - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
+// ReSharper restore RedundantCast
                             var cA = clipPoint - radiusA * normal;
                             points[i] = 0.5f * (cA + cB);
                         }
@@ -149,12 +147,8 @@ namespace Engine.Physics.Collision
             }
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
+        /// <summary>Returns a <see cref="System.String"/> that represents this instance.</summary>
+        /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
         public override string ToString()
         {
             return "{Manifold: Type=" + Type +
@@ -187,27 +181,17 @@ namespace Engine.Physics.Collision
         /// </summary>
         public LocalPoint LocalPoint;
 
-        /// <summary>
-        /// The non-penetration impulse.
-        /// </summary>
+        /// <summary>The non-penetration impulse.</summary>
         public float NormalImpulse;
 
-        /// <summary>
-        /// The friction impulse.
-        /// </summary>
+        /// <summary>The friction impulse.</summary>
         public float TangentImpulse;
 
-        /// <summary>
-        /// Uniquely identifies a contact point between two shapes.
-        /// </summary>
+        /// <summary>Uniquely identifies a contact point between two shapes.</summary>
         public ContactID Id;
 
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
+        /// <summary>Returns a <see cref="System.String"/> that represents this instance.</summary>
+        /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
         public override string ToString()
         {
             return "{Id=" + Id.Key +
@@ -223,12 +207,13 @@ namespace Engine.Physics.Collision
     [StructLayout(LayoutKind.Explicit)]
     internal struct ContactID
     {
+        /// <summary>
+        /// Describes the features of the parties involved in a contact.
+        /// </summary>
         [FieldOffset(0)]
         public ContactFeature Feature;
 
-        /// <summary>
-        /// Used to quickly compare contact ids.
-        /// </summary>
+        /// <summary>Used to quickly compare contact ids.</summary>
         [FieldOffset(0)]
         public uint Key;
     }
@@ -240,41 +225,30 @@ namespace Engine.Physics.Collision
     /// </summary>
     internal struct ContactFeature
     {
-        /// <summary>
-        /// Possible feature types.
-        /// </summary>
+        /// <summary>Possible feature types.</summary>
         public enum FeatureType
         {
             Vertex = 0,
             Face = 1
         }
 
-        /// <summary>
-        /// Feature index on shapeA.
-        /// </summary>
+        /// <summary>Feature index on shapeA.</summary>
         public byte IndexA;
 
-        /// <summary>
-        /// Feature index on shapeB.
-        /// </summary>
+        /// <summary>Feature index on shapeB.</summary>
         public byte IndexB;
 
-        /// <summary>
-        /// The feature type on shapeA.
-        /// </summary>
+        /// <summary>The feature type on shapeA.</summary>
         public byte TypeA;
 
-        /// <summary>
-        /// The feature type on shapeB.
-        /// </summary>
+        /// <summary>The feature type on shapeB.</summary>
         public byte TypeB;
     }
 
     internal static class PacketManifoldExtensions
     {
-        /// <summary>
-        /// Writes the specified manifold value.
-        /// </summary>
+        /// <summary>Writes the specified manifold value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public static Packet Write(this Packet packet, Manifold data)
@@ -287,23 +261,21 @@ namespace Engine.Physics.Collision
                 .Write((byte)data.Type)
                 .Write(data.PointCount);
         }
-        
-        /// <summary>
-        /// Reads a Manifold value.
-        /// </summary>
+
+        /// <summary>Reads a Manifold value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
         public static Packet Read(this Packet packet, out Manifold result)
         {
             result = packet.ReadManifold();
             return packet;
         }
 
-        /// <summary>
-        /// Reads a Manifold value.
-        /// </summary>
+        /// <summary>Reads a Manifold value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
@@ -322,9 +294,8 @@ namespace Engine.Physics.Collision
             return result;
         }
 
-        /// <summary>
-        /// Writes the specified manifold point value.
-        /// </summary>
+        /// <summary>Writes the specified manifold point value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         private static Packet Write(this Packet packet, ManifoldPoint data)
@@ -336,9 +307,8 @@ namespace Engine.Physics.Collision
                 .Write(data.Id.Key);
         }
 
-        /// <summary>
-        /// Reads a ManifoldPoint value.
-        /// </summary>
+        /// <summary>Reads a ManifoldPoint value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
@@ -356,10 +326,8 @@ namespace Engine.Physics.Collision
 
     internal static class HasherManifoldExtensions
     {
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
+        /// <summary>Put the specified value to the data of which the hash
+        /// gets computed.</summary>
         /// <param name="hasher">The hasher to use.</param>
         /// <param name="value">the data to add.</param>
         /// <returns>a reference to the hasher, for chaining.</returns>

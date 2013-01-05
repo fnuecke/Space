@@ -52,9 +52,7 @@ namespace Engine.Physics.Systems
 
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the global gravity vector.
-        /// </summary>
+        /// <summary>Gets or sets the global gravity vector.</summary>
         public Vector2 Gravity
         {
             get { return _gravity; }
@@ -72,17 +70,13 @@ namespace Engine.Physics.Systems
         /// </summary>
         public bool IsLocked { get; private set; }
 
-        /// <summary>
-        /// Gets all bodies in the simulation.
-        /// </summary>
+        /// <summary>Gets all bodies in the simulation.</summary>
         public IEnumerable<Body> Bodies
         {
             get { return Components; }
         }
 
-        /// <summary>
-        /// Gets all active the contacts.
-        /// </summary>
+        /// <summary>Gets all active the contacts.</summary>
         public IEnumerable<Contact> Contacts
         {
             get
@@ -97,9 +91,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Gets all joints in the simulation.
-        /// </summary>
+        /// <summary>Gets all joints in the simulation.</summary>
         public IEnumerable<Joint> Joints
         {
             get
@@ -111,9 +103,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Gets the fixture bounding boxes for the debug renderer.
-        /// </summary>
+        /// <summary>Gets the fixture bounding boxes for the debug renderer.</summary>
         internal IEnumerable<WorldBounds> FixtureBounds
         {
             get
@@ -129,14 +119,10 @@ namespace Engine.Physics.Systems
 
         #region Fields
 
-        /// <summary>
-        /// The settings for this simulation.
-        /// </summary>
+        /// <summary>The settings for this simulation.</summary>
         private float _timestep = 1 / 60f;
 
-        /// <summary>
-        /// The directed global gravitational vector.
-        /// </summary>
+        /// <summary>The directed global gravitational vector.</summary>
         private Vector2 _gravity = -Vector2.UnitY;
 
         /// <summary>
@@ -145,21 +131,15 @@ namespace Engine.Physics.Systems
         /// </summary>
         private int _contactCount;
 
-        /// <summary>
-        /// List of active contacts between bodies (i.e. current active collisions).
-        /// </summary>
+        /// <summary>List of active contacts between bodies (i.e. current active collisions).</summary>
         [DeepCopy, PacketizerIgnore]
         private Contact[] _contacts = new Contact[0];
 
-        /// <summary>
-        /// List of contact edges, two per contact.
-        /// </summary>
+        /// <summary>List of contact edges, two per contact.</summary>
         [DeepCopy, PacketizerIgnore]
         private ContactEdge[] _contactEdges = new ContactEdge[0];
 
-        /// <summary>
-        /// The start of the linked list of used contacts.
-        /// </summary>
+        /// <summary>The start of the linked list of used contacts.</summary>
         private int _usedContacts = -1;
 
         /// <summary>
@@ -171,32 +151,22 @@ namespace Engine.Physics.Systems
         /// </summary>
         private int _freeContacts = -1;
 
-        /// <summary>
-        /// The number of joints in the simulation.
-        /// </summary>
+        /// <summary>The number of joints in the simulation.</summary>
         private int _jointCount;
 
-        /// <summary>
-        /// List of all joints in the simulation.
-        /// </summary>
+        /// <summary>List of all joints in the simulation.</summary>
         [DeepCopy, PacketizerIgnore]
         private Joint[] _joints = new Joint[0];
 
-        /// <summary>
-        /// List of joint edges, two per joint (although sometimes only one might
-        /// actually be used).
-        /// </summary>
+        /// <summary>List of joint edges, two per joint (although sometimes only one might
+        /// actually be used).</summary>
         [DeepCopy, PacketizerIgnore]
         private JointEdge[] _jointEdges = new JointEdge[0];
 
-        /// <summary>
-        /// Start of the linked list of used joints.
-        /// </summary>
+        /// <summary>Start of the linked list of used joints.</summary>
         private int _usedJoints = -1;
 
-        /// <summary>
-        /// Start of the linked list of available joints.
-        /// </summary>
+        /// <summary>Start of the linked list of available joints.</summary>
         private int _freeJoints = -1;
 
         /// <summary>
@@ -236,9 +206,7 @@ namespace Engine.Physics.Systems
         /// </summary>
         private bool _findContactsBeforeNextUpdate;
 
-        /// <summary>
-        /// Reused every update for solving simulation constraints.
-        /// </summary>
+        /// <summary>Reused every update for solving simulation constraints.</summary>
         [CopyIgnore, PacketizerIgnore]
         private Island _island;
 
@@ -254,9 +222,7 @@ namespace Engine.Physics.Systems
 
         #region Constructor
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PhysicsSystem"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="PhysicsSystem"/> class.</summary>
         /// <param name="timestep">The timestep.</param>
         /// <param name="gravity">The global gravity vector.</param>
         public PhysicsSystem(float timestep, Vector2 gravity)
@@ -265,9 +231,7 @@ namespace Engine.Physics.Systems
             _gravity = gravity;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PhysicsSystem"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="PhysicsSystem"/> class.</summary>
         /// <param name="timestep">The timestep.</param>
         public PhysicsSystem(float timestep) : this(timestep, Vector2.Zero)
         {
@@ -277,9 +241,7 @@ namespace Engine.Physics.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Updates the system.
-        /// </summary>
+        /// <summary>Updates the system.</summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
@@ -401,25 +363,17 @@ namespace Engine.Physics.Systems
 
         #region Joint accessors
 
-        /// <summary>
-        /// Determines whether the specified joint is valid/exists.
-        /// </summary>
+        /// <summary>Determines whether the specified joint is valid/exists.</summary>
         /// <param name="jointId">The ID of the joint.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified joint exists; otherwise, <c>false</c>.
-        /// </returns>
+        /// <returns><c>true</c> if the specified joint exists; otherwise, <c>false</c>.</returns>
         public bool HasJoint(int jointId)
         {
             return jointId >= 0 && jointId < _joints.Length && _joints[jointId].Manager != null;
         }
 
-        /// <summary>
-        /// Gets a joint by its ID.
-        /// </summary>
+        /// <summary>Gets a joint by its ID.</summary>
         /// <param name="jointId">The joint id.</param>
-        /// <returns>
-        /// A reference to the joint with the specified ID.
-        /// </returns>
+        /// <returns>A reference to the joint with the specified ID.</returns>
         public Joint GetJoint(int jointId)
         {
             if (!HasJoint(jointId))
@@ -429,13 +383,9 @@ namespace Engine.Physics.Systems
             return _joints[jointId];
         }
 
-        /// <summary>
-        /// Gets all joints attached to the specified body.
-        /// </summary>
+        /// <summary>Gets all joints attached to the specified body.</summary>
         /// <param name="body">The body to check for.</param>
-        /// <returns>
-        /// A list of all joints attached to that body.
-        /// </returns>
+        /// <returns>A list of all joints attached to that body.</returns>
         public IEnumerable<Joint> GetJoints(Body body)
         {
             for (var edge = body.JointList; edge >= 0; edge = _jointEdges[edge].Next)
@@ -448,17 +398,13 @@ namespace Engine.Physics.Systems
 
         #region Callbacks for Bodies/Fixtures
 
-        /// <summary>
-        /// Sets a flag to do a search for new contacts before next update.
-        /// </summary>
+        /// <summary>Sets a flag to do a search for new contacts before next update.</summary>
         internal void FindContactsBeforeNextUpdate()
         {
             _findContactsBeforeNextUpdate = true;
         }
 
-        /// <summary>
-        /// Adds the fixtures of the specified body to the index used in the broadphase.
-        /// </summary>
+        /// <summary>Adds the fixtures of the specified body to the index used in the broadphase.</summary>
         /// <param name="body">The body whose fixtures to add.</param>
         internal void AddFixturesToIndex(Body body)
         {
@@ -469,6 +415,8 @@ namespace Engine.Physics.Systems
             }
         }
 
+        /// <summary>Removes the fixtures of the specified body from the index.</summary>
+        /// <param name="body">The body.</param>
         internal void RemoveFixturesFromIndex(Body body)
         {
             foreach (Fixture fixture in body.Fixtures)
@@ -511,9 +459,7 @@ namespace Engine.Physics.Systems
             FindContactsBeforeNextUpdate();
         }
 
-        /// <summary>
-        /// Marks all contacts of the specified fixture for re-filtering.
-        /// </summary>
+        /// <summary>Marks all contacts of the specified fixture for re-filtering.</summary>
         /// <param name="fixture">The fixture.</param>
         internal void Refilter(Fixture fixture)
         {
@@ -550,9 +496,7 @@ namespace Engine.Physics.Systems
 
         #region Message handling (Body/Fixture creation/destruction)
 
-        /// <summary>
-        /// Called by the manager when a new component was added.
-        /// </summary>
+        /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
         public override void OnComponentAdded(Component component)
         {
@@ -600,9 +544,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Called by the manager when a component was removed.
-        /// </summary>
+        /// <summary>Called by the manager when a component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
         public override void OnComponentRemoved(Component component)
         {
@@ -714,9 +656,7 @@ namespace Engine.Physics.Systems
             _freeContacts = start;
         }
 
-        /// <summary>
-        /// Allocates a new contact between the two specified fixtures and initializes it.
-        /// </summary>
+        /// <summary>Allocates a new contact between the two specified fixtures and initializes it.</summary>
         /// <param name="fixtureA">The first fixture.</param>
         /// <param name="fixtureB">The second fixture.</param>
         private void CreateContact(Fixture fixtureA, Fixture fixtureB)
@@ -797,9 +737,7 @@ namespace Engine.Physics.Systems
             ++_contactCount;
         }
 
-        /// <summary>
-        /// Frees the specified contact.
-        /// </summary>
+        /// <summary>Frees the specified contact.</summary>
         /// <param name="contact">The contact.</param>
         private void DestroyContact(int contact)
         {
@@ -915,16 +853,12 @@ namespace Engine.Physics.Systems
             _freeJoints = start;
         }
 
-        /// <summary>
-        /// Allocates a new joint attached to the two specified bodies and initializes it.
-        /// </summary>
+        /// <summary>Allocates a new joint attached to the two specified bodies and initializes it.</summary>
         /// <param name="type">The type of joint.</param>
         /// <param name="bodyA">The first body.</param>
         /// <param name="bodyB">The second body.</param>
         /// <param name="collideConnected">Whether to collide the connected bodies.</param>
-        /// <returns>
-        /// The allocated joint.
-        /// </returns>
+        /// <returns>The allocated joint.</returns>
         internal Joint CreateJoint(Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = true)
         {
             // We need at least one body to attach the joint to.
@@ -1036,15 +970,11 @@ namespace Engine.Physics.Systems
             return _joints[joint];
         }
 
-        /// <summary>
-        /// Allocates a new gear joint and initializes it to the two speified joints.
-        /// </summary>
+        /// <summary>Allocates a new gear joint and initializes it to the two speified joints.</summary>
         /// <param name="jointA">The first joint.</param>
         /// <param name="jointB">The second joint.</param>
         /// <param name="ratio">The gear ratio.</param>
-        /// <returns>
-        /// The new gear joint.
-        /// </returns>
+        /// <returns>The new gear joint.</returns>
         internal GearJoint CreateGearJoint(Joint jointA, Joint jointB, float ratio)
         {
             ValidateJoint(jointA);
@@ -1082,9 +1012,8 @@ namespace Engine.Physics.Systems
             return (GearJoint)_joints[joint];
         }
 
-        /// <summary>
-        /// Make sure we have enough joints allocated to push a new one back.
-        /// </summary>
+        /// <summary>Make sure we have enough joints allocated to push a new one back.</summary>
+        /// <returns></returns>
         private int AllocateJoint()
         {
             // When we hit the last joint, allocate some more.
@@ -1136,9 +1065,7 @@ namespace Engine.Physics.Systems
             ++_jointCount;
         }
 
-        /// <summary>
-        /// Destroys the joint between the two specified joints.
-        /// </summary>
+        /// <summary>Destroys the joint between the two specified joints.</summary>
         /// <param name="joint">The joint to remove.</param>
         internal void DestroyJoint(Joint joint)
         {
@@ -1146,9 +1073,7 @@ namespace Engine.Physics.Systems
             DestroyJoint(joint.Index);
         }
 
-        /// <summary>
-        /// Frees the specified joint.
-        /// </summary>
+        /// <summary>Frees the specified joint.</summary>
         /// <param name="joint">The contact.</param>
         private void DestroyJoint(int joint)
         {

@@ -101,7 +101,9 @@ namespace Engine.Physics.Components
         public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
         {
             // Edges can't have density because they have no area.
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional
             System.Diagnostics.Debug.Assert(density == 0);
+// ReSharper restore CompareOfFloatsByEqualityOperator
             base.Initialize(0, friction, restitution, isSensor, collisionGroups);
 
             return this;
@@ -186,9 +188,11 @@ namespace Engine.Physics.Components
             var lowerY = (v1.Y < v2.Y) ? v1.Y : v2.Y;
             var upperX = (v1.X > v2.X) ? v1.X : v2.X;
             var upperY = (v1.Y > v2.Y) ? v1.Y : v2.Y;
-
+            
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var sizeX = (float)(upperX - lowerX) + 2 * Radius;
             var sizeY = (float)(upperY - lowerY) + 2 * Radius;
+// ReSharper restore RedundantCast
             
             WorldBounds bounds;
             bounds.X = lowerX - Radius;

@@ -29,8 +29,9 @@ namespace Engine.Physics.Collision
 
             var pA = xfA.ToGlobal(circleA.Center);
             var pB = xfB.ToGlobal(circleB.Center);
-
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var d = (Vector2)(pB - pA);
+// ReSharper restore RedundantCast
             var distSqr = Vector2.Dot(d, d);
             var radius = circleA.Radius + circleB.Radius;
             if (distSqr > radius * radius)

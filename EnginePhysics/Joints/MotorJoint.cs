@@ -43,14 +43,14 @@ namespace Engine.Physics.Joints
             get { return _linearOffset; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value.X != _linearOffset.X || value.Y != _linearOffset.Y)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _linearOffset = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
@@ -62,14 +62,14 @@ namespace Engine.Physics.Joints
             get { return _angularOffset; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value != _angularOffset)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _angularOffset = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 

@@ -81,7 +81,9 @@ namespace Engine.Physics.Joints
             {
                 var pA = BodyA.GetWorldPoint(_localAnchorA);
                 var pB = BodyB.GetWorldPoint(_localAnchorB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var d = (Vector2)(pB - pA);
+// ReSharper restore RedundantCast
                 var axis = BodyA.GetWorldVector(_localXAxisA);
                 return Vector2.Dot(d, axis);
             }
@@ -101,7 +103,9 @@ namespace Engine.Physics.Joints
                 var rB = bB.Transform.Rotation * (_localAnchorB - bB.Sweep.LocalCenter);
                 var p1 = bA.Sweep.CenterOfMass + rA;
                 var p2 = bB.Sweep.CenterOfMass + rB;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var d = (Vector2)(p2 - p1);
+// ReSharper restore RedundantCast
                 var axis = bA.Transform.Rotation * _localXAxisA;
 
                 var vA = bA.LinearVelocityInternal;
@@ -175,14 +179,14 @@ namespace Engine.Physics.Joints
             get { return _motorSpeed; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value != _motorSpeed)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _motorSpeed = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
@@ -194,14 +198,14 @@ namespace Engine.Physics.Joints
             get { return _maxMotorForce; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value != _maxMotorForce)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _maxMotorForce = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
@@ -321,9 +325,10 @@ namespace Engine.Physics.Joints
                 throw new ArgumentException("lower must be less than or equal to upper", "lower");
             }
 
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (lower != _lowerTranslation ||
                 upper != _upperTranslation)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 BodyA.IsAwake = true;
                 BodyB.IsAwake = true;
@@ -331,7 +336,6 @@ namespace Engine.Physics.Joints
                 _upperTranslation = upper;
                 _impulse.Z = 0.0f;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         #endregion
@@ -438,7 +442,9 @@ namespace Engine.Physics.Joints
             // Compute the effective masses.
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var d = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
 
             var mA = _tmp.InverseMassA;
             var mB = _tmp.InverseMassB;
@@ -469,13 +475,13 @@ namespace Engine.Physics.Joints
                 var k12 = iA * _tmp.S1 + iB * _tmp.S2;
                 var k13 = iA * _tmp.S1 * _tmp.A1 + iB * _tmp.S2 * _tmp.A2;
                 var k22 = iA + iB;
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (k22 == 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     // For bodies with fixed rotation.
                     k22 = 1.0f;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
                 var k23 = iA * _tmp.A1 + iB * _tmp.A2;
                 var k33 = mA + mB + iA * _tmp.A1 * _tmp.A1 + iB * _tmp.A2 * _tmp.A2;
 
@@ -679,7 +685,9 @@ namespace Engine.Physics.Joints
             // Compute fresh Jacobians
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var d = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
 
             var axis = qA * _localXAxisA;
             var a1 = Vector2Util.Cross(d + rA, axis);
@@ -733,13 +741,13 @@ namespace Engine.Physics.Joints
                 var k12 = iA * s1 + iB * s2;
                 var k13 = iA * s1 * a1 + iB * s2 * a2;
                 var k22 = iA + iB;
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (k22 == 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     // For fixed rotation
                     k22 = 1.0f;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
                 var k23 = iA * a1 + iB * a2;
                 var k33 = mA + mB + iA * a1 * a1 + iB * a2 * a2;
 
@@ -760,12 +768,12 @@ namespace Engine.Physics.Joints
                 var k11 = mA + mB + iA * s1 * s1 + iB * s2 * s2;
                 var k12 = iA * s1 + iB * s2;
                 var k22 = iA + iB;
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (k22 == 0.0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     k22 = 1.0f;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
 
                 Matrix22 k;
                 Vector2Util.Set(out k.Column1, k11, k12);

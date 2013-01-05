@@ -127,14 +127,14 @@ namespace Engine.Physics.Joints
             get { return _motorSpeed; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value != _motorSpeed)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _motorSpeed = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
@@ -146,14 +146,14 @@ namespace Engine.Physics.Joints
             get { return _maxMotorTorque; }
             set
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (value != _maxMotorTorque)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     BodyA.IsAwake = true;
                     BodyB.IsAwake = true;
                     _maxMotorTorque = value;
                 }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
@@ -280,8 +280,9 @@ namespace Engine.Physics.Joints
                 throw new ArgumentException("lower must be less than or equal to upper", "lower");
             }
 
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (lower != _lowerAngle || upper != _upperAngle)
+// ReSharper restore CompareOfFloatsByEqualityOperator
             {
                 BodyA.IsAwake = true;
                 BodyB.IsAwake = true;
@@ -289,7 +290,6 @@ namespace Engine.Physics.Joints
                 _lowerAngle = lower;
                 _upperAngle = upper;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         #endregion
@@ -354,9 +354,9 @@ namespace Engine.Physics.Joints
             var iA = _tmp.InverseInertiaA;
             var iB = _tmp.InverseIneratiaB;
 
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             var fixedRotation = (iA + iB == 0.0f);
-            // ReSharper restore CompareOfFloatsByEqualityOperator
+// ReSharper restore CompareOfFloatsByEqualityOperator
 
             _tmp.Mass.Column1.X = mA + mB + _tmp.RotA.Y * _tmp.RotA.Y * iA + _tmp.RotB.Y * _tmp.RotB.Y * iB;
             _tmp.Mass.Column2.X = -_tmp.RotA.Y * _tmp.RotA.X * iA - _tmp.RotB.Y * _tmp.RotB.X * iB;
@@ -453,9 +453,9 @@ namespace Engine.Physics.Joints
             var iA = _tmp.InverseInertiaA;
             var iB = _tmp.InverseIneratiaB;
 
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             var fixedRotation = (iA + iB == 0.0f);
-            // ReSharper restore CompareOfFloatsByEqualityOperator
+// ReSharper restore CompareOfFloatsByEqualityOperator
 
             // Solve motor constraint.
             if (_enableMotor && _limitState != LimitState.Equal && fixedRotation == false)
@@ -574,9 +574,9 @@ namespace Engine.Physics.Joints
             var angularError = 0.0f;
             float positionError;
 
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             var fixedRotation = (_tmp.InverseInertiaA + _tmp.InverseIneratiaB == 0.0f);
-            // ReSharper restore CompareOfFloatsByEqualityOperator
+// ReSharper restore CompareOfFloatsByEqualityOperator
 
             // Solve angular limit constraint.
             if (_enableLimit && _limitState != LimitState.Inactive && fixedRotation == false)
@@ -621,8 +621,10 @@ namespace Engine.Physics.Joints
                 qB.Set(aB);
                 var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
                 var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
-
+                
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 var c = (Vector2)(cB - cA) + (rB - rA);
+// ReSharper restore RedundantCast
                 positionError = c.Length();
 
                 var mA = _tmp.InverseMassA;
