@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using Engine.ComponentSystem.Components;
+using Engine.Physics.Joints;
 using Engine.Physics.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
@@ -379,6 +380,14 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
+        /// Gets the list of all joints attached to this body.
+        /// </summary>
+        public IEnumerable<Joint> Joints
+        {
+            get { return Simulation.GetJoints(this); }
+        }
+
+        /// <summary>
         /// Gets the physics system driving the simulation we're part of.
         /// </summary>
         private PhysicsSystem Simulation
@@ -512,8 +521,6 @@ namespace Engine.Physics.Components
         /// <returns></returns>
         public override Component Initialize(Component other)
         {
-            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
-
             base.Initialize(other);
 
             var otherBody = (Body)other;

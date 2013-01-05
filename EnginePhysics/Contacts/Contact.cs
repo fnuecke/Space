@@ -6,7 +6,6 @@ using Engine.Physics.Components;
 using Engine.Physics.Collision;
 using Engine.Physics.Math;
 using Engine.Physics.Messages;
-using Engine.Physics.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -22,19 +21,19 @@ namespace Engine.Physics.Contacts
     /// <summary>
     /// Represents a contact between two fixtures.
     /// </summary>
-    internal sealed class Contact : PhysicsSystem.IContact, ICopyable<Contact>, IPacketizable, IHashable
+    public sealed class Contact : ICopyable<Contact>, IPacketizable, IHashable
     {
         #region Linked list data (unused/free)
 
         /// <summary>
         /// Index of previous entry in the global linked list.
         /// </summary>
-        public int Previous;
+        internal int Previous;
 
         /// <summary>
         /// Index of next entry in the global linked list.
         /// </summary>
-        public int Next;
+        internal int Next;
 
         #endregion
 
@@ -43,43 +42,43 @@ namespace Engine.Physics.Contacts
         /// <summary>
         /// Component id of the first fixture.
         /// </summary>
-        public int FixtureIdA;
+        internal int FixtureIdA;
 
         /// <summary>
         /// Component id of the second fixture.
         /// </summary>
-        public int FixtureIdB;
+        internal int FixtureIdB;
 
         /// <summary>
         /// The friction between the two fixtures.
         /// </summary>
-        public float Friction;
+        internal float Friction;
 
         /// <summary>
         /// The restitution between the two fixtures.
         /// </summary>
-        public float Restitution;
+        internal float Restitution;
 
         /// <summary>
         /// Whether the two involved fixtures are intersecting.
         /// </summary>
-        public bool IsTouching;
+        internal bool IsTouching;
 
         /// <summary>
         /// Whether this contact is currently enabled.
         /// </summary>
-        public bool IsEnabled;
+        internal bool IsEnabled;
 
         /// <summary>
         /// Whether the contact is flagged for refiltering (from changes
         /// to the involved bodies, e.g. from adding joints).
         /// </summary>
-        public bool ShouldFilter;
+        internal bool ShouldFilter;
 
         /// <summary>
         /// The contact manifold for this contact.
         /// </summary>
-        public Manifold Manifold;
+        internal Manifold Manifold;
 
         /// <summary>
         /// The type of this contact (used to look-up evaluation method).
@@ -93,17 +92,17 @@ namespace Engine.Physics.Contacts
         /// <summary>
         /// The number of iterations this contact was involved in.
         /// </summary>
-        public int ToiCount;
+        internal int ToiCount;
 
         /// <summary>
         /// Whether the contact has a valid, cached TOI value.
         /// </summary>
-        public bool HasCachedTOI;
+        internal bool HasCachedTOI;
 
         /// <summary>
         /// The cached TOI value.
         /// </summary>
-        public float TOI;
+        internal float TOI;
 
         #endregion
 
@@ -114,7 +113,7 @@ namespace Engine.Physics.Contacts
         /// involved members.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
-        public IManager Manager;
+        internal IManager Manager;
 
         /// <summary>
         /// Gets the first fixture involved in this contact.
@@ -185,7 +184,7 @@ namespace Engine.Physics.Contacts
         /// </summary>
         /// <param name="fixtureA">The first fixture.</param>
         /// <param name="fixtureB">The second fixture.</param>
-        public void Initialize(ref Fixture fixtureA, ref Fixture fixtureB)
+        internal void Initialize(ref Fixture fixtureA, ref Fixture fixtureB)
         {
             if (SwapFixtures[(int)fixtureA.Type, (int)fixtureB.Type])
             {
@@ -216,16 +215,16 @@ namespace Engine.Physics.Contacts
         /// nice, but at least it avoid running into issues when running multiple
         /// simulations at a time (in different threads).
         /// </remarks>
-        public void Update(Fixture fixtureA, Fixture fixtureB,
-                           Body bodyA, Body bodyB,
-                           Algorithms.DistanceProxy proxyA, Algorithms.DistanceProxy proxyB)
+        internal void Update(Fixture fixtureA, Fixture fixtureB,
+                             Body bodyA, Body bodyB,
+                             Algorithms.DistanceProxy proxyA, Algorithms.DistanceProxy proxyB)
         {
             // Note: do not assume the fixture AABBs are overlapping or are valid.
             var oldManifold = Manifold;
 
             // Re-enable this contact.
             IsEnabled = true;
-            
+
             // Check if a sensor is involved.
             var sensor = fixtureA.IsSensorInternal || fixtureB.IsSensorInternal;
 
@@ -521,15 +520,15 @@ namespace Engine.Physics.Contacts
         public override string ToString()
         {
             return "Contact: Type=" + _type +
-                ", Previous=" + Previous +
-                ", Next=" + Next +
-                ", FixtureA=" + FixtureIdA +
-                ", FixtureB=" + FixtureIdB +
-                ", Friction=" + Friction.ToString(CultureInfo.InvariantCulture) +
-                ", Restitution=" + Restitution.ToString(CultureInfo.InvariantCulture) +
-                ", IsTouching=" + IsTouching +
-                ", IsEnabled=" + IsEnabled +
-                ", Manifold=" + Manifold;
+                   ", Previous=" + Previous +
+                   ", Next=" + Next +
+                   ", FixtureA=" + FixtureIdA +
+                   ", FixtureB=" + FixtureIdB +
+                   ", Friction=" + Friction.ToString(CultureInfo.InvariantCulture) +
+                   ", Restitution=" + Restitution.ToString(CultureInfo.InvariantCulture) +
+                   ", IsTouching=" + IsTouching +
+                   ", IsEnabled=" + IsEnabled +
+                   ", Manifold=" + Manifold;
         }
 
         #endregion

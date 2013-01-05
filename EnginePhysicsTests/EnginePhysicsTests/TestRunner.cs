@@ -43,7 +43,7 @@ namespace Engine.Physics.Tests
             new EdgeBenchmark(),
             new EdgeBenchmarkWithCircles(),
             new CharacterCollision(),
-            new VerticalStack(),
+            new VerticalStack()
         };
 
         /// <summary>
@@ -297,7 +297,8 @@ Space        - Pause or unpause simulation.
 Tab or Enter - Advance simulation one frame.
 R            - Reload current test (keeping pause state).
 K            - Create snapshot (for testing serialization).
-L            - Load snapshot created with K.");
+L            - Load snapshot created with K.
+C            - Test copying (creates simulation copy and uses it).");
             }
             else
             {
@@ -440,13 +441,28 @@ L            - Load snapshot created with K.");
                     if (_snapshot != null)
                     {
                         // Reset test and stuff to avoid invalid references.
-                        //LoadTest(_currentTest, false);
                         _mouseJoint = null;
                         _snapshot.Reset();
                         _snapshot.ReadPacketizableInto(_manager);
                         var hasher = new Hasher();
                         _manager.Hash(hasher);
                         System.Diagnostics.Debug.Assert(_snapshotHash == hasher.Value);
+                    }
+                    break;
+
+                case Keys.C:
+                    // Test copy implementation.
+                    if (_manager != null)
+                    {
+                        _mouseJoint = null;
+                        var copy = new Manager();
+                        copy.AddSystem(new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
+                        copy.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
+                        copy.AddSystem(new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
+
+                        _manager.CopyInto(copy);
+                        _manager.Clear();
+                        copy.CopyInto(_manager);
                     }
                     break;
 

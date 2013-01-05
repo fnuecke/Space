@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -228,7 +229,8 @@ namespace Engine.Physics.Joints
             public float MotorMass; // effective mass for motor/limit angular constraint.
         }
 
-        [PacketizerIgnore] private SolverTemp _tmp;
+        [CopyIgnore, PacketizerIgnore]
+        private SolverTemp _tmp;
 
         #endregion
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Physics.Collision;
@@ -82,7 +83,7 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// Gets all active the contacts.
         /// </summary>
-        public IEnumerable<IContact> Contacts
+        public IEnumerable<Contact> Contacts
         {
             get
             {
@@ -147,13 +148,13 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// List of active contacts between bodies (i.e. current active collisions).
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [DeepCopy, PacketizerIgnore]
         private Contact[] _contacts = new Contact[0];
 
         /// <summary>
         /// List of contact edges, two per contact.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [DeepCopy, PacketizerIgnore]
         private ContactEdge[] _contactEdges = new ContactEdge[0];
 
         /// <summary>
@@ -178,14 +179,14 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// List of all joints in the simulation.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [DeepCopy, PacketizerIgnore]
         private Joint[] _joints = new Joint[0];
 
         /// <summary>
         /// List of joint edges, two per joint (although sometimes only one might
         /// actually be used).
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [DeepCopy, PacketizerIgnore]
         private JointEdge[] _jointEdges = new JointEdge[0];
 
         /// <summary>
@@ -398,6 +399,53 @@ namespace Engine.Physics.Systems
 
         #endregion
 
+        #region Joint accessors
+
+        /// <summary>
+        /// Determines whether the specified joint is valid/exists.
+        /// </summary>
+        /// <param name="jointId">The ID of the joint.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified joint exists; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasJoint(int jointId)
+        {
+            return jointId > 0 && jointId < _joints.Length && _joints[jointId].Manager != null;
+        }
+
+        /// <summary>
+        /// Gets a joint by its ID.
+        /// </summary>
+        /// <param name="jointId">The joint id.</param>
+        /// <returns>
+        /// A reference to the joint with the specified ID.
+        /// </returns>
+        public Joint GetJoint(int jointId)
+        {
+            if (!HasJoint(jointId))
+            {
+                throw new ArgumentException("No such joint.", "jointId");
+            }
+            return _joints[jointId];
+        }
+
+        /// <summary>
+        /// Gets all joints attached to the specified body.
+        /// </summary>
+        /// <param name="body">The body to check for.</param>
+        /// <returns>
+        /// A list of all joints attached to that body.
+        /// </returns>
+        public IEnumerable<Joint> GetJoints(Body body)
+        {
+            for (var edge = body.JointList; edge >= 0; edge = _jointEdges[edge].Next)
+            {
+                yield return _joints[_jointEdges[edge].Joint];
+            }
+        }
+
+        #endregion
+
         #region Callbacks for Bodies/Fixtures
 
         /// <summary>
@@ -588,7 +636,7 @@ namespace Engine.Physics.Systems
                     var contact = _contactEdges[edge].Contact;
                     edge = _contactEdges[edge].Next;
                     DestroyContact(contact);
-                    System.Diagnostics.Debug.Assert(body.JointList == edge);
+                    System.Diagnostics.Debug.Assert(body.ContactList == edge);
                 }
                 System.Diagnostics.Debug.Assert(body.ContactList == -1);
 
@@ -891,36 +939,37 @@ namespace Engine.Physics.Systems
                 switch (type)
                 {
                     case Joint.JointType.Revolute:
-                        _joints[joint] = new RevoluteJoint();
+                        _joints[joint] = new RevoluteJoint {Index = joint};
                         break;
                     case Joint.JointType.Prismatic:
-                        _joints[joint] = new PrismaticJoint();
+                        _joints[joint] = new PrismaticJoint {Index = joint};
                         break;
                     case Joint.JointType.Distance:
-                        _joints[joint] = new DistanceJoint();
+                        _joints[joint] = new DistanceJoint {Index = joint};
                         break;
                     case Joint.JointType.Pulley:
-                        _joints[joint] = new PulleyJoint();
+                        _joints[joint] = new PulleyJoint {Index = joint};
                         break;
                     case Joint.JointType.Mouse:
-                        _joints[joint] = new MouseJoint();
+                        _joints[joint] = new MouseJoint {Index = joint};
                         break;
                     case Joint.JointType.Gear:
-                        throw new ArgumentException("Gear joints must be created using the CreateGearJoint method.", "type");
+                        throw new ArgumentException(
+                            "Gear joints must be created using the CreateGearJoint method.", "type");
                     case Joint.JointType.Wheel:
-                        _joints[joint] = new WheelJoint();
+                        _joints[joint] = new WheelJoint {Index = joint};
                         break;
                     case Joint.JointType.Weld:
-                        _joints[joint] = new WeldJoint();
+                        _joints[joint] = new WeldJoint {Index = joint};
                         break;
                     case Joint.JointType.Friction:
-                        _joints[joint] = new FrictionJoint();
+                        _joints[joint] = new FrictionJoint {Index = joint};
                         break;
                     case Joint.JointType.Rope:
-                        _joints[joint] = new RopeJoint();
+                        _joints[joint] = new RopeJoint {Index = joint};
                         break;
                     case Joint.JointType.Motor:
-                        _joints[joint] = new MotorJoint();
+                        _joints[joint] = new MotorJoint {Index = joint};
                         break;
                     default:
                         throw new ArgumentOutOfRangeException("type");
@@ -998,9 +1047,9 @@ namespace Engine.Physics.Systems
         /// </returns>
         internal GearJoint CreateGearJoint(Joint jointA, Joint jointB, float ratio)
         {
-            // Find the ids of the two joints. This is used to check if they are
-            // valid (in the system) and to store the gears for automatic removal.
-            int jointIdA = ComputeJointId(jointA), jointIdB = ComputeJointId(jointB);
+            ValidateJoint(jointA);
+            ValidateJoint(jointB);
+            int jointIdA = jointA.Index, jointIdB = jointB.Index;
 
             // Get a free joint id.
             var joint = AllocateJoint();
@@ -1008,7 +1057,7 @@ namespace Engine.Physics.Systems
             // Create the joint if necessary and store it.
             if (!(_joints[joint] is GearJoint))
             {
-                _joints[joint] = new GearJoint();
+                _joints[joint] = new GearJoint {Index = joint};
             }
 
             // Adjust global linked list after instance is guaranteed to be the right one.
@@ -1070,9 +1119,7 @@ namespace Engine.Physics.Systems
         {
             System.Diagnostics.Debug.Assert(joint == _freeJoints);
 
-            // Remove it from the linked list of available joints.
-            _freeJoints = _joints[_freeJoints].Previous;
-
+            // Update global list.
             if (_usedJoints >= 0)
             {
                 // Prepend to list.
@@ -1081,6 +1128,9 @@ namespace Engine.Physics.Systems
             _joints[joint].Next = _usedJoints;
             _joints[joint].Previous = -1;
             _usedJoints = joint;
+
+            // Remove it from the linked list of available joints.
+            _freeJoints = _joints[_freeJoints].Previous;
 
             // Increment counter used for island allocation.
             ++_jointCount;
@@ -1092,9 +1142,8 @@ namespace Engine.Physics.Systems
         /// <param name="joint">The joint to remove.</param>
         internal void DestroyJoint(Joint joint)
         {
-            // Figure out id for this joint. This throws for us if the joint is
-            // not in the simulation (possibly removed before).
-            DestroyJoint(ComputeJointId(joint));
+            ValidateJoint(joint);
+            DestroyJoint(joint.Index);
         }
 
         /// <summary>
@@ -1221,13 +1270,10 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Computes the id of the joint between the two specified joints.
+        /// Validates the specified joint, checking if its in the system and it's ID is valud.
         /// </summary>
-        /// <param name="joint">The joint to find the id for.</param>
-        /// <returns>
-        /// The joint between the two.
-        /// </returns>
-        private int ComputeJointId(Joint joint)
+        /// <param name="joint">The joint to check.</param>
+        private void ValidateJoint(Joint joint)
         {
             // Make sure the joint is in the simulation.
             if (joint.Manager == null)
@@ -1235,28 +1281,11 @@ namespace Engine.Physics.Systems
                 throw new ArgumentException("Joint is not in the simulation.", "joint");
             }
 
-            // Figure out id of the joint to remove.
-            var jointId = _usedJoints;
-            {
-                if (joint.Previous >= 0)
-                {
-                    jointId = _joints[joint.Previous].Next;
-                }
-                if (joint.Next >= 0)
-                {
-                    System.Diagnostics.Debug.Assert(jointId == _usedJoints ||
-                                                    jointId == _joints[joint.Next].Previous);
-                    jointId = _joints[joint.Next].Previous;
-                }
-            }
-
             // Make sure the joint is valid.
-            if (_joints[jointId] != joint)
+            if (joint.Index < 0 || joint.Index >= _joints.Length || _joints[joint.Index] != joint)
             {
                 throw new ArgumentException("Bad joint.", "joint");
             }
-
-            return jointId;
         }
 
         /// <summary>
@@ -2096,8 +2125,8 @@ namespace Engine.Physics.Systems
             for (var i = 0; i < _contactCount; ++i)
             {
                 var contact = packet.ReadInt32();
-                _contacts[contact] = new Contact {Manager = Manager};
-                packet.ReadPacketizableInto(_contacts[contact]);
+                _contacts[contact] = packet.ReadPacketizable<Contact>();
+                _contacts[contact].Manager = Manager;
                 _contactEdges[contact * 2] = packet.ReadPacketizable<ContactEdge>();
                 _contactEdges[contact * 2 + 1] = packet.ReadPacketizable<ContactEdge>();
             }
@@ -2123,6 +2152,7 @@ namespace Engine.Physics.Systems
             {
                 var joint = packet.ReadInt32();
                 _joints[joint] = packet.ReadPacketizableWithTypeInfo<Joint>();
+                _joints[joint].Manager = Manager;
                 _jointEdges[joint * 2] = packet.ReadPacketizable<JointEdge>();
                 _jointEdges[joint * 2 + 1] = packet.ReadPacketizable<JointEdge>();
             }
@@ -2205,13 +2235,9 @@ namespace Engine.Physics.Systems
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
-        /// <returns>
-        /// The copy.
-        /// </returns>
+        /// <summary>Creates a new copy of the object, that shares no mutable
+        /// references with this instance.</summary>
+        /// <returns>The copy.</returns>
         public override AbstractSystem NewInstance()
         {
             System.Diagnostics.Debug.Assert(!IsLocked);
@@ -2243,11 +2269,9 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
+        /// Creates a deep copy of the system. The passed system must be of the same type.
         /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
+        /// This clones any contained data types to return an instance that represents a complete copy of the one passed in.
         /// </para>
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
@@ -2259,61 +2283,17 @@ namespace Engine.Physics.Systems
 
             var copy = (PhysicsSystem)into;
 
-            if (copy._contacts.Length != _contacts.Length)
+            for (var i = 0; i < copy._contacts.Length; ++i)
             {
-                copy._contacts = new Contact[_contacts.Length];
-            }
-            for (var i = 0; i < _contacts.Length; ++i)
-            {
-                if (copy._contacts[i] == null)
-                {
-                    copy._contacts[i] = _contacts[i].NewInstance();
-                }
-                _contacts[i].CopyInto(copy._contacts[i]);
                 copy._contacts[i].Manager = copy.Manager;
             }
 
-            if (copy._contactEdges.Length != _contactEdges.Length)
+            for (var i = 0; i < copy._joints.Length; ++i)
             {
-                copy._contactEdges = new ContactEdge[_contactEdges.Length];
-            }
-            for (var i = 0; i < _contactEdges.Length; ++i)
-            {
-                if (copy._contactEdges[i] == null)
-                {
-                    copy._contactEdges[i] = _contactEdges[i].NewInstance();
-                }
-                _contactEdges[i].CopyInto(copy._contactEdges[i]);
-            }
-
-            if (copy._joints.Length != _joints.Length)
-            {
-                copy._joints = new Joint[_joints.Length];
-            }
-            for (var i = 0; i < _joints.Length; ++i)
-            {
-                if (copy._joints[i] == null)
-                {
-                    copy._joints[i] = _joints[i].NewInstance();
-                }
-                _joints[i].CopyInto(copy._joints[i]);
                 if (_joints[i].Manager != null)
                 {
                     copy._joints[i].Manager = copy.Manager;
                 }
-            }
-
-            if (copy._jointEdges.Length != _jointEdges.Length)
-            {
-                copy._jointEdges = new JointEdge[_jointEdges.Length];
-            }
-            for (var i = 0; i < _jointEdges.Length; ++i)
-            {
-                if (copy._jointEdges[i] == null)
-                {
-                    copy._jointEdges[i] = _jointEdges[i].NewInstance();
-                }
-                _jointEdges[i].CopyInto(copy._jointEdges[i]);
             }
 
             copy._gearJoints.Clear();
@@ -2336,53 +2316,81 @@ namespace Engine.Physics.Systems
 
         #endregion
 
-        #region Interfaces
-
-        /// <summary>
-        /// This interface is used to pass contact information outside the internal
-        /// state, for example for iteration of existing contacts or when firing
-        /// contact messages.
-        /// </summary>
-        public interface IContact
-        {
-            /// <summary>
-            /// Gets the first fixture involved in this contact.
-            /// </summary>
-            Fixture FixtureA { get; }
-
-            /// <summary>
-            /// Gets the second fixture involved in this contact.
-            /// </summary>
-            Fixture FixtureB { get; }
-
-            /// <summary>
-            /// Gets the normal impulse of the specified contact point (separation).
-            /// </summary>
-            float GetNormalImpulse(int point);
-
-            /// <summary>
-            /// Gets the tangent impulse of the specified contact point (friction).
-            /// </summary>
-            float GetTangentImpulse(int point);
-
-            /// <summary>
-            /// Computes the world manifold data for this contact. This is relatively
-            /// expensive, so use with care.
-            /// The normal applies for all contact points. The number of contact points
-            /// may vary. For an active contact it is one or two, for inactive contacts
-            /// it is zero.
-            /// </summary>
-            /// <param name="normal">The world contact normal.</param>
-            /// <param name="points">The contact points.</param>
-            void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points);
-        }
-
-        #endregion
-
         #region ToString
 
         // TODO
 
         #endregion
+    }
+
+    /// <summary>
+    /// Some helper methods to access joints via the <see cref="IManager"/>
+    /// to have a common place for everything.
+    /// </summary>
+    static class JointManagerExtensions
+    {
+        /// <summary>Determines whether the specified joint is valid/exists.</summary>
+        /// <param name="manager">The manager to check in.</param>
+        /// <param name="jointId">The ID of the joint.</param>
+        /// <returns><c>true</c> if the specified joint exists in the manager's context; otherwise, <c>false</c>.</returns>
+        public static bool HasJoint(this IManager manager, int jointId)
+        {
+            return manager.GetSimulation().HasJoint(jointId);
+        }
+
+        /// <summary>Gets a joint by its ID.</summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="jointId">The joint id.</param>
+        /// <returns>A reference to the joint with the specified ID.</returns>
+        public static Joint GetJointById(this IManager manager, int jointId)
+        {
+            return manager.GetSimulation().GetJoint(jointId);
+        }
+
+        /// <summary>Gets all joints attached to the body with the specified entity ID.</summary>
+        /// <param name="manager">The manager to check in.</param>
+        /// <param name="bodyId">The ID of the entity the body belongs to.</param>
+        /// <returns>A list of all joints attached to that body.</returns>
+        public static IEnumerable<Joint> GetJoints(this IManager manager, int bodyId)
+        {
+            var body = manager.GetComponent(bodyId, Body.TypeId) as Body;
+            if (body == null)
+            {
+                throw new ArgumentException("The specified entity is not a body.", "bodyId");
+            }
+            return manager.GetSimulation().GetJoints(body);
+        }
+
+        /// <summary>Gets all joints attached to the specified body.</summary>
+        /// <param name="manager">The manager to check in.</param>
+        /// <param name="body">The body to check for.</param>
+        /// <returns>A list of all joints attached to that body.</returns>
+        public static IEnumerable<Joint> GetJoints(this IManager manager, Body body)
+        {
+            return manager.GetSimulation().GetJoints(body);
+        }
+
+        /// <summary>Removes the specified joint from the simulation.</summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="joint">The joint to remove.</param>
+        public static void RemoveJoint(this IManager manager, Joint joint)
+        {
+            manager.GetSimulation().DestroyJoint(joint);
+        }
+
+        /// <summary>Removes the joint with the specified id from the simulation.</summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="jointId">The joint id.</param>
+        public static void RemoveJoint(this IManager manager, int jointId)
+        {
+            var simulation = manager.GetSimulation();
+            simulation.DestroyJoint(simulation.GetJoint(jointId));
+        }
+
+        /// <summary>Gets the simulation for the specified manager.</summary>
+        private static PhysicsSystem GetSimulation(this IManager manager)
+        {
+            return manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
+        }
     }
 }

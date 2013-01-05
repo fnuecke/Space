@@ -17,6 +17,19 @@ namespace Engine.Util
     public sealed class CopyIgnoreAttribute : Attribute
     {
     }
+    
+    /// <summary>
+    /// Use this attribute to mark array properties or fields of which a deep
+    /// copy should be made. If set, this will ensure the target array is a
+    /// different instance than the source array, and will copy each element
+    /// over into the target array. If the array elements are <see cref="ICopyable{T}"/>
+    /// they will in turn have they their <see cref="ICopyable{T}.CopyInto"/>
+    /// method invoked after being cloned using <see cref="ICopyable{T}.NewInstance"/>.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class DeepCopyAttribute : Attribute
+    {
+    }
 
     /// <summary>
     /// This package provides utilities for dynamically generating automatic
@@ -116,30 +129,85 @@ namespace Engine.Util
             }
 
             // Generate dynamic method for the specified type.
-            var method = new DynamicMethod("CopyInto", null, new[] { typeof(object), typeof(object) }, declaringType, true);
+            var method = new DynamicMethod(
+                "CopyInto", null, new[] { typeof(object), typeof(object) }, declaringType, true);
             var generator = method.GetILGenerator();
 
+            // Loop invariant type shortcuts.
             var copyable = Type.GetType("Engine.Util.ICopyable`1");
-            if (copyable == null)
-            {
-                throw new InvalidOperationException("Copyable interface not found.");
-            }
+            var prepareForCopy = typeof(Copyable).GetMethod(
+                "PrepareArray", BindingFlags.Static | BindingFlags.NonPublic);
+            var deepArrayCopy = typeof(Copyable).GetMethod(
+                "DeepCopy", BindingFlags.Static | BindingFlags.NonPublic);
+            var flatArrayCopy = typeof(Array).GetMethod(
+                "Copy", new[] {typeof(Array), typeof(Array), typeof(int)});
+            var smartCopy = typeof(Copyable).GetMethod(
+                "CopyOrNull", BindingFlags.Static | BindingFlags.NonPublic);
 
-            // Copy all instance fields.
+            System.Diagnostics.Debug.Assert(copyable != null, "ICopyable not found.");
+            System.Diagnostics.Debug.Assert(prepareForCopy != null, "Copyable.PrepareArray not found.");
+            System.Diagnostics.Debug.Assert(deepArrayCopy != null, "Copyable.DeepCopy not found.");
+            System.Diagnostics.Debug.Assert(flatArrayCopy != null, "Array.Copy not found.");
+            System.Diagnostics.Debug.Assert(smartCopy != null, "Copyable.CopyOrNull not found.");
+
+            // Copy all instance fields we're allowed to.
             foreach (var f in GetAllFields(type))
             {
-                
-                Type typedCopyable;
-                if (f.FieldType.IsClass && f.FieldType.IsAssignableFrom(typedCopyable = copyable.MakeGenericType(f.FieldType)))
+                // Find a way to copy the type.
+                if (f.FieldType.IsArray && f.IsDefined(typeof(DeepCopyAttribute), true))
                 {
-                    // Got another copyable, call its CopyInto method in turn.
-                    var copyInto = typedCopyable.GetMethod("CopyInto", new[] {f.FieldType, f.FieldType});
-                    System.Diagnostics.Debug.Assert(copyInto.ReturnType == typeof(void));
+                    // Got an array type, get the type stored in it.
+                    var elementType = f.FieldType.GetElementType();
+
+                    // Make sure the target one has the right length and is its own instance.
                     generator.Emit(OpCodes.Ldarg_0);
                     generator.Emit(OpCodes.Ldfld, f);
                     generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Ldflda, f);
+                    generator.EmitCall(OpCodes.Call, prepareForCopy.MakeGenericMethod(elementType), null);
+
+                    // Skip the rest if we have a null value.
+                    generator.Emit(OpCodes.Ldarg_1);
                     generator.Emit(OpCodes.Ldfld, f);
-                    generator.EmitCall(OpCodes.Callvirt, copyInto, null);
+                    var end = generator.DefineLabel();
+                    generator.Emit(OpCodes.Brfalse_S, end);
+
+                    // Copy each element. If we have an array of copyables we create new instances
+                    // and copy them in turn via a CopyInto call, otherwise we can use the inbuilt
+                    // Array.Copy and do a shallow copy of the array.
+                    if (elementType.IsClass && copyable.MakeGenericType(elementType).IsAssignableFrom(elementType))
+                    {
+                        // Got copyables, use own copier which creates new instances.
+                        generator.Emit(OpCodes.Ldarg_0);
+                        generator.Emit(OpCodes.Ldfld, f);
+                        generator.Emit(OpCodes.Ldarg_1);
+                        generator.Emit(OpCodes.Ldfld, f);
+                        generator.EmitCall(OpCodes.Call, deepArrayCopy.MakeGenericMethod(elementType), null);
+                    }
+                    else
+                    {
+                        // Normal fields, just copy by value.
+                        generator.Emit(OpCodes.Ldarg_0);
+                        generator.Emit(OpCodes.Ldfld, f);
+                        generator.Emit(OpCodes.Ldarg_1);
+                        generator.Emit(OpCodes.Ldfld, f);
+                        generator.Emit(OpCodes.Dup);
+                        generator.Emit(OpCodes.Ldlen);
+                        generator.Emit(OpCodes.Conv_I4);
+                        generator.EmitCall(OpCodes.Call, flatArrayCopy, null);
+                    }
+
+                    // Done.
+                    generator.MarkLabel(end);
+                }
+                else if (f.FieldType.IsClass && copyable.MakeGenericType(f.FieldType).IsAssignableFrom(f.FieldType))
+                {
+                    // Got another copyable, set to null or use CopyInto.
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Ldfld, f);
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Ldflda, f);
+                    generator.EmitCall(OpCodes.Call, smartCopy, null);
                 }
                 else
                 {
@@ -217,6 +285,66 @@ namespace Engine.Util
             // After we reach the top, filter out any duplicates (due to visibility
             // in sub-classes some field may have been registered more than once).
             return result;
+        }
+
+        /// <summary>Prepares the target array for copying.</summary>
+        /// <typeparam name="T">The data type.</typeparam>
+        /// <param name="source">The source array.</param>
+        /// <param name="target">The target array.</param>
+// ReSharper disable UnusedMember.Local Used via reflection.
+        private static void PrepareArray<T>(T[] source, ref T[] target)
+// ReSharper restore UnusedMember.Local
+        {
+            // See if we have something.
+            if (source == null)
+            {
+                // Nope, set the target to null, too.
+                target = null;
+            }
+            else if (target == source || target == null || target.Length != source.Length)
+            {
+                // Target must be adjusted, create a new array of required length.
+                target = new T[source.Length];
+            }
+        }
+
+        /// <summary>Utility method for creating a deep copy of an array of copyables.</summary>
+        /// <typeparam name="T">The data type.</typeparam>
+        /// <param name="source">The source array.</param>
+        /// <param name="target">The target array.</param>
+// ReSharper disable UnusedMember.Local Used via reflection.
+        private static void DeepCopy<T>(T[] source, T[] target) where T : class, ICopyable<T>
+// ReSharper restore UnusedMember.Local
+        {
+            // Do a normal copyable copy for each array element.
+            for (var i = 0; i < target.Length; ++i)
+            {
+                CopyOrNull(source[i], ref target[i]);
+            }
+        }
+
+        /// <summary>Copies a copyable if it is not null, otherwise sets the target to null.</summary>
+        /// <typeparam name="T">The data type.</typeparam>
+        /// <param name="source">The source instance or null.</param>
+        /// <param name="target">The target instance.</param>
+        private static void CopyOrNull<T>(T source, ref T target) where T : class, ICopyable<T>
+        {
+            // Check if we have anything at all.
+            if (source == null)
+            {
+                // Nope, just set the target to null, too.
+                target = null;
+            }
+            else
+            {
+                // Make sure we have an instance to copy to and that it's of the right type.
+                if (target == null || target.GetType() != source.GetType())
+                {
+                    target = source.NewInstance();
+                }
+                // Perform type specific copy operations.
+                source.CopyInto(target);
+            }
         }
 
         #endregion

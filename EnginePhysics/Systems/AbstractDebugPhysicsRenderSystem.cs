@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
 using Engine.Physics.Components;
+using Engine.Physics.Contacts;
 using Engine.Physics.Joints;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -179,7 +180,7 @@ namespace Engine.Physics.Systems
         /// <summary>
         /// Gets the visible contacts.
         /// </summary>
-        protected virtual IEnumerable<PhysicsSystem.IContact> GetVisibleContacts()
+        protected virtual IEnumerable<Contact> GetVisibleContacts()
         {
             return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Contacts;
         }
@@ -448,7 +449,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        private void DrawContact(PhysicsSystem.IContact contact, Func<WorldPoint, Vector2> toScreen)
+        private void DrawContact(Contact contact, Func<WorldPoint, Vector2> toScreen)
         {
             Vector2 normal;
             IList<WorldPoint> points;

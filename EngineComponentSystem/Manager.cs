@@ -786,7 +786,7 @@ namespace Engine.ComponentSystem
 
             // Copy systems after copying components so they can fetch their
             // components again.
-            foreach (var item in _systems)
+            foreach (var item in _systems.Where(s => !(s is IDrawingSystem)))
             {
                 copy.CopySystem(item);
             }

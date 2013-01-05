@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -108,7 +109,7 @@ namespace Engine.Physics.Joints
             public float Mass;
         }
 
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private SolverTemp _tmp;
 
         #endregion
@@ -386,28 +387,6 @@ namespace Engine.Physics.Joints
                 .Put(_frequency)
                 .Put(_dampingRatio)
                 .Put(_impulse);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        public override void CopyInto(Joint into)
-        {
-            base.CopyInto(into);
-
-            var copy = (DistanceJoint)into;
-
-            copy._localAnchorA = _localAnchorA;
-            copy._localAnchorB = _localAnchorB;
-            copy._length = _length;
-            copy._frequency = _frequency;
-            copy._dampingRatio = _dampingRatio;
-            copy._impulse = _impulse;
         }
 
         #endregion

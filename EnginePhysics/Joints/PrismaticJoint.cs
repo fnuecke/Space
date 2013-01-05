@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -265,7 +266,7 @@ namespace Engine.Physics.Joints
             public float MotorMass;
         }
 
-        [PacketizerIgnore] private SolverTemp _tmp;
+        [CopyIgnore, PacketizerIgnore] private SolverTemp _tmp;
 
         #endregion
 
@@ -805,19 +806,6 @@ namespace Engine.Physics.Joints
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        public override void CopyInto(Joint into)
-        {
-            base.CopyInto(into);
         }
 
         #endregion

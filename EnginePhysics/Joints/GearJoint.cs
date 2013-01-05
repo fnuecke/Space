@@ -3,6 +3,7 @@ using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -139,7 +140,7 @@ namespace Engine.Physics.Joints
             public float Mass;
         }
 
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private SolverTemp _tmp;
 
         #endregion
@@ -560,37 +561,6 @@ namespace Engine.Physics.Joints
                 .Put(_constant)
                 .Put(_ratio)
                 .Put(_impulse);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        public override void CopyInto(Joint into)
-        {
-            base.CopyInto(into);
-
-            var copy = (GearJoint)into;
-
-            copy._typeA = _typeA;
-            copy._typeB = _typeB;
-            copy._bodyIdC = _bodyIdC;
-            copy._bodyIdD = _bodyIdD;
-            copy._localAnchorA = _localAnchorA;
-            copy._localAnchorB = _localAnchorB;
-            copy._localAnchorC = _localAnchorC;
-            copy._localAnchorD = _localAnchorD;
-            copy._localAxisC = _localAxisC;
-            copy._localAxisD = _localAxisD;
-            copy._referenceAngleA = _referenceAngleA;
-            copy._referenceAngleB = _referenceAngleB;
-            copy._constant = _constant;
-            copy._ratio = _ratio;
-            copy._impulse = _impulse;
         }
 
         #endregion

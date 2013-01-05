@@ -61,6 +61,11 @@ namespace Engine.Physics.Joints
         #region Properties
 
         /// <summary>
+        /// Gets the unique ID of this joint for the simulation it belongs to.
+        /// </summary>
+        public int Id { get { return Index; } }
+
+        /// <summary>
         /// Get the first body this joint is attached to.
         /// </summary>
         public Body BodyA
@@ -93,7 +98,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// The type of this joint.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         internal readonly JointType Type;
 
         /// <summary>
@@ -105,7 +110,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Used for the global doubly linked list of joints.
         /// </summary>
-        internal int Next, Previous;
+        internal int Index, Next, Previous;
 
         /// <summary>
         /// The IDs of the two bodies this joint is attached to.
@@ -234,7 +239,7 @@ namespace Engine.Physics.Joints
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public virtual void CopyInto(Joint into)
+        public void CopyInto(Joint into)
         {
             Copyable.CopyInto(this, into);
         }

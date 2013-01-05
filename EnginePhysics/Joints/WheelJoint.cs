@@ -1,5 +1,6 @@
 ﻿using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -164,8 +165,6 @@ namespace Engine.Physics.Joints
 
         #region Fields
 
-        #region Solver shared
-
         private float _frequency;
 
         private float _dampingRatio;
@@ -189,10 +188,6 @@ namespace Engine.Physics.Joints
         private float _motorSpeed;
 
         private bool _enableMotor;
-
-        #endregion
-
-        #region Solver temp
 
         private struct SolverTemp
         {
@@ -229,10 +224,8 @@ namespace Engine.Physics.Joints
             public float Gamma;
         }
 
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private SolverTemp _tmp;
-
-        #endregion
 
         #endregion
 
@@ -562,19 +555,6 @@ namespace Engine.Physics.Joints
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        public override void CopyInto(Joint into)
-        {
-            base.CopyInto(into);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -118,7 +119,7 @@ namespace Engine.Physics.Joints
             public Vector2 C;
         }
 
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private SolverTemp _tmp;
 
         #endregion
@@ -320,28 +321,6 @@ namespace Engine.Physics.Joints
                 .Put(_dampingRatio)
                 .Put(_maxForce)
                 .Put(_impulse);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        public override void CopyInto(Joint into)
-        {
-            base.CopyInto(into);
-
-            var copy = (MouseJoint)into;
-
-            copy._localAnchorB = _localAnchorB;
-            copy._targetA = _targetA;
-            copy._frequency = _frequency;
-            copy._dampingRatio = _dampingRatio;
-            copy._maxForce = _maxForce;
-            copy._impulse = _impulse;
         }
 
         #endregion

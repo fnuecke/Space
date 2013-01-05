@@ -12,7 +12,7 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics
 {
-    public static class FactoryManagerExtensions
+    public static class BodyFactory
     {
         #region Body
 

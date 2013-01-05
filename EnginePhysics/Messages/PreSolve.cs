@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.Collections;
 using Engine.Physics.Collision;
-using Engine.Physics.Systems;
+using Engine.Physics.Contacts;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -20,7 +20,7 @@ namespace Engine.Physics.Messages
         /// <summary>
         /// The contact for which this message was sent.
         /// </summary>
-        public PhysicsSystem.IContact Contact;
+        public Contact Contact;
 
         /// <summary>
         /// The old manifold state.

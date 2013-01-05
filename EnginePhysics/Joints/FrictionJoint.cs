@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -111,7 +112,7 @@ namespace Engine.Physics.Joints
             public float AngularMass;
         }
 
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private SolverTemp _tmp;
 
         #endregion
@@ -329,28 +330,6 @@ namespace Engine.Physics.Joints
                 .Put(_angularImpulse)
                 .Put(_maxForce)
                 .Put(_maxTorque);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        public override void CopyInto(Joint into)
-        {
-            base.CopyInto(into);
-
-            var copy = (FrictionJoint)into;
-
-            copy._localAnchorA = _localAnchorA;
-            copy._localAnchorB = _localAnchorB;
-            copy._linearImpulse = _linearImpulse;
-            copy._angularImpulse = _angularImpulse;
-            copy._maxForce = _maxForce;
-            copy._maxTorque = _maxTorque;
         }
 
         #endregion
