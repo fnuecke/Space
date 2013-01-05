@@ -410,7 +410,7 @@ namespace Engine.Physics.Systems
         /// </returns>
         public bool HasJoint(int jointId)
         {
-            return jointId > 0 && jointId < _joints.Length && _joints[jointId].Manager != null;
+            return jointId >= 0 && jointId < _joints.Length && _joints[jointId].Manager != null;
         }
 
         /// <summary>
@@ -2327,7 +2327,7 @@ namespace Engine.Physics.Systems
     /// Some helper methods to access joints via the <see cref="IManager"/>
     /// to have a common place for everything.
     /// </summary>
-    static class JointManagerExtensions
+    public static class JointManagerExtensions
     {
         /// <summary>Determines whether the specified joint is valid/exists.</summary>
         /// <param name="manager">The manager to check in.</param>

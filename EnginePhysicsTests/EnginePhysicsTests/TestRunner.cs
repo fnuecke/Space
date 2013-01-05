@@ -126,9 +126,9 @@ namespace Engine.Physics.Tests
         private float _elapsedTimeAccumulator;
 
         /// <summary>
-        /// The mouse joint used for dragging bodies around.
+        /// The id of the mouse joint used for dragging bodies around.
         /// </summary>
-        private MouseJoint _mouseJoint;
+        private int _mouseJoint = -1;
 
         /// <summary>
         /// A serialized snapshot of the scene.
@@ -369,7 +369,7 @@ C            - Test copying (creates simulation copy and uses it).");
                 _renderer.Scale = 0.1f;
                 _snapshot = null;
             }
-            _mouseJoint = null;
+            _mouseJoint = -1;
 
             // Wrap the number to the valid range.
             _currentTest = (number + Tests.Length) % Tests.Length;
@@ -423,10 +423,10 @@ C            - Test copying (creates simulation copy and uses it).");
                     {
                         // Kill the mouse joint because deserializing it would
                         // cause a joint that we do not control anymore.
-                        if (_mouseJoint != null)
+                        if (_mouseJoint >= 0)
                         {
-                            _mouseJoint.Destroy();
-                            _mouseJoint = null;
+                            _manager.RemoveJoint(_mouseJoint);
+                            _mouseJoint = -1;
                         }
                         _snapshot = new Packet();
                         _snapshot.Write(_manager);
@@ -441,7 +441,7 @@ C            - Test copying (creates simulation copy and uses it).");
                     if (_snapshot != null)
                     {
                         // Reset test and stuff to avoid invalid references.
-                        _mouseJoint = null;
+                        _mouseJoint = -1;
                         _snapshot.Reset();
                         _snapshot.ReadPacketizableInto(_manager);
                         var hasher = new Hasher();
@@ -454,7 +454,6 @@ C            - Test copying (creates simulation copy and uses it).");
                     // Test copy implementation.
                     if (_manager != null)
                     {
-                        _mouseJoint = null;
                         var copy = new Manager();
                         copy.AddSystem(new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
                         copy.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
@@ -521,17 +520,17 @@ C            - Test copying (creates simulation copy and uses it).");
         {
             if (_manager != null)
             {
-                if (_mouseJoint != null)
+                if (_mouseJoint >= 0)
                 {
-                    _mouseJoint.Destroy();
-                    _mouseJoint = null;
+                    _manager.RemoveJoint(_mouseJoint);
+                    _mouseJoint = -1;
                 }
                 var mouseWorldPoint = _renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
                                                                                Mouse.GetState().Y));
                 var fixture = _physics.GetFixtureAt(mouseWorldPoint);
                 if (fixture != null)
                 {
-                    _mouseJoint = _manager.AddMouseJoint(fixture.Body, mouseWorldPoint, maxForce: fixture.Body.Mass * 1000);
+                    _mouseJoint = _manager.AddMouseJoint(fixture.Body, mouseWorldPoint, maxForce: fixture.Body.Mass * 1000).Id;
                 }
                 Tests[_currentTest].OnLeftButtonDown();
             }
@@ -544,10 +543,10 @@ C            - Test copying (creates simulation copy and uses it).");
         {
             if (_manager != null)
             {
-                if (_mouseJoint != null)
+                if (_mouseJoint >= 0)
                 {
-                    _mouseJoint.Destroy();
-                    _mouseJoint = null;
+                    _manager.RemoveJoint(_mouseJoint);
+                    _mouseJoint = -1;
                 }
                 Tests[_currentTest].OnLeftButtonUp();
             }
@@ -602,11 +601,11 @@ C            - Test copying (creates simulation copy and uses it).");
             if (_manager != null)
             {
                 // Check if dragging a body. If so update the target.
-                if (_mouseJoint != null)
+                if (_mouseJoint >= 0)
                 {
                     var mouseWorldPoint = _renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
                                                                                    Mouse.GetState().Y));
-                    _mouseJoint.Target = mouseWorldPoint;
+                    ((MouseJoint)_manager.GetJointById(_mouseJoint)).Target = mouseWorldPoint;
                 }
 
                 Tests[_currentTest].OnMouseMove(mousePosition, delta);
