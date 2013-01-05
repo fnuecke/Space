@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Math;
 using Engine.Serialization;
@@ -15,6 +16,17 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
+    /// <summary>
+    /// A gear joint is used to connect two joints together. Either joint
+    /// can be a revolute or prismatic joint. You specify a gear ratio
+    /// to bind the motions together:
+    /// coordinate1 + ratio * coordinate2 = constant
+    /// The ratio can be negative or positive. If one joint is a revolute joint
+    /// and the other joint is a prismatic joint, then the ratio will have units
+    /// of length or units of 1/length.
+    /// @warning You have to manually destroy the gear joint if joint1 or joint2
+    /// is destroyed.
+    /// </summary>
     public sealed class GearJoint : Joint
     {
         #region Properties
@@ -147,8 +159,88 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(IManager manager, Joint jointA, Joint jointB, float ratio)
         {
+            Manager = manager;
+
+            _typeA = jointA.Type;
+            _typeB = jointB.Type;
+
+            System.Diagnostics.Debug.Assert(_typeA == JointType.Revolute || _typeA == JointType.Prismatic);
+            System.Diagnostics.Debug.Assert(_typeB == JointType.Revolute || _typeB == JointType.Prismatic);
+
+            float coordinateA, coordinateB;
+
+            // TODO_ERIN there might be some problem with the joint edges in b2Joint.
+
+            _bodyIdC = jointA.BodyA.Id;
+            _bodyIdA = jointA.BodyB.Id;
+
+            // Get geometry of joint1
+            var xfA = BodyA.Transform;
+            var aA = BodyA.Sweep.Angle;
+            var xfC = BodyC.Transform;
+            var aC = BodyC.Sweep.Angle;
+
+            if (_typeA == JointType.Revolute)
+            {
+                var revolute = (RevoluteJoint)jointA;
+                _localAnchorC = revolute.LocalAnchorA;
+                _localAnchorA = revolute.LocalAnchorB;
+                _referenceAngleA = revolute.ReferenceAngle;
+                _localAxisC = Vector2.Zero;
+
+                coordinateA = aA - aC - _referenceAngleA;
+            }
+            else
+            {
+                var prismatic = (PrismaticJoint)jointA;
+                _localAnchorC = prismatic.LocalAnchorA;
+                _localAnchorA = prismatic.LocalAnchorB;
+                _referenceAngleA = prismatic.ReferenceAngle;
+                _localAxisC = prismatic.LocalAxisA;
+
+                var pC = _localAnchorC;
+                var pA = -xfC.Rotation * ((xfA.Rotation * _localAnchorA) + (Vector2)(xfA.Translation - xfC.Translation));
+                coordinateA = Vector2.Dot(pA - pC, _localAxisC);
+            }
+
+            _bodyIdD = jointB.BodyA.Id;
+            _bodyIdB = jointB.BodyB.Id;
+
+            // Get geometry of joint2
+            var xfB = BodyB.Transform;
+            var aB = BodyB.Sweep.Angle;
+            var xfD = BodyD.Transform;
+            var aD = BodyD.Sweep.Angle;
+
+            if (_typeB == JointType.Revolute)
+            {
+                var revolute = (RevoluteJoint)jointB;
+                _localAnchorD = revolute.LocalAnchorA;
+                _localAnchorB = revolute.LocalAnchorB;
+                _referenceAngleB = revolute.ReferenceAngle;
+                _localAxisD = Vector2.Zero;
+
+                coordinateB = aB - aD - _referenceAngleB;
+            }
+            else
+            {
+                var prismatic = (PrismaticJoint)jointB;
+                _localAnchorD = prismatic.LocalAnchorA;
+                _localAnchorB = prismatic.LocalAnchorB;
+                _referenceAngleB = prismatic.ReferenceAngle;
+                _localAxisD = prismatic.LocalAxisA;
+
+                var pD = _localAnchorD;
+                var pB = -xfD.Rotation * ((xfB.Rotation * _localAnchorB) + (Vector2)(xfB.Translation - xfD.Translation));
+                coordinateB = Vector2.Dot(pB - pD, _localAxisD);
+            }
+
+            _ratio = ratio;
+
+            _constant = coordinateA + _ratio * coordinateB;
+            _impulse = 0.0f;
         }
 
         #endregion

@@ -110,7 +110,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// The IDs of the two bodies this joint is attached to.
         /// </summary>
-        private int _bodyIdA, _bodyIdB;
+        protected int _bodyIdA, _bodyIdB;
 
         /// <summary>
         /// Set this flag to true if the attached bodies should collide.
@@ -154,7 +154,7 @@ namespace Engine.Physics.Joints
 
             var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
             System.Diagnostics.Debug.Assert(physics != null);
-            physics.DestroyJoint(Previous, Next);
+            physics.DestroyJoint(this);
 
             Manager = null;
             _bodyIdA = 0;

@@ -199,6 +199,14 @@ namespace Engine.Physics.Systems
         private int _freeJoints = -1;
 
         /// <summary>
+        /// We keep track of our gear joints by mapping the joints they are attached to
+        /// to the ids of the gear joints attached to them. This way we can quickly
+        /// remove gear joints when one of the joints they are attached to is removed.
+        /// </summary>
+        [CopyIgnore, PacketizerIgnore]
+        private Dictionary<int, HashSet<int>> _gearJoints = new Dictionary<int, HashSet<int>>();
+
+        /// <summary>
         /// The index structure we use for our broad phase. We don't use the index
         /// system because we want to track the individual fixtures, not the complete
         /// body (and the index system only tracks complete entities).
@@ -557,7 +565,6 @@ namespace Engine.Physics.Systems
                 throw new InvalidOperationException("Must not remove bodies, fixtures or joints during update.");
             }
 
-
             if (body != null)
             {
                 // Remove all joints attached to this body.
@@ -867,34 +874,16 @@ namespace Engine.Physics.Systems
         /// <param name="bodyA">The first body.</param>
         /// <param name="bodyB">The second body.</param>
         /// <param name="collideConnected">Whether to collide the connected bodies.</param>
+        /// <returns>
+        /// The allocated joint.
+        /// </returns>
         internal Joint CreateJoint(Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = true)
         {
             // We need at least one body to attach the joint to.
             System.Diagnostics.Debug.Assert(bodyA != null || bodyB != null);
 
-            // When we hit the last joint, allocate some more.
-            if (_freeJoints < 0)
-            {
-                // Remember where the new segment starts and set to new list.
-                var startOfNewSegment = _joints.Length;
-
-                // Actual allocation and copying of old data.
-                var newJoints = new Joint[_joints.Length * 3 / 2 + 1];
-                var newEdges = new JointEdge[newJoints.Length * 2];
-                _joints.CopyTo(newJoints, 0);
-                _jointEdges.CopyTo(newEdges, 0);
-                _joints = newJoints;
-                _jointEdges = newEdges;
-
-                // Initialize the new segment by making it available in the linked
-                // list of available joints.
-                InitializeJoints(startOfNewSegment);
-            }
-
-            // Remember index of joint we will return, then remove it from
-            // the linked list of available joints.
-            var joint = _freeJoints;
-            _freeJoints = _joints[_freeJoints].Previous;
+            // Get a new joint id.
+            var joint = AllocateJoint();
 
             // Allocate actual instance, if what we have is the wrong type.
             if (_joints[joint].Type != type)
@@ -917,8 +906,7 @@ namespace Engine.Physics.Systems
                         _joints[joint] = new MouseJoint();
                         break;
                     case Joint.JointType.Gear:
-                        _joints[joint] = new GearJoint();
-                        break;
+                        throw new ArgumentException("Gear joints must be created using the CreateGearJoint method.", "type");
                     case Joint.JointType.Wheel:
                         _joints[joint] = new WheelJoint();
                         break;
@@ -939,19 +927,11 @@ namespace Engine.Physics.Systems
                 }
             }
 
+            // Adjust global linked list after instance is guaranteed to be the right one.
+            UpdateJointList(joint);
+
             // Initialize with the basics.
             _joints[joint].Initialize(Manager, bodyA, bodyB, collideConnected);
-
-            // Adjust global linked list.
-            if (_usedJoints >= 0)
-            {
-                // Prepend to list.
-                _joints[_usedJoints].Previous = joint;
-            }
-            _joints[joint].Next = _usedJoints;
-            _joints[joint].Previous = -1;
-            _usedJoints = joint;
-
 
             // Set up edge from A to B.
             if (bodyA != null)
@@ -989,9 +969,6 @@ namespace Engine.Physics.Systems
                 bodyB.JointList = edgeB;
             }
 
-            // Increment counter used for island allocation.
-            ++_jointCount;
-
             // If the joint prevents collision, then mark any contacts for filtering.
             if (!collideConnected && bodyA != null && bodyB != null)
             {
@@ -1011,27 +988,113 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
+        /// Allocates a new gear joint and initializes it to the two speified joints.
+        /// </summary>
+        /// <param name="jointA">The first joint.</param>
+        /// <param name="jointB">The second joint.</param>
+        /// <param name="ratio">The gear ratio.</param>
+        /// <returns>
+        /// The new gear joint.
+        /// </returns>
+        internal GearJoint CreateGearJoint(Joint jointA, Joint jointB, float ratio)
+        {
+            // Find the ids of the two joints. This is used to check if they are
+            // valid (in the system) and to store the gears for automatic removal.
+            int jointIdA = ComputeJointId(jointA), jointIdB = ComputeJointId(jointB);
+
+            // Get a free joint id.
+            var joint = AllocateJoint();
+
+            // Create the joint if necessary and store it.
+            if (!(_joints[joint] is GearJoint))
+            {
+                _joints[joint] = new GearJoint();
+            }
+
+            // Adjust global linked list after instance is guaranteed to be the right one.
+            UpdateJointList(joint);
+
+            // Initialize with the basics.
+            ((GearJoint)_joints[joint]).Initialize(Manager, jointA, jointB, ratio);
+
+            // Keep track of our gears so the user doesn't have to remove them manually.
+            if (!_gearJoints.ContainsKey(jointIdA))
+            {
+                _gearJoints[jointIdA] = new HashSet<int>();
+            }
+            _gearJoints[jointIdA].Add(joint);
+            if (!_gearJoints.ContainsKey(jointIdB))
+            {
+                _gearJoints[jointIdB] = new HashSet<int>();
+            }
+            _gearJoints[jointIdB].Add(joint);
+
+            // Return the joint for further initialization.
+            return (GearJoint)_joints[joint];
+        }
+
+        /// <summary>
+        /// Make sure we have enough joints allocated to push a new one back.
+        /// </summary>
+        private int AllocateJoint()
+        {
+            // When we hit the last joint, allocate some more.
+            if (_freeJoints < 0)
+            {
+                // Remember where the new segment starts and set to new list.
+                var startOfNewSegment = _joints.Length;
+
+                // Actual allocation and copying of old data.
+                var newJoints = new Joint[_joints.Length * 3 / 2 + 1];
+                var newEdges = new JointEdge[newJoints.Length * 2];
+                _joints.CopyTo(newJoints, 0);
+                _jointEdges.CopyTo(newEdges, 0);
+                _joints = newJoints;
+                _jointEdges = newEdges;
+
+                // Initialize the new segment by making it available in the linked
+                // list of available joints.
+                InitializeJoints(startOfNewSegment);
+            }
+
+            // Tentatively give out the next free joint id.
+            return _freeJoints;
+        }
+
+        /// <summary>
+        /// Updates the global joint lists by popping the next free one and
+        /// appending it to the list of used joints.
+        /// </summary>
+        /// <param name="joint">The joint.</param>
+        private void UpdateJointList(int joint)
+        {
+            System.Diagnostics.Debug.Assert(joint == _freeJoints);
+
+            // Remove it from the linked list of available joints.
+            _freeJoints = _joints[_freeJoints].Previous;
+
+            if (_usedJoints >= 0)
+            {
+                // Prepend to list.
+                _joints[_usedJoints].Previous = joint;
+            }
+            _joints[joint].Next = _usedJoints;
+            _joints[joint].Previous = -1;
+            _usedJoints = joint;
+
+            // Increment counter used for island allocation.
+            ++_jointCount;
+        }
+
+        /// <summary>
         /// Destroys the joint between the two specified joints.
         /// </summary>
-        /// <param name="previous">The previous.</param>
-        /// <param name="next">The next.</param>
-        internal void DestroyJoint(int previous, int next)
+        /// <param name="joint">The joint to remove.</param>
+        internal void DestroyJoint(Joint joint)
         {
-            // Figure out id of the joint to remove.
-            var joint = _usedJoints;
-            {
-                if (previous >= 0)
-                {
-                    joint = _joints[previous].Next;
-                }
-                if (next >= 0)
-                {
-                    System.Diagnostics.Debug.Assert(joint == _usedContacts ||
-                                                    joint == _joints[next].Previous);
-                    joint = _joints[next].Previous;
-                }
-            }
-            DestroyJoint(joint);
+            // Figure out id for this joint. This throws for us if the joint is
+            // not in the simulation (possibly removed before).
+            DestroyJoint(ComputeJointId(joint));
         }
 
         /// <summary>
@@ -1060,74 +1123,140 @@ namespace Engine.Physics.Systems
                 }
             }
 
-            // Get the actual components.
-            var bodyA = _joints[joint].BodyA;
-            var bodyB = _joints[joint].BodyB;
-
-            // Wake up the first body and update the local edge lists.
-            if (bodyA != null)
-            {
-                bodyA.IsAwake = true;
-                var edgeA = joint * 2;
-                var previous = _jointEdges[edgeA].Previous;
-                var next = _jointEdges[edgeA].Next;
-                if (previous >= 0)
-                {
-                    _jointEdges[previous].Next = next;
-                }
-                if (next >= 0)
-                {
-                    _jointEdges[next].Previous = previous;
-                }
-                // Adjust list pointer as necessary.
-                if (bodyA.JointList == edgeA)
-                {
-                    bodyA.JointList = next;
-                }
-            }
-
-            // Wake up the second body and update the local edge lists.
-            if (bodyB != null) {
-                bodyB.IsAwake = true;
-
-                var edgeB = joint * 2 + 1;
-                var previous = _jointEdges[edgeB].Previous;
-                var next = _jointEdges[edgeB].Next;
-                if (previous >= 0)
-                {
-                    _jointEdges[previous].Next = next;
-                }
-                if (next >= 0)
-                {
-                    _jointEdges[next].Previous = previous;
-                }
-                // Adjust list pointer as necessary.
-                if (bodyB.JointList == edgeB)
-                {
-                    bodyB.JointList = next;
-                }
-            }
-
             // Push contact back to list of free contacts.
             _joints[joint].Previous = _freeJoints;
+            _joints[joint].Next = -1;
             _freeJoints = joint;
 
             // Decrement counter used for island allocation.
             --_jointCount;
 
-            // If the joint prevented collision then mark any contacts for refiltering.
-            if (!_joints[joint].CollideConnected && bodyA != null && bodyB != null)
+            // Depending on whether this is a gear joint or not we proceed differently.
+            // This is because gear joints don't have edges and no "own" bodies.
+            if (_joints[joint] is GearJoint)
             {
-                for (var edge = bodyA.ContactList; edge >= 0; edge = _contactEdges[edge].Next)
+                // Clean up gear tracking data, remove it from the mapping.
+                foreach (var gearJoints in _gearJoints)
                 {
-                    if (_contactEdges[edge].Other == bodyB.Entity)
+                    gearJoints.Value.Remove(joint);
+                }
+            }
+            else
+            {
+                // Get the actual components.
+                var bodyA = _joints[joint].BodyA;
+                var bodyB = _joints[joint].BodyB;
+
+                // Wake up the first body and update the local edge lists.
+                if (bodyA != null)
+                {
+                    bodyA.IsAwake = true;
+                    var edgeA = joint * 2;
+                    var previous = _jointEdges[edgeA].Previous;
+                    var next = _jointEdges[edgeA].Next;
+                    if (previous >= 0)
                     {
-                        // Flag the contact for filtering at the next time step (where either
-                        // body is awake).
-                        _contacts[_contactEdges[edge].Other].ShouldFilter = true;
+                        _jointEdges[previous].Next = next;
+                    }
+                    if (next >= 0)
+                    {
+                        _jointEdges[next].Previous = previous;
+                    }
+                    // Adjust list pointer as necessary.
+                    if (bodyA.JointList == edgeA)
+                    {
+                        bodyA.JointList = next;
+                    }
+                }
+
+                // Wake up the second body and update the local edge lists.
+                if (bodyB != null)
+                {
+                    bodyB.IsAwake = true;
+
+                    var edgeB = joint * 2 + 1;
+                    var previous = _jointEdges[edgeB].Previous;
+                    var next = _jointEdges[edgeB].Next;
+                    if (previous >= 0)
+                    {
+                        _jointEdges[previous].Next = next;
+                    }
+                    if (next >= 0)
+                    {
+                        _jointEdges[next].Previous = previous;
+                    }
+                    // Adjust list pointer as necessary.
+                    if (bodyB.JointList == edgeB)
+                    {
+                        bodyB.JointList = next;
+                    }
+                }
+
+                // If the joint prevented collision then mark any contacts for refiltering.
+                if (!_joints[joint].CollideConnected && bodyA != null && bodyB != null)
+                {
+                    for (var edge = bodyA.ContactList; edge >= 0; edge = _contactEdges[edge].Next)
+                    {
+                        if (_contactEdges[edge].Other == bodyB.Entity)
+                        {
+                            // Flag the contact for filtering at the next time step (where either
+                            // body is awake).
+                            _contacts[_contactEdges[edge].Other].ShouldFilter = true;
+                        }
+                    }
+                }
+
+                // See if there were any gears attached to this joint, and if so
+                // remove those gear joints from the simulation.
+                if (_gearJoints.ContainsKey(joint))
+                {
+                    var gears = _gearJoints[joint];
+                    _gearJoints.Remove(joint);
+                    foreach (var gear in gears)
+                    {
+                        DestroyJoint(gear);
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Computes the id of the joint between the two specified joints.
+        /// </summary>
+        /// <param name="joint">The joint to find the id for.</param>
+        /// <returns>
+        /// The joint between the two.
+        /// </returns>
+        private int ComputeJointId(Joint joint)
+        {
+            // Make sure the joint is in the simulation.
+            if (joint.Manager == null)
+            {
+                throw new ArgumentException("Joint is not in the simulation.", "joint");
+            }
+
+            // Figure out id of the joint to remove.
+            var jointId = _usedJoints;
+            {
+                if (joint.Previous >= 0)
+                {
+                    jointId = _joints[joint.Previous].Next;
+                }
+                if (joint.Next >= 0)
+                {
+                    System.Diagnostics.Debug.Assert(jointId == _usedJoints ||
+                                                    jointId == _joints[joint.Next].Previous);
+                    jointId = _joints[joint.Next].Previous;
+                }
+            }
+
+            // Make sure the joint is valid.
+            if (_joints[jointId] != joint)
+            {
+                throw new ArgumentException("Bad joint.", "joint");
+            }
+
+            return jointId;
         }
 
         /// <summary>
@@ -1934,6 +2063,17 @@ namespace Engine.Physics.Systems
                 packet.Write(_jointEdges[joint * 2 + 1]);
             }
 
+            packet.Write(_gearJoints.Count);
+            foreach (var pair in _gearJoints)
+            {
+                packet.Write(pair.Key);
+                packet.Write(pair.Value.Count);
+                foreach (var gearJoint in pair.Value)
+                {
+                    packet.Write(gearJoint);
+                }
+            }
+
             packet.Write(_touched.Count);
             foreach (var entry in _touched)
             {
@@ -2000,6 +2140,20 @@ namespace Engine.Physics.Systems
                     _jointEdges[joint * 2 + 1] = new JointEdge();
                     _freeJoints = joint;
                 }
+            }
+
+            _gearJoints.Clear();
+            var jointWithGearCount = packet.ReadInt32();
+            for (var i = 0; i < jointWithGearCount; i++)
+            {
+                var joint = packet.ReadInt32();
+                var gearCount = packet.ReadInt32();
+                var gears = new HashSet<int>();
+                for (var j = 0; j < gearCount; j++)
+                {
+                    gears.Add(packet.ReadInt32());
+                }
+                _gearJoints.Add(joint, gears);
             }
 
             _touched.Clear();
@@ -2069,6 +2223,8 @@ namespace Engine.Physics.Systems
 
             copy._joints = new Joint[0];
             copy._jointEdges = new JointEdge[0];
+
+            copy._gearJoints = new Dictionary<int, HashSet<int>>();
 
 #if FARMATH
             copy._index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
@@ -2158,6 +2314,14 @@ namespace Engine.Physics.Systems
                     copy._jointEdges[i] = _jointEdges[i].NewInstance();
                 }
                 _jointEdges[i].CopyInto(copy._jointEdges[i]);
+            }
+
+            copy._gearJoints.Clear();
+            foreach (var gearJoints in _gearJoints)
+            {
+                var gears = new HashSet<int>();
+                gears.UnionWith(gearJoints.Value);
+                copy._gearJoints.Add(gearJoints.Key, gears);
             }
 
             copy._index.Clear();
