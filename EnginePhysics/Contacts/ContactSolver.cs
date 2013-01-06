@@ -19,15 +19,15 @@ namespace Engine.Physics.Contacts
     /// </summary>
     internal sealed class ContactSolver
     {
-        private readonly IList<Contact> _contacts;
+        private Position[] _positions;
+
+        private Velocity[] _velocities;
 
         private ContactPositionConstraint[] _positionConstraints = new ContactPositionConstraint[0];
 
         private ContactVelocityConstraint[] _velocityConstraints = new ContactVelocityConstraint[0];
 
-        private Position[] _positions;
-
-        private Velocity[] _velocities;
+        private readonly IList<Contact> _contacts;
 
         public ContactSolver(IList<Contact> contacts)
         {
@@ -41,8 +41,8 @@ namespace Engine.Physics.Contacts
             {
                 var oldCapacity = _positionConstraints.Length;
                 var newPositionConstraints = new ContactPositionConstraint[contactCapacity];
-                var newVelocityConstraints = new ContactVelocityConstraint[contactCapacity];
                 _positionConstraints.CopyTo(newPositionConstraints, 0);
+                var newVelocityConstraints = new ContactVelocityConstraint[contactCapacity];
                 _velocityConstraints.CopyTo(newVelocityConstraints, 0);
                 for (var i = oldCapacity; i < newPositionConstraints.Length; ++i)
                 {
@@ -811,31 +811,6 @@ namespace Engine.Physics.Contacts
             return minSeparation >= -1.5f * Settings.LinearSlop;
         }
 
-        private sealed class ContactPositionConstraint
-        {
-            public FixedArray2<Vector2> LocalPoints;
-
-            public Vector2 LocalNormal;
-
-            public Vector2 LocalPoint;
-
-            public int IndexA;
-
-            public int IndexB;
-
-            public float InvMassA, InvMassB;
-
-            public Vector2 LocalCenterA, LocalCenterB;
-
-            public float InvInertiaA, InvInertiaB;
-
-            public Manifold.ManifoldType Type;
-
-            public float RadiusA, RadiusB;
-
-            public int PointCount;
-        }
-
         private sealed class ContactVelocityConstraint
         {
             public readonly VelocityConstraintPoint[] Points = new[]
@@ -882,6 +857,31 @@ namespace Engine.Physics.Contacts
             public float TangentMass;
 
             public float VelocityBias;
+        }
+
+        private sealed class ContactPositionConstraint
+        {
+            public Vector2[] LocalPoints = new Vector2[2];
+
+            public Vector2 LocalNormal;
+
+            public Vector2 LocalPoint;
+
+            public int IndexA;
+
+            public int IndexB;
+
+            public float InvMassA, InvMassB;
+
+            public Vector2 LocalCenterA, LocalCenterB;
+
+            public float InvInertiaA, InvInertiaB;
+
+            public Manifold.ManifoldType Type;
+
+            public float RadiusA, RadiusB;
+
+            public int PointCount;
         }
     }
 }
