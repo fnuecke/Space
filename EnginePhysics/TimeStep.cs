@@ -126,11 +126,22 @@ namespace Engine.Physics
             _updateWatch.Restart();
         }
 
+        private static readonly double TicksToMilliseconds = 1000.0 / Stopwatch.Frequency;
+
         [Conditional("PROFILE")]
         internal void EndStep()
         {
             _updateWatch.Stop();
-            _step = _updateWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _step = _updateWatch.ElapsedTicks;
+
+            _step *= TicksToMilliseconds;
+            _collide *= TicksToMilliseconds;
+            _solve *= TicksToMilliseconds;
+            _solveInit *= TicksToMilliseconds;
+            _solveVelocity *= TicksToMilliseconds;
+            _solvePosition *= TicksToMilliseconds;
+            _broadphase *= TicksToMilliseconds;
+            _solveTOI *= TicksToMilliseconds;
         }
 
         [Conditional("PROFILE")]
@@ -143,7 +154,7 @@ namespace Engine.Physics
         internal void EndCollide()
         {
             _solverWatch.Stop();
-            _collide = _solverWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _collide = _solverWatch.ElapsedTicks;
         }
 
         [Conditional("PROFILE")]
@@ -161,7 +172,7 @@ namespace Engine.Physics
         internal void EndSolve()
         {
             _solverWatch.Stop();
-            _solve = _solverWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _solve = _solverWatch.ElapsedTicks;
         }
         
         [Conditional("PROFILE")]
@@ -174,7 +185,7 @@ namespace Engine.Physics
         internal void EndSolveInit()
         {
             _islandWatch.Stop();
-            _solveInit += _islandWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _solveInit += _islandWatch.ElapsedTicks;
         }
 
         [Conditional("PROFILE")]
@@ -187,7 +198,7 @@ namespace Engine.Physics
         internal void EndSolveVelocity()
         {
             _islandWatch.Stop();
-            _solveVelocity += _islandWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _solveVelocity += _islandWatch.ElapsedTicks;
         }
 
         [Conditional("PROFILE")]
@@ -200,7 +211,7 @@ namespace Engine.Physics
         internal void EndSolvePosition()
         {
             _islandWatch.Stop();
-            _solvePosition += _islandWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _solvePosition += _islandWatch.ElapsedTicks;
         }
 
         [Conditional("PROFILE")]
@@ -213,7 +224,7 @@ namespace Engine.Physics
         internal void EndSolveTOI()
         {
             _solverWatch.Stop();
-            _solveTOI = _solverWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _solveTOI = _solverWatch.ElapsedTicks;
         }
 
         [Conditional("PROFILE")]
@@ -226,7 +237,7 @@ namespace Engine.Physics
         internal void EndBroadphase()
         {
             _solverWatch.Stop();
-            _broadphase = _solverWatch.ElapsedTicks * 1000 / (double)Stopwatch.Frequency;
+            _broadphase = _solverWatch.ElapsedTicks;
         }
     }
 }
