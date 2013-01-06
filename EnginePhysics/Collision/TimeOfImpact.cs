@@ -45,7 +45,7 @@ namespace Engine.Physics.Collision
 
                 // Get the distance between shapes. We can also use the results
                 // to get a separating axis.
-                var distance = Distance(ref cache, proxyA, ref xfA, proxyB, ref xfB);
+                var distance = Distance(ref cache, proxyA, xfA, proxyB, xfB);
 
                 // If the shapes are overlapped, we give up on continuous collision.
                 if (distance <= 0.0f)
@@ -64,7 +64,7 @@ namespace Engine.Physics.Collision
 
                 // Initialize the separating axis.
                 SeparationFunction fcn;
-                SeparationFunction.Initialize(out fcn, ref cache, proxyA, proxyB, ref sweepA, ref sweepB, t1);
+                SeparationFunction.Initialize(out fcn, cache, proxyA, proxyB, sweepA, sweepB, t1);
 
                 // Compute the TOI on the separating axis. We do this by successively
                 // resolving the deepest point. This loop is bounded by the number of vertices.
@@ -177,9 +177,9 @@ namespace Engine.Physics.Collision
 
             private Type _type;
 
-            public static void Initialize(out SeparationFunction f, ref SimplexCache cache,
+            public static void Initialize(out SeparationFunction f, SimplexCache cache,
                                           DistanceProxy proxyA, DistanceProxy proxyB,
-                                          ref Sweep sweepA, ref Sweep sweepB, float t1)
+                                          Sweep sweepA, Sweep sweepB, float t1)
             {
                 System.Diagnostics.Debug.Assert(0 < cache.Count && cache.Count < 3);
 
@@ -196,8 +196,8 @@ namespace Engine.Physics.Collision
                 if (cache.Count == 1)
                 {
                     f._type = Type.Points;
-                    var localPointA = f._proxyA.GetVertex(cache.IndexA.Item1);
-                    var localPointB = f._proxyB.GetVertex(cache.IndexB.Item1);
+                    var localPointA = f._proxyA.Vertices[cache.IndexA.Item1];
+                    var localPointB = f._proxyB.Vertices[cache.IndexB.Item1];
                     var pointA = xfA.ToGlobal(localPointA);
                     var pointB = xfB.ToGlobal(localPointB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
@@ -210,8 +210,8 @@ namespace Engine.Physics.Collision
                 {
                     // Two points on B and one on A.
                     f._type = Type.FaceB;
-                    var localPointB1 = proxyB.GetVertex(cache.IndexB.Item1);
-                    var localPointB2 = proxyB.GetVertex(cache.IndexB.Item2);
+                    var localPointB1 = proxyB.Vertices[cache.IndexB.Item1];
+                    var localPointB2 = proxyB.Vertices[cache.IndexB.Item2];
 
                     f._axis = Vector2Util.Cross(localPointB2 - localPointB1, 1.0f);
                     f._axis.Normalize();
@@ -220,7 +220,7 @@ namespace Engine.Physics.Collision
                     f._localPoint = 0.5f * (localPointB1 + localPointB2);
                     var pointB = xfB.ToGlobal(f._localPoint);
 
-                    var localPointA = proxyA.GetVertex(cache.IndexA[0]);
+                    var localPointA = proxyA.Vertices[cache.IndexA[0]];
                     var pointA = xfA.ToGlobal(localPointA);
                     
 // ReSharper disable RedundantCast Necessary for FarPhysics.
@@ -235,8 +235,8 @@ namespace Engine.Physics.Collision
                 {
                     // Two points on A and one or two points on B.
                     f._type = Type.FaceA;
-                    var localPointA1 = f._proxyA.GetVertex(cache.IndexA.Item1);
-                    var localPointA2 = f._proxyA.GetVertex(cache.IndexA.Item2);
+                    var localPointA1 = f._proxyA.Vertices[cache.IndexA.Item1];
+                    var localPointA2 = f._proxyA.Vertices[cache.IndexA.Item2];
 
                     f._axis = Vector2Util.Cross(localPointA2 - localPointA1, 1.0f);
                     f._axis.Normalize();
@@ -245,7 +245,7 @@ namespace Engine.Physics.Collision
                     f._localPoint = 0.5f * (localPointA1 + localPointA2);
                     var pointA = xfA.ToGlobal(f._localPoint);
 
-                    var localPointB = f._proxyB.GetVertex(cache.IndexB[0]);
+                    var localPointB = f._proxyB.Vertices[cache.IndexB[0]];
                     var pointB = xfB.ToGlobal(localPointB);
                     
 // ReSharper disable RedundantCast Necessary for FarPhysics.
@@ -274,8 +274,8 @@ namespace Engine.Physics.Collision
                         indexA = _proxyA.GetSupport(axisA);
                         indexB = _proxyB.GetSupport(axisB);
 
-                        var localPointA = _proxyA.GetVertex(indexA);
-                        var localPointB = _proxyB.GetVertex(indexB);
+                        var localPointA = _proxyA.Vertices[indexA];
+                        var localPointB = _proxyB.Vertices[indexB];
 
                         var pointA = xfA.ToGlobal(localPointA);
                         var pointB = xfB.ToGlobal(localPointB);
@@ -295,7 +295,7 @@ namespace Engine.Physics.Collision
                         indexA = -1;
                         indexB = _proxyB.GetSupport(axisB);
 
-                        var localPointB = _proxyB.GetVertex(indexB);
+                        var localPointB = _proxyB.Vertices[indexB];
                         var pointB = xfB.ToGlobal(localPointB);
                         
 // ReSharper disable RedundantCast Necessary for FarPhysics.
@@ -313,7 +313,7 @@ namespace Engine.Physics.Collision
                         indexB = -1;
                         indexA = _proxyA.GetSupport(axisA);
 
-                        var localPointA = _proxyA.GetVertex(indexA);
+                        var localPointA = _proxyA.Vertices[indexA];
                         var pointA = xfA.ToGlobal(localPointA);
                         
 // ReSharper disable RedundantCast Necessary for FarPhysics.
@@ -336,8 +336,8 @@ namespace Engine.Physics.Collision
                 {
                     case Type.Points:
                     {
-                        var localPointA = _proxyA.GetVertex(indexA);
-                        var localPointB = _proxyB.GetVertex(indexB);
+                        var localPointA = _proxyA.Vertices[indexA];
+                        var localPointB = _proxyB.Vertices[indexB];
 
                         var pointA = xfA.ToGlobal(localPointA);
                         var pointB = xfB.ToGlobal(localPointB);
@@ -351,7 +351,7 @@ namespace Engine.Physics.Collision
                         var normal = xfA.Rotation * _axis;
                         var pointA = xfA.ToGlobal(_localPoint);
 
-                        var localPointB = _proxyB.GetVertex(indexB);
+                        var localPointB = _proxyB.Vertices[indexB];
                         var pointB = xfB.ToGlobal(localPointB);
                         
 // ReSharper disable RedundantCast Necessary for FarPhysics.
@@ -364,7 +364,7 @@ namespace Engine.Physics.Collision
                         var normal = xfB.Rotation * _axis;
                         var pointB = xfB.ToGlobal(_localPoint);
 
-                        var localPointA = _proxyA.GetVertex(indexA);
+                        var localPointA = _proxyA.Vertices[indexA];
                         var pointA = xfA.ToGlobal(localPointA);
                         
 // ReSharper disable RedundantCast Necessary for FarPhysics.

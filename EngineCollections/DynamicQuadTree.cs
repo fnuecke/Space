@@ -350,15 +350,20 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="center">The query point near which to get entries.</param>
         /// <param name="radius">The maximum distance an entry may be away
-        ///   from the query point to be returned.</param>
+        /// from the query point to be returned.</param>
         /// <param name="results"> </param>
         /// <remarks>
         /// This checks for intersections of the query circle and the bounds of
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(TPoint center, float radius, ref ISet<T> results)
+        public void Find(TPoint center, float radius, ISet<T> results)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException("results");
+            }
+
             Accumulate(_root, _bounds,
                 IntersectionExtensions.BoundsFor(center, radius),
                 center, radius, results);
@@ -381,6 +386,11 @@ namespace Engine.Collections
         /// </remarks>
         public bool Find(TPoint center, float radius, SimpleQueryCallback<T> callback)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
             return Accumulate(_root, _bounds,
                 IntersectionExtensions.BoundsFor(center, radius),
                 center, radius, callback);
@@ -393,8 +403,13 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results"> </param>
-        public void Find(TRectangle rectangle, ref ISet<T> results)
+        public void Find(TRectangle rectangle, ISet<T> results)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException("results");
+            }
+
             Accumulate(_root, _bounds, rectangle, results);
         }
 
@@ -408,6 +423,11 @@ namespace Engine.Collections
         /// <returns></returns>
         public bool Find(TRectangle rectangle, SimpleQueryCallback<T> callback)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
             return Accumulate(_root, _bounds, rectangle, callback);
         }
 
@@ -420,8 +440,13 @@ namespace Engine.Collections
         /// <param name="t">The fraction along the line to consider.</param>
         /// <param name="results">The list to put the results into.</param>
         /// <returns></returns>
-        public void Find(TPoint start, TPoint end, float t, ref ISet<T> results)
+        public void Find(TPoint start, TPoint end, float t, ISet<T> results)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException("results");
+            }
+
             Accumulate(_root, _bounds,
                 IntersectionExtensions.BoundsFor(start, end, t),
                 start, end, t, results);
@@ -445,6 +470,11 @@ namespace Engine.Collections
         /// <returns></returns>
         public bool Find(TPoint start, TPoint end, float t, LineQueryCallback<T> callback)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
             // Pass bounds and t as ref because they may change during the query.
             var queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
             return Accumulate(_root, _bounds, ref queryBounds, start, end, ref t, callback);

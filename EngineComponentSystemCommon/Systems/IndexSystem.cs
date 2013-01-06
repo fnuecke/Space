@@ -336,7 +336,7 @@ namespace Engine.ComponentSystem.Common.Systems
             foreach (var tree in TreesForGroups(groups))
             {
                 Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
-                tree.Find(center, radius, ref results);
+                tree.Find(center, radius, results);
             }
         }
 
@@ -352,7 +352,7 @@ namespace Engine.ComponentSystem.Common.Systems
             foreach (var tree in TreesForGroups(groups))
             {
                 Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
-                tree.Find(rectangle, ref results);
+                tree.Find(rectangle, results);
             }
         }
 

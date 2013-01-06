@@ -1444,7 +1444,7 @@ namespace Engine.Physics.Systems
             foreach (var fixture in _touched)
             {
                 // Find contacts (possible collisions based on fattened bounds).
-                _index.Find(_index[fixture], ref neighbors);
+                _index.Find(_index[fixture], neighbors);
                 foreach (var neighbor in neighbors)
                 {
                     // Skip self collision.

@@ -16,11 +16,18 @@ namespace Engine.Physics.Collision
 {
     internal static partial class Algorithms
     {
-        private static float Distance(ref SimplexCache cache, DistanceProxy proxyA, ref WorldTransform xfA, DistanceProxy proxyB, ref WorldTransform xfB, bool useRadii = false)
+        /// <summary>Computes the distance between two shapes represented by the
+        /// specified proxies, positioned as defined by the specified transforms.
+        /// 
+        /// The cache is read-write and will be updated for future calls.</summary>
+        private static float Distance(ref SimplexCache cache,
+                                      DistanceProxy proxyA, WorldTransform xfA,
+                                      DistanceProxy proxyB, WorldTransform xfB,
+                                      bool useRadii = false)
         {
             // Initialize the simplex.
             Simplex simplex;
-            Simplex.ReadCache(out simplex, ref cache, ref xfA, proxyA, ref xfB, proxyB);
+            Simplex.ReadCache(out simplex, cache, xfA, proxyA, xfB, proxyB);
             
             // These store the vertices of the last simplex so that we
             // can check for duplicates and prevent cycling.
@@ -80,8 +87,8 @@ namespace Engine.Physics.Collision
                 SimplexVertex v;
                 v.IndexA = proxyA.GetSupport(-xfA.Rotation * -d);
                 v.IndexB = proxyB.GetSupport(-xfB.Rotation * d);
-                v.VertexA = xfA.ToGlobal(proxyA.GetVertex(v.IndexA));
-                v.VertexB = xfB.ToGlobal(proxyB.GetVertex(v.IndexB));
+                v.VertexA = xfA.ToGlobal(proxyA.Vertices[v.IndexA]);
+                v.VertexB = xfB.ToGlobal(proxyB.Vertices[v.IndexB]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
                 v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
 // ReSharper restore RedundantCast
@@ -151,7 +158,7 @@ namespace Engine.Physics.Collision
                     case Fixture.FixtureType.Circle:
                     {
                         var circle = (CircleFixture)fixture;
-                        _vertices[0] = circle.Center;
+                        Vertices[0] = circle.Center;
                         _count = 1;
                         Radius = circle.Radius;
                     }
@@ -162,7 +169,7 @@ namespace Engine.Physics.Collision
                         var polygon = (PolygonFixture)fixture;
                         for (var i = 0; i < polygon.Count; i++)
                         {
-                            _vertices[i] = polygon.Vertices[i];
+                            Vertices[i] = polygon.Vertices[i];
                         }
                         _count = polygon.Count;
                         Radius = polygon.Radius;
@@ -172,8 +179,8 @@ namespace Engine.Physics.Collision
                     case Fixture.FixtureType.Edge:
                     {
                         var edge = (EdgeFixture)fixture;
-                        _vertices[0] = edge.Vertex1;
-                        _vertices[1] = edge.Vertex2;
+                        Vertices[0] = edge.Vertex1;
+                        Vertices[1] = edge.Vertex2;
                         _count = 2;
                         Radius = edge.Radius;
                     }
@@ -188,10 +195,10 @@ namespace Engine.Physics.Collision
             public int GetSupport(Vector2 d)
             {
                 var bestIndex = 0;
-                var bestValue = Vector2.Dot(_vertices[0], d);
+                var bestValue = Vector2.Dot(Vertices[0], d);
                 for (var i = 1; i < _count; ++i)
                 {
-                    var value = Vector2.Dot(_vertices[i], d);
+                    var value = Vector2.Dot(Vertices[i], d);
                     if (value > bestValue)
                     {
                         bestIndex = i;
@@ -202,14 +209,6 @@ namespace Engine.Physics.Collision
                 return bestIndex;
             }
 
-            /// Get a vertex by index. Used by b2Distance.
-            /// TODO inline
-            public LocalPoint GetVertex(int index)
-            {
-                System.Diagnostics.Debug.Assert(0 <= index && index < _count);
-                return _vertices[index];
-            }
-
             /// <summary>
             /// Buffer radius around the edges of the shape (?)
             /// </summary>
@@ -218,7 +217,7 @@ namespace Engine.Physics.Collision
             /// <summary>
             /// The list of vertices describing this shape.
             /// </summary>
-            private readonly LocalPoint[] _vertices = new Vector2[Settings.MaxPolygonVertices];
+            internal readonly LocalPoint[] Vertices = new Vector2[Settings.MaxPolygonVertices];
 
             /// <summary>
             /// The number of actual vertices.
@@ -260,9 +259,9 @@ namespace Engine.Physics.Collision
             /// <summary>Vertices in this simplex.</summary>
             internal FixedArray3<SimplexVertex> Vertices;
 
-            public static void ReadCache(out Simplex simplex, ref SimplexCache cache,
-                                         ref WorldTransform xfA, DistanceProxy proxyA,
-                                         ref WorldTransform xfB, DistanceProxy proxyB)
+            public static void ReadCache(out Simplex simplex, SimplexCache cache,
+                                         WorldTransform xfA, DistanceProxy proxyA,
+                                         WorldTransform xfB, DistanceProxy proxyB)
             {
                 System.Diagnostics.Debug.Assert(cache.Count <= 3);
 
@@ -273,8 +272,8 @@ namespace Engine.Physics.Collision
                     SimplexVertex v;
                     v.IndexA = cache.IndexA[i];
                     v.IndexB = cache.IndexB[i];
-                    v.VertexA = xfA.ToGlobal(proxyA.GetVertex(v.IndexA));
-                    v.VertexB = xfB.ToGlobal(proxyB.GetVertex(v.IndexB));
+                    v.VertexA = xfA.ToGlobal(proxyA.Vertices[v.IndexA]);
+                    v.VertexB = xfB.ToGlobal(proxyB.Vertices[v.IndexB]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
                     v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
 // ReSharper restore RedundantCast
@@ -301,8 +300,8 @@ namespace Engine.Physics.Collision
                     SimplexVertex v;
                     v.IndexA = 0;
                     v.IndexB = 0;
-                    v.VertexA = xfA.ToGlobal(proxyA.GetVertex(0));
-                    v.VertexB = xfB.ToGlobal(proxyB.GetVertex(0));
+                    v.VertexA = xfA.ToGlobal(proxyA.Vertices[0]);
+                    v.VertexB = xfB.ToGlobal(proxyB.Vertices[0]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
                     v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
 // ReSharper restore RedundantCast

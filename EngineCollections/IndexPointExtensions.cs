@@ -100,7 +100,7 @@ namespace Engine.Collections
             p.Y = (int)point.Y;
 
             // Perform actual search.
-            index.Find(p, range, ref list);
+            index.Find(p, range, list);
         }
     }
 }

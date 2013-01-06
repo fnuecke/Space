@@ -410,14 +410,14 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="center">The query point near which to get entries.</param>
         /// <param name="radius">The maximum distance an entry may be away
-        ///   from the query point to be returned.</param>
+        /// from the query point to be returned.</param>
         /// <param name="results"> </param>
         /// <remarks>
         /// This checks for intersections of the query circle and the bounds of
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(TPoint center, float radius, ref ISet<T> results)
+        public void Find(TPoint center, float radius, ISet<T> results)
         {
             // Compute the area bounds for that query to get the involved trees.
             var queryBounds = IntersectionExtensions.BoundsFor(center, radius);
@@ -430,7 +430,7 @@ namespace Engine.Collections
                     var relativePoint = (Vector2)(center + cell.Item2);
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativePoint, radius, ref results);
+                    _entries[cell.Item1].Find(relativePoint, radius, results);
                 }
             }
         }
@@ -481,7 +481,7 @@ namespace Engine.Collections
             /*/
             
             ISet<T> results = new HashSet<T>();
-            Find(center, radius, ref results);
+            Find(center, radius, results);
             foreach (var result in results)
             {
                 if (!callback(result))
@@ -502,7 +502,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results">The results.</param>
-        public void Find(TRectangle rectangle, ref ISet<T> results)
+        public void Find(TRectangle rectangle, ISet<T> results)
         {
             foreach (var cell in ComputeCells(rectangle))
             {
@@ -514,7 +514,7 @@ namespace Engine.Collections
 
                     // And do the query.
                     var relativeBounds = (Math.RectangleF)relativeFarBounds;
-                    _entries[cell.Item1].Find(relativeBounds, ref results);
+                    _entries[cell.Item1].Find(relativeBounds, results);
                 }
             }
         }
@@ -557,7 +557,7 @@ namespace Engine.Collections
             /*/
             
             ISet<T> results = new HashSet<T>();
-            Find(rectangle, ref results);
+            Find(rectangle, results);
             foreach (var result in results)
             {
                 if (!callback(result))
@@ -580,7 +580,7 @@ namespace Engine.Collections
         /// <param name="t">The fraction along the line to consider.</param>
         /// <param name="results">The list to put the results into.</param>
         /// <returns></returns>
-        public void Find(TPoint start, TPoint end, float t, ref ISet<T> results)
+        public void Find(TPoint start, TPoint end, float t, ISet<T> results)
         {
             foreach (var cell in ComputeCells(IntersectionExtensions.BoundsFor(start, end, t)))
             {
@@ -591,7 +591,7 @@ namespace Engine.Collections
                     var relativeEnd = (Vector2)(end + cell.Item2);
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativeStart, relativeEnd, t, ref results);
+                    _entries[cell.Item1].Find(relativeStart, relativeEnd, t, results);
                 }
             }
         }
