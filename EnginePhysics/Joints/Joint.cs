@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Systems;
@@ -22,6 +23,7 @@ namespace Engine.Physics.Joints
     /// to one entity alone in all cases. Often they will belong to two,
     /// that being the two entities (bodies) they are attached to.
     /// </summary>
+    [DebuggerDisplay("Id = {Index}, Used = {Manager != null}")]
     public abstract class Joint : ICopyable<Joint>, IPacketizable, IHashable
     {
         #region Types
@@ -150,6 +152,7 @@ namespace Engine.Physics.Joints
             CollideConnected = collideConnected;
         }
 
+        /// <summary>Destroys this joint, removing it from the simulation.</summary>
         public void Destroy()
         {
             if (Manager == null)

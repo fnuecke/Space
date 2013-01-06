@@ -207,7 +207,7 @@ namespace Engine.Util
                     generator.Emit(OpCodes.Ldfld, f);
                     generator.Emit(OpCodes.Ldarg_1);
                     generator.Emit(OpCodes.Ldflda, f);
-                    generator.EmitCall(OpCodes.Call, smartCopy, null);
+                    generator.EmitCall(OpCodes.Call, smartCopy.MakeGenericMethod(f.FieldType), null);
                 }
                 else
                 {

@@ -34,7 +34,7 @@ namespace Engine.Collections
     /// values for better performance.
     /// </summary>
     /// <typeparam name="T">The type to store in the index.</typeparam>
-    public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable
+    public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable, ICopyable<SpatialHashedQuadTree<T>>
     {
         #region Constants
 
@@ -102,13 +102,14 @@ namespace Engine.Collections
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
-        [PacketizerIgnore] private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries =
+        [CopyIgnore, PacketizerIgnore]
+        private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries =
             new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
 
         /// <summary>
         /// Maps entries back to their bounds, for removal.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly Dictionary<T, TRectangle> _entryBounds = new Dictionary<T, TRectangle>();
         
         #endregion
@@ -852,6 +853,46 @@ namespace Engine.Collections
                 var value = packet.ReadRectangleF();
 #endif
                 _entryBounds[key] = value;
+            }
+        }
+
+        #endregion
+
+        #region Copying
+        
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public SpatialHashedQuadTree<T> NewInstance()
+        {
+            return new SpatialHashedQuadTree<T>(_maxEntriesPerNode, _minNodeBounds,
+                                                _boundExtension, _movingBoundMultiplier,
+                                                _packetizer, _depacketizer);
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public void CopyInto(SpatialHashedQuadTree<T> into)
+        {
+            Copyable.CopyInto(this, into);
+
+            into._entries.Clear();
+            foreach (var entry in _entries)
+            {
+                var treeCopy = entry.Value.NewInstance();
+                entry.Value.CopyInto(treeCopy);
+                into._entries.Add(entry.Key, treeCopy);
+            }
+
+            into._entryBounds.Clear();
+            foreach (var bound in _entryBounds)
+            {
+                into._entryBounds.Add(bound.Key, bound.Value);
             }
         }
 

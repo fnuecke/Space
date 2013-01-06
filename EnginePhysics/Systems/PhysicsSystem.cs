@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
@@ -39,6 +40,7 @@ namespace Engine.Physics.Systems
     /// is worth it in my opinion.
     /// </para>
     /// </summary>
+    [DebuggerDisplay("Bodies = {BodyCount}, Contacts = {ContactCount}")]
     public sealed class PhysicsSystem : AbstractComponentSystem<Body>, IUpdatingSystem
     {
         #region Type ID
@@ -58,7 +60,7 @@ namespace Engine.Physics.Systems
             get { return _gravity; }
             set
             {
-                System.Diagnostics.Debug.Assert(!IsLocked);
+                Debug.Assert(!IsLocked);
 
                 _gravity = value;
             }
@@ -247,7 +249,6 @@ namespace Engine.Physics.Systems
         /// system because we want to track the individual fixtures, not the complete
         /// body (and the index system only tracks complete entities).
         /// </summary>
-        [CopyIgnore]
 #if FARMATH
         private FarCollections.SpatialHashedQuadTree<int> _index =
             new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
@@ -445,7 +446,7 @@ namespace Engine.Physics.Systems
             {
                 // Get the fixture and its body.
                 var fixture = Manager.GetComponentById(value) as Fixture;
-                System.Diagnostics.Debug.Assert(fixture != null);
+                Debug.Assert(fixture != null);
                 var body = fixture.Body;
 
                 // Check if it's an actual hit.
@@ -475,7 +476,7 @@ namespace Engine.Physics.Systems
         /// <summary>Gets a joint by its ID.</summary>
         /// <param name="jointId">The joint id.</param>
         /// <returns>A reference to the joint with the specified ID.</returns>
-        public Joint GetJoint(int jointId)
+        public Joint GetJointById(int jointId)
         {
             if (!HasJoint(jointId))
             {
@@ -665,9 +666,9 @@ namespace Engine.Physics.Systems
                     var joint = _jointEdges[edge].Joint;
                     edge = _jointEdges[edge].Next;
                     DestroyJoint(joint);
-                    System.Diagnostics.Debug.Assert(body.JointList == edge);
+                    Debug.Assert(body.JointList == edge);
                 }
-                System.Diagnostics.Debug.Assert(body.JointList == -1);
+                Debug.Assert(body.JointList == -1);
 
                 // Remove all contacts in one go (fixture removal would take care
                 // of that, too, but this way it's faster because we don't need to
@@ -679,9 +680,9 @@ namespace Engine.Physics.Systems
                     var contact = _contactEdges[edge].Contact;
                     edge = _contactEdges[edge].Next;
                     DestroyContact(contact);
-                    System.Diagnostics.Debug.Assert(body.ContactList == edge);
+                    Debug.Assert(body.ContactList == edge);
                 }
-                System.Diagnostics.Debug.Assert(body.ContactList == -1);
+                Debug.Assert(body.ContactList == -1);
 
                 // Remove all fixtures if a body is removed (to list because the
                 // enumeration otherwise changes while being enumerated). This
@@ -752,7 +753,7 @@ namespace Engine.Physics.Systems
             }
 
             // Tentatively give out the next free joint id.
-            System.Diagnostics.Debug.Assert(_freeContacts >= 0);
+            Debug.Assert(_freeContacts >= 0);
             return _freeContacts;
         }
 
@@ -767,7 +768,7 @@ namespace Engine.Physics.Systems
             // Initialize all new entries.
             for (var i = start; i < _contacts.Length; i++)
             {
-                System.Diagnostics.Debug.Assert(_contacts[i] == null);
+                Debug.Assert(_contacts[i] == null);
                 _contacts[i] = new Contact
                 {
                     Manager = Manager,
@@ -776,7 +777,7 @@ namespace Engine.Physics.Systems
             }
             for (var i = start * 2; i < _contactEdges.Length; i++)
             {
-                System.Diagnostics.Debug.Assert(_contactEdges[i] == null);
+                Debug.Assert(_contactEdges[i] == null);
                 _contactEdges[i] = new ContactEdge();
             }
 
@@ -792,7 +793,8 @@ namespace Engine.Physics.Systems
         /// <param name="contact">The contact.</param>
         private void UpdateContactList(int contact)
         {
-            System.Diagnostics.Debug.Assert(contact == _freeContacts);
+            
+            Debug.Assert(contact == _freeContacts);
             
             // Remove it from the linked list of available joints.
             _freeContacts = _contacts[contact].Previous;
@@ -829,8 +831,8 @@ namespace Engine.Physics.Systems
             var edgeA = contact * 2;
             var edgeB = contact * 2 + 1;
 
-            System.Diagnostics.Debug.Assert(bodyA.ContactList != edgeA);
-            System.Diagnostics.Debug.Assert(bodyB.ContactList != edgeB);
+            Debug.Assert(bodyA.ContactList != edgeA);
+            Debug.Assert(bodyB.ContactList != edgeB);
 
             // Set up edge from A to B.
             _contactEdges[edgeA].Contact = contact;
@@ -979,7 +981,7 @@ namespace Engine.Physics.Systems
             }
 
             // Tentatively give out the next free joint id.
-            System.Diagnostics.Debug.Assert(_freeJoints >= 0);
+            Debug.Assert(_freeJoints >= 0);
             return _freeJoints;
         }
 
@@ -994,12 +996,12 @@ namespace Engine.Physics.Systems
             // Initialize all new entries.
             for (var i = start; i < _joints.Length; i++)
             {
-                System.Diagnostics.Debug.Assert(_joints[i] == null);
+                Debug.Assert(_joints[i] == null);
                 _joints[i] = new NullJoint {Previous = i + 1};
             }
             for (var i = start * 2; i < _jointEdges.Length; i++)
             {
-                System.Diagnostics.Debug.Assert(_jointEdges[i] == null);
+                Debug.Assert(_jointEdges[i] == null);
                 _jointEdges[i] = new JointEdge();
             }
 
@@ -1015,7 +1017,7 @@ namespace Engine.Physics.Systems
         /// <param name="joint">The joint.</param>
         private void UpdateJointList(int joint)
         {
-            System.Diagnostics.Debug.Assert(joint == _freeJoints);
+            Debug.Assert(joint == _freeJoints);
 
             // Remove it from the linked list of available joints.
             _freeJoints = _joints[joint].Previous;
@@ -1043,7 +1045,7 @@ namespace Engine.Physics.Systems
         internal Joint CreateJoint(Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = true)
         {
             // We need at least one body to attach the joint to.
-            System.Diagnostics.Debug.Assert(bodyA != null || bodyB != null);
+            Debug.Assert(bodyA != null || bodyB != null);
 
             // Get a new joint id.
             var joint = AllocateJoint();
@@ -1109,7 +1111,7 @@ namespace Engine.Physics.Systems
             if (bodyA != null)
             {
                 var edgeA = joint * 2;
-                System.Diagnostics.Debug.Assert(bodyA.JointList != edgeA);
+                Debug.Assert(bodyA.JointList != edgeA);
                 _jointEdges[edgeA].Joint = joint;
                 _jointEdges[edgeA].Other = bodyB != null ? bodyB.Entity : 0;
                 _jointEdges[edgeA].Next = bodyA.JointList;
@@ -1127,7 +1129,7 @@ namespace Engine.Physics.Systems
             if (bodyB != null)
             {
                 var edgeB = joint * 2 + 1;
-                System.Diagnostics.Debug.Assert(bodyB.JointList != edgeB);
+                Debug.Assert(bodyB.JointList != edgeB);
                 _jointEdges[edgeB].Joint = joint;
                 _jointEdges[edgeB].Other = bodyA != null ? bodyA.Entity : 0;
                 _jointEdges[edgeB].Next = bodyB.JointList;
@@ -1421,8 +1423,8 @@ namespace Engine.Physics.Systems
                 var bodyA = fixtureA.Body;
                 var bodyB = fixtureB.Body;
 
-                System.Diagnostics.Debug.Assert(bodyA.Enabled);
-                System.Diagnostics.Debug.Assert(bodyB.Enabled);
+                Debug.Assert(bodyA.Enabled);
+                Debug.Assert(bodyB.Enabled);
 
                 // Is this contact flagged for filtering?
                 if (contact.ShouldFilter)
@@ -1509,8 +1511,8 @@ namespace Engine.Physics.Systems
                     var fixtureA = Manager.GetComponentById(fixtureIdA) as Fixture;
                     var fixtureB = Manager.GetComponentById(fixtureIdB) as Fixture;
 
-                    System.Diagnostics.Debug.Assert(fixtureA != null);
-                    System.Diagnostics.Debug.Assert(fixtureB != null);
+                    Debug.Assert(fixtureA != null);
+                    Debug.Assert(fixtureB != null);
 
                     // Get the actual collidable information for more filtering.
                     var bodyA = fixtureA.Body;
@@ -1676,7 +1678,7 @@ namespace Engine.Physics.Systems
                     var body = stack.Pop();
 
                     // Enabled: checked for seed and disabled bodies should not have contacts.
-                    System.Diagnostics.Debug.Assert(body.Enabled);
+                    Debug.Assert(body.Enabled);
 
                     // And add it to the island.
                     _island.Add(body);
@@ -1719,7 +1721,7 @@ namespace Engine.Physics.Systems
                         // Get the other party involved in this contact.
                         var other = Manager.GetComponent(_contactEdges[edge].Other, Body.TypeId) as Body;
 
-                        System.Diagnostics.Debug.Assert(other != null);
+                        Debug.Assert(other != null);
 
                         // Was the other body already added to this island?
                         if (_island.IsProcessed(other))
@@ -1750,7 +1752,7 @@ namespace Engine.Physics.Systems
                             // Get the other body this contact is attached to.
                             var other = Manager.GetComponent(_jointEdges[edge].Other, Body.TypeId) as Body;
 
-                            System.Diagnostics.Debug.Assert(other != null);
+                            Debug.Assert(other != null);
 
                             // Don't simulate joints connected to inactive bodies.
                             if (!other.Enabled)
@@ -1863,7 +1865,7 @@ namespace Engine.Physics.Systems
                         var typeA = bA.TypeInternal;
                         var typeB = bB.TypeInternal;
 
-                        System.Diagnostics.Debug.Assert(typeA == Body.BodyType.Dynamic || typeB == Body.BodyType.Dynamic);
+                        Debug.Assert(typeA == Body.BodyType.Dynamic || typeB == Body.BodyType.Dynamic);
 
                         // Is at least one body active (awake and dynamic or kinematic)?
                         var activeA = bA.IsAwakeInternal && typeA != Body.BodyType.Static;
@@ -1899,7 +1901,7 @@ namespace Engine.Physics.Systems
                             alpha0 = bA.Sweep.Alpha0;
                         }
 
-                        System.Diagnostics.Debug.Assert(alpha0 < 1.0f);
+                        Debug.Assert(alpha0 < 1.0f);
 
                         // Compute the time of impact in interval [0, minTOI].
                         _proxyA.Set(fA);
@@ -2052,8 +2054,8 @@ namespace Engine.Physics.Systems
                 // Get the other party involved in this contact.
                 var other = Manager.GetComponent(edge.Other, Body.TypeId) as Body;
 
-                System.Diagnostics.Debug.Assert(other != null);
-                System.Diagnostics.Debug.Assert(other.Enabled, "Contact to disabled body.");
+                Debug.Assert(other != null);
+                Debug.Assert(other.Enabled, "Contact to disabled body.");
 
                 // Only add static, kinematic, or bullet bodies.
                 if (other.TypeInternal == Body.BodyType.Dynamic &&
@@ -2132,7 +2134,7 @@ namespace Engine.Physics.Systems
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            System.Diagnostics.Debug.Assert(!IsLocked);
+            Debug.Assert(!IsLocked);
 
             base.Packetize(packet);
 
@@ -2265,7 +2267,7 @@ namespace Engine.Physics.Systems
         /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
-            System.Diagnostics.Debug.Assert(!IsLocked);
+            Debug.Assert(!IsLocked);
 
             base.Hash(hasher);
 
@@ -2302,7 +2304,7 @@ namespace Engine.Physics.Systems
         /// <returns>The copy.</returns>
         public override AbstractSystem NewInstance()
         {
-            System.Diagnostics.Debug.Assert(!IsLocked);
+            Debug.Assert(!IsLocked);
 
             var copy = (PhysicsSystem)base.NewInstance();
 
@@ -2314,13 +2316,7 @@ namespace Engine.Physics.Systems
 
             copy._gearJoints = new Dictionary<int, HashSet<int>>();
 
-#if FARMATH
-            copy._index = new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
-                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
-#else
-            copy._index = new Collections.DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
-                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
-#endif
+            copy._index = _index.NewInstance();
             copy._touched = new HashSet<int>();
 
             copy._island = null;
@@ -2341,7 +2337,7 @@ namespace Engine.Physics.Systems
         /// <param name="into">The instance to copy into.</param>
         public override void CopyInto(AbstractSystem into)
         {
-            System.Diagnostics.Debug.Assert(!IsLocked);
+            Debug.Assert(!IsLocked);
 
             base.CopyInto(into);
 
@@ -2366,12 +2362,6 @@ namespace Engine.Physics.Systems
                 var gears = new HashSet<int>();
                 gears.UnionWith(gearJoints.Value);
                 copy._gearJoints.Add(gearJoints.Key, gears);
-            }
-
-            copy._index.Clear();
-            foreach (var entry in _index)
-            {
-                copy._index.Add(entry.Item1, entry.Item2);
             }
 
             copy._touched.Clear();
@@ -2408,7 +2398,7 @@ namespace Engine.Physics.Systems
         /// <returns>A reference to the joint with the specified ID.</returns>
         public static Joint GetJointById(this IManager manager, int jointId)
         {
-            return manager.GetSimulation().GetJoint(jointId);
+            return manager.GetSimulation().GetJointById(jointId);
         }
 
         /// <summary>Gets all joints attached to the body with the specified entity ID.</summary>
@@ -2439,7 +2429,7 @@ namespace Engine.Physics.Systems
         /// <param name="joint">The joint to remove.</param>
         public static void RemoveJoint(this IManager manager, Joint joint)
         {
-            manager.GetSimulation().DestroyJoint(joint);
+            joint.Destroy();
         }
 
         /// <summary>Removes the joint with the specified id from the simulation.</summary>
@@ -2447,8 +2437,7 @@ namespace Engine.Physics.Systems
         /// <param name="jointId">The joint id.</param>
         public static void RemoveJoint(this IManager manager, int jointId)
         {
-            var simulation = manager.GetSimulation();
-            simulation.DestroyJoint(simulation.GetJoint(jointId));
+            manager.GetJointById(jointId).Destroy();
         }
 
         /// <summary>Gets the simulation for the specified manager.</summary>

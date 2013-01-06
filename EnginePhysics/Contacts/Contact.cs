@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using Engine.Collections;
 using Engine.ComponentSystem;
@@ -21,6 +22,7 @@ namespace Engine.Physics.Contacts
     /// <summary>
     /// Represents a contact between two fixtures.
     /// </summary>
+    [DebuggerDisplay("FixtureA = {FixtureIdA}, FixtureB = {FixtureIdB}, IsTouching = {IsTouching}")]
     public sealed class Contact : ICopyable<Contact>, IPacketizable, IHashable
     {
         #region Linked list data (unused/free)
