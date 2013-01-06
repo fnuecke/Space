@@ -93,25 +93,25 @@ namespace Engine.Collections
         /// <summary>
         /// The number of items in a single cell allowed before we try splitting it.
         /// </summary>
-        private int _maxEntriesPerNode;
+        private readonly int _maxEntriesPerNode;
 
         /// <summary>
         /// The minimum bounds size of a node along an axis, used to stop splitting
         /// at a defined accuracy.
         /// </summary>
-        private float _minNodeBounds;
+        private readonly float _minNodeBounds;
 
         /// <summary>
         /// Amount by which to oversize entry bounds to allow for small movement
         /// the item without having to update the tree. Idea taken from Box2D.
         /// </summary>
-        private float _boundExtension;
+        private readonly float _boundExtension;
 
         /// <summary>
         /// Amount by which to oversize entry bounds in the direction they moved
         /// during an update, to predict future movement. Idea taken from Box2D.
         /// </summary>
-        private float _movingBoundMultiplier;
+        private readonly float _movingBoundMultiplier;
 
         /// <summary>
         /// The current bounds of the tree. This is a dynamic value, adjusted
@@ -712,11 +712,6 @@ namespace Engine.Collections
                 var bounds = packet.ReadFarRectangle();
 #else
                 var bounds = packet.ReadRectangleF();
-
-                Debug.Assert(!float.IsNaN(bounds.X));
-                Debug.Assert(!float.IsNaN(bounds.Y));
-                Debug.Assert(!float.IsNaN(bounds.Width));
-                Debug.Assert(!float.IsNaN(bounds.Height));
 #endif
 
                 var entry = new Entry {Bounds = bounds, Value = value};

@@ -44,7 +44,7 @@ namespace Engine.Collections
 #if FARMATH
         private static readonly int CellSize = FarValue.SegmentSize;
 #else
-        private static readonly int CellSize = 65536;
+        private const int CellSize = 65536;
 #endif
 
         #endregion
@@ -80,24 +80,24 @@ namespace Engine.Collections
         /// <summary>
         /// The max entries per node in quad trees.
         /// </summary>
-        private int _maxEntriesPerNode;
+        private readonly int _maxEntriesPerNode;
 
         /// <summary>
         /// The min node bounds for nodes in quad trees.
         /// </summary>
-        private float _minNodeBounds;
+        private readonly float _minNodeBounds;
 
         /// <summary>
         /// Amount by which to oversize entry bounds to allow for small movement
         /// the item without having to update the tree. Idea taken from Box2D.
         /// </summary>
-        private float _boundExtension;
+        private readonly float _boundExtension;
 
         /// <summary>
         /// Amount by which to oversize entry bounds in the direction they moved
         /// during an update, to predict future movement. Idea taken from Box2D.
         /// </summary>
-        private float _movingBoundMultiplier;
+        private readonly float _movingBoundMultiplier;
 
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
@@ -184,7 +184,9 @@ namespace Engine.Collections
                 relativeBounds.Offset(cell.Item2);
 
                 // And add the item to the tree.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                 _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+// ReSharper restore RedundantCast
             }
 
             // Store element itself for future retrieval (removals, item lookup).
@@ -328,7 +330,9 @@ namespace Engine.Collections
                 relativeBounds.Offset(cell.Item2);
 
                 // And add the item to the tree.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                 _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+// ReSharper restore RedundantCast
             }
 
             //*/
@@ -428,7 +432,9 @@ namespace Engine.Collections
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativePoint = (Vector2)(center + cell.Item2);
+// ReSharper restore RedundantCast
 
                     // And do the query.
                     _entries[cell.Item1].Find(relativePoint, radius, results);
@@ -514,7 +520,9 @@ namespace Engine.Collections
                     relativeFarBounds.Offset(cell.Item2);
 
                     // And do the query.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativeBounds = (Math.RectangleF)relativeFarBounds;
+// ReSharper restore RedundantCast
                     _entries[cell.Item1].Find(relativeBounds, results);
                 }
             }
@@ -588,8 +596,10 @@ namespace Engine.Collections
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativeStart = (Vector2)(start + cell.Item2);
                     var relativeEnd = (Vector2)(end + cell.Item2);
+// ReSharper restore RedundantCast
 
                     // And do the query.
                     _entries[cell.Item1].Find(relativeStart, relativeEnd, t, results);
@@ -623,8 +633,10 @@ namespace Engine.Collections
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativeStart = (Vector2)(start + cell.Item2);
                     var relativeEnd = (Vector2)(end + cell.Item2);
+// ReSharper restore RedundantCast
 
                     // And do the query.
                     if (!_entries[cell.Item1].Find(relativeStart, relativeEnd, t,

@@ -184,7 +184,7 @@ namespace Engine.Physics.Systems
         #region Fields
 
         /// <summary>The settings for this simulation.</summary>
-        private float _timestep = 1 / 60f;
+        private readonly float _timestep = 1 / 60f;
 
         /// <summary>The directed global gravitational vector.</summary>
         private Vector2 _gravity = -Vector2.UnitY;
@@ -2372,7 +2372,12 @@ namespace Engine.Physics.Systems
 
         #region ToString
 
-        // TODO
+        /// <summary>Returns a <see cref="System.String"/> that represents this instance.</summary>
+        /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
+        public override string ToString()
+        {
+            return base.ToString();
+        }
 
         #endregion
     }
