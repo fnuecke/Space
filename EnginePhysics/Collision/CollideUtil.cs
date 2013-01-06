@@ -10,9 +10,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Collision
 {
-    /// <summary>
-    /// Utility methods of the collision module.
-    /// </summary>
+    /// <summary>Utility methods of the collision module.</summary>
     internal static partial class Algorithms
     {
         /// <summary>
@@ -81,12 +79,14 @@ namespace Engine.Physics.Collision
             return numOut;
         }
 
-        /// Used for computing contact manifolds.
+        /// <summary>Used for computing contact manifolds.</summary>
         private struct ClipVertex
         {
-            public LocalPoint Vertex;
-
+            /// <summary>The contact ID uniquely identifying this contact vertex.</summary>
             public ContactID Id;
+
+            /// <summary>The vertex position in local coordinate space.</summary>
+            public LocalPoint Vertex;
         }
     }
 }

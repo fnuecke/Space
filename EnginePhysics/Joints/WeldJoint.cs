@@ -266,20 +266,13 @@ namespace Engine.Physics.Joints
                 _tmp.Bias = 0.0f;
             }
 
-            if (step.IsWarmStarting)
-            {
-                var p = new Vector2(_impulse.X, _impulse.Y);
+            var p = new Vector2(_impulse.X, _impulse.Y);
 
-                vA -= mA * p;
-                wA -= iA * (Vector2Util.Cross(_tmp.RotA, p) + _impulse.Z);
+            vA -= mA * p;
+            wA -= iA * (Vector2Util.Cross(_tmp.RotA, p) + _impulse.Z);
 
-                vB += mB * p;
-                wB += iB * (Vector2Util.Cross(_tmp.RotB, p) + _impulse.Z);
-            }
-            else
-            {
-                _impulse = Vector3.Zero;
-            }
+            vB += mB * p;
+            wB += iB * (Vector2Util.Cross(_tmp.RotB, p) + _impulse.Z);
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;

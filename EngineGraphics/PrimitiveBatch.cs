@@ -451,7 +451,6 @@ namespace Engine.Graphics
             }
 
             // Push the vertex.
-            // TODO offset in z direction was -0.1f in FarSeer, necessary?
             _triangleVertices[_triangleVertexCount].Position = new Vector3(vertex, 0);
             _triangleVertices[_triangleVertexCount].Color = color;
             ++_triangleVertexCount;

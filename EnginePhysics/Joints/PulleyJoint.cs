@@ -299,21 +299,12 @@ namespace Engine.Physics.Joints
                 _tmp.Mass = 1.0f / _tmp.Mass;
             }
 
-            if (step.IsWarmStarting)
-            {
-                // Warm starting.
-                var pA = -(_impulse) * _tmp.AxisA;
-                var pB = (-_ratio * _impulse) * _tmp.AxisB;
-
-                vA += _tmp.InverseMassA * pA;
-                wA += _tmp.InverseInertiaA * Vector2Util.Cross(_tmp.RotA, pA);
-                vB += _tmp.InverseMassB * pB;
-                wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, pB);
-            }
-            else
-            {
-                _impulse = 0.0f;
-            }
+            var pA = -(_impulse) * _tmp.AxisA;
+            var pB = (-_ratio * _impulse) * _tmp.AxisB;
+            vA += _tmp.InverseMassA * pA;
+            wA += _tmp.InverseInertiaA * Vector2Util.Cross(_tmp.RotA, pA);
+            vB += _tmp.InverseMassB * pB;
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, pB);
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;

@@ -241,23 +241,17 @@ namespace Engine.Physics.Joints
             {
                 _tmp.AngularMass = 1.0f / _tmp.AngularMass;
             }
-
+            
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             _tmp.LinearError = (Vector2)(cB - cA) + (_tmp.RotB - _tmp.RotA) - qA * _linearOffset;
+// ReSharper restore RedundantCast
             _tmp.AngularError = aB - aA - _angularOffset;
 
-            if (step.IsWarmStarting)
-            {
-                var p = new Vector2(_linearImpulse.X, _linearImpulse.Y);
-                vA -= mA * p;
-                wA -= iA * (Vector2Util.Cross(_tmp.RotA, p) + _angularImpulse);
-                vB += mB * p;
-                wB += iB * (Vector2Util.Cross(_tmp.RotB, p) + _angularImpulse);
-            }
-            else
-            {
-                _linearImpulse = Vector2.Zero;
-                _angularImpulse = 0.0f;
-            }
+            var p = new Vector2(_linearImpulse.X, _linearImpulse.Y);
+            vA -= mA * p;
+            wA -= iA * (Vector2Util.Cross(_tmp.RotA, p) + _angularImpulse);
+            vB += mB * p;
+            wB += iB * (Vector2Util.Cross(_tmp.RotB, p) + _angularImpulse);
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;

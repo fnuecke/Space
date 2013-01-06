@@ -19,7 +19,7 @@ namespace Engine.Physics.Tests.Tests
             var deltaX = new Vector2(0.5625f, 1.25f);
             var deltaY = new Vector2(1.125f, 0.0f);
 
-            const int count = 20;
+            const int count = 35;
 
             for (var i = 0; i < count; ++i)
             {

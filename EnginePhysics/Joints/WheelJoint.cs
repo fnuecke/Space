@@ -405,24 +405,15 @@ namespace Engine.Physics.Joints
                 _motorImpulse = 0.0f;
             }
 
-            if (step.IsWarmStarting)
-            {
-                var p = _impulse * _tmp.Ay + _springImpulse * _tmp.Ax;
-                var lA = _impulse * _tmp.SAy + _springImpulse * _tmp.SAx + _motorImpulse;
-                var lB = _impulse * _tmp.SBy + _springImpulse * _tmp.SBx + _motorImpulse;
+            var p = _impulse * _tmp.Ay + _springImpulse * _tmp.Ax;
+            var lA = _impulse * _tmp.SAy + _springImpulse * _tmp.SAx + _motorImpulse;
+            var lB = _impulse * _tmp.SBy + _springImpulse * _tmp.SBx + _motorImpulse;
 
-                vA -= _tmp.InverseMassA * p;
-                wA -= _tmp.InverseInertiaA * lA;
+            vA -= _tmp.InverseMassA * p;
+            wA -= _tmp.InverseInertiaA * lA;
 
-                vB += _tmp.InverseMassB * p;
-                wB += _tmp.InverseInertiaB * lB;
-            }
-            else
-            {
-                _impulse = 0.0f;
-                _springImpulse = 0.0f;
-                _motorImpulse = 0.0f;
-            }
+            vB += _tmp.InverseMassB * p;
+            wB += _tmp.InverseInertiaB * lB;
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;

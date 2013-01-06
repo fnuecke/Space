@@ -29,8 +29,6 @@ namespace Engine.Physics.Contacts
 
         private Velocity[] _velocities;
 
-        private TimeStep _step;
-
         public ContactSolver(IList<Contact> contacts)
         {
             _contacts = contacts;
@@ -59,10 +57,8 @@ namespace Engine.Physics.Contacts
             _velocities = velocities;
         }
 
-        public void Initialize(TimeStep step)
+        public void Initialize(bool isWarmStarting)
         {
-            _step = step;
-
             // Initialize position independent portions of the constraints.
             for (var i = 0; i < _contacts.Count; ++i)
             {
@@ -111,7 +107,7 @@ namespace Engine.Physics.Contacts
                 {
                     var vcp = vc.Points[j];
 
-                    if (_step.IsWarmStarting)
+                    if (isWarmStarting)
                     {
                         vcp.NormalImpulse = contact.Manifold.Points[j].NormalImpulse;
                         vcp.TangentImpulse = contact.Manifold.Points[j].TangentImpulse;

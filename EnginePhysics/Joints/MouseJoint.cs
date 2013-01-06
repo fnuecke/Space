@@ -245,15 +245,8 @@ namespace Engine.Physics.Joints
             // Cheat with some damping
             wB *= 0.98f;
 
-            if (step.IsWarmStarting)
-            {
-                vB += _tmp.InverseMassB * _impulse;
-                wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, _impulse);
-            }
-            else
-            {
-                _impulse = Vector2.Zero;
-            }
+            vB += _tmp.InverseMassB * _impulse;
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, _impulse);
 
             velocities[_tmp.IndexB].LinearVelocity = vB;
             velocities[_tmp.IndexB].AngularVelocity = wB;

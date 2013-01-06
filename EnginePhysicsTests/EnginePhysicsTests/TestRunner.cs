@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.Math;
 using Engine.Physics.Joints;
 using Engine.Physics.Systems;
 using Engine.Physics.Tests.Tests;
@@ -119,6 +121,16 @@ namespace Engine.Physics.Tests
         /// Whether to render the help text.
         /// </summary>
         private bool _showHelp;
+
+        /// <summary>
+        /// Whether to show profiling information.
+        /// </summary>
+        private bool _showProfile;
+
+        /// <summary>
+        /// Profiling data accumulated over time.
+        /// </summary>
+        private Profile _profile = new Profile();
 
         /// <summary>
         /// The accumulated elapsed time since the last simulation update.
@@ -284,12 +296,13 @@ namespace Engine.Physics.Tests
 @"
 Hotkeys:
 F1           - Toggles this help message.
-F2           - Toggles profiler information.
-F3           - Toggle joint rendering.
-F4           - Toggle contact points and normal rendering.
-F5           - Toggle contact point normal impulse rendering.
-F7           - Toggle center of mass rendering.
-F8           - Toggle bounding box rendering.
+F2           - Toggles profiler information and stats (current: {0}).
+F3           - Toggle joint rendering. (current: {1})
+F4           - Toggle contact points and normal rendering. (current: {2})
+F5           - Toggle contact point normal impulse rendering. (current: {3})
+F7           - Toggle center of mass rendering. (current: {4})
+F8           - Toggle bounding box rendering. (current: {5})
+S            - Toggle whether sleeping is allowed. (current: {6})
 
 Left Arrow   - Previous test.
 Right Arrow  - Next test.
@@ -298,11 +311,39 @@ Tab or Enter - Advance simulation one frame.
 R            - Reload current test (keeping pause state).
 K            - Create snapshot (for testing serialization).
 L            - Load snapshot created with K.
-C            - Test copying (creates simulation copy and uses it).");
+C            - Test copying (creates simulation copy and uses it).",
+                _showProfile, _renderer.RenderJoints, _renderer.RenderContactPoints,
+                _renderer.RenderContactPointNormalImpulse, _renderer.RenderCenterOfMass,
+                _renderer.RenderFixtureBounds, _physics.AllowSleep);
             }
             else
             {
                 DrawString("\nPress F1 for help.");
+            }
+
+            if (_showProfile && _physics != null)
+            {
+                DrawString(@"
+Bodies/Fixtures/Contacts/Joints: {25}/{26}/{27}/{28}
+HPT: {24,5}       Last [Average] (Maximum)
+Step          {0,7:0.00} [{1,7:0.00}] ({2,7:0.00})
+Collide       {3,7:0.00} [{4,7:0.00}] ({5,7:0.00})
+Solve         {6,7:0.00} [{7,7:0.00}] ({8,7:0.00})
+SolveInit     {9,7:0.00} [{10,7:0.00}] ({11,7:0.00})
+SolveVelocity {12,7:0.00} [{13,7:0.00}] ({14,7:0.00})
+SolvePosition {15,7:0.00} [{16,7:0.00}] ({17,7:0.00})
+Broadphase    {18,7:0.00} [{19,7:0.00}] ({20,7:0.00})
+SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
+                _profile.Step.Last, _profile.Step.Mean(), _profile.Step.Max,
+                _profile.Collide.Last, _profile.Collide.Mean(), _profile.Collide.Max,
+                _profile.Solve.Last, _profile.Solve.Mean(), _profile.Solve.Max,
+                _profile.SolveInit.Last, _profile.SolveInit.Mean(), _profile.SolveInit.Max,
+                _profile.SolveVelocity.Last, _profile.SolveVelocity.Mean(), _profile.SolveVelocity.Max,
+                _profile.SolvePosition.Last, _profile.SolvePosition.Mean(), _profile.SolvePosition.Max,
+                _profile.Broadphase.Last, _profile.Broadphase.Mean(), _profile.Broadphase.Max,
+                _profile.SolveTOI.Last, _profile.SolveTOI.Mean(), _profile.SolveTOI.Max,
+                Stopwatch.IsHighResolution,
+                _physics.BodyCount, _physics.FixtureCount, _physics.ContactCount, _physics.JointCount);
             }
 
             // Newline before any text current test may want to display.
@@ -317,6 +358,20 @@ C            - Test copying (creates simulation copy and uses it).");
                     _manager.Update(0);
                     _runOnce = false;
                     _elapsedTimeAccumulator = 0;
+
+                    // Update profiling data.
+                    if (_physics != null)
+                    {
+                        var profile = _physics.Profile;
+                        _profile.Step.Put(profile.Step);
+                        _profile.Collide.Put(profile.Collide);
+                        _profile.Solve.Put(profile.Solve);
+                        _profile.SolveInit.Put(profile.SolveInit);
+                        _profile.SolveVelocity.Put(profile.SolveVelocity);
+                        _profile.SolvePosition.Put(profile.SolvePosition);
+                        _profile.Broadphase.Put(profile.Broadphase);
+                        _profile.SolveTOI.Put(profile.SolveTOI);
+                    }
                 }
                 // Always update the tests, regardless of tick rate, for
                 // proper text rendering.
@@ -370,6 +425,7 @@ C            - Test copying (creates simulation copy and uses it).");
                 _snapshot = null;
             }
             _mouseJoint = -1;
+            _profile.Reset();
 
             // Wrap the number to the valid range.
             _currentTest = (number + Tests.Length) % Tests.Length;
@@ -465,12 +521,18 @@ C            - Test copying (creates simulation copy and uses it).");
                     }
                     break;
 
+                case Keys.S:
+                    // Toggle whether sleeping is allowed.
+                    _physics.AllowSleep = !_physics.AllowSleep;
+                    break;
+
                 case Keys.F1:
                     // Toggle help display.
                     _showHelp = !_showHelp;
                     break;
                 case Keys.F2:
                     // Toggle profiler information.
+                    _showProfile = !_showProfile;
                     break;
                 case Keys.F3:
                     // Toggle joints.
@@ -609,6 +671,44 @@ C            - Test copying (creates simulation copy and uses it).");
                 }
 
                 Tests[_currentTest].OnMouseMove(mousePosition, delta);
+            }
+        }
+
+        /// <summary>
+        /// Used to accumulate profiling data over time.
+        /// </summary>
+        private sealed class Profile
+        {
+            private const int SampleCount = 240;
+
+            public readonly DoubleSampling Step = new DoubleSampling(SampleCount);
+
+            public readonly DoubleSampling Collide = new DoubleSampling(SampleCount);
+
+            public readonly DoubleSampling Solve = new DoubleSampling(SampleCount);
+
+            public readonly DoubleSampling SolveInit = new DoubleSampling(SampleCount);
+
+            public readonly DoubleSampling SolveVelocity = new DoubleSampling(SampleCount);
+
+            public readonly DoubleSampling SolvePosition = new DoubleSampling(SampleCount);
+
+            public readonly DoubleSampling Broadphase = new DoubleSampling(SampleCount);
+
+            public readonly DoubleSampling SolveTOI = new DoubleSampling(SampleCount);
+
+            /// <summary>Resets all samplings.</summary>
+            public void Reset()
+            {
+
+                Step.Reset();
+                Collide.Reset();
+                Solve.Reset();
+                SolveInit.Reset();
+                SolveVelocity.Reset();
+                SolvePosition.Reset();
+                Broadphase.Reset();
+                SolveTOI.Reset();
             }
         }
     }

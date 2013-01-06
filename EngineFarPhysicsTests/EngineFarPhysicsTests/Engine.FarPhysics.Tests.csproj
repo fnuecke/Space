@@ -189,6 +189,10 @@
       <Project>{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}</Project>
       <Name>Engine.FarPhysics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\EngineRandom\Engine.Random.csproj">
       <Project>{ABEE1E15-1CDA-4BD1-B37B-3500D27A8A7E}</Project>
       <Name>Engine.Random</Name>

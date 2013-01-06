@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Engine.Math
 {
@@ -11,6 +12,22 @@ namespace Engine.Math
     public abstract class AbstractSampling<T> : ISampling<T>, IEnumerable<T>
         where T : struct
     {
+        #region Properties
+
+        /// <summary>Gets the last sample put into this sampling.</summary>
+        public T Last
+        {
+            get { return SampleCount == 0 ? default(T) : Samples[(_writeIndex - 1 + SampleCount) % SampleCount]; }
+        }
+
+        /// <summary>Gets the sampling point with the highest value in this sampling.</summary>
+        public T Max
+        {
+            get { return SampleCount == 0 ? default(T) : Samples.Take(SampleCount).Max(); }
+        }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -40,6 +57,13 @@ namespace Engine.Math
         protected AbstractSampling(int samples)
         {
             Samples = new T[samples];
+        }
+
+        /// <summary>Resets this sampling to its initial, empty state.</summary>
+        public void Reset()
+        {
+            _writeIndex = 0;
+            SampleCount = 0;
         }
 
         #endregion

@@ -358,21 +358,14 @@ namespace Engine.Physics.Joints
             // Compute effective mass.
             _tmp.Mass = _tmp.Mass > 0.0f ? 1.0f / _tmp.Mass : 0.0f;
 
-            if (step.IsWarmStarting)
-            {
-                vA += (_tmp.InverseMassA * _impulse) * _tmp.JvAC;
-                wA += _tmp.InverseInertiaA * _impulse * _tmp.JwA;
-                vB += (_tmp.InverseMassB * _impulse) * _tmp.JvBD;
-                wB += _tmp.InverseInertiaB * _impulse * _tmp.JwB;
-                vC -= (_tmp.InverseMassC * _impulse) * _tmp.JvAC;
-                wC -= _tmp.InverseInertiaC * _impulse * _tmp.JwC;
-                vD -= (_tmp.InverseMassD * _impulse) * _tmp.JvBD;
-                wD -= _tmp.InverseInertiaD * _impulse * _tmp.JwD;
-            }
-            else
-            {
-                _impulse = 0.0f;
-            }
+            vA += (_tmp.InverseMassA * _impulse) * _tmp.JvAC;
+            wA += _tmp.InverseInertiaA * _impulse * _tmp.JwA;
+            vB += (_tmp.InverseMassB * _impulse) * _tmp.JvBD;
+            wB += _tmp.InverseInertiaB * _impulse * _tmp.JwB;
+            vC -= (_tmp.InverseMassC * _impulse) * _tmp.JvAC;
+            wC -= _tmp.InverseInertiaC * _impulse * _tmp.JwC;
+            vD -= (_tmp.InverseMassD * _impulse) * _tmp.JvBD;
+            wD -= _tmp.InverseInertiaD * _impulse * _tmp.JwD;
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;

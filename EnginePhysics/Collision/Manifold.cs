@@ -44,9 +44,6 @@ namespace Engine.Physics.Collision
             FaceB
         }
 
-        /// <summary>The points of contact.</summary>
-        public FixedArray2<ManifoldPoint> Points;
-
         /// <summary>
         /// Usage depends on manifold type:
         /// -Circles: not used.
@@ -63,11 +60,14 @@ namespace Engine.Physics.Collision
         /// </summary>
         public LocalPoint LocalPoint;
 
-        /// <summary>The type of this manifold.</summary>
-        public ManifoldType Type;
-
         /// <summary>The number of manifold points.</summary>
         public int PointCount;
+
+        /// <summary>The points of contact.</summary>
+        public FixedArray2<ManifoldPoint> Points;
+
+        /// <summary>The type of this manifold.</summary>
+        public ManifoldType Type;
 
         /// <summary>
         /// Computes the world manifold data from this manifold with
@@ -173,6 +173,9 @@ namespace Engine.Physics.Collision
     /// </summary>
     internal struct ManifoldPoint
     {
+        /// <summary>Uniquely identifies a contact point between two shapes.</summary>
+        public ContactID Id;
+
         /// <summary>
         /// Usage depends on manifold type:
         /// -Circles: the local center of circleB.
@@ -186,9 +189,6 @@ namespace Engine.Physics.Collision
 
         /// <summary>The friction impulse.</summary>
         public float TangentImpulse;
-
-        /// <summary>Uniquely identifies a contact point between two shapes.</summary>
-        public ContactID Id;
 
         /// <summary>Returns a <see cref="System.String"/> that represents this instance.</summary>
         /// <returns>A <see cref="System.String"/> that represents this instance.</returns>

@@ -34,7 +34,7 @@ namespace Engine.Physics.Collision
             System.Diagnostics.Debug.Assert(target > tolerance);
 
             // Prepare input for distance query.
-            var cache = new SimplexCache{Count = 0};
+            var cache = new SimplexCache {Count = 0};
 
             // The outer loop progressively attempts to compute new separating axes.
             // This loop terminates when an axis is repeated (no progress is made).
@@ -158,6 +158,129 @@ namespace Engine.Physics.Collision
             return false;
         }
 
+        private static float Distance(ref SimplexCache cache,
+                                      DistanceProxy proxyA, DistanceProxy proxyB,
+                                      WorldTransform transformA, WorldTransform transformB,
+                                      bool useRadii = false)
+        {
+            // Initialize the simplex.
+            Simplex simplex;
+            Simplex.ReadCache(cache, proxyA, transformA, proxyB, transformB, out simplex);
+            
+            // These store the vertices of the last simplex so that we
+            // can check for duplicates and prevent cycling.
+            var saveA = new FixedArray3<int>();
+            var saveB = new FixedArray3<int>();
+
+            // Main iteration loop.
+            for (var iter = 0; iter < 20; ++iter)
+            {
+                // Copy simplex so we can identify duplicates.
+                var saveCount = simplex.Count;
+                for (var i = 0; i < saveCount; ++i)
+                {
+                    saveA[i] = simplex.Vertices[i].IndexA;
+                    saveB[i] = simplex.Vertices[i].IndexB;
+                }
+
+                switch (simplex.Count)
+                {
+                    case 1:
+                        break;
+
+                    case 2:
+                        simplex.Solve2();
+                        break;
+
+                    case 3:
+                        simplex.Solve3();
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                // If we have 3 points, then the origin is in the corresponding triangle.
+                if (simplex.Count == 3)
+                {
+                    break;
+                }
+
+                // Get search direction.
+                var d = simplex.GetSearchDirection();
+
+                // Ensure the search direction is numerically fit.
+                if (d.LengthSquared() < Settings.Epsilon * Settings.Epsilon)
+                {
+                    // The origin is probably contained by a line segment
+                    // or triangle. Thus the shapes are overlapped.
+
+                    // We can't return zero here even though there may be overlap.
+                    // In case the simplex is a point, segment, or triangle it is difficult
+                    // to determine if the origin is contained in the CSO or very close to it.
+                    break;
+                }
+
+                // Compute a tentative new simplex vertex using support points.
+                SimplexVertex v;
+                v.IndexA = proxyA.GetSupport(-transformA.Rotation * -d);
+                v.IndexB = proxyB.GetSupport(-transformB.Rotation * d);
+                v.VertexA = transformA.ToGlobal(proxyA.GetVertex(v.IndexA));
+                v.VertexB = transformB.ToGlobal(proxyB.GetVertex(v.IndexB));
+// ReSharper disable RedundantCast Necessary for FarPhysics.
+                v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
+// ReSharper restore RedundantCast
+                v.Alpha = 0;
+                simplex.Vertices[simplex.Count] = v;
+
+                // Check for duplicate support points. This is the main termination criteria.
+                var duplicate = false;
+                for (var i = 0; i < saveCount; ++i)
+                {
+                    if (v.IndexA == saveA[i] && v.IndexB == saveB[i])
+                    {
+                        duplicate = true;
+                        break;
+                    }
+                }
+
+                // If we found a duplicate support point we must exit to avoid cycling.
+                if (duplicate)
+                {
+                    break;
+                }
+
+                // New vertex is ok and needed.
+                ++simplex.Count;
+            }
+
+            // Cache the simplex.
+            simplex.WriteCache(ref cache);
+
+            // Prepare output.
+            var distance = simplex.GetWitnessPointDistance();
+
+            // Apply radii if requested.
+            if (useRadii)
+            {
+                var rA = proxyA.Radius;
+                var rB = proxyB.Radius;
+
+                if (distance > rA + rB && distance > Settings.Epsilon)
+                {
+                    // Shapes are still not overlapped.
+                    return distance - (rA + rB);
+                }
+                else
+                {
+                    // Shapes are overlapped when radii are considered.
+                    return 0.0f;
+                }
+            }
+
+            return distance;
+        }
+
         /// A distance proxy is used by the GJK algorithm.
         /// It encapsulates any shape.
         public sealed class DistanceProxy
@@ -236,6 +359,7 @@ namespace Engine.Physics.Collision
             }
 
             /// Get a vertex by index. Used by b2Distance.
+            /// TODO inline
             public LocalPoint GetVertex(int index)
             {
                 System.Diagnostics.Debug.Assert(0 <= index && index < _count);
@@ -301,17 +425,15 @@ namespace Engine.Physics.Collision
                 FaceB
             };
 
-            private DistanceProxy _proxyA;
+            private Vector2 _axis;
 
-            private DistanceProxy _proxyB;
+            private LocalPoint _localPoint;
+
+            private DistanceProxy _proxyA, _proxyB;
 
             private Sweep _sweepA, _sweepB;
 
             private Type _type;
-
-            private LocalPoint _localPoint;
-
-            private Vector2 _axis;
 
             public static void Initialize(SimplexCache cache,
                                           DistanceProxy proxyA, Sweep sweepA,
@@ -341,8 +463,7 @@ namespace Engine.Physics.Collision
 // ReSharper disable RedundantCast Necessary for FarPhysics.
                     f._axis = (Vector2)(pointB - pointA);
 // ReSharper restore RedundantCast
-                    var s = f._axis.Length();
-                    f._axis /= s;
+                    f._axis.Normalize();
                     f._localPoint = LocalPoint.Zero;
                 }
                 else if (cache.IndexA.Item1 == cache.IndexA.Item2)
@@ -515,129 +636,6 @@ namespace Engine.Physics.Collision
                         throw new ArgumentOutOfRangeException();
                 }
             }
-        }
-
-        private static float Distance(ref SimplexCache cache,
-                                      DistanceProxy proxyA, DistanceProxy proxyB,
-                                      WorldTransform transformA, WorldTransform transformB,
-                                      bool useRadii = false)
-        {
-            // Initialize the simplex.
-            Simplex simplex;
-            Simplex.ReadCache(cache, proxyA, transformA, proxyB, transformB, out simplex);
-            
-            // These store the vertices of the last simplex so that we
-            // can check for duplicates and prevent cycling.
-            var saveA = new FixedArray3<int>();
-            var saveB = new FixedArray3<int>();
-
-            // Main iteration loop.
-            for (var iter = 0; iter < 20; ++iter)
-            {
-                // Copy simplex so we can identify duplicates.
-                var saveCount = simplex.Count;
-                for (var i = 0; i < saveCount; ++i)
-                {
-                    saveA[i] = simplex.Vertices[i].IndexA;
-                    saveB[i] = simplex.Vertices[i].IndexB;
-                }
-
-                switch (simplex.Count)
-                {
-                    case 1:
-                        break;
-
-                    case 2:
-                        simplex.Solve2();
-                        break;
-
-                    case 3:
-                        simplex.Solve3();
-                        break;
-
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                // If we have 3 points, then the origin is in the corresponding triangle.
-                if (simplex.Count == 3)
-                {
-                    break;
-                }
-
-                // Get search direction.
-                var d = simplex.GetSearchDirection();
-
-                // Ensure the search direction is numerically fit.
-                if (d.LengthSquared() < Settings.Epsilon * Settings.Epsilon)
-                {
-                    // The origin is probably contained by a line segment
-                    // or triangle. Thus the shapes are overlapped.
-
-                    // We can't return zero here even though there may be overlap.
-                    // In case the simplex is a point, segment, or triangle it is difficult
-                    // to determine if the origin is contained in the CSO or very close to it.
-                    break;
-                }
-
-                // Compute a tentative new simplex vertex using support points.
-                SimplexVertex v;
-                v.IndexA = proxyA.GetSupport(-transformA.Rotation * -d);
-                v.IndexB = proxyB.GetSupport(-transformB.Rotation * d);
-                v.VertexA = transformA.ToGlobal(proxyA.GetVertex(v.IndexA));
-                v.VertexB = transformB.ToGlobal(proxyB.GetVertex(v.IndexB));
-// ReSharper disable RedundantCast Necessary for FarPhysics.
-                v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
-// ReSharper restore RedundantCast
-                v.Alpha = 0;
-                simplex.Vertices[simplex.Count] = v;
-
-                // Check for duplicate support points. This is the main termination criteria.
-                var duplicate = false;
-                for (var i = 0; i < saveCount; ++i)
-                {
-                    if (v.IndexA == saveA[i] && v.IndexB == saveB[i])
-                    {
-                        duplicate = true;
-                        break;
-                    }
-                }
-
-                // If we found a duplicate support point we must exit to avoid cycling.
-                if (duplicate)
-                {
-                    break;
-                }
-
-                // New vertex is ok and needed.
-                ++simplex.Count;
-            }
-
-            // Cache the simplex.
-            simplex.WriteCache(ref cache);
-
-            // Prepare output.
-            var distance = simplex.GetWitnessPointDistance();
-
-            // Apply radii if requested.
-            if (useRadii)
-            {
-                var rA = proxyA.Radius;
-                var rB = proxyB.Radius;
-
-                if (distance > rA + rB && distance > Settings.Epsilon)
-                {
-                    // Shapes are still not overlapped.
-                    return distance - (rA + rB);
-                }
-                else
-                {
-                    // Shapes are overlapped when radii are considered.
-                    return 0.0f;
-                }
-            }
-
-            return distance;
         }
 
         private struct Simplex

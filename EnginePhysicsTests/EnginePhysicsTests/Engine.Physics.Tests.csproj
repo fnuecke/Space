@@ -144,6 +144,10 @@
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\EnginePhysics\Engine.Physics.csproj">
       <Project>{69F7346B-8904-4AEA-BA38-0F5D5BAEDD3A}</Project>
       <Name>Engine.Physics</Name>

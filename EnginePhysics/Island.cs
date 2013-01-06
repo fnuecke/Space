@@ -80,13 +80,18 @@ namespace Engine.Physics
         /// <summary>Velocity buffer for solver.</summary>
         private Velocity[] _velocities = new Velocity[0];
 
+        /// <summary>Profiling information.</summary>
+        private Profile _profile;
+
         #endregion
 
         #region Initialization
 
         /// <summary>Initializes a new instance of the <see cref="Island"/> class.</summary>
-        public Island()
+        /// <param name="profile"> </param>
+        public Island(Profile profile)
         {
+            _profile = profile;
             _solver = new ContactSolver(_contacts);
         }
 
@@ -235,8 +240,11 @@ namespace Engine.Physics
         /// <summary>Perform normal solve step.</summary>
         /// <param name="step">The time step information.</param>
         /// <param name="gravity">The global gravity.</param>
-        public void Solve(TimeStep step, Vector2 gravity)
+        /// <param name="allowSleep">if set to <c>true</c> allow putting bodies to sleep.</param>
+        public void Solve(TimeStep step, Vector2 gravity, bool allowSleep)
         {
+            _profile.BeginSolveInit();
+
             var h = step.DeltaT;
 
             // Integrate velocities and apply damping. Initialize the body state.
@@ -277,18 +285,19 @@ namespace Engine.Physics
             }
 
             // Initialize velocity constraints.
-            _solver.Initialize(step);
+            _solver.Initialize(true);
             _solver.InitializeVelocityConstraints();
 
-            if (step.IsWarmStarting)
-            {
-                _solver.WarmStart();
-            }
+            _solver.WarmStart();
 
             foreach (var joint in _joints)
             {
                 joint.InitializeVelocityConstraints(step, _positions, _velocities);
             }
+
+            _profile.EndSolveInit();
+
+            _profile.BeginSolveVelocity();
 
             // Solve velocity constraints
             for (var i = 0; i < Settings.VelocityIterations; ++i)
@@ -302,6 +311,8 @@ namespace Engine.Physics
 
             // Store impulses for warm starting
             _solver.StoreImpulses();
+
+            _profile.EndSolveVelocity();
 
             // Integrate positions.
             for (var i = 0; i < _bodies.Count; ++i)
@@ -336,6 +347,8 @@ namespace Engine.Physics
                 _velocities[i].AngularVelocity = w;
             }
 
+            _profile.BeginSolvePosition();
+
             // Solve position constraints
             var positionsSolved = false;
             for (var i = 0; i < Settings.PositionIterations; ++i)
@@ -366,38 +379,43 @@ namespace Engine.Physics
                 body.SynchronizeTransform();
             }
 
-            var minSleepTime = float.MaxValue;
+            _profile.EndSolvePosition();
 
-            const float linTolSqr = Settings.LinearSleepTolerance * Settings.LinearSleepTolerance;
-            const float angTolSqr = Settings.AngularSleepTolerance * Settings.AngularSleepTolerance;
+            // Check for bodies that we can put to sleep.
+            if (allowSleep) {
+                var minSleepTime = float.MaxValue;
 
-            for (var i = 0; i < _bodies.Count; ++i)
-            {
-                var b = _bodies[i];
-                if (b.TypeInternal == Body.BodyType.Static)
-                {
-                    continue;
-                }
+                const float linTolSqr = Settings.LinearSleepTolerance * Settings.LinearSleepTolerance;
+                const float angTolSqr = Settings.AngularSleepTolerance * Settings.AngularSleepTolerance;
 
-                if (!b.IsSleepAllowedInternal || b.AngularVelocityInternal * b.AngularVelocityInternal > angTolSqr ||
-                    Vector2.Dot(b.LinearVelocityInternal, b.LinearVelocityInternal) > linTolSqr)
-                {
-                    b.SleepTime = 0.0f;
-                    minSleepTime = 0.0f;
-                }
-                else
-                {
-                    b.SleepTime += h;
-                    minSleepTime = System.Math.Min(minSleepTime, b.SleepTime);
-                }
-            }
-
-            if (minSleepTime >= Settings.TimeToSleep && positionsSolved)
-            {
                 for (var i = 0; i < _bodies.Count; ++i)
                 {
                     var b = _bodies[i];
-                    b.IsAwake = false;
+                    if (b.TypeInternal == Body.BodyType.Static)
+                    {
+                        continue;
+                    }
+
+                    if (!b.IsSleepAllowedInternal || b.AngularVelocityInternal * b.AngularVelocityInternal > angTolSqr ||
+                        Vector2.Dot(b.LinearVelocityInternal, b.LinearVelocityInternal) > linTolSqr)
+                    {
+                        b.SleepTime = 0.0f;
+                        minSleepTime = 0.0f;
+                    }
+                    else
+                    {
+                        b.SleepTime += h;
+                        minSleepTime = System.Math.Min(minSleepTime, b.SleepTime);
+                    }
+                }
+
+                if (minSleepTime >= Settings.TimeToSleep && positionsSolved)
+                {
+                    for (var i = 0; i < _bodies.Count; ++i)
+                    {
+                        var b = _bodies[i];
+                        b.IsAwake = false;
+                    }
                 }
             }
         }
@@ -422,7 +440,7 @@ namespace Engine.Physics
             }
 
             // Initialize solver for current step.
-            _solver.Initialize(subStep);
+            _solver.Initialize(false);
 
             // Solve position constraints.
             for (var i = 0; i < Settings.PositionIterationsTOI; ++i)

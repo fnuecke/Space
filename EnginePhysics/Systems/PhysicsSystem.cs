@@ -65,6 +65,34 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to allow bodies to sleep.
+        /// Bodies that are asleep require nearly no CPU cycles per update,
+        /// allowing for a lot better performance. You'll probably never want
+        /// to disable this, unless it's for testing purposes.
+        /// </summary>
+        public bool AllowSleep
+        {
+            get { return _allowSleep; }
+            set
+            {
+                if (value == _allowSleep)
+                {
+                    return;
+                }
+
+                _allowSleep = value;
+
+                if (!_allowSleep)
+                {
+                    foreach (var body in Components)
+                    {
+                        body.IsAwake = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is locked. The system will lock
         /// itself during an update, disallowing changes to its state from the outside.
         /// </summary>
@@ -103,6 +131,40 @@ namespace Engine.Physics.Systems
             }
         }
 
+        /// <summary>Gets the number of bodies in this simulation.</summary>
+        public int BodyCount
+        {
+            get { return Components.Count; }
+        }
+        
+        /// <summary>Gets the number of (active) fixtures in this simulation.</summary>
+        public int FixtureCount
+        {
+            get { return _index.Count; }
+        }
+
+        /// <summary>Gets the number of currently active contacts in the simulation.</summary>
+        public int ContactCount
+        {
+            get { return _contactCount; }
+        }
+
+        /// <summary>Gets the number of joints in this simulation.</summary>
+        public int JointCount
+        {
+            get { return _jointCount; }
+        }
+
+        /// <summary>
+        /// Profiling data for this simulation. This will be updated each time <see cref="Update"/>
+        /// is called and will hold the time in milliseconds that different parts of the simulation
+        /// took to run.
+        /// </summary>
+        public Profile Profile
+        {
+            get { return _profile; }
+        }
+
         /// <summary>Gets the fixture bounding boxes for the debug renderer.</summary>
         internal IEnumerable<WorldBounds> FixtureBounds
         {
@@ -124,6 +186,9 @@ namespace Engine.Physics.Systems
 
         /// <summary>The directed global gravitational vector.</summary>
         private Vector2 _gravity = -Vector2.UnitY;
+
+        /// <summary>Whether to allow putting bodies to sleep or not.</summary>
+        private bool _allowSleep = true;
 
         /// <summary>
         /// The number of used contacts. This is used to reserve all the memory
@@ -218,6 +283,12 @@ namespace Engine.Physics.Systems
         private Algorithms.DistanceProxy _proxyA = new Algorithms.DistanceProxy(),
                                          _proxyB = new Algorithms.DistanceProxy();
 
+        /// <summary>
+        /// Profiling data.
+        /// </summary>
+        [CopyIgnore, PacketizerIgnore]
+        private Profile _profile = new Profile();
+
         #endregion
 
         #region Constructor
@@ -245,6 +316,8 @@ namespace Engine.Physics.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
+            _profile.BeginStep();
+
             // Lock system to avoid adding/removal of bodies and fixtures and
             // modifying critical properties during an update (in message handlers).
             IsLocked = true;
@@ -257,20 +330,46 @@ namespace Engine.Physics.Systems
                 _findContactsBeforeNextUpdate = false;
             }
 
-            // Check all contacts for validity (may delete some).
-            UpdateContacts();
-
             // Build our time step information.
             TimeStep step;
             step.DeltaT = _timestep;
             step.InverseDeltaT = 1.0f / step.DeltaT;
-            step.IsWarmStarting = true;
 
-            // Find islands, integrate and solve constraints.
-            Solve(step);
+            _profile.BeginCollide();
+            {
+                // Check all contacts for validity (may delete some).
+                UpdateContacts();
+            }
+            _profile.EndCollide();
 
-            // Find TOI contacts and solve them.
-            SolveTOI(step);
+            _profile.BeginSolve();
+            {
+                // Find islands, integrate and solve constraints.
+                Solve(step);
+            }
+            _profile.EndSolve();
+            
+            _profile.BeginBroadphase();
+            {
+                // Synchronize fixtures, check for out of range bodies.
+                // If a body was not in an island then it did not move.
+                foreach (var body in _island.ProcessedBodies)
+                {
+                    // Update fixtures (for broad-phase).
+                    body.SynchronizeFixtures();
+                }
+
+                // Checks for new contacts for changed entities.
+                FindContacts();
+            }
+            _profile.EndBroadphase();
+
+            _profile.BeginSolveTOI();
+            {
+                // Find TOI contacts and solve them.
+                SolveTOI(step);
+            }
+            _profile.EndSolveTOI();
 
             // Clear forces for next iteration.
             foreach (var body in Components)
@@ -280,6 +379,8 @@ namespace Engine.Physics.Systems
 
             // Done, unlock the system.
             IsLocked = false;
+
+            _profile.EndStep();
         }
 
         /// <summary>
@@ -1485,7 +1586,7 @@ namespace Engine.Physics.Systems
             // Make sure we have an island (may be lost during copying).
             if (_island == null)
             {
-                _island = new Island();
+                _island = new Island(_profile);
             }
 
             // Size the island for the worst case.
@@ -1635,22 +1736,11 @@ namespace Engine.Physics.Systems
                 }
 
                 // Done building our island, solve it.
-                _island.Solve(step, _gravity);
+                _island.Solve(step, _gravity, _allowSleep);
 
                 // Post solve cleanup: allow static bodies to participate in other islands.
                 _island.UnmarkStaticBodies();
             }
-
-            // Synchronize fixtures, check for out of range bodies.
-            // If a body was not in an island then it did not move.
-            foreach (var body in _island.ProcessedBodies)
-            {
-                // Update fixtures (for broad-phase).
-                body.SynchronizeFixtures();
-            }
-
-            // Checks for new contacts for changed entities.
-            FindContacts();
         }
 
         /// <summary>
@@ -1850,7 +1940,6 @@ namespace Engine.Physics.Systems
                     TimeStep subStep;
                     subStep.DeltaT = (1.0f - minAlpha) * step.DeltaT;
                     subStep.InverseDeltaT = 1.0f / subStep.DeltaT;
-                    subStep.IsWarmStarting = false;
                     _island.SolveTOI(subStep, bA.IslandIndex, bB.IslandIndex);
 
                     // Reset island flags and synchronize broad-phase proxies.
@@ -2118,7 +2207,7 @@ namespace Engine.Physics.Systems
                 _touched.Add(packet.ReadInt32());
             }
 
-            _island = new Island();
+            _island = null;
         }
 
         /// <summary>
@@ -2189,6 +2278,8 @@ namespace Engine.Physics.Systems
             copy._island = null;
             copy._proxyA = new Algorithms.DistanceProxy();
             copy._proxyB = new Algorithms.DistanceProxy();
+
+            copy._profile = new Profile();
 
             return copy;
         }
