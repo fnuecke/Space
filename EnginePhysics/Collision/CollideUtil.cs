@@ -25,7 +25,7 @@ namespace Engine.Physics.Collision
                                          WorldTransform transformA, WorldTransform transformB)
         {
             var cache = new SimplexCache {Count = 0};
-            return Distance(ref cache, proxyA, proxyB, transformA, transformB, true) < 10 * Settings.Epsilon;
+            return Distance(ref cache, proxyA, ref transformA, proxyB, ref transformB, true) < 10 * Settings.Epsilon;
         }
 
         /// Clipping for contact manifolds.

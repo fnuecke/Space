@@ -60,6 +60,9 @@
     <Compile Include="..\EnginePhysics\BodyFactory.cs">
       <Link>BodyFactory.cs</Link>
     </Compile>
+    <Compile Include="..\EnginePhysics\Collision\Distance.cs">
+      <Link>Collision\Distance.cs</Link>
+    </Compile>
     <Compile Include="..\EnginePhysics\Components\Body.cs">
       <Link>Components\Body.cs</Link>
     </Compile>

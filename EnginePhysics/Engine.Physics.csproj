@@ -61,6 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collision\Distance.cs" />
     <Compile Include="Components\Body.cs" />
     <Compile Include="Components\CircleFixture.cs" />
     <Compile Include="Components\EdgeFixture.cs" />
