@@ -727,6 +727,34 @@ namespace Engine.Physics.Systems
         #endregion
 
         #region Contact/Joint allocation
+        
+        /// <summary>Make sure we have enough contacts allocated to push a new one back.</summary>
+        /// <returns></returns>
+        private int AllocateContact()
+        {
+            // When we hit the last contact, allocate some more.
+            if (_freeContacts < 0)
+            {
+                // Remember where the new segment starts and set to new list.
+                var startOfNewSegment = _contacts.Length;
+
+                // Actual allocation and copying of old data.
+                var newContacts = new Contact[_contacts.Length * 3 / 2 + 1];
+                var newEdges = new ContactEdge[newContacts.Length * 2];
+                _contacts.CopyTo(newContacts, 0);
+                _contactEdges.CopyTo(newEdges, 0);
+                _contacts = newContacts;
+                _contactEdges = newEdges;
+
+                // Initialize the new segment by making it available in the linked
+                // list of available contacts.
+                InitializeContacts(startOfNewSegment);
+            }
+
+            // Tentatively give out the next free joint id.
+            System.Diagnostics.Debug.Assert(_freeContacts >= 0);
+            return _freeContacts;
+        }
 
         /// <summary>
         /// Initializes the contact buffer starting from the specified index.
@@ -756,39 +784,19 @@ namespace Engine.Physics.Systems
             _contacts[_contacts.Length - 1].Previous = -1;
             _freeContacts = start;
         }
-
-        /// <summary>Allocates a new contact between the two specified fixtures and initializes it.</summary>
-        /// <param name="fixtureA">The first fixture.</param>
-        /// <param name="fixtureB">The second fixture.</param>
-        private void CreateContact(Fixture fixtureA, Fixture fixtureB)
+        
+        /// <summary>
+        /// Updates the global contact lists by popping the next free one and
+        /// appending it to the list of used contacts.
+        /// </summary>
+        /// <param name="contact">The contact.</param>
+        private void UpdateContactList(int contact)
         {
-            // When we hit the last contact, allocate some more.
-            if (_freeContacts < 0)
-            {
-                // Remember where the new segment starts and set to new list.
-                var startOfNewSegment = _contacts.Length;
-
-                // Actual allocation and copying of old data.
-                var newContacts = new Contact[_contacts.Length * 3 / 2 + 1];
-                var newEdges = new ContactEdge[newContacts.Length * 2];
-                _contacts.CopyTo(newContacts, 0);
-                _contactEdges.CopyTo(newEdges, 0);
-                _contacts = newContacts;
-                _contactEdges = newEdges;
-
-                // Initialize the new segment by making it available in the linked
-                // list of available contacts.
-                InitializeContacts(startOfNewSegment);
-            }
-
-            // Remember index of contact we will return, then remove it from
-            // the linked list of available contacts.
-            var contact = _freeContacts;
-            _freeContacts = _contacts[_freeContacts].Previous;
-
-            // Initialize with the basics. This may swap the fixture order.
-            _contacts[contact].Initialize(ref fixtureA, ref fixtureB);
-
+            System.Diagnostics.Debug.Assert(contact == _freeContacts);
+            
+            // Remove it from the linked list of available joints.
+            _freeContacts = _contacts[contact].Previous;
+            
             // Adjust global linked list.
             if (_usedContacts >= 0)
             {
@@ -798,6 +806,22 @@ namespace Engine.Physics.Systems
             _contacts[contact].Next = _usedContacts;
             _contacts[contact].Previous = -1;
             _usedContacts = contact;
+
+            // Increment counter used for island allocation.
+            ++_contactCount;
+        }
+
+        /// <summary>Allocates a new contact between the two specified fixtures and initializes it.</summary>
+        /// <param name="fixtureA">The first fixture.</param>
+        /// <param name="fixtureB">The second fixture.</param>
+        private void CreateContact(Fixture fixtureA, Fixture fixtureB)
+        {
+            // Remember index of contact we will return, then remove it from
+            // the linked list of available contacts.
+            var contact = AllocateContact();
+
+            // Initialize with the basics. This may swap the fixture order.
+            _contacts[contact].Initialize(ref fixtureA, ref fixtureB);
 
             var bodyA = fixtureA.Body;
             var bodyB = fixtureB.Body;
@@ -834,8 +858,10 @@ namespace Engine.Physics.Systems
             }
             bodyB.ContactList = edgeB;
 
-            // Increment counter used for island allocation.
-            ++_contactCount;
+            // Lock it in. This is the acutal "allocation", which we want to do
+            // at the very end to avoid entering an invalid state if any of the
+            // initialization stuff throws an exception.
+            UpdateContactList(contact);
         }
 
         /// <summary>Frees the specified contact.</summary>
@@ -928,6 +954,34 @@ namespace Engine.Physics.Systems
             // Decrement counter used for island allocation.
             --_contactCount;
         }
+        
+        /// <summary>Make sure we have enough joints allocated to push a new one back.</summary>
+        /// <returns></returns>
+        private int AllocateJoint()
+        {
+            // When we hit the last joint, allocate some more.
+            if (_freeJoints < 0)
+            {
+                // Remember where the new segment starts and set to new list.
+                var startOfNewSegment = _joints.Length;
+
+                // Actual allocation and copying of old data.
+                var newJoints = new Joint[_joints.Length * 3 / 2 + 1];
+                var newEdges = new JointEdge[newJoints.Length * 2];
+                _joints.CopyTo(newJoints, 0);
+                _jointEdges.CopyTo(newEdges, 0);
+                _joints = newJoints;
+                _jointEdges = newEdges;
+
+                // Initialize the new segment by making it available in the linked
+                // list of available joints.
+                InitializeJoints(startOfNewSegment);
+            }
+
+            // Tentatively give out the next free joint id.
+            System.Diagnostics.Debug.Assert(_freeJoints >= 0);
+            return _freeJoints;
+        }
 
         /// <summary>
         /// Initializes the joint buffer starting from the specified index.
@@ -953,6 +1007,32 @@ namespace Engine.Physics.Systems
             _joints[_joints.Length - 1].Previous = -1;
             _freeJoints = start;
         }
+        
+        /// <summary>
+        /// Updates the global joint lists by popping the next free one and
+        /// appending it to the list of used joints.
+        /// </summary>
+        /// <param name="joint">The joint.</param>
+        private void UpdateJointList(int joint)
+        {
+            System.Diagnostics.Debug.Assert(joint == _freeJoints);
+
+            // Remove it from the linked list of available joints.
+            _freeJoints = _joints[joint].Previous;
+
+            // Update global list.
+            if (_usedJoints >= 0)
+            {
+                // Prepend to list.
+                _joints[_usedJoints].Previous = joint;
+            }
+            _joints[joint].Next = _usedJoints;
+            _joints[joint].Previous = -1;
+            _usedJoints = joint;
+
+            // Increment counter used for island allocation.
+            ++_jointCount;
+        }
 
         /// <summary>Allocates a new joint attached to the two specified bodies and initializes it.</summary>
         /// <param name="type">The type of joint.</param>
@@ -969,50 +1049,58 @@ namespace Engine.Physics.Systems
             var joint = AllocateJoint();
 
             // Allocate actual instance, if what we have is the wrong type.
+            Joint newJoint = null;
             if (_joints[joint].Type != type)
             {
                 switch (type)
                 {
                     case Joint.JointType.Revolute:
-                        _joints[joint] = new RevoluteJoint {Index = joint};
+                        newJoint = new RevoluteJoint();
                         break;
                     case Joint.JointType.Prismatic:
-                        _joints[joint] = new PrismaticJoint {Index = joint};
+                        newJoint = new PrismaticJoint();
                         break;
                     case Joint.JointType.Distance:
-                        _joints[joint] = new DistanceJoint {Index = joint};
+                        newJoint = new DistanceJoint();
                         break;
                     case Joint.JointType.Pulley:
-                        _joints[joint] = new PulleyJoint {Index = joint};
+                        newJoint = new PulleyJoint();
                         break;
                     case Joint.JointType.Mouse:
-                        _joints[joint] = new MouseJoint {Index = joint};
+                        newJoint = new MouseJoint();
                         break;
                     case Joint.JointType.Gear:
                         throw new ArgumentException(
                             "Gear joints must be created using the CreateGearJoint method.", "type");
                     case Joint.JointType.Wheel:
-                        _joints[joint] = new WheelJoint {Index = joint};
+                        newJoint = new WheelJoint();
                         break;
                     case Joint.JointType.Weld:
-                        _joints[joint] = new WeldJoint {Index = joint};
+                        newJoint = new WeldJoint();
                         break;
                     case Joint.JointType.Friction:
-                        _joints[joint] = new FrictionJoint {Index = joint};
+                        newJoint = new FrictionJoint();
                         break;
                     case Joint.JointType.Rope:
-                        _joints[joint] = new RopeJoint {Index = joint};
+                        newJoint = new RopeJoint();
                         break;
                     case Joint.JointType.Motor:
-                        _joints[joint] = new MotorJoint {Index = joint};
+                        newJoint = new MotorJoint();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException("type");
                 }
             }
-
-            // Adjust global linked list after instance is guaranteed to be the right one.
-            UpdateJointList(joint);
+            // We had to create a new joint because the type didn't match. Make
+            // sure to copy the linked list data back over for proper updating
+            // later / not breaking in case initialization or anything else throws.
+            if (newJoint != null)
+            {
+                // The free list only needs the previous pointer.
+                newJoint.Index = joint;
+                newJoint.Previous = _joints[joint].Previous;
+                _joints[joint] = newJoint;
+            }
 
             // Initialize with the basics.
             _joints[joint].Initialize(Manager, bodyA, bodyB, collideConnected);
@@ -1066,6 +1154,11 @@ namespace Engine.Physics.Systems
                     }
                 }
             }
+            
+            // Lock it in. This is the acutal "allocation", which we want to do
+            // at the very end to avoid entering an invalid state if any of the
+            // initialization stuff throws an exception.
+            UpdateJointList(joint);
 
             // Return the joint for further initialization.
             return _joints[joint];
@@ -1086,16 +1179,19 @@ namespace Engine.Physics.Systems
             var joint = AllocateJoint();
 
             // Create the joint if necessary and store it.
-            if (!(_joints[joint] is GearJoint))
+            var gearJoint = _joints[joint] as GearJoint;
+            if (gearJoint == null)
             {
-                _joints[joint] = new GearJoint {Index = joint};
+                // Make sure we keep the linked list pointer valid.
+                _joints[joint] = gearJoint = new GearJoint
+                {
+                    Index = joint,
+                    Previous = _joints[joint].Previous
+                };
             }
 
-            // Adjust global linked list after instance is guaranteed to be the right one.
-            UpdateJointList(joint);
-
             // Initialize with the basics.
-            ((GearJoint)_joints[joint]).Initialize(Manager, jointA, jointB, ratio);
+            gearJoint.Initialize(Manager, jointA, jointB, ratio);
 
             // Keep track of our gears so the user doesn't have to remove them manually.
             if (!_gearJoints.ContainsKey(jointIdA))
@@ -1108,62 +1204,14 @@ namespace Engine.Physics.Systems
                 _gearJoints[jointIdB] = new HashSet<int>();
             }
             _gearJoints[jointIdB].Add(joint);
+            
+            // Lock it in. This is the acutal "allocation", which we want to do
+            // at the very end to avoid entering an invalid state if any of the
+            // initialization stuff throws an exception.
+            UpdateJointList(joint);
 
             // Return the joint for further initialization.
-            return (GearJoint)_joints[joint];
-        }
-
-        /// <summary>Make sure we have enough joints allocated to push a new one back.</summary>
-        /// <returns></returns>
-        private int AllocateJoint()
-        {
-            // When we hit the last joint, allocate some more.
-            if (_freeJoints < 0)
-            {
-                // Remember where the new segment starts and set to new list.
-                var startOfNewSegment = _joints.Length;
-
-                // Actual allocation and copying of old data.
-                var newJoints = new Joint[_joints.Length * 3 / 2 + 1];
-                var newEdges = new JointEdge[newJoints.Length * 2];
-                _joints.CopyTo(newJoints, 0);
-                _jointEdges.CopyTo(newEdges, 0);
-                _joints = newJoints;
-                _jointEdges = newEdges;
-
-                // Initialize the new segment by making it available in the linked
-                // list of available joints.
-                InitializeJoints(startOfNewSegment);
-            }
-
-            // Tentatively give out the next free joint id.
-            return _freeJoints;
-        }
-
-        /// <summary>
-        /// Updates the global joint lists by popping the next free one and
-        /// appending it to the list of used joints.
-        /// </summary>
-        /// <param name="joint">The joint.</param>
-        private void UpdateJointList(int joint)
-        {
-            System.Diagnostics.Debug.Assert(joint == _freeJoints);
-
-            // Update global list.
-            if (_usedJoints >= 0)
-            {
-                // Prepend to list.
-                _joints[_usedJoints].Previous = joint;
-            }
-            _joints[joint].Next = _usedJoints;
-            _joints[joint].Previous = -1;
-            _usedJoints = joint;
-
-            // Remove it from the linked list of available joints.
-            _freeJoints = _joints[_freeJoints].Previous;
-
-            // Increment counter used for island allocation.
-            ++_jointCount;
+            return gearJoint;
         }
 
         /// <summary>Destroys the joint between the two specified joints.</summary>

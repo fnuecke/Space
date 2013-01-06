@@ -45,7 +45,8 @@ namespace Engine.Physics.Tests
             new EdgeBenchmark(),
             new EdgeBenchmarkWithCircles(),
             new CharacterCollision(),
-            new VerticalStack()
+            new VerticalStack(),
+            new TheoJansen()
         };
 
         /// <summary>

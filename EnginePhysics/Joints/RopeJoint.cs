@@ -13,6 +13,17 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
+    /// <summary>
+    /// A rope joint enforces a maximum distance between two points
+    /// on two bodies. It has no other effect.
+    /// </summary>
+    /// <remarks>
+    /// Changing the maximum length during the simulation would result in
+    /// non-physical behavior, thus it is not allowed. A model that would
+    /// allow you to dynamically modify the length would have some sponginess,
+    /// so Erin chose not to implement it that way. See b2DistanceJoint if you
+    /// want to dynamically control length.
+    /// </remarks>
     public sealed class RopeJoint : Joint
     {
         #region Properties
@@ -119,8 +130,14 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(WorldPoint anchorA, WorldPoint anchorB, float length)
         {
+            _localAnchorA = BodyA.GetLocalPoint(anchorA);
+            _localAnchorB = BodyB.GetLocalPoint(anchorB);
+            _maxLength = length;
+
+            _impulse = 0;
+            _length = 0;
         }
 
         #endregion

@@ -138,7 +138,7 @@ namespace Engine.Physics.Joints
         {
             _localAnchorA = BodyA.GetLocalPoint(anchorA);
             _localAnchorB = BodyB.GetLocalPoint(anchorB);
-            _length = System.Math.Max(0.1f, LocalPoint.Distance(_localAnchorA, _localAnchorB));
+            _length = System.Math.Max(0.1f, WorldPoint.Distance(anchorA, anchorB));
             _frequency = System.Math.Max(0, frequency);
             _dampingRatio = System.Math.Max(0, dampingRatio);
         }

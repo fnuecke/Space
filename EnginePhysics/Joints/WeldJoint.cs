@@ -13,6 +13,10 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
+    /// <summary>
+    /// A weld joint essentially glues two bodies together. A weld joint may
+    /// distort somewhat because the island constraint solver is approximate.
+    /// </summary>
     public sealed class WeldJoint : Joint
     {
         #region Properties
@@ -140,8 +144,16 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(WorldPoint anchor, float frequency, float dampingRatio)
         {
+            _localAnchorA = BodyA.GetLocalPoint(anchor);
+            _localAnchorB = BodyB.GetLocalPoint(anchor);
+            _referenceAngle = BodyB.Angle - BodyA.Angle;
+
+            _frequency= frequency;
+            _dampingRatio = dampingRatio;
+
+            _impulse = Vector3.Zero;
         }
 
         #endregion

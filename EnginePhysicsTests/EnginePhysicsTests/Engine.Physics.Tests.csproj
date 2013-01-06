@@ -100,6 +100,7 @@
     <Compile Include="Tests\EdgeBenchmark.cs" />
     <Compile Include="Tests\Pyramid.cs" />
     <Compile Include="Tests\SphereStack.cs" />
+    <Compile Include="Tests\TheoJansen.cs" />
     <Compile Include="Tests\VaryingFriction.cs" />
     <Compile Include="Tests\VaryingRestitution.cs" />
     <Compile Include="Tests\VerticalStack.cs" />

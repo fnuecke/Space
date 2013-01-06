@@ -1,5 +1,4 @@
-﻿using Engine.Physics.Components;
-using Engine.Physics.Math;
+﻿using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -15,7 +14,11 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// 
+    /// This joint provides two degrees of freedom: translation along an axis
+    /// fixed in the first body and rotation in the plane. You can use a joint
+    /// limit to restrict the range of motion and a joint motor to drive the
+    /// rotation or to model rotational friction. This joint is designed for
+    /// vehicle suspensions.
     /// </summary>
     public sealed class WheelJoint : Joint
     {
@@ -246,7 +249,7 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize(Body bodyA, Body bodyB, WorldPoint anchor, Vector2 axis, float frequency, float dampingRatio, float maxMotorTorque, float motorSpeed, bool enableMotor)
+        internal void Initialize(WorldPoint anchor, Vector2 axis, float frequency, float dampingRatio, float maxMotorTorque, float motorSpeed, bool enableMotor)
         {
             _localAnchorA = BodyA.GetLocalPoint(anchor);
             _localAnchorB = BodyB.GetLocalPoint(anchor);

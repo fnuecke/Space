@@ -125,6 +125,9 @@
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\SphereStack.cs">
       <Link>Tests\SphereStack.cs</Link>
     </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\TheoJansen.cs">
+      <Link>Tests\TheoJansen.cs</Link>
+    </Compile>
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\VaryingFriction.cs">
       <Link>Tests\VaryingFriction.cs</Link>
     </Compile>

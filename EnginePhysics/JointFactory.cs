@@ -4,13 +4,13 @@ using Engine.Physics.Components;
 using Engine.Physics.Joints;
 using Engine.Physics.Systems;
 using Microsoft.Xna.Framework;
-
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
+
 #endif
 
 namespace Engine.Physics
@@ -252,9 +252,8 @@ namespace Engine.Physics
                 throw new ArgumentNullException("body");
             }
 
-            var joint = manager.GetSimulation()
-                            .CreateJoint(Joint.JointType.Mouse, bodyB: body) as MouseJoint;
-            System.Diagnostics.Debug.Assert(joint != null);
+            var joint = (MouseJoint)manager.GetSimulation()
+                                        .CreateJoint(Joint.JointType.Mouse, bodyB: body);
 
             joint.Initialize(target, maxForce, frequency, dampingRatio);
 
@@ -280,7 +279,10 @@ namespace Engine.Physics
         /// <param name="enableMotor">Whether to initially enable the motor..</param>
         /// <param name="collideConnected">Whether the two bodies still collide.</param>
         /// <returns>The created joint.</returns>
-        public static WheelJoint AddWheelJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchor, Vector2 axis, float frequency = 2, float dampingRatio = 0.7f, float maxMotorTorque = 0, float motorSpeed = 0, bool enableMotor = false, bool collideConnected = false)
+        public static WheelJoint AddWheelJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchor,
+                                               Vector2 axis, float frequency = 2, float dampingRatio = 0.7f,
+                                               float maxMotorTorque = 0, float motorSpeed = 0, bool enableMotor = false,
+                                               bool collideConnected = false)
         {
             if (bodyA == null)
             {
@@ -292,9 +294,86 @@ namespace Engine.Physics
             }
 
             var joint = (WheelJoint)manager.GetSimulation()
-                                         .CreateJoint(Joint.JointType.Wheel, bodyA, bodyB, collideConnected);
+                                        .CreateJoint(Joint.JointType.Wheel, bodyA, bodyB, collideConnected);
 
-            joint.Initialize(bodyA, bodyB, anchor, axis, frequency, dampingRatio, maxMotorTorque, motorSpeed, enableMotor);
+            joint.Initialize(anchor, axis, frequency, dampingRatio, maxMotorTorque, motorSpeed, enableMotor);
+
+            return joint;
+        }
+
+        /// <summary>
+        /// Adds a weld joint. A weld joint essentially glues two bodies together. A weld joint may
+        /// distort somewhat because the island constraint solver is approximate.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="bodyB">The second body.</param>
+        /// <param name="anchor">The anchor to weld the bodies at in world coordiantes.</param>
+        /// <param name="frequency">The mass-spring-damper frequency in Hertz. Rotation only.
+        /// Disable softness with a value of 0.</param>
+        /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
+        /// <returns>The created joint.</returns>
+        public static WeldJoint AddWeldJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchor,
+                                             float frequency, float dampingRatio)
+        {
+            if (bodyA == null)
+            {
+                throw new ArgumentNullException("bodyA");
+            }
+            if (bodyB == null)
+            {
+                throw new ArgumentNullException("bodyB");
+            }
+
+            var joint = (WeldJoint)manager.GetSimulation()
+                                       .CreateJoint(Joint.JointType.Weld, bodyA, bodyB, false);
+
+            joint.Initialize(anchor, frequency, dampingRatio);
+
+            return joint;
+        }
+
+        /// <summary>
+        /// Adds a weld joint. A rope joint enforces a maximum distance between
+        /// two points on two bodies. It has no other effect.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="bodyB">The second body.</param>
+        /// <param name="anchorA">The position at which to attach the rope to the
+        /// first body, in world coordiantes.</param>
+        /// <param name="anchorB">The position at which to attach the rope to the
+        /// second body, in world coordiantes.</param>
+        /// <param name="length">The maximum length of the rope.</param>
+        /// <param name="collideConnected">Whether the two bodies still collide.</param>
+        /// <returns>The created joint.</returns>
+        /// <remarks>
+        /// Changing the maximum length during the simulation would result in
+        /// non-physical behavior, thus it is not allowed. A model that would
+        /// allow you to dynamically modify the length would have some sponginess,
+        /// so Erin chose not to implement it that way. See b2DistanceJoint if you
+        /// want to dynamically control length.
+        /// </remarks>
+        public static RopeJoint AddRopeJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchorA, WorldPoint anchorB,
+                                             float length, bool collideConnected)
+        {
+            if (bodyA == null)
+            {
+                throw new ArgumentNullException("bodyA");
+            }
+            if (bodyB == null)
+            {
+                throw new ArgumentNullException("bodyB");
+            }
+            if (length < Settings.LinearSlop)
+            {
+                throw new ArgumentException("Length is too short.", "length");
+            }
+
+            var joint = (RopeJoint)manager.GetSimulation()
+                                       .CreateJoint(Joint.JointType.Rope, bodyA, bodyB, collideConnected);
+
+            joint.Initialize(anchorA, anchorB, length);
 
             return joint;
         }

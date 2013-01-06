@@ -132,8 +132,12 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(WorldPoint anchorA, WorldPoint anchorB)
         {
+
+
+            _linearImpulse = Vector2.Zero;
+            _angularImpulse = 0;
         }
 
         #endregion

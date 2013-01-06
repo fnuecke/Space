@@ -490,30 +490,34 @@ namespace Engine.Physics.Systems
 
             switch (joint.Type)
             {
-                case Joint.JointType.Revolute:
-                    // Does not draw anything.
-                    break;
-                case Joint.JointType.Prismatic:
-                    break;
+                case Joint.JointType.Mouse:
                 case Joint.JointType.Distance:
+                    _primitiveBatch.DrawLine(anchorA, anchorB, JointEdgeColor);
                     break;
                 case Joint.JointType.Pulley:
+                {
+                    var pulleyJoint = (PulleyJoint)joint;
+                    var anchorA0 = toScreen(pulleyJoint.GroundAnchorA);
+                    var anchorB0 = toScreen(pulleyJoint.GroundAnchorB);
+                    _primitiveBatch.DrawFilledRectangle(anchorA0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                    _primitiveBatch.DrawFilledRectangle(anchorB0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+
+                    _primitiveBatch.DrawLine(anchorA0, anchorA, JointEdgeColor);
+                    _primitiveBatch.DrawLine(anchorB0, anchorB, JointEdgeColor);
                     break;
-                case Joint.JointType.Gear:
-                    break;
-                case Joint.JointType.Wheel:
-                    break;
-                case Joint.JointType.Weld:
-                    break;
-                case Joint.JointType.Friction:
-                    break;
-                case Joint.JointType.Rope:
-                    break;
-                case Joint.JointType.Motor:
-                    break;
+                }
                 default:
-                    // Per default just draw a line between the two anchor points.
+                    // Per default just draw three lines from body to joint anchor to
+                    // joint anchor to body.
+                    if (joint.BodyA != null)
+                    {
+                        _primitiveBatch.DrawLine(toScreen(joint.BodyA.Position), anchorA, JointEdgeColor);
+                    }
                     _primitiveBatch.DrawLine(anchorA, anchorB, JointEdgeColor);
+                    if (joint.BodyB != null)
+                    {
+                        _primitiveBatch.DrawLine(anchorB, toScreen(joint.BodyB.Position), JointEdgeColor);
+                    }
                     break;
             }
         }
