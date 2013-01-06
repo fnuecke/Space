@@ -251,7 +251,7 @@ namespace Space.Control
             var avatar = GetPlayerShipInfo();
             if (avatar != null)
             {
-                Settings.Instance.CurrentProfile.Capture(avatar.Entity, Controller.Simulation.Manager);
+                Settings.Instance.CurrentProfile.Capture(Controller.Simulation.Manager, avatar.Entity);
             }
             Settings.Instance.CurrentProfile.Save();
             _lastSave = DateTime.UtcNow;

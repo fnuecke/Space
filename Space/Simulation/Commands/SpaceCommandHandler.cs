@@ -194,7 +194,7 @@ from Space.Data import *
             {
                 lock (command.Profile)
                 {
-                    command.Profile.Restore(~command.PlayerNumber, manager);
+                    command.Profile.Restore(manager, ~command.PlayerNumber);
                 }
             }
         }

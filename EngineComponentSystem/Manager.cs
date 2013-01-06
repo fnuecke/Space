@@ -660,7 +660,11 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Write a complete entity, meaning all its components, to the
         /// specified packet. Entities saved this way can be restored using
-        /// the <c>ReadEntity()</c> method.
+        /// the <see cref="DepacketizeEntity"/> method. Note that this has
+        /// no knowledge about components' internal states, so if they keep
+        /// references to other entities or components via their id, these
+        /// ids will obviously be wrong after depacketizing. You will have
+        /// to take care of fixing these references yourself.
         /// <para/>
         /// This uses the components' <c>Packetize</c> facilities.
         /// </summary>
@@ -688,19 +692,36 @@ namespace Engine.ComponentSystem
         /// i.e. each restored component will send a <c>ComponentAdded</c>
         /// message.
         /// <para/>
-        /// This uses the components' <c>Depacketize</c> facilities.
+        /// This uses the components' serialization facilities.
         /// </summary>
         /// <param name="packet">The packet to read the entity from.</param>
+        /// <param name="componentIdMap">A mapping of how components' ids
+        /// changed due to serialization, mapping old id to new id.</param>
         /// <returns>The id of the read entity.</returns>
-        public int DepacketizeEntity(Packet packet)
+        public int DepacketizeEntity(Packet packet, Dictionary<int, int> componentIdMap = null)
         {
+            // Keep track of what we already did, to allow unwinding if something
+            // bad happens. Then get an entity id and try to read the components.
+            var undo = new Stack<Action>();
             var entity = AddEntity();
+            undo.Push(() => RemoveEntity(entity));
             try
             {
+                // Read all components that were written for this entity. This
+                // does not yet mess with our internal state.
                 var components = packet.ReadPacketizablesWithTypeInfo<Component>();
+
+                // Now we need to inject the components into our system, so we assign
+                // an id to each one and link it to our entity id.
                 foreach (var component in components)
                 {
-                    component.Id = _componentIds.GetId();
+                    // Link stuff together.
+                    var id = _componentIds.GetId();
+                    if (componentIdMap != null)
+                    {
+                        componentIdMap.Add(component.Id, id);
+                    }
+                    component.Id = id;
                     component.Entity = entity;
                     component.Manager = this;
                     _components[component.Id] = component;
@@ -708,17 +729,26 @@ namespace Engine.ComponentSystem
                     // Add to entity index.
                     _entities[entity].Add(component);
 
+                    // Push to undo queue in case a message handler throws.
+                    undo.Push(() => RemoveComponent(id));
+
                     // Send a message to all systems.
                     foreach (var system in _systems)
                     {
                         system.OnComponentAdded(component);
                     }
                 }
+
+                // Yay, all went well. Return the id of the read entity.
                 return entity;
             }
             catch (Exception)
             {
-                RemoveEntity(entity);
+                // Undo all we did.
+                while (undo.Count > 0)
+                {
+                    undo.Pop()();
+                }
                 throw;
             }
         }

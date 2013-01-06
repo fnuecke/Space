@@ -190,12 +190,16 @@ namespace Space.ComponentSystem.Factories
 
         private bool _canBeShot;
 
+        [PacketizerCreate]
         private FloatInterval _initialVelocity;
 
+        [PacketizerCreate]
         private FloatInterval _initialDirection;
 
+        [PacketizerCreate]
         private FloatInterval _accelerationDirection;
 
+        [PacketizerCreate]
         private FloatInterval _accelerationForce;
 
         private float _friction;

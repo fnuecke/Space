@@ -1012,10 +1012,10 @@ namespace Engine.Simulation
             /// This uses the components' <c>Depacketize</c> facilities.
             /// </summary>
             /// <param name="packet">The packet to read the entity from.</param>
-            /// <returns>
-            /// The id of the read entity.
-            /// </returns>
-            int IManager.DepacketizeEntity(Packet packet)
+            /// <param name="componentIdMap">A mapping of how components' ids
+            /// changed due to serialization, mapping old id to new id.</param>
+            /// <returns>The id of the read entity.</returns>
+            int IManager.DepacketizeEntity(Packet packet, Dictionary<int, int> componentIdMap)
             {
                 throw new NotSupportedException();
             }

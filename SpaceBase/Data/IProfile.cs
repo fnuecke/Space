@@ -45,18 +45,18 @@ namespace Space.Data
         /// <summary>
         /// Take a snapshot of a character's current state in a running game.
         /// </summary>
-        /// <param name="avatar">The avatar to take a snapshot of.</param>
         /// <param name="manager">The component system manager.</param>
-        void Capture(int avatar, IManager manager);
+        /// <param name="avatar">The avatar to take a snapshot of.</param>
+        void Capture(IManager manager, int avatar);
 
         /// <summary>
         /// Restores a character snapshot stored in this profile.
         /// </summary>
-        /// <param name="playerNumber">The number of the player in the game
-        /// he is restored to.</param>
         /// <param name="manager">The entity manager to add the restored
         /// entities to.</param>
+        /// <param name="playerNumber">The number of the player in the game
+        /// he is restored to.</param>
         /// <returns>The restored avatar.</returns>
-        int Restore(int playerNumber, IManager manager);
+        int Restore(IManager manager, int playerNumber);
     }
 }

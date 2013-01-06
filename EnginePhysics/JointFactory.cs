@@ -23,6 +23,8 @@ namespace Engine.Physics
     /// </summary>
     public static class JointFactory
     {
+        #region Joint creation
+
         /// <summary>
         /// Adds a distance joint. A distance joint constrains two points on two
         /// bodies to remain at a fixed distance from each other. You can view
@@ -378,10 +380,16 @@ namespace Engine.Physics
             return joint;
         }
 
+        #endregion
+
+        #region Joint management
+
         /// <summary>Gets the simulation for the specified manager.</summary>
         private static PhysicsSystem GetSimulation(this IManager manager)
         {
             return manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
         }
+
+        #endregion
     }
 }

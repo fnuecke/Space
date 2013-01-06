@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
@@ -45,15 +46,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 else
                 {
                     // Get the number of slots that are actually occupied.
-                    int count = 0;
-                    for (int i = 0; i < _items.Count; i++)
-                    {
-                        if (_items[i] > 0)
-                        {
-                            ++count;
-                        }
-                    }
-                    return count;
+                    return _items.Count(i => i > 0);
                 }
             }
         }
@@ -187,16 +180,7 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   is read-only.</exception>
         public int this[int index]
         {
-            get
-            {
-                // Check for null entries (entity manager throws for unknown
-                // values, as it should).
-                if (_isFixed && _items[index] <= 0)
-                {
-                    return 0;
-                }
-                return _items[index];
-            }
+            get { return _items[index]; }
             set { _items[index] = value; }
         }
 
