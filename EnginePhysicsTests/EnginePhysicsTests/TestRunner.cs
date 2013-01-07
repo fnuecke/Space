@@ -279,7 +279,7 @@ namespace Engine.Physics.Tests
 
             if (_snapshot != null)
             {
-                DrawString("Got a save state: [{0}] @ {1:0.00}KB ({3:0.00}% compressed @ {2:0.00}KB)",
+                DrawString("Got a save state: [{0:X}] @ {1:0.00}KB ({3:0.00}% compressed @ {2:0.00}KB)",
                     _snapshotHash,
                     (_snapshot.Length / 1024f),
                     (_snapshotCompressedSize / 1024f),
@@ -485,6 +485,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                             _manager.RemoveJoint(_mouseJoint);
                             _mouseJoint = -1;
                         }
+
                         _snapshot = new Packet();
                         _snapshot.Write(_manager);
                         var hasher = new Hasher();
@@ -501,6 +502,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                         _mouseJoint = -1;
                         _snapshot.Reset();
                         _snapshot.ReadPacketizableInto(_manager);
+
                         var hasher = new Hasher();
                         hasher.Write(_manager);
                         Debug.Assert(_snapshotHash == hasher.Value);

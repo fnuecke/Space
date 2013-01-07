@@ -197,9 +197,16 @@ namespace Engine.ComponentSystem.Systems
         /// </returns>
         public override string ToString()
         {
-            var hasher = new Hasher();
-            hasher.Write(this);
-            return GetType().Name + ": Hash=" + hasher.Value;
+            if (this is IDrawingSystem)
+            {
+                return GetType().Name;
+            }
+            else
+            {
+                var hasher = new Hasher();
+                hasher.Write(this);
+                return GetType().Name + ": Hash=" + hasher.Value;
+            }
         }
 
         #endregion

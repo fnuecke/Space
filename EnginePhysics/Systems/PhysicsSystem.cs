@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -214,6 +215,7 @@ namespace Engine.Physics.Systems
         /// intact when deleting contacts during interation of the active contact
         /// list.
         /// </summary>
+        [PacketizerIgnore]
         private int _freeContacts = -1;
 
         /// <summary>The number of joints in the simulation.</summary>
@@ -232,6 +234,7 @@ namespace Engine.Physics.Systems
         private int _usedJoints = -1;
 
         /// <summary>Start of the linked list of available joints.</summary>
+        [PacketizerIgnore]
         private int _freeJoints = -1;
 
         /// <summary>
@@ -2339,7 +2342,33 @@ namespace Engine.Physics.Systems
         /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
         public override string ToString()
         {
-            return base.ToString();
+            var sb = new StringBuilder(base.ToString());
+
+            var hasher = new Hasher();
+            hasher.Write(_index);
+
+            sb.AppendFormat(
+                "Timestep: {0}, Gravity: {1}, AllowSleep: {2}, UsedContacts: {3}, FreeContacts: {4}, UsedJoints: {5}, FreeJoints: {6}, Index: {7}, FindBeforeUpdate: {8}\n",
+                _timestep, _gravity, _allowSleep, _usedContacts, _freeContacts, _usedJoints, _freeJoints, hasher.Value,
+                _findContactsBeforeNextUpdate);
+
+            sb.AppendFormat("ContactCount: {0}/{1}\n", _contactCount, _contacts.Length);
+            for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
+            {
+                sb.AppendFormat("Contact[{0}]: {1} ({2}, {3})\n", contact, _contacts[contact],
+                                _contactEdges[contact * 2], _contactEdges[contact * 2 + 1]);
+            }
+
+            sb.AppendFormat("JointCount: {0}/{1}\n", _jointCount, _joints.Length);
+            for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
+            {
+                sb.AppendFormat("Joint[{0}]: {1} ({2}, {3})\n", joint, _joints[joint],
+                                _jointEdges[joint * 2], _jointEdges[joint * 2 + 1]);
+            }
+
+            sb.AppendFormat("TouchedCount: {0}\n", _touched.Count);
+
+            return sb.ToString();
         }
 
         #endregion
