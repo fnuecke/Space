@@ -7,6 +7,8 @@ namespace Engine.Serialization
     /// </summary>
     public interface IReadablePacket : IDisposable
     {
+        #region Properties
+
         /// <summary>
         /// The number of bytes available for reading.
         /// </summary>
@@ -17,150 +19,19 @@ namespace Engine.Serialization
         /// </summary>
         int Length { get; }
 
-        /// <summary>
-        /// Reads a boolean value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out bool data);
+        #endregion
+
+        #region Buffer
 
         /// <summary>
-        /// Reads a byte value.
+        /// Reset set the read position, to read from the beginning once more.
         /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out byte data);
-
-        /// <summary>
-        /// Reads a single value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out float data);
-
-        /// <summary>
-        /// Reads a double value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out double data);
-
-        /// <summary>
-        /// Reads an int16 value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out short data);
-
-        /// <summary>
-        /// Reads an int32 value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out int data);
-
-        /// <summary>
-        /// Reads an int64 value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out long data);
-
-        /// <summary>
-        /// Reads a uint16 value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out ushort data);
-
-        /// <summary>
-        /// Reads a uint32 value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out uint data);
-
-        /// <summary>
-        /// Reads a uint64 value.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out ulong data);
-
-        /// <summary>
-        /// Reads a byte array.
-        /// </summary>
-        /// <param name="buffer">The buffer to write to.</param>
-        /// <param name="offset">The offset to start writing at.</param>
-        /// <param name="count">The number of bytes to read.</param>
-        /// <param name="length">The actual number of bytes read.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(byte[] buffer, int offset, int count, out int length);
-
-        /// <summary>
-        /// Reads a byte array.
-        /// 
-        /// <para>
-        /// May yield <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out byte[] data);
+        void Reset();
         
-        /// <summary>
-        /// Reads a packet.
-        /// 
-        /// <para>
-        /// May yield <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out IReadablePacket data);
+        #endregion
 
-        /// <summary>
-        /// Reads a string value using UTF8 encoding.
-        /// </summary>
-        /// <param name="data">The read value</param>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out string data);
-
-        /// <summary>
-        /// Reads a type value using its assembly qualified name for lookup.
-        /// </summary>
-        /// <param name="data">The read value.</param>
-        /// <exception cref="PacketException">The type is not known in the
-        /// local assembly.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        IReadablePacket Read(out Type data);
-
+        #region Reading
+        
         /// <summary>
         /// Reads a boolean value.
         /// </summary>
@@ -262,60 +133,9 @@ namespace Engine.Serialization
         /// available data for the read operation.</exception>
         byte[] ReadByteArray();
 
-        /// <summary>
-        /// Reads a packet.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        IReadablePacket ReadPacket();
+        #endregion
 
-        /// <summary>
-        /// Reads a string value using UTF8 encoding.
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        string ReadString();
-
-        /// <summary>
-        /// Reads a type value using its assembly qualified name for lookup.
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The type is not known in the
-        /// local assembly.</exception>
-        Type ReadType();
-
-        /// <summary>
-        /// Reads an object collections.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">The type of the objects to read.</typeparam>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        T[] ReadPacketizables<T>() where T : class, IPacketizable, new();
-
-        /// <summary>
-        /// Reads an object collections.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">Supertype of the type of the objects actually
-        /// being read.</typeparam>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        T[] ReadPacketizablesWithTypeInfo<T>() where T : class, IPacketizable;
+        #region Peeking
 
         /// <summary>
         /// Reads a boolean value without moving ahead the read pointer.
@@ -416,6 +236,10 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         string PeekString();
+        
+        #endregion
+
+        #region Checking
 
         /// <summary>
         /// Determines whether enough data is available to read a boolean value.
@@ -488,5 +312,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         bool HasString();
+
+        #endregion
     }
 }

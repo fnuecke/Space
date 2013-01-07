@@ -96,8 +96,9 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
-            return base.Packetize(packet)
-                .Write(Modifiers);
+            base.Packetize(packet);
+            packet.Write((ICollection<AttributeModifier<TAttribute>>)Modifiers);
+            return packet;
         }
 
         /// <summary>
@@ -109,21 +110,6 @@ namespace Engine.ComponentSystem.RPG.Components
             base.PostDepacketize(packet);
 
             Modifiers.AddRange(packet.ReadPacketizables<AttributeModifier<TAttribute>>());
-        }
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            foreach (var modifier in Modifiers)
-            {
-                modifier.Hash(hasher);
-            }
         }
 
         #endregion

@@ -19,7 +19,7 @@ namespace Space.ComponentSystem.Components.Behaviors
     /// of the AI. For example, it tries to keep the AI away from danger,
     /// and 'automatically' navigates to a desired destination.
     /// </summary>
-    internal abstract class Behavior : IPacketizable, IHashable, ICopyable<Behavior>
+    internal abstract class Behavior : IPacketizable, ICopyable<Behavior>
     {
         #region Fields
 
@@ -507,16 +507,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         [OnPostDepacketize]
         public virtual void Depacketize(IReadablePacket packet)
         {
-        }
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public virtual void Hash(Hasher hasher)
-        {
-            hasher.Put(_ticksToWait);
         }
 
         #endregion

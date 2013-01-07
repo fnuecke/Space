@@ -206,7 +206,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(Effects);
+            packet.Write((ICollection<PositionedEffect>)Effects);
 
             return packet;
         }
@@ -222,15 +222,6 @@ namespace Space.ComponentSystem.Components
 
             Effects.Clear();
             Effects.AddRange(packet.ReadPacketizables<PositionedEffect>());
-        }
-
-        /// <summary>
-        /// Suppress hashing as this component has no influence on other
-        /// components and actual simulation logic.
-        /// </summary>
-        /// <param name="hasher"></param>
-        public override void Hash(Hasher hasher)
-        {
         }
 
         #endregion

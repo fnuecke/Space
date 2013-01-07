@@ -381,20 +381,6 @@ namespace Engine.Controller
 
             #endregion
 
-            #region Serialization / Hashing
-
-            /// <summary>
-            /// Push some unique data of the object to the given hasher,
-            /// to contribute to the generated hash.
-            /// </summary>
-            /// <param name="hasher">The hasher to push data to.</param>
-            public void Hash(Hasher hasher)
-            {
-                throw new NotSupportedException();
-            }
-
-            #endregion
-
             #region Copying
             
             /// <summary>

@@ -24,7 +24,7 @@ namespace Engine.Physics.Joints
     /// that being the two entities (bodies) they are attached to.
     /// </summary>
     [DebuggerDisplay("Id = {Index}, Used = {Manager != null}")]
-    public abstract class Joint : ICopyable<Joint>, IPacketizable, IHashable
+    public abstract class Joint : ICopyable<Joint>, IPacketizable
     {
         #region Types
 
@@ -202,25 +202,6 @@ namespace Engine.Physics.Joints
 
         #endregion
 
-        #region Serialization / Hashing
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public virtual void Hash(Hasher hasher)
-        {
-            hasher
-                .Put(Next)
-                .Put(Previous)
-                .Put(_bodyIdA)
-                .Put(_bodyIdB)
-                .Put(CollideConnected);
-        }
-
-        #endregion
-
         #region Copying
 
         /// <summary>
@@ -275,7 +256,7 @@ namespace Engine.Physics.Joints
     /// If the joint is only attached to one real entity, the other end is usually
     /// attached to the "world", and <see cref="Other"/> will be zero.
     /// </summary>
-    internal sealed class JointEdge : ICopyable<JointEdge>, IPacketizable, IHashable
+    internal sealed class JointEdge : ICopyable<JointEdge>, IPacketizable
     {
         #region Fields
 
@@ -300,24 +281,6 @@ namespace Engine.Physics.Joints
         /// edge belongs to.
         /// </summary>
         public int Next;
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            hasher
-                .Put(Joint)
-                .Put(Other)
-                .Put(Previous)
-                .Put(Next);
-        }
 
         #endregion
 

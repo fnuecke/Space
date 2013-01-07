@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -32,7 +31,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     /// <typeparam name="TAttribute">The enum of possible attributes.</typeparam>
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public sealed class AttributeModifier<TAttribute> : IPacketizable, IHashable, ICopyable<AttributeModifier<TAttribute>>
+    public sealed class AttributeModifier<TAttribute> : IPacketizable, ICopyable<AttributeModifier<TAttribute>>
     {
         #region Fields
 
@@ -66,22 +65,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         public AttributeModifier()
         {
-        }
-
-        #endregion
-
-        #region Serialization / Hashing
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            hasher.Put(Enum.GetName(typeof(TAttribute), Type));
-            hasher.Put((byte)ComputationType);
-            hasher.Put(Value);
         }
 
         #endregion

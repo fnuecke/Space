@@ -425,7 +425,7 @@ namespace Engine.Session
                                         .Write(requestArgs.Data);
                                     packet
                                         .Write((byte)SessionMessage.GameInfoResponse)
-                                        .Write(packetInner);
+                                        .Write((IWritablePacket)packetInner);
                                     Udp.Send(packet,
                                         e.RemoteEndPoint);
                                 }

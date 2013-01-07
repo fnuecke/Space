@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Systems
     /// Base class for systems, implementing default basic functionality.
     /// </summary>
     [DebuggerTypeProxy(typeof(FlattenHierarchyProxy))]
-    public abstract class AbstractSystem : ICopyable<AbstractSystem>, IPacketizable, IHashable
+    public abstract class AbstractSystem : ICopyable<AbstractSystem>, IPacketizable
     {
         #region Type ID
 
@@ -117,15 +117,6 @@ namespace Engine.ComponentSystem.Systems
         {
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public virtual void Hash(Hasher hasher)
-        {
-        }
-
         #endregion
 
         #region Copying
@@ -207,7 +198,7 @@ namespace Engine.ComponentSystem.Systems
         public override string ToString()
         {
             var hasher = new Hasher();
-            Hash(hasher);
+            hasher.Write(this);
             return GetType().Name + ": Hash=" + hasher.Value;
         }
 

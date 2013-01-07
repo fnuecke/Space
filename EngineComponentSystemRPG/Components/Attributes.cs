@@ -351,28 +351,6 @@ namespace Engine.ComponentSystem.RPG.Components
             }
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            foreach (var attribute in _baseAttributes)
-            {
-                hasher.Put(Enum.GetName(typeof(TAttribute), attribute.Key));
-                hasher.Put(attribute.Value);
-            }
-            foreach (var attribute in _modifiedAttributes)
-            {
-                hasher.Put(Enum.GetName(typeof(TAttribute), attribute.Key));
-                hasher.Put(attribute.Value[0]);
-                hasher.Put(attribute.Value[1]);
-            }
-        }
-
         #endregion
 
         #region ToString

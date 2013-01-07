@@ -45,7 +45,7 @@ namespace Engine.Random
     /// <summary>
     /// Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).
     /// </summary>
-    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICopyable<MersenneTwister>, IHashable
+    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICopyable<MersenneTwister>
     {
         #region Constants: period parameters
 
@@ -348,20 +348,6 @@ namespace Engine.Random
             }
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            for (var i = 0; i < N; i++)
-            {
-                hasher.Put(_mt[i]);
-            }
-            hasher.Put(_index);
-        }
-
         #endregion
 
         #region Copying
@@ -399,8 +385,8 @@ namespace Engine.Random
         public override string ToString()
         {
             var hasher = new Hasher();
-            Hash(hasher);
-            return hasher.Value.ToString(CultureInfo.InvariantCulture);
+            hasher.Write(this);
+            return "{State: " + hasher.Value.ToString(CultureInfo.InvariantCulture) + "}";
         }
 
         #endregion

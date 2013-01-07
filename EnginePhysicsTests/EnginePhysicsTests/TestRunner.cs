@@ -59,6 +59,11 @@ namespace Engine.Physics.Tests
         #region Fields
 
         /// <summary>
+        /// A string buffer used to accumulate text messages to print each frame.
+        /// </summary>
+        private static readonly StringBuilder StringBuffer = new StringBuilder();
+
+        /// <summary>
         /// The graphics device manager we use.
         /// </summary>
         private readonly GraphicsDeviceManager _graphics;
@@ -69,9 +74,9 @@ namespace Engine.Physics.Tests
         private readonly Manager _manager = new Manager();
 
         /// <summary>
-        /// A string buffer used to accumulate text messages to print each frame.
+        /// Profiling data accumulated over time.
         /// </summary>
-        private static readonly StringBuilder StringBuffer = new StringBuilder();
+        private readonly Profile _profile = new Profile();
 
         /// <summary>
         /// Used to render messages.
@@ -129,11 +134,6 @@ namespace Engine.Physics.Tests
         private bool _showProfile;
 
         /// <summary>
-        /// Profiling data accumulated over time.
-        /// </summary>
-        private Profile _profile = new Profile();
-
-        /// <summary>
         /// The accumulated elapsed time since the last simulation update.
         /// </summary>
         private float _elapsedTimeAccumulator;
@@ -151,7 +151,7 @@ namespace Engine.Physics.Tests
         /// <summary>
         /// The hash of the simulation when the snapshot was created.
         /// </summary>
-        private int _snapshotHash;
+        private uint _snapshotHash;
 
         /// <summary>
         /// The zipped size of the snapshot.
@@ -488,7 +488,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                         _snapshot = new Packet();
                         _snapshot.Write(_manager);
                         var hasher = new Hasher();
-                        _manager.Hash(hasher);
+                        hasher.Write(_manager);
                         _snapshotHash = hasher.Value;
                         _snapshotCompressedSize = SimpleCompression.Compress(_snapshot.GetBuffer(), _snapshot.Length).Length;
                     }
@@ -502,8 +502,8 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                         _snapshot.Reset();
                         _snapshot.ReadPacketizableInto(_manager);
                         var hasher = new Hasher();
-                        _manager.Hash(hasher);
-                        System.Diagnostics.Debug.Assert(_snapshotHash == hasher.Value);
+                        hasher.Write(_manager);
+                        Debug.Assert(_snapshotHash == hasher.Value);
                     }
                     break;
 

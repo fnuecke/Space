@@ -11,7 +11,7 @@ namespace Engine.Math
     /// </summary>
     /// <typeparam name="T">The interval type.</typeparam>
     [TypeConverter(typeof(IntervalConverter))]
-    public abstract class Interval<T> : IPacketizable, IHashable where T : IComparable<T>, IEquatable<T>
+    public abstract class Interval<T> : IPacketizable where T : IComparable<T>, IEquatable<T>
     {
         #region Properties
         
@@ -86,17 +86,6 @@ namespace Engine.Math
 
         #endregion
 
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public abstract void Hash(Hasher hasher);
-
-        #endregion
-
         #region ToString
 
         /// <summary>
@@ -152,20 +141,6 @@ namespace Engine.Math
         }
         
         #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            hasher.Put(Low).Put(High);
-        }
-
-        #endregion
     }
 
     public sealed class FloatInterval : Interval<float>
@@ -207,20 +182,6 @@ namespace Engine.Math
         }
         
         #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            hasher.Put(Low).Put(High);
-        }
-
-        #endregion
     }
 
     public sealed class DoubleInterval : Interval<double>
@@ -259,20 +220,6 @@ namespace Engine.Math
         /// </summary>
         public DoubleInterval()
         {
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            hasher.Put(Low).Put(High);
         }
 
         #endregion

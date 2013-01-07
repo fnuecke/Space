@@ -113,7 +113,7 @@ namespace Engine.Simulation
         public virtual IWritablePacket Packetize(IWritablePacket packet)
         {
             // Then serialize all pending commands for the next frame.
-            packet.WriteWithTypeInfo(Commands);
+            packet.WriteWithTypeInfo((ICollection<Command>)Commands);
 
             return packet;
         }
@@ -131,16 +131,6 @@ namespace Engine.Simulation
             {
                 PushCommand(command);
             }
-        }
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">the hasher to push data to.</param>
-        public virtual void Hash(Hasher hasher)
-        {
-            Manager.Hash(hasher);
         }
 
         #endregion

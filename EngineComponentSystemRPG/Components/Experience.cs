@@ -232,25 +232,6 @@ namespace Engine.ComponentSystem.RPG.Components
             _nextLevelValue = (int)(_multiplier * System.Math.Pow(_level, _exponent));
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher
-                .Put(_level)
-                .Put(_maxLevel)
-                .Put(_value)
-                .Put(_currentLevelValue)
-                .Put(_nextLevelValue)
-                .Put(_multiplier)
-                .Put(_exponent);
-        }
-
         #endregion
 
         #region ToString

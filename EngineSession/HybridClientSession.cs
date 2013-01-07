@@ -277,7 +277,7 @@ namespace Engine.Session
                     Write(_playerData);
                 packet.
                     Write((byte)SessionMessage.JoinRequest).
-                    Write(packetInner);
+                    Write((IWritablePacket)packetInner);
                 var written = _stream.Write(packet);
 
                 // Statistics.
@@ -376,7 +376,7 @@ namespace Engine.Session
                             Write(_playerData);
                         packet.
                             Write((byte)SessionMessage.JoinRequest).
-                            Write(packetInner);
+                            Write((IWritablePacket)packetInner);
                         var written = _stream.Write(packet);
 
                         // Statistics.

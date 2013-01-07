@@ -355,7 +355,7 @@ namespace Engine.Simulation
             foreach (var command in _commands)
             {
                 packet.Write(command.Key);
-                packet.WriteWithTypeInfo(command.Value);
+                packet.WriteWithTypeInfo((ICollection<Command>)command.Value);
             }
 
             return packet;
@@ -406,16 +406,6 @@ namespace Engine.Simulation
 
             // Got a valid state.
             WaitingForSynchronization = false;
-        }
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">the hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -1016,16 +1006,6 @@ namespace Engine.Simulation
             /// changed due to serialization, mapping old id to new id.</param>
             /// <returns>The id of the read entity.</returns>
             int IManager.DepacketizeEntity(IReadablePacket packet, Dictionary<int, int> componentIdMap)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
-            /// Push some unique data of the object to the given hasher,
-            /// to contribute to the generated hash.
-            /// </summary>
-            /// <param name="hasher">The hasher to push data to.</param>
-            void IHashable.Hash(Hasher hasher)
             {
                 throw new NotSupportedException();
             }

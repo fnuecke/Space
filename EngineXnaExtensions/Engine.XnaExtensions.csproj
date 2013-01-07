@@ -59,7 +59,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DirectionXnaExtensions.cs" />
-    <Compile Include="HasherXnaExtensions.cs" />
     <Compile Include="LocalizedContentManager.cs" />
     <Compile Include="PacketXnaExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -15,7 +15,7 @@ namespace Engine.FarMath
     /// that otherwise might use normal floating point types.
     /// </para>
     /// </summary>
-    public struct FarValue : IComparable<FarValue>, IEquatable<FarValue>, IHashable
+    public struct FarValue : IComparable<FarValue>, IEquatable<FarValue>
     {
         #region Constants
 
@@ -897,21 +897,6 @@ namespace Engine.FarMath
             System.Diagnostics.Debug.Assert(value._segment >> SegmentSizeShift <= (1 << 16), "Significant loss of precision when casting large farvalue to double.");
             // Cast offset to double for best possible precision.
             return value._segment * SegmentSize + (double)value._offset;
-        }
-
-        #endregion
-
-        #region Serialization / Hashing
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            hasher.Put(_segment);
-            hasher.Put(_offset);
         }
 
         #endregion

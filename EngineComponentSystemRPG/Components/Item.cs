@@ -98,23 +98,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(Name);
-            hasher.Put(IconName);
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>

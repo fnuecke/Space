@@ -1075,38 +1075,6 @@ namespace Engine.Physics.Components
             return base.Packetize(packet);
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
-
-            base.Hash(hasher);
-
-            hasher
-                .Put((byte)TypeInternal)
-                .Put(IsSleepAllowedInternal)
-                .Put(IsAwakeInternal)
-                .Put(IsBulletInternal)
-                .Put(IslandIndex)
-                .Put(Transform)
-                .Put(Sweep)
-                .Put(LinearVelocityInternal)
-                .Put(AngularVelocityInternal)
-                .Put(Force)
-                .Put(Torque)
-                .Put(JointList)
-                .Put(ContactList)
-                .Put(MassInternal)
-                .Put(_inertia)
-                .Put(LinearDampingInternal)
-                .Put(AngularDampingInternal)
-                .Put(SleepTime);
-        }
-
         #endregion
 
         #region ToString

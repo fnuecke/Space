@@ -636,28 +636,6 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            foreach (var system in _systems)
-            {
-                // Don't hash presentation systems.
-                if (system is IDrawingSystem)
-                {
-                    continue;
-                }
-                system.Hash(hasher);
-            }
-            foreach (var component in Components)
-            {
-                component.Hash(hasher);
-            }
-        }
-
-        /// <summary>
         /// Write a complete entity, meaning all its components, to the
         /// specified packet. Entities saved this way can be restored using
         /// the <see cref="DepacketizeEntity"/> method. Note that this has
@@ -675,7 +653,7 @@ namespace Engine.ComponentSystem
         /// </returns>
         public IWritablePacket PacketizeEntity(IWritablePacket packet, int entity)
         {
-            return packet.WriteWithTypeInfo(_entities[entity].Components);
+            return packet.WriteWithTypeInfo((ICollection<Component>)_entities[entity].Components);
         }
 
         /// <summary>

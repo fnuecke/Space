@@ -139,26 +139,4 @@ namespace Engine.Physics.Math
             return result;
         }
     }
-
-    /// <summary>
-    /// Hasher methods for sweeps.
-    /// </summary>
-    internal static class HasherSweepExtensions
-    {
-        /// <summary>Put the specified value to the data of which the hash
-        /// gets computed.</summary>
-        /// <param name="hasher">The hasher to use.</param>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public static Hasher Put(this Hasher hasher, Sweep value)
-        {
-            return hasher
-                .Put(value.LocalCenter)
-                .Put(value.CenterOfMass0)
-                .Put(value.CenterOfMass)
-                .Put(value.Angle0)
-                .Put(value.Angle)
-                .Put(value.Alpha0);
-        }
-    }
 }

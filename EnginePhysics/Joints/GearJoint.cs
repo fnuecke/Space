@@ -535,37 +535,6 @@ namespace Engine.Physics.Joints
 
         #endregion
 
-        #region Serialization / Hashing
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher
-                .Put((byte)_typeA)
-                .Put((byte)_typeB)
-                .Put(_bodyIdC)
-                .Put(_bodyIdD)
-                .Put(_localAnchorA)
-                .Put(_localAnchorB)
-                .Put(_localAnchorC)
-                .Put(_localAnchorD)
-                .Put(_localAxisC)
-                .Put(_localAxisD)
-                .Put(_referenceAngleA)
-                .Put(_referenceAngleB)
-                .Put(_constant)
-                .Put(_ratio)
-                .Put(_impulse);
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>

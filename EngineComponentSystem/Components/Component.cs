@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.Components
     /// </para>
     /// </summary>
     [DebuggerTypeProxy(typeof(FlattenHierarchyProxy))]
-    public abstract class Component : IPacketizable, IHashable
+    public abstract class Component : IPacketizable
     {
         #region Constants
 
@@ -143,19 +143,6 @@ namespace Engine.ComponentSystem.Components
         {
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public virtual void Hash(Hasher hasher)
-        {
-            hasher.Put(GetType().AssemblyQualifiedName);
-            hasher.Put(Id);
-            hasher.Put(Entity);
-            hasher.Put(Enabled);
-        }
-
         #endregion
 
         #region Object
@@ -181,7 +168,7 @@ namespace Engine.ComponentSystem.Components
         public override string ToString()
         {
             var hasher = new Hasher();
-            Hash(hasher);
+            hasher.Write(this);
             return "[Entity " + Entity + "]->" + GetType().Name + ": Id=" + Id + ", Hash=" + hasher.Value + ", Enabled=" + Enabled;
         }
 

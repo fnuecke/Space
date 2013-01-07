@@ -70,7 +70,7 @@ namespace Engine.Controller
         /// Keeping track of hashes to compare to reference hashes from
         /// server (to detect desyncs).
         /// </summary>
-        private readonly Dictionary<long, int> _hashes = new Dictionary<long, int>();
+        private readonly Dictionary<long, uint> _hashes = new Dictionary<long, uint>();
 
         #endregion
 
@@ -149,7 +149,7 @@ namespace Engine.Controller
             {
                 // Generate hash.
                 var hasher = new Hasher();
-                Tss.TrailingSimulation.Hash(hasher);
+                hasher.Write(Tss.TrailingSimulation);
                 PerformHashCheck(hasher.Value, Tss.TrailingFrame, Tss.TrailingFrame >= _lastServerHashedFrame);
             }
         }
@@ -213,7 +213,7 @@ namespace Engine.Controller
         /// the value of our server (or vice versa).
         /// </summary>
         /// <returns>Whether the hash was <b>stored</b> or not.</returns>
-        private void PerformHashCheck(int hashValue, long hashFrame, bool store)
+        private void PerformHashCheck(uint hashValue, long hashFrame, bool store)
         {
             // See if we have that frame, meaning we have to compare to it now.
             if (_hashes.ContainsKey(hashFrame))
@@ -389,7 +389,7 @@ namespace Engine.Controller
                         _lastServerHashedFrame = hashFrame;
 
                         // Read hash values.
-                        var hashValue = args.Data.ReadInt32();
+                        var hashValue = args.Data.ReadUInt32();
 
                         // And perform hash check.
                         PerformHashCheck(hashValue, hashFrame, Tss.TrailingFrame < _lastServerHashedFrame);
@@ -409,7 +409,7 @@ namespace Engine.Controller
 
                         // Validate the data we got.
                         var hasher = new Hasher();
-                        Tss.TrailingSimulation.Hash(hasher);
+                        hasher.Write(Tss.TrailingSimulation);
                         if (hasher.Value != serverHash)
                         {
                             Logger.Error("Hash mismatch after deserialization.");

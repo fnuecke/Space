@@ -88,7 +88,9 @@ namespace Space.ComponentSystem.Systems
             if (m.IsActive)
             {
                 // Get random generator based on world seed and cell location.
-                var random = new MersenneTwister((ulong)new Hasher().Put(m.Id).Put(WorldSeed).Value);
+                var hasher = new Hasher();
+                hasher.Write(m.Id).Write(WorldSeed);
+                var random = new MersenneTwister((ulong)hasher.Value);
 
                 // Check if we have a changed cell info.
                 if (!_cellInfo.ContainsKey(m.Id))
@@ -97,8 +99,10 @@ namespace Space.ComponentSystem.Systems
                     // randomizer to avoid different results in other
                     // sampling operations from when we have an existing
                     // cell info.
+                    hasher.Reset();
+                    hasher.Write(m.Id).Write(WorldSeed);
                     var independentRandom =
-                        new MersenneTwister((ulong)new Hasher().Put(m.Id).Put(WorldSeed).Value);
+                        new MersenneTwister((ulong)hasher.Value);
 
                     // Figure out which faction should own this cell.
                     Factions faction;
@@ -256,16 +260,6 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Hashes the specified hasher.
-        /// </summary>
-        /// <param name="hasher">The hasher.</param>
-        public override void Hash(Hasher hasher)
-        {
-            hasher.Put(WorldSeed);
-            hasher.Put(_cellInfo.Values);
-        }
-
         #endregion
 
         #region Copying
@@ -321,7 +315,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Class used to track persistent information on a single cell.
         /// </summary>
-        public sealed class CellInfo : IPacketizable, IHashable
+        public sealed class CellInfo : IPacketizable
         {
             #region Properties
 
@@ -394,23 +388,6 @@ namespace Space.ComponentSystem.Systems
 
             public CellInfo()
             {
-            }
-
-            #endregion
-
-            #region Serialization / Hashing
-
-            /// <summary>
-            /// Push some unique data of the object to the given hasher,
-            /// to contribute to the generated hash.
-            /// </summary>
-            /// <param name="hasher">The hasher to push data to.</param>
-            public void Hash(Hasher hasher)
-            {
-                hasher
-                    .Put(Dirty)
-                    .Put((int)_faction)
-                    .Put(_techLevel);
             }
 
             #endregion

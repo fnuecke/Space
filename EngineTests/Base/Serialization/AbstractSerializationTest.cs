@@ -10,7 +10,7 @@ namespace Engine.Tests.Base.Serialization
     /// <typeparam name="T">The class to test.</typeparam>
     [TestFixture]
     public abstract class AbstractSerializationTest<T>
-        where T : class, IPacketizable, IHashable, new()
+        where T : class, IPacketizable, new()
     {
         [Test]
         public void SerializationAndHashing()
@@ -77,10 +77,10 @@ namespace Engine.Tests.Base.Serialization
             }
         }
 
-        private static int GetHash(IHashable hashable)
+        private static uint GetHash(IPacketizable hashable)
         {
             var hasher = new Hasher();
-            hashable.Hash(hasher);
+            hasher.Write(hashable);
             return hasher.Value;
         }
 

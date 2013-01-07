@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Engine.Serialization
 {
@@ -15,7 +13,7 @@ namespace Engine.Serialization
     /// A snapshot of the current hash can always be obtained via
     /// the <c>Value</c> property.
     /// </summary>
-    public sealed class Hasher
+    public sealed class Hasher : IWritablePacket
     {
         #region Properties
         
@@ -24,13 +22,13 @@ namespace Engine.Serialization
         /// far. This performs some postprocessing, so keep a copy
         /// if you reuse this a lot.
         /// </summary>
-        public int Value
+        public uint Value
         {
             get
             {
                 unchecked
                 {
-                    int result = _hash;
+                    var result = _hash;
                     result += result << 13;
                     result ^= result >> 7;
                     result += result << 3;
@@ -39,6 +37,14 @@ namespace Engine.Serialization
                     return result;
                 }
             }
+        }
+
+        /// <summary>
+        /// The number of used bytes in the buffer.
+        /// </summary>
+        public int Length
+        {
+            get { return 0; }
         }
 
         #endregion
@@ -53,9 +59,11 @@ namespace Engine.Serialization
         /// <summary>
         /// Current working value of the hash.
         /// </summary>
-        private int _hash;
+        private uint _hash;
 
         #endregion
+        
+        #region Constructor
 
         /// <summary>
         /// Creates a new hasher and initializes it.
@@ -66,14 +74,48 @@ namespace Engine.Serialization
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing,
+        /// or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+        }
+
+        #endregion
+
+        #region Buffer
+        
+        /// <summary>
+        /// Returns the underlying array buffer of this packet. This is a reference to
+        /// the actually used buffer, so it should be treated as read-only.
+        /// </summary>
+        /// <returns>The raw contents of this packet as a <c>byte[]</c>.</returns>
+        public byte[] GetBuffer()
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Reset this hasher to allow reusing it.
         /// </summary>
         public void Reset()
         {
-            unchecked
-            {
-                _hash = (int)2166136261;
-            }
+            _hash = 2166136261;
+        }
+
+        #endregion
+
+        #region Writing
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(bool value)
+        {
+            return Write(BitConverter.GetBytes(value));
         }
 
         /// <summary>
@@ -82,7 +124,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="value">the data to add.</param>
         /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(byte value)
+        public IWritablePacket Write(byte value)
         {
             unchecked
             {
@@ -90,184 +132,139 @@ namespace Engine.Serialization
             }
             return this;
         }
-
+        
         /// <summary>
-        /// Put a byte array to the data of which the hash
+        /// Put the specified value to the data of which the hash
         /// gets computed.
         /// </summary>
         /// <param name="value">the data to add.</param>
         /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(byte[] value)
+        public IWritablePacket Write(double value)
         {
-            return Put(value, 0, value.Length);
+            return Write(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(float value)
+        {
+            return Write(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(int value)
+        {
+            return Write(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(long value)
+        {
+            return Write(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(short value)
+        {
+            return Write(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(uint value)
+        {
+            return Write(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(ulong value)
+        {
+            return Write(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public IWritablePacket Write(ushort value)
+        {
+            return Write(BitConverter.GetBytes(value));
         }
         
         /// <summary>
-        /// Put a byte array to the data of which the hash
-        /// gets computed.
+        /// Writes the specified length from the specified byte array.
+        /// <para>
+        /// May be <c>null</c>.
+        /// </para>
         /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(byte[] value, int offset, int length)
+        /// <param name="data">The value to write.</param>
+        /// <param name="offset">The offset at which to start reading.</param>
+        /// <param name="length">The number of bytes to write.</param>
+        /// <returns>
+        /// This packet, for call chaining.
+        /// </returns>
+        public IWritablePacket Write(byte[] data, int offset, int length)
         {
-            if (value == null)
+            if (data == null)
             {
-                throw new ArgumentNullException("value");
-            }
-            for (var i = offset; i < length; i++)
-            {
-                Put(value[i]);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(bool value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(double value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(float value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(int value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(long value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(short value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(uint value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(ulong value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(ushort value)
-        {
-            return Put(BitConverter.GetBytes(value));
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(string value)
-        {
-            return value != null ? Put(Encoding.UTF8.GetBytes(value)) : Put(0);
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put(IHashable value)
-        {
-            if (value != null)
-            {
-                value.Hash(this);
+                return Write(-1);
             }
             else
             {
-                Put(0);
+                Write(length);
+                for (var i = offset; i < length; i++)
+                {
+                    Write(data[i]);
+                }
+                return this;
             }
-            return this;
         }
 
         /// <summary>
-        /// Put the specified values to the data of which the hash
-        /// gets computed.
+        /// Internal method for writing byte arrays without the array's length.
+        /// This is used to push bytified basic value types (int, long, ...).
         /// </summary>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public Hasher Put<T>(IEnumerable<T> value)
-            where T : IHashable
+        /// <param name="data">The bytes to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        private IWritablePacket Write(byte[] data)
         {
-            if (value == null)
+            for (var i = 0; i < data.Length; i++)
             {
-                return Put(0);
-            }
-            foreach (var hashable in value)
-            {
-                hashable.Hash(this);
+                Write(data[i]);
             }
             return this;
         }
+        
+        #endregion
     }
 }

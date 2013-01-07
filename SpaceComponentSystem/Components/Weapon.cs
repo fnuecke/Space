@@ -126,7 +126,7 @@ namespace Space.ComponentSystem.Components
                 packet.Write(attribute.Value);
             }
 
-            packet.Write(Projectiles);
+            packet.Write((ICollection<ProjectileFactory>)Projectiles);
 
             return packet;
         }
@@ -147,19 +147,6 @@ namespace Space.ComponentSystem.Components
                 Attributes.Add(type, value);
             }
             Projectiles = packet.ReadPacketizables<ProjectileFactory>();
-        }
-
-        /// <summary>
-        /// Hashes the specified hasher.
-        /// </summary>
-        /// <param name="hasher">The hasher.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(Sound);
-            hasher.Put(Attributes.Count);
-            hasher.Put(Projectiles);
         }
 
         #endregion

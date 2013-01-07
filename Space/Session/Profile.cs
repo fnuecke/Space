@@ -189,10 +189,10 @@ namespace Space.Session
 
                     // Check if the hash matches.
                     var hasher = new Hasher();
-                    hasher.Put((byte)playerClass);
+                    hasher.Write((byte)playerClass);
                     if (data != null)
                     {
-                        hasher.Put(data);
+                        hasher.Write(data);
                     }
                     if (hasher.Value == hash)
                     {
@@ -215,10 +215,10 @@ namespace Space.Session
         {
             // Get our plain data and hash it.
             var hasher = new Hasher();
-            hasher.Put((byte)PlayerClass);
+            hasher.Write((byte)PlayerClass);
             if (_data != null)
             {
-                hasher.Put((byte[])_data);
+                hasher.Write((byte[])_data);
             }
 
             // Write it to a packet, compress it, encrypt it and save it.
@@ -228,7 +228,7 @@ namespace Space.Session
                 packet.Write(Header);
                 packet.Write(hasher.Value);
                 packet.Write((byte)PlayerClass);
-                packet.Write(_data);
+                packet.Write((IWritablePacket)_data);
 
                 // Compress and encrypt, then save.
                 var compressed = SimpleCompression.Compress(packet.GetBuffer(), packet.Length);

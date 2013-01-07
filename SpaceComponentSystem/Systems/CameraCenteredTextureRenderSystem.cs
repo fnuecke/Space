@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         /// to avoid having to re-render them each frame, which is slow due
         /// to the frequent texture switching for each item.
         /// </summary>
-        private readonly Dictionary<int, CacheEntry> _modelCache = new Dictionary<int, CacheEntry>();
+        private readonly Dictionary<uint, CacheEntry> _modelCache = new Dictionary<uint, CacheEntry>();
 
         /// <summary>
         /// The struct used to store single model cache entries.
@@ -177,7 +177,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="slot">The slot to start from.</param>
         /// <returns>Hash for the equipment branch.</returns>
-        private int HashEquipment(ItemSlot slot)
+        private uint HashEquipment(ItemSlot slot)
         {
             var hasher = new Hasher();
 
@@ -185,12 +185,12 @@ namespace Space.ComponentSystem.Systems
             {
                 // Get item info.
                 var item = (SpaceItem)Manager.GetComponent(itemId, Item.TypeId);
-                hasher.Put(item.DrawBelowParent);
-                hasher.Put(item.ModelOffset);
-                hasher.Put(item.RequiredSlotSize.Scale());
+                hasher.Write(item.DrawBelowParent);
+                hasher.Write(item.ModelOffset);
+                hasher.Write(item.RequiredSlotSize.Scale());
                 var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
-                hasher.Put(renderer.TextureName);
-                hasher.Put(renderer.Tint);
+                hasher.Write(renderer.TextureName);
+                hasher.Write(renderer.Tint);
             }
 
             return hasher.Value;
@@ -229,7 +229,7 @@ namespace Space.ComponentSystem.Systems
                     slotOffset.Y = -slotOffset.Y;
                 }
             }
-            else if (slotOffset.Y != 0)
+            else if (slotOffset.Y != 0.0f)
             {
                 mirrored = slot.Offset.Y < 0;
             }
@@ -293,7 +293,7 @@ namespace Space.ComponentSystem.Systems
                     slotOffset.Y = -slotOffset.Y;
                 }
             }
-            else if (slotOffset.Y != 0)
+            else if (slotOffset.Y != 0.0f)
             {
                 mirrored = slot.Offset.Y < 0;
             }

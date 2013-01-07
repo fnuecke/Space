@@ -78,17 +78,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Serialization
-
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(Response.ToString());
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>

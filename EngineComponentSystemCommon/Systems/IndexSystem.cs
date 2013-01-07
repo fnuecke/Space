@@ -541,24 +541,6 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(_maxEntriesPerNode);
-            hasher.Put(_minNodeBounds);
-
-            foreach (var tree in _trees)
-            {
-                hasher.Put(tree == null ? 0 : tree.Count);
-            }
-        }
-
         #endregion
 
         #region Copying

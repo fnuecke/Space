@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Engine.Serialization
 {
@@ -8,10 +7,16 @@ namespace Engine.Serialization
     /// </summary>
     public interface IWritablePacket : IDisposable
     {
+        #region Properties
+        
         /// <summary>
         /// The number of used bytes in the buffer.
         /// </summary>
         int Length { get; }
+
+        #endregion
+
+        #region Buffer
 
         /// <summary>
         /// Returns the underlying array buffer of this packet. This is a reference to
@@ -19,6 +24,16 @@ namespace Engine.Serialization
         /// </summary>
         /// <returns>The raw contents of this packet as a <c>byte[]</c>.</returns>
         byte[] GetBuffer();
+
+        /// <summary>
+        /// Reset set the write position, to write from the beginning once more. This
+        /// also resets the length to zero.
+        /// </summary>
+        void Reset();
+        
+        #endregion
+
+        #region Writing
 
         /// <summary>
         /// Writes the specified boolean value.
@@ -103,67 +118,7 @@ namespace Engine.Serialization
         /// This packet, for call chaining.
         /// </returns>
         IWritablePacket Write(byte[] data, int offset, int length);
-
-        /// <summary>
-        /// Writes the specified byte array.
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        IWritablePacket Write(byte[] data);
-
-        /// <summary>
-        /// Writes the specified packet.
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        IWritablePacket Write(IWritablePacket data);
-
-        /// <summary>
-        /// Writes the specified string value using UTF8 encoding.
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        IWritablePacket Write(string data);
-
-        /// <summary>
-        /// Writes the specified type using its assembly qualified name.
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        IWritablePacket Write(Type data);
         
-        /// <summary>
-        /// Writes the specified collection of objects.
-        /// 
-        /// <para>
-        /// Must byte read back using <see cref="Packet.ReadPacketizables{T}"/>.
-        /// </para>
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        IWritablePacket Write<T>(ICollection<T> data) where T : class, IPacketizable;
-
-        /// <summary>
-        /// Writes the specified collection of objects.
-        /// </summary>
-        /// 
-        /// <para>
-        /// Must byte read back using <see cref="Packet.ReadPacketizablesWithTypeInfo{T}"/>.
-        /// </para>
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        IWritablePacket WriteWithTypeInfo<T>(ICollection<T> data) where T : class, IPacketizable;
+        #endregion
     }
 }

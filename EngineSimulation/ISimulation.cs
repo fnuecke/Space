@@ -8,7 +8,7 @@ namespace Engine.Simulation
     /// <summary>
     /// Minimal interface to be implemented by simulation states.
     /// </summary>
-    public interface ISimulation : IPacketizable, IHashable, ICopyable<ISimulation>
+    public interface ISimulation : IPacketizable, ICopyable<ISimulation>
     {
         /// <summary>
         /// The current frame of the simulation the state represents.

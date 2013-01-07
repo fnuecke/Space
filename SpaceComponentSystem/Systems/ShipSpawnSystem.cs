@@ -320,21 +320,6 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            _random.Hash(hasher);
-            for (var i = 0; i < _cellSpawns.Count; i++)
-            {
-                hasher.Put(_cellSpawns[i].Item1);
-                hasher.Put(_cellSpawns[i].Item2);
-            }
-        }
-
         #endregion
 
         #region Copying

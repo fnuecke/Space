@@ -11,7 +11,7 @@ namespace Engine.Tests.Base.Util
     /// <typeparam name="T">The class to test.</typeparam>
     [TestFixture]
     public abstract class AbstractCopyableTest<T>
-        where T : class, IHashable, ICopyable<T>
+        where T : class, IPacketizable, ICopyable<T>
     {
         [Test]
         public void DeepCopyViaHashing()
@@ -34,10 +34,10 @@ namespace Engine.Tests.Base.Util
             }
         }
 
-        private static int GetHash(IHashable hashable)
+        private static uint GetHash(IPacketizable hashable)
         {
             var hasher = new Hasher();
-            hashable.Hash(hasher);
+            hasher.Write(hashable);
             return hasher.Value;
         }
 

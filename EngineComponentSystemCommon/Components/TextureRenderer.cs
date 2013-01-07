@@ -141,15 +141,6 @@ namespace Engine.ComponentSystem.Common.Components
             Texture = null;
         }
 
-        /// <summary>
-        /// Suppress hashing as this component has no influence on other
-        /// components and actual simulation logic.
-        /// </summary>
-        /// <param name="hasher"></param>
-        public override void Hash(Hasher hasher)
-        {
-        }
-
         #endregion
 
         #region ToString

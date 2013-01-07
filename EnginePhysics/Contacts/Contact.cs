@@ -23,7 +23,7 @@ namespace Engine.Physics.Contacts
     /// Represents a contact between two fixtures.
     /// </summary>
     [DebuggerDisplay("FixtureA = {FixtureIdA}, FixtureB = {FixtureIdB}, IsTouching = {IsTouching}")]
-    public sealed class Contact : ICopyable<Contact>, IPacketizable, IHashable
+    public sealed class Contact : ICopyable<Contact>, IPacketizable
     {
         #region Linked list data (unused/free)
 
@@ -463,30 +463,6 @@ namespace Engine.Physics.Contacts
 
         #endregion
 
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            hasher
-                .Put(Previous)
-                .Put(Next)
-                .Put(FixtureIdA)
-                .Put(FixtureIdB)
-                .Put(Friction)
-                .Put(Restitution)
-                .Put(IsTouching)
-                .Put(ShouldFilter)
-                .Put(Manifold)
-                .Put((byte)_type);
-        }
-
-        #endregion
-
         #region Copying
 
         /// <summary>
@@ -540,7 +516,7 @@ namespace Engine.Physics.Contacts
     /// Represents a connection between two (potentially) colliding
     /// objects.
     /// </summary>
-    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable, IHashable
+    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable
     {
         #region Fields
 
@@ -565,24 +541,6 @@ namespace Engine.Physics.Contacts
         /// edge belongs to.
         /// </summary>
         public int Next;
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            hasher
-                .Put(Contact)
-                .Put(Other)
-                .Put(Previous)
-                .Put(Next);
-        }
 
         #endregion
 

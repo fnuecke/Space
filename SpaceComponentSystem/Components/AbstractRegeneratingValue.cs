@@ -136,26 +136,6 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(Value);
-            hasher.Put(MaxValue);
-            hasher.Put(Regeneration);
-            hasher.Put(Timeout);
-            hasher.Put(TimeToWait);
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>

@@ -254,23 +254,6 @@ namespace Engine.ComponentSystem.Common.Components
             Precompute();
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(_angle);
-            hasher.Put(_majorRadius);
-            hasher.Put(_minorRadius);
-            hasher.Put(CenterEntityId);
-            hasher.Put(Period);
-            hasher.Put(PeriodOffset);
-        }
-
         #endregion
 
         #region ToString

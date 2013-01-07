@@ -93,7 +93,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// This class contains some settings controlling an AI's behavior.
         /// </summary>
-        public sealed class AIConfiguration : IPacketizable, IHashable, ICopyable<AIConfiguration>
+        public sealed class AIConfiguration : IPacketizable, ICopyable<AIConfiguration>
         {
             #region Fields
             
@@ -203,31 +203,6 @@ namespace Space.ComponentSystem.Components
 
             #endregion
 
-            #region Serialization / Hashing
-            
-            /// <summary>
-            /// Push some unique data of the object to the given hasher,
-            /// to contribute to the generated hash.
-            /// </summary>
-            /// <param name="hasher">The hasher to push data to.</param>
-            public void Hash(Hasher hasher)
-            {
-                hasher.Put(AggroRange);
-                hasher.Put(MaxEscapeCheckDistance);
-                hasher.Put(MinDistanceToDamagers);
-                hasher.Put(MinMultipleOfPointOfNoReturn);
-                hasher.Put(EnemySeparation);
-                hasher.Put(FlockingThreshold);
-                hasher.Put(FlockingSeparation);
-                hasher.Put(VegetativeUrgencyDistance);
-                hasher.Put(VegetativeWeight);
-                hasher.Put(WeaponRangeEpsilon);
-                hasher.Put(WeaponFiringAngle);
-                hasher.Put(ChaseDistance);
-            }
-
-            #endregion
-
             #region ToString
 
             /// <summary>
@@ -239,7 +214,7 @@ namespace Space.ComponentSystem.Components
             public override string ToString()
             {
                 var h = new Hasher();
-                h.Put(this);
+                h.Write(this);
                 return h.Value.ToString(CultureInfo.InvariantCulture);
             }
 
@@ -543,24 +518,6 @@ namespace Space.ComponentSystem.Components
                 var behavior = _behaviors[behaviorType];
                 packet.ReadPacketizableInto(behavior);
             }
-        }
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(_random);
-            hasher.Put(_config);
-            foreach (var behaviorType in _currentBehaviors)
-            {
-                hasher.Put((byte)behaviorType);
-            }
-            hasher.Put(_behaviors.Values);
         }
 
         #endregion

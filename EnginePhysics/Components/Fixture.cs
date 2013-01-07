@@ -371,26 +371,6 @@ namespace Engine.Physics.Components
             return base.Packetize(packet);
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
-
-            base.Hash(hasher);
-
-            hasher
-                .Put(Radius)
-                .Put(CollisionGroupsInternal)
-                .Put(IsSensorInternal)
-                .Put(_density)
-                .Put(_friction)
-                .Put(_restitution);
-        }
-
         #endregion
 
         #region ToString

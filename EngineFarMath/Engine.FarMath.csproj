@@ -58,7 +58,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FarHasherExtensions.cs" />
     <Compile Include="PacketFarMathExtensions.cs" />
     <Compile Include="FarPosition.cs" />
     <Compile Include="FarRectangle.cs" />

@@ -312,21 +312,6 @@ namespace Engine.ComponentSystem.Common.Components
             return base.Packetize(packet);
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            Debug.Assert(!_translationChanged);
-
-            base.Hash(hasher);
-
-            hasher.Put(Translation);
-            hasher.Put(Rotation);
-        }
-
         #endregion
 
         #region ToString

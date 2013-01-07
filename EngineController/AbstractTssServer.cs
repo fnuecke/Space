@@ -156,7 +156,7 @@ namespace Engine.Controller
 
             // Generate hash.
             var hasher = new Hasher();
-            Tss.TrailingSimulation.Hash(hasher);
+            hasher.Write(Tss.TrailingSimulation);
 
             // Send message.
             using (var packet = new Packet())
@@ -314,7 +314,7 @@ namespace Engine.Controller
                     {
                         // Client needs game state.
                         var hasher = new Hasher();
-                        Tss.TrailingSimulation.Hash(hasher);
+                        hasher.Write(Tss.TrailingSimulation);
                         using (var packet = new Packet())
                         {
                             packet

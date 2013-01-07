@@ -2260,41 +2260,6 @@ namespace Engine.Physics.Systems
             _island = null;
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Hasher hasher)
-        {
-            Debug.Assert(!IsLocked);
-
-            base.Hash(hasher);
-
-            hasher.Put(_timestep);
-            hasher.Put(_gravity);
-
-            hasher.Put(_contactCount);
-            for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
-            {
-                _contacts[contact].Hash(hasher);
-                _contactEdges[contact * 2].Hash(hasher);
-                _contactEdges[contact * 2 + 1].Hash(hasher);
-            }
-
-            hasher.Put(_jointCount);
-            for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
-            {
-                _joints[joint].Hash(hasher);
-                _jointEdges[joint * 2].Hash(hasher);
-                _jointEdges[joint * 2 + 1].Hash(hasher);
-            }
-
-            hasher.Put(_index.Count);
-            hasher.Put(_touched.Count);
-            hasher.Put(_findContactsBeforeNextUpdate);
-        }
-
         #endregion
 
         #region Copying

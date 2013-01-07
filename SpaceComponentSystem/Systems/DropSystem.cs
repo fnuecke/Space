@@ -76,8 +76,8 @@ namespace Space.ComponentSystem.Systems
             // pool and the drop position, to get a deterministic result for
             // each drop, regardless in which order they happen.
             var hasher = new Hasher();
-            hasher.Put(poolName);
-            hasher.Put(position);
+            hasher.Write(poolName);
+            hasher.Write(position);
             var random = new MersenneTwister((ulong)hasher.Value);
 
             // And shuffle it. This is important, to give each entry an equal

@@ -21,7 +21,7 @@ namespace Space.ComponentSystem.Factories
     /// Contains data about a single projectile fired by a weapon.
     /// </summary>
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public sealed class ProjectileFactory : IPacketizable, IHashable
+    public sealed class ProjectileFactory : IPacketizable
     {
         #region Properties
 
@@ -405,29 +405,6 @@ namespace Space.ComponentSystem.Factories
             {
                 return Vector2.Zero;
             }
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            hasher.Put(_model);
-            hasher.Put(_effect);
-            hasher.Put(_collisionRadius);
-            hasher.Put(_canBeShot);
-            hasher.Put(_initialVelocity);
-            hasher.Put(_initialDirection);
-            hasher.Put(_accelerationDirection);
-            hasher.Put(_accelerationForce);
-            hasher.Put(_friction);
-            hasher.Put(_timeToLive);
         }
 
         #endregion

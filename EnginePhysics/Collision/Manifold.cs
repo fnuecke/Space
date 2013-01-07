@@ -323,39 +323,4 @@ namespace Engine.Physics.Collision
             return result;
         }
     }
-
-    internal static class HasherManifoldExtensions
-    {
-        /// <summary>Put the specified value to the data of which the hash
-        /// gets computed.</summary>
-        /// <param name="hasher">The hasher to use.</param>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public static Hasher Put(this Hasher hasher, Manifold value)
-        {
-            return hasher
-                .Put(value.Points.Item1)
-                .Put(value.Points.Item2)
-                .Put(value.LocalNormal)
-                .Put(value.LocalPoint)
-                .Put((byte)value.Type)
-                .Put(value.PointCount);
-        }
-
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
-        /// <param name="hasher">The hasher to use.</param>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public static Hasher Put(this Hasher hasher, ManifoldPoint value)
-        {
-            return hasher
-                .Put(value.LocalPoint)
-                .Put(value.NormalImpulse)
-                .Put(value.TangentImpulse)
-                .Put(value.Id.Key);
-        }
-    }
 }

@@ -141,11 +141,11 @@ namespace Engine.Session
         static AbstractHybridSession()
         {
             // Get ourselves a unique header, based on the program we're running in.
-            UdpHeader = BitConverter.GetBytes(
-                new Hasher().
-                    Put(System.Reflection.Assembly.GetExecutingAssembly().GetName().FullName).
-                    Put(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()).
-                    Value);
+            var hasher = new Hasher();
+            hasher
+                .Write(System.Reflection.Assembly.GetExecutingAssembly().GetName().FullName)
+                .Write(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            UdpHeader = BitConverter.GetBytes(hasher.Value);
         }
 
         protected AbstractHybridSession(UdpProtocol udp)

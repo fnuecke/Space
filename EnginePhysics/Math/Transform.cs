@@ -489,23 +489,4 @@ namespace Engine.Physics.Math
             return result;
         }
     }
-
-    /// <summary>
-    /// Hashing methods for transforms.
-    /// </summary>
-    internal static class HasherTransformExtensions
-    {
-        /// <summary>Put the specified value to the data of which the hash
-        /// gets computed.</summary>
-        /// <param name="hasher">The hasher to use.</param>
-        /// <param name="value">the data to add.</param>
-        /// <returns>a reference to the hasher, for chaining.</returns>
-        public static Hasher Put(this Hasher hasher, WorldTransform value)
-        {
-            return hasher
-                .Put(value.Translation)
-                .Put(value.Rotation.Sin)
-                .Put(value.Rotation.Cos);
-        }
-    }
 }

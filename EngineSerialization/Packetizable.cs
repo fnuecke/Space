@@ -321,7 +321,11 @@ namespace Engine.Serialization
         /// List of types providing serialization/deserialization methods for the
         /// <see cref="Packet"/> class.
         /// </summary>
-        private static readonly HashSet<Type> Packetizers = new HashSet<Type>();
+        private static readonly HashSet<Type> Packetizers = new HashSet<Type>
+        {
+            typeof(WritablePacketExtensions),
+            typeof(ReadablePacketExtensions)
+        };
 
         /// <summary>
         /// Gets the packetizer from the cache, or creates it if it doesn't exist yet
@@ -393,8 +397,8 @@ namespace Engine.Serialization
             // Invariant method shortcuts.
             var writeInt32 = typeof(IWritablePacket)
                 .GetMethod("Write", new[] { typeof(int) });
-            var readInt32 = typeof(IReadablePacket)
-                .GetMethod("Read", new[] { typeof(int).MakeByRefType() });
+            var readInt32 = typeof(ReadablePacketExtensions)
+                .GetMethod("Read", new[] { typeof(IReadablePacket), typeof(int).MakeByRefType() });
             var writePacketizable = typeof(Packetizable)
                 .GetMethod("Write").MakeGenericMethod(type);
             var readPacketizable = typeof(Packetizable)
