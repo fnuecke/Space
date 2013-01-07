@@ -15,6 +15,11 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
+    /// <summary>
+    /// A motor joint is used to control the relative motion between two bodies.
+    /// A typical usage is to control the movement of a dynamic body with respect
+    /// to the ground.
+    /// </summary>
     public sealed class MotorJoint : Joint
     {
         #region Properties
@@ -160,8 +165,17 @@ namespace Engine.Physics.Joints
         /// <summary>
         /// Initializes this joint with the specified parameters.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(float maxForce, float maxTorque, float correctionFactor)
         {
+            _linearOffset = BodyA.GetLocalPoint(BodyB.Position);
+            _angularOffset = BodyB.Angle - BodyA.Angle;
+
+            _maxForce = maxForce;
+            _maxTorque = maxTorque;
+            _correctionFactor = correctionFactor;
+
+            _linearImpulse = Vector2.Zero;
+            _angularImpulse = 0.0f;
         }
 
         #endregion
@@ -348,7 +362,7 @@ namespace Engine.Physics.Joints
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Serialization.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 

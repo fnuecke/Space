@@ -356,7 +356,8 @@ namespace Engine.Physics
         /// so Erin chose not to implement it that way. See b2DistanceJoint if you
         /// want to dynamically control length.
         /// </remarks>
-        public static RopeJoint AddRopeJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchorA, WorldPoint anchorB,
+        public static RopeJoint AddRopeJoint(this IManager manager, Body bodyA, Body bodyB, WorldPoint anchorA,
+                                             WorldPoint anchorB,
                                              float length, bool collideConnected)
         {
             if (bodyA == null)
@@ -376,6 +377,40 @@ namespace Engine.Physics
                                        .CreateJoint(Joint.JointType.Rope, bodyA, bodyB, collideConnected);
 
             joint.Initialize(anchorA, anchorB, length);
+
+            return joint;
+        }
+
+        /// <summary>
+        /// Adds a motor joint. A motor joint is used to control the relative motion
+        /// between two bodies. A typical usage is to control the movement of a dynamic
+        /// body with respect to the ground.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="bodyB">The second body.</param>
+        /// <param name="maxForce">The maxmaximum friction force in N.</param>
+        /// <param name="maxTorque">The maximum friction torque in N*m.</param>
+        /// <param name="correctionFactor">The position correction factor in the range [0,1].</param>
+        /// <param name="collideConnected">Whether the two bodies still collide.</param>
+        /// <returns>The created joint.</returns>
+        public static MotorJoint AddMotoJoint(this IManager manager, Body bodyA, Body bodyB, float maxForce = 1.0f,
+                                              float maxTorque = 1.0f, float correctionFactor = 0.3f,
+                                              bool collideConnected = false)
+        {
+            if (bodyA == null)
+            {
+                throw new ArgumentNullException("bodyA");
+            }
+            if (bodyB == null)
+            {
+                throw new ArgumentNullException("bodyB");
+            }
+
+            var joint = (MotorJoint)manager.GetSimulation()
+                                        .CreateJoint(Joint.JointType.Motor, bodyA, bodyB, collideConnected);
+
+            joint.Initialize(maxForce, maxTorque, correctionFactor);
 
             return joint;
         }
