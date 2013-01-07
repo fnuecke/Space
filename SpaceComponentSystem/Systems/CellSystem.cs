@@ -75,11 +75,13 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// List of cells that are currently marked as alive.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private HashSet<ulong> _livingCells = new HashSet<ulong>();
 
         /// <summary>
         /// Cells awaiting cleanup, with the time when they became invalid.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private Dictionary<ulong, long> _pendingCells = new Dictionary<ulong, long>();
 
         #endregion
@@ -89,26 +91,31 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private HashSet<ulong> _reusableNewCellIds = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private HashSet<ulong> _reusableBornCellsIds = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private HashSet<ulong> _reusableDeceasedCellsIds = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private List<ulong> _reusablePendingList = new List<ulong>();
 
         /// <summary>
         /// Reused for querying entities contained in a dying cell.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private ISet<int> _reusableEntityList = new HashSet<int>();
 
         #endregion
@@ -296,6 +303,8 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
+            base.Packetize(packet);
+
             packet.Write(_livingCells.Count);
             foreach (var cellId in _livingCells)
             {
@@ -317,6 +326,8 @@ namespace Space.ComponentSystem.Systems
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+
             _livingCells.Clear();
             var numLiving = packet.ReadInt32();
             for (var i = 0; i < numLiving; i++)

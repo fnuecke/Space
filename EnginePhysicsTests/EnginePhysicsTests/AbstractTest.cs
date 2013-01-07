@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using Engine.ComponentSystem;
-using Engine.Physics.Components;
+﻿using Engine.ComponentSystem;
 using Engine.Physics.Systems;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -59,8 +57,8 @@ namespace Engine.Physics.Tests
         {
             get
             {
-                var mouse = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
-                return Renderer.ScreenToSimulation(mouse);
+                return Renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
+                                                               Mouse.GetState().Y));
             }
         }
 
@@ -72,21 +70,6 @@ namespace Engine.Physics.Tests
         /// Random number generator for tests.
         /// </summary>
         private readonly MersenneTwister _random = new MersenneTwister(0);
-
-        /// <summary>
-        /// The body currently being dragged.
-        /// </summary>
-        private Body _pickedBody;
-
-        /// <summary>
-        /// The point in the body's local coordinate system from which we drag.
-        /// </summary>
-        private LocalPoint _pickedPoint;
-
-        /// <summary>
-        /// The force to apply to the dragged body.
-        /// </summary>
-        private float _force;
 
         /// <summary>
         /// Whether we're currently dragging the world around (moving the camera).
@@ -105,7 +88,7 @@ namespace Engine.Physics.Tests
         {
             Manager = manager;
             Physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-            Renderer = Manager.GetSystem(Engine.ComponentSystem.Manager.GetSystemTypeId<DebugPhysicsRenderSystem>()) as DebugPhysicsRenderSystem;
+            Renderer = Manager.GetSystem(ComponentSystem.Manager.GetSystemTypeId<DebugPhysicsRenderSystem>()) as DebugPhysicsRenderSystem;
             _random.Seed(0);
             StepCount = 0;
             Create();
@@ -116,16 +99,6 @@ namespace Engine.Physics.Tests
         /// </summary>
         public void Update()
         {
-            // Check if dragging a body.
-            if (_pickedBody != null)
-            {
-                var pickWorldPoint = _pickedBody.GetWorldPoint(_pickedPoint);
-                var direction = (Vector2)(MouseWorldPoint - pickWorldPoint);
-                _pickedBody.LinearVelocity *= 0.9f;
-                //Character.AngularVelocity *= 0.9f;
-                _pickedBody.ApplyForce(direction * _force, pickWorldPoint);
-            }
-
             ++StepCount;
             Step();
         }
@@ -157,14 +130,6 @@ namespace Engine.Physics.Tests
         /// </summary>
         public virtual void OnLeftButtonDown()
         {
-            var fixture = Physics.GetFixtureAt(MouseWorldPoint);
-            if (fixture != null)
-            {
-                _pickedBody = Manager.GetComponent(fixture.Entity, Body.TypeId) as Body;
-                Debug.Assert(_pickedBody != null);
-                _pickedPoint = _pickedBody.GetLocalPoint(MouseWorldPoint);
-                _force = _pickedBody.Mass * 50;
-            }
         }
 
         /// <summary>
@@ -174,12 +139,6 @@ namespace Engine.Physics.Tests
         /// </summary>
         public virtual void OnLeftButtonUp()
         {
-            if (_pickedBody != null)
-            {
-                _pickedBody = null;
-                _pickedPoint = Vector2.Zero;
-                _force = 0;
-            }
         }
 
         /// <summary>

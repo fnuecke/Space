@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using Engine.Collections;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
-using Engine.Physics.Detail.Collision;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Collision;
+using Engine.Physics.Math;
 using Engine.Physics.Messages;
-using Engine.Physics.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -17,24 +17,25 @@ using WorldPoint = Engine.FarMath.FarPosition;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Contacts
+namespace Engine.Physics.Contacts
 {
     /// <summary>
     /// Represents a contact between two fixtures.
     /// </summary>
-    internal sealed class Contact : PhysicsSystem.IContact, ICopyable<Contact>, IPacketizable
+    [DebuggerDisplay("FixtureA = {FixtureIdA}, FixtureB = {FixtureIdB}, IsTouching = {IsTouching}")]
+    public sealed class Contact : ICopyable<Contact>, IPacketizable, IHashable
     {
         #region Linked list data (unused/free)
 
         /// <summary>
         /// Index of previous entry in the global linked list.
         /// </summary>
-        public int Previous;
+        internal int Previous;
 
         /// <summary>
         /// Index of next entry in the global linked list.
         /// </summary>
-        public int Next;
+        internal int Next;
 
         #endregion
 
@@ -43,37 +44,43 @@ namespace Engine.Physics.Detail.Contacts
         /// <summary>
         /// Component id of the first fixture.
         /// </summary>
-        public int FixtureIdA;
+        internal int FixtureIdA;
 
         /// <summary>
         /// Component id of the second fixture.
         /// </summary>
-        public int FixtureIdB;
+        internal int FixtureIdB;
 
         /// <summary>
         /// The friction between the two fixtures.
         /// </summary>
-        public float Friction;
+        internal float Friction;
 
         /// <summary>
         /// The restitution between the two fixtures.
         /// </summary>
-        public float Restitution;
+        internal float Restitution;
 
         /// <summary>
         /// Whether the two involved fixtures are intersecting.
         /// </summary>
-        public bool IsTouching;
+        internal bool IsTouching;
 
         /// <summary>
         /// Whether this contact is currently enabled.
         /// </summary>
-        public bool IsEnabled;
+        internal bool IsEnabled;
+
+        /// <summary>
+        /// Whether the contact is flagged for refiltering (from changes
+        /// to the involved bodies, e.g. from adding joints).
+        /// </summary>
+        internal bool ShouldFilter;
 
         /// <summary>
         /// The contact manifold for this contact.
         /// </summary>
-        public Manifold Manifold;
+        internal Manifold Manifold;
 
         /// <summary>
         /// The type of this contact (used to look-up evaluation method).
@@ -87,17 +94,17 @@ namespace Engine.Physics.Detail.Contacts
         /// <summary>
         /// The number of iterations this contact was involved in.
         /// </summary>
-        public int ToiCount;
+        internal int ToiCount;
 
         /// <summary>
         /// Whether the contact has a valid, cached TOI value.
         /// </summary>
-        public bool HasCachedTOI;
+        internal bool HasCachedTOI;
 
         /// <summary>
         /// The cached TOI value.
         /// </summary>
-        public float TOI;
+        internal float TOI;
 
         #endregion
 
@@ -107,7 +114,8 @@ namespace Engine.Physics.Detail.Contacts
         /// The manager of the simulation this contact lives in. Used to look up
         /// involved members.
         /// </summary>
-        public IManager Manager;
+        [CopyIgnore, PacketizerIgnore]
+        internal IManager Manager;
 
         /// <summary>
         /// Gets the first fixture involved in this contact.
@@ -164,7 +172,7 @@ namespace Engine.Physics.Detail.Contacts
             var radiusB = FixtureB.Radius;
 
             FixedArray2<WorldPoint> worldPoints;
-            ComputeWorldManifold(Manifold, transformA, radiusA, transformB, radiusB, out normal, out worldPoints);
+            Manifold.ComputeWorldManifold(transformA, radiusA, transformB, radiusB, out normal, out worldPoints);
             worldPoints.Count = Manifold.PointCount;
             points = worldPoints;
         }
@@ -174,85 +182,11 @@ namespace Engine.Physics.Detail.Contacts
         #region Logic
 
         /// <summary>
-        /// Computes the world manifold data from the specified manifold with
-        /// the specified properties for the two involved objects.
-        /// </summary>
-        /// <param name="manifold">The local manifold.</param>
-        /// <param name="xfA">The transform of object A.</param>
-        /// <param name="radiusA">The radius of object A.</param>
-        /// <param name="xfB">The transform of object B.</param>
-        /// <param name="radiusB">The radius of object B.</param>
-        /// <param name="normal">The normal.</param>
-        /// <param name="points">The world contact points.</param>
-        public static void ComputeWorldManifold(Manifold manifold,
-                                                WorldTransform xfA, float radiusA,
-                                                WorldTransform xfB, float radiusB,
-                                                out Vector2 normal,
-                                                out FixedArray2<WorldPoint> points)
-        {
-            points = new FixedArray2<WorldPoint>(); // satisfy out
-            switch (manifold.Type)
-            {
-                case Manifold.ManifoldType.Circles:
-                {
-                    normal = Vector2.UnitX;
-                    var pointA = xfA.ToGlobal(manifold.LocalPoint);
-                    var pointB = xfB.ToGlobal(manifold.Points[0].LocalPoint);
-                    if (((Vector2)(pointB - pointA)).LengthSquared() > Settings.Epsilon * Settings.Epsilon)
-                    {
-                        normal = (Vector2)(pointB - pointA);
-                        normal.Normalize();
-                    }
-
-                    var cA = pointA + radiusA * normal;
-                    var cB = pointB - radiusB * normal;
-                    points.Item1 = 0.5f * (cA + cB);
-                    break;
-                }
-
-                case Manifold.ManifoldType.FaceA:
-                {
-                    normal = xfA.Rotation * manifold.LocalNormal;
-                    var planePoint = xfA.ToGlobal(manifold.LocalPoint);
-
-                    for (var i = 0; i < manifold.PointCount; ++i)
-                    {
-                        var clipPoint = xfB.ToGlobal(manifold.Points[i].LocalPoint);
-                        var cA = clipPoint + (radiusA - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
-                        var cB = clipPoint - radiusB * normal;
-                        points[i] = 0.5f * (cA + cB);
-                    }
-                    break;
-                }
-
-                case Manifold.ManifoldType.FaceB:
-                {
-                    normal = xfB.Rotation * manifold.LocalNormal;
-                    var planePoint = xfB.ToGlobal(manifold.LocalPoint);
-
-                    for (var i = 0; i < manifold.PointCount; ++i)
-                    {
-                        var clipPoint = xfA.ToGlobal(manifold.Points[i].LocalPoint);
-                        var cB = clipPoint + (radiusB - Vector2.Dot((Vector2)(clipPoint - planePoint), normal)) * normal;
-                        var cA = clipPoint - radiusA * normal;
-                        points[i] = 0.5f * (cA + cB);
-                    }
-
-                    // Ensure normal points from A to B.
-                    normal = -normal;
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        /// <summary>
         /// Initializes the contact to represent a contact between the two specified fixtures.
         /// </summary>
         /// <param name="fixtureA">The first fixture.</param>
         /// <param name="fixtureB">The second fixture.</param>
-        public void Initialize(ref Fixture fixtureA, ref Fixture fixtureB)
+        internal void Initialize(ref Fixture fixtureA, ref Fixture fixtureB)
         {
             if (SwapFixtures[(int)fixtureA.Type, (int)fixtureB.Type])
             {
@@ -283,18 +217,18 @@ namespace Engine.Physics.Detail.Contacts
         /// nice, but at least it avoid running into issues when running multiple
         /// simulations at a time (in different threads).
         /// </remarks>
-        public void Update(Fixture fixtureA, Fixture fixtureB,
-                           Body bodyA, Body bodyB,
-                           Algorithms.DistanceProxy proxyA, Algorithms.DistanceProxy proxyB)
+        internal void Update(Fixture fixtureA, Fixture fixtureB,
+                             Body bodyA, Body bodyB,
+                             Algorithms.DistanceProxy proxyA, Algorithms.DistanceProxy proxyB)
         {
             // Note: do not assume the fixture AABBs are overlapping or are valid.
             var oldManifold = Manifold;
 
             // Re-enable this contact.
             IsEnabled = true;
-            
+
             // Check if a sensor is involved.
-            var sensor = fixtureA._isSensor || fixtureB._isSensor;
+            var sensor = fixtureA.IsSensorInternal || fixtureB.IsSensorInternal;
 
             // See how we need to update this contact.
             bool nowTouching, wasTouching = IsTouching;
@@ -532,39 +466,23 @@ namespace Engine.Physics.Detail.Contacts
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
         /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public Packet Packetize(Packet packet)
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
         {
-            return packet
-                .Write(Previous)
-                .Write(Next)
-                .Write(FixtureIdA)
-                .Write(FixtureIdB)
-                .Write(Friction)
-                .Write(Restitution)
-                .Write(IsTouching)
-                .Write(Manifold)
-                .Write((byte)_type);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            Previous = packet.ReadInt32();
-            Next = packet.ReadInt32();
-            FixtureIdA = packet.ReadInt32();
-            FixtureIdB = packet.ReadInt32();
-            Friction = packet.ReadSingle();
-            Restitution = packet.ReadSingle();
-            IsTouching = packet.ReadBoolean();
-            Manifold = packet.ReadManifold();
-            _type = (ContactType)packet.ReadByte();
+            hasher
+                .Put(Previous)
+                .Put(Next)
+                .Put(FixtureIdA)
+                .Put(FixtureIdB)
+                .Put(Friction)
+                .Put(Restitution)
+                .Put(IsTouching)
+                .Put(ShouldFilter)
+                .Put(Manifold)
+                .Put((byte)_type);
         }
 
         #endregion
@@ -588,19 +506,31 @@ namespace Engine.Physics.Detail.Contacts
         /// <returns>The copy.</returns>
         public void CopyInto(Contact into)
         {
-            into.Previous = Previous;
-            into.Next = Next;
-            into.FixtureIdA = FixtureIdA;
-            into.FixtureIdB = FixtureIdB;
-            into.Friction = Friction;
-            into.Restitution = Restitution;
-            into.IsTouching = IsTouching;
-            into.IsEnabled = IsEnabled;
-            into.Manifold = Manifold;
-            into._type = _type;
-            into.ToiCount = ToiCount;
-            into.HasCachedTOI = HasCachedTOI;
-            into.TOI = TOI;
+            Copyable.CopyInto(this, into);
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "Contact: Type=" + _type +
+                   ", Previous=" + Previous +
+                   ", Next=" + Next +
+                   ", FixtureA=" + FixtureIdA +
+                   ", FixtureB=" + FixtureIdB +
+                   ", Friction=" + Friction.ToString(CultureInfo.InvariantCulture) +
+                   ", Restitution=" + Restitution.ToString(CultureInfo.InvariantCulture) +
+                   ", IsTouching=" + IsTouching +
+                   ", IsEnabled=" + IsEnabled +
+                   ", Manifold=" + Manifold;
         }
 
         #endregion
@@ -610,14 +540,14 @@ namespace Engine.Physics.Detail.Contacts
     /// Represents a connection between two (potentially) colliding
     /// objects.
     /// </summary>
-    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable
+    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable, IHashable
     {
         #region Fields
 
         /// <summary>
         /// The index of the actual contact.
         /// </summary>
-        public int Parent;
+        public int Contact;
 
         /// <summary>
         /// The id of the other entity involved in this contact.
@@ -641,29 +571,17 @@ namespace Engine.Physics.Detail.Contacts
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
         /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public Packet Packetize(Packet packet)
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
         {
-            return packet
-                .Write(Parent)
-                .Write(Other)
-                .Write(Previous)
-                .Write(Next);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            Parent = packet.ReadInt32();
-            Other = packet.ReadInt32();
-            Previous = packet.ReadInt32();
-            Next = packet.ReadInt32();
+            hasher
+                .Put(Contact)
+                .Put(Other)
+                .Put(Previous)
+                .Put(Next);
         }
 
         #endregion
@@ -687,10 +605,25 @@ namespace Engine.Physics.Detail.Contacts
         /// <returns>The copy.</returns>
         public void CopyInto(ContactEdge into)
         {
-            into.Parent = Parent;
-            into.Other = Other;
-            into.Previous = Previous;
-            into.Next = Next;
+            Copyable.CopyInto(this, into);
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "ContactEdge: Contact=" + Contact +
+                ", Other=" + Other +
+                ", Previous=" + Previous +
+                ", Next=" + Next;
         }
 
         #endregion

@@ -12,7 +12,7 @@ namespace Engine.Physics.Tests.Tests
 {
     internal sealed class VerticalStack : AbstractTest
     {
-        private Body _bullet;
+        private int _bullet;
 
         protected override void Create()
         {
@@ -36,7 +36,7 @@ namespace Engine.Physics.Tests.Tests
                 }
             }
 
-            _bullet = null;
+            _bullet = 0;
         }
         
         public override void  OnKeyDown(Keys key)
@@ -45,18 +45,19 @@ namespace Engine.Physics.Tests.Tests
             switch (key)
             {
                 case Keys.OemComma:
-                    if (_bullet != null)
+                    if (Manager.HasEntity(_bullet))
                     {
-                        Manager.RemoveEntity(_bullet.Entity);
-                        _bullet = null;
+                        Manager.RemoveEntity(_bullet);
+                        _bullet = 0;
                     }
-                    _bullet = Manager.AddCircle(0.25f,
-                                                 type: Body.BodyType.Dynamic,
-                                                 worldPosition: new WorldPoint(-31, 5),
-                                                 isBullet: true,
-                                                 density: 20, restitution: 0.05f);
+                    var bullet = Manager.AddCircle(0.25f,
+                                                   type: Body.BodyType.Dynamic,
+                                                   worldPosition: new WorldPoint(-31, 5),
+                                                   isBullet: true,
+                                                   density: 20, restitution: 0.05f);
 
-                    _bullet.LinearVelocity = new Vector2(400, 0);
+                    bullet.LinearVelocity = new Vector2(400, 0);
+                    _bullet = bullet.Entity;
                     break;
             }
         }

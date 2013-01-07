@@ -1,6 +1,6 @@
 ﻿using Engine.Collections;
 using Engine.Physics.Components;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -9,7 +9,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Collision
+namespace Engine.Physics.Collision
 {
     /// <summary>
     /// Methods for polygon vs. polygon collisions.
@@ -242,7 +242,9 @@ namespace Engine.Physics.Detail.Collision
             var normals1 = poly1.Normals;
 
             // Vector pointing from the centroid of poly1 to the centroid of poly2.
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var d = (Vector2)(xf2.ToGlobal(poly2.Centroid) - xf1.ToGlobal(poly1.Centroid));
+// ReSharper restore RedundantCast
             var dLocal1 = -xf1.Rotation * d;
 
             // Find edge normal on poly1 that has the largest projection onto d.
@@ -351,7 +353,9 @@ namespace Engine.Physics.Detail.Collision
 
             var v1 = xf1.ToGlobal(vertices1[edge1]);
             var v2 = xf2.ToGlobal(vertices2[index]);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var separation = Vector2.Dot((Vector2)(v2 - v1), normal1World);
+// ReSharper restore RedundantCast
             return separation;
         }
     }

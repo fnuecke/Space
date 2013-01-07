@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Engine.Serialization;
+using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Factories;
 
 namespace Space.ComponentSystem.Components
@@ -30,11 +31,13 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The factory that created this shield.
         /// </summary>
+        [PacketizerIgnore]
         public ShieldFactory Factory;
 
         /// <summary>
         /// The texture to use as a structure for the shield.
         /// </summary>
+        [PacketizerIgnore]
         public Texture2D Structure;
 
         #endregion
@@ -92,7 +95,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
                 .Write(Factory.Name);
@@ -102,11 +105,12 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Engine.Serialization.Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             Factory = (ShieldFactory)FactoryLibrary.GetFactory(packet.ReadString());
+            Structure = null;
         }
 
         #endregion

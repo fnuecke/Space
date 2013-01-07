@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Random;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -23,6 +24,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// List of current collisions, mapping to their damage effect.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private Dictionary<ulong, int> _collisions = new Dictionary<ulong, int>();
 
         /// <summary>
@@ -222,7 +224,6 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._collisions.Add(collision.Key, collision.Value);
             }
-            _random.CopyInto(copy._random);
         }
 
         #endregion

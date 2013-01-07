@@ -309,24 +309,7 @@ namespace Engine.ComponentSystem.Common.Components
         {
             Debug.Assert(!_translationChanged);
 
-            return base.Packetize(packet)
-                .Write(Translation)
-                .Write(Rotation);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            Debug.Assert(!_translationChanged);
-
-            base.Depacketize(packet);
-
-            Translation = packet.ReadFarPosition();
-            _nextTranslation = Translation;
-            Rotation = packet.ReadSingle();
+            return base.Packetize(packet);
         }
 
         /// <summary>

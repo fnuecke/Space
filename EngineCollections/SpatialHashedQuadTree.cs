@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Engine.FarMath;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -13,6 +14,7 @@ using TPoint = Engine.FarMath.FarPosition;
 using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
 #else
+using Engine.Math;
 using TPoint = Microsoft.Xna.Framework.Vector2;
 using TSingle = System.Single;
 using TRectangle = Engine.Math.RectangleF;
@@ -32,7 +34,7 @@ namespace Engine.Collections
     /// values for better performance.
     /// </summary>
     /// <typeparam name="T">The type to store in the index.</typeparam>
-    public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>
+    public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable, ICopyable<SpatialHashedQuadTree<T>>
     {
         #region Constants
 
@@ -42,7 +44,7 @@ namespace Engine.Collections
 #if FARMATH
         private static readonly int CellSize = FarValue.SegmentSize;
 #else
-        private static readonly int CellSize = 65536;
+        private const int CellSize = 65536;
 #endif
 
         #endregion
@@ -60,6 +62,20 @@ namespace Engine.Collections
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// A callback that can be used to write an object stored in the tree to
+        /// a packet for serialization.
+        /// </summary>
+        [PacketizerIgnore]
+        private readonly Action<Packet, T> _packetizer;
+
+        /// <summary>
+        /// A callback that can be used to read an object stored in the tree from
+        /// a packet for deserialization.
+        /// </summary>
+        [PacketizerIgnore]
+        private readonly Func<Packet, T> _depacketizer;
 
         /// <summary>
         /// The max entries per node in quad trees.
@@ -86,11 +102,14 @@ namespace Engine.Collections
         /// <summary>
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
-        private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries = new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
+        [CopyIgnore, PacketizerIgnore]
+        private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries =
+            new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
 
         /// <summary>
         /// Maps entries back to their bounds, for removal.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private readonly Dictionary<T, TRectangle> _entryBounds = new Dictionary<T, TRectangle>();
         
         #endregion
@@ -104,12 +123,26 @@ namespace Engine.Collections
         /// <param name="minNodeBounds">The min node bounds for nodes in quad trees.</param>
         /// <param name="boundExtension">The amount by which to fatten bounds.</param>
         /// <param name="movingBoundMultiplier">The amount with which to multiply movement delta for fattening.</param>
-        public SpatialHashedQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
+        /// <param name="packetizer">A function that can be used to packetize the
+        /// type stored in the tree.</param>
+        /// <param name="depacketizer">A function that can be used to depacketize
+        /// the type stored in the tree.</param>
+        public SpatialHashedQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f, Action<Packet, T> packetizer = null, Func<Packet, T> depacketizer = null)
         {
+            if (maxEntriesPerNode < 1)
+            {
+                throw new ArgumentException("Split count must be larger than zero.", "maxEntriesPerNode");
+            }
+            if (minNodeBounds <= 0f)
+            {
+                throw new ArgumentException("Bucket size must be larger than zero.", "minNodeBounds");
+            }
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
             _boundExtension = boundExtension;
             _movingBoundMultiplier = movingBoundMultiplier;
+            _packetizer = packetizer;
+            _depacketizer = depacketizer;
         }
 
         #endregion
@@ -141,7 +174,9 @@ namespace Engine.Collections
                 if (!_entries.ContainsKey(cell.Item1))
                 {
                     // No need to extend again, we already did.
-                    _entries.Add(cell.Item1, new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
+                    _entries.Add(cell.Item1,
+                                 new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f,
+                                                                    _packetizer, _depacketizer));
                 }
 
                 // Convert the item bounds to the tree's local coordinate space.
@@ -149,7 +184,9 @@ namespace Engine.Collections
                 relativeBounds.Offset(cell.Item2);
 
                 // And add the item to the tree.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                 _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+// ReSharper restore RedundantCast
             }
 
             // Store element itself for future retrieval (removals, item lookup).
@@ -283,7 +320,9 @@ namespace Engine.Collections
                 if (!_entries.ContainsKey(cell.Item1))
                 {
                     // No need to extend again, we already did.
-                    _entries.Add(cell.Item1, new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f));
+                    _entries.Add(cell.Item1,
+                                 new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f,
+                                                                    _packetizer, _depacketizer));
                 }
 
                 // Convert the item bounds to the tree's local coordinate space.
@@ -291,7 +330,9 @@ namespace Engine.Collections
                 relativeBounds.Offset(cell.Item2);
 
                 // And add the item to the tree.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                 _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+// ReSharper restore RedundantCast
             }
 
             //*/
@@ -374,14 +415,14 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="center">The query point near which to get entries.</param>
         /// <param name="radius">The maximum distance an entry may be away
-        ///   from the query point to be returned.</param>
+        /// from the query point to be returned.</param>
         /// <param name="results"> </param>
         /// <remarks>
         /// This checks for intersections of the query circle and the bounds of
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(TPoint center, float radius, ref ISet<T> results)
+        public void Find(TPoint center, float radius, ISet<T> results)
         {
             // Compute the area bounds for that query to get the involved trees.
             var queryBounds = IntersectionExtensions.BoundsFor(center, radius);
@@ -391,10 +432,12 @@ namespace Engine.Collections
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativePoint = (Vector2)(center + cell.Item2);
+// ReSharper restore RedundantCast
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativePoint, radius, ref results);
+                    _entries[cell.Item1].Find(relativePoint, radius, results);
                 }
             }
         }
@@ -445,7 +488,7 @@ namespace Engine.Collections
             /*/
             
             ISet<T> results = new HashSet<T>();
-            Find(center, radius, ref results);
+            Find(center, radius, results);
             foreach (var result in results)
             {
                 if (!callback(result))
@@ -466,7 +509,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results">The results.</param>
-        public void Find(TRectangle rectangle, ref ISet<T> results)
+        public void Find(TRectangle rectangle, ISet<T> results)
         {
             foreach (var cell in ComputeCells(rectangle))
             {
@@ -477,8 +520,10 @@ namespace Engine.Collections
                     relativeFarBounds.Offset(cell.Item2);
 
                     // And do the query.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativeBounds = (Math.RectangleF)relativeFarBounds;
-                    _entries[cell.Item1].Find(relativeBounds, ref results);
+// ReSharper restore RedundantCast
+                    _entries[cell.Item1].Find(relativeBounds, results);
                 }
             }
         }
@@ -521,7 +566,7 @@ namespace Engine.Collections
             /*/
             
             ISet<T> results = new HashSet<T>();
-            Find(rectangle, ref results);
+            Find(rectangle, results);
             foreach (var result in results)
             {
                 if (!callback(result))
@@ -544,18 +589,20 @@ namespace Engine.Collections
         /// <param name="t">The fraction along the line to consider.</param>
         /// <param name="results">The list to put the results into.</param>
         /// <returns></returns>
-        public void Find(TPoint start, TPoint end, float t, ref ISet<T> results)
+        public void Find(TPoint start, TPoint end, float t, ISet<T> results)
         {
             foreach (var cell in ComputeCells(IntersectionExtensions.BoundsFor(start, end, t)))
             {
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativeStart = (Vector2)(start + cell.Item2);
                     var relativeEnd = (Vector2)(end + cell.Item2);
+// ReSharper restore RedundantCast
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativeStart, relativeEnd, t, ref results);
+                    _entries[cell.Item1].Find(relativeStart, relativeEnd, t, results);
                 }
             }
         }
@@ -586,8 +633,10 @@ namespace Engine.Collections
                 if (_entries.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
+// ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativeStart = (Vector2)(start + cell.Item2);
                     var relativeEnd = (Vector2)(end + cell.Item2);
+// ReSharper restore RedundantCast
 
                     // And do the query.
                     if (!_entries[cell.Item1].Find(relativeStart, relativeEnd, t,
@@ -744,6 +793,118 @@ namespace Engine.Collections
                 center.X = segmentX * CellSize;
                 center.Y = segmentY * CellSize;
                 yield return Tuple.Create(center, entry.Value);
+            }
+        }
+
+        #endregion
+
+        #region Serialization
+        
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        [Packetize]
+        public Packet Packetize(Packet packet)
+        {
+            if (_packetizer == null)
+            {
+                throw new InvalidOperationException("No serializer specified.");
+            }
+
+            packet.Write(_entries.Count);
+            foreach (var entry in _entries)
+            {
+                packet.Write(entry.Key);
+                packet.Write(entry.Value);
+            }
+
+            packet.Write(_entryBounds.Count);
+            foreach (var entry in _entryBounds)
+            {
+                _packetizer(packet, entry.Key);
+                packet.Write(entry.Value);
+            }
+
+            return packet;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
+        public void PostDepacketize(Packet packet)
+        {
+            if (_depacketizer == null)
+            {
+                throw new InvalidOperationException("No deserializer specified.");
+            }
+
+            _entries.Clear();
+            var cellCount = packet.ReadInt32();
+            for (var i = 0; i < cellCount; ++i)
+            {
+                var cellId = packet.ReadUInt64();
+                var tree = new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, _boundExtension,
+                                                              _movingBoundMultiplier, _packetizer, _depacketizer);
+                packet.ReadPacketizableInto(tree);
+                _entries.Add(cellId, tree);
+            }
+
+            _entryBounds.Clear();
+            var entryCount = packet.ReadInt32();
+            for (var i = 0; i < entryCount; ++i)
+            {
+                var key = _depacketizer(packet);
+#if FARMATH
+                var value = packet.ReadFarRectangle();
+#else
+                var value = packet.ReadRectangleF();
+#endif
+                _entryBounds[key] = value;
+            }
+        }
+
+        #endregion
+
+        #region Copying
+        
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public SpatialHashedQuadTree<T> NewInstance()
+        {
+            return new SpatialHashedQuadTree<T>(_maxEntriesPerNode, _minNodeBounds,
+                                                _boundExtension, _movingBoundMultiplier,
+                                                _packetizer, _depacketizer);
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public void CopyInto(SpatialHashedQuadTree<T> into)
+        {
+            Copyable.CopyInto(this, into);
+
+            into._entries.Clear();
+            foreach (var entry in _entries)
+            {
+                var treeCopy = entry.Value.NewInstance();
+                entry.Value.CopyInto(treeCopy);
+                into._entries.Add(entry.Key, treeCopy);
+            }
+
+            into._entryBounds.Clear();
+            foreach (var bound in _entryBounds)
+            {
+                into._entryBounds.Add(bound.Key, bound.Value);
             }
         }
 

@@ -1,5 +1,5 @@
 ﻿using Engine.Physics.Components;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -8,7 +8,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Collision
+namespace Engine.Physics.Collision
 {
     /// <summary>
     /// Methods for circle vs. circle and circle vs. polygon collisions.
@@ -30,7 +30,10 @@ namespace Engine.Physics.Detail.Collision
             var pA = xfA.ToGlobal(circleA.Center);
             var pB = xfB.ToGlobal(circleB.Center);
 
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var d = (Vector2)(pB - pA);
+// ReSharper restore RedundantCast
+
             var distSqr = Vector2.Dot(d, d);
             var radius = circleA.Radius + circleB.Radius;
             if (distSqr > radius * radius)

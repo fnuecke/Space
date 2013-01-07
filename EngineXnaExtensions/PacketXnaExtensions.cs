@@ -64,6 +64,71 @@ namespace Engine.XnaExtensions
         /// <summary>
         /// Reads a vector value.
         /// </summary>
+        /// <param name="result">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out Vector2 result)
+        {
+            result = packet.ReadVector2();
+            return packet;
+        }
+
+        /// <summary>
+        /// Reads a vector value.
+        /// </summary>
+        /// <param name="result">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out Vector3 result)
+        {
+            result = packet.ReadVector3();
+            return packet;
+        }
+
+        /// <summary>
+        /// Reads a matrix value.
+        /// </summary>
+        /// <param name="result">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out Matrix result)
+        {
+            result = packet.ReadMatrix();
+            return packet;
+        }
+
+        /// <summary>
+        /// Reads a rectangle value.
+        /// </summary>
+        /// <param name="result">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out Rectangle result)
+        {
+            result = packet.ReadRectangle();
+            return packet;
+        }
+
+        /// <summary>
+        /// Reads a vector value.
+        /// </summary>
+        /// <param name="result">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public static Packet Read(this Packet packet, out Color result)
+        {
+            result = packet.ReadColor();
+            return packet;
+        }
+
+        /// <summary>
+        /// Reads a vector value.
+        /// </summary>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>

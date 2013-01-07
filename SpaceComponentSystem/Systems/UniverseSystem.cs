@@ -49,6 +49,7 @@ namespace Space.ComponentSystem.Systems
         /// are in a changed state (deviating from the one that would be
         /// procedurally generated).
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private Dictionary<ulong, CellInfo> _cellInfo = new Dictionary<ulong, CellInfo>();
 
         #endregion
@@ -225,7 +226,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns></returns>
         public override Packet Packetize(Packet packet)
         {
-            packet.Write(WorldSeed);
+            base.Packetize(packet);
 
             packet.Write(_cellInfo.Count);
             foreach (var item in _cellInfo)
@@ -243,7 +244,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="packet">The packet.</param>
         public override void Depacketize(Packet packet)
         {
-            WorldSeed = packet.ReadUInt64();
+            base.Depacketize(packet);
 
             _cellInfo.Clear();
             var numCells = packet.ReadInt32();
@@ -306,8 +307,6 @@ namespace Space.ComponentSystem.Systems
 
             var copy = (UniverseSystem)into;
 
-            copy.WorldSeed = WorldSeed;
-
             copy._cellInfo.Clear();
             foreach (var cellInfo in _cellInfo)
             {
@@ -365,6 +364,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
+            [PacketizerIgnore]
             public List<int> Stations = new List<int>();
 
             #endregion
@@ -399,32 +399,6 @@ namespace Space.ComponentSystem.Systems
             #endregion
 
             #region Serialization / Hashing
-
-            /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>
-            /// The packet after writing.
-            /// </returns>
-            public Packet Packetize(Packet packet)
-            {
-                return packet
-                    .Write(Dirty)
-                    .Write((int)_faction)
-                    .Write(_techLevel);
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public void Depacketize(Packet packet)
-            {
-                Dirty = packet.ReadBoolean();
-                _faction = (Factions)packet.ReadInt32();
-                _techLevel = packet.ReadInt32();
-            }
 
             /// <summary>
             /// Push some unique data of the object to the given hasher,

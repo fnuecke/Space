@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using ProjectMercury;
 
@@ -56,6 +55,7 @@ namespace Space.ComponentSystem.Components
         /// A lists of active effects with the effect name and the position
         /// to display the effect at.
         /// </summary>
+        [PacketizerIgnore]
         internal readonly List<PositionedEffect> Effects = new List<PositionedEffect>();
 
         #endregion
@@ -201,6 +201,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public override Packet Packetize(Packet packet)
         {
             base.Packetize(packet);
@@ -214,9 +215,10 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        [PostDepacketize]
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             Effects.Clear();
             Effects.AddRange(packet.ReadPacketizables<PositionedEffect>());
@@ -303,32 +305,6 @@ namespace Space.ComponentSystem.Components
             /// The intensity of the effect (relative scale).
             /// </summary>
             public float Intensity;
-
-            public Packet Packetize(Packet packet)
-            {
-                packet.Write(Id);
-                packet.Write(AssetName);
-                packet.Write(Scale);
-                packet.Write(Direction);
-                packet.Write(Offset);
-                packet.Write((byte)Group);
-                packet.Write(Enabled);
-                packet.Write(Intensity);
-
-                return packet;
-            }
-
-            public void Depacketize(Packet packet)
-            {
-                Id = packet.ReadInt32();
-                AssetName = packet.ReadString();
-                Scale = packet.ReadSingle();
-                Direction = packet.ReadSingle();
-                Offset = packet.ReadVector2();
-                Group = (EffectGroup)packet.ReadByte();
-                Enabled = packet.ReadBoolean();
-                Intensity = packet.ReadSingle();
-            }
         }
 
         #endregion

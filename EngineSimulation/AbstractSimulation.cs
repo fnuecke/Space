@@ -37,6 +37,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the next step.
         /// </summary>
+        [PacketizerIgnore]
         protected List<Command> Commands = new List<Command>();
 
         #endregion
@@ -108,14 +109,9 @@ namespace Engine.Simulation
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public virtual Packet Packetize(Packet packet)
         {
-            // Write the frame number we're currently in.
-            packet.Write(CurrentFrame);
-
-            // Write entities.
-            packet.Write(Manager);
-
             // Then serialize all pending commands for the next frame.
             packet.WriteWithTypeInfo(Commands);
 
@@ -126,15 +122,9 @@ namespace Engine.Simulation
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public virtual void Depacketize(Packet packet)
+        [PostDepacketize]
+        public virtual void PostDepacketize(Packet packet)
         {
-            // Get the current frame of the simulation.
-            CurrentFrame = packet.ReadInt64();
-
-            // Get entities.
-            var manager = Manager;
-            packet.ReadPacketizableInto(ref manager);
-
             // Continue with reading the list of commands.
             Commands.Clear();
             foreach (var command in packet.ReadPacketizablesWithTypeInfo<Command>())

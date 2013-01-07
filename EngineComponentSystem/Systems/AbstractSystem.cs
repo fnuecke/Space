@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Engine.ComponentSystem.Components;
 using Engine.Diagnostics;
@@ -38,6 +39,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         public IManager Manager { get; set; }
 
         #endregion
@@ -70,7 +72,7 @@ namespace Engine.ComponentSystem.Systems
 
         /// <summary>
         /// Called by the manager when the complete environment has been
-        /// depacketized.
+        /// depacketized. Called from the <see cref="Manager"/>.
         /// </summary>
         public virtual void OnDepacketized()
         {
@@ -78,7 +80,7 @@ namespace Engine.ComponentSystem.Systems
 
         /// <summary>
         /// Called by the manager when the complete environment has been
-        /// copied from another manager.
+        /// copied from another manager. Called from the <see cref="Manager"/>.
         /// </summary>
         public virtual void OnCopied()
         {
@@ -99,19 +101,18 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public virtual Packet Packetize(Packet packet)
         {
             return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
-        /// <remarks>
-        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        /// to true.
-        /// </remarks>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public virtual void Depacketize(Packet packet)
         {
         }
@@ -137,7 +138,10 @@ namespace Engine.ComponentSystem.Systems
         public virtual AbstractSystem NewInstance()
         {
             // Not supported for presentation types.
-            Debug.Assert(!(this is IDrawingSystem));
+            if (this is IDrawingSystem)
+            {
+                throw new InvalidOperationException("Drawing systems cannot be copied.");
+            }
 
             var copy = (AbstractSystem)MemberwiseClone();
 
@@ -162,14 +166,32 @@ namespace Engine.ComponentSystem.Systems
         public virtual void CopyInto(AbstractSystem into)
         {
             // Not supported for presentation types.
-            Debug.Assert(!(this is IDrawingSystem));
+            if (this is IDrawingSystem)
+            {
+                throw new InvalidOperationException("Drawing systems cannot be copied.");
+            }
 
-            Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
-            Debug.Assert(into != this);
+            // Don't allow identity copying.
+            // TODO might relax this to simply returning, but this normally indicates unwanted behavior.
+            if (into == this)
+            {
+                throw new ArgumentException("Cannot copy into self.", "into");
+            }
 
             // Manager must be re-set to new owner before copying.
-            Debug.Assert(into.Manager != null);
-            Debug.Assert(into.Manager != Manager);
+            if (into.Manager == null)
+            {
+                throw new ArgumentException("Target must have a Manager.", "into");
+            }
+
+            // Systems should never have to be copied inside the same context.
+            if (into.Manager == Manager)
+            {
+                throw new ArgumentException("Target must have a different Manager.", "into");
+            }
+
+            // Use dynamic function to do basic copying.
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using Engine.Physics.Components;
-using Engine.Physics.Detail.Contacts;
+using Engine.Physics.Contacts;
+using Engine.Physics.Joints;
 using Microsoft.Xna.Framework;
 
-namespace Engine.Physics.Detail
+namespace Engine.Physics
 {
     /// <summary>
     /// This class represents a graph made up from bodies as vertices and the
@@ -48,69 +49,66 @@ namespace Engine.Physics.Detail
 
         #region Fields
 
-        /// <summary>
-        /// The solver that does the actual work. We keep a copy that we re-use
-        /// every update.
-        /// </summary>
+        /// <summary>The solver that does the actual work. We keep a copy that we re-use
+        /// every update.</summary>
         private readonly ContactSolver _solver;
 
-        /// <summary>
-        /// This list is used to flag bodies as processed, to avoid double work
-        /// when building islands.
-        /// </summary>
+        /// <summary>This list is used to flag bodies as processed, to avoid double work
+        /// when building islands.</summary>
         private readonly HashSet<Body> _processedBodies = new HashSet<Body>();
 
-        /// <summary>
-        /// This is used to flag contacts as processed, to avoid double work when
-        /// building islands.
-        /// </summary>
+        /// <summary>This is used to flag contacts as processed, to avoid double work when
+        /// building islands.</summary>
         private readonly HashSet<Contact> _processedContacts = new HashSet<Contact>();
 
-        /// <summary>
-        /// The list of bodies in this island.
-        /// </summary>
-        private readonly List<Body> _bodies = new List<Body>(64);
+        /// <summary>This is used to flag joints as processed, to avoid double work when
+        /// building islands.</summary>
+        private readonly HashSet<Joint> _processedJoints = new HashSet<Joint>();
 
-        /// <summary>
-        /// The list of contacts in this island.
-        /// </summary>
+        /// <summary>The list of bodies in this island.</summary>
+        private readonly List<Body> _bodies = new List<Body>();
+
+        /// <summary>The list of contacts in this island.</summary>
         private readonly List<Contact> _contacts = new List<Contact>();
 
-        /// <summary>
-        /// Position buffer for solver.
-        /// </summary>
+        /// <summary>The list of joints in this island.</summary>
+        private readonly List<Joint> _joints = new List<Joint>();
+
+        /// <summary>Position buffer for solver.</summary>
         private Position[] _positions = new Position[0];
 
-        /// <summary>
-        /// Velocity buffer for solver.
-        /// </summary>
+        /// <summary>Velocity buffer for solver.</summary>
         private Velocity[] _velocities = new Velocity[0];
+
+        /// <summary>Profiling information.</summary>
+        private Profile _profile;
 
         #endregion
 
         #region Initialization
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Island"/> class.
-        /// </summary>
-        public Island()
+        /// <summary>Initializes a new instance of the <see cref="Island"/> class.</summary>
+        /// <param name="profile"> </param>
+        public Island(Profile profile)
         {
+            _profile = profile;
             _solver = new ContactSolver(_contacts);
         }
 
-        /// <summary>
-        /// Resets the island and ensures the specified capacities.
-        /// </summary>
+        /// <summary>Resets the island and ensures the specified capacities.</summary>
         /// <param name="bodyCapacity">The required body capacity.</param>
         /// <param name="contactCapacity">The required contact capacity.</param>
-        public void Reset(int bodyCapacity, int contactCapacity)
+        /// <param name="jointCapacity">The required joint capacity.</param>
+        public void Reset(int bodyCapacity, int contactCapacity, int jointCapacity)
         {
             Clear();
             UnmarkAllBodies();
             UnmarkAllContacts();
+            UnmarkAllJoints();
 
             _bodies.Capacity = System.Math.Max(_bodies.Capacity, bodyCapacity);
             _contacts.Capacity = System.Math.Max(_contacts.Capacity, contactCapacity);
+            _joints.Capacity = System.Math.Max(_joints.Capacity, jointCapacity);
 
             if (bodyCapacity > _positions.Length)
             {
@@ -125,68 +123,83 @@ namespace Engine.Physics.Detail
 
         #region Accessors
 
-        /// <summary>
-        /// Clears the island of all bodies and contacts.
-        /// </summary>
+        /// <summary>Clears the island of all bodies and contacts.</summary>
         public void Clear()
         {
             _bodies.Clear();
             _contacts.Clear();
+            _joints.Clear();
         }
 
-        /// <summary>
-        /// Adds the specified body to the island.
-        /// </summary>
+        /// <summary>Adds the specified body to the island.</summary>
+        /// <param name="body">The body.</param>
         public void Add(Body body)
         {
             body.IslandIndex = _bodies.Count;
             _bodies.Add(body);
         }
 
-        /// <summary>
-        /// Adds the specified contact to the island.
-        /// </summary>
+        /// <summary>Adds the specified contact to the island.</summary>
+        /// <param name="contact">The contact.</param>
         public void Add(Contact contact)
         {
             _contacts.Add(contact);
         }
 
-        /// <summary>
-        /// Marks the specified body as processed, to avoid double work.
-        /// </summary>
+        /// <summary>Adds the specified joint to the island.</summary>
+        /// <param name="joint">The joint.</param>
+        public void Add(Joint joint)
+        {
+            _joints.Add(joint);
+        }
+
+        /// <summary>Marks the specified body as processed, to avoid double work.</summary>
+        /// <param name="body">The body.</param>
         public void MarkProcessed(Body body)
         {
             _processedBodies.Add(body);
         }
 
-        /// <summary>
-        /// Marks the contact as processed, to avoid double work.
-        /// </summary>
+        /// <summary>Marks the contact as processed, to avoid double work.</summary>
+        /// <param name="contact">The contact.</param>
         public void MarkProcessed(Contact contact)
         {
             _processedContacts.Add(contact);
         }
 
-        /// <summary>
-        /// Determines whether the specified body is already processed.
-        /// </summary>
+        /// <summary>Marks the joint as processed, to avoid double work.</summary>
+        /// <param name="joint">The joint.</param>
+        public void MarkProcessed(Joint joint)
+        {
+            _processedJoints.Add(joint);
+        }
+
+        /// <summary>Determines whether the specified body is already processed.</summary>
+        /// <param name="body">The body.</param>
+        /// <returns><c>true</c> if the specified body is processed; otherwise, <c>false</c>.</returns>
         public bool IsProcessed(Body body)
         {
             return _processedBodies.Contains(body);
         }
 
-        /// <summary>
-        /// Determines whether the specified contact is already processed.
-        /// </summary>
+        /// <summary>Determines whether the specified contact is already processed.</summary>
+        /// <param name="contact">The contact.</param>
+        /// <returns><c>true</c> if the specified contact is processed; otherwise, <c>false</c>.</returns>
         public bool IsProcessed(Contact contact)
         {
             return _processedContacts.Contains(contact);
         }
 
-        /// <summary>
-        /// Clears all bodies from being marked as processed so they can
-        /// be processed again with other islands.
-        /// </summary>
+        /// <summary>Determines whether the specified joint is already processed.</summary>
+        /// <param name="joint">The joint.</param>
+        /// <returns><c>true</c> if the specified joint is processed; otherwise, <c>false</c>.</returns>
+        public bool IsProcessed(Joint joint)
+        {
+            return _processedJoints.Contains(joint);
+        }
+
+        /// <summary>Clears all bodies from being marked as processed so they can
+        /// be processed again with other islands.</summary>
         public void UnmarkAllBodies()
         {
             _processedBodies.Clear();
@@ -198,34 +211,40 @@ namespace Engine.Physics.Detail
         /// </summary>
         public void UnmarkStaticBodies()
         {
-            _processedBodies.RemoveWhere(x => x._type == Body.BodyType.Static);
+            _processedBodies.RemoveWhere(x => x.TypeInternal == Body.BodyType.Static);
         }
 
-        /// <summary>
-        /// Clears the specified contact from being marked as processed.
-        /// </summary>
+        /// <summary>Clears the specified contact from being marked as processed.</summary>
+        /// <param name="contact">The contact.</param>
         public void UnmarkContact(Contact contact)
         {
             _processedContacts.Remove(contact);
         }
 
-        /// <summary>
-        /// Clears all contacts from being marked as processed.
-        /// </summary>
+        /// <summary>Clears all contacts from being marked as processed.</summary>
         private void UnmarkAllContacts()
         {
             _processedContacts.Clear();
+        }
+
+        /// <summary>Clears all joints from being marked as processed.</summary>
+        private void UnmarkAllJoints()
+        {
+            _processedJoints.Clear();
         }
 
         #endregion
 
         #region Logic
 
-        /// <summary>
-        /// Perform normal solve step.
-        /// </summary>
-        public void Solve(TimeStep step, Vector2 gravity)
+        /// <summary>Perform normal solve step.</summary>
+        /// <param name="step">The time step information.</param>
+        /// <param name="gravity">The global gravity.</param>
+        /// <param name="allowSleep">if set to <c>true</c> allow putting bodies to sleep.</param>
+        public void Solve(TimeStep step, Vector2 gravity, bool allowSleep)
         {
+            _profile.BeginSolveInit();
+
             var h = step.DeltaT;
 
             // Integrate velocities and apply damping. Initialize the body state.
@@ -235,14 +254,14 @@ namespace Engine.Physics.Detail
 
                 var c = b.Sweep.CenterOfMass;
                 var a = b.Sweep.Angle;
-                var v = b._linearVelocity;
-                var w = b._angularVelocity;
+                var v = b.LinearVelocityInternal;
+                var w = b.AngularVelocityInternal;
 
                 // Store positions for continuous collision.
                 b.Sweep.CenterOfMass0 = b.Sweep.CenterOfMass;
                 b.Sweep.Angle0 = b.Sweep.Angle;
 
-                if (b._type == Body.BodyType.Dynamic)
+                if (b.TypeInternal == Body.BodyType.Dynamic)
                 {
                     // Integrate velocities.
                     v += h * (gravity + b.InverseMass * b.Force);
@@ -255,8 +274,8 @@ namespace Engine.Physics.Detail
                     // v2 = exp(-c * dt) * v1
                     // Taylor expansion:
                     // v2 = (1.0f - c * dt) * v1
-                    v *= MathHelper.Clamp(1.0f - h * b._linearDamping, 0.0f, 1.0f);
-                    w *= MathHelper.Clamp(1.0f - h * b._angularDamping, 0.0f, 1.0f);
+                    v *= MathHelper.Clamp(1.0f - h * b.LinearDampingInternal, 0.0f, 1.0f);
+                    w *= MathHelper.Clamp(1.0f - h * b.AngularDampingInternal, 0.0f, 1.0f);
                 }
 
                 _positions[i].Point = c;
@@ -266,22 +285,34 @@ namespace Engine.Physics.Detail
             }
 
             // Initialize velocity constraints.
-            _solver.Initialize(step);
+            _solver.Initialize(true);
             _solver.InitializeVelocityConstraints();
 
-            if (step.IsWarmStarting)
+            _solver.WarmStart();
+
+            foreach (var joint in _joints)
             {
-                _solver.WarmStart();
+                joint.InitializeVelocityConstraints(step, _positions, _velocities);
             }
+
+            _profile.EndSolveInit();
+
+            _profile.BeginSolveVelocity();
 
             // Solve velocity constraints
             for (var i = 0; i < Settings.VelocityIterations; ++i)
             {
+                foreach (var joint in _joints)
+                {
+                    joint.SolveVelocityConstraints(step, _positions, _velocities);
+                }
                 _solver.SolveVelocityConstraints();
             }
 
             // Store impulses for warm starting
             _solver.StoreImpulses();
+
+            _profile.EndSolveVelocity();
 
             // Integrate positions.
             for (var i = 0; i < _bodies.Count; ++i)
@@ -316,14 +347,23 @@ namespace Engine.Physics.Detail
                 _velocities[i].AngularVelocity = w;
             }
 
+            _profile.BeginSolvePosition();
+
             // Solve position constraints
-            var positionSolved = false;
+            var positionsSolved = false;
             for (var i = 0; i < Settings.PositionIterations; ++i)
             {
-                if (_solver.SolvePositionConstraints())
+                var contactsFinished = _solver.SolvePositionConstraints();
+                var jointsFinished = true;
+                foreach (var joint in _joints)
+                {
+                    jointsFinished = jointsFinished &&
+                                     joint.SolvePositionConstraints(step, _positions, _velocities);
+                }
+                if (contactsFinished && jointsFinished)
                 {
                     // Exit early if the position errors are small.
-                    positionSolved = true;
+                    positionsSolved = true;
                     break;
                 }
             }
@@ -334,50 +374,56 @@ namespace Engine.Physics.Detail
                 var body = _bodies[i];
                 body.Sweep.CenterOfMass = _positions[i].Point;
                 body.Sweep.Angle = _positions[i].Angle;
-                body._linearVelocity = _velocities[i].LinearVelocity;
-                body._angularVelocity = _velocities[i].AngularVelocity;
+                body.LinearVelocityInternal = _velocities[i].LinearVelocity;
+                body.AngularVelocityInternal = _velocities[i].AngularVelocity;
                 body.SynchronizeTransform();
             }
 
-            var minSleepTime = float.MaxValue;
+            _profile.EndSolvePosition();
 
-            const float linTolSqr = Settings.LinearSleepTolerance * Settings.LinearSleepTolerance;
-            const float angTolSqr = Settings.AngularSleepTolerance * Settings.AngularSleepTolerance;
+            // Check for bodies that we can put to sleep.
+            if (allowSleep) {
+                var minSleepTime = float.MaxValue;
 
-            for (var i = 0; i < _bodies.Count; ++i)
-            {
-                var b = _bodies[i];
-                if (b._type == Body.BodyType.Static)
-                {
-                    continue;
-                }
+                const float linTolSqr = Settings.LinearSleepTolerance * Settings.LinearSleepTolerance;
+                const float angTolSqr = Settings.AngularSleepTolerance * Settings.AngularSleepTolerance;
 
-                if (!b._isSleepAllowed || b._angularVelocity * b._angularVelocity > angTolSqr ||
-                    Vector2.Dot(b._linearVelocity, b._linearVelocity) > linTolSqr)
-                {
-                    b.SleepTime = 0.0f;
-                    minSleepTime = 0.0f;
-                }
-                else
-                {
-                    b.SleepTime += h;
-                    minSleepTime = System.Math.Min(minSleepTime, b.SleepTime);
-                }
-            }
-
-            if (minSleepTime >= Settings.TimeToSleep && positionSolved)
-            {
                 for (var i = 0; i < _bodies.Count; ++i)
                 {
                     var b = _bodies[i];
-                    b.IsAwake = false;
+                    if (b.TypeInternal == Body.BodyType.Static)
+                    {
+                        continue;
+                    }
+
+                    if (!b.IsSleepAllowedInternal || b.AngularVelocityInternal * b.AngularVelocityInternal > angTolSqr ||
+                        Vector2.Dot(b.LinearVelocityInternal, b.LinearVelocityInternal) > linTolSqr)
+                    {
+                        b.SleepTime = 0.0f;
+                        minSleepTime = 0.0f;
+                    }
+                    else
+                    {
+                        b.SleepTime += h;
+                        minSleepTime = System.Math.Min(minSleepTime, b.SleepTime);
+                    }
+                }
+
+                if (minSleepTime >= Settings.TimeToSleep && positionsSolved)
+                {
+                    for (var i = 0; i < _bodies.Count; ++i)
+                    {
+                        var b = _bodies[i];
+                        b.IsAwake = false;
+                    }
                 }
             }
         }
 
-        /// <summary>
-        /// Perform continuous solve step.
-        /// </summary>
+        /// <summary>Perform continuous solve step.</summary>
+        /// <param name="subStep">The sub step information.</param>
+        /// <param name="toiIndexA">The island index of the first involved body.</param>
+        /// <param name="toiIndexB">The island index of the second involved body.</param>
         public void SolveTOI(TimeStep subStep, int toiIndexA, int toiIndexB)
         {
             System.Diagnostics.Debug.Assert(toiIndexA < _bodies.Count);
@@ -389,12 +435,12 @@ namespace Engine.Physics.Detail
                 var b = _bodies[i];
                 _positions[i].Point = b.Sweep.CenterOfMass;
                 _positions[i].Angle = b.Sweep.Angle;
-                _velocities[i].LinearVelocity = b._linearVelocity;
-                _velocities[i].AngularVelocity = b._angularVelocity;
+                _velocities[i].LinearVelocity = b.LinearVelocityInternal;
+                _velocities[i].AngularVelocity = b.AngularVelocityInternal;
             }
 
             // Initialize solver for current step.
-            _solver.Initialize(subStep);
+            _solver.Initialize(false);
 
             // Solve position constraints.
             for (var i = 0; i < Settings.PositionIterationsTOI; ++i)
@@ -462,8 +508,8 @@ namespace Engine.Physics.Detail
                 var body = _bodies[i];
                 body.Sweep.CenterOfMass = c;
                 body.Sweep.Angle = a;
-                body._linearVelocity = v;
-                body._angularVelocity = w;
+                body.LinearVelocityInternal = v;
+                body.AngularVelocityInternal = w;
                 body.SynchronizeTransform();
             }
         }

@@ -11,6 +11,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -132,11 +133,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// The actual indexes we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
-        private IIndex<int, FarRectangle, FarPosition>[] _trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
+        [CopyIgnore, PacketizerIgnore]
+        private FarCollections.SpatialHashedQuadTree<int>[] _trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof(ulong) * 8];
 
         /// <summary>
         /// List of entities for which the index entry changed in the last update.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private HashSet<int> _changed = new HashSet<int>();
 
         #endregion
@@ -333,7 +336,7 @@ namespace Engine.ComponentSystem.Common.Systems
             foreach (var tree in TreesForGroups(groups))
             {
                 Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
-                tree.Find(center, radius, ref results);
+                tree.Find(center, radius, results);
             }
         }
 
@@ -349,7 +352,7 @@ namespace Engine.ComponentSystem.Common.Systems
             foreach (var tree in TreesForGroups(groups))
             {
                 Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
-                tree.Find(rectangle, ref results);
+                tree.Find(rectangle, results);
             }
         }
 
@@ -486,6 +489,11 @@ namespace Engine.ComponentSystem.Common.Systems
                     packet.Write(tuple.Item2);
                 }
             }
+            packet.Write(_changed.Count);
+            foreach (var entity in _changed)
+            {
+                packet.Write(entity);
+            }
 
             return packet;
         }
@@ -523,6 +531,13 @@ namespace Engine.ComponentSystem.Common.Systems
                     var entity = packet.ReadInt32();
                     _trees[i].Add(bounds, entity);
                 }
+            }
+
+            _changed.Clear();
+            var changedCount = packet.ReadInt32();
+            for (var i = 0; i < changedCount; i++)
+            {
+                _changed.Add(packet.ReadInt32());
             }
         }
 
@@ -562,7 +577,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             var copy = (IndexSystem)base.NewInstance();
 
-            copy._trees = new IIndex<int, FarRectangle, FarPosition>[sizeof(ulong) * 8];
+            copy._trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof(ulong) * 8];
             copy._changed = new HashSet<int>();
 
             return copy;
@@ -586,9 +601,6 @@ namespace Engine.ComponentSystem.Common.Systems
 
             var copy = (IndexSystem)into;
 
-            copy._maxEntriesPerNode = _maxEntriesPerNode;
-            copy._minNodeBounds = _minNodeBounds;
-
             foreach (var tree in copy._trees)
             {
                 if (tree != null)
@@ -605,13 +617,9 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
                 if (copy._trees[i] == null)
                 {
-                    copy._trees[i] = new FarCollections.SpatialHashedQuadTree<int>(copy._maxEntriesPerNode, copy._minNodeBounds);
+                    copy._trees[i] = _trees[i].NewInstance();
                 }
-                foreach (var entry in _trees[i])
-                {
-                    var bounds = entry.Item1;
-                    copy._trees[i].Add(bounds, entry.Item2);
-                }
+                _trees[i].CopyInto(copy._trees[i]);
             }
 
             copy._changed.Clear();

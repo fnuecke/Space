@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
@@ -164,20 +165,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         public IEnumerable<int> AllItems
         {
-            get
-            {
-                foreach (var slot in AllSlots)
-                {
-                    // Check if there's an item here.
-                    if (slot.Item == 0)
-                    {
-                        continue;
-                    }
-
-                    // Return item in that slot.
-                    yield return slot.Item;
-                }
-            }
+            get { return AllSlots.Where(s => s.Item > 0).Select(s => s.Item); }
         }
 
         #endregion
@@ -291,32 +279,6 @@ namespace Engine.ComponentSystem.RPG.Components
         #endregion
 
         #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(SlotTypeId)
-                .Write(_item)
-                .Write(_parent);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            SlotTypeId = packet.ReadInt32();
-            _item = packet.ReadInt32();
-            _parent = packet.ReadInt32();
-        }
 
         /// <summary>
         /// Push some unique data of the object to the given hasher,

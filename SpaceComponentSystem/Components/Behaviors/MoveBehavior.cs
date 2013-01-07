@@ -2,7 +2,6 @@
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
-using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -66,7 +65,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         protected override bool UpdateInternal()
         {
             var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            if (((Vector2)(Target - position)).LengthSquared() < ReachedEpsilon * ReachedEpsilon)
+            if (FarPosition.DistanceSquared(position, Target) < ReachedEpsilon * ReachedEpsilon)
             {
                 // We have reached our target, pop self.
                 AI.PopBehavior();
@@ -91,30 +90,6 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Serialization
         
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Target);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Target = packet.ReadFarPosition();
-        }
-
         /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.

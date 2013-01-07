@@ -220,52 +220,6 @@ namespace Space.ComponentSystem.Systems
             return copy;
         }
 
-        /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
-        /// </summary>
-        /// <param name="into">The instance to copy into.</param>
-        public override void CopyInto(AbstractSystem into)
-        {
-            base.CopyInto(into);
-
-            var copy = (DamageSystem)into;
-
-            _random.CopyInto(copy._random);
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(_random);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Engine.Serialization.Packet packet)
-        {
-            base.Depacketize(packet);
-
-            packet.ReadPacketizableInto(ref _random);
-        }
-
         #endregion
     }
 }

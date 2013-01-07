@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
+using Engine.Util;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
@@ -22,6 +23,7 @@ namespace Space.ComponentSystem.Systems
         /// List of drops to sample when we update. This is accumulated from
         /// death events, to allow thread safe sampling in one go.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private List<Tuple<string, FarPosition>> _dropsToSample = new List<Tuple<string, FarPosition>>();
 
         #endregion
@@ -164,6 +166,22 @@ namespace Space.ComponentSystem.Systems
             copy._dropsToSample = new List<Tuple<string, FarPosition>>();
 
             return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <param name="into">The instance to copy into.</param>
+        public override void CopyInto(AbstractSystem into)
+        {
+            System.Diagnostics.Debug.Assert(_dropsToSample.Count == 0, "Drop system got drop requests after its update, but before copying.");
+
+            base.CopyInto(into);
         }
 
         #endregion

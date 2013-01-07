@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -80,36 +81,43 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// List of systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
 
         /// <summary>
         /// List of all updating systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<IUpdatingSystem> _updatingSystems = new List<IUpdatingSystem>();
 
         /// <summary>
         /// List of all messaging systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<IMessagingSystem> _messagingSystems = new List<IMessagingSystem>();
 
         /// <summary>
         /// List of all drawing systems registered with this manager.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
 
         /// <summary>
         /// Lookup table for quick access to systems by their type id.
         /// </summary>
+        [PacketizerIgnore]
         private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
 
         /// <summary>
         /// Keeps track of entity->component relationships.
         /// </summary>
+        [PacketizerIgnore]
         private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
 
         /// <summary>
         /// Lookup table for quick access to components by their id.
         /// </summary>
+        [PacketizerIgnore]
         private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
         #endregion
@@ -517,18 +525,17 @@ namespace Engine.ComponentSystem
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
-            // Write the managers for used ids.
-            packet.Write(_entityIds);
-            packet.Write(_componentIds);
-
             // Write the components, which are enough to implicitly restore the
             // entity to component mapping as well, so we don't need to write
             // the entity mapping.
             packet.Write(_componentIds.Count);
             foreach (var component in Components)
             {
+                // Store type manually to allow going through object pool on
+                // deserialization.
                 packet.Write(component.GetType());
                 packet.Write(component);
             }
@@ -536,9 +543,14 @@ namespace Engine.ComponentSystem
             // Write systems, with their types, as these will only be read back
             // via <c>ReadPacketizableInto()</c> to keep some variables that
             // can only passed in the constructor.
-            packet.Write(_systems.Count);
+            packet.Write(_systems.Count(s => !(s is IDrawingSystem)));
             for (int i = 0, j = _systems.Count; i < j; ++i)
             {
+                // Don't serialize presentation systems.
+                if (_systems[i] is IDrawingSystem)
+                {
+                    continue;
+                }
                 packet.Write(_systems[i].GetType());
                 packet.Write(_systems[i]);
             }
@@ -547,10 +559,11 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
         /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        [PreDepacketize]
+        public void PreDepacketize()
         {
             // Release all current objects.
             foreach (var entity in _entityIds)
@@ -563,11 +576,16 @@ namespace Engine.ComponentSystem
                 ReleaseComponent(component);
             }
             _components.Clear();
+        }
 
-            // Get the managers for ids (restores "known" ids before restoring components).
-            packet.ReadPacketizableInto(ref _entityIds);
-            packet.ReadPacketizableInto(ref _componentIds);
-
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
+        public void PostDepacketize(Packet packet)
+        {
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
             var numComponents = packet.ReadInt32();
@@ -575,7 +593,7 @@ namespace Engine.ComponentSystem
             {
                 var type = packet.ReadType();
                 var component = AllocateComponent(type);
-                packet.ReadPacketizableInto(ref component);
+                packet.ReadPacketizableInto(component);
                 component.Manager = this;
                 _components[component.Id] = component;
 
@@ -607,7 +625,7 @@ namespace Engine.ComponentSystem
                     throw new PacketException("Could not depacketize system of unknown type " + type.FullName);
                 }
                 var instance = _systemsByTypeId[GetSystemTypeId(type)];
-                packet.ReadPacketizableInto(ref instance);
+                packet.ReadPacketizableInto(instance);
             }
 
             // All done, send message to allow post-processing.
@@ -626,6 +644,11 @@ namespace Engine.ComponentSystem
         {
             foreach (var system in _systems)
             {
+                // Don't hash presentation systems.
+                if (system is IDrawingSystem)
+                {
+                    continue;
+                }
                 system.Hash(hasher);
             }
             foreach (var component in Components)
@@ -637,7 +660,11 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Write a complete entity, meaning all its components, to the
         /// specified packet. Entities saved this way can be restored using
-        /// the <c>ReadEntity()</c> method.
+        /// the <see cref="DepacketizeEntity"/> method. Note that this has
+        /// no knowledge about components' internal states, so if they keep
+        /// references to other entities or components via their id, these
+        /// ids will obviously be wrong after depacketizing. You will have
+        /// to take care of fixing these references yourself.
         /// <para/>
         /// This uses the components' <c>Packetize</c> facilities.
         /// </summary>
@@ -665,19 +692,36 @@ namespace Engine.ComponentSystem
         /// i.e. each restored component will send a <c>ComponentAdded</c>
         /// message.
         /// <para/>
-        /// This uses the components' <c>Depacketize</c> facilities.
+        /// This uses the components' serialization facilities.
         /// </summary>
         /// <param name="packet">The packet to read the entity from.</param>
+        /// <param name="componentIdMap">A mapping of how components' ids
+        /// changed due to serialization, mapping old id to new id.</param>
         /// <returns>The id of the read entity.</returns>
-        public int DepacketizeEntity(Packet packet)
+        public int DepacketizeEntity(Packet packet, Dictionary<int, int> componentIdMap = null)
         {
+            // Keep track of what we already did, to allow unwinding if something
+            // bad happens. Then get an entity id and try to read the components.
+            var undo = new Stack<Action>();
             var entity = AddEntity();
+            undo.Push(() => RemoveEntity(entity));
             try
             {
+                // Read all components that were written for this entity. This
+                // does not yet mess with our internal state.
                 var components = packet.ReadPacketizablesWithTypeInfo<Component>();
+
+                // Now we need to inject the components into our system, so we assign
+                // an id to each one and link it to our entity id.
                 foreach (var component in components)
                 {
-                    component.Id = _componentIds.GetId();
+                    // Link stuff together.
+                    var id = _componentIds.GetId();
+                    if (componentIdMap != null)
+                    {
+                        componentIdMap.Add(component.Id, id);
+                    }
+                    component.Id = id;
                     component.Entity = entity;
                     component.Manager = this;
                     _components[component.Id] = component;
@@ -685,17 +729,26 @@ namespace Engine.ComponentSystem
                     // Add to entity index.
                     _entities[entity].Add(component);
 
+                    // Push to undo queue in case a message handler throws.
+                    undo.Push(() => RemoveComponent(id));
+
                     // Send a message to all systems.
                     foreach (var system in _systems)
                     {
                         system.OnComponentAdded(component);
                     }
                 }
+
+                // Yay, all went well. Return the id of the read entity.
                 return entity;
             }
             catch (Exception)
             {
-                RemoveEntity(entity);
+                // Undo all we did.
+                while (undo.Count > 0)
+                {
+                    undo.Pop()();
+                }
                 throw;
             }
         }
@@ -763,7 +816,7 @@ namespace Engine.ComponentSystem
 
             // Copy systems after copying components so they can fetch their
             // components again.
-            foreach (var item in _systems)
+            foreach (var item in _systems.Where(s => !(s is IDrawingSystem)))
             {
                 copy.CopySystem(item);
             }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Collections;
-using Engine.Physics.Detail.Collision;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Collision;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -11,7 +11,7 @@ using WorldPoint = Engine.FarMath.FarPosition;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Contacts
+namespace Engine.Physics.Contacts
 {
     /// <summary>
     /// This class contains the actual logic for solving velocity and position
@@ -19,17 +19,15 @@ namespace Engine.Physics.Detail.Contacts
     /// </summary>
     internal sealed class ContactSolver
     {
-        private readonly IList<Contact> _contacts;
+        private Position[] _positions;
+
+        private Velocity[] _velocities;
 
         private ContactPositionConstraint[] _positionConstraints = new ContactPositionConstraint[0];
 
         private ContactVelocityConstraint[] _velocityConstraints = new ContactVelocityConstraint[0];
 
-        private Position[] _positions;
-
-        private Velocity[] _velocities;
-
-        private TimeStep _step;
+        private readonly IList<Contact> _contacts;
 
         public ContactSolver(IList<Contact> contacts)
         {
@@ -43,8 +41,8 @@ namespace Engine.Physics.Detail.Contacts
             {
                 var oldCapacity = _positionConstraints.Length;
                 var newPositionConstraints = new ContactPositionConstraint[contactCapacity];
-                var newVelocityConstraints = new ContactVelocityConstraint[contactCapacity];
                 _positionConstraints.CopyTo(newPositionConstraints, 0);
+                var newVelocityConstraints = new ContactVelocityConstraint[contactCapacity];
                 _velocityConstraints.CopyTo(newVelocityConstraints, 0);
                 for (var i = oldCapacity; i < newPositionConstraints.Length; ++i)
                 {
@@ -59,10 +57,8 @@ namespace Engine.Physics.Detail.Contacts
             _velocities = velocities;
         }
 
-        public void Initialize(TimeStep step)
+        public void Initialize(bool isWarmStarting)
         {
-            _step = step;
-
             // Initialize position independent portions of the constraints.
             for (var i = 0; i < _contacts.Count; ++i)
             {
@@ -88,8 +84,8 @@ namespace Engine.Physics.Detail.Contacts
                 vc.InvInertiaB = bodyB.InverseInertia;
                 vc.ContactIndex = i;
                 vc.PointCount = contact.Manifold.PointCount;
-                vc.K = Mat22.Zero;
-                vc.NormalMass = Mat22.Zero;
+                vc.K = Matrix22.Zero;
+                vc.NormalMass = Matrix22.Zero;
 
                 var pc = _positionConstraints[i];
                 pc.IndexA = bodyA.IslandIndex;
@@ -111,7 +107,7 @@ namespace Engine.Physics.Detail.Contacts
                 {
                     var vcp = vc.Points[j];
 
-                    if (_step.IsWarmStarting)
+                    if (isWarmStarting)
                     {
                         vcp.NormalImpulse = contact.Manifold.Points[j].NormalImpulse;
                         vcp.TangentImpulse = contact.Manifold.Points[j].TangentImpulse;
@@ -176,18 +172,19 @@ namespace Engine.Physics.Detail.Contacts
                 xfB.Translation = cB - xfB.Rotation * localCenterB;
 
                 FixedArray2<WorldPoint> points;
-                Contact.ComputeWorldManifold(contact.Manifold,
-                                             xfA, radiusA,
-                                             xfB, radiusB,
-                                             out vc.Normal,
-                                             out points);
+                contact.Manifold.ComputeWorldManifold(xfA, radiusA,
+                                                      xfB, radiusB,
+                                                      out vc.Normal,
+                                                      out points);
 
                 for (var j = 0; j < vc.PointCount; ++j)
                 {
                     var vcp = vc.Points[j];
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     vcp.RelativeA = (Vector2)(points[j] - cA);
                     vcp.RelativeB = (Vector2)(points[j] - cB);
+// ReSharper restore RedundantCast
 
                     var rnA = Vector2Util.Cross(vcp.RelativeA, vc.Normal);
                     var rnB = Vector2Util.Cross(vcp.RelativeB, vc.Normal);
@@ -328,7 +325,7 @@ namespace Engine.Physics.Detail.Contacts
                     var vt = Vector2.Dot(dv, tangent);
                     var lambda = vcp.TangentMass * (-vt);
 
-                    // b2Clamp the accumulated force
+                    // Clamp the accumulated force
                     var maxFriction = friction * vcp.NormalImpulse;
                     var newImpulse = MathHelper.Clamp(vcp.TangentImpulse + lambda, -maxFriction, maxFriction);
                     lambda = newImpulse - vcp.TangentImpulse;
@@ -356,7 +353,7 @@ namespace Engine.Physics.Detail.Contacts
                     var vn = Vector2.Dot(dv, normal);
                     var lambda = -vcp.NormalMass * (vn - vcp.VelocityBias);
 
-                    // b2Clamp the accumulated impulse
+                    // Clamp the accumulated impulse
                     var newImpulse = System.Math.Max(vcp.NormalImpulse + lambda, 0.0f);
                     lambda = newImpulse - vcp.NormalImpulse;
                     vcp.NormalImpulse = newImpulse;
@@ -457,19 +454,6 @@ namespace Engine.Physics.Detail.Contacts
                             // Accumulate
                             cp1.NormalImpulse = x.X;
                             cp2.NormalImpulse = x.Y;
-
-#if B2_DEBUG_SOLVER
-    // Postconditions
-                                dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-                                dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
-
-                                // Compute normal velocity
-                                vn1 = b2Dot(dv1, normal);
-                                vn2 = b2Dot(dv2, normal);
-
-                                b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-                                b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
-            #endif
                             break;
                         }
 
@@ -500,16 +484,6 @@ namespace Engine.Physics.Detail.Contacts
                             // Accumulate
                             cp1.NormalImpulse = x.X;
                             cp2.NormalImpulse = x.Y;
-
-#if B2_DEBUG_SOLVER
-    // Postconditions
-                                dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-
-                                // Compute normal velocity
-                                vn1 = b2Dot(dv1, normal);
-                                
-                                b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-#endif
                             break;
                         }
 
@@ -541,16 +515,6 @@ namespace Engine.Physics.Detail.Contacts
                             // Accumulate
                             cp1.NormalImpulse = x.X;
                             cp2.NormalImpulse = x.Y;
-
-#if B2_DEBUG_SOLVER
-    // Postconditions
-                                dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
-
-                                // Compute normal velocity
-                                vn2 = b2Dot(dv2, normal);
-
-                                b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
-            #endif
                             break;
                         }
 
@@ -631,10 +595,14 @@ namespace Engine.Physics.Detail.Contacts
                 {
                     var pointA = xfA.ToGlobal(pc.LocalPoint);
                     var pointB = xfB.ToGlobal(pc.LocalPoints[0]);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     normal = (Vector2)(pointB - pointA);
+// ReSharper restore RedundantCast
                     normal.Normalize();
                     point = 0.5f * (pointA + pointB);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     separation = Vector2.Dot((Vector2)(pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
+// ReSharper restore RedundantCast
                 }
                     break;
 
@@ -644,7 +612,9 @@ namespace Engine.Physics.Detail.Contacts
                     var planePoint = xfA.ToGlobal(pc.LocalPoint);
 
                     var clipPoint = xfB.ToGlobal(pc.LocalPoints[index]);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     separation = Vector2.Dot((Vector2)(clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+// ReSharper restore RedundantCast
                     point = clipPoint;
                 }
                     break;
@@ -655,7 +625,9 @@ namespace Engine.Physics.Detail.Contacts
                     var planePoint = xfB.ToGlobal(pc.LocalPoint);
 
                     var clipPoint = xfA.ToGlobal(pc.LocalPoints[index]);
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     separation = Vector2.Dot((Vector2)(clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+// ReSharper restore RedundantCast
                     point = clipPoint;
 
                     // Ensure normal points from A to B
@@ -706,9 +678,11 @@ namespace Engine.Physics.Detail.Contacts
                     WorldPoint point;
                     float separation;
                     InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     var rA = (Vector2)(point - cA);
                     var rB = (Vector2)(point - cB);
+// ReSharper restore RedundantCast
 
                     // Track max constraint error.
                     minSeparation = System.Math.Min(minSeparation, separation);
@@ -740,8 +714,8 @@ namespace Engine.Physics.Detail.Contacts
                 _positions[indexB].Angle = aB;
             }
 
-            // We can't expect minSpeparation >= -b2_linearSlop because we don't
-            // push the separation above -b2_linearSlop.
+            // We can't expect minSpeparation >= -Settings.LinearSlop because we don't
+            // push the separation above -Settings.LinearSlop.
             return minSeparation >= -3.0f * Settings.LinearSlop;
         }
 
@@ -796,9 +770,11 @@ namespace Engine.Physics.Detail.Contacts
                     WorldPoint point;
                     float separation;
                     InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
-
+                    
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                     var rA = (Vector2)(point - cA);
                     var rB = (Vector2)(point - cB);
+// ReSharper restore RedundantCast
 
                     // Track max constraint error.
                     minSeparation = System.Math.Min(minSeparation, separation);
@@ -830,34 +806,9 @@ namespace Engine.Physics.Detail.Contacts
                 _positions[indexB].Angle = aB;
             }
 
-            // We can't expect minSpeparation >= -b2_linearSlop because we don't
-            // push the separation above -b2_linearSlop.
+            // We can't expect minSpeparation >= -Settings.LinearSlop because we don't
+            // push the separation above -Settings.LinearSlop.
             return minSeparation >= -1.5f * Settings.LinearSlop;
-        }
-
-        private sealed class ContactPositionConstraint
-        {
-            public FixedArray2<Vector2> LocalPoints;
-
-            public Vector2 LocalNormal;
-
-            public Vector2 LocalPoint;
-
-            public int IndexA;
-
-            public int IndexB;
-
-            public float InvMassA, InvMassB;
-
-            public Vector2 LocalCenterA, LocalCenterB;
-
-            public float InvInertiaA, InvInertiaB;
-
-            public Manifold.ManifoldType Type;
-
-            public float RadiusA, RadiusB;
-
-            public int PointCount;
         }
 
         private sealed class ContactVelocityConstraint
@@ -870,9 +821,9 @@ namespace Engine.Physics.Detail.Contacts
 
             public Vector2 Normal;
 
-            public Mat22 NormalMass;
+            public Matrix22 NormalMass;
 
-            public Mat22 K;
+            public Matrix22 K;
 
             public int IndexA;
 
@@ -906,6 +857,31 @@ namespace Engine.Physics.Detail.Contacts
             public float TangentMass;
 
             public float VelocityBias;
+        }
+
+        private sealed class ContactPositionConstraint
+        {
+            public Vector2[] LocalPoints = new Vector2[2];
+
+            public Vector2 LocalNormal;
+
+            public Vector2 LocalPoint;
+
+            public int IndexA;
+
+            public int IndexB;
+
+            public float InvMassA, InvMassB;
+
+            public Vector2 LocalCenterA, LocalCenterB;
+
+            public float InvInertiaA, InvInertiaB;
+
+            public Manifold.ManifoldType Type;
+
+            public float RadiusA, RadiusB;
+
+            public int PointCount;
         }
     }
 }

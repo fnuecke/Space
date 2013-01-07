@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Physics.Components;
+﻿using Engine.Physics.Components;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -21,11 +20,11 @@ namespace Engine.Physics.Tests.Tests
                 var ground = Manager.AddBody();
 
                 var x1 = -20.0f;
-                var y1 = 2.0f * (float)Math.Cos(x1 / 10.0f * (float)Math.PI);
+                var y1 = 2.0f * (float)System.Math.Cos(x1 / 10.0f * (float)System.Math.PI);
                 for (var i = 0; i < 80; ++i)
                 {
                     var x2 = x1 + 0.5f;
-                    var y2 = 2.0f * (float)Math.Cos(x2 / 10.0f * (float)Math.PI);
+                    var y2 = 2.0f * (float)System.Math.Cos(x2 / 10.0f * (float)System.Math.PI);
 
                     Manager.AttachEdge(ground,
                                        new Vector2(x1, y1), new Vector2(x2, y2));

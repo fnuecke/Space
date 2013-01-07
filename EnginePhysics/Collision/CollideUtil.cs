@@ -1,5 +1,5 @@
 ﻿using Engine.Collections;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -8,11 +8,9 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Collision
+namespace Engine.Physics.Collision
 {
-    /// <summary>
-    /// Utility methods of the collision module.
-    /// </summary>
+    /// <summary>Utility methods of the collision module.</summary>
     internal static partial class Algorithms
     {
         /// <summary>
@@ -27,7 +25,7 @@ namespace Engine.Physics.Detail.Collision
                                          WorldTransform transformA, WorldTransform transformB)
         {
             var cache = new SimplexCache {Count = 0};
-            return Distance(ref cache, proxyA, proxyB, transformA, transformB, true) < 10 * Settings.Epsilon;
+            return Distance(ref cache, proxyA, transformA, proxyB, transformB, true) < 10 * Settings.Epsilon;
         }
 
         /// Clipping for contact manifolds.
@@ -81,12 +79,14 @@ namespace Engine.Physics.Detail.Collision
             return numOut;
         }
 
-        /// Used for computing contact manifolds.
+        /// <summary>Used for computing contact manifolds.</summary>
         private struct ClipVertex
         {
-            public LocalPoint Vertex;
-
+            /// <summary>The contact ID uniquely identifying this contact vertex.</summary>
             public ContactID Id;
+
+            /// <summary>The vertex position in local coordinate space.</summary>
+            public LocalPoint Vertex;
         }
     }
 }

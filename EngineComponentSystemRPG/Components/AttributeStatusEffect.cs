@@ -32,6 +32,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// The actual attribute modifiers which are applied.
         /// </summary>
+        [PacketizerIgnore]
         public readonly List<AttributeModifier<TAttribute>> Modifiers = new List<AttributeModifier<TAttribute>>();
 
         #endregion
@@ -103,9 +104,9 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             Modifiers.AddRange(packet.ReadPacketizables<AttributeModifier<TAttribute>>());
         }

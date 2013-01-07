@@ -5,6 +5,8 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
 using Engine.Physics.Components;
+using Engine.Physics.Contacts;
+using Engine.Physics.Joints;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -82,6 +84,16 @@ namespace Engine.Physics.Systems
         /// </summary>
         private static readonly Color FixtureBoundsColor = new Color(0.9f, 0.3f, 0.9f);
 
+        /// <summary>
+        /// The color to render joint anchor points in.
+        /// </summary>
+        private static readonly Color JointAnchorColor = new Color(0.0f, 1.0f, 0.0f);
+
+        /// <summary>
+        /// The color to render joint edges/shapes in.
+        /// </summary>
+        private static readonly Color JointEdgeColor = new Color(0.8f, 0.8f, 0.8f);
+
         #endregion
 
         #region Properties
@@ -124,6 +136,11 @@ namespace Engine.Physics.Systems
         /// </summary>
         public bool RenderContactPointNormalImpulse { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether to render joint edges.
+        /// </summary>
+        public bool RenderJoints { get; set; }
+
         #endregion
 
         #region Fields
@@ -152,14 +169,28 @@ namespace Engine.Physics.Systems
         /// </summary>
         protected abstract WorldTransform GetTransform();
 
+        /// <summary>
+        /// Gets the visible bodies.
+        /// </summary>
         protected virtual IEnumerable<Body> GetVisibleBodies()
         {
             return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Bodies;
         }
 
-        protected virtual IEnumerable<PhysicsSystem.IContact> GetVisibleContacts()
+        /// <summary>
+        /// Gets the visible contacts.
+        /// </summary>
+        protected virtual IEnumerable<Contact> GetVisibleContacts()
         {
             return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Contacts;
+        }
+
+        /// <summary>
+        /// Gets the visible joints.
+        /// </summary>
+        protected virtual IEnumerable<Joint> GetVisibleJoints()
+        {
+            return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Joints;
         }
 
         #endregion
@@ -317,6 +348,27 @@ namespace Engine.Physics.Systems
                 }
                 _primitiveBatch.End();
             }
+            
+            // Render joints.
+            if (RenderJoints)
+            {
+#if FARMATH
+                _primitiveBatch.Begin(view.Matrix);
+#else
+                _primitiveBatch.Begin(view);
+#endif
+
+                foreach (var joint in GetVisibleJoints())
+                {
+#if FARMATH
+                    DrawJoint(joint, v => PhysicsSystem.ToScreenUnits((Vector2)(v + view.Translation)));
+#else
+                    DrawJoint(joint, PhysicsSystem.ToScreenUnits);
+#endif
+                }
+
+                _primitiveBatch.End();
+            }
         }
 
         private void DrawBody(Body body, Func<Vector2, Vector2> toScreen)
@@ -397,7 +449,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        private void DrawContact(PhysicsSystem.IContact contact, Func<WorldPoint, Vector2> toScreen)
+        private void DrawContact(Contact contact, Func<WorldPoint, Vector2> toScreen)
         {
             Vector2 normal;
             IList<WorldPoint> points;
@@ -425,6 +477,48 @@ namespace Engine.Physics.Systems
                     // for mapping to screen space when computing our axis length.
                     _primitiveBatch.DrawLine(point, point + PhysicsSystem.ToScreenUnits(normal * contact.GetNormalImpulse(i) * ImpulseScale), ContactNormalImpulseColor);
                 }
+            }
+        }
+
+        private void DrawJoint(Joint joint, Func<WorldPoint, Vector2> toScreen)
+        {
+            var anchorA = toScreen(joint.AnchorA);
+            var anchorB = toScreen(joint.AnchorB);
+
+            _primitiveBatch.DrawFilledRectangle(anchorA, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+            _primitiveBatch.DrawFilledRectangle(anchorB, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+
+            switch (joint.Type)
+            {
+                case Joint.JointType.Mouse:
+                case Joint.JointType.Distance:
+                    _primitiveBatch.DrawLine(anchorA, anchorB, JointEdgeColor);
+                    break;
+                case Joint.JointType.Pulley:
+                {
+                    var pulleyJoint = (PulleyJoint)joint;
+                    var anchorA0 = toScreen(pulleyJoint.GroundAnchorA);
+                    var anchorB0 = toScreen(pulleyJoint.GroundAnchorB);
+                    _primitiveBatch.DrawFilledRectangle(anchorA0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                    _primitiveBatch.DrawFilledRectangle(anchorB0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+
+                    _primitiveBatch.DrawLine(anchorA0, anchorA, JointEdgeColor);
+                    _primitiveBatch.DrawLine(anchorB0, anchorB, JointEdgeColor);
+                    break;
+                }
+                default:
+                    // Per default just draw three lines from body to joint anchor to
+                    // joint anchor to body.
+                    if (joint.BodyA != null)
+                    {
+                        _primitiveBatch.DrawLine(toScreen(joint.BodyA.Position), anchorA, JointEdgeColor);
+                    }
+                    _primitiveBatch.DrawLine(anchorA, anchorB, JointEdgeColor);
+                    if (joint.BodyB != null)
+                    {
+                        _primitiveBatch.DrawLine(anchorB, toScreen(joint.BodyB.Position), JointEdgeColor);
+                    }
+                    break;
             }
         }
 

@@ -11,7 +11,7 @@ namespace Engine.Tests.Base.Util
     /// <typeparam name="T">The class to test.</typeparam>
     [TestFixture]
     public abstract class AbstractCopyableTest<T>
-        where T : IHashable, ICopyable<T>
+        where T : class, IHashable, ICopyable<T>
     {
         [Test]
         public void DeepCopyViaHashing()

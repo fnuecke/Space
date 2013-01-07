@@ -73,32 +73,6 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public Packet Packetize(Packet packet)
-        {
-            return packet
-                .Write(Enum.GetName(typeof(TAttribute), Type))
-                .Write((byte)ComputationType)
-                .Write(Value);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            Type = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
-            ComputationType = (AttributeComputationType)packet.ReadByte();
-            Value = packet.ReadSingle();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
@@ -131,13 +105,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <returns>The copy.</returns>
         public void CopyInto(AttributeModifier<TAttribute> into)
         {
-            Debug.Assert(into != this);
-
-            var copy = (AttributeModifier<TAttribute>)MemberwiseClone();
-
-            copy.Type = Type;
-            copy.ComputationType = ComputationType;
-            copy.Value = Value;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

@@ -4,7 +4,7 @@
     /// Interface for objects supporting deep copies.
     /// </summary>
     /// <typeparam name="T">The type of the object.</typeparam>
-    public interface ICopyable<T>
+    public interface ICopyable<T> where T : class
     {
         /// <summary>
         /// Creates a new copy of the object, that shares no mutable

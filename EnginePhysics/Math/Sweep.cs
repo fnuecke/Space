@@ -11,7 +11,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
-namespace Engine.Physics.Detail.Math
+namespace Engine.Physics.Math
 {
     /// <summary>
     /// This describes the motion of a body/shape for TOI computation.
@@ -21,34 +21,31 @@ namespace Engine.Physics.Detail.Math
     /// </summary>
     internal struct Sweep
     {
+        static Sweep()
+        {
+            Packetizable.AddValueTypeOverloads(typeof(PacketSweepExtensions));
+        }
+
         #region Fields
 
-        /// <summary>
-        /// Local center of mass position.
-        /// </summary>
+        /// <summary>Local center of mass position.</summary>
         public LocalPoint LocalCenter;
 
-        /// <summary>
-        /// Center world positions.
-        /// </summary>
+        /// <summary>Center world positions.</summary>
         public WorldPoint CenterOfMass0, CenterOfMass;
 
-        /// <summary>
-        /// World angles.
-        /// </summary>
+        /// <summary>World angles.</summary>
         public float Angle0, Angle;
 
-        /// Fraction of the current time step in the range [0,1]
-        /// c0 and a0 are the positions at alpha0.
+        /// <summary>Fraction of the current time step in the range [0,1]
+        /// c0 and a0 are the positions at alpha0.</summary>
         public float Alpha0;
 
         #endregion
 
         #region Accessors
 
-        /// <summary>
-        /// Get the interpolated transform at a specific time.
-        /// </summary>
+        /// <summary>Get the interpolated transform at a specific time.</summary>
         /// <param name="xf">The transform at the specified time.</param>
         /// <param name="beta">is a factor in [0,1], where 0 indicates alpha0.</param>
         public void GetTransform(out WorldTransform xf, float beta)
@@ -65,9 +62,7 @@ namespace Engine.Physics.Detail.Math
             xf.Translation -= xf.Rotation * LocalCenter;
         }
 
-        /// <summary>
-        /// Advance the sweep forward, yielding a new initial state.
-        /// </summary>
+        /// <summary>Advance the sweep forward, yielding a new initial state.</summary>
         /// <param name="alpha">the new initial time</param>
         public void Advance(float alpha)
         {
@@ -79,9 +74,7 @@ namespace Engine.Physics.Detail.Math
             Alpha0 = alpha;
         }
 
-        /// <summary>
-        /// Normalize the angles.
-        /// </summary>
+        /// <summary>Normalize the angles.</summary>
         public void Normalize()
         {
             var d = MathHelper.TwoPi * (float)System.Math.Floor(Angle0 / MathHelper.TwoPi);
@@ -97,9 +90,8 @@ namespace Engine.Physics.Detail.Math
     /// </summary>
     internal static class PacketSweepExtensions
     {
-        /// <summary>
-        /// Writes the specified sweep value.
-        /// </summary>
+        /// <summary>Writes the specified sweep value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public static Packet Write(this Packet packet, Sweep data)
@@ -113,9 +105,20 @@ namespace Engine.Physics.Detail.Math
                 .Write(data.Alpha0);
         }
 
-        /// <summary>
-        /// Reads a Sweep value.
-        /// </summary>
+        /// <summary>Reads a sweep value.</summary>
+        /// <param name="packet">The packet.</param>
+        /// <param name="data">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        public static Packet Read(this Packet packet, out Sweep data)
+        {
+            data = packet.ReadSweep();
+            return packet;
+        }
+
+        /// <summary>Reads a sweep value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
@@ -142,10 +145,8 @@ namespace Engine.Physics.Detail.Math
     /// </summary>
     internal static class HasherSweepExtensions
     {
-        /// <summary>
-        /// Put the specified value to the data of which the hash
-        /// gets computed.
-        /// </summary>
+        /// <summary>Put the specified value to the data of which the hash
+        /// gets computed.</summary>
         /// <param name="hasher">The hasher to use.</param>
         /// <param name="value">the data to add.</param>
         /// <returns>a reference to the hasher, for chaining.</returns>

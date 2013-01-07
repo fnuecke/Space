@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -133,18 +132,6 @@ namespace Space.ComponentSystem.Systems
                     }
                 }
             }
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// We're purely visual, so don't hash anything.
-        /// </summary>
-        /// <param name="hasher">The hasher to use.</param>
-        public override void Hash(Hasher hasher)
-        {
         }
 
         #endregion

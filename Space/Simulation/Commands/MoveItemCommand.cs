@@ -1,5 +1,4 @@
-﻿using Engine.Serialization;
-using Engine.Simulation.Commands;
+﻿using Engine.Simulation.Commands;
 
 namespace Space.Simulation.Commands
 {
@@ -34,36 +33,6 @@ namespace Space.Simulation.Commands
         public MoveItemCommand()
             : this(-1, -1)
         {
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(FirstIndex)
-                .Write(SecondIndex);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            FirstIndex = packet.ReadInt32();
-            SecondIndex = packet.ReadInt32();
         }
 
         #endregion

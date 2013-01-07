@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Physics.Detail;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
@@ -96,11 +95,16 @@ namespace Engine.Physics.Components
         /// <param name="density">The density.</param>
         /// <param name="friction">The friction.</param>
         /// <param name="restitution">The restitution.</param>
+        /// <param name="isSensor">if set to <c>true</c> this fixture is marked as a sensor.</param>
+        /// <param name="collisionGroups">The collision groups for this fixture.</param>
         /// <returns></returns>
-        public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0)
+        public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
         {
+            // Edges can't have density because they have no area.
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional
             System.Diagnostics.Debug.Assert(density == 0);
-            base.Initialize(0, friction, restitution);
+// ReSharper restore CompareOfFloatsByEqualityOperator
+            base.Initialize(0, friction, restitution, isSensor, collisionGroups);
 
             return this;
         }
@@ -184,9 +188,11 @@ namespace Engine.Physics.Components
             var lowerY = (v1.Y < v2.Y) ? v1.Y : v2.Y;
             var upperX = (v1.X > v2.X) ? v1.X : v2.X;
             var upperY = (v1.Y > v2.Y) ? v1.Y : v2.Y;
-
+            
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             var sizeX = (float)(upperX - lowerX) + 2 * Radius;
             var sizeY = (float)(upperY - lowerY) + 2 * Radius;
+// ReSharper restore RedundantCast
             
             WorldBounds bounds;
             bounds.X = lowerX - Radius;
@@ -199,40 +205,6 @@ namespace Engine.Physics.Components
         #endregion
 
         #region Serialization / Hashing
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Vertex0)
-                .Write(Vertex1)
-                .Write(Vertex2)
-                .Write(Vertex3)
-                .Write(HasVertex0)
-                .Write(HasVertex3);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Vertex0 = packet.ReadVector2();
-            Vertex1 = packet.ReadVector2();
-            Vertex2 = packet.ReadVector2();
-            Vertex3 = packet.ReadVector2();
-            HasVertex0 = packet.ReadBoolean();
-            HasVertex3 = packet.ReadBoolean();
-        }
 
         /// <summary>
         /// Push some unique data of the object to the given hasher,

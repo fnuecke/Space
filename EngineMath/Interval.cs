@@ -89,19 +89,6 @@ namespace Engine.Math
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public abstract Packet Packetize(Packet packet);
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public abstract void Depacketize(Packet packet);
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
@@ -169,27 +156,6 @@ namespace Engine.Math
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return packet.Write(Low).Write(High);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            var low = packet.ReadInt32();
-            var high = packet.ReadInt32();
-            SetTo(low, high);
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
@@ -245,27 +211,6 @@ namespace Engine.Math
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return packet.Write(Low).Write(High);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            var low = packet.ReadSingle();
-            var high = packet.ReadSingle();
-            SetTo(low, high);
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
@@ -319,27 +264,6 @@ namespace Engine.Math
         #endregion
 
         #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return packet.Write(Low).Write(High);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            var low = packet.ReadDouble();
-            var high = packet.ReadDouble();
-            SetTo(low, high);
-        }
 
         /// <summary>
         /// Push some unique data of the object to the given hasher,

@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 

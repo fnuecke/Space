@@ -198,68 +198,13 @@ namespace Space.ComponentSystem.Components
             /// <returns>The copy.</returns>
             public void CopyInto(AIConfiguration into)
             {
-                into.AggroRange = AggroRange;
-                into.MaxEscapeCheckDistance = MaxEscapeCheckDistance;
-                into.MinDistanceToDamagers = MinDistanceToDamagers;
-                into.MinMultipleOfPointOfNoReturn = MinMultipleOfPointOfNoReturn;
-                into.EnemySeparation = EnemySeparation;
-                into.FlockingThreshold = FlockingThreshold;
-                into.FlockingSeparation = FlockingSeparation;
-                into.VegetativeUrgencyDistance = VegetativeUrgencyDistance;
-                into.VegetativeWeight = VegetativeWeight;
-                into.WeaponRangeEpsilon = WeaponRangeEpsilon;
-                into.WeaponFiringAngle = WeaponFiringAngle;
-                into.ChaseDistance = ChaseDistance;
+                Copyable.CopyInto(this, into);
             }
 
             #endregion
 
             #region Serialization / Hashing
             
-            /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>
-            /// The packet after writing.
-            /// </returns>
-            public Packet Packetize(Packet packet)
-            {
-                return packet
-                    .Write(AggroRange)
-                    .Write(MaxEscapeCheckDistance)
-                    .Write(MinDistanceToDamagers)
-                    .Write(MinMultipleOfPointOfNoReturn)
-                    .Write(EnemySeparation)
-                    .Write(FlockingThreshold)
-                    .Write(FlockingSeparation)
-                    .Write(VegetativeUrgencyDistance)
-                    .Write(VegetativeWeight)
-                    .Write(WeaponRangeEpsilon)
-                    .Write(WeaponFiringAngle)
-                    .Write(ChaseDistance);
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public void Depacketize(Packet packet)
-            {
-                AggroRange = packet.ReadSingle();
-                MaxEscapeCheckDistance = packet.ReadSingle();
-                MinDistanceToDamagers = packet.ReadSingle();
-                MinMultipleOfPointOfNoReturn = packet.ReadSingle();
-                EnemySeparation = packet.ReadSingle();
-                FlockingThreshold = packet.ReadSingle();
-                FlockingSeparation = packet.ReadSingle();
-                VegetativeUrgencyDistance = packet.ReadSingle();
-                VegetativeWeight = packet.ReadSingle();
-                WeaponRangeEpsilon = packet.ReadSingle();
-                WeaponFiringAngle = packet.ReadSingle();
-                ChaseDistance = packet.ReadSingle();
-            }
-
             /// <summary>
             /// Push some unique data of the object to the given hasher,
             /// to contribute to the generated hash.
@@ -347,6 +292,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The currently running behaviors, ordered as they were issued.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Stack<BehaviorType> _currentBehaviors = new Stack<BehaviorType>();
 
         /// <summary>
@@ -355,6 +301,7 @@ namespace Space.ComponentSystem.Components
         /// we cannot stack multiple behaviors of the same type, but that's
         /// probably not needed anyway.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Dictionary<BehaviorType, Behavior> _behaviors = new Dictionary<BehaviorType, Behavior>();
 
         #endregion
@@ -559,8 +506,6 @@ namespace Space.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(_random);
-            packet.Write(_config);
             packet.Write(_currentBehaviors.Count);
             var behaviorTypes = _currentBehaviors.ToArray();
             // Stacks iterators work backwards (first is the last pushed element),
@@ -582,12 +527,10 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            packet.ReadPacketizableInto(ref _random);
-            packet.ReadPacketizableInto(ref _config);
             _currentBehaviors.Clear();
             var numBehaviors = packet.ReadInt32();
             for (var i = 0; i < numBehaviors; i++)
@@ -598,7 +541,7 @@ namespace Space.ComponentSystem.Components
             foreach (var behaviorType in _behaviors.Keys)
             {
                 var behavior = _behaviors[behaviorType];
-                packet.ReadPacketizableInto(ref behavior);
+                packet.ReadPacketizableInto(behavior);
             }
         }
 

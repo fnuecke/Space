@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS PROFILE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -35,7 +35,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>TRACE;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS PROFILE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -61,32 +61,47 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collision\Distance.cs" />
     <Compile Include="Components\Body.cs" />
     <Compile Include="Components\CircleFixture.cs" />
     <Compile Include="Components\EdgeFixture.cs" />
-    <Compile Include="Components\Factory.cs" />
+    <Compile Include="BodyFactory.cs" />
     <Compile Include="Components\Fixture.cs" />
+    <Compile Include="FixtureFactory.cs" />
+    <Compile Include="JointFactory.cs" />
+    <Compile Include="Joints\DistanceJoint.cs" />
+    <Compile Include="Joints\FrictionJoint.cs" />
+    <Compile Include="Joints\GearJoint.cs" />
+    <Compile Include="Joints\Joint.cs" />
     <Compile Include="Components\PolygonFixture.cs" />
-    <Compile Include="Detail\Collision\TimeOfImpact.cs" />
-    <Compile Include="Detail\Collision\Manifold.cs" />
-    <Compile Include="Detail\Math\Transform.cs" />
-    <Compile Include="Detail\Math\Vector2.cs" />
+    <Compile Include="Collision\TimeOfImpact.cs" />
+    <Compile Include="Collision\Manifold.cs" />
+    <Compile Include="Joints\MotorJoint.cs" />
+    <Compile Include="Joints\MouseJoint.cs" />
+    <Compile Include="Joints\PrismaticJoint.cs" />
+    <Compile Include="Joints\PulleyJoint.cs" />
+    <Compile Include="Joints\RevoluteJoint.cs" />
+    <Compile Include="Joints\RopeJoint.cs" />
+    <Compile Include="Joints\WeldJoint.cs" />
+    <Compile Include="Joints\WheelJoint.cs" />
+    <Compile Include="Math\Transform.cs" />
+    <Compile Include="Math\Vector.cs" />
     <Compile Include="Messages\BeginContact.cs" />
     <Compile Include="Messages\EndContact.cs" />
     <Compile Include="Messages\PreSolve.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Detail\Collision\CollideCircle.cs" />
-    <Compile Include="Detail\Collision\CollideEdge.cs" />
-    <Compile Include="Detail\Collision\CollidePolygon.cs" />
-    <Compile Include="Detail\Collision\CollideUtil.cs" />
-    <Compile Include="Detail\Contacts\ContactSolver.cs" />
-    <Compile Include="Detail\Contacts\Contact.cs" />
-    <Compile Include="Detail\Island.cs" />
+    <Compile Include="Collision\CollideCircle.cs" />
+    <Compile Include="Collision\CollideEdge.cs" />
+    <Compile Include="Collision\CollidePolygon.cs" />
+    <Compile Include="Collision\CollideUtil.cs" />
+    <Compile Include="Contacts\ContactSolver.cs" />
+    <Compile Include="Contacts\Contact.cs" />
+    <Compile Include="Island.cs" />
     <Compile Include="Systems\AbstractDebugPhysicsRenderSystem.cs" />
     <Compile Include="Systems\PhysicsSystem.cs" />
-    <Compile Include="Detail\Math\Sweep.cs" />
-    <Compile Include="Detail\Settings.cs" />
-    <Compile Include="Detail\TimeStep.cs" />
+    <Compile Include="Math\Sweep.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="TimeStep.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -118,11 +118,11 @@ namespace Engine.Tests.ComponentSystem
             var component = manager1.AddComponent<TestComponent>(entity);
 
             var packet = new Packet();
-            manager1.Packetize(packet);
+            packet.Write(manager1);
 
             packet.Reset();
-            
-            manager2.Depacketize(packet);
+
+            packet.ReadPacketizableInto(manager2);
 
             Assert.True(manager2.HasEntity(entity));
             Assert.True(manager2.HasComponent(component.Id));

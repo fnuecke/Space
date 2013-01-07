@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS FARMATH FARMATH_AUTO_NORMALIZE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS FARMATH FARMATH_AUTO_NORMALIZE PROFILE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -34,7 +34,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>TRACE;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS FARMATH FARMATH_AUTO_NORMALIZE PROFILE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -57,6 +57,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\EnginePhysics\BodyFactory.cs">
+      <Link>BodyFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Collision\Distance.cs">
+      <Link>Collision\Distance.cs</Link>
+    </Compile>
     <Compile Include="..\EnginePhysics\Components\Body.cs">
       <Link>Components\Body.cs</Link>
     </Compile>
@@ -66,56 +72,95 @@
     <Compile Include="..\EnginePhysics\Components\EdgeFixture.cs">
       <Link>Components\EdgeFixture.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Components\Factory.cs">
-      <Link>Components\Factory.cs</Link>
-    </Compile>
     <Compile Include="..\EnginePhysics\Components\Fixture.cs">
       <Link>Components\Fixture.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Components\PolygonFixture.cs">
       <Link>Components\PolygonFixture.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollideCircle.cs">
-      <Link>Detail\Collision\CollideCircle.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollideCircle.cs">
+      <Link>Collision\CollideCircle.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollideEdge.cs">
-      <Link>Detail\Collision\CollideEdge.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollideEdge.cs">
+      <Link>Collision\CollideEdge.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollidePolygon.cs">
-      <Link>Detail\Collision\CollidePolygon.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollidePolygon.cs">
+      <Link>Collision\CollidePolygon.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\CollideUtil.cs">
-      <Link>Detail\Collision\CollideUtil.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\CollideUtil.cs">
+      <Link>Collision\CollideUtil.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\Manifold.cs">
-      <Link>Detail\Collision\Manifold.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\Manifold.cs">
+      <Link>Collision\Manifold.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Collision\TimeOfImpact.cs">
-      <Link>Detail\Collision\TimeOfImpact.cs</Link>
+    <Compile Include="..\EnginePhysics\Collision\TimeOfImpact.cs">
+      <Link>Collision\TimeOfImpact.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Contacts\Contact.cs">
-      <Link>Detail\Contacts\Contact.cs</Link>
+    <Compile Include="..\EnginePhysics\Contacts\Contact.cs">
+      <Link>Contacts\Contact.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Contacts\ContactSolver.cs">
-      <Link>Detail\Contacts\ContactSolver.cs</Link>
+    <Compile Include="..\EnginePhysics\Contacts\ContactSolver.cs">
+      <Link>Contacts\ContactSolver.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Island.cs">
-      <Link>Detail\Island.cs</Link>
+    <Compile Include="..\EnginePhysics\FixtureFactory.cs">
+      <Link>FixtureFactory.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Math\Sweep.cs">
-      <Link>Detail\Math\Sweep.cs</Link>
+    <Compile Include="..\EnginePhysics\Island.cs">
+      <Link>Island.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Math\Transform.cs">
-      <Link>Detail\Math\Transform.cs</Link>
+    <Compile Include="..\EnginePhysics\JointFactory.cs">
+      <Link>JointFactory.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Math\Vector2.cs">
-      <Link>Detail\Math\Vector2.cs</Link>
+    <Compile Include="..\EnginePhysics\Joints\DistanceJoint.cs">
+      <Link>Joints\DistanceJoint.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\Settings.cs">
-      <Link>Detail\Settings.cs</Link>
+    <Compile Include="..\EnginePhysics\Joints\FrictionJoint.cs">
+      <Link>Joints\FrictionJoint.cs</Link>
     </Compile>
-    <Compile Include="..\EnginePhysics\Detail\TimeStep.cs">
-      <Link>Detail\TimeStep.cs</Link>
+    <Compile Include="..\EnginePhysics\Joints\GearJoint.cs">
+      <Link>Joints\GearJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\Joint.cs">
+      <Link>Joints\Joint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\MotorJoint.cs">
+      <Link>Joints\MotorJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\MouseJoint.cs">
+      <Link>Joints\MouseJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\PrismaticJoint.cs">
+      <Link>Joints\PrismaticJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\PulleyJoint.cs">
+      <Link>Joints\PulleyJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\RevoluteJoint.cs">
+      <Link>Joints\RevoluteJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\RopeJoint.cs">
+      <Link>Joints\RopeJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\WeldJoint.cs">
+      <Link>Joints\WeldJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Joints\WheelJoint.cs">
+      <Link>Joints\WheelJoint.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Math\Sweep.cs">
+      <Link>Math\Sweep.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Math\Transform.cs">
+      <Link>Math\Transform.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Math\Vector.cs">
+      <Link>Math\Vector.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\Settings.cs">
+      <Link>Settings.cs</Link>
+    </Compile>
+    <Compile Include="..\EnginePhysics\TimeStep.cs">
+      <Link>TimeStep.cs</Link>
     </Compile>
     <Compile Include="..\EnginePhysics\Messages\BeginContact.cs">
       <Link>Messages\BeginContact.cs</Link>

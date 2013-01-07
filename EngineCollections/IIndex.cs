@@ -110,14 +110,14 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="center">The query point near which to get entries.</param>
         /// <param name="radius">The maximum distance an entry may be away
-        ///   from the query point to be returned.</param>
+        /// from the query point to be returned.</param>
         /// <param name="results">The list to put the results into.</param>
         /// <remarks>
         /// This checks for intersections of the query circle and the bounds of
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        void Find(TPoint center, float radius, ref ISet<T> results);
+        void Find(TPoint center, float radius, ISet<T> results);
 
         /// <summary>
         /// Perform a circular query on this index. This will return all entries
@@ -143,7 +143,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results">The list to put the results into.</param>
-        void Find(TRectangle rectangle, ref ISet<T> results);
+        void Find(TRectangle rectangle, ISet<T> results);
 
         /// <summary>
         /// Perform an area query on this index. This will return all entries
@@ -164,7 +164,7 @@ namespace Engine.Collections
         /// <param name="t">The fraction along the line to consider.</param>
         /// <param name="results">The list to put the results into.</param>
         /// <returns></returns>
-        void Find(TPoint start, TPoint end, float t, ref ISet<T> results);
+        void Find(TPoint start, TPoint end, float t, ISet<T> results);
 
         /// <summary>
         /// Perform a line query on this index. This will return all entries

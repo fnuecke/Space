@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -18,6 +19,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         protected List<TComponent> Components = new List<TComponent>();
 
         #endregion

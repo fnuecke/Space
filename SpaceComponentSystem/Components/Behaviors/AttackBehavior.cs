@@ -23,6 +23,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <summary>
         /// The position we were at when we started attacking.
         /// </summary>
+        [PacketizerIgnore]
         private FarPosition? _start;
 
         #endregion
@@ -80,7 +81,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Check if we've traveled too far.
             if (_start.HasValue)
             {
-                if (((Vector2)(position - _start.Value)).LengthSquared() > AI.Configuration.ChaseDistance * AI.Configuration.ChaseDistance)
+                if (FarPosition.DistanceSquared(_start.Value, position) > AI.Configuration.ChaseDistance * AI.Configuration.ChaseDistance)
                 {
                     // Yeah, that's it, let's give up and return to what we
                     // were doing before.
@@ -232,9 +233,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet)
-                .Write(Target)
-                .Write(_start.HasValue);
+            base.Packetize(packet).Write(_start.HasValue);
             if (_start.HasValue)
             {
                 packet.Write(_start.Value);
@@ -243,14 +242,14 @@ namespace Space.ComponentSystem.Components.Behaviors
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
-            Target = packet.ReadInt32();
             if (packet.ReadBoolean())
             {
                 _start = packet.ReadFarPosition();

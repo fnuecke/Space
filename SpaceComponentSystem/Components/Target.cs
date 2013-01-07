@@ -34,6 +34,7 @@ namespace Space.ComponentSystem.Components
         /// The ID of the entity that's being targeted. Negative values mean
         /// that there is no current target.
         /// </summary>
+        [PacketizerIgnore]
         public int? Value;
 
         #endregion
@@ -85,9 +86,9 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             Value = packet.ReadInt32();
             if (Value == 0)

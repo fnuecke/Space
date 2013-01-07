@@ -58,12 +58,14 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Base values for attributes.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
         /// Modified values, based on equipment and status effects. This stores
         /// the absolute value as well as the multiplier for the value.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
         #endregion
@@ -73,12 +75,14 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList =
             new List<AttributeModifier<TAttribute>>();
 
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList =
             new List<AttributeModifier<TAttribute>>();
 
@@ -311,12 +315,13 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
             DepacketizeLocal(packet);
         }

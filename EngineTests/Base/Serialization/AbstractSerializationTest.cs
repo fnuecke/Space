@@ -10,7 +10,7 @@ namespace Engine.Tests.Base.Serialization
     /// <typeparam name="T">The class to test.</typeparam>
     [TestFixture]
     public abstract class AbstractSerializationTest<T>
-        where T : IPacketizable, IHashable, new()
+        where T : class, IPacketizable, IHashable, new()
     {
         [Test]
         public void SerializationAndHashing()
@@ -60,8 +60,7 @@ namespace Engine.Tests.Base.Serialization
                     packet.Reset();
 
                     Assert.AreEqual(123, packet.ReadInt32());
-                    var instanceByRef = instance;
-                    packet.ReadPacketizableInto(ref instanceByRef);
+                    packet.ReadPacketizableInto(instance);
                     Assert.AreEqual(hash, GetHash(instance));
                     Assert.AreEqual(456, packet.ReadInt32());
                 }

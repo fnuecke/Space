@@ -54,11 +54,13 @@ namespace Engine.Simulation
         /// <summary>
         /// The component system manager in use in this simulation.
         /// </summary>
+        [PacketizerIgnore]
         public IManager Manager { get; private set; }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
         /// </summary>
+        [PacketizerIgnore]
         public bool WaitingForSynchronization { get; private set; }
 
         /// <summary>
@@ -78,16 +80,19 @@ namespace Engine.Simulation
         /// <summary>
         /// The delays of the individual simulations.
         /// </summary>
+        [PacketizerIgnore]
         private readonly uint[] _delays;
 
         /// <summary>
         /// The parameterization for the different threads.
         /// </summary>
+        [PacketizerIgnore]
         private readonly ThreadData[] _threadData;
 
         /// <summary>
         /// Tasks used to update different simulations.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Task[] _tasks;
 
         /// <summary>
@@ -95,23 +100,27 @@ namespace Engine.Simulation
         /// delay, i.e. the state at slot 0 is the leading one, 1 is the next
         /// newest, and so on.
         /// </summary>
+        [PacketizerIgnore]
         private readonly IAuthoritativeSimulation[] _simulations;
 
         /// <summary>
         /// List of object ids to remove from delayed simulations when they
         /// reach the given frame.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Dictionary<long, List<int>> _removes = new Dictionary<long, List<int>>();
 
         /// <summary>
         /// List of commands to push in delayed simulations when they reach the
         /// given frame.
         /// </summary>
+        [PacketizerIgnore]
         private readonly Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
 
         /// <summary>
         /// A list that is re-used for marking entries for removal.
         /// </summary>
+        [PacketizerIgnore]
         private readonly List<long> _reusableDeprecationList = new List<long>();
 
         #endregion
@@ -322,11 +331,9 @@ namespace Engine.Simulation
         /// Serialize a simulation to a packet.
         /// </summary>
         /// <param name="packet">the packet to write the data to.</param>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
-            // Write the frame to fast forward to, after unwrapping.
-            packet.Write(CurrentFrame);
-
             // Write the trailing simulation. We can reconstruct the newer ones
             // from there.
             packet.Write(_simulations[_simulations.Length - 1]);
@@ -358,13 +365,11 @@ namespace Engine.Simulation
         /// Deserialize a simulation from a packet.
         /// </summary>
         /// <param name="packet">The packet to read the data from.</param>
-        public void Depacketize(Packet packet)
+        [PostDepacketize]
+        public void PostDepacketize(Packet packet)
         {
-            // Get the current frame of the simulation.
-            CurrentFrame = packet.ReadInt64();
-
             // Unwrap the trailing state and mirror it to all the newer ones.
-            packet.ReadPacketizableInto(ref _simulations[_simulations.Length - 1]);
+            packet.ReadPacketizableInto(_simulations[_simulations.Length - 1]);
             MirrorSimulation(_simulations[_simulations.Length - 1], _simulations.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep
@@ -978,27 +983,6 @@ namespace Engine.Simulation
             #region Serialization / Hashing
 
             /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>
-            /// The packet after writing.
-            /// </returns>
-            Packet IPacketizable.Packetize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            void IPacketizable.Depacketize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            /// <summary>
             /// Write a complete entity, meaning all its components, to the
             /// specified packet. Entities saved this way can be restored using
             /// the <c>ReadEntity()</c> method.
@@ -1028,10 +1012,10 @@ namespace Engine.Simulation
             /// This uses the components' <c>Depacketize</c> facilities.
             /// </summary>
             /// <param name="packet">The packet to read the entity from.</param>
-            /// <returns>
-            /// The id of the read entity.
-            /// </returns>
-            int IManager.DepacketizeEntity(Packet packet)
+            /// <param name="componentIdMap">A mapping of how components' ids
+            /// changed due to serialization, mapping old id to new id.</param>
+            /// <returns>The id of the read entity.</returns>
+            int IManager.DepacketizeEntity(Packet packet, Dictionary<int, int> componentIdMap)
             {
                 throw new NotSupportedException();
             }

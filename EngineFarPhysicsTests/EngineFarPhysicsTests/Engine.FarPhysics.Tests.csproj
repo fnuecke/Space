@@ -51,7 +51,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>TRACE;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS FARMATH</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -125,6 +125,9 @@
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\SphereStack.cs">
       <Link>Tests\SphereStack.cs</Link>
     </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\TheoJansen.cs">
+      <Link>Tests\TheoJansen.cs</Link>
+    </Compile>
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\VaryingFriction.cs">
       <Link>Tests\VaryingFriction.cs</Link>
     </Compile>
@@ -189,6 +192,10 @@
       <Project>{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}</Project>
       <Name>Engine.FarPhysics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\EngineRandom\Engine.Random.csproj">
       <Project>{ABEE1E15-1CDA-4BD1-B37B-3500D27A8A7E}</Project>
       <Name>Engine.Random</Name>
@@ -200,6 +207,10 @@
     <ProjectReference Include="..\..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
+      <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
+      <Name>Engine.XnaExtensions</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

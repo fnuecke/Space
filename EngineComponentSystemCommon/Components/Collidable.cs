@@ -180,36 +180,6 @@ namespace Engine.ComponentSystem.Common.Components
         #region Serialization / Hashing
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(CollisionGroups)
-                .Write(ShouldSweep)
-                .Write(PreviousPosition)
-                .Write(ContactList);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            CollisionGroups = packet.ReadUInt32();
-            ShouldSweep = packet.ReadBoolean();
-            PreviousPosition = packet.ReadFarPosition();
-            ContactList = packet.ReadInt32();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>

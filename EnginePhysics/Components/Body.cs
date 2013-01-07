@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Joints;
+using Engine.Physics.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
 using Engine.XnaExtensions;
@@ -41,6 +43,7 @@ namespace Engine.Physics.Components
 
         #region Types
 
+        /// <summary>The available body types.</summary>
         public enum BodyType
         {
             /// <summary>
@@ -77,9 +80,7 @@ namespace Engine.Physics.Components
             {
                 if (Manager != null)
                 {
-                    var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                    System.Diagnostics.Debug.Assert(physics != null);
-                    if (physics.IsLocked)
+                    if (Simulation.IsLocked)
                     {
                         throw new System.InvalidOperationException("Cannot change enabled state during update.");
                     }
@@ -94,13 +95,18 @@ namespace Engine.Physics.Components
 
                     if (value)
                     {
-                        // Mark so that contacts are created the next time step.
-                        physics.QueueForContactSearch(Entity);
+                        // Add our fixtures back to the index.
+                        Simulation.AddFixturesToIndex(this);
+
+                        // Contacts are created in the next update.
                     }
                     else
                     {
+                        // Remove all our fixtures from the index.
+                        Simulation.RemoveFixturesFromIndex(this);
+
                         // Free any contacts we're involved in.
-                        physics.RemoveContacts(Entity);
+                        Simulation.RemoveContacts(this);
                     }
                 }
                 else
@@ -115,30 +121,28 @@ namespace Engine.Physics.Components
         /// </summary>
         public BodyType Type
         {
-            get { return _type; }
+            get { return TypeInternal; }
             set
             {
-                var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                System.Diagnostics.Debug.Assert(physics != null);
-                if (physics.IsLocked)
+                if (Simulation.IsLocked)
                 {
                     throw new System.InvalidOperationException("Cannot change type during update.");
                 }
 
                 // Skip if nothing changed.
-                if (_type == value)
+                if (TypeInternal == value)
                 {
                     return;
                 }
 
-                _type = value;
+                TypeInternal = value;
 
                 ResetMassData();
 
-                if (_type == BodyType.Static)
+                if (TypeInternal == BodyType.Static)
                 {
-                    _linearVelocity = Vector2.Zero;
-                    _angularVelocity = 0.0f;
+                    LinearVelocityInternal = Vector2.Zero;
+                    AngularVelocityInternal = 0.0f;
                     Sweep.Angle0 = Sweep.Angle;
                     Sweep.CenterOfMass0 = Sweep.CenterOfMass;
                     SynchronizeFixtures();
@@ -149,11 +153,10 @@ namespace Engine.Physics.Components
                 Force = Vector2.Zero;
                 Torque = 0.0f;
 
-                // Delete the attached contacts.
-                physics.RemoveContacts(Entity);
-
-                // Mark so that contacts are created the next time step.
-                physics.QueueForContactSearch(Entity);
+                // Delete the attached contacts and mark so that contacts are created
+                // the next time step.
+                Simulation.RemoveContacts(this);
+                Simulation.TouchFixtures(this);
             }
         }
 
@@ -163,17 +166,14 @@ namespace Engine.Physics.Components
         /// </summary>
         public bool IsSleepAllowed
         {
-            get { return _isSleepAllowed; }
+            get { return IsSleepAllowedInternal; }
             set
             {
-                var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                System.Diagnostics.Debug.Assert(physics != null);
-                if (physics.IsLocked)
+                IsSleepAllowedInternal = value;
+                if (!value)
                 {
-                    throw new System.InvalidOperationException("Cannot change sleep allowed flag during update.");
+                    IsAwake = true;
                 }
-                
-                _isSleepAllowed = value;
             }
         }
 
@@ -182,23 +182,23 @@ namespace Engine.Physics.Components
         /// </summary>
         public bool IsAwake
         {
-            get { return _isAwake; }
+            get { return IsAwakeInternal; }
             internal set
             {
                 if (value)
                 {
-                    if (!_isAwake)
+                    if (!IsAwakeInternal)
                     {
-                        _isAwake = true;
+                        IsAwakeInternal = true;
                         SleepTime = 0.0f;
                     }
                 }
                 else
                 {
                     // Forcibly null any velocity when putting a body to sleep.
-                    _isAwake = false;
-                    _linearVelocity = Vector2.Zero;
-                    _angularVelocity = 0.0f;
+                    IsAwakeInternal = false;
+                    LinearVelocityInternal = Vector2.Zero;
+                    AngularVelocityInternal = 0.0f;
                     Force = Vector2.Zero;
                     Torque = 0.0f;
                 }
@@ -220,7 +220,9 @@ namespace Engine.Physics.Components
                 }
 
                 _isRotationFixed = value;
-                _angularVelocity = 0.0f;
+
+                AngularVelocityInternal = 0.0f;
+
                 ResetMassData();
             }
         }
@@ -235,48 +237,8 @@ namespace Engine.Physics.Components
         /// </summary>
         public bool IsBullet
         {
-            get { return _isBullet; }
-            set
-            {
-                var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                System.Diagnostics.Debug.Assert(physics != null);
-                if (physics.IsLocked)
-                {
-                    throw new System.InvalidOperationException("Cannot change bullet flag during update.");
-                }
-                
-                _isBullet = value;
-            }
-        }
-
-        /// <summary>
-        /// This bit mask representing the collision groups this component is
-        /// part of. Components sharing at least one group will not be tested
-        /// against each other.
-        /// </summary>
-        public uint CollisionGroups
-        {
-            get { return _collisionGroups; }
-            set
-            {
-                var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-                System.Diagnostics.Debug.Assert(physics != null);
-                if (physics.IsLocked)
-                {
-                    throw new System.InvalidOperationException("Cannot change collision groups during update.");
-                }
-
-                // Skip if nothing changed.
-                if (_collisionGroups == value)
-                {
-                    return;
-                }
-
-                _collisionGroups = value;
-
-                // Mark this body as changed to look for new contacts.
-                physics.QueueForContactSearch(Entity);
-            }
+            get { return IsBulletInternal; }
+            set { IsBulletInternal = value; }
         }
 
         /// <summary>
@@ -331,10 +293,10 @@ namespace Engine.Physics.Components
         /// </value>
         public Vector2 LinearVelocity
         {
-            get { return _linearVelocity; }
+            get { return LinearVelocityInternal; }
             set
             {
-                if (_type == BodyType.Static)
+                if (TypeInternal == BodyType.Static)
                 {
                     return;
                 }
@@ -344,7 +306,7 @@ namespace Engine.Physics.Components
                     IsAwake = true;
                 }
 
-                _linearVelocity = value;
+                LinearVelocityInternal = value;
             }
         }
 
@@ -356,10 +318,10 @@ namespace Engine.Physics.Components
         /// </value>
         public float AngularVelocity
         {
-            get { return _angularVelocity; }
+            get { return AngularVelocityInternal; }
             set
             {
-                if (_type == BodyType.Static)
+                if (TypeInternal == BodyType.Static)
                 {
                     return;
                 }
@@ -369,7 +331,7 @@ namespace Engine.Physics.Components
                     IsAwake = true;
                 }
 
-                _angularVelocity = value;
+                AngularVelocityInternal = value;
             }
         }
 
@@ -378,8 +340,8 @@ namespace Engine.Physics.Components
         /// </summary>
         public float LinearDamping
         {
-            get { return _linearDamping; }
-            set { _linearDamping = value; }
+            get { return LinearDampingInternal; }
+            set { LinearDampingInternal = value; }
         }
 
         /// <summary>
@@ -387,14 +349,14 @@ namespace Engine.Physics.Components
         /// </summary>
         public float AngularDamping
         {
-            get { return _angularDamping; }
-            set { _angularDamping = value; }
+            get { return AngularDampingInternal; }
+            set { AngularDampingInternal = value; }
         }
 
         /// <summary>
         /// Gets or sets the mass of this body.
         /// </summary>
-        public float Mass { get { return _mass; } }
+        public float Mass { get { return MassInternal; } }
 
         /// <summary>
         /// Get the rotational inertia of the body about the local origin.
@@ -404,7 +366,7 @@ namespace Engine.Physics.Components
         /// </value>
         public float Inertia
         {
-            get { return _inertia + _mass * Vector2.Dot(Sweep.LocalCenter, Sweep.LocalCenter); }
+            get { return _inertia + MassInternal * Vector2.Dot(Sweep.LocalCenter, Sweep.LocalCenter); }
         }
 
         /// <summary>
@@ -415,6 +377,22 @@ namespace Engine.Physics.Components
             get { return Manager.GetComponents(Entity, Fixture.TypeId); }
         }
 
+        /// <summary>
+        /// Gets the list of all joints attached to this body.
+        /// </summary>
+        public IEnumerable<Joint> Joints
+        {
+            get { return Simulation.GetJoints(this); }
+        }
+
+        /// <summary>
+        /// Gets the physics system driving the simulation we're part of.
+        /// </summary>
+        private PhysicsSystem Simulation
+        {
+            get { return Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem; }
+        }
+
         #endregion
 
         #region Fields
@@ -422,32 +400,27 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The type of this body.
         /// </summary>
-        internal BodyType _type;
+        internal BodyType TypeInternal;
 
         /// <summary>
         /// Whether this body is allowed to sleep.
         /// </summary>
-        internal bool _isSleepAllowed = true;
+        internal bool IsSleepAllowedInternal = true;
 
         /// <summary>
         /// Tracks whether this body is awake or not.
         /// </summary>
-        internal bool _isAwake = true;
+        internal bool IsAwakeInternal = true;
 
         /// <summary>
         /// Whether the rotation for this body is fixed or not.
         /// </summary>
-        internal bool _isRotationFixed;
+        private bool _isRotationFixed;
 
         /// <summary>
         /// Whether this body should act as a bullet, if dynamic.
         /// </summary>
-        internal bool _isBullet;
-
-        /// <summary>
-        /// The collision groups the body is in, as a bit mask.
-        /// </summary>
-        private uint _collisionGroups;
+        internal bool IsBulletInternal;
 
         /// <summary>
         /// Used by the solver to look up body data inside the island data
@@ -468,12 +441,12 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The linear velocity of the body, i.e. the directed speed at which it moves.
         /// </summary>
-        internal Vector2 _linearVelocity;
+        internal Vector2 LinearVelocityInternal;
 
         /// <summary>
         /// The angular velocity of this body, i.e. how fast it spins.
         /// </summary>
-        internal float _angularVelocity;
+        internal float AngularVelocityInternal;
 
         /// <summary>
         /// The force to apply to this body in the next update. This is reset
@@ -488,9 +461,20 @@ namespace Engine.Physics.Components
         internal float Torque;
 
         /// <summary>
+        /// Start of the list of joints attached to this body.
+        /// </summary>
+        internal int JointList = -1;
+
+        /// <summary>
+        /// Start of the list of contacts this body is involved in (i.e. any of its
+        /// fixtures are involved in).
+        /// </summary>
+        internal int ContactList = -1;
+
+        /// <summary>
         /// The mass of this body.
         /// </summary>
-        private float _mass;
+        internal float MassInternal;
 
         /// <summary>
         /// The inverse mass of this body (precomputed for performance).
@@ -510,12 +494,12 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The linear damping of the body.
         /// </summary>
-        internal float _linearDamping;
+        internal float LinearDampingInternal;
 
         /// <summary>
         /// The angular damping of the body.
         /// </summary>
-        internal float _angularDamping;
+        internal float AngularDampingInternal;
 
         /// <summary>
         /// Accumulates the total time the body has not moved (angular and
@@ -535,30 +519,31 @@ namespace Engine.Physics.Components
         /// <returns></returns>
         public override Component Initialize(Component other)
         {
-            System.Diagnostics.Debug.Assert(!((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked);
-
             base.Initialize(other);
 
             var otherBody = (Body)other;
 
-            _type = otherBody._type;
-            _collisionGroups = otherBody._collisionGroups;
-            _isSleepAllowed = otherBody._isSleepAllowed;
-            _isAwake = otherBody._isAwake;
-            _isBullet = otherBody._isBullet;
-            _mass = otherBody._mass;
-            _inertia = otherBody._inertia;
-            InverseMass = otherBody.InverseMass;
-            InverseInertia = otherBody.InverseInertia;
+            TypeInternal = otherBody.TypeInternal;
+            IsSleepAllowedInternal = otherBody.IsSleepAllowedInternal;
+            IsAwakeInternal = otherBody.IsAwakeInternal;
+            _isRotationFixed = otherBody._isRotationFixed;
+            IsBulletInternal = otherBody.IsBulletInternal;
+            IslandIndex = otherBody.IslandIndex;
             Transform = otherBody.Transform;
-            _linearVelocity = otherBody._linearVelocity;
-            _angularVelocity = otherBody._angularVelocity;
-            _linearDamping = otherBody._linearDamping;
-            _angularDamping = otherBody._angularDamping;
             Sweep = otherBody.Sweep;
-            SleepTime = otherBody.SleepTime;
+            LinearVelocityInternal = otherBody.LinearVelocityInternal;
+            AngularVelocityInternal = otherBody.AngularVelocityInternal;
             Force = otherBody.Force;
             Torque = otherBody.Torque;
+            JointList = otherBody.JointList;
+            ContactList = otherBody.ContactList;
+            MassInternal = otherBody.MassInternal;
+            InverseMass = otherBody.InverseMass;
+            _inertia = otherBody._inertia;
+            InverseInertia = otherBody.InverseInertia;
+            LinearDampingInternal = otherBody.LinearDampingInternal;
+            AngularDampingInternal = otherBody.AngularDampingInternal;
+            SleepTime = otherBody.SleepTime;
 
             return this;
         }
@@ -568,58 +553,14 @@ namespace Engine.Physics.Components
         /// mass recomputation, you will have to call <see cref="ResetMassData"/>
         /// to trigger that yourself.
         /// </summary>
+        /// <param name="position">The world position.</param>
+        /// <param name="angle">The angle.</param>
         /// <param name="type">The type.</param>
-        /// <returns></returns>
-        public Body Initialize(BodyType type)
-        {
-            _type = type;
-
-            if (_type == BodyType.Dynamic)
-            {
-                _mass = 1.0f;
-                InverseMass = 1.0f;
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Initializes the body with the specified collision groups.
-        /// </summary>
-        /// <param name="collisionGroups">The collision groups.</param>
-        /// <returns></returns>
-        public Body Initialize(uint collisionGroups)
-        {
-            _collisionGroups = collisionGroups;
-
-            return this;
-        }
-
-        /// <summary>
-        /// Initializes the body with the specified flags. This will not trigger
-        /// mass recomputation, you will have to call <see cref="ResetMassData"/>
-        /// to trigger that yourself.
-        /// </summary>
         /// <param name="fixedRotation">Whether the rotation of this body is fixed.</param>
         /// <param name="isBullet">Whether to set the body as a bullet.</param>
         /// <param name="allowSleep">Whether to allow the body to sleep.</param>
         /// <returns></returns>
-        public Body Initialize(bool fixedRotation, bool isBullet, bool allowSleep)
-        {
-            _isRotationFixed = fixedRotation;
-            _isBullet = isBullet;
-            _isSleepAllowed = allowSleep;
-
-            return this;
-        }
-
-        /// <summary>
-        /// Initializes the body with the specified position and angle.
-        /// </summary>
-        /// <param name="position">The world position.</param>
-        /// <param name="angle">The angle.</param>
-        /// <returns></returns>
-        public Body Initialize(WorldPoint position, float angle)
+        public Body Initialize(WorldPoint position, float angle = 0, BodyType type = BodyType.Static, bool fixedRotation = false, bool isBullet = false, bool allowSleep = true)
         {
             Transform.Translation = position;
             Transform.Rotation.Set(angle);
@@ -629,9 +570,33 @@ namespace Engine.Physics.Components
             Sweep.Angle0 = angle;
             Sweep.Angle = angle;
 
-            SynchronizeFixtures();
+            TypeInternal = type;
+
+            if (TypeInternal == BodyType.Dynamic)
+            {
+                MassInternal = 1.0f;
+                InverseMass = 1.0f;
+            }
+
+            _isRotationFixed = fixedRotation;
+            IsBulletInternal = isBullet;
+            IsSleepAllowedInternal = allowSleep;
 
             return this;
+        }
+
+        /// <summary>
+        /// Initializes the body with the specified position and angle.
+        /// </summary>
+        /// <param name="angle">The angle.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="fixedRotation">Whether the rotation of this body is fixed.</param>
+        /// <param name="isBullet">Whether to set the body as a bullet.</param>
+        /// <param name="allowSleep">Whether to allow the body to sleep.</param>
+        /// <returns></returns>
+        public Body Initialize(float angle = 0, BodyType type = BodyType.Static, bool fixedRotation = false, bool isBullet = false, bool allowSleep = true)
+        {
+            return Initialize(WorldPoint.Zero, angle, type, isBullet, allowSleep);
         }
 
         /// <summary>
@@ -642,25 +607,26 @@ namespace Engine.Physics.Components
         {
             base.Reset();
 
-            _collisionGroups = 0;
-            _isSleepAllowed = true;
-            _isAwake = true;
+            IsSleepAllowedInternal = true;
+            IsAwakeInternal = true;
             _isRotationFixed = false;
-            _isBullet = false;
-            _mass = 0;
-            _inertia = 0;
-            InverseMass = 0;
-            InverseInertia = 0;
+            IsBulletInternal = false;
+            IslandIndex = 0;
             Transform = WorldTransform.Identity;
-            _linearVelocity = Vector2.Zero;
-            _angularVelocity = 0;
-            _linearDamping = 0;
-            _angularDamping = 0;
             Sweep = new Sweep();
-            SleepTime = 0;
+            LinearVelocityInternal = Vector2.Zero;
+            AngularVelocityInternal = 0;
             Force = Vector2.Zero;
             Torque = 0;
-            IslandIndex = 0;
+            JointList = -1;
+            ContactList = -1;
+            MassInternal = 0;
+            InverseMass = 0;
+            _inertia = 0;
+            InverseInertia = 0;
+            LinearDampingInternal = 0;
+            AngularDampingInternal = 0;
+            SleepTime = 0;
         }
 
         #endregion
@@ -714,7 +680,9 @@ namespace Engine.Physics.Components
         /// <returns>The world velocity of a point.</returns>
         public Vector2 GetLinearVelocityFromWorldPoint(WorldPoint worldPoint)
         {
-            return _linearVelocity + Vector2Util.Cross(_angularVelocity, (Vector2)(worldPoint - Sweep.CenterOfMass));
+// ReSharper disable RedundantCast Necessary for FarPhysics.
+            return LinearVelocityInternal + Vector2Util.Cross(AngularVelocityInternal, (Vector2)(worldPoint - Sweep.CenterOfMass));
+// ReSharper restore RedundantCast
         }
 
         /// <summary>
@@ -738,7 +706,7 @@ namespace Engine.Physics.Components
         public void ApplyForce(Vector2 force, WorldPoint point, bool wake = true)
         {
             // Skip for non-dynamic bodies.
-            if (_type != BodyType.Dynamic)
+            if (TypeInternal != BodyType.Dynamic)
             {
                 return;
             }
@@ -753,7 +721,9 @@ namespace Engine.Physics.Components
             if (IsAwake)
             {
                 Force += force;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
                 Torque += Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), force);
+// ReSharper restore RedundantCast
             }
         }
 
@@ -765,7 +735,7 @@ namespace Engine.Physics.Components
         public void ApplyForceToCenter(Vector2 force, bool wake = true)
         {
             // Skip for non-dynamic bodies.
-            if (_type != BodyType.Dynamic)
+            if (TypeInternal != BodyType.Dynamic)
             {
                 return;
             }
@@ -793,7 +763,7 @@ namespace Engine.Physics.Components
         public void ApplyTorque(float torque, bool wake = true)
         {
             // Skip for non-dynamic bodies.
-            if (_type != BodyType.Dynamic)
+            if (TypeInternal != BodyType.Dynamic)
             {
                 return;
             }
@@ -822,7 +792,7 @@ namespace Engine.Physics.Components
         public void ApplyLinearImpulse(Vector2 impulse, WorldPoint point, bool wake = true)
         {
             // Skip for non-dynamic bodies.
-            if (_type != BodyType.Dynamic)
+            if (TypeInternal != BodyType.Dynamic)
             {
                 return;
             }
@@ -836,8 +806,10 @@ namespace Engine.Physics.Components
             // Only apply when awake.
             if (IsAwake)
             {
-                _linearVelocity += InverseMass * impulse;
-                _angularVelocity += InverseInertia * Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), impulse);
+                LinearVelocityInternal += InverseMass * impulse;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
+                AngularVelocityInternal += InverseInertia * Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), impulse);
+// ReSharper restore RedundantCast
             }
         }
 
@@ -849,7 +821,7 @@ namespace Engine.Physics.Components
         public void ApplyAngularImpulse(float impulse, bool wake = true)
         {
             // Skip for non-dynamic bodies.
-            if (_type != BodyType.Dynamic)
+            if (TypeInternal != BodyType.Dynamic)
             {
                 return;
             }
@@ -863,7 +835,7 @@ namespace Engine.Physics.Components
             // Only apply when awake.
             if (IsAwake)
             {
-                _angularVelocity += InverseInertia * impulse;
+                AngularVelocityInternal += InverseInertia * impulse;
             }
         }
 
@@ -878,9 +850,7 @@ namespace Engine.Physics.Components
         /// <param name="angle">The new world angle.</param>
         public void SetTransform(WorldPoint position, float angle)
         {
-            var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-            System.Diagnostics.Debug.Assert(physics != null);
-            if (physics.IsLocked)
+            if (Simulation.IsLocked)
             {
                 throw new System.InvalidOperationException("Cannot manually change position during update.");
             }
@@ -897,8 +867,7 @@ namespace Engine.Physics.Components
                 fixture.Synchronize();
             }
 
-            physics.RemoveContacts(Entity);
-            physics.QueueForContactSearch(Entity);
+            Simulation.FindContactsBeforeNextUpdate();
         }
 
         /// <summary>
@@ -911,27 +880,27 @@ namespace Engine.Physics.Components
         public void SetMassData(float mass, Vector2 center, float inertia)
         {
             // Do not allow changing a body's type during an update.
-            if (((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked)
+            if (Simulation.IsLocked)
             {
                 throw new System.InvalidOperationException("Cannot change mass data during update.");
             }
 
             // Ignore if we're not a dynamic body.
-            if (_type != BodyType.Dynamic)
+            if (TypeInternal != BodyType.Dynamic)
             {
                 return;
             }
 
             // Make sure we have a positive mass.
-            _mass = mass;
-            if (_mass <= 0)
+            MassInternal = mass;
+            if (MassInternal <= 0)
             {
-                _mass = 1;
+                MassInternal = 1;
                 InverseMass = 1;
             }
             else
             {
-                InverseMass = 1 / _mass;
+                InverseMass = 1 / MassInternal;
             }
 
             // Make sure we have a positive inertia.
@@ -942,7 +911,7 @@ namespace Engine.Physics.Components
             }
             else
             {
-                _inertia = inertia - _mass * center.LengthSquared();
+                _inertia = inertia - MassInternal * center.LengthSquared();
                 InverseInertia = 1 / _inertia;
             }
 
@@ -952,7 +921,9 @@ namespace Engine.Physics.Components
             Sweep.CenterOfMass0 = Sweep.CenterOfMass = Transform.ToGlobal(Sweep.LocalCenter);
 
             // Update center of mass velocity.
-            _linearVelocity += Vector2Util.Cross(_angularVelocity, (Vector2)(Sweep.CenterOfMass - oldCenter));
+// ReSharper disable RedundantCast Necessary for FarPhysics.
+            LinearVelocityInternal += Vector2Util.Cross(AngularVelocityInternal, (Vector2)(Sweep.CenterOfMass - oldCenter));
+// ReSharper restore RedundantCast
         }
 
         /// <summary>
@@ -963,14 +934,14 @@ namespace Engine.Physics.Components
         public void ResetMassData()
         {
             // Compute mass data from shapes. Each shape has its own density.
-            _mass = 0.0f;
+            MassInternal = 0.0f;
             InverseMass = 0.0f;
             _inertia = 0.0f;
             InverseInertia = 0.0f;
             Sweep.LocalCenter = Vector2.Zero;
 
             // Static and kinematic bodies have zero mass.
-            if (_type == BodyType.Static || _type == BodyType.Kinematic)
+            if (TypeInternal == BodyType.Static || TypeInternal == BodyType.Kinematic)
             {
                 Sweep.CenterOfMass0 = Transform.Translation;
                 Sweep.CenterOfMass = Transform.Translation;
@@ -978,13 +949,15 @@ namespace Engine.Physics.Components
                 return;
             }
 
-            System.Diagnostics.Debug.Assert(_type == BodyType.Dynamic);
+            System.Diagnostics.Debug.Assert(TypeInternal == BodyType.Dynamic);
 
             // Accumulate mass over all fixtures.
             var localCenter = Vector2.Zero;
             foreach (Fixture fixture in Fixtures)
             {
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (fixture.Density == 0)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     continue;
                 }
@@ -992,21 +965,21 @@ namespace Engine.Physics.Components
                 float mass, inertia;
                 Vector2 center;
                 fixture.GetMassData(out mass, out center, out inertia);
-                _mass += mass;
+                MassInternal += mass;
                 localCenter += mass * center;
                 _inertia += inertia;
             }
 
             // Compute center of mass.
-            if (_mass <= 0)
+            if (MassInternal <= 0)
             {
                 // Force all dynamic bodies to have a positive mass.
-                _mass = 1;
+                MassInternal = 1;
                 InverseMass = 1;
             }
             else
             {
-                InverseMass = 1 / _mass;
+                InverseMass = 1 / MassInternal;
                 localCenter *= InverseMass;
             }
 
@@ -1018,7 +991,7 @@ namespace Engine.Physics.Components
             else
             {
                 // Center the inertia about the center of mass.
-                _inertia -= _mass * Vector2.Dot(localCenter, localCenter);
+                _inertia -= MassInternal * Vector2.Dot(localCenter, localCenter);
                 InverseInertia = 1 / _inertia;
             }
 
@@ -1028,22 +1001,9 @@ namespace Engine.Physics.Components
             Sweep.CenterOfMass0 = Sweep.CenterOfMass = Transform.ToGlobal(Sweep.LocalCenter);
 
             // Update center of mass velocity.
-            _linearVelocity += Vector2Util.Cross(_angularVelocity, (Vector2)(Sweep.CenterOfMass - oldCenter));
-        }
-
-        /// <summary>
-        /// Determines whether the two bodies should the collide, based on their
-        /// collision groups.
-        /// </summary>
-        /// <param name="other">The other body.</param>
-        /// <returns>Whether to check for collision between the tow.</returns>
-        internal bool ShouldCollide(Body other)
-        {
-            return
-                // At least one body should be dynamic.
-                (_type == BodyType.Dynamic || other._type == BodyType.Dynamic) &&
-                // Things that do not share at least one group collide.
-                (_collisionGroups & other._collisionGroups) == 0;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
+            LinearVelocityInternal += Vector2Util.Cross(AngularVelocityInternal, (Vector2)(Sweep.CenterOfMass - oldCenter));
+// ReSharper restore RedundantCast
         }
 
         /// <summary>
@@ -1110,57 +1070,9 @@ namespace Engine.Physics.Components
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            System.Diagnostics.Debug.Assert(!((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked);
+            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
 
-            return base.Packetize(packet)
-                .Write((byte)_type)
-                .Write(_isSleepAllowed)
-                .Write(_isAwake)
-                .Write(_isRotationFixed)
-                .Write(_isBullet)
-                .Write(_collisionGroups)
-                .Write(Transform)
-                .Write(Sweep)
-                .Write(_linearVelocity)
-                .Write(_angularVelocity)
-                .Write(Force)
-                .Write(Torque)
-                .Write(_mass)
-                .Write(_inertia)
-                .Write(_linearDamping)
-                .Write(_angularDamping)
-                .Write(SleepTime);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            System.Diagnostics.Debug.Assert(!((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked);
-
-            base.Depacketize(packet);
-
-            _type = (BodyType)packet.ReadByte();
-            _isSleepAllowed = packet.ReadBoolean();
-            _isAwake = packet.ReadBoolean();
-            _isRotationFixed = packet.ReadBoolean();
-            _isBullet = packet.ReadBoolean();
-            _collisionGroups = packet.ReadUInt32();
-            Transform = packet.ReadWorldTransform();
-            Sweep = packet.ReadSweep();
-            _linearVelocity = packet.ReadVector2();
-            _angularVelocity = packet.ReadSingle();
-            Force = packet.ReadVector2();
-            Torque = packet.ReadSingle();
-            _mass = packet.ReadSingle();
-            InverseMass = 1 / _mass;
-            _inertia = packet.ReadSingle();
-            InverseInertia = 1 / _inertia;
-            _linearDamping = packet.ReadSingle();
-            _angularDamping = packet.ReadSingle();
-            SleepTime = packet.ReadSingle();
+            return base.Packetize(packet);
         }
 
         /// <summary>
@@ -1170,27 +1082,62 @@ namespace Engine.Physics.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
-            System.Diagnostics.Debug.Assert(!((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).IsLocked);
+            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
 
             base.Hash(hasher);
 
             hasher
-                .Put((byte)_type)
-                .Put(_isSleepAllowed)
-                .Put(_isAwake)
-                .Put(_isBullet)
-                .Put(_collisionGroups)
-                .Put(Transform) // TODO
-                .Put(Sweep) // TODO
-                .Put(_linearVelocity)
-                .Put(_angularVelocity)
+                .Put((byte)TypeInternal)
+                .Put(IsSleepAllowedInternal)
+                .Put(IsAwakeInternal)
+                .Put(IsBulletInternal)
+                .Put(IslandIndex)
+                .Put(Transform)
+                .Put(Sweep)
+                .Put(LinearVelocityInternal)
+                .Put(AngularVelocityInternal)
                 .Put(Force)
                 .Put(Torque)
-                .Put(_mass)
+                .Put(JointList)
+                .Put(ContactList)
+                .Put(MassInternal)
                 .Put(_inertia)
-                .Put(_linearDamping)
-                .Put(_angularDamping)
+                .Put(LinearDampingInternal)
+                .Put(AngularDampingInternal)
                 .Put(SleepTime);
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() +
+                   ", BodyType=" + TypeInternal +
+                   ", IsSleepAllowed=" + IsSleepAllowedInternal +
+                   ", IsAwake=" + IsAwakeInternal +
+                   ", IsBullet=" + IsBulletInternal +
+                   ", IslandIndex=" + IslandIndex +
+                   ", Transform=" + Transform +
+                   ", Sweep=" + Sweep +
+                   ", LinearVelocity=" + LinearVelocityInternal.X.ToString(CultureInfo.InvariantCulture) + ":" + LinearVelocityInternal.Y.ToString(CultureInfo.InvariantCulture) +
+                   ", AngularVelocity=" + AngularVelocityInternal.ToString(CultureInfo.InvariantCulture) +
+                   ", Force=" + Force.X.ToString(CultureInfo.InvariantCulture) + ":" + Force.Y.ToString(CultureInfo.InvariantCulture) +
+                   ", Torque=" + Torque.ToString(CultureInfo.InvariantCulture) +
+                   ", JointList=" + JointList +
+                   ", ContactList=" + ContactList +
+                   ", Mass=" + MassInternal.ToString(CultureInfo.InvariantCulture) +
+                   ", Inertia=" + _inertia.ToString(CultureInfo.InvariantCulture) +
+                   ", LinearDamping=" + LinearDampingInternal.ToString(CultureInfo.InvariantCulture) +
+                   ", AngularDamping=" + AngularDampingInternal.ToString(CultureInfo.InvariantCulture) +
+                   ", SleepTime=" + SleepTime.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

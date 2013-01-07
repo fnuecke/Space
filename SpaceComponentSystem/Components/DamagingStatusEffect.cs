@@ -169,44 +169,6 @@ namespace Space.ComponentSystem.Components
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write((byte)Type)
-                .Write(MinValue)
-                .Write(MaxValue)
-                .Write(ChanceToCrit)
-                .Write(CriticalDamageMultiplier)
-                .Write(Interval)
-                .Write(Owner)
-                .Write(Delay);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Engine.Serialization.Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Type = (DamageType)packet.ReadByte();
-            MinValue = packet.ReadSingle();
-            MaxValue = packet.ReadSingle();
-            ChanceToCrit = packet.ReadSingle();
-            CriticalDamageMultiplier = packet.ReadSingle();
-            Interval = packet.ReadInt32();
-            Owner = packet.ReadInt32();
-            Delay = packet.ReadInt32();
-        }
-
-        /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>

@@ -2,15 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Engine.Serialization;
+using Engine.Util;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
 #if FARMATH
 using Engine.Collections;
+using Engine.FarMath;
 using TPoint = Engine.FarMath.FarPosition;
 using TSingle = Engine.FarMath.FarValue;
 using TRectangle = Engine.FarMath.FarRectangle;
 #else
+using Engine.Math;
 using TPoint = Microsoft.Xna.Framework.Vector2;
 using TSingle = System.Single;
 using TRectangle = Engine.Math.RectangleF;
@@ -56,7 +60,7 @@ namespace Engine.Collections
     /// </para>
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>
+    public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable, ICopyable<DynamicQuadTree<T>>
     {
         #region Properties
 
@@ -71,6 +75,20 @@ namespace Engine.Collections
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// A callback that can be used to write an object stored in the tree to
+        /// a packet for serialization.
+        /// </summary>
+        [PacketizerIgnore]
+        private readonly Action<Packet, T> _packetizer;
+
+        /// <summary>
+        /// A callback that can be used to read an object stored in the tree from
+        /// a packet for deserialization.
+        /// </summary>
+        [PacketizerIgnore]
+        private readonly Func<Packet, T> _depacketizer;
 
         /// <summary>
         /// The number of items in a single cell allowed before we try splitting it.
@@ -104,12 +122,14 @@ namespace Engine.Collections
         /// <summary>
         /// The root node of the tree.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private Node _root;
 
         /// <summary>
         /// Mapping back from value to entry, for faster value to entry lookup
         /// when removing or updating items.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private readonly Dictionary<T, Entry> _values = new Dictionary<T, Entry>();
 
         #endregion
@@ -128,11 +148,15 @@ namespace Engine.Collections
         /// <param name="boundExtension">The amount by which to inflate bounds.</param>
         /// <param name="movingBoundMultiplier">The multiplier for moving bound
         /// displacement used for predictive bound inflation.</param>
+        /// <param name="packetizer">A function that can be used to packetize the
+        /// type stored in the tree.</param>
+        /// <param name="depacketizer">A function that can be used to depacketize
+        /// the type stored in the tree.</param>
         /// <exception cref="T:System.ArgumentException">
         /// One or both of the specified parameters are invalid (must be larger
         /// than zero).
         ///   </exception>
-        public DynamicQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f)
+        public DynamicQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f, Action<Packet, T> packetizer = null, Func<Packet, T> depacketizer = null)
         {
             if (maxEntriesPerNode < 1)
             {
@@ -146,6 +170,8 @@ namespace Engine.Collections
             _minNodeBounds = minNodeBounds;
             _boundExtension = boundExtension;
             _movingBoundMultiplier = movingBoundMultiplier;
+            _packetizer = packetizer;
+            _depacketizer = depacketizer;
 
             Clear();
         }
@@ -325,15 +351,20 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="center">The query point near which to get entries.</param>
         /// <param name="radius">The maximum distance an entry may be away
-        ///   from the query point to be returned.</param>
+        /// from the query point to be returned.</param>
         /// <param name="results"> </param>
         /// <remarks>
         /// This checks for intersections of the query circle and the bounds of
         /// the entries in the index. Intersections (i.e. bounds not fully contained
         /// in the circle) will be returned, too.
         /// </remarks>
-        public void Find(TPoint center, float radius, ref ISet<T> results)
+        public void Find(TPoint center, float radius, ISet<T> results)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException("results");
+            }
+
             Accumulate(_root, _bounds,
                 IntersectionExtensions.BoundsFor(center, radius),
                 center, radius, results);
@@ -356,6 +387,11 @@ namespace Engine.Collections
         /// </remarks>
         public bool Find(TPoint center, float radius, SimpleQueryCallback<T> callback)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
             return Accumulate(_root, _bounds,
                 IntersectionExtensions.BoundsFor(center, radius),
                 center, radius, callback);
@@ -368,8 +404,13 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results"> </param>
-        public void Find(TRectangle rectangle, ref ISet<T> results)
+        public void Find(TRectangle rectangle, ISet<T> results)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException("results");
+            }
+
             Accumulate(_root, _bounds, rectangle, results);
         }
 
@@ -383,6 +424,11 @@ namespace Engine.Collections
         /// <returns></returns>
         public bool Find(TRectangle rectangle, SimpleQueryCallback<T> callback)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
             return Accumulate(_root, _bounds, rectangle, callback);
         }
 
@@ -395,8 +441,13 @@ namespace Engine.Collections
         /// <param name="t">The fraction along the line to consider.</param>
         /// <param name="results">The list to put the results into.</param>
         /// <returns></returns>
-        public void Find(TPoint start, TPoint end, float t, ref ISet<T> results)
+        public void Find(TPoint start, TPoint end, float t, ISet<T> results)
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException("results");
+            }
+
             Accumulate(_root, _bounds,
                 IntersectionExtensions.BoundsFor(start, end, t),
                 start, end, t, results);
@@ -420,6 +471,11 @@ namespace Engine.Collections
         /// <returns></returns>
         public bool Find(TPoint start, TPoint end, float t, LineQueryCallback<T> callback)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
             // Pass bounds and t as ref because they may change during the query.
             var queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
             return Accumulate(_root, _bounds, ref queryBounds, start, end, ref t, callback);
@@ -515,6 +571,298 @@ namespace Engine.Collections
 
                 // Return data for this node.
                 yield return Tuple.Create(bounds, node.GetEntryEnumerable());
+            }
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        [Packetize]
+        public Packet Packetize(Packet packet)
+        {
+            if (_packetizer == null)
+            {
+                throw new InvalidOperationException("No serializer specified.");
+            }
+
+            packet.Write(_values.Count);
+
+            // Entry serialization as a two step process: first write the values and
+            // bounds which will allow us to generate the entry objects when deserializing.
+            foreach (var entry in _values.Values)
+            {
+                _packetizer(packet, entry.Value);
+                packet.Write(entry.Bounds);
+            }
+            // In the second pass, write the keys of the referenced other entries,
+            // which can then be filled in into the created objects.
+            foreach (var entry in _values.Values)
+            {
+                _packetizer(packet, entry.Value);
+                if (entry.Next != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, entry.Next.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+                if (entry.Previous != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, entry.Previous.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+            }
+
+            var stack = new Stack<Node>();
+            stack.Push(_root);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+
+                packet.Write(node.EntryCount);
+
+                if (node.FirstChildEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.FirstChildEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                if (node.LastChildEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.LastChildEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                if (node.FirstEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.FirstEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                if (node.LastEntry != null)
+                {
+                    packet.Write(true);
+                    _packetizer(packet, node.LastEntry.Value);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
+
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (node.Children[i] != null)
+                    {
+                        packet.Write(true);
+                        stack.Push(node.Children[i]);
+                    }
+                    else
+                    {
+                        packet.Write(false);
+                    }
+                }
+            }
+
+            return packet;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
+        public void PostDepacketize(Packet packet)
+        {
+            if (_depacketizer == null)
+            {
+                throw new InvalidOperationException("No deserializer specified.");
+            }
+
+            _values.Clear();
+            var count = packet.ReadInt32();
+            for (var i = 0; i < count; ++i)
+            {
+                var value = _depacketizer(packet);
+#if FARMATH
+                var bounds = packet.ReadFarRectangle();
+#else
+                var bounds = packet.ReadRectangleF();
+#endif
+
+                var entry = new Entry {Bounds = bounds, Value = value};
+                _values[value] = entry;
+            }
+            for (var i = 0; i < count; ++i)
+            {
+                var current = _depacketizer(packet);
+                if (packet.ReadBoolean())
+                {
+                    // Got a next value.
+                    var next = _depacketizer(packet);
+                    _values[current].Next = _values[next];
+                }
+                if (packet.ReadBoolean())
+                {
+                    // Got a previous value.
+                    var previous = _depacketizer(packet);
+                    _values[current].Previous = _values[previous];
+                }
+            }
+
+            var stack = new Stack<Tuple<Node, int>>();
+            _root = new Node();
+            DepacketizeNode(packet, _root, stack);
+            while (stack.Count > 0)
+            {
+                var pair = stack.Pop();
+                var parent = pair.Item1;
+                var childIndex = pair.Item2;
+                var child = parent.Children[childIndex] = new Node {Parent = parent};
+                DepacketizeNode(packet, child, stack);
+            }
+        }
+
+        /// <summary>
+        /// Utility method for parsing data from a single node.
+        /// </summary>
+        private void DepacketizeNode(Packet packet, Node node, Stack<Tuple<Node, int>> stack)
+        {
+            node.EntryCount = packet.ReadInt32();
+            if (packet.ReadBoolean())
+            {
+                node.FirstChildEntry = _values[_depacketizer(packet)];
+            }
+            if (packet.ReadBoolean())
+            {
+                node.LastChildEntry = _values[_depacketizer(packet)];
+            }
+            if (packet.ReadBoolean())
+            {
+                node.FirstEntry = _values[_depacketizer(packet)];
+            }
+            if (packet.ReadBoolean())
+            {
+                node.LastEntry = _values[_depacketizer(packet)];
+            }
+            for (var i = 0; i < 4; ++i)
+            {
+                if (packet.ReadBoolean())
+                {
+                    stack.Push(Tuple.Create(node, i));
+                }
+            }
+        }
+
+        #endregion
+
+        #region Copying
+        
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public DynamicQuadTree<T> NewInstance()
+        {
+            return new DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds,
+                                          _boundExtension, _movingBoundMultiplier,
+                                          _packetizer, _depacketizer);
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public void CopyInto(DynamicQuadTree<T> into)
+        {
+            Copyable.CopyInto(this, into);
+
+            // Create a shallow copy in the first pass, link stuff in the second.
+            into._values.Clear();
+            foreach (var entry in _values)
+            {
+                into._values.Add(entry.Key, new Entry
+                {
+                    Bounds = entry.Value.Bounds,
+                    Value = entry.Value.Value
+                });
+            }
+            foreach (var entry in _values)
+            {
+                if (entry.Value.Next != null)
+                {
+                    into._values[entry.Key].Next = into._values[entry.Value.Next.Value];
+                }
+                if (entry.Value.Previous != null)
+                {
+                    into._values[entry.Key].Previous = into._values[entry.Value.Previous.Value];
+                }
+            }
+
+            // Now copy the actual tree. We keep a stack of nodes we still have to copy,
+            // together with the already created copy of the node in the new tree that
+            // we need to initialize.
+            var stack = new Stack<Tuple<Node, Node>>();
+            into._root = new Node();
+            stack.Push(Tuple.Create(_root, into._root));
+            while (stack.Count > 0)
+            {
+                var pair = stack.Pop();
+                var source = pair.Item1;
+                var target = pair.Item2;
+
+                target.EntryCount = source.EntryCount;
+                if (source.FirstChildEntry != null)
+                {
+                    target.FirstChildEntry = into._values[source.FirstChildEntry.Value];
+                }
+                if (source.LastChildEntry != null)
+                {
+                    target.LastChildEntry = into._values[source.LastChildEntry.Value];
+                }
+                if (source.FirstEntry != null)
+                {
+                    target.FirstEntry = into._values[source.FirstEntry.Value];
+                }
+                if (source.LastEntry != null)
+                {
+                    target.LastEntry = into._values[source.LastEntry.Value];
+                }
+
+                for (var i = 0; i < 4; ++i)
+                {
+                    if (source.Children[i] != null)
+                    {
+                        target.Children[i] = new Node {Parent = target};
+                        stack.Push(Tuple.Create(source.Children[i], target.Children[i]));
+                    }
+                }
             }
         }
 
@@ -1827,7 +2175,9 @@ namespace Engine.Collections
                                     t = fraction;
                                     queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
                                 }
-                                else if (fraction == 0f) // Intentional, must be set to zero to trigger.
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional, must be set to zero to trigger.
+                                else if (fraction == 0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                                 {
                                     return false;
                                 }
@@ -1853,7 +2203,9 @@ namespace Engine.Collections
                                     t = fraction;
                                     queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
                                 }
-                                else if (fraction == 0f) // Intentional, must be set to zero to trigger.
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional, must be set to zero to trigger.
+                                else if (fraction == 0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                                 {
                                     return false;
                                 }
@@ -1886,7 +2238,9 @@ namespace Engine.Collections
                                     t = fraction;
                                     queryBounds = IntersectionExtensions.BoundsFor(start, end, t);
                                 }
-                                else if (fraction == 0f) // Intentional, must be set to zero to trigger.
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional, must be set to zero to trigger.
+                                else if (fraction == 0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                                 {
                                     return false;
                                 }

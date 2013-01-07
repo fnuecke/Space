@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.Collections;
-using Engine.Physics.Detail.Collision;
-using Engine.Physics.Systems;
+using Engine.Physics.Collision;
+using Engine.Physics.Contacts;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -20,17 +20,15 @@ namespace Engine.Physics.Messages
         /// <summary>
         /// The contact for which this message was sent.
         /// </summary>
-        public PhysicsSystem.IContact Contact;
+        public Contact Contact;
 
         /// <summary>
         /// The old manifold state.
         /// </summary>
         internal Manifold OldManifold;
 
-        /// <summary>
-        /// Computes the world manifold data for this contact. This is relatively
-        /// expensive, so use with care.
-        /// </summary>
+        /// <summary>Computes the world manifold data for this contact. This is relatively
+        /// expensive, so use with care.</summary>
         /// <param name="normal">The world contact normal.</param>
         /// <param name="points">The contact points.</param>
         public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
@@ -50,10 +48,9 @@ namespace Engine.Physics.Messages
             var radiusB = Contact.FixtureB.Radius;
 
             FixedArray2<WorldPoint> worldPoints;
-            Detail.Contacts.Contact.ComputeWorldManifold(OldManifold,
-                                                         transformA, radiusA,
-                                                         transformB, radiusB,
-                                                         out normal, out worldPoints);
+            OldManifold.ComputeWorldManifold(transformA, radiusA,
+                                             transformB, radiusB,
+                                             out normal, out worldPoints);
             worldPoints.Count = OldManifold.PointCount;
             points = worldPoints;
         }

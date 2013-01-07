@@ -32,6 +32,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// A list of stations this spawner may send ships to.
         /// </summary>
+        [PacketizerIgnore]
         public readonly HashSet<int> Targets = new HashSet<int>();
 
         /// <summary>
@@ -99,10 +100,6 @@ namespace Space.ComponentSystem.Components
                 packet.Write(item);
             }
 
-            packet
-                .Write(SpawnInterval)
-                .Write(Cooldown);
-
             return packet;
         }
 
@@ -110,19 +107,16 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            int numTargets = packet.ReadInt32();
             Targets.Clear();
-            for (int i = 0; i < numTargets; i++)
+            var numTargets = packet.ReadInt32();
+            for (var i = 0; i < numTargets; i++)
             {
                 Targets.Add(packet.ReadInt32());
             }
-
-            SpawnInterval = packet.ReadInt32();
-            Cooldown = packet.ReadInt32();
         }
 
         /// <summary>

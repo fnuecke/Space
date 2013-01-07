@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem;
@@ -33,7 +34,7 @@ namespace Space.Session
         /// fundamentally so that we can handle files differently. This is
         /// the version we write to new snapshots.
         /// </summary>
-        private const int Version = 7;
+        private const int Version = 8;
 
         /// <summary>
         /// Header for our save game files.
@@ -91,6 +92,7 @@ namespace Space.Session
         /// <summary>
         /// The serialized character data.
         /// </summary>
+        [PacketizerCreate]
         private Packet _data;
 
         #endregion
@@ -120,7 +122,7 @@ namespace Space.Session
         {
             if (InvalidCharPattern.IsMatch(name))
             {
-                throw new ArgumentException("Invalid profile name, contains invalid character.", "name");
+                throw new ArgumentException(@"Invalid profile name, contains invalid character.", "name");
             }
 
             // Save name and class, initialization will be done when restore
@@ -144,7 +146,7 @@ namespace Space.Session
         {
             if (InvalidCharPattern.IsMatch(name))
             {
-                throw new ArgumentException("Invalid profile name, contains invalid character.", "name");
+                throw new ArgumentException(@"Invalid profile name, contains invalid character.", "name");
             }
 
             // Figure out the path, check if it's valid.
@@ -154,7 +156,7 @@ namespace Space.Session
 
             if (!File.Exists(profilePath))
             {
-                throw new ArgumentException("Invalid profile name, no such file.", "name");
+                throw new ArgumentException(@"Invalid profile name, no such file.", "name");
             }
 
             try
@@ -307,15 +309,15 @@ namespace Space.Session
         /// </summary>
         /// <param name="manager">The component system manager.</param>
         /// <param name="avatar">The avatar to take a snapshot of.</param>
-        public void Capture(int avatar, IManager manager)
+        public void Capture(IManager manager, int avatar)
         {
-            if (avatar < 1)
-            {
-                throw new ArgumentException("Invalid avatar specified.", "avatar");
-            }
             if (manager == null)
             {
                 throw new ArgumentNullException("manager");
+            }
+            if (avatar < 1)
+            {
+                throw new ArgumentException(@"Invalid avatar specified.", "avatar");
             }
 
             // Get the elements we need to save.
@@ -333,7 +335,7 @@ namespace Space.Session
                 equipment == null ||
                 inventory == null)
             {
-                throw new ArgumentException("Invalid avatar specified.", "avatar");
+                throw new ArgumentException(@"Invalid avatar specified.", "avatar");
             }
 
             // Make the actual snapshot via serialization.
@@ -363,53 +365,58 @@ namespace Space.Session
             // the base class (as we don't need that).
             attributes.PacketizeLocal(_data);
 
-            // Store the equipment tree.
-            foreach (var slot in equipment.AllSlots)
+            // Store the equipment tree. We do this by writing all actually equipped
+            // items and their current id, and the id of the item that is now their
+            // parent. This allows connecting them back after deserializing them into
+            // new entities with different ids.
+            _data.Write(equipment.AllItems.Count());
+            foreach (var slot in equipment.AllSlots.Where(s => s.Item > 0))
             {
-                _data.Write(slot.Item);
-                if (slot.Item > 0)
-                {
-                    _data.Write(slot.Entity);
-                    manager.PacketizeEntity(slot.Item, _data);
-                }
+                // Write old id of containing slot and id of stored item.
+                _data.Write(slot.Id);
+                manager.PacketizeEntity(slot.Item, _data);
             }
 
-            // Track items and their slots.
-            var itemSlots = new List<int>();
-            var items = new List<int>();
-
-            // And finally, the inventory. Same as with the inventory, we have
-            // to serialize the actual items in it.
-            for (var i = 0; i < inventory.Capacity; i++)
+            // And finally, the inventory. Same as with the equipment, we have
+            // to serialize the actual items in it. This is not as complicated
+            // as the equipment, though, as it's not a tree, just a plain list.
+            _data.Write(inventory.Count);
+            _data.Write(inventory.IsReadOnly);
+            if (inventory.IsReadOnly)
             {
-                var item = inventory[i];
-                if (item > 0)
+                // Fixed length inventory, write capacity and index for each item.
+                _data.Write(inventory.Capacity);
+                for (var slot = 0; slot < inventory.Capacity; ++slot)
                 {
-                    itemSlots.Add(i);
-                    items.Add(item);
+                    var item = inventory[slot];
+                    if (item > 0)
+                    {
+                        _data.Write(slot);
+                        manager.PacketizeEntity(item, _data);
+                    }
                 }
             }
-
-            // Write the number of items in the inventory and actual items.
-            _data.Write(items.Count);
-            for (var i = 0; i < items.Count; i++)
+            else
             {
-                _data.Write(itemSlots[i]);
-                manager.PacketizeEntity(items[i], _data);
+                // List inventory, just dump all the items.
+                foreach (var item in inventory)
+                {
+                    manager.PacketizeEntity(item, _data);
+                }
             }
         }
 
         /// <summary>
         /// Restores a character snapshot stored in this profile.
         /// </summary>
-        /// <param name="playerNumber">The number of the player in the game
-        /// he is restored to.</param>
         /// <param name="manager">The entity manager to add the restored
         /// entities to.</param>
+        /// <param name="playerNumber">The number of the player in the game
+        /// he is restored to.</param>
         /// <returns>
         /// The restored avatar.
         /// </returns>
-        public int Restore(int playerNumber, IManager manager)
+        public int Restore(IManager manager, int playerNumber)
         {
             if (manager == null)
             {
@@ -431,7 +438,7 @@ namespace Space.Session
                 switch (_data.ReadInt32())
                 {
                     case Version:
-                        return Restore0(playerNumber, manager);
+                        return Restore0(manager, playerNumber);
 
                     default:
                         Logger.Error("Unknown profile version, using default.");
@@ -445,7 +452,7 @@ namespace Space.Session
 
             // Restore a default profile and return it.
             Reset();
-            return Restore(playerNumber, manager);
+            return Restore(manager, playerNumber);
         }
 
         #region Restore implementations
@@ -453,10 +460,9 @@ namespace Space.Session
         /// <summary>
         /// Load saves of version 0.
         /// </summary>
-        private int Restore0(int playerNumber, IManager manager)
+        private int Restore0(IManager manager, int playerNumber)
         {
-            var avatar = 0;
-            var items = new List<int>();
+            var undo = new Stack<Action>();
             try
             {
                 // Read the player's class and create the ship.
@@ -467,7 +473,8 @@ namespace Space.Session
                 var position = _data.ReadFarPosition();
 
                 // Create the ship.
-                avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
+                var avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
+                undo.Push(() => manager.RemoveEntity(avatar));
 
                 // Get the elements we need to save.
                 var attributes = (Attributes<AttributeType>)manager.GetComponent(avatar, Attributes<AttributeType>.TypeId);
@@ -475,13 +482,15 @@ namespace Space.Session
                 var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
                 var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
 
-                // Clean out equipment.
+                // Clean out default equipment.
                 if (equipment.Item > 0)
                 {
+                    // This will recursively delete all items in child slots.
                     manager.RemoveEntity(equipment.Item);
                 }
 
-                // Clear inventory.
+                // Clear default inventory. Iterate backwards to be compatible with
+                // both fixed and flexible length inventories.
                 for (var i = inventory.Capacity - 1; i >= 0; --i)
                 {
                     var item = inventory[i];
@@ -497,70 +506,74 @@ namespace Space.Session
                 experience.Enabled = true;
 
                 // Restore attributes. Use special packetizer implementation only
-                // adjusting the actual attribute data, not the base data.
+                // adjusting the actual attribute data, not the base data such as
+                // entity id (which we want to keep).
                 attributes.DepacketizeLocal(_data);
 
                 // Disable recomputation while fixing equipped item ids.
                 attributes.Enabled = false;
 
-                // Restore equipment.
+                // Restore equipment. This whole part is a bit messy. We first have to
+                // read back all stored items, then link them back together the way they
+                // were before. To do this without breaking the simulation in case
+                // something goes wrong, we store those links in an extra dictionary and
+                // set all references to zero until we have all items. This dictionary
+                // maps the new item id to the old slot id the item was in. We get the
+                // translation of the old component ids to the new ones from the
+                // depacketizing operation and accumulate all changes in an extra map.
                 var itemIdMapping = new Dictionary<int, int>();
-                var slotsRemaining = 1;
-                while (slotsRemaining-- > 0)
+                // This is used to get the change in component ids from reading the item
+                // entities back after serialization.
+                var componentIdMap = new Dictionary<int, int>();
+                // See how many items we can expect.
+                var equipmentCount = _data.ReadInt32();
+                for (var i = 0; i < equipmentCount; ++i)
                 {
-                    var oldItemId = _data.ReadInt32();
-                    if (oldItemId <= 0)
+                    // Read old ids and item entity.
+                    var oldSlotId = _data.ReadInt32();
+                    var newItemId = manager.DepacketizeEntity(_data, componentIdMap);
+                    itemIdMapping.Add(newItemId, oldSlotId);
+
+                    // Null out any slot references to avoid trying to remove non-existent
+                    // stuff on undo (when something else fails).
+                    foreach (ItemSlot slot in manager.GetComponents(newItemId, ItemSlot.TypeId))
                     {
-                        continue;
+                        slot.SetItemUnchecked(0);
                     }
 
-                    // Got an item in this slot, restore it.
-                    var parentItemId = _data.ReadInt32();
-                    int newItemId;
-                    try
-                    {
-                        newItemId = manager.DepacketizeEntity(_data);
-                    }
-                    catch (Exception)
-                    {
-                        // Failed loading, but don't abort because otherwise the whole system
-                        // will blow up -- we're in a pretty unstable situation here, because
-                        // the item slots point to non-existant entities!
-                        newItemId = 0;
-                    }
+                    // Push undo command.
+                    undo.Push(() => manager.RemoveEntity(newItemId));
+                }
 
-                    // If we have no mappings yet, this was the old equipment node.
-                    if (itemIdMapping.Count == 0)
+                // No rebuild the equipment tree by restoring the links.
+                foreach (var entry in itemIdMapping)
+                {
+                    // Get the new slot id by looking up the new component id based on the old one.
+                    // There's one special case: the slot is not in our component map. This means
+                    // the slot was not on one of the equipped items, and therefore has to be
+                    // our equipment.
+                    var newItemId = entry.Key;
+                    var oldSlotId = entry.Value;
+                    if (componentIdMap.ContainsKey(oldSlotId))
                     {
-                        itemIdMapping.Add(parentItemId, equipment.Entity);
-                        equipment.Item = newItemId;
+                        // Known component, so it has to be a slot on an item.
+                        var newSlot = (ItemSlot)manager.GetComponentById(componentIdMap[oldSlotId]);
+
+                        // Set the slot's content to the item's new id.
+                        newSlot.SetItemUnchecked(newItemId);
+
+                        // Undo linking for entity removal above (to avoid duplicate removals).
+                        undo.Push(() => newSlot.SetItemUnchecked(0));
                     }
                     else
                     {
-                        // Inner node. Adjust slot in parent pointing to old id.
-                        foreach (var component in manager.GetComponents(itemIdMapping[parentItemId], ItemSlot.TypeId))
-                        {
-                            var slot = (ItemSlot)component;
-                            if (slot.Item == oldItemId)
-                            {
-                                // This is the one.
-                                slot.SetItemUnchecked(newItemId);
-                                break;
-                            }
-                        }
-                    }
+                        // Unknown, so it has to be our equipment.
+                        System.Diagnostics.Debug.Assert(equipment.Item == 0, "Got multiple equipment tree roots.");
+                        equipment.SetItemUnchecked(newItemId);
 
-                    // Queue reads for all child slots, unless this item failed loading.
-                    if (newItemId > 0)
-                    {
-                        foreach (var component in manager.GetComponents(newItemId, ItemSlot.TypeId))
-                        {
-                            ++slotsRemaining;
-                        }
+                        // Undo linking for entity removal above (to avoid duplicate removals).
+                        undo.Push(() => equipment.SetItemUnchecked(0));
                     }
-
-                    // Add mapping for this entry.
-                    itemIdMapping.Add(oldItemId, newItemId);
                 }
 
                 // Reenable attribute updating and trigger recomputation.
@@ -568,13 +581,26 @@ namespace Space.Session
                 attributes.RecomputeAttributes();
 
                 // Restore inventory, read back the stored items.
-                var numInventoryItems = _data.ReadInt32();
-                for (var i = 0; i < numInventoryItems; i++)
+                var inventoryCount = _data.ReadInt32();
+                if (_data.ReadBoolean())
                 {
-                    var slot = _data.ReadInt32();
-                    var item = manager.DepacketizeEntity(_data);
-                    items.Add(item);
-                    inventory.Insert(slot, item);
+                    // Fixed size inventory.
+                    inventory.Capacity = _data.ReadInt32();
+                    for (var i = 0; i < inventoryCount; i++)
+                    {
+                        var slot = _data.ReadInt32();
+                        var item = manager.DepacketizeEntity(_data);
+                        inventory.Insert(slot, item);
+                    }
+                }
+                else
+                {
+                    // List inventory.
+                    for (var i = 0; i < inventoryCount; ++i)
+                    {
+                        var item = manager.DepacketizeEntity(_data);
+                        inventory.Add(item);
+                    }
                 }
 
                 return avatar;
@@ -582,13 +608,10 @@ namespace Space.Session
             catch (Exception)
             {
                 // Clean up what we created.
-                if (avatar > 0)
+                while (undo.Count > 0)
                 {
-                    manager.RemoveEntity(avatar);
-                }
-                foreach (var item in items)
-                {
-                    manager.RemoveEntity(item);
+                    // Looks funny, don't it? ;)
+                    undo.Pop()();
                 }
                 throw;
             }
@@ -643,40 +666,6 @@ namespace Space.Session
                 _data.Dispose();
                 _data = null;
             }
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public Packet Packetize(Packet packet)
-        {
-            return packet
-                .Write(Name)
-                .Write((byte)PlayerClass)
-                .Write(_data);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            Name = packet.ReadString();
-            PlayerClass = (PlayerClassType)packet.ReadByte();
-            if (_data != null)
-            {
-                _data.Dispose();
-            }
-            _data = packet.ReadPacket();
         }
 
         #endregion

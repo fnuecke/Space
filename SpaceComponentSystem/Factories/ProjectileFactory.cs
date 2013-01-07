@@ -8,7 +8,6 @@ using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Engine.Serialization;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
@@ -191,12 +190,16 @@ namespace Space.ComponentSystem.Factories
 
         private bool _canBeShot;
 
+        [PacketizerCreate]
         private FloatInterval _initialVelocity;
 
+        [PacketizerCreate]
         private FloatInterval _initialDirection;
 
+        [PacketizerCreate]
         private FloatInterval _accelerationDirection;
 
+        [PacketizerCreate]
         private FloatInterval _accelerationForce;
 
         private float _friction;
@@ -407,53 +410,6 @@ namespace Space.ComponentSystem.Factories
         #endregion
 
         #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public Packet Packetize(Packet packet)
-        {
-            packet.Write(_model);
-            packet.Write(_effect);
-            packet.Write(_effectOffset);
-            packet.Write(_collisionRadius);
-            packet.Write(_canBeShot);
-
-            packet.Write(_initialVelocity);
-            packet.Write(_initialDirection);
-            packet.Write(_accelerationDirection);
-            packet.Write(_accelerationForce);
-
-            packet.Write(_friction);
-            packet.Write(_timeToLive);
-            
-            return packet;
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            _model = packet.ReadString();
-            _effect = packet.ReadString();
-            _effectOffset = packet.ReadVector2();
-            _collisionRadius = packet.ReadSingle();
-            _canBeShot = packet.ReadBoolean();
-
-            _initialVelocity = packet.ReadPacketizable<FloatInterval>();
-            _initialDirection = packet.ReadPacketizable<FloatInterval>();
-            _accelerationDirection = packet.ReadPacketizable<FloatInterval>();
-            _accelerationForce = packet.ReadPacketizable<FloatInterval>();
-
-            _friction = packet.ReadSingle();
-            _timeToLive = packet.ReadSingle();
-        }
 
         /// <summary>
         /// Push some unique data of the object to the given hasher,

@@ -7,6 +7,7 @@ using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Random;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
@@ -25,6 +26,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Cooldowns of known weapon components.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace Space.ComponentSystem.Systems
         /// the creation has do be done synchronously because the manager is
         /// not thread safe.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private List<PendingProjectile> _projectilesToCreate = new List<PendingProjectile>(16);
 
         #endregion
@@ -47,6 +50,7 @@ namespace Space.ComponentSystem.Systems
         /// Used to iterate the cooldown mapping. We change it (by changing single fields,
         /// which seems to suffice) so we can't directly iterate over the key collection.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private List<int> _reusableEntities = new List<int>();
 
         #endregion
@@ -244,8 +248,6 @@ namespace Space.ComponentSystem.Systems
                 packet.Write(kv.Value);
             }
 
-            packet.Write(_random);
-
             return packet;
         }
 
@@ -265,8 +267,6 @@ namespace Space.ComponentSystem.Systems
                 var value = packet.ReadInt32();
                 _cooldowns.Add(key, value);
             }
-
-            packet.ReadPacketizableInto(ref _random);
         }
 
         /// <summary>
@@ -334,8 +334,6 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._cooldowns.Add(item.Key, item.Value);
             }
-
-            _random.CopyInto(copy._random);
         }
 
         #endregion

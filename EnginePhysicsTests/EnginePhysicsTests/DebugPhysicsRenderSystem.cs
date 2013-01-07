@@ -1,4 +1,5 @@
 ﻿using Engine.Physics.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -45,12 +46,14 @@ namespace Engine.Physics.Tests
         /// <summary>
         /// Backing scale field for initial value.
         /// </summary>
+        [PacketizerIgnore]
         private float _scale = 1;
 
         /// <summary>
         /// Backing offset field for transformation on setting (to avoid
         /// recomputation each render pass).
         /// </summary>
+        [PacketizerIgnore]
         private WorldPoint _offset = WorldPoint.Zero;
 
         #endregion

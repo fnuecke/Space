@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,7 +12,7 @@ namespace Engine.Serialization
     /// program structure, i.e. the caller must know what the next thing to
     /// read should be.
     /// </summary>
-    public sealed class Packet : IDisposable, IEquatable<Packet>
+    public sealed class Packet : IDisposable, IEquatable<Packet>, IPacketizable
     {
         #region Properties
 
@@ -34,6 +33,7 @@ namespace Engine.Serialization
         /// <summary>
         /// The underlying memory stream used for buffering.
         /// </summary>
+        [PacketizerIgnore]
         private MemoryStream _stream;
 
         #endregion
@@ -275,86 +275,17 @@ namespace Engine.Serialization
         /// <summary>
         /// Writes the specified type using its assembly qualified name.
         /// </summary>
-        /// <param name="type">The value to write.</param>
+        /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Type type)
+        public Packet Write(Type data)
         {
-            if (type == null)
+            if (data == null)
             {
                 return Write((string)null);
             }
             else
             {
-                return Write(type.AssemblyQualifiedName);
-            }
-        }
-
-        /// <summary>
-        /// Writes the specified packet.
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Packet data)
-        {
-            return Write((byte[])data);
-        }
-
-        /// <summary>
-        /// Writes the specified object.
-        /// 
-        /// <para>
-        /// Must be read back using one of the <see cref="ReadPacketizable{T}"/>
-        /// overloads.
-        /// </para>
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(IPacketizable data)
-        {
-            if (data == null)
-            {
-                return Write((Packet)null);
-            }
-            else
-            {
-                using (var packet = new Packet())
-                {
-                    return Write(data.Packetize(packet));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Writes the specified object with its type info, meaning to
-        /// know the actual underlying type is not necessary for reading.
-        /// 
-        /// <para>
-        /// Must byte read back using <see cref="ReadPacketizableWithTypeInfo{T}"/>.
-        /// </para>
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet WriteWithTypeInfo(IPacketizable data)
-        {
-            if (data == null)
-            {
-                return Write((Type)null);
-            }
-            else
-            {
-                return Write(data.GetType()).Write(data);   
+                return Write(data.AssemblyQualifiedName);
             }
         }
 
@@ -372,7 +303,7 @@ namespace Engine.Serialization
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write<T>(ICollection<T> data)
-            where T : IPacketizable
+            where T : class, IPacketizable
         {
             if (data == null)
             {
@@ -383,7 +314,7 @@ namespace Engine.Serialization
                 Write(data.Count);
                 foreach (var item in data)
                 {
-                    Write(item);
+                    this.Write(item);
                 }
                 return this;
             }
@@ -403,7 +334,7 @@ namespace Engine.Serialization
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public Packet WriteWithTypeInfo<T>(ICollection<T> data)
-            where T : IPacketizable
+            where T : class, IPacketizable
         {
             if (data == null)
             {
@@ -414,7 +345,7 @@ namespace Engine.Serialization
                 Write(data.Count);
                 foreach (var item in data)
                 {
-                    WriteWithTypeInfo(item);
+                    this.WriteWithTypeInfo(item);
                 }
                 return this;
             }
@@ -423,6 +354,193 @@ namespace Engine.Serialization
         #endregion
 
         #region Reading
+
+        /// <summary>
+        /// Reads a boolean value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out bool data)
+        {
+            data = ReadBoolean();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a byte value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out byte data)
+        {
+            data = ReadByte();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a single value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out float data)
+        {
+            data = ReadSingle();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a double value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out double data)
+        {
+            data = ReadDouble();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads an int16 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out short data)
+        {
+            data = ReadInt16();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads an int32 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out int data)
+        {
+            data = ReadInt32();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads an int64 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out long data)
+        {
+            data = ReadInt64();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a uint16 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out ushort data)
+        {
+            data = ReadUInt16();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a uint32 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out uint data)
+        {
+            data = ReadUInt32();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a uint64 value.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out ulong data)
+        {
+            data = ReadUInt64();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a byte array.
+        /// 
+        /// <para>
+        /// May yield <c>null</c>.
+        /// </para>
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out byte[] data)
+        {
+            data = ReadByteArray();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a byte array.
+        /// </summary>
+        /// <param name="buffer">The buffer to write to.</param>
+        /// <param name="offset">The offset to start writing at.</param>
+        /// <param name="count">The number of bytes to read.</param>
+        /// <param name="length">The number of bytes read.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(byte[] buffer, int offset, int count, out int length)
+        {
+            length = ReadByteArray(buffer, offset, count);
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a string value using UTF8 encoding.
+        /// </summary>
+        /// <param name="data">The read value</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out string data)
+        {
+            data = ReadString();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a type value using its assembly qualified name for lookup.
+        /// </summary>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The type is not known in the
+        /// local assembly.</exception>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Read(out Type data)
+        {
+            data = ReadType();
+            return this;
+        }
 
         /// <summary>
         /// Reads a boolean value.
@@ -685,98 +803,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Reads a packet.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public Packet ReadPacket()
-        {
-            if (!HasPacket())
-            {
-                throw new PacketException("Cannot read packet.");
-            }
-            return (Packet)ReadByteArray();
-        }
-
-        /// <summary>
-        /// Reads an object into the specified existing instance.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">The type of object being read.</typeparam>
-        /// <returns>The read value (which may be null).</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public T ReadPacketizableInto<T>(ref T existingInstance)
-            where T : IPacketizable
-        {
-            using (var packet = ReadPacket())
-            {
-                if (packet == null)
-                {
-                    Debug.Assert(!typeof(ValueType).IsAssignableFrom(typeof(T)), "Got a null value for a value type.");
-                    return default(T);
-                }
-                existingInstance.Depacketize(packet);
-            }
-            return existingInstance;
-        }
-
-        /// <summary>
-        /// Reads an object value of the given type.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">The type of the object to read.</typeparam>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public T ReadPacketizable<T>()
-            where T : IPacketizable, new()
-        {
-            var instance = new T();
-            instance = ReadPacketizableInto(ref instance);
-            return instance;
-        }
-
-        /// <summary>
-        /// Reads an object value of an arbitrary type, which should be a
-        /// subtype of the specified type parameter.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <typeparam name="T">Supertype of the type actually being read.</typeparam>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public T ReadPacketizableWithTypeInfo<T>()
-            where T : IPacketizable
-        {
-            var type = ReadType();
-            if (type == null)
-            {
-                return default(T);
-            }
-            else
-            {
-                var instance = (T)Activator.CreateInstance(type);
-                ReadPacketizableInto(ref instance);
-                return instance;
-            }
-        }
-
-        /// <summary>
         /// Reads an object collections.
         /// 
         /// <para>
@@ -788,9 +814,9 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         public T[] ReadPacketizables<T>()
-            where T : IPacketizable, new()
+            where T : class, IPacketizable, new()
         {
-            return ReadPacketizables(ReadPacketizable<T>);
+            return ReadPacketizables(Packetizable.ReadPacketizable<T>);
         }
 
         /// <summary>
@@ -806,9 +832,9 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         public T[] ReadPacketizablesWithTypeInfo<T>()
-            where T : IPacketizable
+            where T : class, IPacketizable
         {
-            return ReadPacketizables(ReadPacketizableWithTypeInfo<T>);
+            return ReadPacketizables(Packetizable.ReadPacketizableWithTypeInfo<T>);
         }
 
         /// <summary>
@@ -818,7 +844,7 @@ namespace Engine.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private T[] ReadPacketizables<T>(Func<T> reader)
+        private T[] ReadPacketizables<T>(Func<Packet, T> reader)
             where T : IPacketizable
         {
             var numPacketizables = ReadInt32();
@@ -829,9 +855,9 @@ namespace Engine.Serialization
             else
             {
                 var result = new T[numPacketizables];
-                for (int i = 0; i < numPacketizables; i++)
+                for (var i = 0; i < numPacketizables; i++)
                 {
-                    result[i] = reader();
+                    result[i] = reader(this);
                 }
                 return result;
             }
@@ -1000,24 +1026,6 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Reads a packet without moving ahead the read pointer.
-        /// 
-        /// <para>
-        /// May return <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public Packet PeekPacket()
-        {
-            var position = _stream.Position;
-            var result = ReadPacket();
-            _stream.Position = position;
-            return result;
-        }
-
-        /// <summary>
         /// Reads a string value using UTF8 encoding without moving ahead the read pointer.
         /// </summary>
         /// <returns>The read value.</returns>
@@ -1133,18 +1141,9 @@ namespace Engine.Serialization
         {
             if (HasInt32())
             {
-                return Available >= sizeof(int) + System.Math.Max(0, PeekInt32());
+                return Available >= sizeof(int) + Math.Max(0, PeekInt32());
             }
             return false;
-        }
-
-        /// <summary>
-        /// Determines whether enough data is available to read a packet.
-        /// </summary>
-        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
-        public bool HasPacket()
-        {
-            return HasByteArray();
         }
 
         /// <summary>
@@ -1219,6 +1218,44 @@ namespace Engine.Serialization
             }
         }
 
+        #endregion
+
+        #region Serialization
+        
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        [Packetize]
+        public Packet Packetize(Packet packet)
+        {
+            return packet.Write(_stream.ToArray());
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// before automatic depacketization is performed.
+        /// </summary>
+        [PreDepacketize]
+        public void PreDepacketize()
+        {
+            _stream.Dispose();
+            _stream = null;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
+        public void PostDepacketize(Packet packet)
+        {
+            var data = packet.ReadByteArray();
+            _stream = new MemoryStream(data ?? new byte[0], false);
+        }
+        
         #endregion
     }
 }

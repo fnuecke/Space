@@ -4,6 +4,8 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -69,11 +71,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         /// List of active contacts between collidables (i.e. current active collisions).
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private Contact[] _contacts = new Contact[DefaultContactCapacity];
 
         /// <summary>
         /// List of contact edges, two per contact.
         /// </summary>
+        [CopyIgnore, PacketizerIgnore]
         private ContactEdge[] _edges = new ContactEdge[DefaultContactCapacity * 2];
 
         /// <summary>
@@ -578,7 +582,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public override Serialization.Packet Packetize(Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
             base.Packetize(packet);
 
@@ -600,9 +604,6 @@ namespace Engine.ComponentSystem.Common.Systems
                 packet.Write(_edges[i].Next);
             }
 
-            packet.Write(_usedContacts);
-            packet.Write(_freeContacts);
-
             return packet;
         }
 
@@ -610,7 +611,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
@@ -631,9 +632,6 @@ namespace Engine.ComponentSystem.Common.Systems
                 _edges[i].Previous = packet.ReadInt32();
                 _edges[i].Next = packet.ReadInt32();
             }
-
-            _usedContacts = packet.ReadInt32();
-            _freeContacts = packet.ReadInt32();
         }
 
         /// <summary>
@@ -641,7 +639,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Serialization.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
@@ -696,9 +694,6 @@ namespace Engine.ComponentSystem.Common.Systems
                 copy._edges = new ContactEdge[_edges.Length];
             }
             _edges.CopyTo(copy._edges, 0);
-
-            copy._usedContacts = _usedContacts;
-            copy._freeContacts = _freeContacts;
         }
 
         #endregion

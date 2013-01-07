@@ -11,7 +11,7 @@ namespace Engine.Physics.Tests.Tests
 {
     sealed class CharacterCollision : AbstractTest
     {
-        private Body _character;
+        private int _character;
 
         protected override void Create()
         {
@@ -125,18 +125,20 @@ namespace Engine.Physics.Tests.Tests
 
             // Circle character
             {
-                _character = Manager.AddCircle(radius: 0.25f,
-                                                type: Body.BodyType.Dynamic,
-                                                worldPosition: new WorldPoint(-7, 6),
-                                                allowSleep: false, density: 20, friction: 1);
+                var character = Manager.AddCircle(radius: 0.25f,
+                                                  type: Body.BodyType.Dynamic,
+                                                  worldPosition: new WorldPoint(-7, 6),
+                                                  allowSleep: false, density: 20, friction: 1);
+                _character = character.Entity;
             }
         }
         
         protected override void Step()
         {
-            var v = _character.LinearVelocity;
+            var character = (Body)Manager.GetComponent(_character, Body.TypeId);
+            var v = character.LinearVelocity;
             v.X = -5.0f;
-            _character.LinearVelocity = v;
+            character.LinearVelocity = v;
 
             DrawString("This tests various character collision shapes.");
             DrawString("Limitation: square and hexagon can snag on aligned boxes.");

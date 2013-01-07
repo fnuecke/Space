@@ -9,7 +9,7 @@ using Engine.Serialization;
 namespace Engine.Session
 {
     public sealed class HybridClientSession<TPlayerData> : AbstractHybridSession, IClientSession
-        where TPlayerData : IPacketizable, new()
+        where TPlayerData : class, IPacketizable, new()
     {
         #region Logger
 
@@ -164,7 +164,7 @@ namespace Engine.Session
                                                             : TrafficTypes.Protocol);
                                 Info.PutIncomingPacketSize(packet.Length);
 
-                                using (var data = packet.ReadPacket())
+                                using (var data = packet.ReadPacketizable<Packet>())
                                 {
                                     HandleTcpData(type, data);
                                 }
@@ -411,7 +411,7 @@ namespace Engine.Session
             var type = (SessionMessage)e.Data.ReadByte();
 
             // Get additional data.
-            using (var packet = e.Data.HasPacket() ? e.Data.ReadPacket() : null)
+            using (var packet = e.Data.ReadPacketizable<Packet>())
             {
                 switch (type)
                 {
@@ -435,7 +435,7 @@ namespace Engine.Session
                                     var numPlayers = packet.ReadInt32();
 
                                     // Get additional data.
-                                    using (var customData = packet.ReadPacket())
+                                    using (var customData = packet.ReadPacketizable<Packet>())
                                     {
                                         Logger.Trace(
                                             "Got game info from host '{0}': {1}/{2} players, data of length {3}.",
@@ -461,9 +461,8 @@ namespace Engine.Session
                         {
                             try
                             {
-                                OnData(new ClientDataEventArgs(packet,
-                                                               _tcp != null &&
-                                                               e.RemoteEndPoint == _tcp.Client.RemoteEndPoint));
+                                OnData(new ClientDataEventArgs(
+                                           packet, _tcp != null && Equals(e.RemoteEndPoint, _tcp.Client.RemoteEndPoint)));
                             }
                             catch (PacketException ex)
                             {
@@ -511,7 +510,7 @@ namespace Engine.Session
                         Players = new Player[MaxPlayers];
 
                         // Get other game relevant data.
-                        using (var joinData = packet.ReadPacket())
+                        using (var joinData = packet.ReadPacketizable<Packet>())
                         {
                             // Get info on players already in the session, including us.
                             for (var i = 0; i < NumPlayers; i++)

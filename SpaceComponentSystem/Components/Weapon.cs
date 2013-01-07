@@ -39,11 +39,13 @@ namespace Space.ComponentSystem.Components
         /// Attributes that are local to this weapon and only used for computing
         /// this weapon's damage, cooldown, energy consumption etc.
         /// </summary>
+        [PacketizerIgnore]
         public readonly Dictionary<AttributeType, float> Attributes = new Dictionary<AttributeType, float>();
 
         /// <summary>
         /// The projectiles this weapon fires.
         /// </summary>
+        [PacketizerIgnore]
         public ProjectileFactory[] Projectiles;
 
         #endregion
@@ -115,8 +117,7 @@ namespace Space.ComponentSystem.Components
         /// <returns></returns>
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet)
-                .Write(Sound);
+            base.Packetize(packet);
 
             packet.Write(Attributes.Count);
             foreach (var attribute in Attributes)
@@ -134,11 +135,10 @@ namespace Space.ComponentSystem.Components
         /// Depacketizes the specified packet.
         /// </summary>
         /// <param name="packet">The packet.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            Sound = packet.ReadString();
             var numAttributes = packet.ReadInt32();
             for (var i = 0; i < numAttributes; i++)
             {

@@ -100,6 +100,7 @@
     <Compile Include="Tests\EdgeBenchmark.cs" />
     <Compile Include="Tests\Pyramid.cs" />
     <Compile Include="Tests\SphereStack.cs" />
+    <Compile Include="Tests\TheoJansen.cs" />
     <Compile Include="Tests\VaryingFriction.cs" />
     <Compile Include="Tests\VaryingRestitution.cs" />
     <Compile Include="Tests\VerticalStack.cs" />
@@ -144,6 +145,10 @@
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\EnginePhysics\Engine.Physics.csproj">
       <Project>{69F7346B-8904-4AEA-BA38-0F5D5BAEDD3A}</Project>
       <Name>Engine.Physics</Name>
@@ -159,6 +164,10 @@
     <ProjectReference Include="..\..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
+      <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
+      <Name>Engine.XnaExtensions</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

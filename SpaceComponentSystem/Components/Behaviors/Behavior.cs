@@ -26,6 +26,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <summary>
         /// The AI component this behavior belongs to.
         /// </summary>
+        [PacketizerIgnore]
         protected readonly ArtificialIntelligence AI;
 
         /// <summary>
@@ -35,11 +36,13 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// The "owner" of this instance is the AI component we belong to,
         /// so we do not need to take care of serialization or copying.
         /// </remarks>
+        [PacketizerIgnore]
         protected readonly IUniformRandom Random;
 
         /// <summary>
         /// The poll rate in ticks how often to update this behavior.
         /// </summary>
+        [PacketizerIgnore]
         private readonly int _pollRate;
 
         /// <summary>
@@ -269,7 +272,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 {
                     // It's an enemy. Check the distance.
                     var enemyPosition = ((Transform)AI.Manager.GetComponent(filteredNeighbor, Transform.TypeId)).Translation;
-                    var distance = ((Vector2)(position - enemyPosition)).LengthSquared();
+                    var distance = FarPosition.Distance(enemyPosition, position);
                     if (distance < closestDistance)
                     {
                         closest = filteredNeighbor;
@@ -490,19 +493,20 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public virtual Packet Packetize(Packet packet)
         {
-            return packet
-                .Write(_ticksToWait);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
+        [PostDepacketize]
         public virtual void Depacketize(Packet packet)
         {
-            _ticksToWait = packet.ReadInt32();
         }
 
         /// <summary>
@@ -512,7 +516,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <param name="hasher">The hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
-            hasher.Put(_pollRate);
             hasher.Put(_ticksToWait);
         }
 
@@ -536,10 +539,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <returns>The copy.</returns>
         public virtual void CopyInto(Behavior into)
         {
-            Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
-            Debug.Assert(into != this);
-
-            into._ticksToWait = _ticksToWait;
+            Copyable.CopyInto(this, into);
         }
 
         #endregion
@@ -560,7 +560,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         #endregion
 
         #region Debugging
-#if DEBUG
 
         private Vector2 _lastEscape;
 
@@ -569,6 +568,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         private Vector2 _lastCohesion;
 
         private Vector2 _lastFormation;
+
+#if DEBUG
 
         public Vector2 GetLastEscape()
         {

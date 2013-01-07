@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 
 namespace Engine.ComponentSystem
 {
@@ -18,16 +19,19 @@ namespace Engine.ComponentSystem
         /// components that might still be referenced in running system update
         /// loops.
         /// </summary>
+        [PacketizerIgnore]
         private readonly SparseArray<Stack<Component>> _dirtyPool = new SparseArray<Stack<Component>>();
 
         /// <summary>
         /// Object pool for reusable instances.
         /// </summary>
+        [PacketizerIgnore]
         private static readonly SparseArray<Stack<Component>> ComponentPool = new SparseArray<Stack<Component>>();
 
         /// <summary>
         /// Pool for entities (index structure only, used for faster component queries).
         /// </summary>
+        [PacketizerIgnore]
         private static readonly Stack<Entity> EntityPool = new Stack<Entity>();
 
         /// <summary>

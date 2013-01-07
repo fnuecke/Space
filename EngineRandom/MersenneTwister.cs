@@ -82,6 +82,7 @@ namespace Engine.Random
         /// <summary>
         /// The array for the state vector.
         /// </summary>
+        [PacketizerIgnore]
         private readonly ulong[] _mt = new ulong[N];
 
         /// <summary>
@@ -324,26 +325,28 @@ namespace Engine.Random
         /// <returns>
         /// The packet after writing.
         /// </returns>
+        [Packetize]
         public Packet Packetize(Packet packet)
         {
             for (var i = 0; i < N; i++)
             {
                 packet.Write(_mt[i]);
             }
-            return packet.Write(_index);
+            return packet;
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        /// Bring the object to the state in the given packet. This is called
+        /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        [PostDepacketize]
+        public void PostDepacketize(Packet packet)
         {
             for (var i = 0; i < N; i++)
             {
                 _mt[i] = packet.ReadUInt64();
             }
-            _index = packet.ReadInt32();
         }
 
         /// <summary>

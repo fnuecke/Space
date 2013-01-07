@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Engine.ComponentSystem.Components;
-using Engine.Physics.Detail;
-using Engine.Physics.Detail.Math;
+using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
@@ -30,11 +29,13 @@ namespace Engine.Physics.Components
         /// <summary>
         /// The vertices that make up this polygon.
         /// </summary>
+        [PacketizerIgnore]
         internal readonly LocalPoint[] Vertices = new LocalPoint[Settings.MaxPolygonVertices];
 
         /// <summary>
         /// The surface normals of the edges of this polygon.
         /// </summary>
+        [PacketizerIgnore]
         internal readonly Vector2[] Normals = new Vector2[Settings.MaxPolygonVertices];
 
         /// <summary>
@@ -114,7 +115,9 @@ namespace Engine.Physics.Components
             for (var i = 1; i < points.Count; ++i)
             {
                 var x = ps[i].X;
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                 if (x > x0 || (x == x0 && ps[i].Y < ps[i0].Y))
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     i0 = i;
                     x0 = x;
@@ -147,7 +150,9 @@ namespace Engine.Physics.Components
                     }
 
                     // Collinearity check
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                     if (c == 0.0f && v.LengthSquared() > r.LengthSquared())
+// ReSharper restore CompareOfFloatsByEqualityOperator
                     {
                         ie = j;
                     }
@@ -242,8 +247,8 @@ namespace Engine.Physics.Components
             // Let rho be the polygon density in mass per unit area.
             // Then:
             // mass = rho * int(dA)
-            // centroid.x = (1/mass) * rho * int(x * dA)
-            // centroid.y = (1/mass) * rho * int(y * dA)
+            // centroid.X = (1/mass) * rho * int(x * dA)
+            // centroid.Y = (1/mass) * rho * int(y * dA)
             // I = rho * int((x*x + y*y) * dA)
             //
             // We can compute these integrals by summing all the integrals
@@ -338,8 +343,10 @@ namespace Engine.Physics.Components
             }
 
             Vector2 size;
+// ReSharper disable RedundantCast Necessary for FarPhysics.
             size.X = (float)(upper.X - lower.X) + 2 * Radius;
             size.Y = (float)(upper.Y - lower.Y) + 2 * Radius;
+// ReSharper restore RedundantCast
 
             WorldBounds bounds;
             bounds.X = lower.X - Radius;
@@ -402,14 +409,11 @@ namespace Engine.Physics.Components
         {
             base.Packetize(packet);
 
-            packet.Write(Count);
             for (var i = 0; i < Count; ++i)
             {
                 packet.Write(Vertices[i]);
                 packet.Write(Normals[i]);
             }
-
-            packet.Write(Centroid);
 
             return packet;
         }
@@ -418,18 +422,15 @@ namespace Engine.Physics.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void PostDepacketize(Packet packet)
         {
-            base.Depacketize(packet);
+            base.PostDepacketize(packet);
 
-            Count = packet.ReadInt32();
             for (var i = 0; i < Count; ++i)
             {
                 Vertices[i] = packet.ReadVector2();
                 Normals[i] = packet.ReadVector2();
             }
-
-            Centroid = packet.ReadVector2();
         }
 
         /// <summary>

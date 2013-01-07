@@ -1,4 +1,4 @@
-﻿using Engine.Physics.Systems;
+﻿using Engine.Physics.Contacts;
 
 namespace Engine.Physics.Messages
 {
@@ -10,6 +10,6 @@ namespace Engine.Physics.Messages
         /// <summary>
         /// The contact has has become inactive.
         /// </summary>
-        public PhysicsSystem.IContact Contact;
+        public Contact Contact;
     }
 }
