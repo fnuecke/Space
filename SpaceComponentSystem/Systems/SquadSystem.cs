@@ -356,7 +356,8 @@ namespace Space.ComponentSystem.Systems
                 copy._squads[id] = new SquadData
                 {
                     Formation = _squads[id].Formation,
-                    Spacing = _squads[id].Spacing
+                    Spacing = _squads[id].Spacing,
+                    Cache = new FormationCache(_squads[id].Formation)
                 };
                 copy._squads[id].Members.AddRange(_squads[id].Members);
             }
@@ -428,18 +429,6 @@ namespace Space.ComponentSystem.Systems
         public abstract class AbstractFormation : IEnumerable<Vector2>, IPacketizable
         {
             /// <summary>
-            /// Utility method creating a formation from a simple enumerable. This
-            /// is meant to provide a simple way of generating formation wrappers
-            /// for parameterless formation declarations.
-            /// </summary>
-            /// <param name="formation">The formation definition.</param>
-            /// <returns></returns>
-            public static AbstractFormation FromEnumerable(IEnumerable<Vector2> formation)
-            {
-                return new SimpleFormation(formation);
-            }
-
-            /// <summary>
             /// Returns an enumerator that iterates through the collection.
             /// </summary>
             /// <returns>
@@ -460,25 +449,6 @@ namespace Space.ComponentSystem.Systems
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
-            }
-
-            /// <summary>
-            /// A simple wrapper for parameterless formation implementations.
-            /// </summary>
-            private sealed class SimpleFormation : AbstractFormation
-            {
-                [PacketizerIgnore]
-                private readonly IEnumerable<Vector2> _enumerable;
-
-                public SimpleFormation(IEnumerable<Vector2> formation)
-                {
-                    _enumerable = formation;
-                }
-
-                public override IEnumerator<Vector2> GetEnumerator()
-                {
-                    return _enumerable.GetEnumerator();
-                }
             }
         }
 
@@ -508,8 +478,12 @@ namespace Space.ComponentSystem.Systems
             /// This is the 'null' implementation, which simply returns nothing and
             /// causes the cache to fall-back to the default value.
             /// </summary>
-            public static readonly AbstractFormation None =
-                AbstractFormation.FromEnumerable(new Vector2[0]);
+            public static readonly AbstractFormation None = new NoneFormation();
+
+            private sealed class NoneFormation : SimpleFormation
+            {
+                public NoneFormation() : base(new Vector2[0]) {}
+            }
 
             /// <summary>
             /// This is an implementation for a line formation, i.e. the formation
@@ -524,10 +498,14 @@ namespace Space.ComponentSystem.Systems
             ///           2
             ///          ...
             /// </summary>
-            public static readonly AbstractFormation Line =
-                AbstractFormation.FromEnumerable(
+            public static readonly AbstractFormation Line = new LineFormation();
+
+            private sealed class LineFormation : SimpleFormation
+            {
+                public LineFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
-                        .Select(i => new Vector2(0, i)));
+                        .Select(i => new Vector2(0, i))) {}
+            }
 
             /// <summary>
             /// This is an implementation for a column formation, i.e. the formation
@@ -543,10 +521,14 @@ namespace Space.ComponentSystem.Systems
             ///           2
             ///          ...
             /// </summary>
-            public static readonly AbstractFormation Column =
-                AbstractFormation.FromEnumerable(
+            public static readonly AbstractFormation Column = new ColumnFormation();
+
+            private sealed class ColumnFormation : SimpleFormation
+            {
+                public ColumnFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
-                        .Select(i => new Vector2(-(i & 1), i)));
+                        .Select(i => new Vector2(-(i & 1), i))) {}
+            }
 
             /// <summary>
             /// This is an implementation for a vee formation, i.e. the formation
@@ -562,11 +544,15 @@ namespace Space.ComponentSystem.Systems
             ///         1   2
             ///           0
             /// </summary>
-            public static readonly AbstractFormation Vee =
-                AbstractFormation.FromEnumerable(
+            public static readonly AbstractFormation Vee = new VeeFormation();
+
+            private sealed class VeeFormation : SimpleFormation
+            {
+                public VeeFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
                         .Select(i => i + 1)
-                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), -(i >> 1))));
+                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), -(i >> 1)))) {}
+            }
 
             /// <summary>
             /// This is an implementation for an open wedge formation, i.e. the formation
@@ -582,11 +568,15 @@ namespace Space.ComponentSystem.Systems
             ///       3       4
             ///          ...
             /// </summary>
-            public static readonly AbstractFormation Wedge =
-                AbstractFormation.FromEnumerable(
+            public static readonly AbstractFormation Wedge = new WedgeFormation();
+
+            private sealed class WedgeFormation : SimpleFormation
+            {
+                public WedgeFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
                         .Select(i => i + 1)
-                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), i >> 1)));
+                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), i >> 1))) {}
+            }
 
             /// <summary>
             /// This is an implementation for a filled wedge formation, i.e. the formation
@@ -603,9 +593,13 @@ namespace Space.ComponentSystem.Systems
             ///     8   6   7   9
             ///          ...
             /// </summary>
-            public static readonly AbstractFormation FilledWedge =
-                AbstractFormation.FromEnumerable(
-                    FilledWedgeBase.Select(t => new Vector2(0.5f * t.Item1, t.Item2)));
+            public static readonly AbstractFormation FilledWedge = new FilledWedgeFormation();
+
+            private sealed class FilledWedgeFormation : SimpleFormation
+            {
+                public FilledWedgeFormation() : base(
+                    FilledWedgeBase.Select(t => new Vector2(0.5f * t.Item1, t.Item2))) {}
+            }
 
             /// <summary>
             /// This is an implementation for a block formation, i.e. the formation will look
@@ -620,15 +614,22 @@ namespace Space.ComponentSystem.Systems
             /// 8 4 3 5 9
             ///    ...
             /// </summary>
-            public static readonly AbstractFormation Block =
-                AbstractFormation.FromEnumerable(BlockBase);
+            public static readonly AbstractFormation Block = new BlockFormation();
+
+            private sealed class BlockFormation : SimpleFormation
+            {
+                public BlockFormation() : base(BlockBase) {}
+            }
 
             /// <summary>
             /// This in an implementation for a Sierpinski formation. See
             /// https://en.wikipedia.org/wiki/Sierpinski_triangle
             /// </summary>
-            public static readonly AbstractFormation Sierpinski =
-                AbstractFormation.FromEnumerable(
+            public static readonly AbstractFormation Sierpinski = new SierpinskiFormation();
+
+            private sealed class SierpinskiFormation : SimpleFormation
+            {
+                public SierpinskiFormation() : base(
                     // Fetch our raw data from the filled wedge formation. We
                     // it as our "blueprint" from which filter out some entries
                     // (the "holes" in the Sierpinski triangle).
@@ -643,7 +644,8 @@ namespace Space.ComponentSystem.Systems
                         // the association (bool keep, Vector2 entry).
                         .Zip(FilledWedge, Tuple.Create)
                         // Then filter by that association.
-                        .Where(t => t.Item1).Select(t => t.Item2));
+                        .Where(t => t.Item1).Select(t => t.Item2)) {}
+            }
 
             // ReSharper disable FunctionNeverReturns Infinite generators.
 
@@ -694,6 +696,25 @@ namespace Space.ComponentSystem.Systems
             }
 
             // ReSharper restore FunctionNeverReturns
+
+            /// <summary>
+            /// A simple wrapper for parameterless formation implementations.
+            /// </summary>
+            private class SimpleFormation : AbstractFormation
+            {
+                [PacketizerIgnore]
+                private readonly IEnumerable<Vector2> _enumerable;
+
+                protected SimpleFormation(IEnumerable<Vector2> formation)
+                {
+                    _enumerable = formation;
+                }
+
+                public override IEnumerator<Vector2> GetEnumerator()
+                {
+                    return _enumerable.GetEnumerator();
+                }
+            }
         }
 
         /// <summary>

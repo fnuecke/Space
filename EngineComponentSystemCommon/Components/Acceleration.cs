@@ -1,7 +1,5 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Serialization;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components

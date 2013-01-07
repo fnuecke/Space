@@ -258,25 +258,6 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #endregion
 
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        /// <returns>The copy.</returns>
-        public override void CopyInto(Behavior into)
-        {
-            base.CopyInto(into);
-
-            var copy = (AttackBehavior)into;
-
-            copy.Target = Target;
-            copy._start = _start;
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>

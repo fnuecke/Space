@@ -3,13 +3,22 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Session;
+using Engine.Serialization;
 using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
-    public class CameraMovementSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
+    public class CameraMovementSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should draw.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool Enabled { get; set; }
+
+        [PacketizerIgnore]
         private List<MoveCamera.Positions> _positions = new List<MoveCamera.Positions>();
         private long _frame;
         private FarPosition _lastPosition;
@@ -19,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         private bool _returnToSender;
         private long _returnSpeed;
 
-        public void Update(long frame)
+        public void Draw(long frame, float ellapsedMilliseconds)
         {
             if (_positions.Count <= 0)
             {

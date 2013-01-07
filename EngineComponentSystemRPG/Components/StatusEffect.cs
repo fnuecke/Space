@@ -1,5 +1,4 @@
 ﻿using Engine.ComponentSystem.Components;
-using Engine.Serialization;
 
 namespace Engine.ComponentSystem.RPG.Components
 {

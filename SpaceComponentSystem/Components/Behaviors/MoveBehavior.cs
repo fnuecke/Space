@@ -1,7 +1,6 @@
 ﻿using Engine.ComponentSystem.Common.Components;
 using Engine.FarMath;
 using Engine.Random;
-using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -84,24 +83,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         protected override FarPosition GetTargetPosition()
         {
             return Target;
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        /// <returns>The copy.</returns>
-        public override void CopyInto(Behavior into)
-        {
-            base.CopyInto(into);
-
-            var copy = (MoveBehavior)into;
-
-            copy.Target = Target;
         }
 
         #endregion

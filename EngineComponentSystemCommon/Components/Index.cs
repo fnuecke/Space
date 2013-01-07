@@ -1,7 +1,6 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
-using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Common.Components
 {

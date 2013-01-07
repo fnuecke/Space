@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     /// allows a centralized lookup, and avoids having to store the
     /// session all over the place.
     /// </summary>
-    public sealed class LocalPlayerSystem : AbstractSystem, IUpdatingSystem
+    public sealed class LocalPlayerSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -23,6 +23,14 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should draw.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool Enabled { get; set; }
 
         /// <summary>
         /// Gets the entity ID of the local player's avatar. This can be
@@ -58,12 +66,13 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
+        
         /// <summary>
-        /// Updates the system.
+        /// Draws the system.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public void Update(long frame)
+        /// <param name="frame">The frame that should be rendered.</param>
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             // Keep the cached avatar ID up-to-date.
             if (_session == null || _session.ConnectionState != ClientState.Connected)
@@ -86,7 +95,7 @@ namespace Space.ComponentSystem.Systems
         {
             base.OnCopied();
 
-            Update(0);
+            Draw(0, 0);
         }
 
         #endregion
@@ -101,7 +110,7 @@ namespace Space.ComponentSystem.Systems
         {
             base.OnDepacketized();
 
-            Update(0);
+            Draw(0, 0);
         }
 
         #endregion

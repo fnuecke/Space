@@ -404,7 +404,7 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         // Read data.
-                        var serverHash = args.Data.ReadInt32();
+                        var serverHash = args.Data.ReadUInt32();
                         args.Data.ReadPacketizableInto(Tss);
 
                         // Validate the data we got.

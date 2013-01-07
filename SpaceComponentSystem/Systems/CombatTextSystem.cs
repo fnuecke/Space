@@ -12,8 +12,16 @@ namespace Space.ComponentSystem.Systems
     /// This system interprets messages and triggers combat floating text
     /// accordingly.
     /// </summary>
-    public sealed class CombatTextSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
+    public sealed class CombatTextSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
+        /// <summary>
+        /// Determines whether this system is enabled, i.e. whether it should draw.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool Enabled { get; set; }
+
         #region Fields
 
         /// <summary>
@@ -26,10 +34,11 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Updates the system.
+        /// Draws the system.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public void Update(long frame)
+        /// <param name="frame">The frame that should be rendered.</param>
+        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
+        public void Draw(long frame, float elapsedMilliseconds)
         {
             var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             _localPlayerFaction = avatar > 0

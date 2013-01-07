@@ -2,7 +2,6 @@
 using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.Util;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH

@@ -12,7 +12,6 @@ using Engine.Physics.Joints;
 using Engine.Physics.Messages;
 using Engine.Serialization;
 using Engine.Util;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -20,7 +19,6 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
 #endif

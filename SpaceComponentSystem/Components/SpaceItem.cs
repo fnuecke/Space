@@ -1,6 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.Data;
 

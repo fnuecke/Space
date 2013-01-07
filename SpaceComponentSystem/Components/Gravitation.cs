@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components
 {

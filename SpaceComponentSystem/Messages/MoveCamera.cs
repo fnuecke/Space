@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Engine.FarMath;
 
 namespace Space.ComponentSystem.Messages
@@ -31,7 +28,5 @@ namespace Space.ComponentSystem.Messages
             /// </summary>
             public float Zoom;
         }
-
-        
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
@@ -68,6 +67,7 @@ namespace Space.ComponentSystem.Components
 
             var otherSun = (SunRenderer)other;
             Radius = otherSun.Radius;
+            Tint = otherSun.Tint;
             SurfaceRotation = otherSun.SurfaceRotation;
             PrimaryTurbulenceRotation = otherSun.PrimaryTurbulenceRotation;
             SecondaryTurbulenceRotation = otherSun.SecondaryTurbulenceRotation;

@@ -3,7 +3,6 @@ using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 using Space.ComponentSystem.Util;

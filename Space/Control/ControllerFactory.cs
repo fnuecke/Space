@@ -261,10 +261,10 @@ namespace Space.Control
                     new DetectableSystem {Enabled = true},
 
                     // Provide local player's avatar ID.
-                    new LocalPlayerSystem(session),
+                    new LocalPlayerSystem(session) {Enabled = true},
 
                     // Trigger combat text rendering.
-                    new CombatTextSystem(),
+                    new CombatTextSystem {Enabled = true},
 
                     // Provides interpolation of objects in view space. This uses the camera
                     // for the viewport, but the camera uses it for its own position (based
@@ -275,7 +275,7 @@ namespace Space.Control
 
                     // Update camera first, as it determines what to render.
                     new CameraSystem(game.GraphicsDevice, game.Services) {Enabled = true},
-                    new CameraMovementSystem(), 
+                    new CameraMovementSystem {Enabled = true},
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, audioRange) {Enabled = true},
@@ -298,7 +298,7 @@ namespace Space.Control
                     new ShieldRenderSystem {Enabled = true},
                     new CameraCenteredParticleEffectSystem(simulationFps) {Enabled = true},
 
-                    new InformationDisplaySystem{Enabled =true},
+                    new InformationDisplaySystem {Enabled = true},
 
                     // Perform post processing on the rendered scene.
                     new PostProcessingPostRenderSystem

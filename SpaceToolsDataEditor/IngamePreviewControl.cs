@@ -8,7 +8,6 @@ using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;

@@ -1,5 +1,4 @@
 ﻿using Engine.ComponentSystem.Components;
-using Engine.Serialization;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components

@@ -271,6 +271,7 @@ namespace Space.ComponentSystem.Components
             /// <summary>
             /// The actual particle effect structure.
             /// </summary>
+            [PacketizerIgnore]
             public ParticleEffect Effect;
 
             /// <summary>

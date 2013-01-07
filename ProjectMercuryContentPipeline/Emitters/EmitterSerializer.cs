@@ -11,7 +11,6 @@ namespace ProjectMercury.ContentPipeline.Emitters
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
     using ProjectMercury.Emitters;
-    using System;
 
     [ContentTypeSerializer]
     public class EmitterSerializer : AbstractEmitterSerializer<Emitter>

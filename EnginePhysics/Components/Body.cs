@@ -5,7 +5,6 @@ using Engine.Physics.Joints;
 using Engine.Physics.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
 #if FARMATH

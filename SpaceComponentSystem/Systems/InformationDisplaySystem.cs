@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework.Graphics;
 using Engine.ComponentSystem.Common.Messages;
@@ -9,7 +6,6 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Util;
 using Space.ComponentSystem.Components;
-using Engine.ComponentSystem.RPG.Components;
 
 namespace Space.ComponentSystem.Systems
 {

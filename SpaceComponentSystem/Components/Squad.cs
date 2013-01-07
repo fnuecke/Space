@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
-using Engine.Serialization;
 using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components

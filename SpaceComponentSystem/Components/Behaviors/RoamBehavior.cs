@@ -1,6 +1,5 @@
 ﻿using Engine.FarMath;
 using Engine.Random;
-using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -63,24 +62,6 @@ namespace Space.ComponentSystem.Components.Behaviors
 
             // Nothing to do. Ever.
             return false;
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
-        /// <param name="into">The object to copy into.</param>
-        /// <returns>The copy.</returns>
-        public override void CopyInto(Behavior into)
-        {
-            base.CopyInto(into);
-
-            var copy = (RoamBehavior)into;
-
-            copy.Area = Area;
         }
 
         #endregion

@@ -1,6 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
-using Engine.Serialization;
+﻿using Engine.ComponentSystem.Components;
 
 namespace Engine.ComponentSystem.RPG.Components
 {

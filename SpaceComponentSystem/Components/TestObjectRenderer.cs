@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
