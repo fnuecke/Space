@@ -200,12 +200,12 @@ namespace Engine.ComponentSystem
         /// <para/>
         /// This uses the components' <c>Packetize</c> facilities.
         /// </summary>
-        /// <param name="entity">The entity to write.</param>
         /// <param name="packet">The packet to write to.</param>
+        /// <param name="entity">The entity to write.</param>
         /// <returns>
         /// The packet after writing the entity's components.
         /// </returns>
-        Packet PacketizeEntity(int entity, Packet packet);
+        IWritablePacket PacketizeEntity(IWritablePacket packet, int entity);
 
         /// <summary>
         /// Reads an entity from the specified packet, meaning all its
@@ -223,7 +223,7 @@ namespace Engine.ComponentSystem
         /// <param name="componentIdMap">A mapping of how components' ids
         /// changed due to serialization, mapping old id to new id.</param>
         /// <returns>The id of the read entity.</returns>
-        int DepacketizeEntity(Packet packet, Dictionary<int, int> componentIdMap = null);
+        int DepacketizeEntity(IReadablePacket packet, Dictionary<int, int> componentIdMap = null);
 
         #endregion
     }

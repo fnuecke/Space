@@ -30,6 +30,6 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">The player to whom to send the packet.</param>
         /// <param name="packet">The data to send.</param>
-        void SendTo(Player player, Packet packet);
+        void SendTo(Player player, IWritablePacket packet);
     }
 }

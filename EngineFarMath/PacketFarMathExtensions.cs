@@ -15,7 +15,7 @@ namespace Engine.FarMath
         /// <returns>
         /// This packet, for call chaining.
         /// </returns>
-        public static Packet Write(this Packet packet, FarValue data)
+        public static IWritablePacket Write(this IWritablePacket packet, FarValue data)
         {
             return packet.Write(data.Segment).Write(data.Offset);
         }
@@ -28,7 +28,7 @@ namespace Engine.FarMath
         /// <returns>
         /// This packet, for call chaining.
         /// </returns>
-        public static Packet Write(this Packet packet, FarPosition data)
+        public static IWritablePacket Write(this IWritablePacket packet, FarPosition data)
         {
             return packet.Write(data.X).Write(data.Y);
         }
@@ -41,7 +41,7 @@ namespace Engine.FarMath
         /// <returns>
         /// This packet, for call chaining.
         /// </returns>
-        public static Packet Write(this Packet packet, FarRectangle data)
+        public static IWritablePacket Write(this IWritablePacket packet, FarRectangle data)
         {
             return packet.Write(data.X).Write(data.Y).Write(data.Width).Write(data.Height);
         }
@@ -56,7 +56,7 @@ namespace Engine.FarMath
         /// </returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Packet Read(this Packet packet, out FarValue data)
+        public static IReadablePacket Read(this IReadablePacket packet, out FarValue data)
         {
             data = packet.ReadFarValue();
             return packet;
@@ -72,7 +72,7 @@ namespace Engine.FarMath
         /// </returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Packet Read(this Packet packet, out FarPosition data)
+        public static IReadablePacket Read(this IReadablePacket packet, out FarPosition data)
         {
             data = packet.ReadFarPosition();
             return packet;
@@ -88,7 +88,7 @@ namespace Engine.FarMath
         /// </returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Packet Read(this Packet packet, out FarRectangle data)
+        public static IReadablePacket Read(this IReadablePacket packet, out FarRectangle data)
         {
             data = packet.ReadFarRectangle();
             return packet;
@@ -103,7 +103,7 @@ namespace Engine.FarMath
         /// </returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static FarValue ReadFarValue(this Packet packet)
+        public static FarValue ReadFarValue(this IReadablePacket packet)
         {
             var segment = packet.ReadInt32();
             var offset = packet.ReadSingle();
@@ -119,7 +119,7 @@ namespace Engine.FarMath
         /// </returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static FarPosition ReadFarPosition(this Packet packet)
+        public static FarPosition ReadFarPosition(this IReadablePacket packet)
         {
             FarPosition result;
             result.X = packet.ReadFarValue();
@@ -136,7 +136,7 @@ namespace Engine.FarMath
         /// </returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static FarRectangle ReadFarRectangle(this Packet packet)
+        public static FarRectangle ReadFarRectangle(this IReadablePacket packet)
         {
             FarRectangle result;
             result.X = packet.ReadFarValue();

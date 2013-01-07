@@ -364,7 +364,7 @@ namespace Engine.Physics.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public override Packet Packetize(Packet packet)
+        public override IWritablePacket Packetize(IWritablePacket packet)
         {
             System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
 

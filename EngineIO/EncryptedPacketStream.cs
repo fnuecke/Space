@@ -62,7 +62,7 @@ namespace Engine.IO
         #endregion
 
         #region Interface
-        
+
         /// <summary>
         /// Tries reading a single packet from this stream. To read multiple available
         /// packets, repeatedly call this method until it returns <c>null</c>.
@@ -71,13 +71,13 @@ namespace Engine.IO
         /// A read packet, if one was available.
         /// </returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        public Packet Read()
+        public IReadablePacket Read()
         {
             using (var packet = _stream.Read())
             {
                 if (packet != null)
                 {
-                    return new Packet(Crypto.Decrypt(packet.ReadByteArray()));
+                    return new Packet(Crypto.Decrypt(packet.ReadByteArray()), false);
                 }
             }
             return null;
@@ -92,11 +92,12 @@ namespace Engine.IO
         /// from the length of the specified packet due to transforms from
         /// wrapper streams (encryption, compression, ...)</returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        public int Write(Packet packet)
+        public int Write(IWritablePacket packet)
         {
             using (var data = new Packet())
             {
-                return _stream.Write(data.Write(Crypto.Encrypt(packet.GetBuffer())));
+                data.Write(Crypto.Encrypt(packet.GetBuffer(), 0, packet.Length));
+                return _stream.Write(data);
             }
         }
 

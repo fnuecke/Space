@@ -12,7 +12,7 @@ namespace Engine.Serialization
     /// program structure, i.e. the caller must know what the next thing to
     /// read should be.
     /// </summary>
-    public sealed class Packet : IDisposable, IEquatable<Packet>, IPacketizable
+    public sealed class Packet : IEquatable<Packet>, IWritablePacket, IReadablePacket
     {
         #region Properties
 
@@ -48,14 +48,13 @@ namespace Engine.Serialization
             _stream = new MemoryStream();
         }
 
-        /// <summary>
-        /// Create a new packet based on the given buffer, which will
-        /// result in a read-only packet.
-        /// </summary>
+        /// <summary>Create a new packet based on the given buffer, which will
+        /// result in a read-only packet.</summary>
         /// <param name="data">The data to initialize the packet with.</param>
-        public Packet(byte[] data)
+        /// <param name="writable">Whether this packet can be written to..</param>
+        public Packet(byte[] data, bool writable)
         {
-            _stream = new MemoryStream(data ?? new byte[0], false);
+            _stream = new MemoryStream(data ?? new byte[0], writable);
         }
 
         /// <summary>
@@ -75,7 +74,8 @@ namespace Engine.Serialization
         #region Buffer
 
         /// <summary>
-        /// Writes the contents of this packet to an array and returns it.
+        /// Returns the underlying array buffer of this packet. This is a reference to
+        /// the actually used buffer, so it should be treated as read-only.
         /// </summary>
         /// <returns>The raw contents of this packet as a <c>byte[]</c>.</returns>
         public byte[] GetBuffer()
@@ -100,7 +100,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(bool data)
+        public IWritablePacket Write(bool data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
@@ -112,7 +112,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(byte data)
+        public IWritablePacket Write(byte data)
         {
             _stream.WriteByte(data);
             return this;
@@ -123,7 +123,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(double data)
+        public IWritablePacket Write(double data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
@@ -135,19 +135,19 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(float data)
+        public IWritablePacket Write(float data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
-        
+
         /// <summary>
         /// Writes the specified int32 value.
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(int data)
+        public IWritablePacket Write(int data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
@@ -159,7 +159,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(long data)
+        public IWritablePacket Write(long data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
@@ -171,7 +171,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(short data)
+        public IWritablePacket Write(short data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
@@ -183,7 +183,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(uint data)
+        public IWritablePacket Write(uint data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
@@ -195,7 +195,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(ulong data)
+        public IWritablePacket Write(ulong data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
@@ -207,26 +207,11 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(ushort data)
+        public IWritablePacket Write(ushort data)
         {
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
-        }
-
-        /// <summary>
-        /// Writes the specified byte array.
-        /// 
-        /// <para>
-        /// May be <c>null</c>.
-        /// </para>
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(byte[] data)
-        {
-            // Doing null check here to avoid nullpointer reading length.
-            return data == null ? Write(-1) : Write(data, 0, data.Length);
         }
 
         /// <summary>
@@ -241,7 +226,7 @@ namespace Engine.Serialization
         /// <returns>
         /// This packet, for call chaining.
         /// </returns>
-        public Packet Write(byte[] data, int offset, int length)
+        public IWritablePacket Write(byte[] data, int offset, int length)
         {
             if (data == null)
             {
@@ -256,11 +241,36 @@ namespace Engine.Serialization
         }
 
         /// <summary>
+        /// Writes the specified byte array.
+        /// 
+        /// <para>
+        /// May be <c>null</c>.
+        /// </para>
+        /// </summary>
+        /// <param name="data">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public IWritablePacket Write(byte[] data)
+        {
+            // Doing null check here to avoid nullpointer reading length.
+            return data == null ? Write(-1) : Write(data, 0, data.Length);
+        }
+
+        /// <summary>
+        /// Writes the specified packet.
+        /// </summary>
+        /// <param name="data">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public IWritablePacket Write(IWritablePacket data)
+        {
+            return data == null ? Write(-1) : Write(data.GetBuffer(), 0, data.Length);
+        }
+
+        /// <summary>
         /// Writes the specified string value using UTF8 encoding.
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(string data)
+        public IWritablePacket Write(string data)
         {
             if (data == null)
             {
@@ -277,16 +287,9 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Type data)
+        public IWritablePacket Write(Type data)
         {
-            if (data == null)
-            {
-                return Write((string)null);
-            }
-            else
-            {
-                return Write(data.AssemblyQualifiedName);
-            }
+            return data == null ? Write((string)null) : Write(data.AssemblyQualifiedName);
         }
 
         /// <summary>
@@ -302,7 +305,7 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write<T>(ICollection<T> data)
+        public IWritablePacket Write<T>(ICollection<T> data)
             where T : class, IPacketizable
         {
             if (data == null)
@@ -333,7 +336,7 @@ namespace Engine.Serialization
         /// </para>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet WriteWithTypeInfo<T>(ICollection<T> data)
+        public IWritablePacket WriteWithTypeInfo<T>(ICollection<T> data)
             where T : class, IPacketizable
         {
             if (data == null)
@@ -362,7 +365,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out bool data)
+        public IReadablePacket Read(out bool data)
         {
             data = ReadBoolean();
             return this;
@@ -375,7 +378,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out byte data)
+        public IReadablePacket Read(out byte data)
         {
             data = ReadByte();
             return this;
@@ -388,7 +391,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out float data)
+        public IReadablePacket Read(out float data)
         {
             data = ReadSingle();
             return this;
@@ -401,7 +404,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out double data)
+        public IReadablePacket Read(out double data)
         {
             data = ReadDouble();
             return this;
@@ -414,7 +417,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out short data)
+        public IReadablePacket Read(out short data)
         {
             data = ReadInt16();
             return this;
@@ -427,7 +430,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out int data)
+        public IReadablePacket Read(out int data)
         {
             data = ReadInt32();
             return this;
@@ -440,7 +443,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out long data)
+        public IReadablePacket Read(out long data)
         {
             data = ReadInt64();
             return this;
@@ -453,7 +456,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out ushort data)
+        public IReadablePacket Read(out ushort data)
         {
             data = ReadUInt16();
             return this;
@@ -466,7 +469,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out uint data)
+        public IReadablePacket Read(out uint data)
         {
             data = ReadUInt32();
             return this;
@@ -479,9 +482,23 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out ulong data)
+        public IReadablePacket Read(out ulong data)
         {
             data = ReadUInt64();
+            return this;
+        }
+
+        /// <summary>
+        /// Reads a byte array.
+        /// </summary>
+        /// <param name="buffer">The buffer to write to.</param>
+        /// <param name="offset">The offset to start writing at.</param>
+        /// <param name="count">The number of bytes to read.</param>
+        /// <param name="length">The number of bytes read.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public IReadablePacket Read(byte[] buffer, int offset, int count, out int length)
+        {
+            length = ReadByteArray(buffer, offset, count);
             return this;
         }
 
@@ -496,23 +513,26 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out byte[] data)
+        public IReadablePacket Read(out byte[] data)
         {
             data = ReadByteArray();
             return this;
         }
-
+        
         /// <summary>
-        /// Reads a byte array.
+        /// Reads a packet.
+        /// 
+        /// <para>
+        /// May yield <c>null</c>.
+        /// </para>
         /// </summary>
-        /// <param name="buffer">The buffer to write to.</param>
-        /// <param name="offset">The offset to start writing at.</param>
-        /// <param name="count">The number of bytes to read.</param>
-        /// <param name="length">The number of bytes read.</param>
+        /// <param name="data">The read value.</param>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(byte[] buffer, int offset, int count, out int length)
+        public IReadablePacket Read(out IReadablePacket data)
         {
-            length = ReadByteArray(buffer, offset, count);
+            data = ReadPacket();
             return this;
         }
 
@@ -523,7 +543,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out string data)
+        public IReadablePacket Read(out string data)
         {
             data = ReadString();
             return this;
@@ -536,7 +556,7 @@ namespace Engine.Serialization
         /// <exception cref="PacketException">The type is not known in the
         /// local assembly.</exception>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Read(out Type data)
+        public IReadablePacket Read(out Type data)
         {
             data = ReadType();
             return this;
@@ -712,6 +732,27 @@ namespace Engine.Serialization
 
         /// <summary>
         /// Reads a byte array.
+        /// </summary>
+        /// <param name="buffer">The buffer to write to.</param>
+        /// <param name="offset">The offset to start writing at.</param>
+        /// <param name="count">The number of bytes to read.</param>
+        /// <returns>The number of bytes read.</returns>
+        public int ReadByteArray(byte[] buffer, int offset, int count)
+        {
+            if (!HasByteArray())
+            {
+                throw new PacketException("Cannot read byte[].");
+            }
+            var length = ReadInt32();
+            if (length != count)
+            {
+                throw new PacketException("Expected array size does not match written array's size.");
+            }
+            return _stream.Read(buffer, offset, count);
+        }
+
+        /// <summary>
+        /// Reads a byte array.
         /// 
         /// <para>
         /// May return <c>null</c>.
@@ -736,26 +777,20 @@ namespace Engine.Serialization
             _stream.Read(bytes, 0, bytes.Length);
             return bytes;
         }
-
+        
         /// <summary>
-        /// Reads a byte array.
+        /// Reads a packet.
+        /// 
+        /// <para>
+        /// May return <c>null</c>.
+        /// </para>
         /// </summary>
-        /// <param name="buffer">The buffer to write to.</param>
-        /// <param name="offset">The offset to start writing at.</param>
-        /// <param name="count">The number of bytes to read.</param>
-        /// <returns>The number of bytes read.</returns>
-        public int ReadByteArray(byte[] buffer, int offset, int count)
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        public IReadablePacket ReadPacket()
         {
-            if (!HasByteArray())
-            {
-                throw new PacketException("Cannot read byte[].");
-            }
-            var length = ReadInt32();
-            if (length != count)
-            {
-                throw new PacketException("Read array size does not match written array's size.");
-            }
-            return _stream.Read(buffer, offset, count);
+            return (Packet)ReadByteArray();
         }
 
         /// <summary>
@@ -844,7 +879,7 @@ namespace Engine.Serialization
         /// <typeparam name="T"></typeparam>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private T[] ReadPacketizables<T>(Func<Packet, T> reader)
+        private T[] ReadPacketizables<T>(Func<IReadablePacket, T> reader)
             where T : IPacketizable
         {
             var numPacketizables = ReadInt32();
@@ -1160,14 +1195,22 @@ namespace Engine.Serialization
         #region Casting
 
         /// <summary>
-        /// Casts a packet to a byte array.
+        /// Casts a packet to a byte array. This allocates a new array.
         /// </summary>
         /// <param name="value">The packet to cast.</param>
         /// <returns>A byte array representing the packet's internal buffer,
         /// or <c>null</c> if the packet itself was <c>null</c>.</returns>
         public static explicit operator byte[](Packet value)
         {
-            return value == null ? null : value.GetBuffer();
+            if (value == null)
+            {
+                return null;
+            }
+            var buffer = value.GetBuffer();
+            var length = value.Length;
+            var result = new byte[length];
+            buffer.CopyTo(result, 0);
+            return result;
         }
 
         /// <summary>
@@ -1182,7 +1225,7 @@ namespace Engine.Serialization
         /// or <c>null</c> if the packet itself was <c>null</c>.</returns>
         public static explicit operator Packet(byte[] value)
         {
-            return value == null ? null : new Packet(value);
+            return value == null ? null : new Packet(value, false);
         }
 
         #endregion
@@ -1218,44 +1261,6 @@ namespace Engine.Serialization
             }
         }
 
-        #endregion
-
-        #region Serialization
-        
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        [Packetize]
-        public Packet Packetize(Packet packet)
-        {
-            return packet.Write(_stream.ToArray());
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
-        /// </summary>
-        [PreDepacketize]
-        public void PreDepacketize()
-        {
-            _stream.Dispose();
-            _stream = null;
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// after automatic depacketization has been performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public void PostDepacketize(Packet packet)
-        {
-            var data = packet.ReadByteArray();
-            _stream = new MemoryStream(data ?? new byte[0], false);
-        }
-        
         #endregion
     }
 }

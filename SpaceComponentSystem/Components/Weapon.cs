@@ -115,7 +115,7 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="packet">The packet.</param>
         /// <returns></returns>
-        public override Packet Packetize(Packet packet)
+        public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
@@ -135,7 +135,7 @@ namespace Space.ComponentSystem.Components
         /// Depacketizes the specified packet.
         /// </summary>
         /// <param name="packet">The packet.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void PostDepacketize(IReadablePacket packet)
         {
             base.PostDepacketize(packet);
 

@@ -525,8 +525,8 @@ namespace Engine.ComponentSystem
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        [Packetize]
-        public Packet Packetize(Packet packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
             // Write the components, which are enough to implicitly restore the
             // entity to component mapping as well, so we don't need to write
@@ -562,7 +562,7 @@ namespace Engine.ComponentSystem
         /// Bring the object to the state in the given packet. This is called
         /// before automatic depacketization is performed.
         /// </summary>
-        [PreDepacketize]
+        [OnPreDepacketize]
         public void PreDepacketize()
         {
             // Release all current objects.
@@ -583,8 +583,8 @@ namespace Engine.ComponentSystem
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public void PostDepacketize(Packet packet)
+        [OnPostDepacketize]
+        public void PostDepacketize(IReadablePacket packet)
         {
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
@@ -668,12 +668,12 @@ namespace Engine.ComponentSystem
         /// <para/>
         /// This uses the components' <c>Packetize</c> facilities.
         /// </summary>
-        /// <param name="entity">The entity to write.</param>
         /// <param name="packet">The packet to write to.</param>
+        /// <param name="entity">The entity to write.</param>
         /// <returns>
         /// The packet after writing the entity's components.
         /// </returns>
-        public Packet PacketizeEntity(int entity, Packet packet)
+        public IWritablePacket PacketizeEntity(IWritablePacket packet, int entity)
         {
             return packet.WriteWithTypeInfo(_entities[entity].Components);
         }
@@ -698,7 +698,7 @@ namespace Engine.ComponentSystem
         /// <param name="componentIdMap">A mapping of how components' ids
         /// changed due to serialization, mapping old id to new id.</param>
         /// <returns>The id of the read entity.</returns>
-        public int DepacketizeEntity(Packet packet, Dictionary<int, int> componentIdMap = null)
+        public int DepacketizeEntity(IReadablePacket packet, Dictionary<int, int> componentIdMap = null)
         {
             // Keep track of what we already did, to allow unwinding if something
             // bad happens. Then get an entity id and try to read the components.

@@ -490,7 +490,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                         var hasher = new Hasher();
                         _manager.Hash(hasher);
                         _snapshotHash = hasher.Value;
-                        _snapshotCompressedSize = SimpleCompression.Compress(_snapshot.GetBuffer()).Length;
+                        _snapshotCompressedSize = SimpleCompression.Compress(_snapshot.GetBuffer(), _snapshot.Length).Length;
                     }
                     break;
                 case Keys.L:

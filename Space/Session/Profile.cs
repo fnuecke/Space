@@ -105,6 +105,7 @@ namespace Space.Session
             {
                 _data.Dispose();
             }
+            _data = null;
         }
 
         #endregion
@@ -168,7 +169,7 @@ namespace Space.Session
 
                 // Now we have the plain data, handle it as a packet to read our
                 // data from it.
-                using (var packet = new Packet(plain))
+                using (var packet = new Packet(plain, false))
                 {
                     // Get file header.
                     if (!CheckHeader(packet.ReadByteArray()))
@@ -197,7 +198,7 @@ namespace Space.Session
                     {
                         // All is well, keep the data, drop our old data, if any.
                         PlayerClass = playerClass;
-                        _data = new Packet(data);
+                        _data = new Packet(data, true);
                     }
                 }
             }
@@ -213,12 +214,11 @@ namespace Space.Session
         public void Save()
         {
             // Get our plain data and hash it.
-            var plain = (_data != null) ? _data.GetBuffer() : null;
             var hasher = new Hasher();
             hasher.Put((byte)PlayerClass);
-            if (plain != null)
+            if (_data != null)
             {
-                hasher.Put(plain);
+                hasher.Put((byte[])_data);
             }
 
             // Write it to a packet, compress it, encrypt it and save it.
@@ -228,10 +228,10 @@ namespace Space.Session
                 packet.Write(Header);
                 packet.Write(hasher.Value);
                 packet.Write((byte)PlayerClass);
-                packet.Write(plain);
+                packet.Write(_data);
 
                 // Compress and encrypt, then save.
-                var compressed = SimpleCompression.Compress(packet.GetBuffer());
+                var compressed = SimpleCompression.Compress(packet.GetBuffer(), packet.Length);
                 var encrypted = Crypto.Encrypt(compressed);
 
                 var profilePath = GetFullProfilePath();
@@ -265,9 +265,9 @@ namespace Space.Session
                     {
                         File.WriteAllBytes(profilePath, encrypted);
 #if DEBUG
-                        if (plain != null)
+                        if (_data != null)
                         {
-                            File.WriteAllBytes(profilePath + ".raw", plain);
+                            File.WriteAllBytes(profilePath + ".raw", (byte[])_data);
                         }
 #endif
                     }
@@ -374,7 +374,7 @@ namespace Space.Session
             {
                 // Write old id of containing slot and id of stored item.
                 _data.Write(slot.Id);
-                manager.PacketizeEntity(slot.Item, _data);
+                manager.PacketizeEntity(_data, slot.Item);
             }
 
             // And finally, the inventory. Same as with the equipment, we have
@@ -392,7 +392,7 @@ namespace Space.Session
                     if (item > 0)
                     {
                         _data.Write(slot);
-                        manager.PacketizeEntity(item, _data);
+                        manager.PacketizeEntity(_data, item);
                     }
                 }
             }
@@ -401,7 +401,7 @@ namespace Space.Session
                 // List inventory, just dump all the items.
                 foreach (var item in inventory)
                 {
-                    manager.PacketizeEntity(item, _data);
+                    manager.PacketizeEntity(_data, item);
                 }
             }
         }

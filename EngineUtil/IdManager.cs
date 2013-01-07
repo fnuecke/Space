@@ -117,8 +117,8 @@ namespace Engine.Util
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
-        [Packetize]
-        public Packet Packetize(Packet packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
             packet.Write(_reusableIds.Count);
             foreach (var reusableId in _reusableIds)
@@ -134,8 +134,8 @@ namespace Engine.Util
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public void Depacketize(Packet packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
             _reusableIds.Clear();
             var numReusableIds = packet.ReadInt32();

@@ -224,7 +224,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="packet">The packet.</param>
         /// <returns></returns>
-        public override Packet Packetize(Packet packet)
+        public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
@@ -242,7 +242,7 @@ namespace Space.ComponentSystem.Systems
         /// Depacketizes the specified packet.
         /// </summary>
         /// <param name="packet">The packet.</param>
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(IReadablePacket packet)
         {
             base.Depacketize(packet);
 

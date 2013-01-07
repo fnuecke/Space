@@ -493,8 +493,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        [Packetize]
-        public virtual Packet Packetize(Packet packet)
+        [OnPacketize]
+        public virtual IWritablePacket Packetize(IWritablePacket packet)
         {
             return packet;
         }
@@ -504,8 +504,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public virtual void Depacketize(Packet packet)
+        [OnPostDepacketize]
+        public virtual void Depacketize(IReadablePacket packet)
         {
         }
 

@@ -109,8 +109,8 @@ namespace Engine.Simulation
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        [Packetize]
-        public virtual Packet Packetize(Packet packet)
+        [OnPacketize]
+        public virtual IWritablePacket Packetize(IWritablePacket packet)
         {
             // Then serialize all pending commands for the next frame.
             packet.WriteWithTypeInfo(Commands);
@@ -122,8 +122,8 @@ namespace Engine.Simulation
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public virtual void PostDepacketize(Packet packet)
+        [OnPostDepacketize]
+        public virtual void PostDepacketize(IReadablePacket packet)
         {
             // Continue with reading the list of commands.
             Commands.Clear();

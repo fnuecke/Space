@@ -8,32 +8,29 @@ namespace Engine.XnaExtensions
     /// </summary>
     public static class PacketXnaExtensions
     {
-        /// <summary>
-        /// Writes the specified vector value.
-        /// </summary>
+        /// <summary>Writes the specified vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, Vector2 data)
+        public static IWritablePacket Write(this IWritablePacket packet, Vector2 data)
         {
             return packet.Write(data.X).Write(data.Y);
         }
 
-        /// <summary>
-        /// Writes the specified vector value.
-        /// </summary>
+        /// <summary>Writes the specified vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, Vector3 data)
+        public static IWritablePacket Write(this IWritablePacket packet, Vector3 data)
         {
             return packet.Write(data.X).Write(data.Y).Write(data.Z);
         }
 
-        /// <summary>
-        /// Writes the specified matrix value.
-        /// </summary>
+        /// <summary>Writes the specified matrix value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, Matrix data)
+        public static IWritablePacket Write(this IWritablePacket packet, Matrix data)
         {
             return packet.Write(data.M11).Write(data.M12).Write(data.M13).Write(data.M14).
                 Write(data.M21).Write(data.M22).Write(data.M23).Write(data.M24).
@@ -41,98 +38,90 @@ namespace Engine.XnaExtensions
                 Write(data.M41).Write(data.M42).Write(data.M43).Write(data.M44);
         }
 
-        /// <summary>
-        /// Writes the specified rectangle value.
-        /// </summary>
+        /// <summary>Writes the specified rectangle value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, Rectangle data)
+        public static IWritablePacket Write(this IWritablePacket packet, Rectangle data)
         {
             return packet.Write(data.X).Write(data.Y).Write(data.Width).Write(data.Height);
         }
 
-        /// <summary>
-        /// Writes the specified vector value.
-        /// </summary>
+        /// <summary>Writes the specified vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, Color data)
+        public static IWritablePacket Write(this IWritablePacket packet, Color data)
         {
             return packet.Write(data.PackedValue);
         }
 
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
+        /// <summary>Reads a vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        public static Packet Read(this Packet packet, out Vector2 result)
+        public static IReadablePacket Read(this IReadablePacket packet, out Vector2 result)
         {
             result = packet.ReadVector2();
             return packet;
         }
 
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
+        /// <summary>Reads a vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        public static Packet Read(this Packet packet, out Vector3 result)
+        public static IReadablePacket Read(this IReadablePacket packet, out Vector3 result)
         {
             result = packet.ReadVector3();
             return packet;
         }
 
-        /// <summary>
-        /// Reads a matrix value.
-        /// </summary>
+        /// <summary>Reads a matrix value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        public static Packet Read(this Packet packet, out Matrix result)
+        public static IReadablePacket Read(this IReadablePacket packet, out Matrix result)
         {
             result = packet.ReadMatrix();
             return packet;
         }
 
-        /// <summary>
-        /// Reads a rectangle value.
-        /// </summary>
+        /// <summary>Reads a rectangle value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        public static Packet Read(this Packet packet, out Rectangle result)
+        public static IReadablePacket Read(this IReadablePacket packet, out Rectangle result)
         {
             result = packet.ReadRectangle();
             return packet;
         }
 
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
+        /// <summary>Reads a vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
+        /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        /// <returns>This packet, for call chaining.</returns>
-        public static Packet Read(this Packet packet, out Color result)
+        public static IReadablePacket Read(this IReadablePacket packet, out Color result)
         {
             result = packet.ReadColor();
             return packet;
         }
 
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
+        /// <summary>Reads a vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Vector2 ReadVector2(this Packet packet)
+        public static Vector2 ReadVector2(this IReadablePacket packet)
         {
             Vector2 result;
             result.X = packet.ReadSingle();
@@ -140,13 +129,12 @@ namespace Engine.XnaExtensions
             return result;
         }
 
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
+        /// <summary>Reads a vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Vector3 ReadVector3(this Packet packet)
+        public static Vector3 ReadVector3(this IReadablePacket packet)
         {
             Vector3 result;
             result.X = packet.ReadSingle();
@@ -155,13 +143,12 @@ namespace Engine.XnaExtensions
             return result;
         }
 
-        /// <summary>
-        /// Reads a matrix value.
-        /// </summary>
+        /// <summary>Reads a matrix value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Matrix ReadMatrix(this Packet packet)
+        public static Matrix ReadMatrix(this IReadablePacket packet)
         {
             Matrix result;
             result.M11 = packet.ReadSingle();
@@ -183,13 +170,12 @@ namespace Engine.XnaExtensions
             return result;
         }
 
-        /// <summary>
-        /// Reads a rectangle value.
-        /// </summary>
+        /// <summary>Reads a rectangle value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Rectangle ReadRectangle(this Packet packet)
+        public static Rectangle ReadRectangle(this IReadablePacket packet)
         {
             Rectangle result;
             result.X = packet.ReadInt32();
@@ -199,13 +185,12 @@ namespace Engine.XnaExtensions
             return result;
         }
 
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
+        /// <summary>Reads a vector value.</summary>
+        /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Color ReadColor(this Packet packet)
+        public static Color ReadColor(this IReadablePacket packet)
         {
             return new Color {PackedValue = packet.ReadUInt32()};
         }

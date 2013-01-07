@@ -36,7 +36,6 @@
 */
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using Engine.Serialization;
 using Engine.Util;
@@ -82,11 +81,11 @@ namespace Engine.Random
         /// <summary>
         /// The array for the state vector.
         /// </summary>
-        [PacketizerIgnore]
+        [DeepCopy, PacketizerIgnore]
         private readonly ulong[] _mt = new ulong[N];
 
         /// <summary>
-        /// 
+        /// Current state of this randomizer.
         /// </summary>
         private int _index;
 
@@ -325,8 +324,8 @@ namespace Engine.Random
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        [Packetize]
-        public Packet Packetize(Packet packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
             for (var i = 0; i < N; i++)
             {
@@ -340,8 +339,8 @@ namespace Engine.Random
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public void PostDepacketize(Packet packet)
+        [OnPostDepacketize]
+        public void PostDepacketize(IReadablePacket packet)
         {
             for (var i = 0; i < N; i++)
             {
@@ -384,10 +383,7 @@ namespace Engine.Random
         /// <returns>The copy.</returns>
         public void CopyInto(MersenneTwister into)
         {
-            Debug.Assert(into != this);
-
-            into._index = _index;
-            _mt.CopyTo(into._mt, 0);
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

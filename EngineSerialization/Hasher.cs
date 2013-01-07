@@ -99,11 +99,22 @@ namespace Engine.Serialization
         /// <returns>a reference to the hasher, for chaining.</returns>
         public Hasher Put(byte[] value)
         {
+            return Put(value, 0, value.Length);
+        }
+        
+        /// <summary>
+        /// Put a byte array to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(byte[] value, int offset, int length)
+        {
             if (value == null)
             {
                 throw new ArgumentNullException("value");
             }
-            for (var i = 0; i < value.Length; i++)
+            for (var i = offset; i < length; i++)
             {
                 Put(value[i]);
             }

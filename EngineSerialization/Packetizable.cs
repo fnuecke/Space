@@ -11,7 +11,7 @@ namespace Engine.Serialization
     /// Use this attribute to mark properties or fields as to be ignored when
     /// packetizing or depacketzing an object.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Event)]
     public sealed class PacketizerIgnoreAttribute : Attribute
     {
     }
@@ -33,7 +33,7 @@ namespace Engine.Serialization
     /// packetizing an object, for example to allow specialized packetizing.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public sealed class PacketizeAttribute : Attribute
+    public sealed class OnPacketizeAttribute : Attribute
     {
     }
 
@@ -42,7 +42,7 @@ namespace Engine.Serialization
     /// depacketizing an object, for example to allow cleanup.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public sealed class PreDepacketizeAttribute : Attribute
+    public sealed class OnPreDepacketizeAttribute : Attribute
     {
     }
 
@@ -51,7 +51,7 @@ namespace Engine.Serialization
     /// depacketizing an object, for example to allow specialized depacketizing.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public sealed class PostDepacketizeAttribute : Attribute
+    public sealed class OnPostDepacketizeAttribute : Attribute
     {
     }
 
@@ -105,7 +105,7 @@ namespace Engine.Serialization
         /// <returns>
         /// The packet, for call chaining.
         /// </returns>
-        public static Packet Write<T>(this Packet packet, T data) where T : class, IPacketizable
+        public static IWritablePacket Write<T>(this IWritablePacket packet, T data) where T : class, IPacketizable
         {
             if (data != null)
             {
@@ -113,7 +113,14 @@ namespace Engine.Serialization
                 packet.Write(true);
                 // Packetize all fields, then give the object a chance to do manual
                 // serialization, e.g. of collections and such.
-                GetPacketizer(data.GetType())(packet, data);
+                try
+                {
+                    GetPacketizer(data.GetType())(packet, data);
+                }
+                catch (Exception ex)
+                {
+                    throw new PacketException("Failed serializing " + typeof(T).Name, ex);
+                }
                 return packet;
             }
             return packet.Write(false);
@@ -132,7 +139,7 @@ namespace Engine.Serialization
         /// <returns>
         /// This packet, for call chaining.
         /// </returns>
-        public static Packet WriteWithTypeInfo<T>(this Packet packet, T data) where T : class, IPacketizable
+        public static IWritablePacket WriteWithTypeInfo<T>(this IWritablePacket packet, T data) where T : class, IPacketizable
         {
             if (data != null)
             {
@@ -148,7 +155,14 @@ namespace Engine.Serialization
 
                 // Packetize all fields, then give the object a chance to do manual
                 // serialization, e.g. of collections and such.
-                GetPacketizer(type)(packet, data);
+                try
+                {
+                    GetPacketizer(type)(packet, data);
+                }
+                catch (Exception ex)
+                {
+                    throw new PacketException("Failed serializing " + type.Name, ex);
+                }
                 return packet;
             }
             return packet.Write((Type)null);
@@ -171,7 +185,7 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public static Packet Read<T>(this Packet packet, out T data) where T : class, IPacketizable, new()
+        public static IReadablePacket Read<T>(this IReadablePacket packet, out T data) where T : class, IPacketizable, new()
         {
             data = packet.ReadPacketizable<T>();
             return packet;
@@ -193,7 +207,7 @@ namespace Engine.Serialization
         /// <typeparam name="T">The type of the packetizable to read.</typeparam>
         /// <param name="packet">The packet.</param>
         /// <returns>The read data.</returns>
-        public static T ReadPacketizable<T>(this Packet packet) where T : class, IPacketizable, new()
+        public static T ReadPacketizable<T>(this IReadablePacket packet) where T : class, IPacketizable, new()
         {
             // See if we have anything at all, or if the written value was null.
             if (packet.ReadBoolean())
@@ -201,7 +215,14 @@ namespace Engine.Serialization
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
                 var result = new T();
-                GetDepacketizer(typeof(T))(packet, result);
+                try
+                {
+                    GetDepacketizer(typeof(T))(packet, result);
+                }
+                catch (Exception ex)
+                {
+                    throw new PacketException("Failed deserializing " + typeof(T).Name, ex);
+                }
                 return result;
             }
             return null;
@@ -219,7 +240,7 @@ namespace Engine.Serialization
         /// </returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static T ReadPacketizableWithTypeInfo<T>(this Packet packet) where T : class, IPacketizable
+        public static T ReadPacketizableWithTypeInfo<T>(this IReadablePacket packet) where T : class, IPacketizable
         {
             // Get the type.
             var type = packet.ReadType();
@@ -228,7 +249,14 @@ namespace Engine.Serialization
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
                 var result = (T)Activator.CreateInstance(type);
-                GetDepacketizer(type)(packet, result);
+                try
+                {
+                    GetDepacketizer(type)(packet, result);
+                }
+                catch (Exception ex)
+                {
+                    throw new PacketException("Failed deserializing " + type.Name, ex);
+                }
                 return result;
             }
             return null;
@@ -243,14 +271,27 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         /// <param name="result">The object to write read data to.</param>
-        public static Packet ReadPacketizableInto(this Packet packet, IPacketizable result)
+        public static IReadablePacket ReadPacketizableInto(this IReadablePacket packet, IPacketizable result)
         {
+            // We need something to write to.
+            if (result == null)
+            {
+                throw new ArgumentNullException("result", "Cannot depacketize into null reference.");
+            }
+
             // See if we have anything at all, or if the written value was null.
             if (packet.ReadBoolean())
             {
                 // Read all fields, then give the object a chance to do manual
                 // deserialization, e.g. for collections.
-                GetDepacketizer(result.GetType())(packet, result);
+                try
+                {
+                    GetDepacketizer(result.GetType())(packet, result);
+                }
+                catch (Exception ex)
+                {
+                    throw new PacketException("Failed deserializing packetizable", ex);
+                }
                 return packet;
             }
             throw new InvalidOperationException("Cannot read 'null' into existing instance.");
@@ -263,12 +304,12 @@ namespace Engine.Serialization
         /// <summary>
         /// Signature of a packetizing function.
         /// </summary>
-        private delegate Packet Packetize(Packet packet, IPacketizable data);
+        private delegate IWritablePacket Packetize(IWritablePacket packet, IPacketizable data);
 
         /// <summary>
         /// Signature of a depacketizing function.
         /// </summary>
-        private delegate Packet Depacketize(Packet packet, IPacketizable data);
+        private delegate IReadablePacket Depacketize(IReadablePacket packet, IPacketizable data);
 
         /// <summary>
         /// Cached list of type packetizers, to avoid rebuilding the methods over and over.
@@ -327,9 +368,9 @@ namespace Engine.Serialization
         /// they came from. It will skip any fields (and properties) that are marked
         /// with the <see cref="PacketizerIgnoreAttribute"/> attribute.
         /// This function may indirectly recurse. It calls any methods with the
-        /// <see cref="PacketizeAttribute"/> attribute after serialization, and any
-        /// methods with the <see cref="PreDepacketizeAttribute"/> before as well as
-        /// those with the <see cref="PostDepacketizeAttribute"/> after depacketizing
+        /// <see cref="OnPacketizeAttribute"/> attribute after serialization, and any
+        /// methods with the <see cref="OnPreDepacketizeAttribute"/> before as well as
+        /// those with the <see cref="OnPostDepacketizeAttribute"/> after depacketizing
         /// from a packet, respectively. If a value does not implement <see cref="IPacketizable"/>,
         /// it will only be handled if there is a known <c>Write</c> overload
         /// for <see cref="Packet"/>. Otherwise an exception is thrown.
@@ -350,22 +391,28 @@ namespace Engine.Serialization
             }
 
             // Invariant method shortcuts.
-            var writeInt32 = typeof(Packet)
+            var writeInt32 = typeof(IWritablePacket)
                 .GetMethod("Write", new[] { typeof(int) });
-            var readInt32 = typeof(Packet)
+            var readInt32 = typeof(IReadablePacket)
                 .GetMethod("Read", new[] { typeof(int).MakeByRefType() });
             var writePacketizable = typeof(Packetizable)
                 .GetMethod("Write").MakeGenericMethod(type);
             var readPacketizable = typeof(Packetizable)
-                .GetMethod("ReadPacketizable", new[] {typeof(Packet)});
+                .GetMethod("ReadPacketizable", new[] {typeof(IReadablePacket)});
             var readPacketizableInto = typeof(Packetizable)
-                .GetMethod("ReadPacketizableInto", new[] { typeof(Packet), typeof(IPacketizable) });
+                .GetMethod("ReadPacketizableInto", new[] { typeof(IReadablePacket), typeof(IPacketizable) });
+
+            System.Diagnostics.Debug.Assert(writeInt32 != null);
+            System.Diagnostics.Debug.Assert(readInt32 != null);
+            System.Diagnostics.Debug.Assert(writePacketizable != null);
+            System.Diagnostics.Debug.Assert(readPacketizable != null);
+            System.Diagnostics.Debug.Assert(readPacketizableInto != null);
 
             // Generate dynamic methods for the specified type.
             var packetizeMethod = new DynamicMethod(
-                "Packetize", typeof(Packet), new[] { typeof(Packet), typeof(IPacketizable) }, declaringType, true);
+                "Packetize", typeof(IWritablePacket), new[] { typeof(IWritablePacket), typeof(IPacketizable) }, declaringType, true);
             var depacketizeMethod = new DynamicMethod(
-                "Depacketize", typeof(Packet), new[] { typeof(Packet), typeof(IPacketizable) }, declaringType, true);
+                "Depacketize", typeof(IReadablePacket), new[] { typeof(IReadablePacket), typeof(IPacketizable) }, declaringType, true);
 
             // Get the code generators.
             var packetizeGenerator = packetizeMethod.GetILGenerator();
@@ -376,12 +423,18 @@ namespace Engine.Serialization
             foreach (var callback in type
                 .GetMethods(BindingFlags.Instance |
                             BindingFlags.Public)
-                .Where(m => m.IsDefined(typeof(PreDepacketizeAttribute), true) &&
-                            m.GetParameters().Length == 0 &&
-                            m.ReturnType == typeof(void)))
+                .Where(m => m.IsDefined(typeof(OnPreDepacketizeAttribute), true)))
             {
+                if (callback.GetParameters().Length != 0)
+                {
+                    throw new ArgumentException(string.Format("PreDepacketize callback {0}.{1} has invalid signature, must be (void => ?).", type.Name, callback.Name));
+                }
                 depacketizeGenerator.Emit(OpCodes.Ldarg_1);
                 depacketizeGenerator.EmitCall(OpCodes.Callvirt, callback, null);
+                if (callback.ReturnType != typeof(void))
+                {
+                    packetizeGenerator.Emit(OpCodes.Pop);
+                }
             }
 
             // Load packet as onto the stack. This will always remain the lowest entry on
@@ -394,6 +447,13 @@ namespace Engine.Serialization
             // Handle all instance fields.
             foreach (var f in GetAllFields(type))
             {
+                // Skip functions (event handlers in particular) because we have no
+                // way of serializing them.
+                if (typeof(Delegate).IsAssignableFrom(f.FieldType))
+                {
+                    continue;
+                }
+
                 // Find a write and read function for the type.
                 if (typeof(IPacketizable).IsAssignableFrom(f.FieldType))
                 {
@@ -463,15 +523,20 @@ namespace Engine.Serialization
             foreach (var callback in type
                 .GetMethods(BindingFlags.Instance |
                             BindingFlags.Public)
-                .Where(m => m.IsDefined(typeof(PacketizeAttribute), true) &&
-                            m.GetParameters().Length == 1 &&
-                            m.GetParameters()[0].ParameterType == typeof(Packet) &&
-                            m.ReturnType == typeof(Packet)))
+                .Where(m => m.IsDefined(typeof(OnPacketizeAttribute), true)))
             {
+                if (callback.GetParameters().Length != 1 ||
+                    callback.GetParameters()[0].ParameterType != typeof(IWritablePacket))
+                {
+                    throw new ArgumentException(string.Format("Packetize callback {0}.{1} has invalid signature, must be (IWritablePacket => ?).", type.Name, callback.Name));
+                }
                 packetizeGenerator.Emit(OpCodes.Ldarg_1);
                 packetizeGenerator.Emit(OpCodes.Ldarg_0);
                 packetizeGenerator.EmitCall(OpCodes.Callvirt, callback, null);
-                packetizeGenerator.Emit(OpCodes.Pop);
+                if (callback.ReturnType != typeof(void))
+                {
+                    packetizeGenerator.Emit(OpCodes.Pop);
+                }
             }
 
             // Call post-depacketize method for depacketization if a callback exists, to
@@ -479,14 +544,20 @@ namespace Engine.Serialization
             foreach (var callback in type
                 .GetMethods(BindingFlags.Instance |
                             BindingFlags.Public)
-                .Where(m => m.IsDefined(typeof(PostDepacketizeAttribute), true) &&
-                            m.GetParameters().Length == 1 &&
-                            m.GetParameters()[0].ParameterType == typeof(Packet) &&
-                            m.ReturnType == typeof(void)))
+                .Where(m => m.IsDefined(typeof(OnPostDepacketizeAttribute), true)))
             {
+                if (callback.GetParameters().Length != 1 ||
+                    callback.GetParameters()[0].ParameterType != typeof(IReadablePacket))
+                {
+                    throw new ArgumentException(string.Format("PostDepacketize callback {0}.{1} has invalid signature, must be (IReadablePacket => ?).", type.Name, callback.Name));
+                }
                 depacketizeGenerator.Emit(OpCodes.Ldarg_1);
                 depacketizeGenerator.Emit(OpCodes.Ldarg_0);
                 depacketizeGenerator.EmitCall(OpCodes.Callvirt, callback, null);
+                if (callback.ReturnType != typeof(void))
+                {
+                    depacketizeGenerator.Emit(OpCodes.Pop);
+                }
             }
 
             // Finish our dynamic functions by returning.
@@ -506,8 +577,8 @@ namespace Engine.Serialization
         {
             // Look for built-in methods.
             {
-                var packetizer = typeof(Packet).GetMethod("Write", new[] {type});
-                if (packetizer != null && packetizer.ReturnType == typeof(Packet))
+                var packetizer = typeof(IWritablePacket).GetMethod("Write", new[] {type});
+                if (packetizer != null && packetizer.ReturnType == typeof(IWritablePacket))
                 {
                     return packetizer;
                 }
@@ -515,8 +586,8 @@ namespace Engine.Serialization
             // Look for extension methods.
             foreach (var group in Packetizers)
             {
-                var packetizer = group.GetMethod("Write", new[] {typeof(Packet), type});
-                if (packetizer != null && packetizer.ReturnType == typeof(Packet))
+                var packetizer = group.GetMethod("Write", new[] {typeof(IWritablePacket), type});
+                if (packetizer != null && packetizer.IsStatic && packetizer.ReturnType == typeof(IWritablePacket))
                 {
                     return packetizer;
                 }
@@ -532,8 +603,8 @@ namespace Engine.Serialization
         {
             // Look for built-in methods.
             {
-                var depacketizer = typeof(Packet).GetMethod("Read", new[] {type.MakeByRefType()});
-                if (depacketizer != null)
+                var depacketizer = typeof(IReadablePacket).GetMethod("Read", new[] {type.MakeByRefType()});
+                if (depacketizer != null && depacketizer.ReturnType == typeof(IReadablePacket))
                 {
                     return depacketizer;
                 }
@@ -541,8 +612,8 @@ namespace Engine.Serialization
             // Look for extension methods.
             foreach (var group in Packetizers)
             {
-                var depacketizer = group.GetMethod("Read", new[] {typeof(Packet), type.MakeByRefType()});
-                if (depacketizer != null)
+                var depacketizer = group.GetMethod("Read", new[] {typeof(IReadablePacket), type.MakeByRefType()});
+                if (depacketizer != null && depacketizer.IsStatic && depacketizer.ReturnType == typeof(IReadablePacket))
                 {
                     return depacketizer;
                 }

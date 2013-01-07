@@ -47,7 +47,7 @@ namespace Engine.IO
         /// A read packet, if one was available.
         /// </returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        public Packet Read()
+        public IReadablePacket Read()
         {
             using (var packet = _stream.Read())
             {
@@ -59,7 +59,7 @@ namespace Engine.IO
                     {
                         data = SimpleCompression.Decompress(data);
                     }
-                    return new Packet(data);
+                    return new Packet(data, false);
                 }
             }
             return null;
@@ -74,7 +74,7 @@ namespace Engine.IO
         /// from the length of the specified packet due to transforms from
         /// wrapper streams (encryption, compression, ...)</returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        public int Write(Packet packet)
+        public int Write(IWritablePacket packet)
         {
             using (var data = new Packet())
             {
@@ -82,7 +82,7 @@ namespace Engine.IO
                 // Only start after a certain size. General overhead for gzip
                 // seems to be around 130byte, so make sure we're well beyond that.
                 byte[] compressed;
-                if (packet.Length > 200 && (compressed = SimpleCompression.Compress(packet.GetBuffer())).Length < packet.Length)
+                if (packet.Length > 200 && (compressed = SimpleCompression.Compress(packet.GetBuffer(), packet.Length)).Length < packet.Length)
                 {
                     // OK, worth it, it's smaller than before.
                     data.Write(true);
@@ -91,7 +91,7 @@ namespace Engine.IO
                 else
                 {
                     data.Write(false);
-                    data.Write(packet);
+                    data.Write(packet.GetBuffer(), 0, packet.Length);
                 }
 
                 return _stream.Write(data);

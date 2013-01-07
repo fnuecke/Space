@@ -164,7 +164,7 @@ namespace Engine.Session
                                                             : TrafficTypes.Protocol);
                                 Info.PutIncomingPacketSize(packet.Length);
 
-                                using (var data = packet.ReadPacketizable<Packet>())
+                                using (var data = packet.ReadPacket())
                                 {
                                     HandleTcpData(type, data);
                                 }
@@ -202,7 +202,8 @@ namespace Engine.Session
             Logger.Trace("Sending ping to search for open games.");
             using (var packet = new Packet())
             {
-                Udp.Send(packet.Write((byte)SessionMessage.GameInfoRequest), DefaultMulticastEndpoint);
+                packet.Write((byte)SessionMessage.GameInfoRequest);
+                Udp.Send(packet, DefaultMulticastEndpoint);
             }
         }
 
@@ -269,21 +270,20 @@ namespace Engine.Session
             // The server gets one in the other direction (see below).
             _stream = new SlidingPacketStream(toClient, toServer);
             using (var packet = new Packet())
+            using (var packetInner = new Packet())
             {
-                using (var packetInner = new Packet())
-                {
-                    packet.
-                        Write((byte)SessionMessage.JoinRequest).
-                        Write(packetInner.
-                                  Write(_playerName).
-                                  Write(_playerData));
-                    var written = _stream.Write(packet);
+                packetInner.
+                    Write(_playerName).
+                    Write(_playerData);
+                packet.
+                    Write((byte)SessionMessage.JoinRequest).
+                    Write(packetInner);
+                var written = _stream.Write(packet);
 
-                    // Statistics.
-                    Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
-                    Info.PutOutgoingPacketSize(written);
-                    Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
-                }
+                // Statistics.
+                Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                Info.PutOutgoingPacketSize(written);
+                Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
             }
 
             // Let's try this. This can throw if the server is already
@@ -317,7 +317,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
-        protected override void Send(SessionMessage type, Packet packet = null)
+        protected override void Send(SessionMessage type, IWritablePacket packet = null)
         {
             if (ConnectionState != ClientState.Connected)
             {
@@ -331,10 +331,9 @@ namespace Engine.Session
                     var written = _stream.Write(wrapper);
 
                     // Statistics.
-                    Info.PutOutgoingTraffic(written,
-                                                    type == SessionMessage.Data
-                                                        ? TrafficTypes.Data
-                                                        : TrafficTypes.Protocol);
+                    Info.PutOutgoingTraffic(written, type == SessionMessage.Data
+                                                         ? TrafficTypes.Data
+                                                         : TrafficTypes.Protocol);
                     Info.PutOutgoingPacketSize(written);
                     if (packet != null)
                     {
@@ -368,24 +367,22 @@ namespace Engine.Session
                 {
                     Logger.Debug("Connected to host, sending actual join request.");
                     _tcp.EndConnect(result);
-                    _stream =
-                        new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
+                    _stream = new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
                     using (var packet = new Packet())
+                    using (var packetInner = new Packet())
                     {
-                        using (var packetInner = new Packet())
-                        {
-                            packet.
-                                Write((byte)SessionMessage.JoinRequest).
-                                Write(packetInner.
-                                          Write(_playerName).
-                                          Write(_playerData));
-                            var written = _stream.Write(packet);
+                        packetInner.
+                            Write(_playerName).
+                            Write(_playerData);
+                        packet.
+                            Write((byte)SessionMessage.JoinRequest).
+                            Write(packetInner);
+                        var written = _stream.Write(packet);
 
-                            // Statistics.
-                            Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
-                            Info.PutOutgoingPacketSize(written);
-                            Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
-                        }
+                        // Statistics.
+                        Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                        Info.PutOutgoingPacketSize(written);
+                        Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
                     }
                 }
                 catch (SocketException ex)
@@ -411,7 +408,7 @@ namespace Engine.Session
             var type = (SessionMessage)e.Data.ReadByte();
 
             // Get additional data.
-            using (var packet = e.Data.ReadPacketizable<Packet>())
+            using (var packet = e.Data.ReadPacket())
             {
                 switch (type)
                 {
@@ -435,7 +432,7 @@ namespace Engine.Session
                                     var numPlayers = packet.ReadInt32();
 
                                     // Get additional data.
-                                    using (var customData = packet.ReadPacketizable<Packet>())
+                                    using (var customData = packet.ReadPacket())
                                     {
                                         Logger.Trace(
                                             "Got game info from host '{0}': {1}/{2} players, data of length {3}.",
@@ -482,7 +479,7 @@ namespace Engine.Session
         /// <summary>
         /// Got some data via our TCP connection, so it's from the server.
         /// </summary>
-        private void HandleTcpData(SessionMessage type, Packet packet)
+        private void HandleTcpData(SessionMessage type, IReadablePacket packet)
         {
             switch (type)
             {
@@ -510,7 +507,7 @@ namespace Engine.Session
                         Players = new Player[MaxPlayers];
 
                         // Get other game relevant data.
-                        using (var joinData = packet.ReadPacketizable<Packet>())
+                        using (var joinData = packet.ReadPacket())
                         {
                             // Get info on players already in the session, including us.
                             for (var i = 0; i < NumPlayers; i++)

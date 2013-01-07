@@ -202,7 +202,7 @@ namespace Engine.Session
                                                                 : TrafficTypes.Protocol);
                             Info.PutIncomingPacketSize(packet.Length);
 
-                            using (var data = packet.ReadPacketizable<Packet>())
+                            using (var data = packet.ReadPacket())
                             {
                                 HandleTcpData(i, type, data);
                             }
@@ -255,7 +255,7 @@ namespace Engine.Session
                         if (packet != null)
                         {
                             var type = (SessionMessage)packet.ReadByte();
-                            using (var data = packet.ReadPacketizable<Packet>())
+                            using (var data = packet.ReadPacket())
                             {
                                 HandlePendingData(i, type, data);
                             }
@@ -313,7 +313,8 @@ namespace Engine.Session
             {
                 using (var packet = new Packet())
                 {
-                    SendTo(player, SessionMessage.PlayerLeft, packet.Write(player.Number));
+                    packet.Write(player.Number);
+                    SendTo(player, SessionMessage.PlayerLeft, packet);
                 }
                 Remove(player.Number);
             }
@@ -328,7 +329,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">The play to whom to send the packet.</param>
         /// <param name="packet">The data to send.</param>
-        public void SendTo(Player player, Packet packet)
+        public void SendTo(Player player, IWritablePacket packet)
         {
             SendTo(player, SessionMessage.Data, packet);
         }
@@ -338,7 +339,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
-        protected override void Send(SessionMessage type, Packet packet = null)
+        protected override void Send(SessionMessage type, IWritablePacket packet = null)
         {
             foreach (var player in AllPlayers)
             {
@@ -352,7 +353,7 @@ namespace Engine.Session
         /// <param name="player">The player to whom to send the packet.</param>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
-        private void SendTo(Player player, SessionMessage type, Packet packet)
+        private void SendTo(Player player, SessionMessage type, IWritablePacket packet)
         {
             if (!HasPlayer(player))
             {
@@ -405,7 +406,7 @@ namespace Engine.Session
 
             // Get additional data.
             // TODO what happens with data?
-            using (var data = e.Data.ReadPacketizable<Packet>())
+            using (var data = e.Data.ReadPacket())
             {
                 switch (type)
                 {
@@ -418,12 +419,14 @@ namespace Engine.Session
                                 using (var packet = new Packet())
                                 using (var packetInner = new Packet())
                                 {
-                                    Udp.Send(packet
+                                    packetInner
+                                        .Write(MaxPlayers)
+                                        .Write(NumPlayers)
+                                        .Write(requestArgs.Data);
+                                    packet
                                         .Write((byte)SessionMessage.GameInfoResponse)
-                                        .Write(packetInner
-                                            .Write(MaxPlayers)
-                                            .Write(NumPlayers)
-                                            .Write(requestArgs.Data)),
+                                        .Write(packetInner);
+                                    Udp.Send(packet,
                                         e.RemoteEndPoint);
                                 }
                             }
@@ -444,7 +447,7 @@ namespace Engine.Session
         /// <param name="pendingIndex">the index of the pending connection data.</param>
         /// <param name="type">the type of message we got.</param>
         /// <param name="packet">the data we got with it.</param>
-        private void HandlePendingData(int pendingIndex, SessionMessage type, Packet packet)
+        private void HandlePendingData(int pendingIndex, SessionMessage type, IReadablePacket packet)
         {
             switch (type)
             {
@@ -565,7 +568,7 @@ namespace Engine.Session
             }
         }
 
-        private void HandleTcpData(int playerNumber, SessionMessage type, Packet packet)
+        private void HandleTcpData(int playerNumber, SessionMessage type, IReadablePacket packet)
         {
             switch (type)
             {
@@ -626,7 +629,8 @@ namespace Engine.Session
 
             using (var packet = new Packet())
             {
-                Send(SessionMessage.PlayerLeft, packet.Write(playerNumber));
+                packet.Write(playerNumber);
+                Send(SessionMessage.PlayerLeft, packet);
             }
             OnPlayerLeft(new PlayerEventArgs(player));
         }

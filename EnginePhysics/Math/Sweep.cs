@@ -94,7 +94,7 @@ namespace Engine.Physics.Math
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, Sweep data)
+        public static IWritablePacket Write(this IWritablePacket packet, Sweep data)
         {
             return packet
                 .Write(data.LocalCenter)
@@ -111,7 +111,7 @@ namespace Engine.Physics.Math
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Packet Read(this Packet packet, out Sweep data)
+        public static IReadablePacket Read(this IReadablePacket packet, out Sweep data)
         {
             data = packet.ReadSweep();
             return packet;
@@ -122,7 +122,7 @@ namespace Engine.Physics.Math
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Sweep ReadSweep(this Packet packet)
+        public static Sweep ReadSweep(this IReadablePacket packet)
         {
             Sweep result;
             result.LocalCenter = packet.ReadVector2();

@@ -112,7 +112,7 @@ namespace Engine.Controller
         /// <param name="command">The command to wrap.</param>
         /// <param name="packet">The packet to wrap into.</param>
         /// <returns>the given packet, after writing.</returns>
-        protected virtual Packet WrapDataForSend(TCommand command, Packet packet)
+        protected virtual IWritablePacket WrapDataForSend(TCommand command, IWritablePacket packet)
         {
             return packet.WriteWithTypeInfo(command);
         }

@@ -161,7 +161,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         /// <param name="packet">the final packet to send.</param>
         /// <returns>the given packet, after writing.</returns>
-        protected override Packet WrapDataForSend(FrameCommand command, Packet packet)
+        protected override IWritablePacket WrapDataForSend(FrameCommand command, IWritablePacket packet)
         {
             // Wrap it up like a TSS client would.
             packet.Write((byte)AbstractTssController<IClientSession>.TssControllerMessage.Command);

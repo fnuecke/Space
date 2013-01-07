@@ -251,7 +251,7 @@ namespace Engine.Physics.Collision
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, Manifold data)
+        public static IWritablePacket Write(this IWritablePacket packet, Manifold data)
         {
             return packet
                 .Write(data.Points.Item1)
@@ -268,7 +268,7 @@ namespace Engine.Physics.Collision
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Packet Read(this Packet packet, out Manifold result)
+        public static IReadablePacket Read(this IReadablePacket packet, out Manifold result)
         {
             result = packet.ReadManifold();
             return packet;
@@ -279,7 +279,7 @@ namespace Engine.Physics.Collision
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Manifold ReadManifold(this Packet packet)
+        public static Manifold ReadManifold(this IReadablePacket packet)
         {
             Manifold result;
             result.Points = new FixedArray2<ManifoldPoint>
@@ -298,7 +298,7 @@ namespace Engine.Physics.Collision
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        private static Packet Write(this Packet packet, ManifoldPoint data)
+        private static IWritablePacket Write(this IWritablePacket packet, ManifoldPoint data)
         {
             return packet
                 .Write(data.LocalPoint)
@@ -312,7 +312,7 @@ namespace Engine.Physics.Collision
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        private static ManifoldPoint ReadManifoldPoint(this Packet packet)
+        private static ManifoldPoint ReadManifoldPoint(this IReadablePacket packet)
         {
             ManifoldPoint result;
             result.LocalPoint = packet.ReadVector2();

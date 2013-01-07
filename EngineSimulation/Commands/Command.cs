@@ -11,6 +11,12 @@ namespace Engine.Simulation.Commands
         #region Fields
 
         /// <summary>
+        /// The type of the command.
+        /// </summary>
+        [PacketizerIgnore]
+        public readonly Enum Type;
+
+        /// <summary>
         /// Whether the command is signed (e.g. by a server) (<c>true</c>)
         /// or came from an untrustworthy source (e.g. another client) (<c>false</c>).
         /// </summary>
@@ -25,11 +31,6 @@ namespace Engine.Simulation.Commands
         /// The id of this command, specific to the player that created it.
         /// </summary>
         public int Id;
-
-        /// <summary>
-        /// The type of the command.
-        /// </summary>
-        public readonly Enum Type;
 
         #endregion
 

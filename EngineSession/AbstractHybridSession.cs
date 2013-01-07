@@ -243,7 +243,7 @@ namespace Engine.Session
         /// Sends a data message with the the specified packet as its data.
         /// </summary>
         /// <param name="packet">The data to send.</param>
-        public void Send(Packet packet)
+        public void Send(IWritablePacket packet)
         {
             Send(SessionMessage.Data, packet);
         }
@@ -253,7 +253,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
-        protected abstract void Send(SessionMessage type, Packet packet = null);
+        protected abstract void Send(SessionMessage type, IWritablePacket packet = null);
 
         #endregion
 

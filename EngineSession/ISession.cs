@@ -70,7 +70,7 @@ namespace Engine.Session
         /// Send some data to the server.
         /// </summary>
         /// <param name="packet">the data to send.</param>
-        void Send(Packet packet);
+        void Send(IWritablePacket packet);
 
         /// <summary>
         /// Called when the session needs to be updated. This should be called

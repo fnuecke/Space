@@ -282,7 +282,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public override Packet Packetize(Packet packet)
+        public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
@@ -295,7 +295,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="packet">The packet to write to.</param>
         /// <returns>The written to packet.</returns>
-        public Packet PacketizeLocal(Packet packet)
+        public IWritablePacket PacketizeLocal(IWritablePacket packet)
         {
             packet.Write(_baseAttributes.Count);
             foreach (var attribute in _baseAttributes)
@@ -319,7 +319,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void PostDepacketize(IReadablePacket packet)
         {
             base.PostDepacketize(packet);
 
@@ -331,7 +331,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// the base class alone.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void DepacketizeLocal(Packet packet)
+        public void DepacketizeLocal(IReadablePacket packet)
         {
             var numBaseAttributes = packet.ReadInt32();
             for (var i = 0; i < numBaseAttributes; i++)

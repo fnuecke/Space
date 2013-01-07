@@ -29,13 +29,13 @@ namespace Engine.Session
         /// <summary>
         /// The data received.
         /// </summary>
-        public Packet Data { get; private set; }
+        public IReadablePacket Data { get; private set; }
 
         /// <summary>
         /// Initializes this data event with the specified packet.
         /// </summary>
         /// <param name="data"></param>
-        protected SessionDataEventArgs(Packet data)
+        protected SessionDataEventArgs(IReadablePacket data)
         {
             Data = data;
         }
@@ -51,7 +51,7 @@ namespace Engine.Session
         /// </summary>
         public Player Player { get; private set; }
 
-        public ServerDataEventArgs(Packet data, Player player)
+        public ServerDataEventArgs(IReadablePacket data, Player player)
             : base(data)
         {
             Player = player;
@@ -69,7 +69,7 @@ namespace Engine.Session
         /// </summary>
         public bool IsAuthoritative { get; private set; }
 
-        public ClientDataEventArgs(Packet data, bool isAuthoritative)
+        public ClientDataEventArgs(IReadablePacket data, bool isAuthoritative)
             : base(data)
         {
             IsAuthoritative = isAuthoritative;
@@ -99,9 +99,9 @@ namespace Engine.Session
         /// <summary>
         /// Any additional data the server sent together with the response.
         /// </summary>
-        public Packet Data { get; private set; }
+        public IReadablePacket Data { get; private set; }
 
-        public GameInfoReceivedEventArgs(IPEndPoint host, int numPlayers, int maxPlayers, Packet data)
+        public GameInfoReceivedEventArgs(IPEndPoint host, int numPlayers, int maxPlayers, IReadablePacket data)
         {
             Host = host;
             NumPlayers = numPlayers;
@@ -118,9 +118,9 @@ namespace Engine.Session
         /// <summary>
         /// Any additional data the server sent with the answer.
         /// </summary>
-        public Packet Data { get; private set; }
+        public IReadablePacket Data { get; private set; }
 
-        public JoinResponseEventArgs(Packet data)
+        public JoinResponseEventArgs(IReadablePacket data)
         {
             Data = data;
         }
@@ -134,7 +134,7 @@ namespace Engine.Session
         /// <summary>
         /// Data that should be sent should be written to this packet.
         /// </summary>
-        public Packet Data { get; set; }
+        public IWritablePacket Data { get; set; }
 
         public RequestEventArgs()
         {

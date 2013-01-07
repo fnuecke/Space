@@ -267,7 +267,7 @@ namespace Engine.IO
         /// </summary>
         /// <returns>A read packet, if one was available.</returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        public Packet Read()
+        public IReadablePacket Read()
         {
             // Read until we either find a complete packet, or cannot read any more data.
             while (Available > 0 || IsDataAvailable(_source))
@@ -275,7 +275,7 @@ namespace Engine.IO
                 // Parse what's left in our buffer. If we find a packet, we return it.
                 if (Available > 0)
                 {
-                    Packet packet = Parse();
+                    var packet = Parse();
                     if (packet != null)
                     {
                         return packet;
@@ -309,7 +309,7 @@ namespace Engine.IO
         /// from the length of the specified packet due to transforms from
         /// wrapper streams (encryption, compression, ...)</returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        public int Write(Packet packet)
+        public int Write(IWritablePacket packet)
         {
             if (packet.Length > 0)
             {
@@ -335,7 +335,7 @@ namespace Engine.IO
         /// <summary>
         /// Try to parse a message from the data that's currently in the buffer.
         /// </summary>
-        private Packet Parse()
+        private IReadablePacket Parse()
         {
             if (_messageLength <= 0)
             {
@@ -379,7 +379,7 @@ namespace Engine.IO
                 if (_messageStream.Position == _messageLength)
                 {
                     // Yes. Wrap up a packet, reset and return it.
-                    var packet = new Packet(_messageStream.ToArray());
+                    var packet = new Packet(_messageStream.ToArray(), false);
 
                     // Reset for the next message.
                     _messageStream.SetLength(0);

@@ -433,7 +433,7 @@ namespace Engine.Physics.Math
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static Packet Write(this Packet packet, WorldTransform data)
+        public static IWritablePacket Write(this IWritablePacket packet, WorldTransform data)
         {
             return packet.Write(data.Translation).Write(data.Rotation);
         }
@@ -444,7 +444,7 @@ namespace Engine.Physics.Math
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static Packet Read(this Packet packet, out WorldTransform data)
+        public static IReadablePacket Read(this IReadablePacket packet, out WorldTransform data)
         {
             data = packet.ReadWorldTransform();
             return packet;
@@ -455,7 +455,7 @@ namespace Engine.Physics.Math
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public static WorldTransform ReadWorldTransform(this Packet packet)
+        public static WorldTransform ReadWorldTransform(this IReadablePacket packet)
         {
             WorldTransform result;
 #if FARMATH
@@ -471,7 +471,7 @@ namespace Engine.Physics.Math
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        private static Packet Write(this Packet packet, Rotation data)
+        private static IWritablePacket Write(this IWritablePacket packet, Rotation data)
         {
             return packet.Write(data.Sin).Write(data.Cos);
         }
@@ -481,7 +481,7 @@ namespace Engine.Physics.Math
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        private static Rotation ReadRotation(this Packet packet)
+        private static Rotation ReadRotation(this IReadablePacket packet)
         {
             Rotation result;
             result.Sin = packet.ReadSingle();

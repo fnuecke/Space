@@ -147,11 +147,13 @@ namespace Space.ComponentSystem.Systems
 
             var newList = new List<IInformation>();
             var localEntity = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
-
-            var shipInfo = (ShipInfo)Manager.GetComponent(localEntity, ShipInfo.TypeId);
-            if (shipInfo != null)
-            {
-                newList.Add(shipInfo);
+            if (localEntity > 0)
+            { 
+                var shipInfo = (ShipInfo)Manager.GetComponent(localEntity, ShipInfo.TypeId);
+                if (shipInfo != null)
+                {
+                    newList.Add(shipInfo);
+                }
             }
 
 

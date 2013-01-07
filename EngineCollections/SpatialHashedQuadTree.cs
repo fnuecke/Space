@@ -68,14 +68,14 @@ namespace Engine.Collections
         /// a packet for serialization.
         /// </summary>
         [PacketizerIgnore]
-        private readonly Action<Packet, T> _packetizer;
+        private readonly Action<IWritablePacket, T> _packetizer;
 
         /// <summary>
         /// A callback that can be used to read an object stored in the tree from
         /// a packet for deserialization.
         /// </summary>
         [PacketizerIgnore]
-        private readonly Func<Packet, T> _depacketizer;
+        private readonly Func<IReadablePacket, T> _depacketizer;
 
         /// <summary>
         /// The max entries per node in quad trees.
@@ -127,7 +127,7 @@ namespace Engine.Collections
         /// type stored in the tree.</param>
         /// <param name="depacketizer">A function that can be used to depacketize
         /// the type stored in the tree.</param>
-        public SpatialHashedQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f, Action<Packet, T> packetizer = null, Func<Packet, T> depacketizer = null)
+        public SpatialHashedQuadTree(int maxEntriesPerNode, float minNodeBounds, float boundExtension = 0.1f, float movingBoundMultiplier = 2f, Action<IWritablePacket, T> packetizer = null, Func<IReadablePacket, T> depacketizer = null)
         {
             if (maxEntriesPerNode < 1)
             {
@@ -805,8 +805,8 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
-        [Packetize]
-        public Packet Packetize(Packet packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
             if (_packetizer == null)
             {
@@ -835,8 +835,8 @@ namespace Engine.Collections
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public void PostDepacketize(Packet packet)
+        [OnPostDepacketize]
+        public void PostDepacketize(IReadablePacket packet)
         {
             if (_depacketizer == null)
             {

@@ -223,7 +223,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void PostDepacketize(IReadablePacket packet)
         {
             base.PostDepacketize(packet);
 

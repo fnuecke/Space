@@ -331,8 +331,8 @@ namespace Engine.Simulation
         /// Serialize a simulation to a packet.
         /// </summary>
         /// <param name="packet">the packet to write the data to.</param>
-        [Packetize]
-        public Packet Packetize(Packet packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
             // Write the trailing simulation. We can reconstruct the newer ones
             // from there.
@@ -365,8 +365,8 @@ namespace Engine.Simulation
         /// Deserialize a simulation from a packet.
         /// </summary>
         /// <param name="packet">The packet to read the data from.</param>
-        [PostDepacketize]
-        public void PostDepacketize(Packet packet)
+        [OnPostDepacketize]
+        public void PostDepacketize(IReadablePacket packet)
         {
             // Unwrap the trailing state and mirror it to all the newer ones.
             packet.ReadPacketizableInto(_simulations[_simulations.Length - 1]);
@@ -989,14 +989,14 @@ namespace Engine.Simulation
             /// <para/>
             /// This uses the components' <c>Packetize</c> facilities.
             /// </summary>
-            /// <param name="entity">The entity to write.</param>
             /// <param name="packet">The packet to write to.</param>
+            /// <param name="entity">The entity to write.</param>
             /// <returns>
             /// The packet after writing the entity's components.
             /// </returns>
-            public Packet PacketizeEntity(int entity, Packet packet)
+            public IWritablePacket PacketizeEntity(IWritablePacket packet, int entity)
             {
-                return _tss.LeadingSimulation.Manager.PacketizeEntity(entity, packet);
+                return _tss.LeadingSimulation.Manager.PacketizeEntity(packet, entity);
             }
 
             /// <summary>
@@ -1015,7 +1015,7 @@ namespace Engine.Simulation
             /// <param name="componentIdMap">A mapping of how components' ids
             /// changed due to serialization, mapping old id to new id.</param>
             /// <returns>The id of the read entity.</returns>
-            int IManager.DepacketizeEntity(Packet packet, Dictionary<int, int> componentIdMap)
+            int IManager.DepacketizeEntity(IReadablePacket packet, Dictionary<int, int> componentIdMap)
             {
                 throw new NotSupportedException();
             }

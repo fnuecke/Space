@@ -17,17 +17,17 @@ namespace Engine.Network
         /// <summary>
         /// The data we received.
         /// </summary>
-        public Packet Data { get; private set; }
+        public IReadablePacket Data { get; private set; }
 
         /// <summary>
         /// Creates a new protocol data event argument wrapper.
         /// </summary>
         /// <param name="endPoint">The endpoint that triggered the event.</param>
         /// <param name="data">The data associated with the event.</param>
-        public ProtocolDataEventArgs(IPEndPoint endPoint, Packet data)
+        public ProtocolDataEventArgs(IPEndPoint endPoint, IReadablePacket data)
         {
-            this.RemoteEndPoint = endPoint;
-            this.Data = data;
+            RemoteEndPoint = endPoint;
+            Data = data;
         }
     }
 }

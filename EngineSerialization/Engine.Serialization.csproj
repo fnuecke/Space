@@ -55,6 +55,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IWritablePacket.cs" />
+    <Compile Include="IReadablePacket.cs" />
     <Compile Include="Packetizable.cs" />
     <Compile Include="Hasher.cs" />
     <Compile Include="IHashable.cs" />

@@ -116,7 +116,7 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(Packet packet)
+        public override void PostDepacketize(IReadablePacket packet)
         {
             base.PostDepacketize(packet);
 

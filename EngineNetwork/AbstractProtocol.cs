@@ -88,7 +88,7 @@ namespace Engine.Network
         /// </summary>
         /// <param name="packet">the data to send</param>
         /// <param name="endPoint">the remote end point to send it to.</param>
-        public void Send(Packet packet, IPEndPoint endPoint)
+        public void Send(IWritablePacket packet, IPEndPoint endPoint)
         {
             if (packet == null)
             {
@@ -152,7 +152,7 @@ namespace Engine.Network
         /// </summary>
         /// <param name="message">the data to parse.</param>
         /// <returns>the data parsed from the message, or <c>null</c> on failure.</returns>
-        private Packet ParseMessage(byte[] message)
+        private IReadablePacket ParseMessage(byte[] message)
         {
             // Check the header.
             if (IsHeaderValid(message))
@@ -172,7 +172,7 @@ namespace Engine.Network
                 }
 
                 // Return result as a packet.
-                return new Packet(data);
+                return new Packet(data, false);
             }
             return null;
         }
@@ -183,38 +183,40 @@ namespace Engine.Network
         /// </summary>
         /// <param name="packet">the packet to make a message of.</param>
         /// <returns>the message data.</returns>
-        private byte[] MakeMessage(Packet packet)
+        private byte[] MakeMessage(IWritablePacket packet)
         {
             // Get the actual data in raw format.
-            byte[] data = packet.GetBuffer();
+            var data = packet.GetBuffer();
+            var length = packet.Length;
 
             // If packets are large, try compressing them, see if it helps.
             // Only start after a certain size. General overhead for gzip
             // seems to be around 130byte, so make sure we're well beyond that.
-            bool flag = false;
-            if (data.Length > 200)
+            var flag = false;
+            if (length > 200)
             {
-                byte[] compressed = SimpleCompression.Compress(data);
-                if (compressed.Length < data.Length)
+                var compressed = SimpleCompression.Compress(data, length);
+                if (compressed.Length < length)
                 {
                     // OK, worth it, it's smaller than before.
                     flag = true;
                     data = compressed;
+                    length = compressed.Length;
                 }
             }
 
             // Encrypt the message.
-            data = Crypto.Encrypt(data);
+            data = Crypto.Encrypt(data, 0, length);
 
-            if ((data.Length & CompressedMask) > 0)
+            if ((length & CompressedMask) > 0)
             {
-                throw new ArgumentException("Packet too long.", "packet");
+                throw new ArgumentException("Packet too big.", "packet");
             }
 
             // Build the final message: header, then length + compressed bit, then data.
-            var result = new byte[_header.Length + sizeof(uint) + data.Length];
+            var result = new byte[_header.Length + sizeof(uint) + length];
             _header.CopyTo(result, 0);
-            BitConverter.GetBytes((uint)data.Length | (flag ? CompressedMask : 0u)).CopyTo(result, _header.Length);
+            BitConverter.GetBytes((uint)length | (flag ? CompressedMask : 0u)).CopyTo(result, _header.Length);
             data.CopyTo(result, _header.Length + sizeof(uint));
             return result;
         }

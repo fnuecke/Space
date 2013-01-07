@@ -305,7 +305,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public override Packet Packetize(Packet packet)
+        public override IWritablePacket Packetize(IWritablePacket packet)
         {
             Debug.Assert(!_translationChanged);
 

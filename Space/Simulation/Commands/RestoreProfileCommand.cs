@@ -1,4 +1,5 @@
-﻿using Engine.Simulation.Commands;
+﻿using Engine.Serialization;
+using Engine.Simulation.Commands;
 using Space.Session;
 
 namespace Space.Simulation.Commands
@@ -14,7 +15,8 @@ namespace Space.Simulation.Commands
         /// <summary>
         /// The profile data to use.
         /// </summary>
-        public Profile Profile;
+        [PacketizerCreate]
+        public readonly Profile Profile;
 
         #endregion
 

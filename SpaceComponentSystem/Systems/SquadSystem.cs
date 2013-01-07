@@ -373,7 +373,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public override Packet Packetize(Packet packet)
+        public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
@@ -397,7 +397,7 @@ namespace Space.ComponentSystem.Systems
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(IReadablePacket packet)
         {
             base.Depacketize(packet);
 

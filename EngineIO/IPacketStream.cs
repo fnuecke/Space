@@ -14,7 +14,7 @@ namespace Engine.IO
         /// </summary>
         /// <returns>A read packet, if one was available.</returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        Packet Read();
+        IReadablePacket Read();
 
         /// <summary>
         /// Writes the specified packet to the underlying stream. It can then be read
@@ -25,7 +25,7 @@ namespace Engine.IO
         /// from the length of the specified packet due to transforms from
         /// wrapper streams (encryption, compression, ...)</returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
-        int Write(Packet packet);
+        int Write(IWritablePacket packet);
 
         /// <summary>
         /// Flushes the underlying stream.

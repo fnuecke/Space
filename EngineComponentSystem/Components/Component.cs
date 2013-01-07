@@ -127,8 +127,8 @@ namespace Engine.ComponentSystem.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        [Packetize]
-        public virtual Packet Packetize(Packet packet)
+        [OnPacketize]
+        public virtual IWritablePacket Packetize(IWritablePacket packet)
         {
             return packet;
         }
@@ -138,8 +138,8 @@ namespace Engine.ComponentSystem.Components
         /// after automatic depacketization has been performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public virtual void PostDepacketize(Packet packet)
+        [OnPostDepacketize]
+        public virtual void PostDepacketize(IReadablePacket packet)
         {
         }
 

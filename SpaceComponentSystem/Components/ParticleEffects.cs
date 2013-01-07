@@ -201,8 +201,8 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        [Packetize]
-        public override Packet Packetize(Packet packet)
+        [OnPacketize]
+        public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
@@ -215,8 +215,8 @@ namespace Space.ComponentSystem.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        [PostDepacketize]
-        public override void PostDepacketize(Packet packet)
+        [OnPostDepacketize]
+        public override void PostDepacketize(IReadablePacket packet)
         {
             base.PostDepacketize(packet);
 
