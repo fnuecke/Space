@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Text;
+using System.IO;
 using Engine.Math;
 using Engine.Serialization;
 using Engine.Session;
@@ -160,38 +159,19 @@ namespace Engine.Controller
         [Conditional("DEBUG")]
         private void SendGameStateDump()
         {
-            // String builder we use to concatenate our strings.
-            var sb = new StringBuilder();
+            // Get a (relatively) unique base name for the files.
+            var dumpId = "desync_" + DateTime.UtcNow.Ticks;
 
-            // Get some general system information, for reference.
-            var assembly = Assembly.GetEntryAssembly().GetName();
-#if DEBUG
-            const string build = "Debug";
-#else
-            const string build = "Release";
-#endif
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
-                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
-            sb.AppendFormat("Build Version: {0}\n", assembly.Version);
-            sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
-            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
-            sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
-            sb.Append("Controller Type: Client\n");
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("Gamestate at frame {0}\n", Tss.TrailingFrame);
-            sb.Append("--------------------------------------------------------------------------------\n");
-
-            // Dump actual game state.
-            foreach (var system in Tss.TrailingSimulation.Manager.Systems)
+            try
             {
-                sb.Append(system);
-                sb.AppendLine();
+                // Create actual game dump and write it to file.
+                var clientDump = StringifyGameState(Tss.TrailingFrame, Tss.TrailingSimulation.Manager);
+                File.WriteAllText(dumpId + "_client.txt", clientDump);
             }
-            foreach (var component in Tss.TrailingSimulation.Manager.Components)
+            catch (Exception ex)
             {
-                sb.Append(component);
-                sb.AppendLine();
+                Logger.ErrorException("Failed writing client desynchronization dump.", ex);
+                return;
             }
 
             // Send the dump to the server.
@@ -202,8 +182,8 @@ namespace Engine.Controller
                     .Write((byte)TssControllerMessage.GameStateDump)
                     // Frame this dump applies to.
                     .Write(Tss.TrailingFrame)
-                    // Actual dump.
-                    .Write(sb.ToString());
+                    // Write the dump id, to make it easier to match files.
+                    .Write(dumpId);
                 Session.Send(packet);
             }
         }

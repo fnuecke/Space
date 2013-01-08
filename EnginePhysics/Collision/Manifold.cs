@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using Engine.Collections;
 using Engine.Physics.Math;
@@ -37,7 +36,7 @@ namespace Engine.Physics.Collision
 
         /// <summary>Possibly types of manifolds, i.e. what kind of overlap it
         /// represents (between what kind of shapes).</summary>
-        public enum ManifoldType
+        public enum ManifoldType : byte
         {
             Circles,
             FaceA,
@@ -151,14 +150,20 @@ namespace Engine.Physics.Collision
         /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
         public override string ToString()
         {
-            return "{Manifold: Type=" + Type +
-                   ", PointCount=" + PointCount +
-                   (PointCount > 0
-                        ? ("LocalNormal=" + LocalNormal.X.ToString(CultureInfo.InvariantCulture) + ":" + LocalNormal.Y.ToString(CultureInfo.InvariantCulture) +
-                           ", LocalPoint=" + LocalPoint.X.ToString(CultureInfo.InvariantCulture) + ":" + LocalPoint.Y.ToString(CultureInfo.InvariantCulture) +
-                           ", Point1=" + Points.Item1 +
-                           (PointCount > 1 ? ("Point2=" + Points.Item2) : ""))
-                        : "");
+            if (PointCount > 1)
+            {
+                return string.Format("{{Type:{0} PointCount:{1} LocalNormal:{2} LocalPoint:{3} Point1:{4} Point2:{5}}}",
+                    Type, PointCount, LocalNormal, LocalPoint, Points[0], Points[1]);
+            }
+            else if (PointCount > 0)
+            {
+                return string.Format("{{Type:{0} PointCount:{1} LocalNormal:{2} LocalPoint:{3} Point1:{4}}}",
+                    Type, PointCount, LocalNormal, LocalPoint, Points[0]);
+            }
+            else
+            {
+                return string.Format("{{Type:{0} PointCount:{1}}}", Type, PointCount);
+            }
         }
     }
     
@@ -194,10 +199,8 @@ namespace Engine.Physics.Collision
         /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
         public override string ToString()
         {
-            return "{Id=" + Id.Key +
-                ", LocalPoint=" + LocalPoint.X.ToString(CultureInfo.InvariantCulture) + LocalPoint.Y.ToString(CultureInfo.InvariantCulture) +
-                ", NormalImpulse=" + NormalImpulse.ToString(CultureInfo.InvariantCulture) +
-                ", TangentImpulse=" + TangentImpulse.ToString(CultureInfo.InvariantCulture);
+            return string.Format("{{Id:{0} LocalPoint:{1} NormalImpulse:{2} TangentImpulse:{3}}}",
+                                 Id.Key, LocalPoint, NormalImpulse, TangentImpulse);
         }
     }
     
@@ -281,16 +284,14 @@ namespace Engine.Physics.Collision
         /// available data for the read operation.</exception>
         public static Manifold ReadManifold(this IReadablePacket packet)
         {
-            Manifold result;
-            result.Points = new FixedArray2<ManifoldPoint>
-            {
-                Item1 = packet.ReadManifoldPoint(),
-                Item2 = packet.ReadManifoldPoint()
-            };
-            result.LocalNormal = packet.ReadVector2();
-            result.LocalPoint = packet.ReadVector2();
+            var result = new Manifold();
+            packet
+                .Read(out result.Points.Item1)
+                .Read(out result.Points.Item2)
+                .Read(out result.LocalNormal)
+                .Read(out result.LocalPoint);
             result.Type = (Manifold.ManifoldType)packet.ReadByte();
-            result.PointCount = packet.ReadInt32();
+            packet.Read(out result.PointCount);
             return result;
         }
 
@@ -309,18 +310,18 @@ namespace Engine.Physics.Collision
 
         /// <summary>Reads a ManifoldPoint value.</summary>
         /// <param name="packet">The packet.</param>
-        /// <returns>The read value.</returns>
+        /// <param name="result">The read value.</param>
+        /// <returns>The packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        private static ManifoldPoint ReadManifoldPoint(this IReadablePacket packet)
+        private static IReadablePacket Read(this IReadablePacket packet, out ManifoldPoint result)
         {
-            ManifoldPoint result;
-            result.LocalPoint = packet.ReadVector2();
-            result.NormalImpulse = packet.ReadSingle();
-            result.TangentImpulse = packet.ReadSingle();
             result.Id.Feature = new ContactFeature();
-            result.Id.Key = packet.ReadUInt32();
-            return result;
+            return packet
+                .Read(out result.LocalPoint)
+                .Read(out result.NormalImpulse)
+                .Read(out result.TangentImpulse)
+                .Read(out result.Id.Key);
         }
     }
 }

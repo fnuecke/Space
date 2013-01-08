@@ -282,8 +282,7 @@ namespace Engine.Util
                 type = type.BaseType;
             }
 
-            // After we reach the top, filter out any duplicates (due to visibility
-            // in sub-classes some field may have been registered more than once).
+            // And we're done.
             return result;
         }
 

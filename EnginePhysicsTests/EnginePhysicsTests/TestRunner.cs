@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
@@ -200,6 +201,7 @@ namespace Engine.Physics.Tests
             _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
             _renderer.RenderFixtures = true;
+            _renderer.RenderJoints = true;
 
             LoadTest(0);
         }
@@ -325,7 +327,7 @@ C            - Test copying (creates simulation copy and uses it).",
             if (_showProfile && _physics != null)
             {
                 DrawString(@"
-Bodies/Fixtures/Contacts/Joints: {25}/{26}/{27}/{28}
+Bodies/Fixtures/Contacts/Joints/Tree depth: {25}/{26}/{27}/{28}/{29}
 HPT: {24,5}       Last [Average] (Maximum)
 Step          {0,7:0.00} [{1,7:0.00}] ({2,7:0.00})
 Collide       {3,7:0.00} [{4,7:0.00}] ({5,7:0.00})
@@ -344,7 +346,8 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                 _profile.Broadphase.Last, _profile.Broadphase.Mean(), _profile.Broadphase.Max,
                 _profile.SolveTOI.Last, _profile.SolveTOI.Mean(), _profile.SolveTOI.Max,
                 Stopwatch.IsHighResolution,
-                _physics.BodyCount, _physics.FixtureCount, _physics.ContactCount, _physics.JointCount);
+                _physics.BodyCount, _physics.FixtureCount, _physics.ContactCount, _physics.JointCount,
+                _physics.IndexDepth);
             }
 
             // Newline before any text current test may want to display.
@@ -485,6 +488,10 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                             _manager.RemoveJoint(_mouseJoint);
                             _mouseJoint = -1;
                         }
+
+                        var sb = new StringBuilder();
+                        sb.Dump(_manager);
+                        File.WriteAllText("before.txt", sb.ToString());
 
                         _snapshot = new Packet();
                         _snapshot.Write(_manager);

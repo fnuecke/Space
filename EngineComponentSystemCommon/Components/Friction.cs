@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 
 namespace Engine.ComponentSystem.Common.Components
 {
@@ -96,21 +95,6 @@ namespace Engine.ComponentSystem.Common.Components
 
             Value = 0;
             StopVelocity = 0;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", StopVelocity=" + StopVelocity.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

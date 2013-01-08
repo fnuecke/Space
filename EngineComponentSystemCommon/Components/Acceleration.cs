@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components
@@ -74,21 +73,6 @@ namespace Engine.ComponentSystem.Common.Components
             base.Reset();
 
             Value = Vector2.Zero;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Value=" + Value.X.ToString(CultureInfo.InvariantCulture) + ":" + Value.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

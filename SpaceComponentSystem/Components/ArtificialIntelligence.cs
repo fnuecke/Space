@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
@@ -202,23 +201,6 @@ namespace Space.ComponentSystem.Components
             }
 
             #endregion
-
-            #region ToString
-
-            /// <summary>
-            /// Returns a <see cref="System.String"/> that represents this instance.
-            /// </summary>
-            /// <returns>
-            /// A <see cref="System.String"/> that represents this instance.
-            /// </returns>
-            public override string ToString()
-            {
-                var h = new Hasher();
-                h.Write(this);
-                return h.Value.ToString(CultureInfo.InvariantCulture);
-            }
-
-            #endregion
         }
 
         #endregion
@@ -257,7 +239,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The randomizer we use to make pseudo random decisions.
         /// </summary>
-        private MersenneTwister _random = new MersenneTwister(0);
+        private readonly MersenneTwister _random = new MersenneTwister(0);
 
         /// <summary>
         /// The configuration for this AI instance, controlling its behavior.
@@ -520,19 +502,37 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        /// <summary>Writes a string representation of the object to a string builder.</summary>
+        /// <param name="sb">The string builder.</param>
+        /// <param name="indent">The indentation level.</param>
+        /// <returns>The string builder, for call chaining.</returns>
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
         {
-            return base.ToString() + ", Random=" + _random + ", Config=" + _config + ", CurrentBehaviors=[" + string.Join(", ", _currentBehaviors) + "], Behaviors=[" + string.Join(", ", _behaviors) + "]";
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("CurrentBehaviors = {");
+            {
+                var first = true;
+                foreach (var behavior in _currentBehaviors)
+                {
+                    if (!first)
+                    {
+                        sb.Append(", ");
+                    }
+                    first = false;
+                    sb.Append(behavior);
+                }
+            }
+            sb.Append("}");
+
+            sb.AppendIndent(indent).Append("Behaviors = {");
+            foreach (var behavior in _behaviors)
+            {
+                sb.AppendIndent(indent + 1).Dump(behavior, indent + 1);
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
         }
 
         #endregion

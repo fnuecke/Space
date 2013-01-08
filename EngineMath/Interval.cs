@@ -96,7 +96,7 @@ namespace Engine.Math
         /// </returns>
         public override string ToString()
         {
-            return "[" + _low + ", " + _high + "]";
+            return string.Format("{{Low:{0} High:{1}}}", _low, _high);
         }
 
         #endregion

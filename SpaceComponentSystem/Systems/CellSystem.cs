@@ -344,6 +344,43 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        {
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("LivingCells = {");
+            {
+                var first = true;
+                foreach (var cell in _livingCells)
+                {
+                    if (!first)
+                    {
+                        sb.Append(", ");
+                    }
+                    first = false;
+                    sb.Append(cell);
+                }
+            }
+            string.Join(", ", _livingCells);
+            sb.Append("}");
+            sb.AppendIndent(indent).Append("PendingCells {");
+            {
+                var first = true;
+                foreach (var cell in _pendingCells)
+                {
+                    if (!first)
+                    {
+                        sb.Append(", ");
+                    }
+                    first = false;
+                    sb.Append(cell.Key).Append("@").Append(cell.Value);
+                }
+            }
+            sb.Append("}");
+
+            return sb;
+        }
+
         #endregion
 
         #region Copying
@@ -398,21 +435,6 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._pendingCells.Add(item.Key, item.Value);
             }
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", LivingCells=[" + string.Join(", ", _livingCells) + "], PendingCells=[" + string.Join(", ", _pendingCells) + "]";
         }
 
         #endregion

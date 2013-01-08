@@ -143,20 +143,5 @@ namespace Space.ComponentSystem.Components.Behaviors
         }
 
         #endregion
-        
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Target=" + Target;
-        }
-
-        #endregion
     }
 }

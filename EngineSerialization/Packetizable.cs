@@ -11,7 +11,7 @@ namespace Engine.Serialization
     /// Use this attribute to mark properties or fields as to be ignored when
     /// packetizing or depacketzing an object.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Event)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public sealed class PacketizerIgnoreAttribute : Attribute
     {
     }
@@ -304,18 +304,18 @@ namespace Engine.Serialization
         /// <summary>
         /// Signature of a packetizing function.
         /// </summary>
-        private delegate IWritablePacket Packetize(IWritablePacket packet, IPacketizable data);
+        private delegate IWritablePacket Packetizer(IWritablePacket packet, IPacketizable data);
 
         /// <summary>
         /// Signature of a depacketizing function.
         /// </summary>
-        private delegate IReadablePacket Depacketize(IReadablePacket packet, IPacketizable data);
+        private delegate IReadablePacket Depacketizer(IReadablePacket packet, IPacketizable data);
 
         /// <summary>
         /// Cached list of type packetizers, to avoid rebuilding the methods over and over.
         /// </summary>
-        private static readonly Dictionary<Type, Tuple<Packetize, Depacketize>> PacketizerCache =
-            new Dictionary<Type, Tuple<Packetize, Depacketize>>();
+        private static readonly Dictionary<Type, Tuple<Packetizer, Depacketizer>> PacketizerCache =
+            new Dictionary<Type, Tuple<Packetizer, Depacketizer>>();
 
         /// <summary>
         /// List of types providing serialization/deserialization methods for the
@@ -331,9 +331,9 @@ namespace Engine.Serialization
         /// Gets the packetizer from the cache, or creates it if it doesn't exist yet
         /// and adds it to the cache.
         /// </summary>
-        private static Packetize GetPacketizer(Type type)
+        private static Packetizer GetPacketizer(Type type)
         {
-            Tuple<Packetize, Depacketize> pair;
+            Tuple<Packetizer, Depacketizer> pair;
             if (!PacketizerCache.ContainsKey(type))
             {
                 pair = CreatePacketizer(type);
@@ -350,9 +350,9 @@ namespace Engine.Serialization
         /// Gets the depacketizer from the cache, or creates it if it doesn't exist yet
         /// and adds it to the cache.
         /// </summary>
-        private static Depacketize GetDepacketizer(Type type)
+        private static Depacketizer GetDepacketizer(Type type)
         {
-            Tuple<Packetize, Depacketize> pair;
+            Tuple<Packetizer, Depacketizer> pair;
             if (!PacketizerCache.ContainsKey(type))
             {
                 pair = CreatePacketizer(type);
@@ -383,7 +383,7 @@ namespace Engine.Serialization
         /// <returns>
         /// Two delegates for the generated methods.
         /// </returns>
-        private static Tuple<Packetize, Depacketize> CreatePacketizer(Type type)
+        private static Tuple<Packetizer, Depacketizer> CreatePacketizer(Type type)
         {
             // Must not be null for the following. This is used to provide a context
             // for the generated method, which will avoid a number of costly security
@@ -569,8 +569,8 @@ namespace Engine.Serialization
             depacketizeGenerator.Emit(OpCodes.Ret);
 
             // Create an instances of our dynamic methods (as delegates) and return them.
-            var packetizer = (Packetize)packetizeMethod.CreateDelegate(typeof(Packetize));
-            var depacketizer = (Depacketize)depacketizeMethod.CreateDelegate(typeof(Depacketize));
+            var packetizer = (Packetizer)packetizeMethod.CreateDelegate(typeof(Packetizer));
+            var depacketizer = (Depacketizer)depacketizeMethod.CreateDelegate(typeof(Depacketizer));
             return Tuple.Create(packetizer, depacketizer);
         }
 
@@ -653,7 +653,7 @@ namespace Engine.Serialization
                         // - fields that are declared in parent types.
                         // - fields that should be ignored via attribute.
                         // - fields that are compiler generated. We will scan for them below,
-                        // when we parse the properties.
+                        //   when we parse the properties.
                         .Where(f => f.DeclaringType == t &&
                                     !f.IsDefined(typeof(PacketizerIgnoreAttribute), true) &&
                                     !f.IsDefined(typeof(CompilerGeneratedAttribute), false)));
@@ -681,8 +681,7 @@ namespace Engine.Serialization
                 type = type.BaseType;
             }
 
-            // After we reach the top, filter out any duplicates (due to visibility
-            // in sub-classes some field may have been registered more than once).
+            // And we're done.
             return result;
         }
 

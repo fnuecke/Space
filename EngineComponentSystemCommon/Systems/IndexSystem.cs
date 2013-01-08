@@ -541,6 +541,38 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        {
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("Trees = {");
+            for (var i = 0; i < _trees.Length; ++i)
+            {
+                var tree = _trees[i];
+                if (tree == null)
+                {
+                    continue;
+                }
+                sb.AppendIndent(indent + 1).Append(i).Append(" = ").Dump(tree, indent + 1);
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            sb.AppendIndent(indent).Append("Changed = {");
+            var first = true;
+            foreach (var entity in _changed)
+            {
+                if (!first)
+                {
+                    sb.Append(", ");
+                }
+                first = false;
+                sb.Append(entity);
+            }
+            sb.Append("}");
+
+            return sb;
+        }
+
         #endregion
 
         #region Copying

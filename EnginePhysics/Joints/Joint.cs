@@ -229,26 +229,6 @@ namespace Engine.Physics.Joints
         }
 
         #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return GetType().Name + ": JointType=" + Type +
-                ", Next=" + Next +
-                ", Previous=" + Previous +
-                ", BodyA=" + _bodyIdA +
-                ", BodyB=" + _bodyIdB +
-                ", CollideConnected=" + CollideConnected;
-        }
-
-        #endregion
     }
 
     /// <summary>
@@ -304,24 +284,6 @@ namespace Engine.Physics.Joints
         public void CopyInto(JointEdge into)
         {
             Copyable.CopyInto(this, into);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return "JointEdge: Joint=" + Joint +
-                ", Other=" + Other +
-                ", Previous=" + Previous +
-                ", Next=" + Next;
         }
 
         #endregion

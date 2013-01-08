@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
@@ -59,6 +61,14 @@ namespace Engine.Collections
             get { return _entryBounds.Count; }
         }
 
+        /// <summary>
+        /// Gets the maximum tree depth of the deepest sub-tree.
+        /// </summary>
+        public int Depth
+        {
+            get { return _cells.Values.Max(t => t.Depth); }
+        }
+
         #endregion
 
         #region Fields
@@ -103,7 +113,7 @@ namespace Engine.Collections
         /// The buckets with the quad trees storing the actual entries.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
-        private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _entries =
+        private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _cells =
             new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
 
         /// <summary>
@@ -171,10 +181,10 @@ namespace Engine.Collections
             foreach (var cell in ComputeCells(bounds))
             {
                 // Create the quad tree for that cell if it doesn't yet exist.
-                if (!_entries.ContainsKey(cell.Item1))
+                if (!_cells.ContainsKey(cell.Item1))
                 {
                     // No need to extend again, we already did.
-                    _entries.Add(cell.Item1,
+                    _cells.Add(cell.Item1,
                                  new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f,
                                                                     _packetizer, _depacketizer));
                 }
@@ -185,7 +195,7 @@ namespace Engine.Collections
 
                 // And add the item to the tree.
 // ReSharper disable RedundantCast Necessary for FarCollections.
-                _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+                _cells[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
 // ReSharper restore RedundantCast
             }
 
@@ -306,7 +316,7 @@ namespace Engine.Collections
             foreach (var cell in ComputeCells(oldBounds))
             {
                 Collections.DynamicQuadTree<T> tree;
-                _entries.TryGetValue(cell.Item1, out tree);
+                _cells.TryGetValue(cell.Item1, out tree);
                 if (tree != null)
                 {
                     tree.Remove(item);
@@ -317,10 +327,10 @@ namespace Engine.Collections
             foreach (var cell in ComputeCells(newBounds))
             {
                 // Create the quad tree for that cell if it doesn't yet exist.
-                if (!_entries.ContainsKey(cell.Item1))
+                if (!_cells.ContainsKey(cell.Item1))
                 {
                     // No need to extend again, we already did.
-                    _entries.Add(cell.Item1,
+                    _cells.Add(cell.Item1,
                                  new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, 0f, 0f,
                                                                     _packetizer, _depacketizer));
                 }
@@ -331,7 +341,7 @@ namespace Engine.Collections
 
                 // And add the item to the tree.
 // ReSharper disable RedundantCast Necessary for FarCollections.
-                _entries[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
+                _cells[cell.Item1].Add((Math.RectangleF)relativeBounds, item);
 // ReSharper restore RedundantCast
             }
 
@@ -364,12 +374,12 @@ namespace Engine.Collections
             foreach (var cell in ComputeCells(_entryBounds[item]))
             {
                 // Remove from the tree.
-                _entries[cell.Item1].Remove(item);
+                _cells[cell.Item1].Remove(item);
 
                 // Clean up: remove the tree if it's empty.
-                if (_entries[cell.Item1].Count == 0)
+                if (_cells[cell.Item1].Count == 0)
                 {
-                    _entries.Remove(cell.Item1);
+                    _cells.Remove(cell.Item1);
                 }
             }
 
@@ -396,7 +406,7 @@ namespace Engine.Collections
         /// </summary>
         public void Clear()
         {
-            _entries.Clear();
+            _cells.Clear();
             _entryBounds.Clear();
         }
 
@@ -429,7 +439,7 @@ namespace Engine.Collections
             foreach (var cell in ComputeCells(queryBounds))
             {
                 // Only if the cell exists.
-                if (_entries.ContainsKey(cell.Item1))
+                if (_cells.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
 // ReSharper disable RedundantCast Necessary for FarCollections.
@@ -437,7 +447,7 @@ namespace Engine.Collections
 // ReSharper restore RedundantCast
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativePoint, radius, results);
+                    _cells[cell.Item1].Find(relativePoint, radius, results);
                 }
             }
         }
@@ -513,7 +523,7 @@ namespace Engine.Collections
         {
             foreach (var cell in ComputeCells(rectangle))
             {
-                if (_entries.ContainsKey(cell.Item1))
+                if (_cells.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
                     var relativeFarBounds = rectangle;
@@ -523,7 +533,7 @@ namespace Engine.Collections
 // ReSharper disable RedundantCast Necessary for FarCollections.
                     var relativeBounds = (Math.RectangleF)relativeFarBounds;
 // ReSharper restore RedundantCast
-                    _entries[cell.Item1].Find(relativeBounds, results);
+                    _cells[cell.Item1].Find(relativeBounds, results);
                 }
             }
         }
@@ -593,7 +603,7 @@ namespace Engine.Collections
         {
             foreach (var cell in ComputeCells(IntersectionExtensions.BoundsFor(start, end, t)))
             {
-                if (_entries.ContainsKey(cell.Item1))
+                if (_cells.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
 // ReSharper disable RedundantCast Necessary for FarCollections.
@@ -602,7 +612,7 @@ namespace Engine.Collections
 // ReSharper restore RedundantCast
 
                     // And do the query.
-                    _entries[cell.Item1].Find(relativeStart, relativeEnd, t, results);
+                    _cells[cell.Item1].Find(relativeStart, relativeEnd, t, results);
                 }
             }
         }
@@ -630,7 +640,7 @@ namespace Engine.Collections
 
             foreach (var cell in ComputeCells(IntersectionExtensions.BoundsFor(start, end, t)))
             {
-                if (_entries.ContainsKey(cell.Item1))
+                if (_cells.ContainsKey(cell.Item1))
                 {
                     // Convert the query to the tree's local coordinate space.
 // ReSharper disable RedundantCast Necessary for FarCollections.
@@ -639,7 +649,7 @@ namespace Engine.Collections
 // ReSharper restore RedundantCast
 
                     // And do the query.
-                    if (!_entries[cell.Item1].Find(relativeStart, relativeEnd, t,
+                    if (!_cells[cell.Item1].Find(relativeStart, relativeEnd, t,
                         (value, fraction) =>
                         {
                             if (!Filter(value, ref filter))
@@ -784,7 +794,7 @@ namespace Engine.Collections
         /// </remarks>
         public IEnumerable<Tuple<TPoint, Collections.DynamicQuadTree<T>>> GetTreeEnumerable()
         {
-            foreach (var entry in _entries)
+            foreach (var entry in _cells)
             {
                 int segmentX, segmentY;
                 BitwiseMagic.Unpack(entry.Key, out segmentX, out segmentY);
@@ -813,8 +823,8 @@ namespace Engine.Collections
                 throw new InvalidOperationException("No serializer specified.");
             }
 
-            packet.Write(_entries.Count);
-            foreach (var entry in _entries)
+            packet.Write(_cells.Count);
+            foreach (var entry in _cells)
             {
                 packet.Write(entry.Key);
                 packet.Write(entry.Value);
@@ -843,7 +853,7 @@ namespace Engine.Collections
                 throw new InvalidOperationException("No deserializer specified.");
             }
 
-            _entries.Clear();
+            _cells.Clear();
             var cellCount = packet.ReadInt32();
             for (var i = 0; i < cellCount; ++i)
             {
@@ -851,7 +861,7 @@ namespace Engine.Collections
                 var tree = new Collections.DynamicQuadTree<T>(_maxEntriesPerNode, _minNodeBounds, _boundExtension,
                                                               _movingBoundMultiplier, _packetizer, _depacketizer);
                 packet.ReadPacketizableInto(tree);
-                _entries.Add(cellId, tree);
+                _cells.Add(cellId, tree);
             }
 
             _entryBounds.Clear();
@@ -859,13 +869,32 @@ namespace Engine.Collections
             for (var i = 0; i < entryCount; ++i)
             {
                 var key = _depacketizer(packet);
-#if FARMATH
-                var value = packet.ReadFarRectangle();
-#else
-                var value = packet.ReadRectangleF();
-#endif
+                TRectangle value;
+                packet.Read(out value);
                 _entryBounds[key] = value;
             }
+        }
+        
+        [OnStringify]
+        public StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            sb
+                .AppendIndent(indent).Append("CellCount = ").Append(_cells.Count)
+                .AppendIndent(indent).Append("Cells = {");
+            foreach (var entry in _cells)
+            {
+                sb.AppendIndent(indent + 1).Append(entry.Key).Append(" = ").Dump(entry.Value, indent + 1);
+            }
+            sb
+                .AppendIndent(indent).Append("}")
+
+                .AppendIndent(indent).Append("EntryCount = ").Append(_entryBounds.Count)
+                .AppendIndent(indent).Append("Entries = {");
+            foreach (var entry in _entryBounds)
+            {
+                sb.AppendIndent(indent + 1).Append(entry.Key).Append(" = ").Dump(entry.Value, indent + 1);
+            }
+            return sb.AppendIndent(indent).Append("}");
         }
 
         #endregion
@@ -893,12 +922,12 @@ namespace Engine.Collections
         {
             Copyable.CopyInto(this, into);
 
-            into._entries.Clear();
-            foreach (var entry in _entries)
+            into._cells.Clear();
+            foreach (var entry in _cells)
             {
                 var treeCopy = entry.Value.NewInstance();
                 entry.Value.CopyInto(treeCopy);
-                into._entries.Add(entry.Key, treeCopy);
+                into._cells.Add(entry.Key, treeCopy);
             }
 
             into._entryBounds.Clear();

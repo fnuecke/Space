@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
@@ -36,7 +37,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         /// The "owner" of this instance is the AI component we belong to,
         /// so we do not need to take care of serialization or copying.
         /// </remarks>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         protected readonly IUniformRandom Random;
 
         /// <summary>
@@ -509,6 +510,12 @@ namespace Space.ComponentSystem.Components.Behaviors
         {
         }
 
+        [OnStringify]
+        public virtual StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            return sb.AppendIndent(indent).Append("TicksToWait = ").Append(_ticksToWait);
+        }
+
         #endregion
 
         #region Copying
@@ -530,21 +537,6 @@ namespace Space.ComponentSystem.Components.Behaviors
         public virtual void CopyInto(Behavior into)
         {
             Copyable.CopyInto(this, into);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return GetType().Name + ": TicksToWait=" + _ticksToWait;
         }
 
         #endregion

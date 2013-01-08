@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using Engine.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Components
@@ -132,21 +131,6 @@ namespace Space.ComponentSystem.Components
         /// Recomputes the maximum value and regeneration speed.
         /// </summary>
         internal abstract void RecomputeValues();
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", MaxValue=" + MaxValue.ToString(CultureInfo.InvariantCulture) + ", Regeneration=" + Regeneration.ToString(CultureInfo.InvariantCulture) + ", Timeout=" + Timeout + ", TimeToWait=" + TimeToWait;
-        }
 
         #endregion
     }

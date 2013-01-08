@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Engine.Diagnostics;
 using Engine.Serialization;
 
@@ -143,6 +144,18 @@ namespace Engine.ComponentSystem.Components
         {
         }
 
+        /// <summary>
+        /// Writes a string representation of the object to a string builder.
+        /// </summary>
+        /// <param name="sb">The string builder.</param>
+        /// <param name="indent">The indentation level.</param>
+        /// <returns>The string builder, for call chaining.</returns>
+        [OnStringify]
+        public virtual StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            return sb;
+        }
+
         #endregion
 
         #region Object
@@ -157,19 +170,6 @@ namespace Engine.ComponentSystem.Components
         public override int GetHashCode()
         {
             return Id.GetHashCode();
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            var hasher = new Hasher();
-            hasher.Write(this);
-            return "[Entity " + Entity + "]->" + GetType().Name + ": Id=" + Id + ", Hash=" + hasher.Value + ", Enabled=" + Enabled;
         }
 
         #endregion

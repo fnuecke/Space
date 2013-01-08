@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Microsoft.Xna.Framework;
 using Space.Data;
@@ -253,21 +252,6 @@ namespace Space.ComponentSystem.Components
             }
             // Add x-offset normally.
             offset.X = potentialRootOffset.X + offset.X;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + "Size=" + Size + ", Offset=" + Offset.X.ToString(CultureInfo.InvariantCulture) + ":" + Offset.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

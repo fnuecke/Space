@@ -83,6 +83,18 @@ namespace Engine.Physics.Math
         }
 
         #endregion
+
+        #region ToString
+
+        /// <summary>Returns a <see cref="System.String"/> that represents this instance.</summary>
+        /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
+        public override string ToString()
+        {
+            return string.Format("{{LocalCenter:{0} CenterOfMass0:{1} CenterOfMass:{2} Angle0:{3} Angle:{4} Alpha0:{5}}}",
+                LocalCenter, CenterOfMass0, CenterOfMass, Angle0, Angle, Alpha0);
+        }
+
+        #endregion
     }
 
     /// <summary>
@@ -125,17 +137,12 @@ namespace Engine.Physics.Math
         public static Sweep ReadSweep(this IReadablePacket packet)
         {
             Sweep result;
-            result.LocalCenter = packet.ReadVector2();
-#if FARMATH
-            result.CenterOfMass0 = packet.ReadFarPosition();
-            result.CenterOfMass = packet.ReadFarPosition();
-#else
-            result.CenterOfMass0 = packet.ReadVector2();
-            result.CenterOfMass = packet.ReadVector2();
-#endif
-            result.Angle0 = packet.ReadSingle();
-            result.Angle = packet.ReadSingle();
-            result.Alpha0 = packet.ReadSingle();
+            packet.Read(out result.LocalCenter);
+            packet.Read(out result.CenterOfMass0);
+            packet.Read(out result.CenterOfMass);
+            packet.Read(out result.Angle0);
+            packet.Read(out result.Angle);
+            packet.Read(out result.Alpha0);
             return result;
         }
     }

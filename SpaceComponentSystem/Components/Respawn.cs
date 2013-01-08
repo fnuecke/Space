@@ -32,12 +32,6 @@ namespace Space.ComponentSystem.Components
         #region Properties
 
         /// <summary>
-        /// A list of components which should be disabled while dead.
-        /// </summary>
-        [PacketizerIgnore]
-        public readonly List<int> ComponentsToDisable = new List<int>();
-
-        /// <summary>
         /// Returns whether the component is currently in respawn mode, i.e.
         /// the entity is to be considered dead, and we're waiting to respawn
         /// it.
@@ -47,6 +41,12 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// A list of components which should be disabled while dead.
+        /// </summary>
+        [PacketizerIgnore]
+        public readonly List<int> ComponentsToDisable = new List<int>();
 
         /// <summary>
         /// The number of ticks to wait before respawning the entity.
@@ -191,19 +191,28 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        /// <summary>Writes a string representation of the object to a string builder.</summary>
+        /// <param name="sb">The string builder.</param>
+        /// <param name="indent">The indentation level.</param>
+        /// <returns>The string builder, for call chaining.</returns>
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
         {
-            return base.ToString() + ", Delay=" + Delay + ", Position=" + Position + ", TimeToRespawn=" + TimeToRespawn;
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("ComponentsToDisable = {");
+            var first = true;
+            foreach (var component in ComponentsToDisable)
+            {
+                if (!first)
+                {
+                    sb.Append(", ");
+                }
+                first = false;
+                sb.Append(component);
+            }
+            sb.Append("}");
+
+            return sb;
         }
 
         #endregion

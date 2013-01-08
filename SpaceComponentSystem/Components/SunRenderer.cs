@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
@@ -108,24 +107,6 @@ namespace Space.ComponentSystem.Components
             SurfaceRotation = Vector2.Zero;
             PrimaryTurbulenceRotation = Vector2.Zero;
             SecondaryTurbulenceRotation = Vector2.Zero;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Radius=" + Radius.ToString(CultureInfo.InvariantCulture) + ", Color=" + Tint +
-                ", SurfaceRotation=" + SurfaceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + SurfaceRotation.Y.ToString(CultureInfo.InvariantCulture) +
-                ", PrimaryTurbulenceRotation=" + PrimaryTurbulenceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + PrimaryTurbulenceRotation.Y.ToString(CultureInfo.InvariantCulture) +
-                ", SecondaryTurbulenceRotation=" + SecondaryTurbulenceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + SecondaryTurbulenceRotation.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
@@ -310,21 +309,6 @@ namespace Engine.ComponentSystem.Common.Components
             Debug.Assert(!_translationChanged);
 
             return base.Packetize(packet);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Translation=" + Translation + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

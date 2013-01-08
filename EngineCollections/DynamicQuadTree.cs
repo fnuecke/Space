@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -70,6 +72,20 @@ namespace Engine.Collections
         public int Count
         {
             get { return _values.Count; }
+        }
+
+        /// <summary>
+        /// Returns the maximum depth of this tree.
+        /// </summary>
+        public int Depth
+        {
+            get { return NodeDepth(_root); }
+        }
+
+        /// <summary>Utility method for computing tree depth.</summary>
+        private static int NodeDepth(Node node)
+        {
+            return node == null ? 0 : (1 + node.Children.Max((Func<Node, int>)NodeDepth));
         }
 
         #endregion
@@ -591,101 +607,27 @@ namespace Engine.Collections
                 throw new InvalidOperationException("No serializer specified.");
             }
 
+            // Get all entries as a list. We will use the list index as a unique
+            // id when storing references inside the tree.
+            var entries = _values.Values.ToList();
+
             packet.Write(_values.Count);
 
-            // Entry serialization as a two step process: first write the values and
-            // bounds which will allow us to generate the entry objects when deserializing.
-            foreach (var entry in _values.Values)
+            // Write all entries. Write the links in a second step for deserialization.
+            foreach (var entry in entries)
             {
                 _packetizer(packet, entry.Value);
                 packet.Write(entry.Bounds);
             }
-            // In the second pass, write the keys of the referenced other entries,
-            // which can then be filled in into the created objects.
-            foreach (var entry in _values.Values)
+            foreach (var entry in entries)
             {
-                _packetizer(packet, entry.Value);
-                if (entry.Next != null)
-                {
-                    packet.Write(true);
-                    _packetizer(packet, entry.Next.Value);
-                }
-                else
-                {
-                    packet.Write(false);
-                }
-                if (entry.Previous != null)
-                {
-                    packet.Write(true);
-                    _packetizer(packet, entry.Previous.Value);
-                }
-                else
-                {
-                    packet.Write(false);
-                }
+                packet.Write(entries.IndexOf(entry.Next));
+                packet.Write(entries.IndexOf(entry.Previous));
             }
 
-            var stack = new Stack<Node>();
-            stack.Push(_root);
-            while (stack.Count > 0)
-            {
-                var node = stack.Pop();
-
-                packet.Write(node.EntryCount);
-
-                if (node.FirstChildEntry != null)
-                {
-                    packet.Write(true);
-                    _packetizer(packet, node.FirstChildEntry.Value);
-                }
-                else
-                {
-                    packet.Write(false);
-                }
-
-                if (node.LastChildEntry != null)
-                {
-                    packet.Write(true);
-                    _packetizer(packet, node.LastChildEntry.Value);
-                }
-                else
-                {
-                    packet.Write(false);
-                }
-
-                if (node.FirstEntry != null)
-                {
-                    packet.Write(true);
-                    _packetizer(packet, node.FirstEntry.Value);
-                }
-                else
-                {
-                    packet.Write(false);
-                }
-
-                if (node.LastEntry != null)
-                {
-                    packet.Write(true);
-                    _packetizer(packet, node.LastEntry.Value);
-                }
-                else
-                {
-                    packet.Write(false);
-                }
-
-                for (int i = 0; i < 4; ++i)
-                {
-                    if (node.Children[i] != null)
-                    {
-                        packet.Write(true);
-                        stack.Push(node.Children[i]);
-                    }
-                    else
-                    {
-                        packet.Write(false);
-                    }
-                }
-            }
+            // Write tree. The tree is very unlikely to ever get so deep that we
+            // get stack issues here, so we can just do it recursively.
+            PacketizeNode(packet, _root, entries);
 
             return packet;
         }
@@ -703,79 +645,211 @@ namespace Engine.Collections
                 throw new InvalidOperationException("No deserializer specified.");
             }
 
-            _values.Clear();
+            // Read plain list of entries. Store them in a list to allow restoring
+            // links between entries in a second pass.
             var count = packet.ReadInt32();
+            var entries = new List<Entry>(count);
+            _values.Clear();
             for (var i = 0; i < count; ++i)
             {
-                var value = _depacketizer(packet);
-#if FARMATH
-                var bounds = packet.ReadFarRectangle();
-#else
-                var bounds = packet.ReadRectangleF();
-#endif
-
-                var entry = new Entry {Bounds = bounds, Value = value};
-                _values[value] = entry;
+                var entry = new Entry {Value = _depacketizer(packet)};
+                packet.Read(out entry.Bounds);
+                _values[entry.Value] = entry;
+                entries.Add(entry);
             }
             for (var i = 0; i < count; ++i)
             {
-                var current = _depacketizer(packet);
-                if (packet.ReadBoolean())
+                var next = packet.ReadInt32();
+                var previous = packet.ReadInt32();
+                if (next >= 0)
                 {
-                    // Got a next value.
-                    var next = _depacketizer(packet);
-                    _values[current].Next = _values[next];
+                    entries[i].Next = entries[next];
                 }
-                if (packet.ReadBoolean())
+                if (previous >= 0)
                 {
-                    // Got a previous value.
-                    var previous = _depacketizer(packet);
-                    _values[current].Previous = _values[previous];
+                    entries[i].Previous = entries[previous];
                 }
             }
 
-            var stack = new Stack<Tuple<Node, int>>();
             _root = new Node();
-            DepacketizeNode(packet, _root, stack);
-            while (stack.Count > 0)
+            DepacketizeNode(packet, _root, entries);
+        }
+        
+        private static void PacketizeNode(IWritablePacket packet, Node node, IList<Entry> entries)
+        {
+            packet.Write(node.EntryCount);
+            packet.Write(entries.IndexOf(node.FirstChildEntry));
+            packet.Write(entries.IndexOf(node.LastChildEntry));
+            packet.Write(entries.IndexOf(node.FirstEntry));
+            packet.Write(entries.IndexOf(node.LastEntry));
+
+            for (var i = 0; i < 4; ++i)
             {
-                var pair = stack.Pop();
-                var parent = pair.Item1;
-                var childIndex = pair.Item2;
-                var child = parent.Children[childIndex] = new Node {Parent = parent};
-                DepacketizeNode(packet, child, stack);
+                if (node.Children[i] != null)
+                {
+                    packet.Write(true);
+                    PacketizeNode(packet, node.Children[i], entries);
+                }
+                else
+                {
+                    packet.Write(false);
+                }
             }
         }
 
         /// <summary>
         /// Utility method for parsing data from a single node.
         /// </summary>
-        private void DepacketizeNode(IReadablePacket packet, Node node, Stack<Tuple<Node, int>> stack)
+        private static void DepacketizeNode(IReadablePacket packet, Node node, IList<Entry> entries)
         {
             node.EntryCount = packet.ReadInt32();
-            if (packet.ReadBoolean())
+            var firstChildEntry = packet.ReadInt32();
+            var lastChildEntry = packet.ReadInt32();
+            var firstEntry = packet.ReadInt32();
+            var lastEntry = packet.ReadInt32();
+            if (firstChildEntry >= 0)
             {
-                node.FirstChildEntry = _values[_depacketizer(packet)];
+                node.FirstChildEntry = entries[firstChildEntry];
             }
-            if (packet.ReadBoolean())
+            if (lastChildEntry >= 0)
             {
-                node.LastChildEntry = _values[_depacketizer(packet)];
+                node.LastChildEntry = entries[lastChildEntry];
             }
-            if (packet.ReadBoolean())
+            if (firstEntry >= 0)
             {
-                node.FirstEntry = _values[_depacketizer(packet)];
+                node.FirstEntry = entries[firstEntry];
             }
-            if (packet.ReadBoolean())
+            if (lastEntry >= 0)
             {
-                node.LastEntry = _values[_depacketizer(packet)];
+                node.LastEntry = entries[lastEntry];
             }
+
             for (var i = 0; i < 4; ++i)
             {
                 if (packet.ReadBoolean())
                 {
-                    stack.Push(Tuple.Create(node, i));
+                    DepacketizeNode(packet, node.Children[i], entries);
                 }
             }
+        }
+
+        [OnStringify]
+        public StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            var entries = _values.Values.ToList();
+
+            sb
+                .AppendIndent(indent).Append("ValueCount = ").Append(_values.Count)
+                .AppendIndent(indent).Append("Values = {");
+            for (var i = 0; i < entries.Count; ++i)
+            {
+                var entry = entries[i];
+                sb.AppendIndent(indent + 1).Append("#").Append(i).Append(" = {");
+                sb.AppendIndent(indent + 2).Append("Value = ").Append(entry.Value);
+                sb.AppendIndent(indent + 2).Append("Bounds = ").Append(entry.Bounds);
+                sb.AppendIndent(indent + 2).Append("Previous = ");
+                {
+                    var index = entries.IndexOf(entry.Previous);
+                    if (index >= 0)
+                    {
+                        sb.Append("#").Append(index);
+                    }
+                    else
+                    {
+                        sb.Append("null");
+                    }
+                }
+                sb.AppendIndent(indent + 2).Append("Next = ");
+                {
+                    var index = entries.IndexOf(entry.Next);
+                    if (index >= 0)
+                    {
+                        sb.Append("#").Append(index);
+                    }
+                    else
+                    {
+                        sb.Append("null");
+                    }
+                }
+                sb.AppendIndent(indent + 1).Append("}");
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            sb.AppendIndent(indent).Append("Nodes = {");
+            DumpNode(sb, indent + 1, _root, entries);
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
+        }
+
+        private static void DumpNode(StringBuilder sb, int indent, Node node, IList<Entry> entries)
+        {
+            sb.AppendIndent(indent).Append("EntryCount = ").Append(node.EntryCount);
+            sb.AppendIndent(indent).Append("FirstChildEntry = ");
+            {
+                var index = entries.IndexOf(node.FirstChildEntry);
+                if (index >= 0)
+                {
+                    sb.Append("#").Append(index);
+                }
+                else
+                {
+                    sb.Append("null");
+                }
+            }
+            sb.AppendIndent(indent).Append("LastChildEntry = ");
+            {
+                var index = entries.IndexOf(node.LastChildEntry);
+                if (index >= 0)
+                {
+                    sb.Append("#").Append(index);
+                }
+                else
+                {
+                    sb.Append("null");
+                }
+            }
+            sb.AppendIndent(indent).Append("FirstEntry = ");
+            {
+                var index = entries.IndexOf(node.FirstEntry);
+                if (index >= 0)
+                {
+                    sb.Append("#").Append(index);
+                }
+                else
+                {
+                    sb.Append("null");
+                }
+            }
+            sb.AppendIndent(indent).Append("LastEntry = ");
+            {
+                var index = entries.IndexOf(node.LastEntry);
+                if (index >= 0)
+                {
+                    sb.Append("#").Append(index);
+                }
+                else
+                {
+                    sb.Append("null");
+                }
+            }
+
+            sb.AppendIndent(indent).Append("Children = {");
+            for (var i = 0; i < 4; ++i)
+            {
+                sb.AppendIndent(indent + 1).Append(i).Append(" = ");
+                if (node.Children[i] != null)
+                {
+                    sb.Append("{");
+                    DumpNode(sb, indent + 2, node.Children[i], entries);
+                    sb.AppendIndent(indent + 1).Append("}");
+                }
+                else
+                {
+                    sb.Append("null");
+                }
+            }
+            sb.AppendIndent(indent).Append("}");
         }
 
         #endregion

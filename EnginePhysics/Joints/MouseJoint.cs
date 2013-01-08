@@ -5,7 +5,6 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using Engine.FarMath;
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 #else
@@ -293,31 +292,6 @@ namespace Engine.Physics.Joints
         internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
         {
             return true;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() +
-                ", LocalAnchorB=" + _localAnchorB.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorB.Y.ToString(CultureInfo.InvariantCulture) +
-#if FARMATH
-                ", TargetA=" + _targetA.X.ToString() + ":" + _targetA.Y.ToString() +
-#else
-                ", TargetA=" + _targetA.X.ToString(CultureInfo.InvariantCulture) + ":" + _targetA.Y.ToString(CultureInfo.InvariantCulture) +
-#endif
-                ", Frequency=" + _frequency.ToString(CultureInfo.InvariantCulture) +
-                ", DamingRatio=" + _dampingRatio.ToString(CultureInfo.InvariantCulture) +
-                ", MaxForce=" + _maxForce.ToString(CultureInfo.InvariantCulture) +
-                ", Impulse=" + _impulse.X.ToString(CultureInfo.InvariantCulture) + ":" + _impulse.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

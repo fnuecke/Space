@@ -166,6 +166,12 @@ namespace Engine.Physics.Systems
             get { return _profile; }
         }
 
+        /// <summary>Gets the depth of the index tree.</summary>
+        public int IndexDepth
+        {
+            get { return _index.Depth; }
+        }
+
         /// <summary>Gets the fixture bounding boxes for the debug renderer.</summary>
         internal IEnumerable<WorldBounds> FixtureBounds
         {
@@ -252,11 +258,11 @@ namespace Engine.Physics.Systems
         /// </summary>
 #if FARMATH
         private FarCollections.SpatialHashedQuadTree<int> _index =
-            new FarCollections.SpatialHashedQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+            new FarCollections.SpatialHashedQuadTree<int>(16, 1, Settings.AabbExtension, Settings.AabbMultiplier,
                 (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #else
         private Collections.DynamicQuadTree<int> _index =
-            new Collections.DynamicQuadTree<int>(16, 64, Settings.AabbExtension, Settings.AabbMultiplier,
+            new Collections.DynamicQuadTree<int>(16, 1, Settings.AabbExtension, Settings.AabbMultiplier,
                 (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #endif
 
@@ -2261,6 +2267,72 @@ namespace Engine.Physics.Systems
             _island = null;
         }
 
+        public override StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("ContactCapacity = ").Append(_contacts.Length);
+            sb.AppendIndent(indent).Append("Contacts = {");
+            for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
+            {
+                sb.AppendIndent(indent + 1).Append(contact).Append(" = {");
+                sb.AppendIndent(indent + 2).Append("Contact = ").Dump(_contacts[contact], indent + 2);
+                sb.AppendIndent(indent + 2).Append("EdgeA = ").Dump(_contactEdges[contact * 2], indent + 2);
+                sb.AppendIndent(indent + 2).Append("EdgeB = ").Dump(_contactEdges[contact * 2 + 1], indent + 2);
+                sb.AppendIndent(indent + 1).Append("}");
+            }
+            sb.AppendIndent(indent).Append("}");
+            
+            sb.AppendIndent(indent).Append("JointCapacity = ").Append(_joints.Length);
+            sb.AppendIndent(indent).Append("Joints = {");
+            for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
+            {
+                sb.AppendIndent(indent + 1).Append(joint).Append(" = {");
+                sb.AppendIndent(indent + 2).Append("Joint = ").Dump(_joints[joint], indent + 2);
+                sb.AppendIndent(indent + 2).Append("EdgeA = ").Dump(_jointEdges[joint * 2], indent + 2);
+                sb.AppendIndent(indent + 2).Append("EdgeB = ").Dump(_jointEdges[joint * 2 + 1], indent + 2);
+                sb.AppendIndent(indent + 1).Append("}");
+            }
+            sb.AppendIndent(indent).Append("}");
+            
+            sb.AppendIndent(indent).Append("JointsWithGearsCount = ").Append(_gearJoints.Count);
+            sb.AppendIndent(indent).Append("JointsWithGears = {");
+            foreach (var pair in _gearJoints)
+            {
+                sb.AppendIndent(indent + 1).Append("Joint ").Append(pair.Key).Append(" = {");
+                var first = true;
+                foreach (var gearJoint in pair.Value)
+                {
+                    if (!first)
+                    {
+                        sb.Append(", ");
+                    }
+                    first = false;
+                    sb.Append(gearJoint);
+                }
+                sb.Append("}");
+            }
+            sb.AppendIndent(indent).Append("}");
+            
+            sb.AppendIndent(indent).Append("TouchedCount = ").Append(_touched.Count);
+            sb.AppendIndent(indent).Append("Touched = {");
+            {
+                var first = true;
+                foreach (var entry in _touched)
+                {
+                    if (!first)
+                    {
+                        sb.Append(", ");
+                    }
+                    first = false;
+                    sb.Append(entry);
+                }
+            }
+            sb.Append("}");
+
+            return sb;
+        }
+
         #endregion
 
         #region Copying
@@ -2332,43 +2404,6 @@ namespace Engine.Physics.Systems
 
             copy._touched.Clear();
             copy._touched.UnionWith(_touched);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>Returns a <see cref="System.String"/> that represents this instance.</summary>
-        /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder(base.ToString());
-
-            var hasher = new Hasher();
-            hasher.Write(_index);
-
-            sb.AppendFormat(
-                "Timestep: {0}, Gravity: {1}, AllowSleep: {2}, UsedContacts: {3}, FreeContacts: {4}, UsedJoints: {5}, FreeJoints: {6}, Index: {7}, FindBeforeUpdate: {8}\n",
-                _timestep, _gravity, _allowSleep, _usedContacts, _freeContacts, _usedJoints, _freeJoints, hasher.Value,
-                _findContactsBeforeNextUpdate);
-
-            sb.AppendFormat("ContactCount: {0}/{1}\n", _contactCount, _contacts.Length);
-            for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
-            {
-                sb.AppendFormat("Contact[{0}]: {1} ({2}, {3})\n", contact, _contacts[contact],
-                                _contactEdges[contact * 2], _contactEdges[contact * 2 + 1]);
-            }
-
-            sb.AppendFormat("JointCount: {0}/{1}\n", _jointCount, _joints.Length);
-            for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
-            {
-                sb.AppendFormat("Joint[{0}]: {1} ({2}, {3})\n", joint, _joints[joint],
-                                _jointEdges[joint * 2], _jointEdges[joint * 2 + 1]);
-            }
-
-            sb.AppendFormat("TouchedCount: {0}\n", _touched.Count);
-
-            return sb.ToString();
         }
 
         #endregion

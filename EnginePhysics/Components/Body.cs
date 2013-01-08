@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Physics.Joints;
 using Engine.Physics.Math;
@@ -1072,39 +1071,6 @@ namespace Engine.Physics.Components
             System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
 
             return base.Packetize(packet);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() +
-                   ", BodyType=" + TypeInternal +
-                   ", IsSleepAllowed=" + IsSleepAllowedInternal +
-                   ", IsAwake=" + IsAwakeInternal +
-                   ", IsBullet=" + IsBulletInternal +
-                   ", IslandIndex=" + IslandIndex +
-                   ", Transform=" + Transform +
-                   ", Sweep=" + Sweep +
-                   ", LinearVelocity=" + LinearVelocityInternal.X.ToString(CultureInfo.InvariantCulture) + ":" + LinearVelocityInternal.Y.ToString(CultureInfo.InvariantCulture) +
-                   ", AngularVelocity=" + AngularVelocityInternal.ToString(CultureInfo.InvariantCulture) +
-                   ", Force=" + Force.X.ToString(CultureInfo.InvariantCulture) + ":" + Force.Y.ToString(CultureInfo.InvariantCulture) +
-                   ", Torque=" + Torque.ToString(CultureInfo.InvariantCulture) +
-                   ", JointList=" + JointList +
-                   ", ContactList=" + ContactList +
-                   ", Mass=" + MassInternal.ToString(CultureInfo.InvariantCulture) +
-                   ", Inertia=" + _inertia.ToString(CultureInfo.InvariantCulture) +
-                   ", LinearDamping=" + LinearDampingInternal.ToString(CultureInfo.InvariantCulture) +
-                   ", AngularDamping=" + AngularDampingInternal.ToString(CultureInfo.InvariantCulture) +
-                   ", SleepTime=" + SleepTime.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

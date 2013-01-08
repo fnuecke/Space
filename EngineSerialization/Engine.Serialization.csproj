@@ -64,6 +64,7 @@
     <Compile Include="PacketException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadablePacketExtensions.cs" />
+    <Compile Include="Stringify.cs" />
     <Compile Include="WritablePacketExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -417,6 +417,36 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        {
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("Squads = {");
+            foreach (var id in _squadIds)
+            {
+                var data = _squads[id];
+
+                sb.AppendIndent(indent + 1).Append(id).Append(" = {");
+                sb.AppendIndent(indent + 2).Append("Formation = ").Append(data.Formation.GetType().Name);
+                sb.AppendIndent(indent + 2).Append("Spacing = ").Append(data.Spacing);
+                sb.AppendIndent(indent + 2).Append("MemberCount = ").Append(data.Members.Count);
+                sb.AppendIndent(indent + 2).Append("Members = {");
+                for (var i = 0; i < data.Members.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(", ");
+                    }
+                    sb.Append(data.Members[i]);
+                }
+                sb.AppendIndent(indent + 2).Append("}");
+                sb.AppendIndent(indent + 1).Append("}");
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
+        }
+
         #endregion
 
         #region Types

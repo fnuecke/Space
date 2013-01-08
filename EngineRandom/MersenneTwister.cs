@@ -37,6 +37,7 @@
 
 using System;
 using System.Globalization;
+using System.Text;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -327,7 +328,7 @@ namespace Engine.Random
         [OnPacketize]
         public IWritablePacket Packetize(IWritablePacket packet)
         {
-            for (var i = 0; i < N; i++)
+            for (var i = 0; i < N; ++i)
             {
                 packet.Write(_mt[i]);
             }
@@ -340,12 +341,25 @@ namespace Engine.Random
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
-        public void PostDepacketize(IReadablePacket packet)
+        public void Depacketize(IReadablePacket packet)
         {
-            for (var i = 0; i < N; i++)
+            for (var i = 0; i < N; ++i)
             {
                 _mt[i] = packet.ReadUInt64();
             }
+        }
+
+        [OnStringify]
+        public StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            var hasher = new Hasher();
+            for (var i = 0; i < N; i++)
+            {
+                hasher.Write(_mt[i]);
+            }
+            return sb
+                .AppendIndent(indent)
+                .Append("_mt (hash) = ").Append(hasher.Value);
         }
 
         #endregion

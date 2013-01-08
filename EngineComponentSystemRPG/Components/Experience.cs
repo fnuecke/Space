@@ -233,20 +233,5 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Level=" + _level + ", XP=" + _value;
-        }
-
-        #endregion
     }
 }

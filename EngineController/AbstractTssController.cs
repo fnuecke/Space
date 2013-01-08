@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
+using System.Text;
 using Engine.ComponentSystem;
 using Engine.Math;
 using Engine.Serialization;
@@ -406,5 +408,35 @@ namespace Engine.Controller
         }
 
         #endregion
+
+        protected static string StringifyGameState(long frame, IManager manager)
+        {
+            // String builder we use to concatenate our strings.
+            var sb = new StringBuilder();
+
+            // Get some general system information, for reference.
+            var assembly = Assembly.GetEntryAssembly().GetName();
+#if DEBUG
+            const string build = "Debug";
+#else
+            const string build = "Release";
+#endif
+            sb.Append("--------------------------------------------------------------------------------\n");
+            sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
+                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
+            sb.AppendFormat("Build Version: {0}\n", assembly.Version);
+            sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
+            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
+            sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
+            sb.Append("Controller Type: Server\n");
+            sb.Append("--------------------------------------------------------------------------------\n");
+            sb.AppendFormat("Gamestate at frame {0}\n", frame);
+            sb.Append("--------------------------------------------------------------------------------\n");
+
+            // Dump actual game state.
+            sb.Dump(manager);
+
+            return sb.ToString();
+        }
     }
 }

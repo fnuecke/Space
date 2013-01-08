@@ -256,19 +256,13 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
         }
 
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
         {
-            return base.ToString() + ", Target=" + Target + ", Start=" + (_start.HasValue ? _start.Value.ToString() : "null");
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("Start = ").Append(_start.HasValue ? _start.Value.ToString() : "null");
+
+            return sb;
         }
 
         #endregion

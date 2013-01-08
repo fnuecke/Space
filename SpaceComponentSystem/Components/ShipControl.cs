@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
@@ -143,21 +142,6 @@ namespace Space.ComponentSystem.Components
                 TargetRotation = rotation;
                 TargetRotationChanged = true;
             }
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Stabilizing=" + Stabilizing + ", Shooting=" + Shooting + ", ShieldsActive=" + ShieldsActive + ", DirectedAcceleration=" + DirectedAcceleration.X.ToString(CultureInfo.InvariantCulture) + ":" + DirectedAcceleration.Y.ToString(CultureInfo.InvariantCulture) + ", TargetRotation=" + TargetRotation.ToString(CultureInfo.InvariantCulture) + ", TargetRotationChanged=" + TargetRotationChanged + ", PreviousRotation=" + PreviousRotation.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

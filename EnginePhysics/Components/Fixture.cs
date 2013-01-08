@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Physics.Math;
 using Engine.Physics.Systems;
@@ -369,27 +368,6 @@ namespace Engine.Physics.Components
             System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
 
             return base.Packetize(packet);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() +
-                   ", Radius=" + Radius.ToString(CultureInfo.InvariantCulture) +
-                   ", CollisionGroups=" + CollisionGroupsInternal +
-                   ", IsSensor=" + IsSensorInternal +
-                   ", Density=" + _density.ToString(CultureInfo.InvariantCulture) +
-                   ", Friction=" + _friction.ToString(CultureInfo.InvariantCulture) +
-                   ", Restitution=" + _restitution.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

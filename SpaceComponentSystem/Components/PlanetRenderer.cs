@@ -172,19 +172,17 @@ namespace Space.ComponentSystem.Components
             Clouds = null;
         }
 
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        /// <summary>Writes a string representation of the object to a string builder.</summary>
+        /// <param name="sb">The string builder.</param>
+        /// <param name="indent">The indentation level.</param>
+        /// <returns>The string builder, for call chaining.</returns>
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
         {
-            return base.ToString() + ", Factory=" + Factory.Name;
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("Factory = ").Append(Factory.Name);
+
+            return sb;
         }
 
         #endregion

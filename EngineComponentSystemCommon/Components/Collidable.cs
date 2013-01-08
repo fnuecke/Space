@@ -175,20 +175,5 @@ namespace Engine.ComponentSystem.Common.Components
         #endregion
 
         #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", ShouldSweep=" + ShouldSweep + ", PreviousPosition=" + PreviousPosition + ", ContactList=" + ContactList;
-        }
-
-        #endregion
     }
 }

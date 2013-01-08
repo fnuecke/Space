@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -729,6 +730,35 @@ namespace Engine.ComponentSystem
                 }
                 throw;
             }
+        }
+        
+        [OnStringify]
+        public StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            // Write the components.
+            sb
+                .AppendIndent(indent).Append("ComponentCount = ").Append(_componentIds.Count)
+                .AppendIndent(indent).Append("Components = {");
+            foreach (var component in Components)
+            {
+                sb.AppendIndent(indent + 1).Append(component.GetType()).Append(" = ").Dump(component, indent + 1);
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            // Write systems.
+            sb
+                .AppendIndent(indent).Append("SystemCount (excluding IDrawingSystems) = ").Append(_systems.Count(s => !(s is IDrawingSystem)))
+                .AppendIndent(indent).Append("Systems = {");
+            for (int i = 0, j = _systems.Count; i < j; ++i)
+            {
+                if (_systems[i] is IDrawingSystem)
+                {
+                    continue;
+                }
+                sb.AppendIndent(indent + 1).Append(_systems[i].GetType()).Append(" = ").Dump(_systems[i], indent + 1);
+            }
+
+            return sb.AppendIndent(indent).Append("}");
         }
 
         #endregion

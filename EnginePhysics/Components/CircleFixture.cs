@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
@@ -126,21 +125,6 @@ namespace Engine.Physics.Components
             bounds.Width = Radius + Radius;
             bounds.Height = Radius + Radius;
             return bounds;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Center=" + Center.X.ToString(CultureInfo.InvariantCulture) + ":" + Center.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

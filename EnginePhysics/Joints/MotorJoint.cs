@@ -353,27 +353,5 @@ namespace Engine.Physics.Joints
         }
 
         #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() +
-                ", LinearOffset=" + _linearOffset.X.ToString(CultureInfo.InvariantCulture) + ":" + _linearOffset.Y.ToString(CultureInfo.InvariantCulture) +
-                ", AngularOffset=" + _angularOffset.ToString(CultureInfo.InvariantCulture) +
-                ", LinearImpulse=" + _linearImpulse.X.ToString(CultureInfo.InvariantCulture) + ":" + _linearImpulse.Y.ToString(CultureInfo.InvariantCulture) +
-                ", AngularImpulse=" + _angularImpulse.ToString(CultureInfo.InvariantCulture) +
-                ", MaxForce=" + _maxForce.ToString(CultureInfo.InvariantCulture) +
-                ", MaxTorque=" + _maxTorque.ToString(CultureInfo.InvariantCulture) +
-                ", CorrectionFactor=" + _correctionFactor.ToString(CultureInfo.InvariantCulture);
-        }
-
-        #endregion
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.Physics.Math;
@@ -433,48 +432,25 @@ namespace Engine.Physics.Components
             }
         }
 
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        /// <summary>Writes a string representation of the object to a string builder.</summary>
+        /// <param name="sb">The string builder.</param>
+        /// <param name="indent">The indentation level.</param>
+        /// <returns>The string builder, for call chaining.</returns>
+        public override StringBuilder Dump(StringBuilder sb, int indent)
         {
-            return base.ToString() +
-                   ", Vertices=[" + Vector2ArrayToString(Vertices, Count) + "]" +
-                   ", Normals=[" + Vector2ArrayToString(Normals, Count) + "]" +
-                   ", Count=" + Count +
-                   ", Centroid=" + Centroid.X.ToString(CultureInfo.InvariantCulture) +
-                   ":" + Centroid.Y.ToString(CultureInfo.InvariantCulture);
-        }
+            base.Dump(sb, indent);
 
-        /// <summary>
-        /// Utility method for stringifying Vector2 arrays.
-        /// </summary>
-        private static string Vector2ArrayToString(IList<Vector2> vs, int count)
-        {
-            if (count == 0)
+            sb.AppendIndent(indent).Append("Vertices = {");
+            for (var i = 0; i < Count; i++)
             {
-                return "";
+                sb.AppendIndent(indent + 1).Append("{");
+                sb.AppendIndent(indent + 2).Append("Position = ").Append(Vertices[i]);
+                sb.AppendIndent(indent + 2).Append("Normal = ").Append(Normals[i]);
+                sb.AppendIndent(indent + 1).Append("}");
             }
-            var sb = new StringBuilder();
-            sb
-                .Append(vs[0].X.ToString(CultureInfo.InvariantCulture))
-                .Append(":")
-                .Append(vs[0].Y.ToString(CultureInfo.InvariantCulture));
-            for (var i = 1; i < count; ++i)
-            {
-                sb.Append(", ")
-                    .Append(vs[i].X.ToString(CultureInfo.InvariantCulture))
-                    .Append(":")
-                    .Append(vs[i].Y.ToString(CultureInfo.InvariantCulture));
-            }
-            return sb.ToString();
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
         }
 
         #endregion

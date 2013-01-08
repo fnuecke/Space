@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
 
@@ -192,21 +191,6 @@ namespace Engine.ComponentSystem.Common.Components
                 normal = Vector2.Zero;
                 return false;
             }
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Size=" + Size.X.ToString(CultureInfo.InvariantCulture) + ":" + Size.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

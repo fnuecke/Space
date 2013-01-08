@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Engine.Serialization;
 
 namespace Engine.Util
@@ -143,6 +144,23 @@ namespace Engine.Util
             {
                 _reusableIds.Add(packet.ReadInt32());
             }
+        }
+        
+        [OnStringify]
+        public StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            sb.AppendIndent(indent).Append("_reusableIds = {");
+            var first = true;
+            foreach (var reusableId in _reusableIds)
+            {
+                if (!first)
+                {
+                    sb.Append(", ");
+                }
+                sb.Append(reusableId);
+                first = false;
+            }
+            return sb.Append("}");
         }
 
         /// <summary>

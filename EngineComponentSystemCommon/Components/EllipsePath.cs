@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Common.Components
@@ -252,21 +251,6 @@ namespace Engine.ComponentSystem.Common.Components
             base.PostDepacketize(packet);
 
             Precompute();
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", CenterEntityId=" + CenterEntityId + ", MajorRadius=" + MajorRadius.ToString(CultureInfo.InvariantCulture) + ", MinorRadius=" + MinorRadius.ToString(CultureInfo.InvariantCulture) + ", Angle=" + Angle.ToString(CultureInfo.InvariantCulture) + ", Period=" + Period.ToString(CultureInfo.InvariantCulture) + ", PeriodOffset=" + PeriodOffset.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

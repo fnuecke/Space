@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -162,26 +161,6 @@ namespace Space.ComponentSystem.Components
             Interval = 1;
             Owner = 0;
             Delay = 0;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Type=" + Type +
-                ", MinValue=" + MinValue.ToString(CultureInfo.InvariantCulture) +
-                ", MaxValue=" + MaxValue.ToString(CultureInfo.InvariantCulture) +
-                ", ChanceToCrit=" + ChanceToCrit.ToString(CultureInfo.InvariantCulture) +
-                ", CriticalDamageMultiplier=" + CriticalDamageMultiplier.ToString(CultureInfo.InvariantCulture) +
-                ", Interval=" + Interval + ", Owner=" + Owner + ", Delay=" + Delay;
         }
 
         #endregion

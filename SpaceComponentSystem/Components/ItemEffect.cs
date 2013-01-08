@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
@@ -106,23 +105,6 @@ namespace Space.ComponentSystem.Components
             Scale = 0f;
             Offset = Vector2.Zero;
             Direction = 0f;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Group=" + Group + ", Name=" + Name + ", Scale=" + Scale.ToString(CultureInfo.InvariantCulture) +
-                ", Offset=" + Offset.X.ToString(CultureInfo.InvariantCulture) + Offset.Y.ToString(CultureInfo.InvariantCulture) +
-                ", Direction=" + Direction.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
@@ -102,35 +103,37 @@ namespace Engine.Simulation
 
         #region Serialization
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
         [OnPacketize]
-        public virtual IWritablePacket Packetize(IWritablePacket packet)
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            // Then serialize all pending commands for the next frame.
+            // Serialize all pending commands for the next frame.
             packet.WriteWithTypeInfo((ICollection<Command>)Commands);
 
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
-        public virtual void PostDepacketize(IReadablePacket packet)
+        public void Depacketize(IReadablePacket packet)
         {
-            // Continue with reading the list of commands.
+            // Read the list of commands for the next frame.
             Commands.Clear();
             foreach (var command in packet.ReadPacketizablesWithTypeInfo<Command>())
             {
                 PushCommand(command);
             }
+        }
+
+        [OnStringify]
+        public StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            sb.AppendIndent(indent).Append("Commands = {");
+            foreach (var command in Commands)
+            {
+                sb.AppendIndent(indent + 1).Dump(command, indent + 1);
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
         }
 
         #endregion

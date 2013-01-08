@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -139,21 +138,6 @@ namespace Engine.ComponentSystem.Common.Components
             base.PostDepacketize(packet);
 
             Texture = null;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", TextureName=" + TextureName + ", Tint=" + Tint + ", Scale=" + Scale.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

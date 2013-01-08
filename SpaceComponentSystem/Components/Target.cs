@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
-using Engine.Serialization;
+﻿using Engine.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Components
 {
@@ -31,11 +29,9 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// The ID of the entity that's being targeted. Negative values mean
-        /// that there is no current target.
+        /// The ID of the entity that's being targeted.
         /// </summary>
-        [PacketizerIgnore]
-        public int? Value;
+        public int Value;
 
         #endregion
 
@@ -62,54 +58,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Reset();
 
-            Value = null;
-        }
-
-        #endregion
-
-        #region Serialization / Hashing
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
-        {
-            return base.Packetize(packet)
-                .Write(Value.HasValue ? Value.Value : 0);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(IReadablePacket packet)
-        {
-            base.PostDepacketize(packet);
-
-            Value = packet.ReadInt32();
-            if (Value == 0)
-            {
-                Value = null;
-            }
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Value=" + (Value.HasValue ? Value.Value.ToString(CultureInfo.InvariantCulture) : "null");
+            Value = 0;
         }
 
         #endregion

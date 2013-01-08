@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
@@ -340,11 +341,11 @@ namespace Engine.Simulation
 
             // Write pending object removals.
             packet.Write(_removes.Count);
-            foreach (var remove in _removes)
+            foreach (var frame in _removes)
             {
-                packet.Write(remove.Key);
-                packet.Write(remove.Value.Count);
-                foreach (var entityUid in remove.Value)
+                packet.Write(frame.Key);
+                packet.Write(frame.Value.Count);
+                foreach (var entityUid in frame.Value)
                 {
                     packet.Write(entityUid);
                 }
@@ -352,10 +353,10 @@ namespace Engine.Simulation
 
             // Write pending simulation commands.
             packet.Write(_commands.Count);
-            foreach (var command in _commands)
+            foreach (var frame in _commands)
             {
-                packet.Write(command.Key);
-                packet.WriteWithTypeInfo((ICollection<Command>)command.Value);
+                packet.Write(frame.Key);
+                packet.WriteWithTypeInfo((ICollection<Command>)frame.Value);
             }
 
             return packet;
@@ -406,6 +407,49 @@ namespace Engine.Simulation
 
             // Got a valid state.
             WaitingForSynchronization = false;
+        }
+
+        [OnStringify]
+        public StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            // Write the trailing simulation.
+            sb.AppendIndent(indent).Append("TrailingSimulation = ").Dump(_simulations[_simulations.Length - 1], indent);
+
+            // Write pending object removals.
+            sb.AppendIndent(indent).Append("PendingRemovalFrameCount = ").Append(_removes.Count);
+            sb.AppendIndent(indent).Append("PendingRemovals = {");
+            foreach (var frame in _removes)
+            {
+                sb.AppendIndent(indent + 1).Append("Frame ").Append(frame.Key).Append(" = {");
+                var first = true;
+                foreach (var entityUid in frame.Value)
+                {
+                    if (!first)
+                    {
+                        sb.Append(", ");
+                    }
+                    first = false;
+                    sb.Append(entityUid);
+                }
+                sb.Append("}");
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            // Write pending simulation commands.
+            sb.AppendIndent(indent).Append("CommandFrameCount = ").Append(_commands.Count);
+            sb.AppendIndent(indent).Append("Commands = {");
+            foreach (var frame in _commands)
+            {
+                sb.AppendIndent(indent + 1).Append("Frame ").Append(frame.Key).Append(" = {");
+                foreach (var command in frame.Value)
+                {
+                    sb.AppendIndent(indent + 1).Dump(command, indent + 1);
+                }
+                sb.AppendIndent(indent + 1).Append("}");
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
         }
 
         /// <summary>

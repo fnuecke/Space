@@ -533,35 +533,5 @@ namespace Engine.Physics.Joints
         }
 
         #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() +
-                ", TypeA=" + _typeA +
-                ", TypeB=" + _typeB +
-                ", BodyC=" + _bodyIdC +
-                ", BodyD=" + _bodyIdD +
-                ", LocalAnchorA=" + _localAnchorA.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorA.Y.ToString(CultureInfo.InvariantCulture) +
-                ", LocalAnchorB=" + _localAnchorB.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorB.Y.ToString(CultureInfo.InvariantCulture) +
-                ", LocalAnchorC=" + _localAnchorC.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorC.Y.ToString(CultureInfo.InvariantCulture) +
-                ", LocalAnchorD=" + _localAnchorD.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAnchorD.Y.ToString(CultureInfo.InvariantCulture) +
-                ", LocalAxisC=" + _localAxisC.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAxisC.Y.ToString(CultureInfo.InvariantCulture) +
-                ", LocalAxisD=" + _localAxisD.X.ToString(CultureInfo.InvariantCulture) + ":" + _localAxisD.Y.ToString(CultureInfo.InvariantCulture) +
-                ", ReferenceAngleA=" + _referenceAngleA.ToString(CultureInfo.InvariantCulture) +
-                ", ReferenceAngleB=" + _referenceAngleB.ToString(CultureInfo.InvariantCulture) +
-                ", Constant=" + _constant.ToString(CultureInfo.InvariantCulture) +
-                ", Ratio=" + _ratio.ToString(CultureInfo.InvariantCulture) +
-                ", Impulse=" + _impulse.ToString(CultureInfo.InvariantCulture);
-        }
-
-        #endregion
     }
 }

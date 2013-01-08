@@ -260,6 +260,21 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        {
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("StoredCellCount = ").Append(_cellInfo.Count);
+            sb.AppendIndent(indent).Append("Cells = {");
+            foreach (var item in _cellInfo)
+            {
+                sb.AppendIndent(indent + 1).Append(item.Key).Append(" = ").Dump(item.Value, indent + 1);
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
+        }
+
         #endregion
 
         #region Copying

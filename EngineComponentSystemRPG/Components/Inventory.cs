@@ -451,28 +451,15 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Serialization
 
-        /// <summary>
-        ///   Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet"> The packet to write the data to. </param>
-        /// <returns> The packet after writing. </returns>
+        /// <summary>Write the object's state to the given packet.</summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
-            // Write total capacity.
-            packet.Write(_items.Count);
-
-            // Write number of actual items.
-            var count = 0;
-            for (var i = 0; i < _items.Count; i++)
-            {
-                if (_items[i] > 0)
-                {
-                    ++count;
-                }
-            }
-            packet.Write(count);
+            packet.Write(Capacity);
+            packet.Write(Count);
 
             // Write actual item ids with their positions.
             for (var i = 0; i < _items.Count; i++)
@@ -490,10 +477,8 @@ namespace Engine.ComponentSystem.RPG.Components
             return packet;
         }
 
-        /// <summary>
-        ///   Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet"> The packet to read from. </param>
+        /// <summary>Bring the object to the state in the given packet.</summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void PostDepacketize(IReadablePacket packet)
         {
             base.PostDepacketize(packet);
@@ -514,19 +499,31 @@ namespace Engine.ComponentSystem.RPG.Components
             }
         }
 
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        /// <summary>Writes a string representation of the object to a string builder.</summary>
+        /// <param name="sb">The string builder.</param>
+        /// <param name="indent">The indentation level.</param>
+        /// <returns>The string builder, for call chaining.</returns>
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
         {
-            return base.ToString() + ", Count=" + Count + ", Capacity=" + Capacity;
+            base.Dump(sb, indent);
+            
+            sb.AppendIndent(indent).Append("Capacity = ").Append(Capacity);
+            sb.AppendIndent(indent).Append("Count = ").Append(Count);
+
+            // Write actual item ids with their positions.
+            sb.AppendIndent(indent).Append("Items = {");
+            for (var i = 0; i < _items.Count; i++)
+            {
+                var itemEntry = _items[i];
+                if (itemEntry <= 0)
+                {
+                    continue;
+                }
+                sb.AppendIndent(indent + 1).Append(i).Append(" = ").Append(itemEntry);
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
         }
 
         #endregion

@@ -269,6 +269,24 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        /// <summary>Dumps the specified sb.</summary>
+        /// <param name="sb">The sb.</param>
+        /// <param name="indent">The indent.</param>
+        /// <returns></returns>
+        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        {
+            base.Dump(sb, indent);
+
+            sb.AppendIndent(indent).Append("Cooldowns = {");
+            foreach (var cooldown in _cooldowns)
+            {
+                sb.AppendIndent(indent + 1).Append(cooldown.Key).Append(" = ").Append(cooldown.Value);
+            }
+            sb.AppendIndent(indent).Append("}");
+
+            return sb;
+        }
+
         #endregion
 
         #region Copying
@@ -318,21 +336,6 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._cooldowns.Add(item.Key, item.Value);
             }
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Cooldowns=[" + string.Join(", ", _cooldowns) + "], Random=" + _random;
         }
 
         #endregion

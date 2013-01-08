@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Text;
 using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Session;
@@ -339,67 +337,24 @@ namespace Engine.Controller
                             return null;
                         }
 
-                        // Get the two correlating dumps.
-                        var clientDump = args.Data.ReadString();
-                        var serverDump = StringifyGameState(frame, _gameStates[frame]);
+                        // Get the id for the dump for easier file matching.
+                        var dumpId = args.Data.ReadString();
 
-                        // Get a (relatively) unique base name for the files.
-                        var dumpId = "desync_" + DateTime.UtcNow.Ticks;
-
-                        // Write the dumps.
                         try
                         {
-                            File.WriteAllText(dumpId + "_client.txt", clientDump);
+                            // Create actual game dump and write it to file.
+                            var serverDump = StringifyGameState(frame, _gameStates[frame]);
                             File.WriteAllText(dumpId + "_server.txt", serverDump);
                         }
                         catch (Exception ex)
                         {
-                            Logger.ErrorException("Failed writing desynchronization dumps.", ex);
+                            Logger.ErrorException("Failed writing server desynchronization dump.", ex);
                         }
 
                         break;
                     }
             }
             return null;
-        }
-
-        static string StringifyGameState(long frame, IManager manager)
-        {
-            // String builder we use to concatenate our strings.
-            var sb = new StringBuilder();
-
-            // Get some general system information, for reference.
-            var assembly = Assembly.GetEntryAssembly().GetName();
-#if DEBUG
-            const string build = "Debug";
-#else
-            const string build = "Release";
-#endif
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
-                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
-            sb.AppendFormat("Build Version: {0}\n", assembly.Version);
-            sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
-            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
-            sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
-            sb.Append("Controller Type: Server\n");
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("Gamestate at frame {0}\n", frame);
-            sb.Append("--------------------------------------------------------------------------------\n");
-
-            // Dump actual game state.
-            foreach (var system in manager.Systems)
-            {
-                sb.Append(system);
-                sb.AppendLine();
-            }
-            foreach (var component in manager.Components)
-            {
-                sb.Append(component);
-                sb.AppendLine();
-            }
-
-            return sb.ToString();
         }
 
         #endregion

@@ -486,30 +486,6 @@ namespace Engine.Physics.Contacts
         }
 
         #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return "Contact: Type=" + _type +
-                   ", Previous=" + Previous +
-                   ", Next=" + Next +
-                   ", FixtureA=" + FixtureIdA +
-                   ", FixtureB=" + FixtureIdB +
-                   ", Friction=" + Friction.ToString(CultureInfo.InvariantCulture) +
-                   ", Restitution=" + Restitution.ToString(CultureInfo.InvariantCulture) +
-                   ", IsTouching=" + IsTouching +
-                   ", IsEnabled=" + IsEnabled +
-                   ", Manifold=" + Manifold;
-        }
-
-        #endregion
     }
 
     /// <summary>
@@ -564,24 +540,6 @@ namespace Engine.Physics.Contacts
         public void CopyInto(ContactEdge into)
         {
             Copyable.CopyInto(this, into);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return "ContactEdge: Contact=" + Contact +
-                ", Other=" + Other +
-                ", Previous=" + Previous +
-                ", Next=" + Next;
         }
 
         #endregion

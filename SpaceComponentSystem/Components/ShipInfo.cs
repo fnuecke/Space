@@ -1,8 +1,9 @@
-﻿using System.Globalization;
+﻿using System.Text;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.FarMath;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
 using Space.ComponentSystem.Util;
@@ -333,24 +334,9 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", IsAlive=" + IsAlive + ", Health=" + Health.ToString(CultureInfo.InvariantCulture) + ", MaxHealth=" + MaxHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", Energy=" + Energy.ToString(CultureInfo.InvariantCulture) + ", MaxEnergy=" + MaxEnergy.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", Position=" + Position + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture) + ", IsAccelerating=" + IsAccelerating + ", IsStabilizing=" + IsStabilizing + ", Speed=" + Speed.ToString(CultureInfo.InvariantCulture) + ", MaxSpeed=" + MaxSpeed.ToString(CultureInfo.InvariantCulture) + ", MaxAcceleration=" + MaxAcceleration.ToString(CultureInfo.InvariantCulture) + ", RotationSpeed=" + RotationSpeed.ToString(CultureInfo.InvariantCulture) + ", Mass=" + Mass.ToString(CultureInfo.InvariantCulture) + ", RadarRange=" + RadarRange.ToString(CultureInfo.InvariantCulture) + ", WeaponRange=" + WeaponRange.ToString(CultureInfo.InvariantCulture) + ", InventoryCapacity=" + InventoryCapacity;
-        }
-
-        #endregion
-
         string[] IInformation.getDisplayText()
         {
-            return ToString().Split(',');
+            return new[] {new StringBuilder().Dump(this).ToString()};
         }
 
         Color IInformation.getDisplayColor()

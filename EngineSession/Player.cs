@@ -39,10 +39,5 @@ namespace Engine.Session
         {
             return Number.GetHashCode();
         }
-
-        public override string ToString()
-        {
-            return String.Format("Player {0} ({1})", Number, Name);
-        }
     }
 }

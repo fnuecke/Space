@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 
 namespace Engine.ComponentSystem.Common.Components
 {
@@ -73,21 +72,6 @@ namespace Engine.ComponentSystem.Common.Components
             base.Reset();
 
             Value = 0;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Spin=" + Value.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

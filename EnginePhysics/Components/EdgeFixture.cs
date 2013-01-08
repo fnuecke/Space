@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
@@ -200,25 +199,6 @@ namespace Engine.Physics.Components
             return bounds;
         }
         
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() +
-                (HasVertex0 ? ("Vertex0=" + Vertex0.X.ToString(CultureInfo.InvariantCulture) + ":" + Vertex0.Y.ToString(CultureInfo.InvariantCulture)) : "") +
-                Vertex1.X.ToString(CultureInfo.InvariantCulture) + ":" + Vertex1.Y.ToString(CultureInfo.InvariantCulture) +
-                Vertex2.X.ToString(CultureInfo.InvariantCulture) + ":" + Vertex2.Y.ToString(CultureInfo.InvariantCulture) +
-                (HasVertex3 ? ("Vertex3=" + Vertex3.X.ToString(CultureInfo.InvariantCulture) + ":" + Vertex3.Y.ToString(CultureInfo.InvariantCulture)) : "");
-        }
-
         #endregion
     }
 }

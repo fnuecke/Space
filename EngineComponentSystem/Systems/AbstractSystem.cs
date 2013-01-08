@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.Diagnostics;
 using Engine.Serialization;
@@ -117,6 +118,12 @@ namespace Engine.ComponentSystem.Systems
         {
         }
 
+        [OnStringify]
+        public virtual StringBuilder Dump(StringBuilder sb, int indent)
+        {
+            return sb;
+        }
+
         #endregion
 
         #region Copying
@@ -183,30 +190,6 @@ namespace Engine.ComponentSystem.Systems
 
             // Use dynamic function to do basic copying.
             Copyable.CopyInto(this, into);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            if (this is IDrawingSystem)
-            {
-                return GetType().Name;
-            }
-            else
-            {
-                var hasher = new Hasher();
-                hasher.Write(this);
-                return GetType().Name + ": Hash=" + hasher.Value;
-            }
         }
 
         #endregion
