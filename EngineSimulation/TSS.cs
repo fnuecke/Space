@@ -12,17 +12,13 @@ using Engine.Util;
 
 namespace Engine.Simulation
 {
-    /// <summary>
-    /// Implements a Trailing State Synchronization.
-    /// </summary>
+    /// <summary>Implements a Trailing State Synchronization.</summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
     public sealed class TSS : IReversibleSimulation
     {
         #region Logger
 
-        /// <summary>
-        /// Logger for general purpose logging.
-        /// </summary>
+        /// <summary>Logger for general purpose logging.</summary>
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
@@ -30,10 +26,9 @@ namespace Engine.Simulation
         #region Events
 
         /// <summary>
-        /// Dispatched when the state needs to roll back further than it can
-        /// to accommodate an authoritative command / a user rollback request.
-        /// The handler must trigger the process of getting a valid snapshot,
-        /// which is fed back to this state (normally via <c>Depacketize()</c>).
+        ///     Dispatched when the state needs to roll back further than it can to accommodate an authoritative command / a user
+        ///     rollback request. The handler must trigger the process of getting a valid snapshot, which is fed back to this state
+        ///     (normally via <see cref="Packetizable.ReadPacketizableInto"/>).
         /// </summary>
         public event EventHandler<EventArgs> Invalidated;
 
@@ -41,86 +36,67 @@ namespace Engine.Simulation
 
         #region Properties
 
-        /// <summary>
-        /// The current frame of the leading state.
-        /// </summary>
+        /// <summary>The current frame of the leading state.</summary>
         public long CurrentFrame { get; private set; }
 
-        /// <summary>
-        /// The frame number of the trailing state, i.e. the point we cannot roll
-        /// back past.
-        /// </summary>
-        public long TrailingFrame { get { return _simulations[_simulations.Length - 1].CurrentFrame; } }
+        /// <summary>The frame number of the trailing state, i.e. the point we cannot roll back past.</summary>
+        public long TrailingFrame
+        {
+            get { return _simulations[_simulations.Length - 1].CurrentFrame; }
+        }
 
-        /// <summary>
-        /// The component system manager in use in this simulation.
-        /// </summary>
+        /// <summary>The component system manager in use in this simulation.</summary>
         [PacketizerIgnore]
         public IManager Manager { get; private set; }
 
-        /// <summary>
-        /// Tells if the state is currently waiting to be synchronized.
-        /// </summary>
+        /// <summary>Tells if the state is currently waiting to be synchronized.</summary>
         [PacketizerIgnore]
         public bool WaitingForSynchronization { get; private set; }
 
-        /// <summary>
-        /// Get the trailing simulation.
-        /// </summary>
-        public IAuthoritativeSimulation TrailingSimulation { get { return _simulations[_simulations.Length - 1]; } }
+        /// <summary>Get the trailing simulation.</summary>
+        public IAuthoritativeSimulation TrailingSimulation
+        {
+            get { return _simulations[_simulations.Length - 1]; }
+        }
 
-        /// <summary>
-        /// Get the leading simulation.
-        /// </summary>
-        private IAuthoritativeSimulation LeadingSimulation { get { return _simulations[0]; } }
+        /// <summary>Get the leading simulation.</summary>
+        private IAuthoritativeSimulation LeadingSimulation
+        {
+            get { return _simulations[0]; }
+        }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The delays of the individual simulations.
-        /// </summary>
+        /// <summary>The delays of the individual simulations.</summary>
         [PacketizerIgnore]
         private readonly uint[] _delays;
 
-        /// <summary>
-        /// The parameterization for the different threads.
-        /// </summary>
+        /// <summary>The parameterization for the different threads.</summary>
         [PacketizerIgnore]
         private readonly ThreadData[] _threadData;
 
-        /// <summary>
-        /// Tasks used to update different simulations.
-        /// </summary>
+        /// <summary>Tasks used to update different simulations.</summary>
         [PacketizerIgnore]
         private readonly Task[] _tasks;
 
         /// <summary>
-        /// The list of running simulations. They are ordered in in increasing
-        /// delay, i.e. the state at slot 0 is the leading one, 1 is the next
-        /// newest, and so on.
+        ///     The list of running simulations. They are ordered in in increasing delay, i.e. the state at slot 0 is the
+        ///     leading one, 1 is the next newest, and so on.
         /// </summary>
         [PacketizerIgnore]
         private readonly IAuthoritativeSimulation[] _simulations;
 
-        /// <summary>
-        /// List of object ids to remove from delayed simulations when they
-        /// reach the given frame.
-        /// </summary>
+        /// <summary>List of object ids to remove from delayed simulations when they reach the given frame.</summary>
         [PacketizerIgnore]
         private readonly Dictionary<long, List<int>> _removes = new Dictionary<long, List<int>>();
 
-        /// <summary>
-        /// List of commands to push in delayed simulations when they reach the
-        /// given frame.
-        /// </summary>
+        /// <summary>List of commands to push in delayed simulations when they reach the given frame.</summary>
         [PacketizerIgnore]
         private readonly Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
 
-        /// <summary>
-        /// A list that is re-used for marking entries for removal.
-        /// </summary>
+        /// <summary>A list that is re-used for marking entries for removal.</summary>
         [PacketizerIgnore]
         private readonly List<long> _reusableDeprecationList = new List<long>();
 
@@ -128,9 +104,7 @@ namespace Engine.Simulation
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new TSS based meta state.
-        /// </summary>
+        /// <summary>Creates a new TSS based meta state.</summary>
         /// <param name="delays">The delays to use for trailing simulations, with the delays in frames.</param>
         public TSS(uint[] delays)
         {
@@ -160,8 +134,8 @@ namespace Engine.Simulation
         #region Invalidation / (Re-)Initialization
 
         /// <summary>
-        /// Initialize the TSS to the given simulation. This also clears the
-        /// <c>WaitingForSynchronization</c> flag.
+        ///     Initialize the TSS to the given simulation. This also clears the
+        ///     <c>WaitingForSynchronization</c> flag.
         /// </summary>
         /// <param name="simulation">The simulation to initialize this TSS to.</param>
         public void Initialize(IAuthoritativeSimulation simulation)
@@ -171,8 +145,8 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Mark the simulation as invalid (desynchronized). Will trigger a new
-        /// <c>Invalidated</c> event.
+        ///     Mark the simulation as invalid (desynchronized). Will trigger a new
+        ///     <c>Invalidated</c> event.
         /// </summary>
         public void Invalidate()
         {
@@ -184,11 +158,8 @@ namespace Engine.Simulation
         #region Interfaces
 
         /// <summary>
-        /// Push a command to all sub simulations.
-        /// 
-        /// This will lead to a rollback of all simulations that have already
-        /// passed the command's frame. They will be fast-forwarded
-        /// appropriately in the next update.
+        ///     Push a command to all sub simulations. This will lead to a rollback of all simulations that have already
+        ///     passed the command's frame. They will be fast-forwarded appropriately in the next update.
         /// </summary>
         /// <param name="command">the command to push.</param>
         public void PushCommand(Command command)
@@ -197,9 +168,8 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Push a command to be executed at the given frame.  This will roll
-        /// back, if necessary, to remove the object, meaning it can trigger
-        /// invalidation.
+        ///     Push a command to be executed at the given frame.  This will roll back, if necessary, to remove the object,
+        ///     meaning it can trigger invalidation.
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
@@ -238,8 +208,7 @@ namespace Engine.Simulation
                     {
                         // We already have that command, but it's not authoritative,
                         // yet this one is, so we'll replace it.
-                        _commands[frame].Insert(index, command);
-                        _commands[frame].RemoveAt(index + 1);
+                        _commands[frame][index] = command;
                     }
                     // else: we already have an authoritative one!
                 }
@@ -252,8 +221,7 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Advance leading simulation to <c>CurrentFrame + 1</c> and update
-        /// all trailing simulations accordingly.
+        ///     Advance leading simulation to <c>CurrentFrame + 1</c> and update all trailing simulations accordingly.
         /// </summary>
         public void Update()
         {
@@ -266,8 +234,8 @@ namespace Engine.Simulation
         #region Time specific adding / removal of entities
 
         /// <summary>
-        /// Remove an object in a specific time frame. This will roll back, if
-        /// necessary, to remove the object, meaning it can trigger invalidation.
+        ///     Remove an object in a specific time frame. This will roll back, if necessary, to remove the object, meaning it
+        ///     can trigger invalidation.
         /// </summary>
         /// <param name="entity">The id of the object to remove.</param>
         /// <param name="frame">The frame to remove it at.</param>
@@ -297,10 +265,9 @@ namespace Engine.Simulation
         #region Fine-grained playback control
 
         /// <summary>
-        /// Run the simulation to the given frame, which may be in the past.
-        /// This will make the given frame the new  <c>CurrentFrame</c>, which
-        /// means that no adds/removes/commands/update will be applied to that
-        /// actual frame just yet.
+        ///     Run the simulation to the given frame, which may be in the past. This will make the given frame the new
+        ///     <c>CurrentFrame</c>, which means that no adds/removes/commands/update will be applied to that actual frame just
+        ///     yet.
         /// </summary>
         /// <param name="frame">the frame to run to.</param>
         public void RunToFrame(long frame)
@@ -328,9 +295,7 @@ namespace Engine.Simulation
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Serialize a simulation to a packet.
-        /// </summary>
+        /// <summary>Serialize a simulation to a packet.</summary>
         /// <param name="packet">the packet to write the data to.</param>
         [OnPacketize]
         public IWritablePacket Packetize(IWritablePacket packet)
@@ -345,9 +310,9 @@ namespace Engine.Simulation
             {
                 packet.Write(frame.Key);
                 packet.Write(frame.Value.Count);
-                foreach (var entityUid in frame.Value)
+                foreach (var entity in frame.Value)
                 {
-                    packet.Write(entityUid);
+                    packet.Write(entity);
                 }
             }
 
@@ -356,18 +321,16 @@ namespace Engine.Simulation
             foreach (var frame in _commands)
             {
                 packet.Write(frame.Key);
-                packet.WriteWithTypeInfo((ICollection<Command>)frame.Value);
+                packet.WriteWithTypeInfo((ICollection<Command>) frame.Value);
             }
 
             return packet;
         }
 
-        /// <summary>
-        /// Deserialize a simulation from a packet.
-        /// </summary>
+        /// <summary>Deserialize a simulation from a packet.</summary>
         /// <param name="packet">The packet to read the data from.</param>
         [OnPostDepacketize]
-        public void PostDepacketize(IReadablePacket packet)
+        public void Depacketize(IReadablePacket packet)
         {
             // Unwrap the trailing state and mirror it to all the newer ones.
             packet.ReadPacketizableInto(_simulations[_simulations.Length - 1]);
@@ -378,24 +341,24 @@ namespace Engine.Simulation
             PrunePastEvents();
 
             // Continue with reading the list of removes.
-            var numRemoves = packet.ReadInt32();
-            for (var removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
+            var removeCount = packet.ReadInt32();
+            for (var removeIndex = 0; removeIndex < removeCount; ++removeIndex)
             {
                 var key = packet.ReadInt64();
                 if (!_removes.ContainsKey(key))
                 {
                     _removes.Add(key, new List<int>());
                 }
-                var numValues = packet.ReadInt32();
-                for (var valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                var valueCount = packet.ReadInt32();
+                for (var valueIndex = 0; valueIndex < valueCount; ++valueIndex)
                 {
                     _removes[key].Add(packet.ReadInt32());
                 }
             }
 
             // And finally the commands.
-            var numCommands = packet.ReadInt32();
-            for (var commandIdx = 0; commandIdx < numCommands; ++commandIdx)
+            var commandCount = packet.ReadInt32();
+            for (var commandIndex = 0; commandIndex < commandCount; ++commandIndex)
             {
                 var key = packet.ReadInt64();
                 if (!_commands.ContainsKey(key))
@@ -413,34 +376,41 @@ namespace Engine.Simulation
         public StreamWriter Dump(StreamWriter w, int indent)
         {
             // Write the trailing simulation.
-            w.AppendIndent(indent).Write("TrailingSimulation = "); w.Dump(_simulations[_simulations.Length - 1], indent);
+            w.AppendIndent(indent).Write("TrailingSimulation = ");
+            w.Dump(_simulations[_simulations.Length - 1], indent);
 
             // Write pending object removals.
-            w.AppendIndent(indent).Write("PendingRemovalFrameCount = "); w.Write(_removes.Count);
+            w.AppendIndent(indent).Write("PendingRemovalFrameCount = ");
+            w.Write(_removes.Count);
             w.AppendIndent(indent).Write("PendingRemovals = {");
             foreach (var frame in _removes)
             {
-                w.AppendIndent(indent + 1).Write("Frame "); w.Write(frame.Key); w.Write(" = {");
+                w.AppendIndent(indent + 1).Write("Frame ");
+                w.Write(frame.Key);
+                w.Write(" = {");
                 var first = true;
-                foreach (var entityUid in frame.Value)
+                foreach (var entity in frame.Value)
                 {
                     if (!first)
                     {
                         w.Write(", ");
                     }
                     first = false;
-                    w.Write(entityUid);
+                    w.Write(entity);
                 }
                 w.Write("}");
             }
             w.AppendIndent(indent).Write("}");
 
             // Write pending simulation commands.
-            w.AppendIndent(indent).Write("CommandFrameCount = "); w.Write(_commands.Count);
+            w.AppendIndent(indent).Write("CommandFrameCount = ");
+            w.Write(_commands.Count);
             w.AppendIndent(indent).Write("Commands = {");
             foreach (var frame in _commands)
             {
-                w.AppendIndent(indent + 1).Write("Frame "); w.Write(frame.Key); w.Write(" = {");
+                w.AppendIndent(indent + 1).Write("Frame ");
+                w.Write(frame.Key);
+                w.Write(" = {");
                 foreach (var command in frame.Value)
                 {
                     w.AppendIndent(indent + 1).Dump(command, indent + 1);
@@ -452,17 +422,13 @@ namespace Engine.Simulation
             return w;
         }
 
-        /// <summary>
-        /// Not available for TSS.
-        /// </summary>
+        /// <summary>Not available for TSS.</summary>
         public ISimulation NewInstance()
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not available for TSS.
-        /// </summary>
+        /// <summary>Not available for TSS.</summary>
         public void CopyInto(ISimulation into)
         {
             throw new NotSupportedException();
@@ -482,17 +448,16 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Update the simulation by advancing forwards. This will run to,
-        /// excluding, the given frame (i.e. adds/removes/commands will *not*
-        /// be applied to the given frame, and its <c>Update()</c> method will
-        /// *not* be called once it reaches the given frame).
+        ///     Update the simulation by advancing forwards. This will run to, excluding, the given frame (i.e.
+        ///     adds/removes/commands will *not* be applied to the given frame, and its <see cref="ISimulation.Update"/> method
+        ///     will *not* be called once it reaches the given frame).
         /// </summary>
         /// <param name="frame">The frame up to which to run.</param>
         private void FastForward(long frame)
         {
             // Start threads for the non-trailing simulations. We run these in
             // parallel with the trailing simulation update, even though this
-            // might result in us having to redo this (if the trailing sim is
+            // might result in us having to redo this (if the trailing simulation is
             // invalid). But the redo is *very* rare, so it's really not an issue.
             BeginThreadedUpdate(frame);
 
@@ -533,9 +498,7 @@ namespace Engine.Simulation
             PrunePastEvents();
         }
 
-        /// <summary>
-        /// Begin threaded update for all simulations except the trailing one.
-        /// </summary>
+        /// <summary>Begin threaded update for all simulations except the trailing one.</summary>
         /// <param name="frame">The frame to perform the update for.</param>
         [Conditional("TSS_THREADING")]
         private void BeginThreadedUpdate(long frame)
@@ -548,13 +511,11 @@ namespace Engine.Simulation
             }
         }
 
-        /// <summary>
-        /// Perform a threaded update of a simulation.
-        /// </summary>
+        /// <summary>Perform a threaded update of a simulation.</summary>
         /// <param name="data">The information about which simulation to update up to which frame.</param>
         private void ThreadedUpdate(object data)
         {
-            var info = (ThreadData)data;
+            var info = (ThreadData) data;
 
             try
             {
@@ -570,10 +531,8 @@ namespace Engine.Simulation
                 throw;
             }
         }
-        
-        /// <summary>
-        /// Wait for threaded update to finish for all simulations.
-        /// </summary>
+
+        /// <summary>Wait for threaded update to finish for all simulations.</summary>
         [Conditional("TSS_THREADING")]
         private void EndThreadedUpdate()
         {
@@ -581,9 +540,8 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Performs a non-threaded (sequential) update for all non-trailing
-        /// simulations. This is called after the trailing simulation has been
-        /// updated.
+        ///     Performs a non-threaded (sequential) update for all non-trailing simulations. This is called after the
+        ///     trailing simulation has been updated.
         /// </summary>
         /// <param name="frame">The frame to run the leading simulation to.</param>
 #if TSS_THREADING // Fugly hack, but ConditionalAttribute does not support !TSS_THREADING.
@@ -602,8 +560,8 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Prepares a simulation for its next update, by pushing commands for
-        /// that frame, as well as adding and removing entities.
+        ///     Prepares a simulation for its next update, by pushing commands for that frame, as well as adding and removing
+        ///     entities.
         /// </summary>
         /// <param name="simulation">The simulation to prepare.</param>
         private void PrepareForUpdate(ISimulation simulation)
@@ -614,10 +572,10 @@ namespace Engine.Simulation
             // Check if we need to remove objects.
             if (_removes.ContainsKey(frame))
             {
-                // Add a copy of it.
-                foreach (var entityUid in _removes[frame])
+                // Remove the marked objects from the simulation.
+                foreach (var entity in _removes[frame])
                 {
-                    simulation.Manager.RemoveEntity(entityUid);
+                    simulation.Manager.RemoveEntity(entity);
                 }
             }
 
@@ -632,11 +590,9 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Rewind the simulation to the "beginning" of the given frame.
-        /// Meaning one frame before the given frame, making it ready to
-        /// have adds/removes/commands applied to it again. If this fails
-        /// (too far in the past) this will trigger a resynchronization
-        /// request.
+        ///     Rewind the simulation to the "beginning" of the given frame. Meaning one frame before the given frame, making
+        ///     it ready to have adds/removes/commands applied to it again. If this fails (too far in the past) this will trigger a
+        ///     resynchronization request.
         /// </summary>
         /// <param name="frame">the frame to rewind to.</param>
         private void Rewind(long frame)
@@ -648,7 +604,7 @@ namespace Engine.Simulation
                 {
                     // Success, mirror the state to all newer ones.
                     MirrorSimulation(_simulations[i], i - 1);
-                    return; // Then return, so we don't trigger resync ;)
+                    return; // Then return, so we don't trigger resynchronization ;)
                 }
             }
 
@@ -656,24 +612,19 @@ namespace Engine.Simulation
             OnInvalidated(EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Mirror the given frame to all more recent frames.
-        /// </summary>
+        /// <summary>Mirror the given frame to all more recent frames.</summary>
         /// <param name="state">the state to mirror.</param>
         /// <param name="start">the index to start at.</param>
         private void MirrorSimulation(ICopyable<ISimulation> state, int start)
         {
             for (var i = start; i >= 0; --i)
             {
-                _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation)state.NewInstance();
+                _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation) state.NewInstance();
                 state.CopyInto(_simulations[i]);
             }
         }
 
-        /// <summary>
-        /// Some cleanup, removing old adds/removes, that will never
-        /// be checked again.
-        /// </summary>
+        /// <summary>Some cleanup, removing old adds/removes, that will never be checked again.</summary>
         private void PrunePastEvents()
         {
             // Remove adds / removes from the to-add list that have been added
@@ -707,19 +658,13 @@ namespace Engine.Simulation
 
         #region Thread parameter wrapper
 
-        /// <summary>
-        /// Wrapper for parameters passed to a updater thread.
-        /// </summary>
+        /// <summary>Wrapper for parameters passed to a updater thread.</summary>
         private struct ThreadData
         {
-            /// <summary>
-            /// The simulation to update.
-            /// </summary>
+            /// <summary>The simulation to update.</summary>
             public IAuthoritativeSimulation Simulation;
 
-            /// <summary>
-            /// The frame to run to.
-            /// </summary>
+            /// <summary>The frame to run to.</summary>
             public long Frame;
         }
 
@@ -730,33 +675,26 @@ namespace Engine.Simulation
         #region Manager-Wrappers
 
         /// <summary>
-        /// Managed wrapper for TSS to interface to the leading state for read
-        /// operations, and inject commands for modifying operations.
+        ///     Managed wrapper for TSS to interface to the leading state for read operations, and inject commands for
+        ///     modifying operations.
         /// </summary>
         private sealed class TSSEntityManager : IManager
         {
             #region Properties
 
-            /// <summary>
-            /// A list of all components currently registered with this manager,
-            /// in order of their ID.
-            /// </summary>
+            /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
             IEnumerable<Component> IManager.Components
             {
                 get { throw new NotSupportedException(); }
             }
 
-            /// <summary>
-            /// A list of all systems registered with this manager.
-            /// </summary>
+            /// <summary>A list of all systems registered with this manager.</summary>
             IEnumerable<AbstractSystem> IManager.Systems
             {
                 get { throw new NotSupportedException(); }
             }
 
-            /// <summary>
-            /// Number of components currently registered in this system.
-            /// </summary>
+            /// <summary>Number of components currently registered in this system.</summary>
             public int ComponentCount
             {
                 get { return _tss.LeadingSimulation.Manager.ComponentCount; }
@@ -766,9 +704,7 @@ namespace Engine.Simulation
 
             #region Fields
 
-            /// <summary>
-            /// The TSS this wrapper is associated to.
-            /// </summary>
+            /// <summary>The TSS this wrapper is associated to.</summary>
             private readonly TSS _tss;
 
             #endregion
@@ -784,18 +720,14 @@ namespace Engine.Simulation
 
             #region Logic
 
-            /// <summary>
-            /// Update all registered systems.
-            /// </summary>
+            /// <summary>Update all registered systems.</summary>
             /// <param name="frame">The frame in which the update is applied.</param>
             void IManager.Update(long frame)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Renders all registered systems.
-            /// </summary>
+            /// <summary>Renders all registered systems.</summary>
             /// <param name="frame">The frame to render.</param>
             /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
             public void Draw(long frame, float elapsedMilliseconds)
@@ -807,13 +739,9 @@ namespace Engine.Simulation
 
             #region Systems
 
-            /// <summary>
-            /// Add the specified system to this manager.
-            /// </summary>
+            /// <summary>Add the specified system to this manager.</summary>
             /// <param name="system">The system to add.</param>
-            /// <returns>
-            /// This manager, for chaining.
-            /// </returns>
+            /// <returns>This manager, for chaining.</returns>
             public IManager AddSystem(AbstractSystem system)
             {
                 if (_tss.CurrentFrame > 0)
@@ -838,9 +766,7 @@ namespace Engine.Simulation
                 return this;
             }
 
-            /// <summary>
-            /// Add multiple systems to this manager.
-            /// </summary>
+            /// <summary>Add multiple systems to this manager.</summary>
             /// <param name="systems">The systems to add.</param>
             public void AddSystems(IEnumerable<AbstractSystem> systems)
             {
@@ -850,34 +776,24 @@ namespace Engine.Simulation
                 }
             }
 
-            /// <summary>
-            /// Adds a copy of the specified system.
-            /// </summary>
+            /// <summary>Adds a copy of the specified system.</summary>
             /// <param name="system">The system to copy.</param>
             void IManager.CopySystem(AbstractSystem system)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Removes the specified system from this manager.
-            /// </summary>
+            /// <summary>Removes the specified system from this manager.</summary>
             /// <param name="system">The system to remove.</param>
-            /// <returns>
-            /// Whether the system was successfully removed.
-            /// </returns>
+            /// <returns>Whether the system was successfully removed.</returns>
             bool IManager.RemoveSystem(AbstractSystem system)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Get a system of the specified type.
-            /// </summary>
+            /// <summary>Get a system of the specified type.</summary>
             /// <param name="typeId">The type of the system to get.</param>
-            /// <returns>
-            /// The system with the specified type.
-            /// </returns>
+            /// <returns>The system with the specified type.</returns>
             public AbstractSystem GetSystem(int typeId)
             {
                 return _tss.LeadingSimulation.Manager.GetSystem(typeId);
@@ -887,96 +803,68 @@ namespace Engine.Simulation
 
             #region Entities and Components
 
-            /// <summary>
-            /// Creates a new entity and returns its ID.
-            /// </summary>
-            /// <returns>
-            /// The id of the new entity.
-            /// </returns>
+            /// <summary>Creates a new entity and returns its ID.</summary>
+            /// <returns>The id of the new entity.</returns>
             int IManager.AddEntity()
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Test whether the specified entity exists.
-            /// </summary>
+            /// <summary>Test whether the specified entity exists.</summary>
             /// <param name="entity">The entity to check for.</param>
-            /// <returns>
-            /// Whether the manager contains the entity or not.
-            /// </returns>
+            /// <returns>Whether the manager contains the entity or not.</returns>
             public bool HasEntity(int entity)
             {
                 return _tss.LeadingSimulation.Manager.HasEntity(entity);
             }
 
-            /// <summary>
-            /// Removes an entity and all its components from the system.
-            /// </summary>
+            /// <summary>Removes an entity and all its components from the system.</summary>
             /// <param name="entity">The entity to remove.</param>
             public void RemoveEntity(int entity)
             {
                 _tss.RemoveEntity(entity, _tss.CurrentFrame);
             }
 
-            /// <summary>
-            /// Creates a new component for the specified entity.
-            /// </summary>
+            /// <summary>Creates a new component for the specified entity.</summary>
             /// <typeparam name="T">The type of component to create.</typeparam>
             /// <param name="entity">The entity to attach the component to.</param>
-            /// <returns>
-            /// The new component.
-            /// </returns>
+            /// <returns>The new component.</returns>
             T IManager.AddComponent<T>(int entity)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Removes the specified component from the system.
-            /// </summary>
+            /// <summary>Removes the specified component from the system.</summary>
             /// <param name="component">The component to remove.</param>
             void IManager.RemoveComponent(Component component)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Removes the specified component from the system.
-            /// </summary>
+            /// <summary>Removes the specified component from the system.</summary>
             /// <param name="componentId">The id of the component to remove.</param>
             void IManager.RemoveComponent(int componentId)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Test whether the component with the specified id exists.
-            /// </summary>
+            /// <summary>Test whether the component with the specified id exists.</summary>
             /// <param name="componentId">The id of the component to check for.</param>
-            /// <returns>
-            /// Whether the manager contains the component or not.
-            /// </returns>
+            /// <returns>Whether the manager contains the component or not.</returns>
             public bool HasComponent(int componentId)
             {
                 return _tss.LeadingSimulation.Manager.HasComponent(componentId);
             }
 
-            /// <summary>
-            /// Get a component by its id.
-            /// </summary>
+            /// <summary>Get a component by its id.</summary>
             /// <param name="componentId">The if of the component to retrieve.</param>
-            /// <returns>
-            /// The component with the specified id.
-            /// </returns>
+            /// <returns>The component with the specified id.</returns>
             public Component GetComponentById(int componentId)
             {
                 return _tss.LeadingSimulation.Manager.GetComponentById(componentId);
             }
 
-            /// <summary>
-            /// Gets the component of the specified type for an entity.
-            /// </summary>
+            /// <summary>Gets the component of the specified type for an entity.</summary>
             /// <param name="entity">The entity to get the component of.</param>
             /// <param name="typeId"> </param>
             /// <returns>The component.</returns>
@@ -985,14 +873,10 @@ namespace Engine.Simulation
                 return _tss.LeadingSimulation.Manager.GetComponent(entity, typeId);
             }
 
-            /// <summary>
-            /// Allows enumerating over all components of the specified entity.
-            /// </summary>
+            /// <summary>Allows enumerating over all components of the specified entity.</summary>
             /// <param name="entity">The entity for which to get the components.</param>
             /// <param name="typeId">The type of the components to get.</param>
-            /// <returns>
-            /// An enumerable listing all components of that entity.
-            /// </returns>
+            /// <returns>An enumerable listing all components of that entity.</returns>
             public IEnumerable<Component> GetComponents(int entity, int typeId)
             {
                 return _tss.LeadingSimulation.Manager.GetComponents(entity, typeId);
@@ -1002,9 +886,7 @@ namespace Engine.Simulation
 
             #region Messaging
 
-            /// <summary>
-            /// Inform all interested systems of a message.
-            /// </summary>
+            /// <summary>Inform all interested systems of a message.</summary>
             /// <typeparam name="T">The type of the message.</typeparam>
             /// <param name="message">The sent message.</param>
             void IManager.SendMessage<T>(T message)
@@ -1017,37 +899,30 @@ namespace Engine.Simulation
             #region Serialization / Hashing
 
             /// <summary>
-            /// Write a complete entity, meaning all its components, to the
-            /// specified packet. Entities saved this way can be restored using
-            /// the <c>ReadEntity()</c> method.
-            /// <para/>
-            /// This uses the components' <c>Packetize</c> facilities.
+            ///     Write a complete entity, meaning all its components, to the specified packet. Entities saved this way can be
+            ///     restored using the <c>ReadEntity()</c> method.
+            ///     <para/>
+            ///     This uses the components' <c>Packetize</c> facilities.
             /// </summary>
             /// <param name="packet">The packet to write to.</param>
             /// <param name="entity">The entity to write.</param>
-            /// <returns>
-            /// The packet after writing the entity's components.
-            /// </returns>
+            /// <returns>The packet after writing the entity's components.</returns>
             public IWritablePacket PacketizeEntity(IWritablePacket packet, int entity)
             {
                 return _tss.LeadingSimulation.Manager.PacketizeEntity(packet, entity);
             }
 
             /// <summary>
-            /// Reads an entity from the specified packet, meaning all its
-            /// components. This will create a new entity, with an id that
-            /// may differ from the id the entity had when it was written.
-            /// <para/>
-            /// In particular, all re-created components will likely have different
-            /// different ids as well, so this method is not suited for storing
-            /// components that reference other components, even if just by their
-            /// ID.
-            /// <para/>
-            /// This uses the components' <c>Depacketize</c> facilities.
+            ///     Reads an entity from the specified packet, meaning all its components. This will create a new entity, with an id
+            ///     that may differ from the id the entity had when it was written.
+            ///     <para/>
+            ///     In particular, all re-created components will likely have different different ids as well, so this method is not
+            ///     suited for storing components that reference other components, even if just by their ID.
+            ///     <para/>
+            ///     This uses the components' <c>Depacketize</c> facilities.
             /// </summary>
             /// <param name="packet">The packet to read the entity from.</param>
-            /// <param name="componentIdMap">A mapping of how components' ids
-            /// changed due to serialization, mapping old id to new id.</param>
+            /// <param name="componentIdMap">A mapping of how components' ids changed due to serialization, mapping old id to new id.</param>
             /// <returns>The id of the read entity.</returns>
             int IManager.DepacketizeEntity(IReadablePacket packet, Dictionary<int, int> componentIdMap)
             {
@@ -1058,18 +933,14 @@ namespace Engine.Simulation
 
             #region Copying
 
-            /// <summary>
-            /// Creates a shallow copy of the object.
-            /// </summary>
+            /// <summary>Creates a shallow copy of the object.</summary>
             /// <returns>The copy.</returns>
             IManager ICopyable<IManager>.NewInstance()
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Creates a deep copy of the object, reusing the given object.
-            /// </summary>
+            /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
             /// <param name="into">The object to copy into.</param>
             /// <returns>The copy.</returns>
             void ICopyable<IManager>.CopyInto(IManager into)

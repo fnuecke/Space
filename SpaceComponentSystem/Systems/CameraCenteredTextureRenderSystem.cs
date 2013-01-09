@@ -15,39 +15,27 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Defines a render system which always translates the view to be
-    /// centered to the camera.
-    /// </summary>
+    /// <summary>Defines a render system which always translates the view to be centered to the camera.</summary>
     public sealed class CameraCenteredTextureRenderSystem : TextureRenderSystem
     {
         #region Fields
 
         /// <summary>
-        /// We cache rendered ship models, indexed by the equipment hash,
-        /// to avoid having to re-render them each frame, which is slow due
-        /// to the frequent texture switching for each item.
+        ///     We cache rendered ship models, indexed by the equipment hash, to avoid having to re-render them each frame,
+        ///     which is slow due to the frequent texture switching for each item.
         /// </summary>
         private readonly Dictionary<uint, CacheEntry> _modelCache = new Dictionary<uint, CacheEntry>();
 
-        /// <summary>
-        /// The struct used to store single model cache entries.
-        /// </summary>
+        /// <summary>The struct used to store single model cache entries.</summary>
         private sealed class CacheEntry
         {
-            /// <summary>
-            /// The actual model texture used for rendering.
-            /// </summary>
+            /// <summary>The actual model texture used for rendering.</summary>
             public Texture2D Texture;
 
-            /// <summary>
-            /// Offset to render the cached texture at.
-            /// </summary>
+            /// <summary>Offset to render the cached texture at.</summary>
             public Vector2 Offset;
 
-            /// <summary>
-            /// The last frame the model was used in (to clean up unused models).
-            /// </summary>
+            /// <summary>The last frame the model was used in (to clean up unused models).</summary>
             public long LastUsedFrame;
         }
 
@@ -55,10 +43,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Called when the graphics device is being disposed, and
-        /// any assets manually allocated should be disposed.
-        /// </summary>
+        /// <summary>Called when the graphics device is being disposed, and any assets manually allocated should be disposed.</summary>
         protected override void UnloadContent()
         {
             base.UnloadContent();
@@ -77,17 +62,17 @@ namespace Space.ComponentSystem.Systems
             // using a custom spritebatch in between would break that.
             foreach (var entity in GetVisibleEntities())
             {
-                var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
+                var component = ((TextureRenderer) Manager.GetComponent(entity, TextureRenderer.TypeId));
 
                 // Skip invalid or disabled entities.
                 if (component == null || !component.Enabled)
                 {
                     continue;
                 }
-                
+
                 // Skip if it's not a ship.
                 ShipInfo shipInfo;
-                if ((shipInfo = (ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId)) == null ||
+                if ((shipInfo = (ShipInfo) Manager.GetComponent(component.Entity, ShipInfo.TypeId)) == null ||
                     shipInfo.Equipment == null || shipInfo.Equipment.Item <= 0)
                 {
                     continue;
@@ -101,9 +86,10 @@ namespace Space.ComponentSystem.Systems
                 {
                     // No cache entry yet, create it.
                     var size = ComputeModelSize(shipInfo.Equipment, Vector2.Zero);
-                    var target = new RenderTarget2D(SpriteBatch.GraphicsDevice,
-                                                    (int)System.Math.Ceiling(size.Width),
-                                                    (int)System.Math.Ceiling(size.Height));
+                    var target = new RenderTarget2D(
+                        SpriteBatch.GraphicsDevice,
+                        (int) System.Math.Ceiling(size.Width),
+                        (int) System.Math.Ceiling(size.Height));
                     var previousRenderTargets = SpriteBatch.GraphicsDevice.GetRenderTargets();
                     SpriteBatch.GraphicsDevice.SetRenderTarget(target);
                     SpriteBatch.GraphicsDevice.Clear(Color.Transparent);
@@ -137,24 +123,31 @@ namespace Space.ComponentSystem.Systems
             base.Draw(frame, elapsedMilliseconds);
         }
 
-        /// <summary>
-        /// Draws the component.
-        /// </summary>
+        /// <summary>Draws the component.</summary>
         /// <param name="component">The component.</param>
         /// <param name="position">The position.</param>
         /// <param name="rotation">The rotation.</param>
         /// <param name="layerDepth">The base layer depth to render at.</param>
-        protected override void DrawComponent(TextureRenderer component, Vector2 position, float rotation, float layerDepth)
+        protected override void DrawComponent(
+            TextureRenderer component, Vector2 position, float rotation, float layerDepth)
         {
             // See what we're drawing.
             ShipInfo shipInfo;
-            if ((shipInfo = (ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId)) != null &&
+            if ((shipInfo = (ShipInfo) Manager.GetComponent(component.Entity, ShipInfo.TypeId)) != null &&
                 shipInfo.Equipment != null && shipInfo.Equipment.Item > 0)
             {
                 // Cached drawing, just render the texture.
                 var cachedModel = _modelCache[HashEquipment(shipInfo.Equipment)];
-                SpriteBatch.Draw(cachedModel.Texture, position, null, Color.White, rotation, cachedModel.Offset, component.Scale,
-                                 SpriteEffects.None, layerDepth);
+                SpriteBatch.Draw(
+                    cachedModel.Texture,
+                    position,
+                    null,
+                    Color.White,
+                    rotation,
+                    cachedModel.Offset,
+                    component.Scale,
+                    SpriteEffects.None,
+                    layerDepth);
             }
             else
             {
@@ -164,16 +157,22 @@ namespace Space.ComponentSystem.Systems
                 origin.Y = component.Texture.Height / 2f;
 
                 // Draw.
-                SpriteBatch.Draw(component.Texture, position, null, component.Tint, rotation, origin, component.Scale,
-                                 SpriteEffects.None, layerDepth);
+                SpriteBatch.Draw(
+                    component.Texture,
+                    position,
+                    null,
+                    component.Tint,
+                    rotation,
+                    origin,
+                    component.Scale,
+                    SpriteEffects.None,
+                    layerDepth);
             }
         }
 
         /// <summary>
-        /// Computes a hash based on the currently equipped items, using
-        /// the values relevant for rendering that item. An identical hash
-        /// will therefore mean that an equipment branch will look exactly
-        /// the same when rendered.
+        ///     Computes a hash based on the currently equipped items, using the values relevant for rendering that item. An
+        ///     identical hash will therefore mean that an equipment branch will look exactly the same when rendered.
         /// </summary>
         /// <param name="slot">The slot to start from.</param>
         /// <returns>Hash for the equipment branch.</returns>
@@ -184,11 +183,11 @@ namespace Space.ComponentSystem.Systems
             foreach (var itemId in slot.AllItems)
             {
                 // Get item info.
-                var item = (SpaceItem)Manager.GetComponent(itemId, Item.TypeId);
+                var item = (SpaceItem) Manager.GetComponent(itemId, Item.TypeId);
                 hasher.Write(item.DrawBelowParent);
                 hasher.Write(item.ModelOffset);
                 hasher.Write(item.RequiredSlotSize.Scale());
-                var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
+                var renderer = (TextureRenderer) Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
                 hasher.Write(renderer.TextureName);
                 hasher.Write(renderer.Tint);
             }
@@ -197,10 +196,11 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Computes the size of the model, i.e. the area covered by the fully rendered
-        /// equipment starting with the specified slot.
+        ///     Computes the size of the model, i.e. the area covered by the fully rendered equipment starting with the
+        ///     specified slot.
         /// </summary>
-        private RectangleF ComputeModelSize(SpaceItemSlot slot, Vector2 offset, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
+        private RectangleF ComputeModelSize(
+            SpaceItemSlot slot, Vector2 offset, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
         {
             // Nothing to do if there's no item in the slot.
             if (slot.Item <= 0)
@@ -209,13 +209,13 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get item info.
-            var item = (SpaceItem)Manager.GetComponent(slot.Item, Item.TypeId);
+            var item = (SpaceItem) Manager.GetComponent(slot.Item, Item.TypeId);
 
             // Get renderer and load texture if necessary.
-            var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
+            var renderer = (TextureRenderer) Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
             if (renderer.Texture == null)
             {
-                var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
                 renderer.Texture = graphicsSystem.Content.Load<Texture2D>(renderer.TextureName);
             }
 
@@ -241,27 +241,33 @@ namespace Space.ComponentSystem.Systems
             // Move the offset according to rotation and accumulate it.
             var localOffset = offset + parentSize.Scale() * slotOffset;
             var renderOffset = localOffset + item.RequiredSlotSize.Scale() * itemOffset;
-            
+
             // Get area the texture is rendered to.
-            var bounds = (RectangleF)renderer.Texture.Bounds;
+            var bounds = (RectangleF) renderer.Texture.Bounds;
             bounds.Offset(-bounds.Width / 2, -bounds.Height / 2);
             bounds.Offset(renderOffset);
-            bounds.Inflate(-renderer.Texture.Width / 2f * (1 - item.RequiredSlotSize.Scale()),
-                           -renderer.Texture.Height / 2f * (1 - item.RequiredSlotSize.Scale()));
+            bounds.Inflate(
+                -renderer.Texture.Width / 2f * (1 - item.RequiredSlotSize.Scale()),
+                -renderer.Texture.Height / 2f * (1 - item.RequiredSlotSize.Scale()));
 
             // Check sub-items.
             foreach (SpaceItemSlot childSlot in Manager.GetComponents(item.Entity, ItemSlot.TypeId))
             {
-                bounds = RectangleF.Union(bounds, ComputeModelSize(childSlot, localOffset, item.RequiredSlotSize, mirrored));
+                bounds = RectangleF.Union(
+                    bounds, ComputeModelSize(childSlot, localOffset, item.RequiredSlotSize, mirrored));
             }
 
             return bounds;
         }
 
-        /// <summary>
-        /// Renders the equipment starting from the specified slot.
-        /// </summary>
-        private void RenderEquipment(SpaceItemSlot slot, Vector2 offset, int depth = 1, float order = 0.5f, ItemSlotSize parentSize = ItemSlotSize.Small, bool? mirrored = null)
+        /// <summary>Renders the equipment starting from the specified slot.</summary>
+        private void RenderEquipment(
+            SpaceItemSlot slot,
+            Vector2 offset,
+            int depth = 1,
+            float order = 0.5f,
+            ItemSlotSize parentSize = ItemSlotSize.Small,
+            bool? mirrored = null)
         {
             // Nothing to do if there's no item in the slot.
             if (slot.Item <= 0)
@@ -270,13 +276,13 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get item info.
-            var item = (SpaceItem)Manager.GetComponent(slot.Item, Item.TypeId);
+            var item = (SpaceItem) Manager.GetComponent(slot.Item, Item.TypeId);
 
             // Get renderer and load texture if necessary.
-            var renderer = (TextureRenderer)Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
+            var renderer = (TextureRenderer) Manager.GetComponent(item.Entity, TextureRenderer.TypeId);
             if (renderer.Texture == null)
             {
-                var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
                 renderer.Texture = graphicsSystem.Content.Load<Texture2D>(renderer.TextureName);
             }
 
@@ -312,7 +318,8 @@ namespace Space.ComponentSystem.Systems
             origin.Y = renderer.Texture.Height / 2f;
 
             // And render.
-            SpriteBatch.Draw(renderer.Texture,
+            SpriteBatch.Draw(
+                renderer.Texture,
                 renderOffset,
                 null,
                 renderer.Tint,
@@ -329,24 +336,20 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Gets the list of currently visible entities.
-        /// </summary>
-        /// <returns>
-        /// The list of visible entities.
-        /// </returns>
+        /// <summary>Gets the list of currently visible entities.</summary>
+        /// <returns>The list of visible entities.</returns>
         protected override IEnumerable<int> GetVisibleEntities()
         {
-            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).VisibleEntities;
+            return ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).VisibleEntities;
         }
 
         /// <summary>
-        /// Returns the <em>transformation</em> for offsetting and scaling rendered content.
+        ///     Returns the <em>transformation</em> for offsetting and scaling rendered content.
         /// </summary>
         /// <returns>The transformation.</returns>
         protected override FarTransform GetTransform()
         {
-            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).Transform;
+            return ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).Transform;
         }
 
         #endregion

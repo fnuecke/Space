@@ -9,48 +9,32 @@ using Engine.Util;
 
 namespace Engine.ComponentSystem
 {
-    /// <summary>
-    /// Type managing facilities for component system manager.
-    /// </summary>
+    /// <summary>Type managing facilities for component system manager.</summary>
     public sealed partial class Manager
     {
         #region Type mapping
 
-        /// <summary>
-        /// Manages unique IDs for system types.
-        /// </summary>
+        /// <summary>Manages unique IDs for system types.</summary>
         [PacketizerIgnore]
         private static readonly IdManager SystemTypeIds = new IdManager();
 
-        /// <summary>
-        /// Maps actual system types to their IDs.
-        /// </summary>
+        /// <summary>Maps actual system types to their IDs.</summary>
         [PacketizerIgnore]
         private static readonly Dictionary<Type, int> SystemTypes = new Dictionary<Type, int>();
 
-        /// <summary>
-        /// Keeps track of type hierarchy among systems, i.e. stores for each
-        /// system its most direct, known parent.
-        /// </summary>
+        /// <summary>Keeps track of type hierarchy among systems, i.e. stores for each system its most direct, known parent.</summary>
         [PacketizerIgnore]
         private static readonly SparseArray<int> SystemHierarchy = new SparseArray<int>();
 
-        /// <summary>
-        /// Manages unique IDs for component types.
-        /// </summary>
+        /// <summary>Manages unique IDs for component types.</summary>
         [PacketizerIgnore]
         private static readonly IdManager ComponentTypeIds = new IdManager();
 
-        /// <summary>
-        /// Maps actual component types to their IDs.
-        /// </summary>
+        /// <summary>Maps actual component types to their IDs.</summary>
         [PacketizerIgnore]
         private static readonly Dictionary<Type, int> ComponentTypes = new Dictionary<Type, int>();
 
-        /// <summary>
-        /// Keeps track of type hierarchy among components, i.e. stores for each
-        /// component its most direct, known parent.
-        /// </summary>
+        /// <summary>Keeps track of type hierarchy among components, i.e. stores for each component its most direct, known parent.</summary>
         [PacketizerIgnore]
         private static readonly SparseArray<int> ComponentHierarchy = new SparseArray<int>();
 
@@ -58,26 +42,20 @@ namespace Engine.ComponentSystem
 
         #region Type Resolving
 
-        /// <summary>
-        /// Gets the system type id for the specified system type. This will
-        /// create a new ID if necessary.
-        /// </summary>
+        /// <summary>Gets the system type id for the specified system type. This will create a new ID if necessary.</summary>
         /// <typeparam name="T">The system type to look up the id for.</typeparam>
         /// <returns>The type id for that system.</returns>
         public static int GetSystemTypeId<T>() where T : AbstractSystem
         {
-            return GetSystemTypeId(typeof(T));
+            return GetSystemTypeId(typeof (T));
         }
 
-        /// <summary>
-        /// Gets the system type id for the specified system type. This will
-        /// create a new ID if necessary.
-        /// </summary>
+        /// <summary>Gets the system type id for the specified system type. This will create a new ID if necessary.</summary>
         /// <param name="type">The system type to look up the id for.</param>
         /// <returns>The type id for that system.</returns>
         public static int GetSystemTypeId(Type type)
         {
-            Debug.Assert(type.IsSubclassOf(typeof(AbstractSystem)));
+            Debug.Assert(type.IsSubclassOf(typeof (AbstractSystem)));
 
             int typeId;
             if (!SystemTypes.TryGetValue(type, out typeId))
@@ -108,7 +86,8 @@ namespace Engine.ComponentSystem
                         var otherTypeId = GetSystemTypeId(otherType);
                         var otherParentTypeId = SystemHierarchy[otherTypeId];
                         if (otherParentTypeId == 0 || // Had no parent.
-                            type.IsSubclassOf(GetSystemTypeForTypeId(otherParentTypeId))) // Better than previous parent.
+                            type.IsSubclassOf(GetSystemTypeForTypeId(otherParentTypeId)))
+                            // Better than previous parent.
                         {
                             SystemHierarchy[otherTypeId] = typeId;
                         }
@@ -127,26 +106,20 @@ namespace Engine.ComponentSystem
             return typeId;
         }
 
-        /// <summary>
-        /// Gets the component type id for the specified component type. This will
-        /// create a new ID if necessary.
-        /// </summary>
+        /// <summary>Gets the component type id for the specified component type. This will create a new ID if necessary.</summary>
         /// <typeparam name="T">The component type to look up the id for.</typeparam>
         /// <returns>The type id for that component.</returns>
         public static int GetComponentTypeId<T>() where T : Component
         {
-            return GetComponentTypeId(typeof(T));
+            return GetComponentTypeId(typeof (T));
         }
 
-        /// <summary>
-        /// Gets the component type id for the specified component type. This will
-        /// create a new ID if necessary.
-        /// </summary>
+        /// <summary>Gets the component type id for the specified component type. This will create a new ID if necessary.</summary>
         /// <param name="type">The component type to look up the id for.</param>
         /// <returns>The type id for that component.</returns>
         public static int GetComponentTypeId(Type type)
         {
-            Debug.Assert(type.IsSubclassOf(typeof(Component)));
+            Debug.Assert(type.IsSubclassOf(typeof (Component)));
 
             int typeId;
             if (!ComponentTypes.TryGetValue(type, out typeId))
@@ -177,7 +150,8 @@ namespace Engine.ComponentSystem
                         var otherTypeId = GetComponentTypeId(otherType);
                         var otherParentTypeId = ComponentHierarchy[otherTypeId];
                         if (otherParentTypeId == 0 || // Had no parent.
-                            type.IsSubclassOf(GetComponentTypeForTypeId(otherParentTypeId))) // Better than previous parent.
+                            type.IsSubclassOf(GetComponentTypeForTypeId(otherParentTypeId)))
+                            // Better than previous parent.
                         {
                             ComponentHierarchy[otherTypeId] = typeId;
                         }
@@ -197,9 +171,8 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Gets the component type for type id. This is an inverse dictionary
-        /// lookup, which is a linear search and thus slow. But we only use it
-        /// when adding component types, which shouldn't happen that often.
+        ///     Gets the component type for type id. This is an inverse dictionary lookup, which is a linear search and thus
+        ///     slow. But we only use it when adding component types, which shouldn't happen that often.
         /// </summary>
         /// <param name="typeId">The type id.</param>
         /// <returns>The actual component type.</returns>
@@ -216,9 +189,8 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Gets the system type for type id. This is an inverse dictionary
-        /// lookup, which is a linear search and thus slow. But we only use it
-        /// when adding system types, which shouldn't happen that often.
+        ///     Gets the system type for type id. This is an inverse dictionary lookup, which is a linear search and thus
+        ///     slow. But we only use it when adding system types, which shouldn't happen that often.
         /// </summary>
         /// <param name="typeId">The type id.</param>
         /// <returns>The actual component type.</returns>

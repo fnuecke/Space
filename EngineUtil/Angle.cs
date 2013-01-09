@@ -1,14 +1,9 @@
 ﻿namespace Engine.Util
 {
-    /// <summary>
-    /// Utility class for angle computations.
-    /// </summary>
+    /// <summary>Utility class for angle computations.</summary>
     public static class Angle
     {
-        /// <summary>
-        /// Computes the minimum angle difference between the two specified
-        /// angles.
-        /// </summary>
+        /// <summary>Computes the minimum angle difference between the two specified angles.</summary>
         /// <param name="angle1">The first angle.</param>
         /// <param name="angle2">The second angle.</param>
         /// <returns>The minimal difference between the two.</returns>

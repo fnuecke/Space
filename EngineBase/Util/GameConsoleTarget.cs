@@ -7,26 +7,19 @@ using NLog.Targets;
 
 namespace Engine.Util
 {
-    /// <summary>
-    /// Target to log to a GameConsole instance attached to a given game.
-    /// </summary>
+    /// <summary>Target to log to a GameConsole instance attached to a given game.</summary>
     [Target("GameConsole")]
     public sealed class GameConsoleTarget : TargetWithLayout
     {
-        /// <summary>
-        /// The actual console to log to.
-        /// </summary>
+        /// <summary>The actual console to log to.</summary>
         private readonly IGameConsole _console;
 
-        /// <summary>
-        /// Creates a new target, logging to the console of the specified game,
-        /// at the specified level.
-        /// </summary>
+        /// <summary>Creates a new target, logging to the console of the specified game, at the specified level.</summary>
         /// <param name="game">the game to create the console for.</param>
         /// <param name="level">the log level starting at which to output messages.</param>
         public GameConsoleTarget(Game game, LogLevel level)
         {
-            _console = (IGameConsole)game.Services.GetService(typeof(IGameConsole));
+            _console = (IGameConsole) game.Services.GetService(typeof (IGameConsole));
 
             if (_console == null)
             {
@@ -49,9 +42,7 @@ namespace Engine.Util
             }
         }
 
-        /// <summary>
-        /// Do actual logging by writing to console.
-        /// </summary>
+        /// <summary>Do actual logging by writing to console.</summary>
         /// <param name="logEvent">the log event to process.</param>
         protected override void Write(LogEventInfo logEvent)
         {

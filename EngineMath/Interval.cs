@@ -6,18 +6,14 @@ using Engine.Serialization;
 
 namespace Engine.Math
 {
-    /// <summary>
-    /// Represents an interval of the specified type.
-    /// </summary>
+    /// <summary>Represents an interval of the specified type.</summary>
     /// <typeparam name="T">The interval type.</typeparam>
-    [TypeConverter(typeof(IntervalConverter))]
+    [TypeConverter(typeof (IntervalConverter))]
     public abstract class Interval<T> : IPacketizable where T : IComparable<T>, IEquatable<T>
     {
         #region Properties
-        
-        /// <summary>
-        /// The low endpoint of the interval.
-        /// </summary>
+
+        /// <summary>The low endpoint of the interval.</summary>
         [Description("The lower inclusive bound of the interval.")]
         public T Low
         {
@@ -25,9 +21,7 @@ namespace Engine.Math
             set { SetTo(value, _high); }
         }
 
-        /// <summary>
-        /// The high endpoint of the interval.
-        /// </summary>
+        /// <summary>The high endpoint of the interval.</summary>
         [Description("The upper inclusive bound of the interval.")]
         public T High
         {
@@ -48,7 +42,7 @@ namespace Engine.Math
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Interval&lt;T&gt;"/> class.
+        ///     Initializes a new instance of the <see cref="Interval&lt;T&gt;"/> class.
         /// </summary>
         /// <param name="low">The low endpoint.</param>
         /// <param name="high">The high endpoint.</param>
@@ -57,20 +51,14 @@ namespace Engine.Math
             SetTo(low, high);
         }
 
-        /// <summary>
-        /// For serialization.
-        /// </summary>
-        protected Interval()
-        {
-        }
+        /// <summary>For serialization.</summary>
+        protected Interval() {}
 
         #endregion
 
         #region Methods
-        
-        /// <summary>
-        /// Sets the interval endpoints to the specified values.
-        /// </summary>
+
+        /// <summary>Sets the interval endpoints to the specified values.</summary>
         /// <param name="low">The low endpoint.</param>
         /// <param name="high">The high endpoint.</param>
         /// <exception cref="ArgumentException">If low is larger than high.</exception>
@@ -78,7 +66,8 @@ namespace Engine.Math
         {
             if (low.CompareTo(high) > 0)
             {
-                throw new ArgumentException("Invalid interval, the lower endpoint must be less or equal to the higher endpoint.", "low");
+                throw new ArgumentException(
+                    "Invalid interval, the lower endpoint must be less or equal to the higher endpoint.", "low");
             }
             _low = low;
             _high = high;
@@ -89,10 +78,10 @@ namespace Engine.Math
         #region ToString
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        ///     Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
+        ///     A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -106,17 +95,13 @@ namespace Engine.Math
     {
         #region Constants
 
-        /// <summary>
-        /// Default 'zero' value for an interval.
-        /// </summary>
+        /// <summary>Default 'zero' value for an interval.</summary>
         public static IntInterval Zero
         {
             get { return ConstZero; }
         }
 
-        /// <summary>
-        /// Internal field to avoid manipulation.
-        /// </summary>
+        /// <summary>Internal field to avoid manipulation.</summary>
         private static readonly IntInterval ConstZero = new IntInterval(0, 0);
 
         #endregion
@@ -124,7 +109,7 @@ namespace Engine.Math
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IntInterval"/> class.
+        ///     Initializes a new instance of the <see cref="IntInterval"/> class.
         /// </summary>
         /// <param name="low">The low endpoint.</param>
         /// <param name="high">The high endpoint.</param>
@@ -133,13 +118,9 @@ namespace Engine.Math
             SetTo(low, high);
         }
 
-        /// <summary>
-        /// For serialization.
-        /// </summary>
-        public IntInterval()
-        {
-        }
-        
+        /// <summary>For serialization.</summary>
+        public IntInterval() {}
+
         #endregion
     }
 
@@ -147,25 +128,21 @@ namespace Engine.Math
     {
         #region Constants
 
-        /// <summary>
-        /// Default 'zero' value for an interval.
-        /// </summary>
+        /// <summary>Default 'zero' value for an interval.</summary>
         public static FloatInterval Zero
         {
             get { return ConstZero; }
         }
 
-        /// <summary>
-        /// Internal field to avoid manipulation.
-        /// </summary>
+        /// <summary>Internal field to avoid manipulation.</summary>
         private static readonly FloatInterval ConstZero = new FloatInterval(0f, 0f);
 
         #endregion
-        
+
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FloatInterval"/> class.
+        ///     Initializes a new instance of the <see cref="FloatInterval"/> class.
         /// </summary>
         /// <param name="low">The low endpoint.</param>
         /// <param name="high">The high endpoint.</param>
@@ -174,13 +151,9 @@ namespace Engine.Math
             SetTo(low, high);
         }
 
-        /// <summary>
-        /// For serialization.
-        /// </summary>
-        public FloatInterval()
-        {
-        }
-        
+        /// <summary>For serialization.</summary>
+        public FloatInterval() {}
+
         #endregion
     }
 
@@ -188,17 +161,13 @@ namespace Engine.Math
     {
         #region Constants
 
-        /// <summary>
-        /// Default 'zero' value for an interval.
-        /// </summary>
+        /// <summary>Default 'zero' value for an interval.</summary>
         public static DoubleInterval Zero
         {
             get { return ConstZero; }
         }
 
-        /// <summary>
-        /// Internal field to avoid manipulation.
-        /// </summary>
+        /// <summary>Internal field to avoid manipulation.</summary>
         private static readonly DoubleInterval ConstZero = new DoubleInterval(0.0, 0.0);
 
         #endregion
@@ -206,7 +175,7 @@ namespace Engine.Math
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FloatInterval"/> class.
+        ///     Initializes a new instance of the <see cref="FloatInterval"/> class.
         /// </summary>
         /// <param name="low">The low endpoint.</param>
         /// <param name="high">The high endpoint.</param>
@@ -215,79 +184,75 @@ namespace Engine.Math
             SetTo(low, high);
         }
 
-        /// <summary>
-        /// For serialization.
-        /// </summary>
-        public DoubleInterval()
-        {
-        }
+        /// <summary>For serialization.</summary>
+        public DoubleInterval() {}
 
         #endregion
     }
 
-    /// <summary>
-    /// Custom converter for intervals for text editing.
-    /// </summary>
+    /// <summary>Custom converter for intervals for text editing.</summary>
     public sealed class IntervalConverter : ExpandableObjectConverter
     {
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
         {
-            return base.CanConvertTo(context, destinationType) || destinationType == typeof(string);
+            return base.CanConvertTo(context, destinationType) || destinationType == typeof (string);
         }
 
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
-            return base.CanConvertFrom(context, sourceType) || sourceType == typeof(string);
+            return base.CanConvertFrom(context, sourceType) || sourceType == typeof (string);
         }
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        public override object ConvertTo(
+            ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
-            if (destinationType == typeof(string))
+            if (destinationType == typeof (string))
             {
-                if (value is DoubleInterval)
+                var doubleInterval = value as DoubleInterval;
+                if (doubleInterval != null)
                 {
-                    var i = (DoubleInterval)value;
+                    var i = doubleInterval;
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                     if (i.Low == i.High)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                     {
                         return i.Low.ToString(CultureInfo.InvariantCulture);
                     }
-                    else
-                    {
-                        return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
-                               i.High.ToString(CultureInfo.InvariantCulture);
-                    }
+                    return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
+                           i.High.ToString(CultureInfo.InvariantCulture);
                 }
-                else if (value is FloatInterval)
+
+                var floatInterval = value as FloatInterval;
+                if (floatInterval != null)
                 {
-                    var i = (FloatInterval)value;
+                    var i = floatInterval;
+// ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
                     if (i.Low == i.High)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                     {
                         return i.Low.ToString(CultureInfo.InvariantCulture);
                     }
-                    else
-                    {
-                        return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
-                               i.High.ToString(CultureInfo.InvariantCulture);
-                    }
+                    return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
+                           i.High.ToString(CultureInfo.InvariantCulture);
                 }
-                else if (value is IntInterval)
+
+                var intInterval = value as IntInterval;
+                if (intInterval != null)
                 {
-                    var i = (IntInterval)value;
+                    var i = intInterval;
                     if (i.Low == i.High)
                     {
                         return i.Low.ToString(CultureInfo.InvariantCulture);
                     }
-                    else
-                    {
-                        return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
-                               i.High.ToString(CultureInfo.InvariantCulture);
-                    }
+                    return i.Low.ToString(CultureInfo.InvariantCulture) + " to " +
+                           i.High.ToString(CultureInfo.InvariantCulture);
                 }
             }
             return base.ConvertTo(context, culture, value, destinationType);
         }
 
-        private static readonly Regex IntervalPattern = new Regex(@"
+        private static readonly Regex IntervalPattern = new Regex(
+            @"
             ^\s*           # Complete line, ignore leading whitespace.
             (?<low>        # Read the low value, which must be a number.
                 -?[0-9]+
@@ -305,37 +270,40 @@ namespace Engine.Math
                 )
             )?
             \s*$     # Skip trailing whitespace",
-             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace);
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace);
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             if (value is string)
             {
-                if (string.IsNullOrWhiteSpace((string)value))
+                if (string.IsNullOrWhiteSpace((string) value))
                 {
                     value = "0";
                 }
                 // Parse the content.
-                var match = IntervalPattern.Match((string)value);
+                var match = IntervalPattern.Match((string) value);
                 if (match.Success)
                 {
                     // Now get the numeric value for the attribute.
                     var low = match.Groups["low"].Value;
                     var high = match.Groups["high"].Success ? match.Groups["high"].Value : low;
 
-                    if (context.PropertyDescriptor.PropertyType == typeof(DoubleInterval))
+                    if (context.PropertyDescriptor.PropertyType == typeof (DoubleInterval))
                     {
-                        return new DoubleInterval(double.Parse(low, CultureInfo.InvariantCulture),
+                        return new DoubleInterval(
+                            double.Parse(low, CultureInfo.InvariantCulture),
                             double.Parse(high, CultureInfo.InvariantCulture));
                     }
-                    else if (context.PropertyDescriptor.PropertyType == typeof(FloatInterval))
+                    if (context.PropertyDescriptor.PropertyType == typeof (FloatInterval))
                     {
-                        return new FloatInterval(float.Parse(low, CultureInfo.InvariantCulture),
+                        return new FloatInterval(
+                            float.Parse(low, CultureInfo.InvariantCulture),
                             float.Parse(high, CultureInfo.InvariantCulture));
                     }
-                    else if (context.PropertyDescriptor.PropertyType == typeof(IntInterval))
+                    if (context.PropertyDescriptor.PropertyType == typeof (IntInterval))
                     {
-                        return new IntInterval(int.Parse(low, CultureInfo.InvariantCulture),
+                        return new IntInterval(
+                            int.Parse(low, CultureInfo.InvariantCulture),
                             int.Parse(high, CultureInfo.InvariantCulture));
                     }
                 }

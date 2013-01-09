@@ -1,15 +1,14 @@
-﻿using System.Globalization;
-using Engine.Physics.Math;
+﻿using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
+
 #endif
 
 namespace Engine.Physics.Joints
@@ -18,43 +17,33 @@ namespace Engine.Physics.Joints
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Gets or sets the length of the joint.
-        /// </summary>
+        /// <summary>Gets or sets the length of the joint.</summary>
         public float Length
         {
             get { return _length; }
             set { _length = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the frequency in Hz.
-        /// </summary>
+        /// <summary>Gets or sets the frequency in Hz.</summary>
         public float Frequency
         {
             get { return _frequency; }
             set { _frequency = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the damping ratio.
-        /// </summary>
+        /// <summary>Gets or sets the damping ratio.</summary>
         public float DampingRatio
         {
             get { return _dampingRatio; }
@@ -116,24 +105,23 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DistanceJoint"/> class.
+        ///     Initializes a new instance of the <see cref="DistanceJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public DistanceJoint() : base(JointType.Distance)
-        {
-        }
+        public DistanceJoint() : base(JointType.Distance) {}
 
-        /// <summary>
-        /// Initializes the specified local anchor A.
-        /// </summary>
+        /// <summary>Initializes the specified local anchor A.</summary>
         /// <param name="anchorA">The world anchor point for the first body.</param>
         /// <param name="anchorB">The world anchor point for the second body.</param>
         /// <param name="frequency">The mass-spring-damper frequency in Hertz. A value of 0 disables softness.</param>
         /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
-        internal void Initialize(WorldPoint anchorA, WorldPoint anchorB,
-                                 float frequency, float dampingRatio)
+        internal void Initialize(
+            WorldPoint anchorA,
+            WorldPoint anchorB,
+            float frequency,
+            float dampingRatio)
         {
             _localAnchorA = BodyA.GetLocalPoint(anchorA);
             _localAnchorB = BodyB.GetLocalPoint(anchorB);
@@ -161,9 +149,7 @@ namespace Engine.Physics.Joints
         // K = J * invM * JTB
         //   = invMass1 + invI1 * cross(r1, u)^2 + invMass2 + invI2 * cross(r2, u)^2
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -194,7 +180,7 @@ namespace Engine.Physics.Joints
             _tmp.RotA = qA * (_localAnchorA - _tmp.LocalCenterA);
             _tmp.RotB = qB * (_localAnchorB - _tmp.LocalCenterB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            _tmp.U = (Vector2)(cB - cA) + (_tmp.RotB - _tmp.RotA);
+            _tmp.U = (Vector2) (cB - cA) + (_tmp.RotB - _tmp.RotA);
 // ReSharper restore RedundantCast
 
             // Handle singularity.
@@ -210,15 +196,15 @@ namespace Engine.Physics.Joints
 
             var crAu = Vector2Util.Cross(_tmp.RotA, _tmp.U);
             var crBu = Vector2Util.Cross(_tmp.RotB, _tmp.U);
-            var invMass = _tmp.InverseMassA + _tmp.InverseInertiaA * crAu * crAu + _tmp.InverseMassB +
-                          _tmp.InverseInertiaB * crBu * crBu;
+            var inverseMass = _tmp.InverseMassA + _tmp.InverseInertiaA * crAu * crAu + _tmp.InverseMassB +
+                              _tmp.InverseInertiaB * crBu * crBu;
 
             // Compute the effective mass matrix.
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
-            if (invMass != 0.0f)
+            if (inverseMass != 0.0f)
 // ReSharper restore CompareOfFloatsByEqualityOperator
             {
-                _tmp.Mass = 1.0f / invMass;
+                _tmp.Mass = 1.0f / inverseMass;
             }
             else
             {
@@ -249,12 +235,12 @@ namespace Engine.Physics.Joints
                 }
                 _tmp.Bias = c * h * k * _tmp.Gamma;
 
-                invMass += _tmp.Gamma;
+                inverseMass += _tmp.Gamma;
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
-                if (invMass != 0.0f)
+                if (inverseMass != 0.0f)
 // ReSharper restore CompareOfFloatsByEqualityOperator
                 {
-                    _tmp.Mass = 1.0f / invMass;
+                    _tmp.Mass = 1.0f / inverseMass;
                 }
                 else
                 {
@@ -279,25 +265,22 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
             var vB = velocities[_tmp.IndexB].LinearVelocity;
             var wB = velocities[_tmp.IndexB].AngularVelocity;
 
-            // Cdot = dot(u, v + cross(w, r))
+            // cDot = dot(u, v + cross(w, r))
             var vpA = vA + Vector2Util.Cross(wA, _tmp.RotA);
             var vpB = vB + Vector2Util.Cross(wB, _tmp.RotB);
-            var cdot = Vector2.Dot(_tmp.U, vpB - vpA);
+            var cDot = Vector2.Dot(_tmp.U, vpB - vpA);
 
-            var impulse = -_tmp.Mass * (cdot + _tmp.Bias + _tmp.Gamma * _impulse);
+            var impulse = -_tmp.Mass * (cDot + _tmp.Bias + _tmp.Gamma * _impulse);
             _impulse += impulse;
 
             var p = impulse * _tmp.U;
@@ -312,15 +295,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             if (_frequency > 0.0f)
             {
@@ -339,7 +319,7 @@ namespace Engine.Physics.Joints
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var u = (Vector2)(cB - cA) + (rB - rA);
+            var u = (Vector2) (cB - cA) + (rB - rA);
 // ReSharper restore RedundantCast
 
             var length = u.Length();

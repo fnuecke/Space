@@ -14,17 +14,13 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// Generates planetes based on set constraints.
-    /// </summary>
+    /// <summary>Generates planets based on set constraints.</summary>
     [DefaultProperty("Name")]
     public sealed class PlanetFactory : IFactory
     {
         #region Properties
 
-        /// <summary>
-        /// The unique name of the object type.
-        /// </summary>
+        /// <summary>The unique name of the object type.</summary>
         [Category("General")]
         [Description("The name of this planet, by which it can be referenced, e.g. in sun systems.")]
         public string Name
@@ -33,11 +29,9 @@ namespace Space.ComponentSystem.Factories
             set { _name = value; }
         }
 
-        /// <summary>
-        /// Texture to use for generated planets.
-        /// </summary>
+        /// <summary>Texture to use for generated planets.</summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [DefaultValue("Textures/Planets/default")]
         [Category("Surface")]
         [Description("The base image to render the planet surface.")]
@@ -47,11 +41,9 @@ namespace Space.ComponentSystem.Factories
             set { _albedo = value; }
         }
 
-        /// <summary>
-        /// Texture to use for surface normals.
-        /// </summary>
+        /// <summary>Texture to use for surface normals.</summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Surface")]
@@ -62,11 +54,9 @@ namespace Space.ComponentSystem.Factories
             set { _normals = value; }
         }
 
-        /// <summary>
-        /// Texture to use for surface specularity.
-        /// </summary>
+        /// <summary>Texture to use for surface specularity.</summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Surface")]
@@ -77,11 +67,9 @@ namespace Space.ComponentSystem.Factories
             set { _specular = value; }
         }
 
-        /// <summary>
-        /// Texture to use for surface lights.
-        /// </summary>
+        /// <summary>Texture to use for surface lights.</summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Surface")]
@@ -92,11 +80,9 @@ namespace Space.ComponentSystem.Factories
             set { _lights = value; }
         }
 
-        /// <summary>
-        /// Texture to use for clouds.
-        /// </summary>
+        /// <summary>Texture to use for clouds.</summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Surface")]
@@ -107,12 +93,10 @@ namespace Space.ComponentSystem.Factories
             set { _clouds = value; }
         }
 
-        /// <summary>
-        /// The color tint for generated planets' surface.
-        /// </summary>
+        /// <summary>The color tint for generated planets' surface.</summary>
         [Editor("Space.Tools.DataEditor.XnaColorEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-        [TypeConverter(typeof(ColorConverter))]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [TypeConverter(typeof (ColorConverter))]
         [ContentSerializer(Optional = true)]
         [DefaultValue(0xFFFFFFFF)]
         [Category("Surface")]
@@ -123,9 +107,7 @@ namespace Space.ComponentSystem.Factories
             set { _surfaceTint = value; }
         }
 
-        /// <summary>
-        /// Specular lighting alpha.
-        /// </summary>
+        /// <summary>Specular lighting alpha.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(1f)]
         [Category("Surface")]
@@ -136,9 +118,7 @@ namespace Space.ComponentSystem.Factories
             set { _specularAlpha = value; }
         }
 
-        /// <summary>
-        /// Specular lighting exponent.
-        /// </summary>
+        /// <summary>Specular lighting exponent.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(10f)]
         [Category("Surface")]
@@ -149,25 +129,22 @@ namespace Space.ComponentSystem.Factories
             set { _specularExponent = value; }
         }
 
-        /// <summary>
-        /// Specular lighting exponent.
-        /// </summary>
+        /// <summary>Specular lighting exponent.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(1f)]
         [Category("Surface")]
-        [Description("The offset used for specular lighting. Higher values result in a highlight closer to the center.")]
+        [Description("The offset used for specular lighting. Higher values result in a highlight closer to the center.")
+        ]
         public float SpecularOffset
         {
             get { return _specularOffset; }
             set { _specularOffset = value; }
         }
 
-        /// <summary>
-        /// The atmospheric color tint for generated planets.
-        /// </summary>
+        /// <summary>The atmospheric color tint for generated planets.</summary>
         [Editor("Space.Tools.DataEditor.XnaColorEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-        [TypeConverter(typeof(ColorConverter))]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [TypeConverter(typeof (ColorConverter))]
         [ContentSerializer(Optional = true)]
         [DefaultValue(0x00000000)]
         [Category("Atmosphere")]
@@ -178,9 +155,7 @@ namespace Space.ComponentSystem.Factories
             set { _atmosphereTint = value; }
         }
 
-        /// <summary>
-        /// Relative inner atmosphere area.
-        /// </summary>
+        /// <summary>Relative inner atmosphere area.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(0.4f)]
         [Category("Atmosphere")]
@@ -191,9 +166,7 @@ namespace Space.ComponentSystem.Factories
             set { _atmosphereInner = value; }
         }
 
-        /// <summary>
-        /// Relative outer atmosphere area.
-        /// </summary>
+        /// <summary>Relative outer atmosphere area.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(0.1f)]
         [Category("Atmosphere")]
@@ -204,9 +177,7 @@ namespace Space.ComponentSystem.Factories
             set { _atmosphereOuter = value; }
         }
 
-        /// <summary>
-        /// Relative inner atmosphere alpha.
-        /// </summary>
+        /// <summary>Relative inner atmosphere alpha.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(0.85f)]
         [Category("Atmosphere")]
@@ -217,9 +188,7 @@ namespace Space.ComponentSystem.Factories
             set { _atmosphereInnerAlpha = value; }
         }
 
-        /// <summary>
-        /// Relative outer atmosphere alpha.
-        /// </summary>
+        /// <summary>Relative outer atmosphere alpha.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(1f)]
         [Category("Atmosphere")]
@@ -230,9 +199,7 @@ namespace Space.ComponentSystem.Factories
             set { _atmosphereOuterAlpha = value; }
         }
 
-        /// <summary>
-        /// The radius of generated planets.
-        /// </summary>
+        /// <summary>The radius of generated planets.</summary>
         [Category("Logic")]
         [Description("The radius of the planet.")]
         public FloatInterval Radius
@@ -241,9 +208,7 @@ namespace Space.ComponentSystem.Factories
             set { _radius = value; }
         }
 
-        /// <summary>
-        /// The mass of generated planets.
-        /// </summary>
+        /// <summary>The mass of generated planets.</summary>
         [ContentSerializer(Optional = true)]
         [Category("Logic")]
         [Description("The mass of the planet, which determines how strong it's gravitational pull is.")]
@@ -253,9 +218,7 @@ namespace Space.ComponentSystem.Factories
             set { _mass = value; }
         }
 
-        /// <summary>
-        /// The rotation speed of generated planets.
-        /// </summary>
+        /// <summary>The rotation speed of generated planets.</summary>
         [ContentSerializer(Optional = true)]
         [Category("Logic")]
         [Description("The speed with which the planet revolves around its own axis, in pixels per second.")]
@@ -309,9 +272,7 @@ namespace Space.ComponentSystem.Factories
 
         #region Sampling
 
-        /// <summary>
-        /// Samples the attributes to apply to the item.
-        /// </summary>
+        /// <summary>Samples the attributes to apply to the item.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="center">The entity to revolve around.</param>
         /// <param name="angle">The base angle for orbit ellipses.</param>
@@ -328,7 +289,9 @@ namespace Space.ComponentSystem.Factories
             var rotationSpeed = SampleRotationSpeed(random);
             var mass = SampleMass(random);
 
-            var surfaceRotation = random != null ? (Math.Sign(random.NextDouble() - 0.5) * rotationSpeed) : rotationSpeed;
+            var surfaceRotation = random != null
+                                      ? (Math.Sign(random.NextDouble() - 0.5) * rotationSpeed)
+                                      : rotationSpeed;
 
             // Give it a position.
             manager.AddComponent<Transform>(entity);
@@ -356,23 +319,23 @@ namespace Space.ComponentSystem.Factories
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 SoundSystem.IndexGroupMask | // Can make noise.
                 CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CameraSystem.IndexGroupMask, // Must be detectable by the camera.
-                (int)(planetRadius + planetRadius));
+                CameraSystem.IndexGroupMask,
+                // Must be detectable by the camera.
+                (int) (planetRadius + planetRadius));
 
             return entity;
         }
 
-        /// <summary>
-        /// Samples the radius of this planet.
-        /// </summary>
+        /// <summary>Samples the radius of this planet.</summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled radius.</returns>
         private float SampleRadius(IUniformRandom random)
         {
             if (_radius != null)
             {
-                return (random == null) ? _radius.Low
-                    : MathHelper.Lerp(_radius.Low, _radius.High, (float)random.NextDouble());
+                return (random == null)
+                           ? _radius.Low
+                           : MathHelper.Lerp(_radius.Low, _radius.High, (float) random.NextDouble());
             }
             else
             {
@@ -380,17 +343,17 @@ namespace Space.ComponentSystem.Factories
             }
         }
 
-        /// <summary>
-        /// Samples the rotation speed of this planet.
-        /// </summary>
+        /// <summary>Samples the rotation speed of this planet.</summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled rotation speed.</returns>
         private float SampleRotationSpeed(IUniformRandom random)
         {
             if (_rotationSpeed != null)
             {
-                return MathHelper.ToRadians((random == null) ? _rotationSpeed.Low
-                    : MathHelper.Lerp(_rotationSpeed.Low, _rotationSpeed.High, (float)random.NextDouble()));
+                return MathHelper.ToRadians(
+                    (random == null)
+                        ? _rotationSpeed.Low
+                        : MathHelper.Lerp(_rotationSpeed.Low, _rotationSpeed.High, (float) random.NextDouble()));
             }
             else
             {
@@ -398,17 +361,16 @@ namespace Space.ComponentSystem.Factories
             }
         }
 
-        /// <summary>
-        /// Samples the mass of this planet.
-        /// </summary>
+        /// <summary>Samples the mass of this planet.</summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled mass.</returns>
         private float SampleMass(IUniformRandom random)
         {
             if (_mass != null)
             {
-                return (random == null) ? _mass.Low
-                    : MathHelper.Lerp(_mass.Low, _mass.High, (float)random.NextDouble());
+                return (random == null)
+                           ? _mass.Low
+                           : MathHelper.Lerp(_mass.Low, _mass.High, (float) random.NextDouble());
             }
             else
             {

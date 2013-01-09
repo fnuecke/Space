@@ -6,27 +6,23 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Engine.Graphics
 {
     /// <summary>
-    /// This is a utility class alike XNA's own <see cref="SpriteBatch"/> class
-    /// that may be used to render to the graphics device. This class allows
-    /// rendering basic primitives such as lines, circles and general polygons.
+    ///     This is a utility class alike XNA's own <see cref="SpriteBatch"/> class that may be used to render to the graphics
+    ///     device. This class allows rendering basic primitives such as lines, circles and general polygons.
     /// </summary>
-    /// <remarks>
-    /// The basic implementation was taken from FarSeer Physics but adjusted
-    /// quite a bit.
-    /// </remarks>
+    /// <remarks>The basic implementation was taken from FarSeer Physics but adjusted quite a bit.</remarks>
     public sealed class PrimitiveBatch : IDisposable
     {
         #region Constants
 
         /// <summary>
-        /// The default buffer size, i.e. the number of vertices we buffer before
-        /// submitting a draw request to the graphics card.
+        ///     The default buffer size, i.e. the number of vertices we buffer before submitting a draw request to the
+        ///     graphics card.
         /// </summary>
         private const uint DefaultBufferSize = 0x2000;
 
         /// <summary>
-        /// The number of segments we use when rendering circles. Higher number
-        /// means smoother circles, but more expensive draw operations.
+        ///     The number of segments we use when rendering circles. Higher number means smoother circles, but more expensive
+        ///     draw operations.
         /// </summary>
         private const int CircleSegments = 32;
 
@@ -34,54 +30,42 @@ namespace Engine.Graphics
 
         #region Fields
 
-        /// <summary>
-        /// The effect (shader) we use for drawing our primitives.
-        /// </summary>
+        /// <summary>The effect (shader) we use for drawing our primitives.</summary>
         private readonly BasicEffect _basicEffect;
 
-        /// <summary>
-        /// The device that we will issue draw calls to.
-        /// </summary>
+        /// <summary>The device that we will issue draw calls to.</summary>
         private readonly GraphicsDevice _device;
 
-        /// <summary>
-        /// Tracks whether we've already disposed our resources.
-        /// </summary>
+        /// <summary>Tracks whether we've already disposed our resources.</summary>
         private bool _isDisposed;
 
         /// <summary>
-        /// We use this flag to track whether we're currently inside a batch call,
-        /// to make sure users don't call <see cref="End"/> before <see cref="Begin(Microsoft.Xna.Framework.Matrix)"/>
-        /// is called, and don't call <see cref="Begin(Microsoft.Xna.Framework.Matrix)"/> again befure <see cref="End"/>
-        /// is called.
+        ///     We use this flag to track whether we're currently inside a batch call, to make sure users don't call
+        ///     <see cref="End"/> before <see cref="Begin(Microsoft.Xna.Framework.Matrix)"/>
+        ///     is called, and don't call <see cref="Begin(Microsoft.Xna.Framework.Matrix)"/> again before <see cref="End"/>
+        ///     is called.
         /// </summary>
         private bool _inBeginEndPair;
 
-        /// <summary>
-        /// The transform matrix we use for the current batch.
-        /// </summary>
+        /// <summary>The transform matrix we use for the current batch.</summary>
         private Matrix _transform;
 
         /// <summary>
-        /// Our line vertex buffer. This stores line draw operations by
-        /// saving the vertices of the draw operations in groups of two.
+        ///     Our line vertex buffer. This stores line draw operations by saving the vertices of the draw operations in
+        ///     groups of two.
         /// </summary>
         private readonly VertexPositionColor[] _lineVertices;
 
-        /// <summary>
-        /// The number of actually buffered line vertices.
-        /// </summary>
+        /// <summary>The number of actually buffered line vertices.</summary>
         private int _lineVertexCount;
 
         /// <summary>
-        /// Our triangle vertex buffer. This stores triangle draw operations
-        /// by saving the vertices of the draw operations in groups of three.
+        ///     Our triangle vertex buffer. This stores triangle draw operations by saving the vertices of the draw operations
+        ///     in groups of three.
         /// </summary>
         private readonly VertexPositionColor[] _triangleVertices;
 
-        /// <summary>
-        /// The number of actually buffered triangle vertices.
-        /// </summary>
+        /// <summary>The number of actually buffered triangle vertices.</summary>
         private int _triangleVertexCount;
 
         #endregion
@@ -89,7 +73,7 @@ namespace Engine.Graphics
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PrimitiveBatch"/> class.
+        ///     Initializes a new instance of the <see cref="PrimitiveBatch"/> class.
         /// </summary>
         /// <param name="graphicsDevice">The graphics device to render to.</param>
         /// <param name="bufferSize">Size of the vertex buffers (batches).</param>
@@ -117,29 +101,25 @@ namespace Engine.Graphics
         }
 
         /// <summary>
-        /// Releases unmanaged resources and performs other cleanup operations before the
-        /// <see cref="PrimitiveBatch"/> is reclaimed by garbage collection.
+        ///     Releases unmanaged resources and performs other cleanup operations before the
+        ///     <see cref="PrimitiveBatch"/> is reclaimed by garbage collection.
         /// </summary>
         ~PrimitiveBatch()
         {
             _basicEffect.Dispose();
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing,
-        /// releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged
-        /// resources; <c>false</c> to release only unmanaged resources.</param>
+        /// <summary>Releases unmanaged and - optionally - managed resources</summary>
+        /// <param name="disposing">
+        ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.
+        /// </param>
         private void Dispose(bool disposing)
         {
             if (disposing && !_isDisposed)
@@ -157,11 +137,8 @@ namespace Engine.Graphics
 
         #region Drawing
 
-        /// <summary>
-        /// Begin is called to initialize the graphics card for our draw.
-        /// </summary>
-        /// <param name="transformMatrix">The transform matrix to apply when drawing
-        /// this batch.</param>
+        /// <summary>Begin is called to initialize the graphics card for our draw.</summary>
+        /// <param name="transformMatrix">The transform matrix to apply when drawing this batch.</param>
         public void Begin(Matrix transformMatrix)
         {
             if (_inBeginEndPair)
@@ -176,18 +153,15 @@ namespace Engine.Graphics
             _inBeginEndPair = true;
         }
 
-        /// <summary>
-        /// Begin is called to initialize the graphics card for our draw.
-        /// </summary>
+        /// <summary>Begin is called to initialize the graphics card for our draw.</summary>
         public void Begin()
         {
             Begin(Matrix.Identity);
         }
 
         /// <summary>
-        /// End is called once all the primitives have been drawn using AddVertex.
-        /// it will call Flush to actually submit the draw call to the graphics card, and
-        /// then tell the basic effect to end.
+        ///     End is called once all the primitives have been drawn using AddVertex. it will call Flush to actually submit
+        ///     the draw call to the graphics card, and then tell the basic effect to end.
         /// </summary>
         public void End()
         {
@@ -203,9 +177,7 @@ namespace Engine.Graphics
             _inBeginEndPair = false;
         }
 
-        /// <summary>
-        /// Draws a line from the specified start point to the specified end point.
-        /// </summary>
+        /// <summary>Draws a line from the specified start point to the specified end point.</summary>
         /// <param name="start">The start point.</param>
         /// <param name="end">The end point.</param>
         /// <param name="color">The color of the line.</param>
@@ -215,9 +187,7 @@ namespace Engine.Graphics
             BufferLineVertex(end, color);
         }
 
-        /// <summary>
-        /// Draws the polygon outline of the polygon define by the specified vertices.
-        /// </summary>
+        /// <summary>Draws the polygon outline of the polygon define by the specified vertices.</summary>
         /// <param name="vertices">The vertices of the polygon.</param>
         /// <param name="color">The outline color.</param>
         public void DrawPolygon(IList<Vector2> vertices, Color color)
@@ -233,13 +203,14 @@ namespace Engine.Graphics
         }
 
         /// <summary>
-        /// Draws the filled polygon of the polygon define by the specified vertices.
-        /// If <paramref name="outline"/> is <c>true</c> the fill color will be half
-        /// transparent and the border of the specified <paramref name="color"/>.
+        ///     Draws the filled polygon of the polygon define by the specified vertices. If <paramref name="outline"/> is
+        ///     <c>true</c> the fill color will be half transparent and the border of the specified <paramref name="color"/>.
         /// </summary>
         /// <param name="vertices">The vertices of the polygon.</param>
         /// <param name="color">The fill/outline color.</param>
-        /// <param name="outline">if set to <c>true</c> will also draw an outline.</param>
+        /// <param name="outline">
+        ///     if set to <c>true</c> will also draw an outline.
+        /// </param>
         public void DrawFilledPolygon(IList<Vector2> vertices, Color color, bool outline = true)
         {
             // Is it actually a line?
@@ -265,9 +236,7 @@ namespace Engine.Graphics
             }
         }
 
-        /// <summary>
-        /// Draws a box outline centered at the specified position, with the specified size.
-        /// </summary>
+        /// <summary>Draws a box outline centered at the specified position, with the specified size.</summary>
         /// <param name="position">The center position of the rectangle.</param>
         /// <param name="width">The width of the rectangle.</param>
         /// <param name="height">The height of the rectangle.</param>
@@ -288,15 +257,16 @@ namespace Engine.Graphics
         }
 
         /// <summary>
-        /// Draws a filled box centered at the specified position, with the specified size.
-        /// If <paramref name="outline"/> is <c>true</c> the fill color will be half
-        /// transparent and the border of the specified <paramref name="color"/>.
+        ///     Draws a filled box centered at the specified position, with the specified size. If <paramref name="outline"/> is
+        ///     <c>true</c> the fill color will be half transparent and the border of the specified <paramref name="color"/>.
         /// </summary>
         /// <param name="position">The center position of the rectangle.</param>
         /// <param name="width">The width of the rectangle.</param>
         /// <param name="height">The height of the rectangle.</param>
         /// <param name="color">The fill/outline color.</param>
-        /// <param name="outline">if set to <c>true</c> will also draw an outline.</param>
+        /// <param name="outline">
+        ///     if set to <c>true</c> will also draw an outline.
+        /// </param>
         public void DrawFilledRectangle(Vector2 position, float width, float height, Color color, bool outline = true)
         {
             var halfWidth = width / 2.0f;
@@ -312,11 +282,9 @@ namespace Engine.Graphics
             DrawFilledPolygon(vertices, color, outline);
         }
 
-        /// <summary>
-        /// Draws the circle outline with the specified properties.
-        /// </summary>
+        /// <summary>Draws the circle outline with the specified properties.</summary>
         /// <param name="center">The center of the circle.</param>
-        /// <param name="radius">The radius of the cirle.</param>
+        /// <param name="radius">The radius of the circle.</param>
         /// <param name="color">The outline color.</param>
         public void DrawCircle(Vector2 center, float radius, Color color)
         {
@@ -325,10 +293,11 @@ namespace Engine.Graphics
 
             for (var i = 0; i < CircleSegments; i++)
             {
-                var v1 = center + radius * new Vector2((float)System.Math.Cos(theta), (float)System.Math.Sin(theta));
+                var v1 = center + radius * new Vector2((float) System.Math.Cos(theta), (float) System.Math.Sin(theta));
                 var v2 = center +
-                             radius *
-                             new Vector2((float)System.Math.Cos(theta + increment), (float)System.Math.Sin(theta + increment));
+                         radius *
+                         new Vector2(
+                             (float) System.Math.Cos(theta + increment), (float) System.Math.Sin(theta + increment));
 
                 BufferLineVertex(v1, color);
                 BufferLineVertex(v2, color);
@@ -337,13 +306,13 @@ namespace Engine.Graphics
             }
         }
 
-        /// <summary>
-        /// Draws the filled circle with the specified properties.
-        /// </summary>
+        /// <summary>Draws the filled circle with the specified properties.</summary>
         /// <param name="center">The center of the circle.</param>
-        /// <param name="radius">The radius of the cirle.</param>
+        /// <param name="radius">The radius of the circle.</param>
         /// <param name="color">The outline color.</param>
-        /// <param name="axis">if set to <c>true</c> renders a rotation indicator along the x axis.</param>
+        /// <param name="axis">
+        ///     if set to <c>true</c> renders a rotation indicator along the x axis.
+        /// </param>
         public void DrawSolidCircle(Vector2 center, float radius, Color color, bool axis = true)
         {
             const double increment = System.Math.PI * 2.0 / CircleSegments;
@@ -351,13 +320,16 @@ namespace Engine.Graphics
 
             var colorFill = color * 0.5f;
 
-            var v0 = center + radius * new Vector2((float)System.Math.Cos(theta), (float)System.Math.Sin(theta));
+            var v0 = center + radius * new Vector2((float) System.Math.Cos(theta), (float) System.Math.Sin(theta));
             theta += increment;
 
             for (var i = 1; i < CircleSegments - 1; i++)
             {
-                var v1 = center + radius * new Vector2((float)System.Math.Cos(theta), (float)System.Math.Sin(theta));
-                var v2 = center + radius * new Vector2((float)System.Math.Cos(theta + increment), (float)System.Math.Sin(theta + increment));
+                var v1 = center + radius * new Vector2((float) System.Math.Cos(theta), (float) System.Math.Sin(theta));
+                var v2 = center +
+                         radius *
+                         new Vector2(
+                             (float) System.Math.Cos(theta + increment), (float) System.Math.Sin(theta + increment));
 
                 BufferTriangleVertex(v0, colorFill);
                 BufferTriangleVertex(v1, colorFill);
@@ -373,57 +345,69 @@ namespace Engine.Graphics
             }
         }
 
-        public void DrawArrow(Vector2 start, Vector2 end, float length, float width, bool drawStartIndicator,
-                              Color color)
+        /// <summary>Draws an arrow.</summary>
+        /// <param name="start">The start position of the arrow (where it points from).</param>
+        /// <param name="end">The end position of the arrow (where it points to).</param>
+        /// <param name="length">The length.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="drawStartIndicator">if set to <c>true</c> draws a shape indicating where the arrow starts.</param>
+        /// <param name="color">The color of the arrow.</param>
+        public void DrawArrow(
+            Vector2 start,
+            Vector2 end,
+            float length,
+            float width,
+            bool drawStartIndicator,
+            Color color)
         {
             // Draw connection segment between start- and end-point
             DrawLine(start, end, color);
 
             // Precalculate halfwidth
-            float halfWidth = width / 2;
+            var halfWidth = width / 2;
 
             // Create directional reference
-            Vector2 rotation = (start - end);
+            var rotation = (start - end);
             rotation.Normalize();
 
             // Calculate angle of directional vector
-            float angle = (float)System.Math.Atan2(rotation.X, -rotation.Y);
+            var angle = (float) System.Math.Atan2(rotation.X, -rotation.Y);
             // Create matrix for rotation
-            Matrix rotMatrix = Matrix.CreateRotationZ(angle);
+            var rotMatrix = Matrix.CreateRotationZ(angle);
             // Create translation matrix for end-point
-            Matrix endMatrix = Matrix.CreateTranslation(end.X, end.Y, 0);
+            var endMatrix = Matrix.CreateTranslation(end.X, end.Y, 0);
 
             // Setup arrow end shape
-            var verts = new Vector2[3];
-            verts[0] = new Vector2(0, 0);
-            verts[1] = new Vector2(-halfWidth, -length);
-            verts[2] = new Vector2(halfWidth, -length);
+            var vertices = new Vector2[3];
+            vertices[0] = new Vector2(0, 0);
+            vertices[1] = new Vector2(-halfWidth, -length);
+            vertices[2] = new Vector2(halfWidth, -length);
 
             // Rotate end shape
-            Vector2.Transform(verts, ref rotMatrix, verts);
+            Vector2.Transform(vertices, ref rotMatrix, vertices);
             // Translate end shape
-            Vector2.Transform(verts, ref endMatrix, verts);
+            Vector2.Transform(vertices, ref endMatrix, vertices);
 
             // Draw arrow end shape
-            DrawFilledPolygon(verts, color, false);
+            DrawFilledPolygon(vertices, color, false);
 
             if (drawStartIndicator)
             {
                 // Create translation matrix for start
                 var startMatrix = Matrix.CreateTranslation(start.X, start.Y, 0);
                 // Setup arrow start shape
-                var baseVerts = new Vector2[4];
-                baseVerts[0] = new Vector2(-halfWidth, length / 4);
-                baseVerts[1] = new Vector2(halfWidth, length / 4);
-                baseVerts[2] = new Vector2(halfWidth, 0);
-                baseVerts[3] = new Vector2(-halfWidth, 0);
+                var baseVertices = new Vector2[4];
+                baseVertices[0] = new Vector2(-halfWidth, length / 4);
+                baseVertices[1] = new Vector2(halfWidth, length / 4);
+                baseVertices[2] = new Vector2(halfWidth, 0);
+                baseVertices[3] = new Vector2(-halfWidth, 0);
 
                 // Rotate start shape
-                Vector2.Transform(baseVerts, ref rotMatrix, baseVerts);
+                Vector2.Transform(baseVertices, ref rotMatrix, baseVertices);
                 // Translate start shape
-                Vector2.Transform(baseVerts, ref startMatrix, baseVerts);
+                Vector2.Transform(baseVertices, ref startMatrix, baseVertices);
                 // Draw start shape
-                DrawFilledPolygon(baseVerts, color, false);
+                DrawFilledPolygon(baseVertices, color, false);
             }
         }
 
@@ -431,10 +415,7 @@ namespace Engine.Graphics
 
         #region Buffering
 
-        /// <summary>
-        /// Buffers the specified line vertex. If the buffer is full this will
-        /// flush the buffer.
-        /// </summary>
+        /// <summary>Buffers the specified line vertex. If the buffer is full this will flush the buffer.</summary>
         /// <param name="vertex">The vertex.</param>
         /// <param name="color">The color.</param>
         private void BufferTriangleVertex(Vector2 vertex, Color color)
@@ -456,10 +437,7 @@ namespace Engine.Graphics
             ++_triangleVertexCount;
         }
 
-        /// <summary>
-        /// Buffers the specified line vertex. If the buffer is full this will
-        /// flush the buffer.
-        /// </summary>
+        /// <summary>Buffers the specified line vertex. If the buffer is full this will flush the buffer.</summary>
         /// <param name="vertex">The vertex.</param>
         /// <param name="color">The color.</param>
         private void BufferLineVertex(Vector2 vertex, Color color)
@@ -481,9 +459,7 @@ namespace Engine.Graphics
             ++_lineVertexCount;
         }
 
-        /// <summary>
-        /// Flushes all buffered triangle draw operations to the graphics card.
-        /// </summary>
+        /// <summary>Flushes all buffered triangle draw operations to the graphics card.</summary>
         private void FlushTriangles()
         {
             System.Diagnostics.Debug.Assert(_inBeginEndPair);
@@ -507,9 +483,7 @@ namespace Engine.Graphics
             _triangleVertexCount = 0;
         }
 
-        /// <summary>
-        /// Flushes all buffered line draw operations to the graphics card.
-        /// </summary>
+        /// <summary>Flushes all buffered line draw operations to the graphics card.</summary>
         private void FlushLines()
         {
             System.Diagnostics.Debug.Assert(_inBeginEndPair);
@@ -529,9 +503,7 @@ namespace Engine.Graphics
             _lineVertexCount = 0;
         }
 
-        /// <summary>
-        /// Sets up our effect for rendering a batch of shapes.
-        /// </summary>
+        /// <summary>Sets up our effect for rendering a batch of shapes.</summary>
         private void SetRenderState()
         {
             _device.BlendState = BlendState.AlphaBlend;
@@ -541,9 +513,13 @@ namespace Engine.Graphics
 
             var viewport = _device.Viewport;
             _basicEffect.Projection = Matrix
-                .CreateOrthographicOffCenter(0, viewport.Width,
-                                             0, viewport.Height,
-                                             0, 1);
+                .CreateOrthographicOffCenter(
+                    0,
+                    viewport.Width,
+                    0,
+                    viewport.Height,
+                    0,
+                    1);
             _basicEffect.View = _transform;
             _basicEffect.CurrentTechnique.Passes[0].Apply();
         }

@@ -11,9 +11,7 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Collision
 {
-    /// <summary>
-    /// Methods for polygon vs. polygon collisions.
-    /// </summary>
+    /// <summary>Methods for polygon vs. polygon collisions.</summary>
     internal static partial class Algorithms
     {
         // Find edge normal of max separation on A - return if separating axis is found
@@ -23,9 +21,12 @@ namespace Engine.Physics.Collision
         // Clip
 
         // The normal points from 1 to 2
-        public static bool CollidePolygons(Fixture fixtureA, WorldTransform transformA,
-                                           Fixture fixtureB, WorldTransform transformB,
-                                           out Manifold manifold)
+        public static bool CollidePolygons(
+            Fixture fixtureA,
+            WorldTransform transformA,
+            Fixture fixtureB,
+            WorldTransform transformB,
+            out Manifold manifold)
         {
             manifold = new Manifold();
 
@@ -133,10 +134,10 @@ namespace Engine.Physics.Collision
                         {
                             Feature =
                             {
-                                IndexA = (byte)edge1,
-                                IndexB = (byte)index21,
-                                TypeA = (byte)ContactFeature.FeatureType.Face,
-                                TypeB = (byte)ContactFeature.FeatureType.Vertex
+                                IndexA = (byte) edge1,
+                                IndexB = (byte) index21,
+                                TypeA = (byte) ContactFeature.FeatureType.Face,
+                                TypeB = (byte) ContactFeature.FeatureType.Vertex
                             }
                         }
                     },
@@ -148,10 +149,10 @@ namespace Engine.Physics.Collision
                         {
                             Feature =
                             {
-                                IndexA = (byte)edge1,
-                                IndexB = (byte)index22,
-                                TypeA = (byte)ContactFeature.FeatureType.Face,
-                                TypeB = (byte)ContactFeature.FeatureType.Vertex
+                                IndexA = (byte) edge1,
+                                IndexB = (byte) index22,
+                                TypeA = (byte) ContactFeature.FeatureType.Face,
+                                TypeB = (byte) ContactFeature.FeatureType.Vertex
                             }
                         }
                     }
@@ -234,16 +235,19 @@ namespace Engine.Physics.Collision
         }
 
         // Find the max separation between poly1 and poly2 using edge normals from poly1.
-        private static float FindMaxSeparation(out int edgeIndex,
-                                               PolygonFixture poly1, WorldTransform xf1,
-                                               PolygonFixture poly2, WorldTransform xf2)
+        private static float FindMaxSeparation(
+            out int edgeIndex,
+            PolygonFixture poly1,
+            WorldTransform xf1,
+            PolygonFixture poly2,
+            WorldTransform xf2)
         {
             var count1 = poly1.Count;
             var normals1 = poly1.Normals;
 
             // Vector pointing from the centroid of poly1 to the centroid of poly2.
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var d = (Vector2)(xf2.ToGlobal(poly2.Centroid) - xf1.ToGlobal(poly1.Centroid));
+            var d = (Vector2) (xf2.ToGlobal(poly2.Centroid) - xf1.ToGlobal(poly1.Centroid));
 // ReSharper restore RedundantCast
             var dLocal1 = -xf1.Rotation * d;
 
@@ -321,9 +325,12 @@ namespace Engine.Physics.Collision
         }
 
         // Find the separation between poly1 and poly2 for a give edge normal on poly1.
-        private static float EdgeSeparation(int edge1,
-                                            PolygonFixture poly1, WorldTransform xf1,
-                                            PolygonFixture poly2, WorldTransform xf2)
+        private static float EdgeSeparation(
+            int edge1,
+            PolygonFixture poly1,
+            WorldTransform xf1,
+            PolygonFixture poly2,
+            WorldTransform xf2)
         {
             var vertices1 = poly1.Vertices;
             var normals1 = poly1.Normals;
@@ -354,7 +361,7 @@ namespace Engine.Physics.Collision
             var v1 = xf1.ToGlobal(vertices1[edge1]);
             var v2 = xf2.ToGlobal(vertices2[index]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var separation = Vector2.Dot((Vector2)(v2 - v1), normal1World);
+            var separation = Vector2.Dot((Vector2) (v2 - v1), normal1World);
 // ReSharper restore RedundantCast
             return separation;
         }

@@ -11,86 +11,62 @@ using Microsoft.Xna.Framework;
 namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
-    /// This system takes care of components that support collision (anything
-    /// that extends <see cref="Collidable"/>). It fetches the components
-    /// neighbors and checks their collision groups, keeping the number of
-    /// actual collision checks that have to be performed low.
-    /// 
-    /// <para>
-    /// Collisions are handled in a way very much inspired by box 2D:
-    /// * In the index, entities are stored with 'inflated' bounds, i.e. the
-    /// rectangle in the index representing them is not their minimal bounding
-    /// box, but one that has been expanded slightly. Once by a fixed small
-    /// delta, which works against frequent updates due to tiny, wobbly motion,
-    /// as well as by a dynamic amount into the direction the entity is moving
-    /// in. Together with the fact that entities rarely stop instantly, this
-    /// works against frequent updates due to movement, but keeps the update
-    /// frequency rather constant (due to the dependency on the velocity).
-    /// * In each update we get the list of entities from the index that have
-    /// changed so much so that their expanded bounds have changed. This means
-    /// they now potentially collide with entities they did not before (bounds
-    /// may intersect with other bounds, now). For each such changed entity we
-    /// get the list of intersections with other bounds, and for each
-    /// intersection we declare a 'contact'. If there already is a contact for
-    /// the two intersecting entities we skip them.
-    /// * Each contact has two states: colliding and not colliding. This state
-    /// is updated each update, by querying the specific collision detection
-    /// methods of the two entities involved in the contact.
-    /// * When a contact state changed, we send a message to let other systems
-    /// know that a new collision took place, or that an active one stopped.
-    /// </para>
-    /// 
-    /// <para>
-    /// The lists for contacts and contact edges (an edge is a directed part of
-    /// a contact when it is in its colliding state, so there's one for each of
-    /// the two involved entities) are managed in a hybrid of a linked list and
-    /// an array list. This allows for the best of both worlds: very fast removal
-    /// and adding as well as indexed lookup of members. Essentially this is a
-    /// linked list with 'pointers' to the single nodes, but using structs,
-    /// which gives us nice memory locality.
-    /// </para>
+    ///     This system takes care of components that support collision (anything that extends <see cref="Collidable"/>). It
+    ///     fetches the components neighbors and checks their collision groups, keeping the number of actual collision checks
+    ///     that have to be performed low.
+    ///     <para>
+    ///         Collisions are handled in a way very much inspired by box 2D: * In the index, entities are stored with
+    ///         'inflated' bounds, i.e. the rectangle in the index representing them is not their minimal bounding box, but one
+    ///         that has been expanded slightly. Once by a fixed small delta, which works against frequent updates due to tiny,
+    ///         wobbly motion, as well as by a dynamic amount into the direction the entity is moving in. Together with the
+    ///         fact that entities rarely stop instantly, this works against frequent updates due to movement, but keeps the
+    ///         update frequency rather constant (due to the dependency on the velocity). * In each update we get the list of
+    ///         entities from the index that have changed so much so that their expanded bounds have changed. This means they
+    ///         now potentially collide with entities they did not before (bounds may intersect with other bounds, now). For
+    ///         each such changed entity we get the list of intersections with other bounds, and for each intersection we
+    ///         declare a 'contact'. If there already is a contact for the two intersecting entities we skip them. * Each
+    ///         contact has two states: colliding and not colliding. This state is updated each update, by querying the
+    ///         specific collision detection methods of the two entities involved in the contact. * When a contact state
+    ///         changed, we send a message to let other systems know that a new collision took place, or that an active one
+    ///         stopped.
+    ///     </para>
+    ///     <para>
+    ///         The lists for contacts and contact edges (an edge is a directed part of a contact when it is in its colliding
+    ///         state, so there's one for each of the two involved entities) are managed in a hybrid of a linked list and an
+    ///         array list. This allows for the best of both worlds: very fast removal and adding as well as indexed lookup of
+    ///         members. Essentially this is a linked list with 'pointers' to the single nodes, but using structs, which gives
+    ///         us nice memory locality.
+    ///     </para>
     /// </summary>
     public sealed class CollisionSystem : AbstractSystem, IMessagingSystem, IUpdatingSystem
     {
         #region Constants
 
-        /// <summary>
-        /// Start using indexes after the collision index.
-        /// </summary>
+        /// <summary>Start using indexes after the collision index.</summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
-        /// <summary>
-        /// Default capacity of the contacts list.
-        /// </summary>
+        /// <summary>Default capacity of the contacts list.</summary>
         private const int DefaultContactCapacity = 64;
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// List of active contacts between collidables (i.e. current active collisions).
-        /// </summary>
+        /// <summary>List of active contacts between collidables (i.e. current active collisions).</summary>
         [CopyIgnore, PacketizerIgnore]
         private Contact[] _contacts = new Contact[DefaultContactCapacity];
 
-        /// <summary>
-        /// List of contact edges, two per contact.
-        /// </summary>
+        /// <summary>List of contact edges, two per contact.</summary>
         [CopyIgnore, PacketizerIgnore]
         private ContactEdge[] _edges = new ContactEdge[DefaultContactCapacity * 2];
 
-        /// <summary>
-        /// The start of the linked list of used contacts.
-        /// </summary>
+        /// <summary>The start of the linked list of used contacts.</summary>
         private int _usedContacts = -1;
 
         /// <summary>
-        /// The start of the linked list of available contacts.
-        /// It is important to note that the list of free contacts is maintained
-        /// using the 'Previous' reference, to allow keeping the 'Next' reference
-        /// intact when deleting contacts during interation of the active contact
-        /// list.
+        ///     The start of the linked list of available contacts. It is important to note that the list of free contacts is
+        ///     maintained using the 'Previous' reference, to allow keeping the 'Next' reference intact when deleting contacts
+        ///     during iteration of the active contact list.
         /// </summary>
         private int _freeContacts;
 
@@ -120,8 +96,8 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             // The collidable info for the two entities, holding in particular
             // the head of the linked list of contacts involving the entities.
-            var collidableA = (Collidable)Manager.GetComponent(entityA, Collidable.TypeId);
-            var collidableB = (Collidable)Manager.GetComponent(entityB, Collidable.TypeId);
+            var collidableA = (Collidable) Manager.GetComponent(entityA, Collidable.TypeId);
+            var collidableB = (Collidable) Manager.GetComponent(entityB, Collidable.TypeId);
 
             // When we hit the last contact, allocate some more.
             if (_freeContacts < 0)
@@ -269,9 +245,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Updates the system.
-        /// </summary>
+        /// <summary>Updates the system.</summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
@@ -283,20 +257,18 @@ namespace Engine.ComponentSystem.Common.Systems
             UpdateContacts();
         }
 
-        /// <summary>
-        /// Checks for new contacts for all entities that moved significantly in the index.
-        /// </summary>
+        /// <summary>Checks for new contacts for all entities that moved significantly in the index.</summary>
         private void FindContacts()
         {
             // Get reference to index system.
-            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
 
             // Check the list of entities that moved in the index.
             ISet<int> neighbors = new HashSet<int>();
-            foreach (var entity in index.ChangedEntites)
+            foreach (var entity in index.ChangedEntities)
             {
                 // See if it's a collidable.
-                var collidable = (Collidable)Manager.GetComponent(entity, Collidable.TypeId);
+                var collidable = (Collidable) Manager.GetComponent(entity, Collidable.TypeId);
                 if (collidable == null)
                 {
                     continue;
@@ -324,8 +296,8 @@ namespace Engine.ComponentSystem.Common.Systems
                     }
 
                     // Get the actual collidable information for more filtering.
-                    var collidableA = (Collidable)Manager.GetComponent(entityA, Collidable.TypeId);
-                    var collidableB = (Collidable)Manager.GetComponent(entityB, Collidable.TypeId);
+                    var collidableA = (Collidable) Manager.GetComponent(entityA, Collidable.TypeId);
+                    var collidableB = (Collidable) Manager.GetComponent(entityB, Collidable.TypeId);
 
                     // Skip if not enabled. If a component gets enabled at a place where it would
                     // intersect this may lead to to missed intersections, but this probably won't
@@ -352,9 +324,8 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>
-        /// Checks if a contact exists in the specified contact edge list for the
-        /// two specified entities. The entity ids are expected to be sorted (i.e.
-        /// entityA &lt; entityB).
+        ///     Checks if a contact exists in the specified contact edge list for the two specified entities. The entity ids
+        ///     are expected to be sorted (i.e. entityA &lt; entityB).
         /// </summary>
         /// <param name="contactList">The contact list.</param>
         /// <param name="entityA">The entity A.</param>
@@ -378,14 +349,11 @@ namespace Engine.ComponentSystem.Common.Systems
             return false;
         }
 
-        /// <summary>
-        /// Updates all contacts, checking if they're still valid and if they
-        /// result in actual intersections.
-        /// </summary>
+        /// <summary>Updates all contacts, checking if they're still valid and if they result in actual intersections.</summary>
         private void UpdateContacts()
         {
             // Get reference to index system.
-            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
 
             // Check the list of contacts for actual collisions.
             for (var i = _usedContacts; i >= 0; i = _contacts[i].Next)
@@ -393,8 +361,8 @@ namespace Engine.ComponentSystem.Common.Systems
                 var entityA = _contacts[i].EntityA;
                 var entityB = _contacts[i].EntityB;
 
-                var collidableA = (Collidable)Manager.GetComponent(entityA, Collidable.TypeId);
-                var collidableB = (Collidable)Manager.GetComponent(entityB, Collidable.TypeId);
+                var collidableA = (Collidable) Manager.GetComponent(entityA, Collidable.TypeId);
+                var collidableB = (Collidable) Manager.GetComponent(entityB, Collidable.TypeId);
 
                 // Test for actual collision.
                 Vector2 normal;
@@ -409,8 +377,8 @@ namespace Engine.ComponentSystem.Common.Systems
                         // began is a pain in the ass we simply guesstimate the original impact
                         // normal by weighing in the relative velocity of the to two parties.
                         // This is far from perfect, but should do a relatively good (and cheap) job.
-                        var velocityA = (Velocity)Manager.GetComponent(entityA, Velocity.TypeId);
-                        var velocityB = (Velocity)Manager.GetComponent(entityB, Velocity.TypeId);
+                        var velocityA = (Velocity) Manager.GetComponent(entityA, Velocity.TypeId);
+                        var velocityB = (Velocity) Manager.GetComponent(entityB, Velocity.TypeId);
                         Vector2 relativeVelocity;
                         if (velocityB != null)
                         {
@@ -484,28 +452,25 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        /// <summary>
-        /// Update the previous position to the current one when adding a component.
-        /// </summary>
+        /// <summary>Update the previous position to the current one when adding a component.</summary>
         /// <param name="component">The added component.</param>
         public override void OnComponentAdded(Component component)
         {
-            if (component is Collidable)
+            var collidable = component as Collidable;
+            if (collidable != null)
             {
                 // Initialize previous position to current position, to avoid false positives
                 // due to sweep intersection tests (with a sweep from (0,0) to position in the
                 // first update).
-                var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+                var transform = ((Transform) Manager.GetComponent(collidable.Entity, Transform.TypeId));
                 if (transform != null)
                 {
-                    ((Collidable)component).PreviousPosition = transform.Translation;
+                    collidable.PreviousPosition = transform.Translation;
                 }
             }
         }
 
-        /// <summary>
-        /// Called by the manager when a component was removed.
-        /// </summary>
+        /// <summary>Called by the manager when a component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
         public override void OnComponentRemoved(Component component)
         {
@@ -526,8 +491,8 @@ namespace Engine.ComponentSystem.Common.Systems
                             Manager.SendMessage(message);
                         }
 
-                        var collidableA = (Collidable)Manager.GetComponent(_contacts[i].EntityA, Collidable.TypeId);
-                        var collidableB = (Collidable)Manager.GetComponent(_contacts[i].EntityB, Collidable.TypeId);
+                        var collidableA = (Collidable) Manager.GetComponent(_contacts[i].EntityA, Collidable.TypeId);
+                        var collidableB = (Collidable) Manager.GetComponent(_contacts[i].EntityB, Collidable.TypeId);
 
                         FreeContact(i, collidableA, collidableB);
                     }
@@ -535,9 +500,7 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        /// <summary>
-        /// Update the previous position when a collidable component changes its position.
-        /// </summary>
+        /// <summary>Update the previous position when a collidable component changes its position.</summary>
         /// <param name="message">The sent message.</param>
         public void Receive<T>(T message) where T : struct
         {
@@ -549,16 +512,14 @@ namespace Engine.ComponentSystem.Common.Systems
 
             var m = cm.Value;
 
-            var collidable = ((Collidable)Manager.GetComponent(m.Entity, Collidable.TypeId));
+            var collidable = ((Collidable) Manager.GetComponent(m.Entity, Collidable.TypeId));
             if (collidable != null)
             {
                 collidable.PreviousPosition = m.PreviousPosition;
             }
         }
 
-        /// <summary>
-        /// Only make the effort to set this when in debug mode.
-        /// </summary>
+        /// <summary>Only make the effort to set this when in debug mode.</summary>
         /// <param name="entity">The entity.</param>
         /// <param name="state">The state.</param>
         [Conditional("DEBUG")]
@@ -568,20 +529,16 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 return;
             }
-            ((Collidable)Manager.GetComponent(entity, Collidable.TypeId)).State = state;
+            ((Collidable) Manager.GetComponent(entity, Collidable.TypeId)).State = state;
         }
 
         #endregion
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
@@ -607,9 +564,7 @@ namespace Engine.ComponentSystem.Common.Systems
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
         {
@@ -638,16 +593,11 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
-        /// <returns>
-        /// The copy.
-        /// </returns>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
+        /// <returns>The copy.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (CollisionSystem)base.NewInstance();
+            var copy = (CollisionSystem) base.NewInstance();
 
             copy._contacts = new Contact[_contacts.Length];
             copy._edges = new ContactEdge[_edges.Length];
@@ -656,19 +606,18 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (CollisionSystem)into;
+            var copy = (CollisionSystem) into;
 
             if (copy._contacts.Length != _contacts.Length)
             {
@@ -687,58 +636,35 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Utility types
 
-        /// <summary>
-        /// Represents a contact between two collidables.
-        /// </summary>
+        /// <summary>Represents a contact between two collidables.</summary>
         private struct Contact
         {
-            /// <summary>
-            /// Entity id of the first collidables entity.
-            /// </summary>
+            /// <summary>Entity id of the first collidables entity.</summary>
             public int EntityA;
 
-            /// <summary>
-            /// Entity id of the second collidables entity.
-            /// </summary>
+            /// <summary>Entity id of the second collidables entity.</summary>
             public int EntityB;
 
-            /// <summary>
-            /// Index of previous entry in the global linked list.
-            /// </summary>
+            /// <summary>Index of previous entry in the global linked list.</summary>
             public int Previous;
 
-            /// <summary>
-            /// Index of next entry in the global linked list.
-            /// </summary>
+            /// <summary>Index of next entry in the global linked list.</summary>
             public int Next;
 
-            /// <summary>
-            /// Whether the two entities were intersecting in the previous update.
-            /// </summary>
+            /// <summary>Whether the two entities were intersecting in the previous update.</summary>
             public bool Intersecting;
         }
 
-        /// <summary>
-        /// Represents a connection between two (potentially) colliding
-        /// objects.
-        /// </summary>
+        /// <summary>Represents a connection between two (potentially) colliding objects.</summary>
         private struct ContactEdge
         {
-            /// <summary>
-            /// The index of the actual contact.
-            /// </summary>
+            /// <summary>The index of the actual contact.</summary>
             public int Parent;
 
-            /// <summary>
-            /// The index of the previous contact edge, for the entity this
-            /// edge belongs to.
-            /// </summary>
+            /// <summary>The index of the previous contact edge, for the entity this edge belongs to.</summary>
             public int Previous;
 
-            /// <summary>
-            /// The index of the next contact edge, for the entity this
-            /// edge belongs to.
-            /// </summary>
+            /// <summary>The index of the next contact edge, for the entity this edge belongs to.</summary>
             public int Next;
         }
 

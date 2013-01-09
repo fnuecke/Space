@@ -13,24 +13,29 @@ namespace Engine.Physics.Collision
     /// <summary>Utility methods of the collision module.</summary>
     internal static partial class Algorithms
     {
-        /// <summary>
-        /// Tests whether two shapes overlap, using their distance proxies.
-        /// </summary>
+        /// <summary>Tests whether two shapes overlap, using their distance proxies.</summary>
         /// <param name="proxyA">The proxy for the first shape.</param>
         /// <param name="proxyB">The proxy for the second shape.</param>
         /// <param name="transformA">The transform of the first shape.</param>
         /// <param name="transformB">The transform of the second shape.</param>
         /// <returns></returns>
-        internal static bool TestOverlap(DistanceProxy proxyA, DistanceProxy proxyB,
-                                         WorldTransform transformA, WorldTransform transformB)
+        internal static bool TestOverlap(
+            DistanceProxy proxyA,
+            DistanceProxy proxyB,
+            WorldTransform transformA,
+            WorldTransform transformB)
         {
             var cache = new SimplexCache {Count = 0};
             return Distance(ref cache, proxyA, transformA, proxyB, transformB, true) < 10 * Settings.Epsilon;
         }
 
         /// Clipping for contact manifolds.
-        private static int ClipSegmentToLine(out FixedArray2<ClipVertex> vOut, FixedArray2<ClipVertex> vIn,
-                                             Vector2 normal, float offset, int vertexIndexA)
+        private static int ClipSegmentToLine(
+            out FixedArray2<ClipVertex> vOut,
+            FixedArray2<ClipVertex> vIn,
+            Vector2 normal,
+            float offset,
+            int vertexIndexA)
         {
             // Satisfy outs.
             vOut = new FixedArray2<ClipVertex>();
@@ -69,10 +74,10 @@ namespace Engine.Physics.Collision
                 vOut.Item2.Vertex = vIn.Item1.Vertex + interp * (vIn.Item2.Vertex - vIn.Item1.Vertex);
 
                 // VertexA is hitting edgeB.
-                vOut.Item2.Id.Feature.IndexA = (byte)vertexIndexA;
+                vOut.Item2.Id.Feature.IndexA = (byte) vertexIndexA;
                 vOut.Item2.Id.Feature.IndexB = vIn.Item1.Id.Feature.IndexB;
-                vOut.Item2.Id.Feature.TypeA = (byte)ContactFeature.FeatureType.Vertex;
-                vOut.Item2.Id.Feature.TypeB = (byte)ContactFeature.FeatureType.Face;
+                vOut.Item2.Id.Feature.TypeA = (byte) ContactFeature.FeatureType.Vertex;
+                vOut.Item2.Id.Feature.TypeB = (byte) ContactFeature.FeatureType.Face;
                 ++numOut;
             }
 
@@ -83,7 +88,7 @@ namespace Engine.Physics.Collision
         private struct ClipVertex
         {
             /// <summary>The contact ID uniquely identifying this contact vertex.</summary>
-            public ContactID Id;
+            public ContactId Id;
 
             /// <summary>The vertex position in local coordinate space.</summary>
             public LocalPoint Vertex;

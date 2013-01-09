@@ -58,9 +58,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DirectionXnaExtensions.cs" />
+    <Compile Include="DirectionExtensions.cs" />
     <Compile Include="LocalizedContentManager.cs" />
-    <Compile Include="PacketXnaExtensions.cs" />
+    <Compile Include="PacketExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

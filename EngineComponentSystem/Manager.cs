@@ -12,54 +12,39 @@ using Engine.Util;
 namespace Engine.ComponentSystem
 {
     /// <summary>
-    /// Manager for a complete component system. Tracks live entities and
-    /// components, and allows lookup of components for entities.
+    ///     Manager for a complete component system. Tracks live entities and components, and allows lookup of components
+    ///     for entities.
     /// </summary>
     /// <remarks>
-    /// All reading operations on the manager are thread safe. These are:
-    /// <see cref="GetSystem(int)"/>, <see cref="HasEntity(int)"/>, <see cref="HasComponent(int)"/>,
-    /// <see cref="GetComponent(int, int)"/>, <see cref="GetComponentById(int)"/> and
-    /// <see cref="GetComponents(int, int)"/>.
-    /// 
-    /// <para>
-    /// It is <em>not</em> thread safe for all writing operations (adding, removing).
-    /// </para>
-    /// 
-    /// <para>
-    /// Note that this does <em>not</em> guarantee the thread safety of the individual components.
-    /// </para>
+    ///     All reading operations on the manager are thread safe. These are:
+    ///     <see cref="GetSystem(int)"/>, <see cref="HasEntity(int)"/>, <see cref="HasComponent(int)"/>,
+    ///     <see cref="GetComponent(int, int)"/>, <see cref="GetComponentById(int)"/> and
+    ///     <see cref="GetComponents(int, int)"/>.
+    ///     <para>
+    ///         It is <em>not</em> thread safe for all writing operations (adding, removing).
+    ///     </para>
+    ///     <para>
+    ///         Note that this does <em>not</em> guarantee the thread safety of the individual components.
+    ///     </para>
     /// </remarks>
     [DebuggerDisplay("Systems = {_systems.Count}, Components = {_componentIds.Count}")]
     public sealed partial class Manager : IManager
     {
         #region Properties
 
-        /// <summary>
-        /// A list of all components currently registered with this manager,
-        /// in order of their ID.
-        /// </summary>
+        /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
         public IEnumerable<Component> Components
         {
-            get
-            {
-                foreach (var id in _componentIds)
-                {
-                    yield return _components[id];
-                }
-            }
+            get { return _componentIds.Select(id => _components[id]); }
         }
 
-        /// <summary>
-        /// A list of all systems registered with this manager.
-        /// </summary>
+        /// <summary>A list of all systems registered with this manager.</summary>
         public IEnumerable<AbstractSystem> Systems
         {
             get { return _systems; }
         }
 
-        /// <summary>
-        /// Number of components currently registered in this system.
-        /// </summary>
+        /// <summary>Number of components currently registered in this system.</summary>
         public int ComponentCount
         {
             get { return _componentIds.Count; }
@@ -69,55 +54,37 @@ namespace Engine.ComponentSystem
 
         #region Fields
 
-        /// <summary>
-        /// Manager for entity ids.
-        /// </summary>
-        private IdManager _entityIds = new IdManager();
+        /// <summary>Manager for entity ids.</summary>
+        private readonly IdManager _entityIds = new IdManager();
 
-        /// <summary>
-        /// Manager for entity ids.
-        /// </summary>
-        private IdManager _componentIds = new IdManager();
+        /// <summary>Manager for entity ids.</summary>
+        private readonly IdManager _componentIds = new IdManager();
 
-        /// <summary>
-        /// List of systems registered with this manager.
-        /// </summary>
+        /// <summary>List of systems registered with this manager.</summary>
         [PacketizerIgnore]
-        private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
+        private readonly List<AbstractSystem> _systems = new List<AbstractSystem>();
 
-        /// <summary>
-        /// List of all updating systems registered with this manager.
-        /// </summary>
+        /// <summary>List of all updating systems registered with this manager.</summary>
         [PacketizerIgnore]
         private readonly List<IUpdatingSystem> _updatingSystems = new List<IUpdatingSystem>();
 
-        /// <summary>
-        /// List of all messaging systems registered with this manager.
-        /// </summary>
+        /// <summary>List of all messaging systems registered with this manager.</summary>
         [PacketizerIgnore]
         private readonly List<IMessagingSystem> _messagingSystems = new List<IMessagingSystem>();
 
-        /// <summary>
-        /// List of all drawing systems registered with this manager.
-        /// </summary>
+        /// <summary>List of all drawing systems registered with this manager.</summary>
         [PacketizerIgnore]
         private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
 
-        /// <summary>
-        /// Lookup table for quick access to systems by their type id.
-        /// </summary>
+        /// <summary>Lookup table for quick access to systems by their type id.</summary>
         [PacketizerIgnore]
         private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
 
-        /// <summary>
-        /// Keeps track of entity->component relationships.
-        /// </summary>
+        /// <summary>Keeps track of entity->component relationships.</summary>
         [PacketizerIgnore]
         private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
 
-        /// <summary>
-        /// Lookup table for quick access to components by their id.
-        /// </summary>
+        /// <summary>Lookup table for quick access to components by their id.</summary>
         [PacketizerIgnore]
         private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
@@ -125,9 +92,7 @@ namespace Engine.ComponentSystem
 
         #region Logic
 
-        /// <summary>
-        /// Update all registered systems.
-        /// </summary>
+        /// <summary>Update all registered systems.</summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
@@ -142,9 +107,7 @@ namespace Engine.ComponentSystem
             ReleaseDirty();
         }
 
-        /// <summary>
-        /// Renders all registered systems.
-        /// </summary>
+        /// <summary>Renders all registered systems.</summary>
         /// <param name="frame">The frame to render.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
@@ -162,19 +125,16 @@ namespace Engine.ComponentSystem
 
         #region Systems
 
-        /// <summary>
-        /// Add the specified system to this manager.
-        /// </summary>
+        /// <summary>Add the specified system to this manager.</summary>
         /// <param name="system">The system to add.</param>
-        /// <returns>
-        /// This manager, for chaining.
-        /// </returns>
+        /// <returns>This manager, for chaining.</returns>
         public IManager AddSystem(AbstractSystem system)
         {
             // We do not allow systems to be both logic and presentation related.
             if (system is IUpdatingSystem && system is IDrawingSystem)
             {
-                throw new ArgumentException("Systems must be either logic related (IUpdatingSystem) or presentation related (IDrawingSystem), but never both.");
+                throw new ArgumentException(
+                    "Systems must be either logic related (IUpdatingSystem) or presentation related (IDrawingSystem), but never both.");
             }
 
             // Get type ID for that system.
@@ -197,19 +157,22 @@ namespace Engine.ComponentSystem
             _systems.Add(system);
 
             // Add to updating list, for update iteration.
-            if (system is IUpdatingSystem)
+            var updatingSystem = system as IUpdatingSystem;
+            if (updatingSystem != null)
             {
-                _updatingSystems.Add((IUpdatingSystem)system);
+                _updatingSystems.Add(updatingSystem);
             }
             // Add to messaging list, for iteration for message distribution.
-            if (system is IMessagingSystem)
+            var messagingSystem = system as IMessagingSystem;
+            if (messagingSystem != null)
             {
-                _messagingSystems.Add((IMessagingSystem)system);
+                _messagingSystems.Add(messagingSystem);
             }
             // Add to drawing list, for draw iteration.
-            if (system is IDrawingSystem)
+            var drawingSystem = system as IDrawingSystem;
+            if (drawingSystem != null)
             {
-                _drawingSystems.Add((IDrawingSystem)system);
+                _drawingSystems.Add(drawingSystem);
             }
 
             // Set the manager so that the system knows it belongs to us.
@@ -218,9 +181,7 @@ namespace Engine.ComponentSystem
             return this;
         }
 
-        /// <summary>
-        /// Add multiple systems to this manager.
-        /// </summary>
+        /// <summary>Add multiple systems to this manager.</summary>
         /// <param name="systems">The systems to add.</param>
         public void AddSystems(IEnumerable<AbstractSystem> systems)
         {
@@ -230,9 +191,7 @@ namespace Engine.ComponentSystem
             }
         }
 
-        /// <summary>
-        /// Adds a copy of the specified system.
-        /// </summary>
+        /// <summary>Adds a copy of the specified system.</summary>
         /// <param name="system">The system to copy.</param>
         public void CopySystem(AbstractSystem system)
         {
@@ -250,13 +209,9 @@ namespace Engine.ComponentSystem
             system.CopyInto(_systemsByTypeId[systemTypeId]);
         }
 
-        /// <summary>
-        /// Removes the specified system from this manager.
-        /// </summary>
+        /// <summary>Removes the specified system from this manager.</summary>
         /// <param name="system">The system to remove.</param>
-        /// <returns>
-        /// Whether the system was successfully removed.
-        /// </returns>
+        /// <returns>Whether the system was successfully removed.</returns>
         public bool RemoveSystem(AbstractSystem system)
         {
             // Make sure we have a valid system.
@@ -285,13 +240,9 @@ namespace Engine.ComponentSystem
             return true;
         }
 
-        /// <summary>
-        /// Get a system of the specified type.
-        /// </summary>
+        /// <summary>Get a system of the specified type.</summary>
         /// <param name="typeId">The type of the system to get.</param>
-        /// <returns>
-        /// The system with the specified type.
-        /// </returns>
+        /// <returns>The system with the specified type.</returns>
         public AbstractSystem GetSystem(int typeId)
         {
             return _systemsByTypeId[typeId];
@@ -301,12 +252,8 @@ namespace Engine.ComponentSystem
 
         #region Entities and Components
 
-        /// <summary>
-        /// Creates a new entity and returns its ID.
-        /// </summary>
-        /// <returns>
-        /// The id of the new entity.
-        /// </returns>
+        /// <summary>Creates a new entity and returns its ID.</summary>
+        /// <returns>The id of the new entity.</returns>
         public int AddEntity()
         {
             // Allocate a new entity id and a component mapping for the entity.
@@ -315,9 +262,7 @@ namespace Engine.ComponentSystem
             return entity;
         }
 
-        /// <summary>
-        /// Removes an entity and all its components from the system.
-        /// </summary>
+        /// <summary>Removes an entity and all its components from the system.</summary>
         /// <param name="entity">The entity to remove.</param>
         public void RemoveEntity(int entity)
         {
@@ -343,21 +288,15 @@ namespace Engine.ComponentSystem
             }
         }
 
-        /// <summary>
-        /// Test whether the specified entity exists.
-        /// </summary>
+        /// <summary>Test whether the specified entity exists.</summary>
         /// <param name="entity">The entity to check for.</param>
-        /// <returns>
-        /// Whether the manager contains the entity or not.
-        /// </returns>
+        /// <returns>Whether the manager contains the entity or not.</returns>
         public bool HasEntity(int entity)
         {
             return _entityIds.InUse(entity);
         }
 
-        /// <summary>
-        /// Removes all entities (and their components) from the system.
-        /// </summary>
+        /// <summary>Removes all entities (and their components) from the system.</summary>
         public void Clear()
         {
             var next = _entityIds.GetId();
@@ -375,21 +314,17 @@ namespace Engine.ComponentSystem
             Debug.Assert(_componentIds.Count == 0);
         }
 
-        /// <summary>
-        /// Creates a new component for the specified entity.
-        /// </summary>
+        /// <summary>Creates a new component for the specified entity.</summary>
         /// <typeparam name="T">The type of component to create.</typeparam>
         /// <param name="entity">The entity to attach the component to.</param>
-        /// <returns>
-        /// The new component.
-        /// </returns>
+        /// <returns>The new component.</returns>
         public T AddComponent<T>(int entity) where T : Component, new()
         {
             // Make sure that entity exists.
             Debug.Assert(HasEntity(entity), "No such entity in the system.");
 
             // The create the component and set it up.
-            var component = (T)AllocateComponent(typeof(T));
+            var component = (T) AllocateComponent(typeof (T));
             component.Manager = this;
             component.Id = _componentIds.GetId();
             component.Entity = entity;
@@ -409,9 +344,7 @@ namespace Engine.ComponentSystem
             return component;
         }
 
-        /// <summary>
-        /// Removes the specified component from the system.
-        /// </summary>
+        /// <summary>Removes the specified component from the system.</summary>
         /// <param name="component">The component to remove.</param>
         public void RemoveComponent(Component component)
         {
@@ -432,9 +365,7 @@ namespace Engine.ComponentSystem
             ReleaseComponent(component);
         }
 
-        /// <summary>
-        /// Removes the specified component from the system.
-        /// </summary>
+        /// <summary>Removes the specified component from the system.</summary>
         /// <param name="componentId">The id of the component to remove.</param>
         public void RemoveComponent(int componentId)
         {
@@ -445,37 +376,28 @@ namespace Engine.ComponentSystem
             RemoveComponent(_components[componentId]);
         }
 
-        /// <summary>
-        /// Test whether the component with the specified id exists.
-        /// </summary>
+        /// <summary>Test whether the component with the specified id exists.</summary>
         /// <param name="componentId">The id of the component to check for.</param>
-        /// <returns>
-        /// Whether the manager contains the component or not.
-        /// </returns>
+        /// <returns>Whether the manager contains the component or not.</returns>
         public bool HasComponent(int componentId)
         {
             return _componentIds.InUse(componentId);
         }
 
         /// <summary>
-        /// Gets a component of the specified type for an entity. If there are
-        /// multiple components of the same type attached to the entity, use
-        /// the <c>index</c> parameter to select which one to get.
+        ///     Gets a component of the specified type for an entity. If there are multiple components of the same type attached to
+        ///     the entity, use the <c>index</c> parameter to select which one to get.
         /// </summary>
         /// <param name="entity">The entity to get the component of.</param>
         /// <param name="typeId">The type of the component to get.</param>
-        /// <returns>
-        /// The component.
-        /// </returns>
+        /// <returns>The component.</returns>
         public Component GetComponent(int entity, int typeId)
         {
             Debug.Assert(HasEntity(entity), "No such entity in the system.");
             return _entities[entity].GetComponent(typeId);
         }
 
-        /// <summary>
-        /// Get a component by its id.
-        /// </summary>
+        /// <summary>Get a component by its id.</summary>
         /// <param name="componentId">The if of the component to retrieve.</param>
         /// <returns>The component with the specified id.</returns>
         public Component GetComponentById(int componentId)
@@ -484,14 +406,10 @@ namespace Engine.ComponentSystem
             return _components[componentId];
         }
 
-        /// <summary>
-        /// Allows enumerating over all components of the specified entity.
-        /// </summary>
+        /// <summary>Allows enumerating over all components of the specified entity.</summary>
         /// <param name="entity">The entity for which to get the components.</param>
         /// <param name="typeId">The type of components to get.</param>
-        /// <returns>
-        /// An enumerable listing all components of that entity.
-        /// </returns>
+        /// <returns>An enumerable listing all components of that entity.</returns>
         public IEnumerable<Component> GetComponents(int entity, int typeId)
         {
             Debug.Assert(HasEntity(entity), "No such entity in the system.");
@@ -502,9 +420,7 @@ namespace Engine.ComponentSystem
 
         #region Messaging
 
-        /// <summary>
-        /// Inform all interested systems of a message.
-        /// </summary>
+        /// <summary>Inform all interested systems of a message.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(T message) where T : struct
@@ -519,13 +435,9 @@ namespace Engine.ComponentSystem
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         [OnPacketize]
         public IWritablePacket Packetize(IWritablePacket packet)
         {
@@ -560,8 +472,8 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
+        ///     Bring the object to the state in the given packet. This is called before automatic depacketization is
+        ///     performed.
         /// </summary>
         [OnPreDepacketize]
         public void PreDepacketize()
@@ -580,8 +492,8 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// after automatic depacketization has been performed.
+        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
+        ///     performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
@@ -589,8 +501,8 @@ namespace Engine.ComponentSystem
         {
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
-            var numComponents = packet.ReadInt32();
-            for (var i = 0; i < numComponents; ++i)
+            var componentCount = packet.ReadInt32();
+            for (var i = 0; i < componentCount; ++i)
             {
                 var type = packet.ReadType();
                 var component = AllocateComponent(type);
@@ -617,8 +529,8 @@ namespace Engine.ComponentSystem
 
             // Read back all systems. This must be done after reading the components,
             // because the systems will fetch their components again at this point.
-            var numSystems = packet.ReadInt32();
-            for (var i = 0; i < numSystems; ++i)
+            var systemCount = packet.ReadInt32();
+            for (var i = 0; i < systemCount; ++i)
             {
                 var type = packet.ReadType();
                 if (!SystemTypes.ContainsKey(type))
@@ -637,45 +549,35 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Write a complete entity, meaning all its components, to the
-        /// specified packet. Entities saved this way can be restored using
-        /// the <see cref="DepacketizeEntity"/> method. Note that this has
-        /// no knowledge about components' internal states, so if they keep
-        /// references to other entities or components via their id, these
-        /// ids will obviously be wrong after depacketizing. You will have
-        /// to take care of fixing these references yourself.
-        /// <para/>
-        /// This uses the components' <c>Packetize</c> facilities.
+        ///     Write a complete entity, meaning all its components, to the specified packet. Entities saved this way can be
+        ///     restored using the <see cref="DepacketizeEntity"/> method. Note that this has no knowledge about components'
+        ///     internal states, so if they keep references to other entities or components via their id, these ids will obviously
+        ///     be wrong after depacketizing. You will have to take care of fixing these references yourself.
+        ///     <para/>
+        ///     This uses the components' <see cref="IPacketizable"/> facilities.
         /// </summary>
         /// <param name="packet">The packet to write to.</param>
         /// <param name="entity">The entity to write.</param>
-        /// <returns>
-        /// The packet after writing the entity's components.
-        /// </returns>
+        /// <returns>The packet after writing the entity's components.</returns>
         public IWritablePacket PacketizeEntity(IWritablePacket packet, int entity)
         {
-            return packet.WriteWithTypeInfo((ICollection<Component>)_entities[entity].Components);
+            return packet.WriteWithTypeInfo((ICollection<Component>) _entities[entity].Components);
         }
 
         /// <summary>
-        /// Reads an entity from the specified packet, meaning all its
-        /// components. This will create a new entity, with an id that
-        /// may differ from the id the entity had when it was written.
-        /// <para/>
-        /// In particular, all re-created components will likely have different
-        /// different ids as well, so this method is not suited for storing
-        /// components that reference other components, even if just by their
-        /// ID.
-        /// <para/>
-        /// This will act as though all of the written components were added,
-        /// i.e. each restored component will send a <c>ComponentAdded</c>
-        /// message.
-        /// <para/>
-        /// This uses the components' serialization facilities.
+        ///     Reads an entity from the specified packet, meaning all its components. This will create a new entity, with an id
+        ///     that may differ from the id the entity had when it was written.
+        ///     <para/>
+        ///     In particular, all re-created components will likely have different different ids as well, so this method is not
+        ///     suited for storing components that reference other components, even if just by their ID.
+        ///     <para/>
+        ///     This will act as though all of the written components were added, i.e. for each restored component all systems'
+        ///     <see cref="AbstractSystem.OnComponentAdded"/> method will be called.
+        ///     <para/>
+        ///     This uses the components' <see cref="IPacketizable"/> facilities.
         /// </summary>
         /// <param name="packet">The packet to read the entity from.</param>
-        /// <param name="componentIdMap">A mapping of how components' ids
-        /// changed due to serialization, mapping old id to new id.</param>
+        /// <param name="componentIdMap">A mapping of how components' ids changed due to serialization, mapping old id to new id.</param>
         /// <returns>The id of the read entity.</returns>
         public int DepacketizeEntity(IReadablePacket packet, Dictionary<int, int> componentIdMap = null)
         {
@@ -731,21 +633,25 @@ namespace Engine.ComponentSystem
                 throw;
             }
         }
-        
+
         [OnStringify]
         public StreamWriter Dump(StreamWriter w, int indent)
         {
             // Write the components.
-            w.AppendIndent(indent).Write("ComponentCount = "); w.Write(_componentIds.Count);
+            w.AppendIndent(indent).Write("ComponentCount = ");
+            w.Write(_componentIds.Count);
             w.AppendIndent(indent).Write("Components = {");
             foreach (var component in Components)
             {
-                w.AppendIndent(indent + 1).Write(component.GetType()); w.Write(" = "); w.Dump(component, indent + 1);
+                w.AppendIndent(indent + 1).Write(component.GetType());
+                w.Write(" = ");
+                w.Dump(component, indent + 1);
             }
             w.AppendIndent(indent).Write("}");
 
             // Write systems.
-            w.AppendIndent(indent).Write("SystemCount (excluding IDrawingSystems) = "); w.Write(_systems.Count(s => !(s is IDrawingSystem)));
+            w.AppendIndent(indent).Write("SystemCount (excluding IDrawingSystems) = ");
+            w.Write(_systems.Count(s => !(s is IDrawingSystem)));
             w.AppendIndent(indent).Write("Systems = {");
             for (int i = 0, j = _systems.Count; i < j; ++i)
             {
@@ -753,7 +659,9 @@ namespace Engine.ComponentSystem
                 {
                     continue;
                 }
-                w.AppendIndent(indent + 1).Write(_systems[i].GetType()); w.Write(" = "); w.Dump(_systems[i], indent + 1);
+                w.AppendIndent(indent + 1).Write(_systems[i].GetType());
+                w.Write(" = ");
+                w.Dump(_systems[i], indent + 1);
             }
             w.AppendIndent(indent).Write("}");
 
@@ -765,9 +673,8 @@ namespace Engine.ComponentSystem
         #region Copying
 
         /// <summary>
-        /// Not supported, to avoid issues with assumptions on how presentation
-        /// related systems should be handled. Manually create a new instance
-        /// instead and use <see cref="CopyInto"/> on it.
+        ///     Not supported, to avoid issues with assumptions on how presentation related systems should be handled. Manually
+        ///     create a new instance instead and use <see cref="CopyInto"/> on it.
         /// </summary>
         /// <returns>The copy.</returns>
         public IManager NewInstance()
@@ -775,9 +682,7 @@ namespace Engine.ComponentSystem
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
         public void CopyInto(IManager into)
@@ -789,7 +694,7 @@ namespace Engine.ComponentSystem
             }
 
             // Get the properly typed version.
-            var copy = (Manager)into;
+            var copy = (Manager) into;
 
             // Copy id managers.
             _entityIds.CopyInto(copy._entityIds);

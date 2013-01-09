@@ -4,22 +4,35 @@ using System.IO;
 
 namespace Engine.IO
 {
-    /// <summary>
-    /// Simple FIFO queue like stream. This implementation is NOT thread-safe!
-    /// </summary>
+    /// <summary>Simple FIFO queue like stream. This implementation is NOT thread-safe!</summary>
     public class SlidingStream : Stream
     {
         #region Properties
 
-        public override bool CanRead { get { return true; } }
+        public override bool CanRead
+        {
+            get { return true; }
+        }
 
-        public override bool CanSeek { get { return false; } }
+        public override bool CanSeek
+        {
+            get { return false; }
+        }
 
-        public override bool CanWrite { get { return true; } }
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
 
-        public bool DataAvailable { get { return _pendingSegments.Count > 0; } }
+        public bool DataAvailable
+        {
+            get { return _pendingSegments.Count > 0; }
+        }
 
-        public override long Length { get { throw new NotSupportedException(); } }
+        public override long Length
+        {
+            get { throw new NotSupportedException(); }
+        }
 
         public override long Position
         {
@@ -31,14 +44,10 @@ namespace Engine.IO
 
         #region Fields
 
-        /// <summary>
-        /// Internal representation of this stream.
-        /// </summary>
+        /// <summary>Internal representation of this stream.</summary>
         private readonly LinkedList<ArraySegment<byte>> _pendingSegments = new LinkedList<ArraySegment<byte>>();
 
-        /// <summary>
-        /// Remember if this stream is closed, because if it is we throw exceptions on read/write.
-        /// </summary>
+        /// <summary>Remember if this stream is closed, because if it is we throw exceptions on read/write.</summary>
         private bool _closed;
 
         #endregion
@@ -52,7 +61,7 @@ namespace Engine.IO
         }
 
         #region Read / Write
-        
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (_closed)
@@ -70,14 +79,15 @@ namespace Engine.IO
                 _pendingSegments.RemoveFirst();
 
                 // Copy from it as much as we need or as much as we can.
-                var toCopy = System.Math.Min(segment.Count, count - currentCount);
+                var toCopy = Math.Min(segment.Count, count - currentCount);
                 Array.Copy(segment.Array, segment.Offset, buffer, offset + currentCount, toCopy);
                 currentCount += toCopy;
 
                 // If we didn't use up the segment, push what remains back to the list.
                 if (segment.Count > toCopy)
                 {
-                    _pendingSegments.AddFirst(new ArraySegment<byte>(segment.Array, segment.Offset + toCopy, segment.Count - toCopy));
+                    _pendingSegments.AddFirst(
+                        new ArraySegment<byte>(segment.Array, segment.Offset + toCopy, segment.Count - toCopy));
                 }
             }
 

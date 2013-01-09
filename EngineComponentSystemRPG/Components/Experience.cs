@@ -8,14 +8,10 @@ namespace Engine.ComponentSystem.RPG.Components
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -25,29 +21,24 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Properties
 
-        /// <summary>
-        /// The current level.
-        /// </summary>
+        /// <summary>The current level.</summary>
         public int Level
         {
             get { return _level; }
         }
 
-        /// <summary>
-        /// The maximum level.
-        /// </summary>
+        /// <summary>The maximum level.</summary>
         public int MaxLevel
         {
             get { return _maxLevel; }
         }
 
-        /// <summary>
-        /// The current amount of experience.
-        /// </summary>
+        /// <summary>The current amount of experience.</summary>
         public int Value
         {
             get { return _value; }
-            set {
+            set
+            {
                 // Skip if nothing changes.
                 if (_value == value)
                 {
@@ -56,7 +47,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
                 // Bound value.
                 value = System.Math.Max(0, value);
-                value = System.Math.Min((int)(_multiplier * System.Math.Pow(_maxLevel - 1, _exponent)), value);
+                value = System.Math.Min((int) (_multiplier * System.Math.Pow(_maxLevel - 1, _exponent)), value);
 
                 // Check again if anything changes (e.g. when already max level).
                 if (_value == value)
@@ -84,9 +75,9 @@ namespace Engine.ComponentSystem.RPG.Components
                 // Our formula is: xp(lvl) = m * (lvl-1)^e
                 // Or: value = _multiplier * pow(_level - 1, _exponent)
                 // Thus: _level = 1 + pow(value / _multiplier, 1 / _exponent)
-                _level = 1 + (int)System.Math.Pow(value / _multiplier, 1f / _exponent);
-                _currentLevelValue = (int)(_multiplier * System.Math.Pow(_level - 1, _exponent));
-                _nextLevelValue = (int)(_multiplier * System.Math.Pow(_level, _exponent));
+                _level = 1 + (int) System.Math.Pow(value / _multiplier, 1f / _exponent);
+                _currentLevelValue = (int) (_multiplier * System.Math.Pow(_level - 1, _exponent));
+                _nextLevelValue = (int) (_multiplier * System.Math.Pow(_level, _exponent));
 
                 // Send level change message.
                 if (Enabled && Manager != null)
@@ -97,17 +88,13 @@ namespace Engine.ComponentSystem.RPG.Components
             }
         }
 
-        /// <summary>
-        /// Experience that was required to reach current level.
-        /// </summary>
+        /// <summary>Experience that was required to reach current level.</summary>
         public int RequiredForCurrentLevel
         {
             get { return _currentLevelValue; }
         }
 
-        /// <summary>
-        /// Experience required to reach next level.
-        /// </summary>
+        /// <summary>Experience required to reach next level.</summary>
         public int RequiredForNextLevel
         {
             get { return _nextLevelValue; }
@@ -117,41 +104,27 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Fields
 
-        /// <summary>
-        /// The multiplier used for computing required experience for level up.
-        /// </summary>
+        /// <summary>The multiplier used for computing required experience for level up.</summary>
         private float _multiplier;
 
-        /// <summary>
-        /// The exponent used for computing required experience for level up.
-        /// </summary>
+        /// <summary>The exponent used for computing required experience for level up.</summary>
         private float _exponent;
 
-        /// <summary>
-        /// The maximum level that can be reached.
-        /// </summary>
+        /// <summary>The maximum level that can be reached.</summary>
         private int _maxLevel;
 
-        /// <summary>
-        /// The current amount of experience.
-        /// </summary>
+        /// <summary>The current amount of experience.</summary>
         private int _value;
 
-        /// <summary>
-        /// The current level.
-        /// </summary>
+        /// <summary>The current level.</summary>
         [PacketizerIgnore]
         private int _level = 1;
 
-        /// <summary>
-        /// Experience required to reach current level.
-        /// </summary>
+        /// <summary>Experience required to reach current level.</summary>
         [PacketizerIgnore]
         private int _currentLevelValue;
 
-        /// <summary>
-        /// Experience required to reach next level.
-        /// </summary>
+        /// <summary>Experience required to reach next level.</summary>
         [PacketizerIgnore]
         private int _nextLevelValue;
 
@@ -159,16 +132,14 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         /// <returns></returns>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherExperience = (Experience)other;
+            var otherExperience = (Experience) other;
             _level = otherExperience.Level;
             _maxLevel = otherExperience._maxLevel;
             _value = otherExperience.Value;
@@ -180,9 +151,7 @@ namespace Engine.ComponentSystem.RPG.Components
             return this;
         }
 
-        /// <summary>
-        /// Initializes the component using the specified parameters.
-        /// </summary>
+        /// <summary>Initializes the component using the specified parameters.</summary>
         /// <param name="maxLevel">The max level.</param>
         /// <param name="multiplier">The multiplier.</param>
         /// <param name="exponent">The exponent.</param>
@@ -192,15 +161,12 @@ namespace Engine.ComponentSystem.RPG.Components
             _multiplier = multiplier;
             _exponent = exponent;
             _maxLevel = maxLevel;
-            _nextLevelValue = (int)(_multiplier * System.Math.Pow(_level, _exponent));
+            _nextLevelValue = (int) (_multiplier * System.Math.Pow(_level, _exponent));
 
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -219,17 +185,17 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Serialization
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// after automatic depacketization has been performed.
+        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
+        ///     performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(IReadablePacket packet)
+        public override void Depacketize(IReadablePacket packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
-            _level = 1 + (int)System.Math.Pow(_value / _multiplier, 1f / _exponent);
-            _currentLevelValue = (int)(_multiplier * System.Math.Pow(_level - 1, _exponent));
-            _nextLevelValue = (int)(_multiplier * System.Math.Pow(_level, _exponent));
+            _level = 1 + (int) System.Math.Pow(_value / _multiplier, 1f / _exponent);
+            _currentLevelValue = (int) (_multiplier * System.Math.Pow(_level - 1, _exponent));
+            _nextLevelValue = (int) (_multiplier * System.Math.Pow(_level, _exponent));
         }
 
         #endregion

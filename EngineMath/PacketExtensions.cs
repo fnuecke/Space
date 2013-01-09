@@ -2,10 +2,8 @@
 
 namespace Engine.Math
 {
-    /// <summary>
-    /// Packet extensions for serializing floating point rectangles.
-    /// </summary>
-    public static class PacketRectangleFExtensions
+    /// <summary>Packet extensions for serializing floating point rectangles.</summary>
+    public static class PacketExtensions
     {
         /// <summary>Writes the specified rectangle value.</summary>
         /// <param name="packet">The packet to write to.</param>
@@ -20,8 +18,7 @@ namespace Engine.Math
         /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out RectangleF result)
         {
             result = packet.ReadRectangleF();
@@ -31,8 +28,7 @@ namespace Engine.Math
         /// <summary>Reads a rectangle value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static RectangleF ReadRectangleF(this IReadablePacket packet)
         {
             RectangleF result;

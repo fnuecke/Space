@@ -12,22 +12,17 @@ using Space.View;
 
 namespace Space
 {
-    /// <summary>
-    /// Loading of all globally used assets.
-    /// </summary>
+    /// <summary>Loading of all globally used assets.</summary>
     partial class Program
     {
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
+        /// <summary>LoadContent will be called once per game and is the place to load all of your content.</summary>
         protected override void LoadContent()
         {
             base.LoadContent();
 
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Services.AddService(typeof(SpriteBatch), _spriteBatch);
+            Services.AddService(typeof (SpriteBatch), _spriteBatch);
 
             // Tell the console how to render itself.
             LoadConsole();
@@ -64,18 +59,14 @@ namespace Space
             LoadGraphs();
         }
 
-        /// <summary>
-        /// Tell our console how to render itself.
-        /// </summary>
+        /// <summary>Tell our console how to render itself.</summary>
         private void LoadConsole()
         {
             _console.SpriteBatch = _spriteBatch;
             _console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
         }
 
-        /// <summary>
-        /// Set up audio by loading the XACT generated files.
-        /// </summary>
+        /// <summary>Set up audio by loading the XACT generated files.</summary>
         private void LoadAudio()
         {
             // Set up audio stuff by loading our XACT project files.
@@ -90,9 +81,9 @@ namespace Space
                 _audioEngine.Update();
 
                 // Make the sound and wave bank available as a service.
-                Services.AddService(typeof(AudioEngine), _audioEngine);
-                Services.AddService(typeof(SoundBank), _soundBank);
-                Services.AddService(typeof(WaveBank), _waveBank);
+                Services.AddService(typeof (AudioEngine), _audioEngine);
+                Services.AddService(typeof (SoundBank), _soundBank);
+                Services.AddService(typeof (WaveBank), _waveBank);
             }
             catch (Exception ex)
             {
@@ -100,10 +91,7 @@ namespace Space
             }
         }
 
-        /// <summary>
-        /// Initialize the gui by creating our screen manager an pushing the main
-        /// menu screen to it.
-        /// </summary>
+        /// <summary>Initialize the gui by creating our screen manager an pushing the main menu screen to it.</summary>
         private void LoadGui()
         {
             // Create the screen manager.
@@ -117,9 +105,7 @@ namespace Space
             _screenManager.PushScreen("MainMenu/MainMenu");
         }
 
-        /// <summary>
-        /// Load graphs we use to render some game statistics (debug stuff).
-        /// </summary>
+        /// <summary>Load graphs we use to render some game statistics (debug stuff).</summary>
         private void LoadGraphs()
         {
             _fpsGraph = new Graph(Content, GraphicsDeviceManager)

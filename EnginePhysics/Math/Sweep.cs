@@ -14,16 +14,15 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Math
 {
     /// <summary>
-    /// This describes the motion of a body/shape for TOI computation.
-    /// Shapes are defined with respect to the body origin, which may
-    /// no coincide with the center of mass. However, to support dynamics
-    /// we must interpolate the center of mass position.
+    ///     This describes the motion of a body/shape for TOI computation. Shapes are defined with respect to the body
+    ///     origin, which may no coincide with the center of mass. However, to support dynamics we must interpolate the center
+    ///     of mass position.
     /// </summary>
     internal struct Sweep
     {
         static Sweep()
         {
-            Packetizable.AddValueTypeOverloads(typeof(PacketSweepExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (PacketSweepExtensions));
         }
 
         #region Fields
@@ -37,8 +36,7 @@ namespace Engine.Physics.Math
         /// <summary>World angles.</summary>
         public float Angle0, Angle;
 
-        /// <summary>Fraction of the current time step in the range [0,1]
-        /// c0 and a0 are the positions at alpha0.</summary>
+        /// <summary>Fraction of the current time step in the range [0,1] c0 and a0 are the positions at alpha0.</summary>
         public float Alpha0;
 
         #endregion
@@ -51,8 +49,8 @@ namespace Engine.Physics.Math
         public void GetTransform(out WorldTransform xf, float beta)
         {
             var angle = (1.0f - beta) * Angle0 + beta * Angle;
-            var sin = (float)System.Math.Sin(angle);
-            var cos = (float)System.Math.Cos(angle);
+            var sin = (float) System.Math.Sin(angle);
+            var cos = (float) System.Math.Cos(angle);
 
             xf.Translation = (1.0f - beta) * CenterOfMass0 + beta * CenterOfMass;
             xf.Rotation.Sin = sin;
@@ -77,7 +75,7 @@ namespace Engine.Physics.Math
         /// <summary>Normalize the angles.</summary>
         public void Normalize()
         {
-            var d = MathHelper.TwoPi * (float)System.Math.Floor(Angle0 / MathHelper.TwoPi);
+            var d = MathHelper.TwoPi * (float) System.Math.Floor(Angle0 / MathHelper.TwoPi);
             Angle0 -= d;
             Angle -= d;
         }
@@ -86,20 +84,29 @@ namespace Engine.Physics.Math
 
         #region ToString
 
-        /// <summary>Returns a <see cref="System.String"/> that represents this instance.</summary>
-        /// <returns>A <see cref="System.String"/> that represents this instance.</returns>
+        /// <summary>
+        ///     Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        ///     A <see cref="System.String"/> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
-            return string.Format("{{LocalCenter:{0} CenterOfMass0:{1} CenterOfMass:{2} Angle0:{3} Angle:{4} Alpha0:{5}}}",
-                LocalCenter, CenterOfMass0, CenterOfMass, Angle0, Angle, Alpha0);
+            return
+                string.Format(
+                    "{{LocalCenter:{0} CenterOfMass0:{1} CenterOfMass:{2} Angle0:{3} Angle:{4} Alpha0:{5}}}",
+                    LocalCenter,
+                    CenterOfMass0,
+                    CenterOfMass,
+                    Angle0,
+                    Angle,
+                    Alpha0);
         }
 
         #endregion
     }
 
-    /// <summary>
-    /// Packet write and read methods for math types.
-    /// </summary>
+    /// <summary>Packet write and read methods for math types.</summary>
     internal static class PacketSweepExtensions
     {
         /// <summary>Writes the specified sweep value.</summary>
@@ -121,8 +128,7 @@ namespace Engine.Physics.Math
         /// <param name="packet">The packet.</param>
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out Sweep data)
         {
             data = packet.ReadSweep();
@@ -132,8 +138,7 @@ namespace Engine.Physics.Math
         /// <summary>Reads a sweep value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static Sweep ReadSweep(this IReadablePacket packet)
         {
             Sweep result;

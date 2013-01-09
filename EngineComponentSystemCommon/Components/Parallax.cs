@@ -2,21 +2,15 @@
 
 namespace Engine.ComponentSystem.Common.Components
 {
-    /// <summary>
-    /// This component defines in which layer to render an entity in a parallax render system.
-    /// </summary>
+    /// <summary>This component defines in which layer to render an entity in a parallax render system.</summary>
     public sealed class Parallax : Component
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -26,35 +20,30 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Fields
 
-        /// <summary>
-        /// The "layer" the component is in.
-        /// </summary>
+        /// <summary>The "layer" the component is in.</summary>
         /// <remarks>
-        /// This directly translates to the offset used when rendering it, where <c>1.0f</c>
-        /// means 1:1 mapping of coordinate to screen space. Lower values make objects
-        /// "move slower"/appear further back, higher values do the opposite.</remarks>
+        ///     This directly translates to the offset used when rendering it, where <c>1.0f</c>
+        ///     means 1:1 mapping of coordinate to screen space. Lower values make objects "move slower"/appear further back,
+        ///     higher values do the opposite.
+        /// </remarks>
         public float Layer = 1.0f;
 
         #endregion
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            Layer = ((Parallax)other).Layer;
+            Layer = ((Parallax) other).Layer;
 
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified layer.
-        /// </summary>
+        /// <summary>Initialize with the specified layer.</summary>
         /// <param name="layer">The layer.</param>
         public Parallax Initialize(float layer)
         {
@@ -63,10 +52,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();

@@ -7,22 +7,15 @@ using Engine.ComponentSystem.RPG.Messages;
 
 namespace Engine.ComponentSystem.RPG.Components
 {
-    /// <summary>
-    /// A single equipment slot. This is a recursive structure, due to items having
-    /// the capability of having slots.
-    /// </summary>
+    /// <summary>A single equipment slot. This is a recursive structure, due to items having the capability of having slots.</summary>
     public class ItemSlot : Component
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -32,18 +25,14 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Properties
 
-        /// <summary>
-        /// Gets the slot the item this slot belongs to is equipped in.
-        /// </summary>
+        /// <summary>Gets the slot the item this slot belongs to is equipped in.</summary>
         public ItemSlot Parent
         {
-            get { return _parent == 0 ? null : (ItemSlot)Manager.GetComponentById(_parent); }
+            get { return _parent == 0 ? null : (ItemSlot) Manager.GetComponentById(_parent); }
             private set { _parent = value == null ? 0 : value.Id; }
         }
 
-        /// <summary>
-        /// Get the root slot of the equipment hierarchy this slot belongs to.
-        /// </summary>
+        /// <summary>Get the root slot of the equipment hierarchy this slot belongs to.</summary>
         public ItemSlot Root
         {
             get
@@ -58,9 +47,8 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// The ID of the item equipped in that slot. The unequip message can be
-        /// supressed by passing the complement of the new value (which will then
-        /// be a negative number).
+        ///     The ID of the item equipped in that slot. The unequip message can be suppressed by passing the complement of
+        ///     the new value (which will then be a negative number).
         /// </summary>
         public int Item
         {
@@ -88,7 +76,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     // Update hierarchy (after message, as it might need the Parent/Root property).
                     foreach (var slot in Manager.GetComponents(oldItem, TypeId))
                     {
-                        ((ItemSlot)slot).Parent = null;
+                        ((ItemSlot) slot).Parent = null;
                     }
                 }
 
@@ -98,7 +86,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 if (value > 0)
                 {
                     // Get item component.
-                    var item = (Item)Manager.GetComponent(value, Components.Item.TypeId);
+                    var item = (Item) Manager.GetComponent(value, Components.Item.TypeId);
 
                     // Check if its really an item.
                     if (item == null)
@@ -116,7 +104,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     // Update hierarchy (before message, as it might need the Parent/Root property).
                     foreach (var slot in Manager.GetComponents(value, TypeId))
                     {
-                        ((ItemSlot)slot).Parent = this;
+                        ((ItemSlot) slot).Parent = this;
                     }
 
                     // Send equip message.
@@ -128,9 +116,7 @@ namespace Engine.ComponentSystem.RPG.Components
             }
         }
 
-        /// <summary>
-        /// Enumerates over all slots including this and descendant slots.
-        /// </summary>
+        /// <summary>Enumerates over all slots including this and descendant slots.</summary>
         public IEnumerable<ItemSlot> AllSlots
         {
             get
@@ -152,16 +138,14 @@ namespace Engine.ComponentSystem.RPG.Components
                     {
                         foreach (var childSlot in Manager.GetComponents(slot.Item, TypeId))
                         {
-                            slots.Push((ItemSlot)childSlot);
+                            slots.Push((ItemSlot) childSlot);
                         }
                     }
                 }
             }
         }
 
-        /// <summary>
-        /// Enumerates over all currently equipped items in this and descendant slots.
-        /// </summary>
+        /// <summary>Enumerates over all currently equipped items in this and descendant slots.</summary>
         public IEnumerable<int> AllItems
         {
             get { return AllSlots.Where(s => s.Item > 0).Select(s => s.Item); }
@@ -171,34 +155,26 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Fields
 
-        /// <summary>
-        /// The type of item that can be equipped in the slot.
-        /// </summary>
+        /// <summary>The type of item that can be equipped in the slot.</summary>
         public int SlotTypeId;
 
-        /// <summary>
-        /// Actual field storing value of equipped item.
-        /// </summary>
+        /// <summary>Actual field storing value of equipped item.</summary>
         private int _item;
 
-        /// <summary>
-        /// ID of our parent node.
-        /// </summary>
+        /// <summary>ID of our parent node.</summary>
         private int _parent;
 
         #endregion
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherSlot = (ItemSlot)other;
+            var otherSlot = (ItemSlot) other;
             SlotTypeId = otherSlot.SlotTypeId;
             _item = otherSlot._item;
             _parent = otherSlot._parent;
@@ -206,10 +182,7 @@ namespace Engine.ComponentSystem.RPG.Components
             return this;
         }
 
-        /// <summary>
-        /// Initializes the component to one primary equipment slot that allows
-        /// the specified type id.
-        /// </summary>
+        /// <summary>Initializes the component to one primary equipment slot that allows the specified type id.</summary>
         /// <param name="typeId">The type id.</param>
         /// <returns></returns>
         public ItemSlot Initialize(int typeId)
@@ -219,10 +192,7 @@ namespace Engine.ComponentSystem.RPG.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -236,25 +206,21 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Methods
 
-        /// <summary>
-        /// Validates the specified item for this slot. It may only be
-        /// put into this slot if the method returns true.
-        /// </summary>
+        /// <summary>Validates the specified item for this slot. It may only be put into this slot if the method returns true.</summary>
         /// <param name="item">The item to validate.</param>
         /// <returns>
-        ///   <c>true</c> if the item may be equipped in this slot; <c>false</c> otherwise.
+        ///     <c>true</c> if the item may be equipped in this slot; <c>false</c> otherwise.
         /// </returns>
         public virtual bool Validate(Item item)
         {
             return item != null &&
-                (SlotTypeId == 0 || item.GetTypeId() == SlotTypeId);
+                   (SlotTypeId == 0 || item.GetTypeId() == SlotTypeId);
         }
 
         /// <summary>
-        /// This forces setting the item to a new value, only updating the set item's
-        /// hierarchy (this slot as parent of slots in the item). This is intended to
-        /// be used for post-processig depacketized item slots. This also sends the
-        /// equipped event.
+        ///     This forces setting the item to a new value, only updating the set item's hierarchy (this slot as parent of
+        ///     slots in the item). This is intended to be used for post-processing depacketized item slots. This also sends the
+        ///     equipped event.
         /// </summary>
         /// <param name="item">The item value to set.</param>
         public void SetItemUnchecked(int item)
@@ -264,7 +230,7 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 foreach (var slot in Manager.GetComponents(_item, TypeId))
                 {
-                    ((ItemSlot)slot).Parent = this;
+                    ((ItemSlot) slot).Parent = this;
                 }
 
                 // Send equip message.

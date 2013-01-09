@@ -1,21 +1,15 @@
 ﻿namespace Engine.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Interface for presentation implementing systems.
-    /// </summary>
+    /// <summary>Interface for presentation implementing systems.</summary>
     public interface IDrawingSystem
     {
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should draw.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
-        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
         bool Enabled { get; set; }
 
-        /// <summary>
-        /// Draws the system.
-        /// </summary>
+        /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         void Draw(long frame, float elapsedMilliseconds);

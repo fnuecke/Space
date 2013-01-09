@@ -17,21 +17,17 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// Contains data about a single projectile fired by a weapon.
-    /// </summary>
-    [TypeConverter(typeof(ExpandableObjectConverter))]
+    /// <summary>Contains data about a single projectile fired by a weapon.</summary>
+    [TypeConverter(typeof (ExpandableObjectConverter))]
     public sealed class ProjectileFactory : IPacketizable
     {
         #region Properties
 
-        /// <summary>
-        /// The texture to use to render the projectile type.
-        /// </summary>
+        /// <summary>The texture to use to render the projectile type.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [Category("Media")]
         [Description("The asset name of the texture to use to render this projectile.")]
         public string Model
@@ -40,11 +36,9 @@ namespace Space.ComponentSystem.Factories
             set { _model = value; }
         }
 
-        /// <summary>
-        /// Name of the particle effect to use for this projectile type.
-        /// </summary>
+        /// <summary>Name of the particle effect to use for this projectile type.</summary>
         [Editor("Space.Tools.DataEditor.EffectAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Media")]
@@ -55,9 +49,7 @@ namespace Space.ComponentSystem.Factories
             set { _effect = value; }
         }
 
-        /// <summary>
-        /// Offset of the particle effect relative to its center.
-        /// </summary>
+        /// <summary>Offset of the particle effect relative to its center.</summary>
         [ContentSerializer(Optional = true)]
         [Category("Media")]
         [Description("The offset relative to a projectile's position to emit the particle effects at.")]
@@ -67,9 +59,7 @@ namespace Space.ComponentSystem.Factories
             set { _effectOffset = value; }
         }
 
-        /// <summary>
-        /// The collision radius of the projectile.
-        /// </summary>
+        /// <summary>The collision radius of the projectile.</summary>
         [Category("Logic")]
         [Description("The radius of the circle that is used for collision checks.")]
         public float CollisionRadius
@@ -79,9 +69,8 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// Whether this projectile type can be hit by other projectiles (e.g.
-        /// missiles may be shot down, but normal projectiles should not
-        /// interact).
+        ///     Whether this projectile type can be hit by other projectiles (e.g. missiles may be shot down, but normal
+        ///     projectiles should not interact).
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(false)]
@@ -94,10 +83,8 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// The range allowed for initial velocity of the projectile. This is
-        /// rotated according to the emitters rotation. The set value applies
-        /// directly if the emitter is facing to the right (i.e. is at zero
-        /// rotation).
+        ///     The range allowed for initial velocity of the projectile. This is rotated according to the emitters rotation.
+        ///     The set value applies directly if the emitter is facing to the right (i.e. is at zero rotation).
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
@@ -109,23 +96,18 @@ namespace Space.ComponentSystem.Factories
             set { _initialVelocity = value; }
         }
 
-        /// <summary>
-        /// The allowed range for the angle to the emitter used as the
-        /// direction of the initial velocity.
-        /// </summary>
+        /// <summary>The allowed range for the angle to the emitter used as the direction of the initial velocity.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Logic")]
-        [Description("The direction of the intial velocity, relative to the projectile's emitter.")]
+        [Description("The direction of the initial velocity, relative to the projectile's emitter.")]
         public FloatInterval InitialDirection
         {
             get { return _initialDirection; }
             set { _initialDirection = value; }
         }
 
-        /// <summary>
-        /// Allowed range for the acceleration force applied to this projectile.
-        /// </summary>
+        /// <summary>Allowed range for the acceleration force applied to this projectile.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Logic")]
@@ -136,9 +118,7 @@ namespace Space.ComponentSystem.Factories
             set { _accelerationDirection = value; }
         }
 
-        /// <summary>
-        /// Allowed range for the acceleration force applied to this projectile.
-        /// </summary>
+        /// <summary>Allowed range for the acceleration force applied to this projectile.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Logic")]
@@ -149,9 +129,7 @@ namespace Space.ComponentSystem.Factories
             set { _accelerationForce = value; }
         }
 
-        /// <summary>
-        /// The friction used to slow the projectile down.
-        /// </summary>
+        /// <summary>The friction used to slow the projectile down.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(0f)]
         [Category("Logic")]
@@ -162,10 +140,7 @@ namespace Space.ComponentSystem.Factories
             set { _friction = value; }
         }
 
-        /// <summary>
-        /// The time this projectile will stay alive before disappearing,
-        /// in seconds.
-        /// </summary>
+        /// <summary>The time this projectile will stay alive before disappearing, in seconds.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(5f)]
         [Category("Logic")]
@@ -210,9 +185,7 @@ namespace Space.ComponentSystem.Factories
 
         #region Sampling
 
-        /// <summary>
-        /// Samples a new projectile.
-        /// </summary>
+        /// <summary>Samples a new projectile.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="emitter">The emitter that the projectile comes from.</param>
         /// <param name="offset">The offset.</param>
@@ -220,22 +193,27 @@ namespace Space.ComponentSystem.Factories
         /// <param name="weapon">The weapon.</param>
         /// <param name="faction">The faction the projectile belongs to.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// A new projectile.
-        /// </returns>
-        public int SampleProjectile(IManager manager, int emitter, Vector2 offset, float angle, Weapon weapon, Factions faction, IUniformRandom random)
+        /// <returns>A new projectile.</returns>
+        public int SampleProjectile(
+            IManager manager,
+            int emitter,
+            Vector2 offset,
+            float angle,
+            Weapon weapon,
+            Factions faction,
+            IUniformRandom random)
         {
             var entity = manager.AddEntity();
 
             // Get position and velocity of the emitter, to set initial position
             // and additional velocity.
-            var emitterTransform = (Transform)manager.GetComponent(emitter, Transform.TypeId);
-            var emitterVelocity = (Velocity)manager.GetComponent(emitter, Velocity.TypeId);
+            var emitterTransform = (Transform) manager.GetComponent(emitter, Transform.TypeId);
+            var emitterVelocity = (Velocity) manager.GetComponent(emitter, Velocity.TypeId);
 
             // Rotate the offset.
             var rotation = emitterTransform.Rotation;
-            var cosRadians = (float)Math.Cos(rotation);
-            var sinRadians = (float)Math.Sin(rotation);
+            var cosRadians = (float) Math.Cos(rotation);
+            var sinRadians = (float) Math.Sin(rotation);
 
             FarPosition rotatedOffset;
             rotatedOffset.X = -offset.X * cosRadians - offset.Y * sinRadians;
@@ -248,11 +226,11 @@ namespace Space.ComponentSystem.Factories
             // Adjust rotation for projectile based on its own acceleration or speed.
             if (accelerationForce != Vector2.Zero)
             {
-                rotation = (float)Math.Atan2(accelerationForce.Y, accelerationForce.X);
+                rotation = (float) Math.Atan2(accelerationForce.Y, accelerationForce.X);
             }
             else if (velocity != Vector2.Zero)
             {
-                rotation = (float)Math.Atan2(velocity.Y, velocity.X);
+                rotation = (float) Math.Atan2(velocity.Y, velocity.X);
             }
 
             // Set initial position.
@@ -285,7 +263,7 @@ namespace Space.ComponentSystem.Factories
             // If this projectile should vanish after some time, make it expire.
             if (_timeToLive > 0)
             {
-                manager.AddComponent<Expiration>(entity).Initialize((int)(_timeToLive * Settings.TicksPerSecond));
+                manager.AddComponent<Expiration>(entity).Initialize((int) (_timeToLive * Settings.TicksPerSecond));
             }
 
             // Mark as applying damage on collision.
@@ -294,9 +272,10 @@ namespace Space.ComponentSystem.Factories
             // Apply attributes of the weapon, modified with emitter attribute values,
             // and emitter attributes to the projectile to allow damage calculation if
             // it hits something.
-            var emitterAttributes = (Attributes<AttributeType>)manager.GetComponent(emitter, Attributes<AttributeType>.TypeId);
+            var emitterAttributes =
+                (Attributes<AttributeType>) manager.GetComponent(emitter, Attributes<AttributeType>.TypeId);
             Attributes<AttributeType> projectileAttributes = null; // Only create if necessary.
-            foreach (AttributeType attributeType in Enum.GetValues(typeof(AttributeType)))
+            foreach (AttributeType attributeType in Enum.GetValues(typeof (AttributeType)))
             {
                 if (attributeType == AttributeType.None)
                 {
@@ -328,8 +307,9 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Index>(entity).Initialize(
                 CollisionSystem.IndexGroupMask | // Can collide.
                 CameraSystem.IndexGroupMask | // Must be detectable by the camera.
-                InterpolationSystem.IndexGroupMask, // Rendering should be interpolated.
-                (int)(_collisionRadius + _collisionRadius));
+                InterpolationSystem.IndexGroupMask,
+                // Rendering should be interpolated.
+                (int) (_collisionRadius + _collisionRadius));
 
             // See what we can bump into.
             var collisionGroup = faction.ToCollisionGroup();
@@ -354,7 +334,8 @@ namespace Space.ComponentSystem.Factories
             // And add some particle effects, if so desired.
             if (!string.IsNullOrWhiteSpace(_effect))
             {
-                manager.AddComponent<ParticleEffects>(entity).TryAdd(0, _effect, 1f, 0, _effectOffset, ParticleEffects.EffectGroup.None, true);
+                manager.AddComponent<ParticleEffects>(entity)
+                       .TryAdd(0, _effect, 1f, 0, _effectOffset, ParticleEffects.EffectGroup.None, true);
             }
 
             // Assign owner, to track original cause when they do something (e.g. kill something).
@@ -363,9 +344,7 @@ namespace Space.ComponentSystem.Factories
             return entity;
         }
 
-        /// <summary>
-        /// Samples the initial directed velocity.
-        /// </summary>
+        /// <summary>Samples the initial directed velocity.</summary>
         /// <param name="baseRotation">The base rotation.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled velocity.</returns>
@@ -374,10 +353,20 @@ namespace Space.ComponentSystem.Factories
             if (_initialDirection != null && _initialVelocity != null)
             {
                 var velocity = Vector2.UnitX;
-                var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(_initialDirection.Low, _initialDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
+                var rotation =
+                    Matrix.CreateRotationZ(
+                        baseRotation +
+                        MathHelper.ToRadians(
+                            MathHelper.Lerp(
+                                _initialDirection.Low,
+                                _initialDirection.High,
+                                (random == null) ? 0 : (float) random.NextDouble())));
                 Vector2.Transform(ref velocity, ref rotation, out velocity);
                 velocity.Normalize();
-                return velocity * ((random == null) ? _initialVelocity.Low : MathHelper.Lerp(_initialVelocity.Low, _initialVelocity.High, (float)random.NextDouble()));
+                return velocity *
+                       ((random == null)
+                            ? _initialVelocity.Low
+                            : MathHelper.Lerp(_initialVelocity.Low, _initialVelocity.High, (float) random.NextDouble()));
             }
             else
             {
@@ -385,9 +374,7 @@ namespace Space.ComponentSystem.Factories
             }
         }
 
-        /// <summary>
-        /// Samples the acceleration force.
-        /// </summary>
+        /// <summary>Samples the acceleration force.</summary>
         /// <param name="baseRotation">The base rotation.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled acceleration force.</returns>
@@ -396,10 +383,21 @@ namespace Space.ComponentSystem.Factories
             if (_accelerationDirection != null && _accelerationForce != null)
             {
                 var acceleration = Vector2.UnitX;
-                var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(_accelerationDirection.Low, _accelerationDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
+                var rotation =
+                    Matrix.CreateRotationZ(
+                        baseRotation +
+                        MathHelper.ToRadians(
+                            MathHelper.Lerp(
+                                _accelerationDirection.Low,
+                                _accelerationDirection.High,
+                                (random == null) ? 0 : (float) random.NextDouble())));
                 Vector2.Transform(ref acceleration, ref rotation, out acceleration);
                 acceleration.Normalize();
-                return acceleration * ((random == null) ? _accelerationForce.Low : MathHelper.Lerp(_accelerationForce.Low, _accelerationForce.High, (float)random.NextDouble()));
+                return acceleration *
+                       ((random == null)
+                            ? _accelerationForce.Low
+                            : MathHelper.Lerp(
+                                _accelerationForce.Low, _accelerationForce.High, (float) random.NextDouble()));
             }
             else
             {

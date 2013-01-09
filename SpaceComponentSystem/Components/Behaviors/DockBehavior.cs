@@ -7,22 +7,18 @@ using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
-    /// <summary>
-    /// Moves to the nearest friendly station, then docks.
-    /// </summary>
+    /// <summary>Moves to the nearest friendly station, then docks.</summary>
     internal sealed class DockBehavior : Behavior
     {
         #region Constants
 
         /// <summary>
-        /// How far we want to look for a station. This can be a fairly high
-        /// number, because we don't do this very often. Hopefully :D
+        ///     How far we want to look for a station. This can be a fairly high number, because we don't do this very often.
+        ///     Hopefully :D
         /// </summary>
         private const float ScanRange = 30000;
 
-        /// <summary>
-        /// How close we want to be to the station to allow docking.
-        /// </summary>
+        /// <summary>How close we want to be to the station to allow docking.</summary>
         private const float DockingRange = 100;
 
         #endregion
@@ -30,32 +26,25 @@ namespace Space.ComponentSystem.Components.Behaviors
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DockBehavior"/> class.
+        ///     Initializes a new instance of the <see cref="DockBehavior"/> class.
         /// </summary>
         /// <param name="ai">The ai component this behavior belongs to.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
         public DockBehavior(ArtificialIntelligence ai, IUniformRandom random)
-            : base(ai, random, 0)
-        {
-        }
+            : base(ai, random, 0) {}
 
         #endregion
 
         #region Logic
 
-        /// <summary>
-        /// Finds the closest friendly station and moves to it, if we're close
-        /// enough we dock (delete the instance).
-        /// </summary>
-        /// <returns>
-        /// Whether to do the rest of the update.
-        /// </returns>
+        /// <summary>Finds the closest friendly station and moves to it, if we're close enough we dock (delete the instance).</summary>
+        /// <returns>Whether to do the rest of the update.</returns>
         protected override bool UpdateInternal()
         {
             // See if there are any stations nearby.
-            var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
-            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
+            var faction = ((Faction) AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
+            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
 
             // The closest station we were able to find and how far it is away.
             var closestStation = 0;
@@ -69,11 +58,11 @@ namespace Space.ComponentSystem.Components.Behaviors
                 // TODO...
 
                 // Friend or foe?
-                var neighborFaction = ((Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId));
+                var neighborFaction = ((Faction) AI.Manager.GetComponent(neighbor, Faction.TypeId));
                 if (neighborFaction != null && (neighborFaction.Value & faction) != 0)
                 {
                     // Friend. Closer than any other?
-                    var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
                     var neighborDistanceSquared = FarPosition.DistanceSquared(position, neighborPosition);
                     if (neighborDistanceSquared < distanceSquared)
                     {
@@ -86,7 +75,8 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Do we have a closest station?
             if (closestStation > 0)
             {
-                var neighborPosition = ((Transform)AI.Manager.GetComponent(closestStation, Transform.TypeId)).Translation;
+                var neighborPosition =
+                    ((Transform) AI.Manager.GetComponent(closestStation, Transform.TypeId)).Translation;
                 // Close enough to dock?
                 if (FarPosition.DistanceSquared(position, neighborPosition) < DockingRange * DockingRange)
                 {

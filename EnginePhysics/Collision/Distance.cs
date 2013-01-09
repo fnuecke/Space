@@ -16,33 +16,36 @@ namespace Engine.Physics.Collision
 {
     internal static partial class Algorithms
     {
-        /// <summary>Computes the distance between two shapes represented by the
-        /// specified proxies, positioned as defined by the specified transforms.
-        /// 
-        /// The cache is read-write and will be updated for future calls.</summary>
-        private static float Distance(ref SimplexCache cache,
-                                      DistanceProxy proxyA, WorldTransform xfA,
-                                      DistanceProxy proxyB, WorldTransform xfB,
-                                      bool useRadii = false)
+        /// <summary>
+        ///     Computes the distance between two shapes represented by the specified proxies, positioned as defined by the
+        ///     specified transforms. The cache is read-write and will be updated for future calls.
+        /// </summary>
+        private static float Distance(
+            ref SimplexCache cache,
+            DistanceProxy proxyA,
+            WorldTransform xfA,
+            DistanceProxy proxyB,
+            WorldTransform xfB,
+            bool useRadii = false)
         {
             // Initialize the simplex.
             Simplex simplex;
             Simplex.ReadCache(out simplex, cache, xfA, proxyA, xfB, proxyB);
-            
+
             // These store the vertices of the last simplex so that we
             // can check for duplicates and prevent cycling.
             var saveA = new FixedArray3<int>();
             var saveB = new FixedArray3<int>();
 
             // Main iteration loop.
-            for (var iter = 0; iter < 20; ++iter)
+            for (var i = 0; i < 20; ++i)
             {
                 // Copy simplex so we can identify duplicates.
                 var saveCount = simplex.Count;
-                for (var i = 0; i < saveCount; ++i)
+                for (var j = 0; j < saveCount; ++j)
                 {
-                    saveA[i] = simplex.Vertices[i].IndexA;
-                    saveB[i] = simplex.Vertices[i].IndexB;
+                    saveA[j] = simplex.Vertices[j].IndexA;
+                    saveB[j] = simplex.Vertices[j].IndexB;
                 }
 
                 switch (simplex.Count)
@@ -90,16 +93,16 @@ namespace Engine.Physics.Collision
                 v.VertexA = xfA.ToGlobal(proxyA.Vertices[v.IndexA]);
                 v.VertexB = xfB.ToGlobal(proxyB.Vertices[v.IndexB]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
+                v.VertexDelta = (LocalPoint) (v.VertexB - v.VertexA);
 // ReSharper restore RedundantCast
                 v.Alpha = 0;
                 simplex.Vertices[simplex.Count] = v;
 
                 // Check for duplicate support points. This is the main termination criteria.
                 var duplicate = false;
-                for (var i = 0; i < saveCount; ++i)
+                for (var j = 0; j < saveCount; ++j)
                 {
-                    if (v.IndexA == saveA[i] && v.IndexB == saveB[i])
+                    if (v.IndexA == saveA[j] && v.IndexB == saveB[j])
                     {
                         duplicate = true;
                         break;
@@ -133,11 +136,8 @@ namespace Engine.Physics.Collision
                     // Shapes are still not overlapped.
                     return distance - (rA + rB);
                 }
-                else
-                {
-                    // Shapes are overlapped when radii are considered.
-                    return 0.0f;
-                }
+                // Shapes are overlapped when radii are considered.
+                return 0.0f;
             }
 
             return distance;
@@ -147,9 +147,7 @@ namespace Engine.Physics.Collision
         /// It encapsulates any shape.
         public sealed class DistanceProxy
         {
-            /// <summary>
-            /// Initialize the proxy using the given shape.
-            /// </summary>
+            /// <summary>Initialize the proxy using the given shape.</summary>
             /// <param name="fixture">The fixture describing the shape.</param>
             public void Set(Fixture fixture)
             {
@@ -157,7 +155,7 @@ namespace Engine.Physics.Collision
                 {
                     case Fixture.FixtureType.Circle:
                     {
-                        var circle = (CircleFixture)fixture;
+                        var circle = (CircleFixture) fixture;
                         Vertices[0] = circle.Center;
                         _count = 1;
                         Radius = circle.Radius;
@@ -166,7 +164,7 @@ namespace Engine.Physics.Collision
 
                     case Fixture.FixtureType.Polygon:
                     {
-                        var polygon = (PolygonFixture)fixture;
+                        var polygon = (PolygonFixture) fixture;
                         for (var i = 0; i < polygon.Count; i++)
                         {
                             Vertices[i] = polygon.Vertices[i];
@@ -178,7 +176,7 @@ namespace Engine.Physics.Collision
 
                     case Fixture.FixtureType.Edge:
                     {
-                        var edge = (EdgeFixture)fixture;
+                        var edge = (EdgeFixture) fixture;
                         Vertices[0] = edge.Vertex1;
                         Vertices[1] = edge.Vertex2;
                         _count = 2;
@@ -209,45 +207,31 @@ namespace Engine.Physics.Collision
                 return bestIndex;
             }
 
-            /// <summary>
-            /// Buffer radius around the edges of the shape (?)
-            /// </summary>
+            /// <summary>Buffer radius around the edges of the shape (?)</summary>
             internal float Radius;
 
-            /// <summary>
-            /// The list of vertices describing this shape.
-            /// </summary>
+            /// <summary>The list of vertices describing this shape.</summary>
             internal readonly LocalPoint[] Vertices = new Vector2[Settings.MaxPolygonVertices];
 
-            /// <summary>
-            /// The number of actual vertices.
-            /// </summary>
+            /// <summary>The number of actual vertices.</summary>
             private int _count;
         }
 
         /// <summary>
-        /// Used to warm start <see cref="Algorithms.Distance"/>.
+        ///     Used to warm start <see cref="Algorithms.Distance"/>.
         /// </summary>
         private struct SimplexCache
         {
-            /// <summary>
-            /// Number of vertices.
-            /// </summary>
+            /// <summary>Number of vertices.</summary>
             public ushort Count;
 
-            /// <summary>
-            /// Vertices on shape A.
-            /// </summary>
+            /// <summary>Vertices on shape A.</summary>
             public FixedArray3<byte> IndexA;
 
-            /// <summary>
-            /// Vertices on shape B.
-            /// </summary>
+            /// <summary>Vertices on shape B.</summary>
             public FixedArray3<byte> IndexB;
 
-            /// <summary>
-            /// Length or area.
-            /// </summary>
+            /// <summary>Length or area.</summary>
             public float Metric;
         }
 
@@ -259,9 +243,13 @@ namespace Engine.Physics.Collision
             /// <summary>Vertices in this simplex.</summary>
             internal FixedArray3<SimplexVertex> Vertices;
 
-            public static void ReadCache(out Simplex simplex, SimplexCache cache,
-                                         WorldTransform xfA, DistanceProxy proxyA,
-                                         WorldTransform xfB, DistanceProxy proxyB)
+            public static void ReadCache(
+                out Simplex simplex,
+                SimplexCache cache,
+                WorldTransform xfA,
+                DistanceProxy proxyA,
+                WorldTransform xfB,
+                DistanceProxy proxyB)
             {
                 System.Diagnostics.Debug.Assert(cache.Count <= 3);
 
@@ -275,7 +263,7 @@ namespace Engine.Physics.Collision
                     v.VertexA = xfA.ToGlobal(proxyA.Vertices[v.IndexA]);
                     v.VertexB = xfB.ToGlobal(proxyB.Vertices[v.IndexB]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
+                    v.VertexDelta = (LocalPoint) (v.VertexB - v.VertexA);
 // ReSharper restore RedundantCast
                     v.Alpha = 0.0f;
                     simplex.Vertices[i] = v;
@@ -303,7 +291,7 @@ namespace Engine.Physics.Collision
                     v.VertexA = xfA.ToGlobal(proxyA.Vertices[0]);
                     v.VertexB = xfB.ToGlobal(proxyB.Vertices[0]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    v.VertexDelta = (LocalPoint)(v.VertexB - v.VertexA);
+                    v.VertexDelta = (LocalPoint) (v.VertexB - v.VertexA);
 // ReSharper restore RedundantCast
                     v.Alpha = 1.0f;
                     simplex.Vertices.Item1 = v;
@@ -314,11 +302,11 @@ namespace Engine.Physics.Collision
             public void WriteCache(ref SimplexCache cache)
             {
                 cache.Metric = GetMetric();
-                cache.Count = (ushort)Count;
+                cache.Count = (ushort) Count;
                 for (var i = 0; i < Count; ++i)
                 {
-                    cache.IndexA[i] = (byte)Vertices[i].IndexA;
-                    cache.IndexB[i] = (byte)Vertices[i].IndexB;
+                    cache.IndexA[i] = (byte) Vertices[i].IndexA;
+                    cache.IndexB[i] = (byte) Vertices[i].IndexB;
                 }
             }
 
@@ -332,17 +320,14 @@ namespace Engine.Physics.Collision
                     case 2:
                     {
                         var e12 = Vertices.Item2.VertexDelta - Vertices.Item1.VertexDelta;
-                        var sgn = Vector2Util.Cross(e12, -Vertices.Item1.VertexDelta);
-                        if (sgn > 0.0f)
+                        var sign = Vector2Util.Cross(e12, -Vertices.Item1.VertexDelta);
+                        if (sign > 0.0f)
                         {
                             // Origin is left of e12.
                             return Vector2Util.Cross(1.0f, e12);
                         }
-                        else
-                        {
-                            // Origin is right of e12.
-                            return Vector2Util.Cross(e12, 1.0f);
-                        }
+                        // Origin is right of e12.
+                        return Vector2Util.Cross(e12, 1.0f);
                     }
 
                     default:
@@ -358,10 +343,11 @@ namespace Engine.Physics.Collision
                         return WorldPoint.Distance(Vertices.Item1.VertexA, Vertices.Item1.VertexB);
 
                     case 2:
-                        return WorldPoint.Distance((Vertices.Item1.Alpha * Vertices.Item1.VertexA +
-                                                    Vertices.Item2.Alpha * Vertices.Item2.VertexA),
-                                                   (Vertices.Item1.Alpha * Vertices.Item1.VertexB +
-                                                    Vertices.Item2.Alpha * Vertices.Item2.VertexB));
+                        return WorldPoint.Distance(
+                            (Vertices.Item1.Alpha * Vertices.Item1.VertexA +
+                             Vertices.Item2.Alpha * Vertices.Item2.VertexA),
+                            (Vertices.Item1.Alpha * Vertices.Item1.VertexB +
+                             Vertices.Item2.Alpha * Vertices.Item2.VertexB));
 
                     case 3:
                         return 0;
@@ -382,8 +368,9 @@ namespace Engine.Physics.Collision
                         return LocalPoint.Distance(Vertices.Item1.VertexDelta, Vertices.Item2.VertexDelta);
 
                     case 3:
-                        return Vector2Util.Cross(Vertices.Item2.VertexDelta - Vertices.Item1.VertexDelta,
-                                                 Vertices.Item3.VertexDelta - Vertices.Item1.VertexDelta);
+                        return Vector2Util.Cross(
+                            Vertices.Item2.VertexDelta - Vertices.Item1.VertexDelta,
+                            Vertices.Item3.VertexDelta - Vertices.Item1.VertexDelta);
 
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -564,34 +551,22 @@ namespace Engine.Physics.Collision
 
         private struct SimplexVertex
         {
-            /// <summary>
-            /// Barycentric coordinate for closest point.
-            /// </summary>
+            /// <summary>Barycentric coordinate for closest point.</summary>
             public float Alpha;
 
-            /// <summary>
-            /// VertexA index.
-            /// </summary>
+            /// <summary>VertexA index.</summary>
             public int IndexA;
 
-            /// <summary>
-            /// VertexB index.
-            /// </summary>
+            /// <summary>VertexB index.</summary>
             public int IndexB;
 
-            /// <summary>
-            /// wB - wA
-            /// </summary>
+            /// <summary>wB - wA</summary>
             public LocalPoint VertexDelta;
 
-            /// <summary>
-            /// Support point in proxyA in world space.
-            /// </summary>
+            /// <summary>Support point in proxyA in world space.</summary>
             public WorldPoint VertexA;
 
-            /// <summary>
-            /// Support point in proxyB in world space.
-            /// </summary>
+            /// <summary>Support point in proxyB in world space.</summary>
             public WorldPoint VertexB;
         }
     }

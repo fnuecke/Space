@@ -5,17 +5,13 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// An attribute pool contains a list of attributes that may be sampled from it (e.g. for item creation).
-    /// </summary>
+    /// <summary>An attribute pool contains a list of attributes that may be sampled from it (e.g. for item creation).</summary>
     [DefaultProperty("Name")]
     public sealed class AttributePool
     {
         #region Properties
 
-        /// <summary>
-        /// The logical name of the item pool.
-        /// </summary>
+        /// <summary>The logical name of the item pool.</summary>
         [Category("General")]
         [Description("The name of the item pool, by which it may be referenced (e.g. in ships).")]
         public string Name
@@ -24,9 +20,7 @@ namespace Space.ComponentSystem.Factories
             set { _name = value; }
         }
 
-        /// <summary>
-        /// The list of attributes provided by this pool.
-        /// </summary>
+        /// <summary>The list of attributes provided by this pool.</summary>
         [Category("Logic")]
         [Description("The list of attributes provided by this pool.")]
         public AttributeInfo[] Attributes
@@ -39,16 +33,11 @@ namespace Space.ComponentSystem.Factories
 
         private AttributeInfo[] _attributes;
 
-        ///<summary>
-        /// Intermediate class with sampling information for a single attribute.
-        ///</summary>
-        [TypeConverter(typeof(ExpandableObjectConverter))]
+        /// <summary>Intermediate class with sampling information for a single attribute.</summary>
+        [TypeConverter(typeof (ExpandableObjectConverter))]
         public sealed class AttributeInfo
         {
-            ///<summary>
-            /// An attribute modifier that can be applied to
-            /// the generated item, just with random values.
-            ///</summary>
+            /// <summary>An attribute modifier that can be applied to the generated item, just with random values.</summary>
             [Description("Description of the actual attribute that may be sampled from the pool.")]
             public AttributeModifierConstraint<AttributeType> Attribute
             {
@@ -56,13 +45,13 @@ namespace Space.ComponentSystem.Factories
                 set { _attribute = value; }
             }
 
-            ///<summary>
-            /// When sampling, the weight of an attribute is normalized using the sum
-            /// of the weights of all available attributes, resulting in the probability
-            /// of the attribute being sampled.
-            ///</summary>
+            /// <summary>
+            ///     When sampling, the weight of an attribute is normalized using the sum of the weights of all available
+            ///     attributes, resulting in the probability of the attribute being sampled.
+            /// </summary>
             [DefaultValue(0)]
-            [Description("The weight of the attribute when sampling, which correlates to its probability being sampled.")]
+            [Description("The weight of the attribute when sampling, which correlates to its probability being sampled."
+                )]
             public int Weight
             {
                 get { return _weight; }
@@ -70,8 +59,8 @@ namespace Space.ComponentSystem.Factories
             }
 
             /// <summary>
-            /// Determines whether the attribute may only be sampled once, for any single
-            /// sampling process (false), or multiple times (true).
+            ///     Determines whether the attribute may only be sampled once, for any single sampling process (false), or
+            ///     multiple times (true).
             /// </summary>
             [ContentSerializer(Optional = true)]
             [DefaultValue(false)]
@@ -82,9 +71,7 @@ namespace Space.ComponentSystem.Factories
                 set { _allowRedraw = value; }
             }
 
-            /// <summary>
-            /// The scale of the attribute values to be used after the owning item has gained a new level.
-            /// </summary>
+            /// <summary>The scale of the attribute values to be used after the owning item has gained a new level.</summary>
             [DefaultValue(0f)]
             [Description("The scale for this attribute when gaining a new level ")]
             public float LevelScale { get; set; }
@@ -97,10 +84,10 @@ namespace Space.ComponentSystem.Factories
             private bool _allowRedraw;
 
             /// <summary>
-            /// Returns a <see cref="System.String"/> that represents this instance.
+            ///     Returns a <see cref="System.String"/> that represents this instance.
             /// </summary>
             /// <returns>
-            /// A <see cref="System.String"/> that represents this instance.
+            ///     A <see cref="System.String"/> that represents this instance.
             /// </returns>
             public override string ToString()
             {

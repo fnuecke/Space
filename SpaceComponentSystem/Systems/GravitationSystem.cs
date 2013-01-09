@@ -9,38 +9,27 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Applies gravitational force.
-    /// </summary>
+    /// <summary>Applies gravitational force.</summary>
     /// <remarks>
-    /// This is hard to parallelize because multiple attractors might affect one
-    /// attractee. And locking the attractee's acceleration is not sufficient,
-    /// because floating point addition leads to different results when performed
-    /// in a different order. So, the additional overhead to sort the changes is
-    /// too large to justify parallelizing it.
+    ///     This is hard to parallelize because multiple attractors might affect one attractee. And locking the
+    ///     attractee's acceleration is not sufficient, because floating point addition leads to different results when
+    ///     performed in a different order. So, the additional overhead to sort the changes is too large to justify
+    ///     parallelizing it.
     /// </remarks>
     public sealed class GravitationSystem : AbstractUpdatingComponentSystem<Gravitation>
     {
         #region Constants
 
-        /// <summary>
-        /// Index group to use for gravitational computations.
-        /// </summary>
+        /// <summary>Index group to use for gravitational computations.</summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
-        /// <summary>
-        /// The maximum distance at which an attractor may look for attractees.
-        /// </summary>
+        /// <summary>The maximum distance at which an attractor may look for attractees.</summary>
         private const float MaxGravitationDistance = 30000f;
 
-        /// <summary>
-        /// The squared velocity below which an object should be before it's docked.
-        /// </summary>
+        /// <summary>The squared velocity below which an object should be before it's docked.</summary>
         private const float DockVelocity = 16f;
 
-        /// <summary>
-        /// Squared distance to the center an object should be before it's docked.
-        /// </summary>
+        /// <summary>Squared distance to the center an object should be before it's docked.</summary>
         private const float DockDistance = 4;
 
         #endregion
@@ -48,8 +37,8 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Updates the component by checking if it attracts other entities, and
-        /// if yes fetching all nearby ones and applying it's acceleration to them.
+        ///     Updates the component by checking if it attracts other entities, and if yes fetching all nearby ones and
+        ///     applying it's acceleration to them.
         /// </summary>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
@@ -62,11 +51,11 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get our position.
-            var myTransform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            var myTransform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
             Debug.Assert(myTransform != null);
 
             // And the index.
-            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
             Debug.Assert(index != null);
 
             // Then check all our neighbors. Use new list each time because we're running
@@ -76,10 +65,12 @@ namespace Space.ComponentSystem.Systems
             foreach (var neighbor in neighbors)
             {
                 // If they have an enabled gravitation component...
-                var otherGravitation = ((Gravitation)Manager.GetComponent(neighbor, Gravitation.TypeId));
+                var otherGravitation = ((Gravitation) Manager.GetComponent(neighbor, Gravitation.TypeId));
 
                 // Validation.
-                Debug.Assert((otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) != 0, "Non-attractees must not be added to the index.");
+                Debug.Assert(
+                    (otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) != 0,
+                    "Non-attractees must not be added to the index.");
 
                 // Is it enabled?
                 if (!otherGravitation.Enabled)
@@ -88,15 +79,15 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Get their velocity and position.
-                var otherVelocity = ((Velocity)Manager.GetComponent(neighbor, Velocity.TypeId));
-                var otherTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
+                var otherVelocity = ((Velocity) Manager.GetComponent(neighbor, Velocity.TypeId));
+                var otherTransform = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId));
 
                 // We need both.
                 Debug.Assert(otherVelocity != null);
                 Debug.Assert(otherTransform != null);
 
                 // Get the delta vector between the two positions.
-                var delta = (Vector2)(otherTransform.Translation - myTransform.Translation);
+                var delta = (Vector2) (otherTransform.Translation - myTransform.Translation);
 
                 // Compute the angle between us and the other entity.
                 var distanceSquared = delta.LengthSquared();
@@ -109,7 +100,7 @@ namespace Space.ComponentSystem.Systems
                     // If it's a ship it might accelerate itself, but acceleration doesn't
                     // carry over frames, and it has to come after gravitation for stabilization,
                     // so we must check manually if the ship is accelerating.
-                    var otherShipInfo = (ShipInfo)Manager.GetComponent(neighbor, ShipInfo.TypeId);
+                    var otherShipInfo = (ShipInfo) Manager.GetComponent(neighbor, ShipInfo.TypeId);
                     if (otherShipInfo != null && !otherShipInfo.IsAccelerating &&
                         otherVelocity.Value.LengthSquared() < DockVelocity && distanceSquared < DockDistance)
                     {
@@ -117,7 +108,8 @@ namespace Space.ComponentSystem.Systems
                         otherTransform.SetTranslation(myTransform.Translation);
                         otherVelocity.Value = Vector2.Zero;
                     }
-                    else if ((otherShipInfo == null || !otherShipInfo.IsAccelerating) && distanceSquared > 0.001f) // epsilon to avoid delta.Normalize() generating NaNs
+                    else if ((otherShipInfo == null || !otherShipInfo.IsAccelerating) && distanceSquared > 0.001f)
+                        // epsilon to avoid delta.Normalize() generating NaNs
                     {
                         // Adjust acceleration with a fixed value when we're getting
                         // close. This is to avoid objects jittering around an attractor
@@ -128,7 +120,7 @@ namespace Space.ComponentSystem.Systems
 
                         Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
 
-                        var acceleration = (Acceleration)Manager.GetComponent(neighbor, Acceleration.TypeId);
+                        var acceleration = (Acceleration) Manager.GetComponent(neighbor, Acceleration.TypeId);
                         acceleration.Value.X -= directedGravitation.X;
                         acceleration.Value.Y -= directedGravitation.Y;
                     }
@@ -142,7 +134,7 @@ namespace Space.ComponentSystem.Systems
 
                     Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
 
-                    var acceleration = (Acceleration)Manager.GetComponent(neighbor, Acceleration.TypeId);
+                    var acceleration = (Acceleration) Manager.GetComponent(neighbor, Acceleration.TypeId);
                     acceleration.Value.X -= directedGravitation.X;
                     acceleration.Value.Y -= directedGravitation.Y;
                 }

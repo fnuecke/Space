@@ -7,16 +7,12 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Recomputes mass of a player ship based on its character stats.
-    /// </summary>
+    /// <summary>Recomputes mass of a player ship based on its character stats.</summary>
     public sealed class DynamicMassSystem : AbstractSystem, IMessagingSystem
     {
         #region Logic
 
-        /// <summary>
-        /// Receives the specified message and handles it if it invalidates character stats.
-        /// </summary>
+        /// <summary>Receives the specified message and handles it if it invalidates character stats.</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -29,8 +25,8 @@ namespace Space.ComponentSystem.Systems
 
             // Module removed or added, recompute mass.
             var entity = cm.Value.Entity;
-            var attributes = (Attributes<AttributeType>)Manager.GetComponent(entity, Attributes<AttributeType>.TypeId);
-            var gravitation = (Gravitation)Manager.GetComponent(entity, Gravitation.TypeId);
+            var attributes = (Attributes<AttributeType>) Manager.GetComponent(entity, Attributes<AttributeType>.TypeId);
+            var gravitation = (Gravitation) Manager.GetComponent(entity, Gravitation.TypeId);
             if (gravitation != null)
             {
                 // Get the mass of the object and return it.

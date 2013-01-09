@@ -38,13 +38,13 @@ namespace Space.View
             for (var i = 0; i < values.Length; ++i)
             {
                 values[i] = new[]
-                            {
-                                Tuple.Create(0, Color.White),
-                                Tuple.Create(0, Color.White),
-                                Tuple.Create(0, Color.White),
-                                Tuple.Create(0, Color.White),
-                                Tuple.Create(0, Color.White)
-                            };
+                {
+                    Tuple.Create(0, Color.White),
+                    Tuple.Create(0, Color.White),
+                    Tuple.Create(0, Color.White),
+                    Tuple.Create(0, Color.White),
+                    Tuple.Create(0, Color.White)
+                };
             }
 
             {
@@ -109,32 +109,44 @@ namespace Space.View
             avgOutgoing /= info.HistoryLength - 1;
             avgTotal /= info.HistoryLength - 1;
 
-            var netInfo = String.Format("in: {0}|{1}|{2}|{3:f2}kB/s\n" +
-                                        "    aps: {12:f2}|apc: {13:f2}\n" +
-                                        "out: {4}|{5}|{6}|{7:f2}kB/s\n" +
-                                        "     aps: {14:f2}|apc: {15:f2}\n" +
-                                        "sum: {8}|{9}|{10}|{11:f2}kB/s",
-                                        minIncoming, maxIncoming, avgIncoming, avgIncoming / 1024f,
-                                        minOutgoing, maxOutgoing, avgOutgoing, avgOutgoing / 1024f,
-                                        minTotal, maxTotal, avgTotal, avgTotal / 1024f,
-                                        info.IncomingPacketSizes.Mean(), info.IncomingPacketCompression.Mean(),
-                                        info.OutgoingPacketSizes.Mean(), info.OutgoingPacketCompression.Mean());
+            var netInfo = String.Format(
+                "in: {0}|{1}|{2}|{3:f2}kB/s\n" +
+                "    aps: {12:f2}|apc: {13:f2}\n" +
+                "out: {4}|{5}|{6}|{7:f2}kB/s\n" +
+                "     aps: {14:f2}|apc: {15:f2}\n" +
+                "sum: {8}|{9}|{10}|{11:f2}kB/s",
+                minIncoming,
+                maxIncoming,
+                avgIncoming,
+                avgIncoming / 1024f,
+                minOutgoing,
+                maxOutgoing,
+                avgOutgoing,
+                avgOutgoing / 1024f,
+                minTotal,
+                maxTotal,
+                avgTotal,
+                avgTotal / 1024f,
+                info.IncomingPacketSizes.Mean(),
+                info.IncomingPacketCompression.Mean(),
+                info.OutgoingPacketSizes.Mean(),
+                info.OutgoingPacketCompression.Mean());
             var netInfoMeasure = font.MeasureString(netInfo);
             var netInfoPosition = offset;
             var graphPosition = new Vector2(offset.X, offset.Y + netInfoMeasure.Y + 5);
 
-            var graphNormX = graphWidth / (float)Math.Max(info.IncomingTraffic.Count, info.OutgoingTraffic.Count);
-            var graphNormY = graphHeight / (float)Math.Max(maxTotal, 1);
+            var graphNormX = graphWidth / (float) Math.Max(info.IncomingTraffic.Count, info.OutgoingTraffic.Count);
+            var graphNormY = graphHeight / (float) Math.Max(maxTotal, 1);
 
             // Draw it.
             spriteBatch.Begin();
             spriteBatch.DrawString(font, netInfo, netInfoPosition, Color.White);
 
             // Draw the bars.
-            var barIdx = 0;
+            var barIndex = 0;
             foreach (var bar in values)
             {
-                var barX = (int)(graphPosition.X + barIdx * graphNormX);
+                var barX = (int) (graphPosition.X + barIndex * graphNormX);
                 var bottom = graphPosition.Y + graphHeight;
                 foreach (var segment in bar)
                 {
@@ -143,12 +155,12 @@ namespace Space.View
                         continue;
                     }
 
-                    var top = (int)(bottom - segment.Item1 * graphNormY);
-                    var line = new Rectangle(barX, top, (int)graphNormX, (int)(bottom - top));
+                    var top = (int) (bottom - segment.Item1 * graphNormY);
+                    var line = new Rectangle(barX, top, (int) graphNormX, (int) (bottom - top));
                     spriteBatch.Draw(PixelTextures[spriteBatch], line, segment.Item2);
                     bottom = top;
                 }
-                ++barIdx;
+                ++barIndex;
             }
 
             spriteBatch.End();

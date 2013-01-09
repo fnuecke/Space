@@ -15,66 +15,51 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// A prismatic joint. This joint provides one degree of freedom: translation
-    /// along an axis fixed in bodyA. Relative rotation is prevented. You can
-    /// use a joint limit to restrict the range of motion and a joint motor to
-    /// drive the motion or to model joint friction.
+    ///     A prismatic joint. This joint provides one degree of freedom: translation along an axis fixed in bodyA.
+    ///     Relative rotation is prevented. You can use a joint limit to restrict the range of motion and a joint motor to
+    ///     drive the motion or to model joint friction.
     /// </summary>
     public sealed class PrismaticJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the first body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in local coordinates.</summary>
         public LocalPoint LocalAnchorA
         {
             get { return _localAnchorA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in local coordinates.</summary>
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
         }
 
-        /// <summary>
-        /// The local joint axis relative to the first body.
-        /// </summary>
+        /// <summary>The local joint axis relative to the first body.</summary>
         public Vector2 LocalAxisA
         {
             get { return _localXAxisA; }
         }
 
-        /// <summary>
-        /// Get the reference angle.
-        /// </summary>
+        /// <summary>Get the reference angle.</summary>
         public float ReferenceAngle
         {
             get { return _referenceAngle; }
         }
 
-        /// <summary>
-        /// Get the current joint translation, usually in meters.
-        /// </summary>
+        /// <summary>Get the current joint translation, usually in meters.</summary>
         public float JointTranslation
         {
             get
@@ -82,16 +67,14 @@ namespace Engine.Physics.Joints
                 var pA = BodyA.GetWorldPoint(_localAnchorA);
                 var pB = BodyB.GetWorldPoint(_localAnchorB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var d = (Vector2)(pB - pA);
+                var d = (Vector2) (pB - pA);
 // ReSharper restore RedundantCast
                 var axis = BodyA.GetWorldVector(_localXAxisA);
                 return Vector2.Dot(d, axis);
             }
         }
 
-        /// <summary>
-        /// Get the current joint translation speed, usually in meters per second.
-        /// </summary>
+        /// <summary>Get the current joint translation speed, usually in meters per second.</summary>
         public float JointSpeed
         {
             get
@@ -104,7 +87,7 @@ namespace Engine.Physics.Joints
                 var p1 = bA.Sweep.CenterOfMass + rA;
                 var p2 = bB.Sweep.CenterOfMass + rB;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var d = (Vector2)(p2 - p1);
+                var d = (Vector2) (p2 - p1);
 // ReSharper restore RedundantCast
                 var axis = bA.Transform.Rotation * _localXAxisA;
 
@@ -118,9 +101,7 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get whether the joint limit is enabled.
-        /// </summary>
+        /// <summary>Set/Get whether the joint limit is enabled.</summary>
         public bool IsLimitEnabled
         {
             get { return _enableLimit; }
@@ -136,27 +117,21 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get the lower joint limit, usually in meters.
-        /// </summary>
+        /// <summary>Set/Get the lower joint limit, usually in meters.</summary>
         public float LowerLimit
         {
             get { return _lowerTranslation; }
             set { SetLimits(value, _upperTranslation); }
         }
 
-        /// <summary>
-        /// Set/Get the upper joint limit, usually in meters.
-        /// </summary>
+        /// <summary>Set/Get the upper joint limit, usually in meters.</summary>
         public float UpperLimit
         {
             get { return _upperTranslation; }
             set { SetLimits(_lowerTranslation, value); }
         }
 
-        /// <summary>
-        /// Set/Get whether the joint motor is enabled.
-        /// </summary>
+        /// <summary>Set/Get whether the joint motor is enabled.</summary>
         public bool IsMotorEnabled
         {
             get { return _enableMotor; }
@@ -171,9 +146,7 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get the motor speed, usually in meters per second.
-        /// </summary>
+        /// <summary>Set/Get the motor speed, usually in meters per second.</summary>
         public float MotorSpeed
         {
             get { return _motorSpeed; }
@@ -190,9 +163,7 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get the maximum motor force, usually in N.
-        /// </summary>
+        /// <summary>Set/Get the maximum motor force, usually in N.</summary>
         public float MaxMotorForce
         {
             get { return _maxMotorForce; }
@@ -270,28 +241,31 @@ namespace Engine.Physics.Joints
             public float MotorMass;
         }
 
-        [CopyIgnore, PacketizerIgnore] private SolverTemp _tmp;
+        [CopyIgnore, PacketizerIgnore]
+        private SolverTemp _tmp;
 
         #endregion
 
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PrismaticJoint"/> class.
+        ///     Initializes a new instance of the <see cref="PrismaticJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public PrismaticJoint() : base(JointType.Prismatic)
-        {
-        }
+        public PrismaticJoint() : base(JointType.Prismatic) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
-        internal void Initialize(WorldPoint anchor, Vector2 axis, float lowerTranslation = 0, float upperTranslation = 0,
-                                 float maxMotorForce = 0, float motorSpeed = 0, bool enableLimit = false,
-                                 bool enableMotor = false)
+        /// <summary>Initializes this joint with the specified parameters.</summary>
+        internal void Initialize(
+            WorldPoint anchor,
+            Vector2 axis,
+            float lowerTranslation = 0,
+            float upperTranslation = 0,
+            float maxMotorForce = 0,
+            float motorSpeed = 0,
+            bool enableLimit = false,
+            bool enableMotor = false)
         {
             _localAnchorA = BodyA.GetLocalPoint(anchor);
             _localAnchorB = BodyB.GetLocalPoint(anchor);
@@ -315,9 +289,7 @@ namespace Engine.Physics.Joints
 
         #region Accessors
 
-        /// <summary>
-        /// Set the joint limits, usually in meters.
-        /// </summary>
+        /// <summary>Set the joint limits, usually in meters.</summary>
         public void SetLimits(float lower, float upper)
         {
             if (lower > upper)
@@ -361,7 +333,6 @@ namespace Engine.Physics.Joints
         // a = perp
         // s1 = cross(d + r1, a) = cross(p2 - x1, a)
         // s2 = cross(r2, a) = cross(p2 - x2, a)
-
 
         // Motor/Limit linear constraint
         // C = dot(ax1, d)
@@ -409,9 +380,7 @@ namespace Engine.Physics.Joints
         // Now compute impulse to be applied:
         // df = f2 - f1
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -443,7 +412,7 @@ namespace Engine.Physics.Joints
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var d = (Vector2)(cB - cA) + (rB - rA);
+            var d = (Vector2) (cB - cA) + (rB - rA);
 // ReSharper restore RedundantCast
 
             var mA = _tmp.InverseMassA;
@@ -545,13 +514,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -649,15 +615,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             var cA = positions[_tmp.IndexA].Point;
             var aA = positions[_tmp.IndexA].Angle;
@@ -676,7 +639,7 @@ namespace Engine.Physics.Joints
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var d = (Vector2)(cB - cA) + (rB - rA);
+            var d = (Vector2) (cB - cA) + (rB - rA);
 // ReSharper restore RedundantCast
 
             var axis = qA * _localXAxisA;
@@ -710,16 +673,20 @@ namespace Engine.Physics.Joints
                 else if (translation <= _lowerTranslation)
                 {
                     // Prevent large linear corrections and allow some slop.
-                    c2 = MathHelper.Clamp(translation - _lowerTranslation + Settings.LinearSlop,
-                                          -Settings.MaxLinearCorrection, 0.0f);
+                    c2 = MathHelper.Clamp(
+                        translation - _lowerTranslation + Settings.LinearSlop,
+                        -Settings.MaxLinearCorrection,
+                        0.0f);
                     linearError = System.Math.Max(linearError, _lowerTranslation - translation);
                     active = true;
                 }
                 else if (translation >= _upperTranslation)
                 {
                     // Prevent large linear corrections and allow some slop.
-                    c2 = MathHelper.Clamp(translation - _upperTranslation - Settings.LinearSlop, 0.0f,
-                                          Settings.MaxLinearCorrection);
+                    c2 = MathHelper.Clamp(
+                        translation - _upperTranslation - Settings.LinearSlop,
+                        0.0f,
+                        Settings.MaxLinearCorrection);
                     linearError = System.Math.Max(linearError, translation - _upperTranslation);
                     active = true;
                 }

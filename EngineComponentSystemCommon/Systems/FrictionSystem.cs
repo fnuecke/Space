@@ -4,14 +4,10 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
 {
-    /// <summary>
-    /// Applies a component's friction to its velocity.
-    /// </summary>
+    /// <summary>Applies a component's friction to its velocity.</summary>
     public sealed class FrictionSystem : AbstractParallelComponentSystem<Friction>
     {
-        /// <summary>
-        /// Updates the component's entity by adjusting it's velocity.
-        /// </summary>
+        /// <summary>Updates the component's entity by adjusting it's velocity.</summary>
         /// <param name="frame">The current frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Friction component)
@@ -23,7 +19,7 @@ namespace Engine.ComponentSystem.Common.Systems
             }
 
             // Get velocity.
-            var velocity = ((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId));
+            var velocity = ((Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId));
 
             // Save previous velocity for stop check (due to MinVelocity).
             var previousVelocity = velocity.Value.LengthSquared();

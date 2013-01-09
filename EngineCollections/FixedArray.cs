@@ -4,19 +4,15 @@ using System.Collections.Generic;
 
 namespace Engine.Collections
 {
-    /// <summary>
-    /// Utility class providing a fixed size array as a struct.
-    /// </summary>
+    /// <summary>Utility class providing a fixed size array as a struct.</summary>
     /// <typeparam name="T">The type stored in the array.</typeparam>
     public struct FixedArray2<T> : IList<T>
     {
-        /// <summary>
-        /// The items of the array.
-        /// </summary>
+        /// <summary>The items of the array.</summary>
         public T Item1, Item2;
 
         /// <summary>
-        /// Gets or sets the <see cref="T"/> at the specified index.
+        ///     Gets or sets the <see cref="T"/> at the specified index.
         /// </summary>
         public T this[int index]
         {
@@ -51,22 +47,26 @@ namespace Engine.Collections
         #region IList interface
 
         /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
-        /// Can be set to indicate how many entries are used.
+        ///     Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>. Can be set
+        ///     to indicate how many entries are used.
         /// </summary>
         public int Count { get; set; }
 
-        /// <summary>
-        /// Always false.
-        /// </summary>
-        public bool IsReadOnly { get { return false; } }
+        /// <summary>Always false.</summary>
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
 
         /// <summary>
-        /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains a specific value.
+        ///     Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains a specific value.
         /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
+        /// <param name="item">
+        ///     The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        /// </param>
         /// <returns>
-        /// true if <paramref name="item"/> is found in the <see cref="T:System.Collections.Generic.ICollection`1"/>; otherwise, false.
+        ///     true if <paramref name="item"/> is found in the <see cref="T:System.Collections.Generic.ICollection`1"/>;
+        ///     otherwise, false.
         /// </returns>
         public bool Contains(T item)
         {
@@ -90,11 +90,13 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        ///     Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
         /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
+        /// <param name="item">
+        ///     The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        /// </param>
         /// <returns>
-        /// The index of <paramref name="item"/> if found in the list; otherwise, -1.
+        ///     The index of <paramref name="item"/> if found in the list; otherwise, -1.
         /// </returns>
         public int IndexOf(T item)
         {
@@ -117,12 +119,9 @@ namespace Engine.Collections
             return -1;
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
+        /// <summary>Returns an enumerator that iterates through the collection.</summary>
         /// <returns>
-        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used
-        /// to iterate through the collection.
+        ///     A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
         /// </returns>
         public IEnumerator<T> GetEnumerator()
         {
@@ -138,12 +137,9 @@ namespace Engine.Collections
             yield return Item2;
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
+        /// <summary>Returns an enumerator that iterates through a collection.</summary>
         /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to
-        /// iterate through the collection.
+        ///     An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
         /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -151,24 +147,32 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1"/>
-        /// to an <see cref="T:System.Array"/>, starting at a particular <see cref="T:System.Array"/>
-        /// index.
+        ///     Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1"/>
+        ///     to an <see cref="T:System.Array"/>, starting at a particular <see cref="T:System.Array"/>
+        ///     index.
         /// </summary>
-        /// <param name="array">The one-dimensional <see cref="T:System.Array"/> that is the destination
-        /// of the elements copied from <see cref="T:System.Collections.Generic.ICollection`1"/>. The
-        /// <see cref="T:System.Array"/> must have zero-based indexing.</param>
-        /// <param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param>
-        /// <exception cref="T:System.ArgumentNullException"><paramref name="array"/> is null.</exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-        /// <exception cref="T:System.ArgumentException"><paramref name="array"/> is multidimensional.
-        /// -or-
-        /// The number of elements in the source <see cref="T:System.Collections.Generic.ICollection`1"/> is
-        /// greater than the available space from <paramref name="arrayIndex"/> to the end of the destination
-        /// <paramref name="array"/>.
-        /// -or-
-        /// Type <paramref name="{T}"/> cannot be cast automatically to the type of the destination
-        /// <paramref name="array"/>.</exception>
+        /// <param name="array">
+        ///     The one-dimensional <see cref="T:System.Array"/> that is the destination of the elements copied from
+        ///     <see cref="T:System.Collections.Generic.ICollection`1"/>. The
+        ///     <see cref="T:System.Array"/> must have zero-based indexing.
+        /// </param>
+        /// <param name="arrayIndex">
+        ///     The zero-based index in <paramref name="array"/> at which copying begins.
+        /// </param>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="array"/> is null.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///     <paramref name="arrayIndex"/> is less than 0.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="array"/> is multidimensional. -or- The number of elements in the source
+        ///     <see cref="T:System.Collections.Generic.ICollection`1"/> is greater than the available space from
+        ///     <paramref name="arrayIndex"/> to the end of the destination
+        ///     <paramref name="array"/>. -or- Type <paramref name="{T}"/> cannot be cast automatically to the type of the
+        ///     destination
+        ///     <paramref name="array"/>.
+        /// </exception>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (Count == 0)
@@ -183,45 +187,35 @@ namespace Engine.Collections
             array[arrayIndex + 1] = Item2;
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void Insert(int index, T item)
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void RemoveAt(int index)
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void Add(T item)
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void Clear()
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public bool Remove(T item)
         {
@@ -231,19 +225,15 @@ namespace Engine.Collections
         #endregion
     }
 
-    /// <summary>
-    /// Utility class providing a fixed size array as a struct.
-    /// </summary>
+    /// <summary>Utility class providing a fixed size array as a struct.</summary>
     /// <typeparam name="T">The type stored in the array.</typeparam>
     public struct FixedArray3<T> : IList<T>
     {
-        /// <summary>
-        /// The items of the array.
-        /// </summary>
+        /// <summary>The items of the array.</summary>
         public T Item1, Item2, Item3;
 
         /// <summary>
-        /// Gets or sets the <see cref="T"/> at the specified index.
+        ///     Gets or sets the <see cref="T"/> at the specified index.
         /// </summary>
         public T this[int index]
         {
@@ -283,22 +273,26 @@ namespace Engine.Collections
         #region IList interface
 
         /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
-        /// Can be set to indicate how many entries are used.
+        ///     Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>. Can be set
+        ///     to indicate how many entries are used.
         /// </summary>
         public int Count { get; set; }
 
-        /// <summary>
-        /// Always false.
-        /// </summary>
-        public bool IsReadOnly { get { return false; } }
+        /// <summary>Always false.</summary>
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
 
         /// <summary>
-        /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains a specific value.
+        ///     Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains a specific value.
         /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
+        /// <param name="item">
+        ///     The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        /// </param>
         /// <returns>
-        /// true if <paramref name="item"/> is found in the <see cref="T:System.Collections.Generic.ICollection`1"/>; otherwise, false.
+        ///     true if <paramref name="item"/> is found in the <see cref="T:System.Collections.Generic.ICollection`1"/>;
+        ///     otherwise, false.
         /// </returns>
         public bool Contains(T item)
         {
@@ -330,11 +324,13 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        ///     Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
         /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
+        /// <param name="item">
+        ///     The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        /// </param>
         /// <returns>
-        /// The index of <paramref name="item"/> if found in the list; otherwise, -1.
+        ///     The index of <paramref name="item"/> if found in the list; otherwise, -1.
         /// </returns>
         public int IndexOf(T item)
         {
@@ -365,12 +361,9 @@ namespace Engine.Collections
             return -1;
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
+        /// <summary>Returns an enumerator that iterates through the collection.</summary>
         /// <returns>
-        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used
-        /// to iterate through the collection.
+        ///     A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
         /// </returns>
         public IEnumerator<T> GetEnumerator()
         {
@@ -391,12 +384,9 @@ namespace Engine.Collections
             yield return Item3;
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
+        /// <summary>Returns an enumerator that iterates through a collection.</summary>
         /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to
-        /// iterate through the collection.
+        ///     An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
         /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -404,24 +394,32 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1"/>
-        /// to an <see cref="T:System.Array"/>, starting at a particular <see cref="T:System.Array"/>
-        /// index.
+        ///     Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1"/>
+        ///     to an <see cref="T:System.Array"/>, starting at a particular <see cref="T:System.Array"/>
+        ///     index.
         /// </summary>
-        /// <param name="array">The one-dimensional <see cref="T:System.Array"/> that is the destination
-        /// of the elements copied from <see cref="T:System.Collections.Generic.ICollection`1"/>. The
-        /// <see cref="T:System.Array"/> must have zero-based indexing.</param>
-        /// <param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param>
-        /// <exception cref="T:System.ArgumentNullException"><paramref name="array"/> is null.</exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-        /// <exception cref="T:System.ArgumentException"><paramref name="array"/> is multidimensional.
-        /// -or-
-        /// The number of elements in the source <see cref="T:System.Collections.Generic.ICollection`1"/> is
-        /// greater than the available space from <paramref name="arrayIndex"/> to the end of the destination
-        /// <paramref name="array"/>.
-        /// -or-
-        /// Type <paramref name="{T}"/> cannot be cast automatically to the type of the destination
-        /// <paramref name="array"/>.</exception>
+        /// <param name="array">
+        ///     The one-dimensional <see cref="T:System.Array"/> that is the destination of the elements copied from
+        ///     <see cref="T:System.Collections.Generic.ICollection`1"/>. The
+        ///     <see cref="T:System.Array"/> must have zero-based indexing.
+        /// </param>
+        /// <param name="arrayIndex">
+        ///     The zero-based index in <paramref name="array"/> at which copying begins.
+        /// </param>
+        /// <exception cref="T:System.ArgumentNullException">
+        ///     <paramref name="array"/> is null.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///     <paramref name="arrayIndex"/> is less than 0.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentException">
+        ///     <paramref name="array"/> is multidimensional. -or- The number of elements in the source
+        ///     <see cref="T:System.Collections.Generic.ICollection`1"/> is greater than the available space from
+        ///     <paramref name="arrayIndex"/> to the end of the destination
+        ///     <paramref name="array"/>. -or- Type <paramref name="{T}"/> cannot be cast automatically to the type of the
+        ///     destination
+        ///     <paramref name="array"/>.
+        /// </exception>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (Count == 0)
@@ -441,45 +439,35 @@ namespace Engine.Collections
             array[arrayIndex + 2] = Item3;
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void Insert(int index, T item)
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void RemoveAt(int index)
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void Add(T item)
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public void Clear()
         {
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Not supported, always throws.
-        /// </summary>
+        /// <summary>Not supported, always throws.</summary>
         /// <exception cref="T:System.NotSupportedException">Always.</exception>
         public bool Remove(T item)
         {

@@ -7,43 +7,30 @@ using System.Runtime.CompilerServices;
 
 namespace Engine.Util
 {
+
     #region Copying
 
-    /// <summary>
-    /// Use this attribute to mark properties or fields as to be ignored when
-    /// copying the object to another instance.
-    /// </summary>
+    /// <summary>Use this attribute to mark properties or fields as to be ignored when copying the object to another instance.</summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class CopyIgnoreAttribute : Attribute
-    {
-    }
-    
-    /// <summary>
-    /// Use this attribute to mark array properties or fields of which a deep
-    /// copy should be made. If set, this will ensure the target array is a
-    /// different instance than the source array, and will copy each element
-    /// over into the target array. If the array elements are <see cref="ICopyable{T}"/>
-    /// they will in turn have they their <see cref="ICopyable{T}.CopyInto"/>
-    /// method invoked after being cloned using <see cref="ICopyable{T}.NewInstance"/>.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class DeepCopyAttribute : Attribute
-    {
-    }
+    public sealed class CopyIgnoreAttribute : Attribute {}
 
     /// <summary>
-    /// This package provides utilities for dynamically generating automatic
-    /// member copying functions.
+    ///     Use this attribute to mark array properties or fields of which a deep copy should be made. If set, this will ensure
+    ///     the target array is a different instance than the source array, and will copy each element over into the target
+    ///     array. If the array elements are <see cref="ICopyable{T}"/>
+    ///     they will in turn have they their <see cref="ICopyable{T}.CopyInto"/>
+    ///     method invoked after being cloned using <see cref="ICopyable{T}.NewInstance"/>.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class DeepCopyAttribute : Attribute {}
+
+    /// <summary>This package provides utilities for dynamically generating automatic member copying functions.</summary>
     public static class Copyable
     {
         /// <summary>
-        /// Copies all public and private instance fields from the first object into
-        /// the second. This somewhat behaves like <see cref="object.MemberwiseClone"/>,
-        /// except that it does not create a new object but reuses an existing one.
-        /// This will perform a shallow copy.
-        /// 
-        /// Fields marked with the <see cref="CopyIgnoreAttribute"/> will not be copied.
+        ///     Copies all public and private instance fields from the first object into the second. This somewhat behaves like
+        ///     <see cref="object.MemberwiseClone"/>, except that it does not create a new object but reuses an existing one. This
+        ///     will perform a shallow copy. Fields marked with the <see cref="CopyIgnoreAttribute"/> will not be copied.
         /// </summary>
         /// <typeparam name="T">The type of the object to copy.</typeparam>
         /// <param name="from">The instance to copy from.</param>
@@ -77,21 +64,14 @@ namespace Engine.Util
 
         #region Copying internals
 
-        /// <summary>
-        /// Signature of a copying function.
-        /// </summary>
+        /// <summary>Signature of a copying function.</summary>
         private delegate void Copier(object from, object into);
 
-        /// <summary>
-        /// Cached list of object copiers, to avoid rebuilding the methods over and over.
-        /// </summary>
+        /// <summary>Cached list of object copiers, to avoid rebuilding the methods over and over.</summary>
         private static readonly Dictionary<Type, Copier> CopierCache =
             new Dictionary<Type, Copier>();
 
-        /// <summary>
-        /// Gets the copier from the cache, or creates it if it doesn't exist yet
-        /// and adds it to the cache.
-        /// </summary>
+        /// <summary>Gets the copier from the cache, or creates it if it doesn't exist yet and adds it to the cache.</summary>
         private static Copier GetCopier(Type type)
         {
             Copier copier;
@@ -108,15 +88,12 @@ namespace Engine.Util
         }
 
         /// <summary>
-        /// Generates a function that will copy all public and private instance fields,
-        /// including backing fields for auto properties, from one instance of a type
-        /// into the other. It will skip any fields (and properties) that are marked
-        /// with the <see cref="CopyIgnoreAttribute"/> attribute.
+        ///     Generates a function that will copy all public and private instance fields, including backing fields for auto
+        ///     properties, from one instance of a type into the other. It will skip any fields (and properties) that are marked
+        ///     with the <see cref="CopyIgnoreAttribute"/> attribute.
         /// </summary>
         /// <param name="type">The type to generate the method for.</param>
-        /// <returns>
-        /// A delegate for the generated method.
-        /// </returns>
+        /// <returns>A delegate for the generated method.</returns>
         private static Copier CreateCopier(Type type)
         {
             // Must not be null for the following. This is used to provide a context
@@ -130,18 +107,18 @@ namespace Engine.Util
 
             // Generate dynamic method for the specified type.
             var method = new DynamicMethod(
-                "CopyInto", null, new[] { typeof(object), typeof(object) }, declaringType, true);
+                "CopyInto", null, new[] {typeof (object), typeof (object)}, declaringType, true);
             var generator = method.GetILGenerator();
 
             // Loop invariant type shortcuts.
             var copyable = Type.GetType("Engine.Util.ICopyable`1");
-            var prepareForCopy = typeof(Copyable).GetMethod(
+            var prepareForCopy = typeof (Copyable).GetMethod(
                 "PrepareArray", BindingFlags.Static | BindingFlags.NonPublic);
-            var deepArrayCopy = typeof(Copyable).GetMethod(
+            var deepArrayCopy = typeof (Copyable).GetMethod(
                 "DeepCopy", BindingFlags.Static | BindingFlags.NonPublic);
-            var flatArrayCopy = typeof(Array).GetMethod(
-                "Copy", new[] {typeof(Array), typeof(Array), typeof(int)});
-            var smartCopy = typeof(Copyable).GetMethod(
+            var flatArrayCopy = typeof (Array).GetMethod(
+                "Copy", new[] {typeof (Array), typeof (Array), typeof (int)});
+            var smartCopy = typeof (Copyable).GetMethod(
                 "CopyOrNull", BindingFlags.Static | BindingFlags.NonPublic);
 
             System.Diagnostics.Debug.Assert(copyable != null, "ICopyable not found.");
@@ -154,7 +131,7 @@ namespace Engine.Util
             foreach (var f in GetAllFields(type))
             {
                 // Find a way to copy the type.
-                if (f.FieldType.IsArray && f.IsDefined(typeof(DeepCopyAttribute), true))
+                if (f.FieldType.IsArray && f.IsDefined(typeof (DeepCopyAttribute), true))
                 {
                     // Got an array type, get the type stored in it.
                     var elementType = f.FieldType.GetElementType();
@@ -223,15 +200,13 @@ namespace Engine.Util
             generator.Emit(OpCodes.Ret);
 
             // Create an instance of our dynamic method (as a delegate) and return it.
-            return (Copier)method.CreateDelegate(typeof(Copier));
+            return (Copier) method.CreateDelegate(typeof (Copier));
         }
 
         /// <summary>
-        /// Utility method the gets a list of all fields in a type, including
-        /// this in its base classes all the way up the hierarchy. Fields with
-        /// the <see cref="CopyIgnoreAttribute"/> are not returned. This will
-        /// also include automatially generated field backing properties, unless
-        /// the property has said attribute.
+        ///     Utility method the gets a list of all fields in a type, including this in its base classes all the way up the
+        ///     hierarchy. Fields with the <see cref="CopyIgnoreAttribute"/> are not returned. This will also include automatically
+        ///     generated field backing properties, unless the property has said attribute.
         /// </summary>
         /// <param name="type">The type to start parsing at.</param>
         /// <returns>The list of all relevant fields.</returns>
@@ -247,36 +222,42 @@ namespace Engine.Util
                 // Look for normal, non-backing fields.
                 result = result.Union(
                     // Get all public and private fields.
-                    type.GetFields(BindingFlags.Public |
-                                   BindingFlags.NonPublic |
-                                   BindingFlags.Instance)
-                    // Ignore:
-                    // - fields that are declared in parent types.
-                    // - fields that should be ignored via attribute.
-                    // - fields that are compiler generated. We will scan for them below,
-                    // when we parse the properties.
-                        .Where(f => f.DeclaringType == t &&
-                                    !f.IsDefined(typeof(CopyIgnoreAttribute), true) &&
-                                    !f.IsDefined(typeof(CompilerGeneratedAttribute), false)));
+                    type.GetFields(
+                        BindingFlags.Public |
+                        BindingFlags.NonPublic |
+                        BindingFlags.Instance)
+                        // Ignore:
+                        // - fields that are declared in parent types.
+                        // - fields that should be ignored via attribute.
+                        // - fields that are compiler generated. We will scan for them below,
+                        // when we parse the properties.
+                        .Where(
+                            f => f.DeclaringType == t &&
+                                 !f.IsDefined(typeof (CopyIgnoreAttribute), true) &&
+                                 !f.IsDefined(typeof (CompilerGeneratedAttribute), false)));
 
                 // Look for properties with automatically generated backing fields.
                 result = result.Union(
-                    type.GetProperties(BindingFlags.Public |
-                                       BindingFlags.NonPublic |
-                                       BindingFlags.Instance)
-                    // Ignore:
-                    // - properties that are declared in parent types.
-                    // - properties that should be ignored via attribute.
-                    // - properties that do not have an automatically generated backing field
-                    //   (which we can deduce from the getter/setter being compiler generated).
-                        .Where(p => p.DeclaringType == t &&
-                                    !p.IsDefined(typeof(CopyIgnoreAttribute), true) &&
-                                    (p.GetGetMethod(true) ?? p.GetSetMethod(true))
-                                        .IsDefined(typeof(CompilerGeneratedAttribute), false))
-                    // Get the backing field. There is no "hard link" we can follow, but the
-                    // backing fields do follow a naming convention we can make use of.
-                        .Select(p => t.GetField(string.Format("<{0}>k__BackingField", p.Name),
-                                                BindingFlags.NonPublic | BindingFlags.Instance)));
+                    type.GetProperties(
+                        BindingFlags.Public |
+                        BindingFlags.NonPublic |
+                        BindingFlags.Instance)
+                        // Ignore:
+                        // - properties that are declared in parent types.
+                        // - properties that should be ignored via attribute.
+                        // - properties that do not have an automatically generated backing field
+                        //   (which we can deduce from the getter/setter being compiler generated).
+                        .Where(
+                            p => p.DeclaringType == t &&
+                                 !p.IsDefined(typeof (CopyIgnoreAttribute), true) &&
+                                 (p.GetGetMethod(true) ?? p.GetSetMethod(true))
+                                     .IsDefined(typeof (CompilerGeneratedAttribute), false))
+                        // Get the backing field. There is no "hard link" we can follow, but the
+                        // backing fields do follow a naming convention we can make use of.
+                        .Select(
+                            p => t.GetField(
+                                string.Format("<{0}>k__BackingField", p.Name),
+                                BindingFlags.NonPublic | BindingFlags.Instance)));
 
                 // Continue with the parent.
                 type = type.BaseType;
@@ -347,6 +328,5 @@ namespace Engine.Util
         }
 
         #endregion
-
     }
 }

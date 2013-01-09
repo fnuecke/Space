@@ -4,14 +4,14 @@ using System.Text;
 
 namespace Engine.Serialization
 {
-    /// <summary>
-    /// Common utility implementations for writable packets.
-    /// </summary>
+    /// <summary>Common utility implementations for writable packets.</summary>
     public static class WritablePacketExtensions
     {
-        /// <summary>Writes the specified byte array.
-        /// <para/>
-        /// May be <c>null</c>.</summary>
+        /// <summary>
+        ///     Writes the specified byte array.
+        ///     <para/>
+        ///     May be <c>null</c>.
+        /// </summary>
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
@@ -20,9 +20,11 @@ namespace Engine.Serialization
             return data == null ? packet.Write(-1) : packet.Write(data, 0, data.Length);
         }
 
-        /// <summary>Writes the specified packet.
-        /// <para/>
-        /// May be <c>null</c>.</summary>
+        /// <summary>
+        ///     Writes the specified packet.
+        ///     <para/>
+        ///     May be <c>null</c>.
+        /// </summary>
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
@@ -37,14 +39,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public static IWritablePacket Write(this IWritablePacket packet, string data)
         {
-            if (data == null)
-            {
-                return packet.Write((byte[])null);
-            }
-            else
-            {
-                return packet.Write(Encoding.UTF8.GetBytes(data));
-            }
+            return data == null ? packet.Write((byte[]) null) : packet.Write(Encoding.UTF8.GetBytes(data));
         }
 
         /// <summary>Writes the specified type using its assembly qualified name.</summary>
@@ -53,15 +48,15 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public static IWritablePacket Write(this IWritablePacket packet, Type data)
         {
-            return data == null ? packet.Write((string)null) : packet.Write(data.AssemblyQualifiedName);
+            return data == null ? packet.Write((string) null) : packet.Write(data.AssemblyQualifiedName);
         }
 
         /// <summary>
-        /// Writes the specified collection of objects.
-        /// <para/>
-        /// Must byte read back using <see cref="ReadablePacketExtensions.ReadPacketizables{T}"/>.
-        /// <para/>
-        /// May be <c>null</c>.
+        ///     Writes the specified collection of objects.
+        ///     <para/>
+        ///     Must byte read back using <see cref="ReadablePacketExtensions.ReadPacketizables{T}"/>.
+        ///     <para/>
+        ///     May be <c>null</c>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="packet">The packet.</param>
@@ -74,23 +69,21 @@ namespace Engine.Serialization
             {
                 return packet.Write(-1);
             }
-            else
+
+            packet.Write(data.Count);
+            foreach (var item in data)
             {
-                packet.Write(data.Count);
-                foreach (var item in data)
-                {
-                    packet.Write(item);
-                }
-                return packet;
+                packet.Write(item);
             }
+            return packet;
         }
 
         /// <summary>
-        /// Writes the specified collection of objects.
-        /// <para/>
-        /// Must byte read back using <see cref="ReadablePacketExtensions.ReadPacketizablesWithTypeInfo{T}"/>.
-        /// <para/>
-        /// May be <c>null</c>.
+        ///     Writes the specified collection of objects.
+        ///     <para/>
+        ///     Must byte read back using <see cref="ReadablePacketExtensions.ReadPacketizablesWithTypeInfo{T}"/>.
+        ///     <para/>
+        ///     May be <c>null</c>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="packet">The packet.</param>
@@ -103,15 +96,13 @@ namespace Engine.Serialization
             {
                 return packet.Write(-1);
             }
-            else
+
+            packet.Write(data.Count);
+            foreach (var item in data)
             {
-                packet.Write(data.Count);
-                foreach (var item in data)
-                {
-                    packet.WriteWithTypeInfo(item);
-                }
-                return packet;
+                packet.WriteWithTypeInfo(item);
             }
+            return packet;
         }
     }
 }

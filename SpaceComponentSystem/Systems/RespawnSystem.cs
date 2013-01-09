@@ -7,16 +7,12 @@ using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// This system tracks entities that respawn (players, normally).
-    /// </summary>
+    /// <summary>This system tracks entities that respawn (players, normally).</summary>
     public sealed class RespawnSystem : AbstractParallelComponentSystem<Respawn>, IMessagingSystem
     {
         #region Logic
-        
-        /// <summary>
-        /// Checks for entities to respawn.
-        /// </summary>
+
+        /// <summary>Checks for entities to respawn.</summary>
         /// <param name="frame">The current simulation frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Respawn component)
@@ -28,7 +24,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Try to position.
-            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
             if (transform != null)
             {
                 transform.SetTranslation(ref component.Position);
@@ -37,19 +33,19 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Kill of remainder velocity.
-            var velocity = ((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId));
+            var velocity = ((Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId));
             if (velocity != null)
             {
                 velocity.Value = Vector2.Zero;
             }
 
             // Fill up health / energy.
-            var health = ((Health)Manager.GetComponent(component.Entity, Health.TypeId));
+            var health = ((Health) Manager.GetComponent(component.Entity, Health.TypeId));
             if (health != null)
             {
                 health.SetValue(health.MaxValue * component.RelativeHealth);
             }
-            var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
+            var energy = ((Energy) Manager.GetComponent(component.Entity, Energy.TypeId));
             if (energy != null)
             {
                 energy.SetValue(energy.MaxValue * component.RelativeEnergy);
@@ -62,9 +58,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Checks if an entity died, and marks it for respawn if possible.
-        /// </summary>
+        /// <summary>Checks if an entity died, and marks it for respawn if possible.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -78,7 +72,7 @@ namespace Space.ComponentSystem.Systems
             var entity = cm.Value.KilledEntity;
 
             // See if the entity respawns.
-            var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
+            var respawn = ((Respawn) Manager.GetComponent(entity, Respawn.TypeId));
             if (respawn == null)
             {
                 return;
@@ -99,7 +93,7 @@ namespace Space.ComponentSystem.Systems
 
             // Stop the entity, to avoid zooming off to nowhere when
             // killed by a sun, e.g.
-            var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
+            var velocity = ((Velocity) Manager.GetComponent(entity, Velocity.TypeId));
             if (velocity != null)
             {
                 velocity.Value = Vector2.Zero;

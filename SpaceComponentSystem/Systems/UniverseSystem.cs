@@ -13,32 +13,26 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// System responsible for tracking astronomical objects and relatively
-    /// stationary objects (such as space stations) in active cells.
-    /// 
-    /// <para>
-    /// It also tracks general stats about a cell, such as the predominant
-    /// faction in the system, state of stations and so on. This information
-    /// is only stored permanently if it changed, however. Otherwise it is
-    /// re-generated procedurally whenever a cell gets re-activated.
-    /// </para>
+    ///     System responsible for tracking astronomical objects and relatively stationary objects (such as space stations) in
+    ///     active cells.
+    ///     <para>
+    ///         It also tracks general stats about a cell, such as the predominant faction in the system, state of stations
+    ///         and so on. This information is only stored permanently if it changed, however. Otherwise it is re-generated
+    ///         procedurally whenever a cell gets re-activated.
+    ///     </para>
     /// </summary>
     public sealed class UniverseSystem : AbstractSystem, IMessagingSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// The base seed for the current game world.
-        /// </summary>
+        /// <summary>The base seed for the current game world.</summary>
         public ulong WorldSeed { get; set; }
 
         #endregion
@@ -46,9 +40,8 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// Tracks cell information for active cells and inactive cells that
-        /// are in a changed state (deviating from the one that would be
-        /// procedurally generated).
+        ///     Tracks cell information for active cells and inactive cells that are in a changed state (deviating from the
+        ///     one that would be procedurally generated).
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private Dictionary<ulong, CellInfo> _cellInfo = new Dictionary<ulong, CellInfo>();
@@ -57,9 +50,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Accessors
 
-        /// <summary>
-        /// Get the static cell information for the cell with the given id.
-        /// </summary>
+        /// <summary>Get the static cell information for the cell with the given id.</summary>
         /// <param name="cellId"></param>
         /// <returns></returns>
         public CellInfo GetCellInfo(ulong cellId)
@@ -71,9 +62,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Receives the specified message.
-        /// </summary>
+        /// <summary>Receives the specified message.</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -109,13 +98,13 @@ namespace Space.ComponentSystem.Systems
                     switch (independentRandom.NextInt32(3))
                     {
                         case 0:
-                            faction = Factions.NpcFactionA;
+                            faction = Factions.NPCFactionA;
                             break;
                         case 1:
-                            faction = Factions.NpcFactionB;
+                            faction = Factions.NPCFactionB;
                             break;
                         default:
-                            faction = Factions.NpcFactionC;
+                            faction = Factions.NPCFactionC;
                             break;
                     }
 
@@ -129,8 +118,9 @@ namespace Space.ComponentSystem.Systems
 
                 // Get center of our cell.
                 const int cellSize = CellSystem.CellSize;
-                var center = new FarPosition(cellSize * m.X + (cellSize >> 1),
-                                             cellSize * m.Y + (cellSize >> 1));
+                var center = new FarPosition(
+                    cellSize * m.X + (cellSize >> 1),
+                    cellSize * m.Y + (cellSize >> 1));
 
                 // Check if it's the start system or not.
                 if (m.X == 0 && m.Y == 0)
@@ -148,7 +138,7 @@ namespace Space.ComponentSystem.Systems
                 // Find nearby active cells and the stations in them, mark
                 // them as possible targets for all station sin this cell,
                 // and let them know about our existence, as well.
-                var cellSystem = (CellSystem)Manager.GetSystem(CellSystem.TypeId);
+                var cellSystem = (CellSystem) Manager.GetSystem(CellSystem.TypeId);
                 var stations = _cellInfo[m.Id].Stations;
                 for (var ny = m.Y - 1; ny <= m.Y + 1; ny++)
                 {
@@ -184,7 +174,7 @@ namespace Space.ComponentSystem.Systems
                                 // Tell the other stations.
                                 foreach (var stationId in _cellInfo[id].Stations)
                                 {
-                                    var spawn = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
+                                    var spawn = ((ShipSpawner) Manager.GetComponent(stationId, ShipSpawner.TypeId));
                                     foreach (var otherStationId in stations)
                                     {
                                         spawn.Targets.Add(otherStationId);
@@ -193,7 +183,7 @@ namespace Space.ComponentSystem.Systems
                                 // Tell our own stations.
                                 foreach (var stationId in stations)
                                 {
-                                    var spawner = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
+                                    var spawner = ((ShipSpawner) Manager.GetComponent(stationId, ShipSpawner.TypeId));
                                     foreach (var otherStationId in _cellInfo[id].Stations)
                                     {
                                         spawner.Targets.Add(otherStationId);
@@ -223,9 +213,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization
 
-        /// <summary>
-        /// Packetizes the specified packet.
-        /// </summary>
+        /// <summary>Packetizes the specified packet.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns></returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
@@ -242,17 +230,15 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        /// <summary>
-        /// Depacketizes the specified packet.
-        /// </summary>
+        /// <summary>Depacketizes the specified packet.</summary>
         /// <param name="packet">The packet.</param>
         public override void Depacketize(IReadablePacket packet)
         {
             base.Depacketize(packet);
 
             _cellInfo.Clear();
-            var numCells = packet.ReadInt32();
-            for (var i = 0; i < numCells; i++)
+            var cellCount = packet.ReadInt32();
+            for (var i = 0; i < cellCount; i++)
             {
                 var key = packet.ReadUInt64();
                 var value = packet.ReadPacketizable<CellInfo>();
@@ -264,11 +250,14 @@ namespace Space.ComponentSystem.Systems
         {
             base.Dump(w, indent);
 
-            w.AppendIndent(indent).Write("StoredCellCount = "); w.Write(_cellInfo.Count);
+            w.AppendIndent(indent).Write("StoredCellCount = ");
+            w.Write(_cellInfo.Count);
             w.AppendIndent(indent).Write("Cells = {");
             foreach (var item in _cellInfo)
             {
-                w.AppendIndent(indent + 1).Write(item.Key); w.Write(" = "); w.Dump(item.Value, indent + 1);
+                w.AppendIndent(indent + 1).Write(item.Key);
+                w.Write(" = ");
+                w.Dump(item.Value, indent + 1);
             }
             w.AppendIndent(indent).Write("}");
 
@@ -280,18 +269,13 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        ///     Servers as a copy constructor that returns a new instance of the same type that is freshly initialized.
+        ///     <para>This takes care of duplicating reference types to a new copy of that type (e.g. collections).</para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (UniverseSystem)base.NewInstance();
+            var copy = (UniverseSystem) base.NewInstance();
 
             copy._cellInfo = new Dictionary<ulong, CellInfo>();
 
@@ -299,22 +283,19 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
+        /// <remarks>The manager for the system to copy into must be set to the manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (UniverseSystem)into;
+            var copy = (UniverseSystem) into;
 
             copy._cellInfo.Clear();
             foreach (var cellInfo in _cellInfo)
@@ -327,29 +308,21 @@ namespace Space.ComponentSystem.Systems
 
         #region CellInfo
 
-        /// <summary>
-        /// Class used to track persistent information on a single cell.
-        /// </summary>
+        /// <summary>Class used to track persistent information on a single cell.</summary>
         public sealed class CellInfo : IPacketizable
         {
             #region Properties
 
             /// <summary>
-            /// Flag to check if the values deviate from the procedurally generated
-            /// ones, so that we know whether to persistently store the settings of
-            /// this cell, or not.
+            ///     Flag to check if the values deviate from the procedurally generated ones, so that we know whether to
+            ///     persistently store the settings of this cell, or not.
             /// </summary>
             public bool Dirty { get; private set; }
 
-            /// <summary>
-            /// The predominant faction in the system.
-            /// </summary>
+            /// <summary>The predominant faction in the system.</summary>
             public Factions Faction
             {
-                get
-                {
-                    return _faction;
-                }
+                get { return _faction; }
                 set
                 {
                     _faction = value;
@@ -357,15 +330,10 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
-            /// <summary>
-            /// The current tech level of the cell.
-            /// </summary>
+            /// <summary>The current tech level of the cell.</summary>
             public int TechLevel
             {
-                get
-                {
-                    return _techLevel;
-                }
+                get { return _techLevel; }
                 set
                 {
                     _techLevel = value;
@@ -380,14 +348,10 @@ namespace Space.ComponentSystem.Systems
 
             #region Fields
 
-            /// <summary>
-            /// Actual value for tech level.
-            /// </summary>
+            /// <summary>Actual value for tech level.</summary>
             private Factions _faction;
 
-            /// <summary>
-            /// Actual value for tech level.
-            /// </summary>
+            /// <summary>Actual value for tech level.</summary>
             private int _techLevel;
 
             #endregion
@@ -401,9 +365,7 @@ namespace Space.ComponentSystem.Systems
                 _techLevel = techLevel;
             }
 
-            public CellInfo()
-            {
-            }
+            public CellInfo() {}
 
             #endregion
 
@@ -411,8 +373,8 @@ namespace Space.ComponentSystem.Systems
 
             internal CellInfo DeepCopy()
             {
-                var copy = (CellInfo)MemberwiseClone();
-                
+                var copy = (CellInfo) MemberwiseClone();
+
                 copy.Stations = new List<int>(Stations);
 
                 return copy;

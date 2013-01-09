@@ -4,16 +4,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
 {
-    /// <summary>
-    /// Utility class for rendering rectangles.
-    /// </summary>
+    /// <summary>Utility class for rendering rectangles.</summary>
     public sealed class Rectangle : AbstractShape
     {
         #region Properties
 
-        /// <summary>
-        /// The thickness for this rectangle.
-        /// </summary>
+        /// <summary>The thickness for this rectangle.</summary>
         public float Thickness
         {
             get { return _thickness; }
@@ -27,19 +23,15 @@ namespace Engine.Graphics
         #endregion
 
         #region Fields
-        
-        /// <summary>
-        /// The current thickness of the rectangle.
-        /// </summary>
+
+        /// <summary>The current thickness of the rectangle.</summary>
         private float _thickness;
 
         #endregion
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new rectangle renderer for the given game.
-        /// </summary>
+        /// <summary>Creates a new rectangle renderer for the given game.</summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics device service.</param>
         public Rectangle(ContentManager content, IGraphicsDeviceService graphics)
@@ -53,9 +45,7 @@ namespace Engine.Graphics
 
         #region Draw
 
-        /// <summary>
-        /// Adjusts effect parameters prior to the draw call.
-        /// </summary>
+        /// <summary>Adjusts effect parameters prior to the draw call.</summary>
         protected override void AdjustParameters()
         {
             base.AdjustParameters();
@@ -76,9 +66,8 @@ namespace Engine.Graphics
         #region Utility stuff
 
         /// <summary>
-        /// Adjusts the bounds of the shape, in the sense that it adjusts the
-        /// positions of the vertices' texture coordinates if required for the
-        /// effect to work correctly.
+        ///     Adjusts the bounds of the shape, in the sense that it adjusts the positions of the vertices' texture
+        ///     coordinates if required for the effect to work correctly.
         /// </summary>
         protected override void AdjustBounds()
         {

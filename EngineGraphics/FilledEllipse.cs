@@ -4,16 +4,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
 {
-    /// <summary>
-    /// Utility class for rendering filled ellipses or circles.
-    /// </summary>
+    /// <summary>Utility class for rendering filled ellipses or circles.</summary>
     public sealed class FilledEllipse : AbstractEllipse
     {
         #region Properties
 
-        /// <summary>
-        /// The gradient for this ellipse.
-        /// </summary>
+        /// <summary>The gradient for this ellipse.</summary>
         public float Gradient
         {
             get { return _gradient; }
@@ -27,19 +23,15 @@ namespace Engine.Graphics
         #endregion
 
         #region Fields
-        
-        /// <summary>
-        /// The current border gradient of the ellipse.
-        /// </summary>
+
+        /// <summary>The current border gradient of the ellipse.</summary>
         private float _gradient;
 
         #endregion
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new ellipse renderer for the given game.
-        /// </summary>
+        /// <summary>Creates a new ellipse renderer for the given game.</summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics device service.</param>
         public FilledEllipse(ContentManager content, IGraphicsDeviceService graphics)
@@ -53,9 +45,7 @@ namespace Engine.Graphics
 
         #region Draw
 
-        /// <summary>
-        /// Adjusts effect parameters prior to the draw call.
-        /// </summary>
+        /// <summary>Adjusts effect parameters prior to the draw call.</summary>
         protected override void AdjustParameters()
         {
             base.AdjustParameters();

@@ -3,15 +3,11 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// An item pool contains a list of items that may be sampled from it.
-    /// </summary>
+    /// <summary>An item pool contains a list of items that may be sampled from it.</summary>
     [DefaultProperty("Name")]
     public sealed class ItemPool
     {
-        /// <summary>
-        /// The logical name of the item pool.
-        /// </summary>
+        /// <summary>The logical name of the item pool.</summary>
         [Category("General")]
         [Description("The name of the item pool, by which it may be referenced (e.g. in ships).")]
         public string Name
@@ -20,9 +16,7 @@ namespace Space.ComponentSystem.Factories
             set { _name = value; }
         }
 
-        /// <summary>
-        /// The maximum amount of simultaneously dropped items.
-        /// </summary>
+        /// <summary>The maximum amount of simultaneously dropped items.</summary>
         [DefaultValue(0)]
         [Category("Logic")]
         [Description("The maximum number of items to sample from this item pool (actual number is randomly determined per drop, with this as the maximum number of items).")]
@@ -32,10 +26,7 @@ namespace Space.ComponentSystem.Factories
             set { _maxDrops = value; }
         }
 
-        /// <summary>
-        /// A list of tuples containing the name of the item and the
-        /// probability the item will be dropped.
-        /// </summary>
+        /// <summary>A list of tuples containing the name of the item and the probability the item will be dropped.</summary>
         [ContentSerializer(FlattenContent = true, CollectionItemName = "Item")]
         [Category("Logic")]
         [Description("The list of items that can be drawn from this item pool.")]
@@ -51,18 +42,14 @@ namespace Space.ComponentSystem.Factories
 
         private DropInfo[] _items;
 
-        /// <summary>
-        /// The class holding the information about a single drop.
-        /// </summary>
-        [TypeConverter(typeof(ExpandableObjectConverter))]
+        /// <summary>The class holding the information about a single drop.</summary>
+        [TypeConverter(typeof (ExpandableObjectConverter))]
         public sealed class DropInfo
         {
-            /// <summary>
-            /// The logical name of the item.
-            /// </summary>
+            /// <summary>The logical name of the item.</summary>
             [Editor("Space.Tools.DataEditor.ItemPoolEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-            [TypeConverter(typeof(ReadonlyItemNameConverter))]
+                    "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+            [TypeConverter(typeof (ReadonlyItemNameConverter))]
             [Description("The name of the item type to sample.")]
             public string ItemName
             {
@@ -70,11 +57,9 @@ namespace Space.ComponentSystem.Factories
                 set { _itemName = value; }
             }
 
-            /// <summary>
-            /// The probability with which the item will be dropped.
-            /// </summary>
+            /// <summary>The probability with which the item will be dropped.</summary>
             [DefaultValue(0f)]
-            [Description("The propability that the item will be sampled when an item from its pool is dropped.")]
+            [Description("The probability that the item will be sampled when an item from its pool is dropped.")]
             public float Probability
             {
                 get { return _probability; }
@@ -86,10 +71,10 @@ namespace Space.ComponentSystem.Factories
             private float _probability;
 
             /// <summary>
-            /// Returns a <see cref="System.String"/> that represents this instance.
+            ///     Returns a <see cref="System.String"/> that represents this instance.
             /// </summary>
             /// <returns>
-            /// A <see cref="System.String"/> that represents this instance.
+            ///     A <see cref="System.String"/> that represents this instance.
             /// </returns>
             public override string ToString()
             {

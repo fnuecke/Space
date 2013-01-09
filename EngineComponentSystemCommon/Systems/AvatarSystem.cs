@@ -4,25 +4,19 @@ using Engine.ComponentSystem.Systems;
 
 namespace Engine.ComponentSystem.Common.Systems
 {
-    /// <summary>
-    /// Look-up system which allows fetching avatars for individual players.
-    /// </summary>
+    /// <summary>Look-up system which allows fetching avatars for individual players.</summary>
     public sealed class AvatarSystem : AbstractComponentSystem<Avatar>
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// The list of all currently known player avatars.
-        /// </summary>
+        /// <summary>The list of all currently known player avatars.</summary>
         public IEnumerable<int> Avatars
         {
             get
@@ -46,9 +40,7 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        /// <summary>
-        /// Gets the number of avatars (number of players).
-        /// </summary>
+        /// <summary>Gets the number of avatars (number of players).</summary>
         public int Count
         {
             get
@@ -77,11 +69,11 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Avatar-lookup
 
-        /// <summary>
-        /// Fetch the avatar of the specified player.
-        /// </summary>
+        /// <summary>Fetch the avatar of the specified player.</summary>
         /// <param name="playerNumber">The player to fetch the avatar for.</param>
-        /// <returns>The avatar entity, or <c>0</c> if none is known for this player.</returns>
+        /// <returns>
+        ///     The avatar entity, or <c>0</c> if none is known for this player.
+        /// </returns>
         public int GetAvatar(int playerNumber)
         {
             foreach (var component in Components)

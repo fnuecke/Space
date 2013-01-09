@@ -8,18 +8,14 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// Constraints for generating shields.
-    /// </summary>
+    /// <summary>Constraints for generating shields.</summary>
     public sealed class ShieldFactory : ItemFactory
     {
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the structure texture.
-        /// </summary>
+        /// <summary>Gets or sets the structure texture.</summary>
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [DefaultValue(null)]
         [ContentSerializer(Optional = true)]
         [Category("Media")]
@@ -30,12 +26,10 @@ namespace Space.ComponentSystem.Factories
             set { _structure = value; }
         }
 
-        /// <summary>
-        /// The color tint for generated shields.
-        /// </summary>
+        /// <summary>The color tint for generated shields.</summary>
         [Editor("Space.Tools.DataEditor.XnaColorEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
-        [TypeConverter(typeof(ColorConverter))]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+        [TypeConverter(typeof (ColorConverter))]
         [ContentSerializer(Optional = true)]
         [DefaultValue(0xFFFFFFFF)]
         [Category("Media")]
@@ -58,21 +52,17 @@ namespace Space.ComponentSystem.Factories
 
         #region Sampling
 
-        /// <summary>
-        /// Samples a new shield based on these constraints.
-        /// </summary>
+        /// <summary>Samples a new shield based on these constraints.</summary>
         /// <param name="manager"></param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled shield.
-        /// </returns>
+        /// <returns>The sampled shield.</returns>
         public override int Sample(IManager manager, IUniformRandom random)
         {
             var entity = base.Sample(manager, random);
 
             manager.AddComponent<Shield>(entity)
-                .Initialize(this)
-                .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
+                   .Initialize(this)
+                   .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
             return entity;
         }

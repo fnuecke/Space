@@ -16,16 +16,12 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Cleans up squads if a squad component is removed.
-    /// </summary>
+    /// <summary>Cleans up squads if a squad component is removed.</summary>
     public sealed class SquadSystem : AbstractSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
@@ -33,14 +29,12 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// IDs for squads (i.e. each squad gets its own ID by which is is
-        /// referenced in the squad components of the entities in that squad).
+        ///     IDs for squads (i.e. each squad gets its own ID by which is is referenced in the squad components of the
+        ///     entities in that squad).
         /// </summary>
         private IdManager _squadIds = new IdManager();
 
-        /// <summary>
-        /// The list of actual squads, mapping squad id to squad data.
-        /// </summary>
+        /// <summary>The list of actual squads, mapping squad id to squad data.</summary>
         [CopyIgnore, PacketizerIgnore]
         private SparseArray<SquadData> _squads = new SparseArray<SquadData>();
 
@@ -48,25 +42,21 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Determines whether the specified squad exists.
-        /// </summary>
+        /// <summary>Determines whether the specified squad exists.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>
-        ///   <c>true</c> if the specified squad exists; otherwise, <c>false</c>.
+        ///     <c>true</c> if the specified squad exists; otherwise, <c>false</c>.
         /// </returns>
         public bool HasSquad(int squad)
         {
             return _squadIds.InUse(squad);
         }
 
-        /// <summary>
-        /// Determines whether the squad contains the specified entity.
-        /// </summary>
+        /// <summary>Determines whether the squad contains the specified entity.</summary>
         /// <param name="squad">The squad to check for.</param>
         /// <param name="entity">The entity to check for.</param>
         /// <returns>
-        ///   <c>true</c> if the squad contains the specified entity; otherwise, <c>false</c>.
+        ///     <c>true</c> if the squad contains the specified entity; otherwise, <c>false</c>.
         /// </returns>
         public bool Contains(int squad, int entity)
         {
@@ -74,9 +64,7 @@ namespace Space.ComponentSystem.Systems
             return _squads[squad].Members.Contains(entity);
         }
 
-        /// <summary>
-        /// Gets the leader of the specified squad.
-        /// </summary>
+        /// <summary>Gets the leader of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The leader of the squad.</returns>
         public int GetLeader(int squad)
@@ -85,9 +73,7 @@ namespace Space.ComponentSystem.Systems
             return _squads[squad].Members[0];
         }
 
-        /// <summary>
-        /// Gets the members of the specified squad.
-        /// </summary>
+        /// <summary>Gets the members of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The members of the squad.</returns>
         public IEnumerable<int> GetMembers(int squad)
@@ -96,9 +82,7 @@ namespace Space.ComponentSystem.Systems
             return _squads[squad].Members;
         }
 
-        /// <summary>
-        /// Gets the number of members of the specified squad.
-        /// </summary>
+        /// <summary>Gets the number of members of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The number of squad members.</returns>
         public int GetCount(int squad)
@@ -107,9 +91,7 @@ namespace Space.ComponentSystem.Systems
             return _squads[squad].Members.Count;
         }
 
-        /// <summary>
-        /// Gets the formation for the specified squad.
-        /// </summary>
+        /// <summary>Gets the formation for the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The formation type of that squad.</returns>
         public AbstractFormation GetFormation(int squad)
@@ -118,9 +100,7 @@ namespace Space.ComponentSystem.Systems
             return _squads[squad].Formation;
         }
 
-        /// <summary>
-        /// Sets the formation of the specified squad.
-        /// </summary>
+        /// <summary>Sets the formation of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <param name="value">The formation to set.</param>
         public void SetFormation(int squad, AbstractFormation value)
@@ -130,9 +110,7 @@ namespace Space.ComponentSystem.Systems
             _squads[squad].Cache = new FormationCache(value);
         }
 
-        /// <summary>
-        /// Gets the formation spacing for the specified squad.
-        /// </summary>
+        /// <summary>Gets the formation spacing for the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The formation spacing of that squad.</returns>
         public float GetFormationSpacing(int squad)
@@ -141,9 +119,7 @@ namespace Space.ComponentSystem.Systems
             return _squads[squad].Spacing;
         }
 
-        /// <summary>
-        /// Sets the formation spacing of the specified squad.
-        /// </summary>
+        /// <summary>Sets the formation spacing of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <param name="value">The formation spacing to set.</param>
         public void SetFormationSpacing(int squad, float value)
@@ -153,9 +129,8 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Adds a new member to this squad. Note that this will automatically
-        /// register the entity with the squad component of all other already-
-        /// members of this squad.
+        ///     Adds a new member to this squad. Note that this will automatically register the entity with the squad
+        ///     component of all other already- members of this squad.
         /// </summary>
         /// <param name="squad">The squad to add to.</param>
         /// <param name="entity">The entity to add to the squad.</param>
@@ -171,7 +146,7 @@ namespace Space.ComponentSystem.Systems
 
             // Make sure the entity isn't in a squad (except the identity squad,
             // into which it is moved if removed from another one).
-            var memberSquad = (Squad)Manager.GetComponent(entity, Squad.TypeId);
+            var memberSquad = (Squad) Manager.GetComponent(entity, Squad.TypeId);
             RemoveMember(memberSquad.SquadId, entity);
 
             // Remove the identity squad.
@@ -183,8 +158,8 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Removes an entity from this squad. Note that this will automatically
-        /// remove the entity from the squad components of all other members.
+        ///     Removes an entity from this squad. Note that this will automatically remove the entity from the squad
+        ///     components of all other members.
         /// </summary>
         /// <param name="squad">The squad to remove from.</param>
         /// <param name="entity">The entity to remove.</param>
@@ -221,13 +196,10 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Put the entity into its own identity squad.
-            MakeIdentitySquad((Squad)Manager.GetComponent(entity, Squad.TypeId));
+            MakeIdentitySquad((Squad) Manager.GetComponent(entity, Squad.TypeId));
         }
 
-        /// <summary>
-        /// Gets the position of the specified member in the squad formation (i.e. where it
-        /// should be at this time).
-        /// </summary>
+        /// <summary>Gets the position of the specified member in the squad formation (i.e. where it should be at this time).</summary>
         /// <param name="squad">The squad.</param>
         /// <param name="entity">The squad member.</param>
         /// <returns></returns>
@@ -240,7 +212,7 @@ namespace Space.ComponentSystem.Systems
 
             var data = _squads[squad];
 
-            var leaderTransform = (Transform)Manager.GetComponent(data.Members[0], Transform.TypeId);
+            var leaderTransform = (Transform) Manager.GetComponent(data.Members[0], Transform.TypeId);
 
             // Get our own index in the formation.
             var index = data.Members.IndexOf(entity);
@@ -252,17 +224,15 @@ namespace Space.ComponentSystem.Systems
             // Rotate around origin of the formation (which should be the leader's position in
             // most cases).
             var finalPosition = leaderTransform.Translation;
-            var cosRadians = (float)Math.Cos(leaderTransform.Rotation);
-            var sinRadians = (float)Math.Sin(leaderTransform.Rotation);
+            var cosRadians = (float) Math.Cos(leaderTransform.Rotation);
+            var sinRadians = (float) Math.Sin(leaderTransform.Rotation);
             finalPosition.X += (-position.Y * cosRadians - position.X * sinRadians) * data.Spacing;
             finalPosition.Y += (-position.Y * sinRadians + position.X * cosRadians) * data.Spacing;
 
             return finalPosition;
         }
 
-        /// <summary>
-        /// Called by the manager when a new component was added.
-        /// </summary>
+        /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
         public override void OnComponentAdded(Component component)
         {
@@ -275,9 +245,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Called when a component is removed.
-        /// </summary>
+        /// <summary>Called when a component is removed.</summary>
         /// <param name="component">The component.</param>
         public override void OnComponentRemoved(Component component)
         {
@@ -293,10 +261,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Creates a new squad, only containing the entity of the specified
-        /// squad component.
-        /// </summary>
+        /// <summary>Creates a new squad, only containing the entity of the specified squad component.</summary>
         /// <param name="squad">The squad.</param>
         private void MakeIdentitySquad(Squad squad)
         {
@@ -310,7 +275,7 @@ namespace Space.ComponentSystem.Systems
             _squads[identitySquad].Formation = Formations.None;
             _squads[identitySquad].Spacing = 200;
             _squads[identitySquad].Cache = new FormationCache(Formations.None);
-            
+
             // Add member to squad and let it know it's in it.
             _squads[identitySquad].Members.Add(squad.Entity);
             squad.SquadId = identitySquad;
@@ -320,16 +285,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
-        /// <returns>
-        /// The copy.
-        /// </returns>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
+        /// <returns>The copy.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (SquadSystem)base.NewInstance();
+            var copy = (SquadSystem) base.NewInstance();
 
             copy._squadIds = new IdManager();
             copy._squads = new SparseArray<SquadData>();
@@ -338,19 +298,18 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (SquadSystem)into;
+            var copy = (SquadSystem) into;
 
             foreach (var id in _squadIds)
             {
@@ -368,13 +327,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
@@ -395,9 +350,7 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
         {
@@ -427,10 +380,14 @@ namespace Space.ComponentSystem.Systems
             {
                 var data = _squads[id];
 
-                w.AppendIndent(indent + 1).Write(id);w.Write(" = {");
-                w.AppendIndent(indent + 2).Write("Formation = "); w.Write(data.Formation.GetType().Name);
-                w.AppendIndent(indent + 2).Write("Spacing = "); w.Write(data.Spacing);
-                w.AppendIndent(indent + 2).Write("MemberCount = "); w.Write(data.Members.Count);
+                w.AppendIndent(indent + 1).Write(id);
+                w.Write(" = {");
+                w.AppendIndent(indent + 2).Write("Formation = ");
+                w.Write(data.Formation.GetType().Name);
+                w.AppendIndent(indent + 2).Write("Spacing = ");
+                w.Write(data.Spacing);
+                w.AppendIndent(indent + 2).Write("MemberCount = ");
+                w.Write(data.Members.Count);
                 w.AppendIndent(indent + 2).Write("Members = {");
                 for (var i = 0; i < data.Members.Count; i++)
                 {
@@ -453,39 +410,28 @@ namespace Space.ComponentSystem.Systems
         #region Types
 
         /// <summary>
-        /// Base class defining the interface all formation implementations must implement.
-        /// Formations are implemented by providing an enumerator over the positions of the
-        /// single members of a squad. 
+        ///     Base class defining the interface all formation implementations must implement. Formations are implemented by
+        ///     providing an enumerator over the positions of the single members of a squad.
         /// </summary>
         public abstract class AbstractFormation : IEnumerable<Vector2>, IPacketizable
         {
-            /// <summary>
-            /// Returns an enumerator that iterates through the collection.
-            /// </summary>
+            /// <summary>Returns an enumerator that iterates through the collection.</summary>
             /// <returns>
-            /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can
-            /// be used to iterate through the collection.
+            ///     A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
             /// </returns>
-            /// <filterpriority>1</filterpriority>
             public abstract IEnumerator<Vector2> GetEnumerator();
 
-            /// <summary>
-            /// Returns an enumerator that iterates through a collection.
-            /// </summary>
+            /// <summary>Returns an enumerator that iterates through a collection.</summary>
             /// <returns>
-            /// An <see cref="T:System.Collections.IEnumerator"/> object that can be
-            /// used to iterate through the collection.
+            ///     An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
             /// </returns>
-            /// <filterpriority>2</filterpriority>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
             }
         }
 
-        /// <summary>
-        /// The list of available default formation implementations.
-        /// </summary>
+        /// <summary>The list of available default formation implementations.</summary>
         public static class Formations
         {
             // Note: all formation positions are computed without taking the leader's rotation
@@ -506,8 +452,8 @@ namespace Space.ComponentSystem.Systems
             // followers, filled up top-down left-to-right.
 
             /// <summary>
-            /// This is the 'null' implementation, which simply returns nothing and
-            /// causes the cache to fall-back to the default value.
+            ///     This is the 'null' implementation, which simply returns nothing and causes the cache to fall-back to the
+            ///     default value.
             /// </summary>
             public static readonly AbstractFormation None = new NoneFormation();
 
@@ -517,17 +463,21 @@ namespace Space.ComponentSystem.Systems
             }
 
             /// <summary>
-            /// This is an implementation for a line formation, i.e. the formation
-            /// will look like this:
-            ///           L
-            ///           F
-            ///           F
-            ///          ...
-            /// The order goes like so:
-            ///           0
-            ///           1
-            ///           2
-            ///          ...
+            ///     This is an implementation for a line formation, i.e. the formation will look like this:
+            ///     <code>
+            ///       L
+            ///       F
+            ///       F
+            ///      ...
+            ///     </code>
+            ///     <para/>
+            ///     The order goes like so:
+            ///     <code>
+            ///       0
+            ///       1
+            ///       2
+            ///      ...
+            ///     </code>
             /// </summary>
             public static readonly AbstractFormation Line = new LineFormation();
 
@@ -535,22 +485,26 @@ namespace Space.ComponentSystem.Systems
             {
                 public LineFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
-                        .Select(i => new Vector2(0, i))) {}
+                              .Select(i => new Vector2(0, i))) {}
             }
 
             /// <summary>
-            /// This is an implementation for a column formation, i.e. the formation
-            /// will look like this:
-            ///           L
-            ///         F
-            ///           F
-            ///         F
-            ///          ...
-            /// The order goes like so:
-            ///           0
-            ///         1
-            ///           2
-            ///          ...
+            ///     This is an implementation for a column formation, i.e. the formation will look like this:
+            ///     <code>
+            ///       L
+            ///     F
+            ///       F
+            ///     F
+            ///      ...
+            ///     </code>
+            ///     <para/>
+            ///     The order goes like so:
+            ///     <code>
+            ///       0
+            ///     1
+            ///       2
+            ///      ...
+            ///     </code>
             /// </summary>
             public static readonly AbstractFormation Column = new ColumnFormation();
 
@@ -558,22 +512,26 @@ namespace Space.ComponentSystem.Systems
             {
                 public ColumnFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
-                        .Select(i => new Vector2(-(i & 1), i))) {}
+                              .Select(i => new Vector2(-(i & 1), i))) {}
             }
 
             /// <summary>
-            /// This is an implementation for a vee formation, i.e. the formation
-            /// will look like this:
-            ///          ...
-            ///     F           F
-            ///       F       F
-            ///         F   F
-            ///           L
-            /// The order goes like so:
-            ///          ...
-            ///       3       4
-            ///         1   2
-            ///           0
+            ///     This is an implementation for a vee formation, i.e. the formation will look like this:
+            ///     <code>
+            ///      ...
+            /// F           F
+            ///   F       F
+            ///     F   F
+            ///       L
+            ///     </code>
+            ///     <para/>
+            ///     The order goes like so:
+            ///     <code>
+            ///      ...
+            ///   3       4
+            ///     1   2
+            ///       0
+            ///     </code>
             /// </summary>
             public static readonly AbstractFormation Vee = new VeeFormation();
 
@@ -581,23 +539,27 @@ namespace Space.ComponentSystem.Systems
             {
                 public VeeFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
-                        .Select(i => i + 1)
-                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), -(i >> 1)))) {}
+                              .Select(i => i + 1)
+                              .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), -(i >> 1)))) {}
             }
 
             /// <summary>
-            /// This is an implementation for an open wedge formation, i.e. the formation
-            /// will look like this:
-            ///           L
-            ///         F   F
-            ///       F       F
-            ///     F           F
-            ///          ...
-            /// The order goes like so:
-            ///           0
-            ///         1   2
-            ///       3       4
-            ///          ...
+            ///     This is an implementation for an open wedge formation, i.e. the formation will look like this:
+            ///     <code>
+            ///       L
+            ///     F   F
+            ///   F       F
+            /// F           F
+            ///      ...
+            ///     </code>
+            ///     <para/>
+            ///     The order goes like so:
+            ///     <code>
+            ///       0
+            ///     1   2
+            ///   3       4
+            ///      ...
+            ///     </code>
             /// </summary>
             public static readonly AbstractFormation Wedge = new WedgeFormation();
 
@@ -605,24 +567,28 @@ namespace Space.ComponentSystem.Systems
             {
                 public WedgeFormation() : base(
                     Enumerable.Range(0, int.MaxValue)
-                        .Select(i => i + 1)
-                        .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), i >> 1))) {}
+                              .Select(i => i + 1)
+                              .Select(i => new Vector2((i >> 1) * (((i & 1) == 0) ? -0.5f : 0.5f), i >> 1))) {}
             }
 
             /// <summary>
-            /// This is an implementation for a filled wedge formation, i.e. the formation
-            /// will look like this:
-            ///           L
-            ///         F   F
-            ///       F   F   F
-            ///     F   F   F   F
-            ///          ...
-            /// The order goes like so:
-            ///           0
-            ///         1   2
-            ///       4   3   5
-            ///     8   6   7   9
-            ///          ...
+            ///     This is an implementation for a filled wedge formation, i.e. the formation will look like this:
+            ///     <code>
+            ///       L
+            ///     F   F
+            ///   F   F   F
+            /// F   F   F   F
+            ///      ...
+            ///     </code>
+            ///     <para/>
+            ///     The order goes like so:
+            ///     <code>
+            ///       0
+            ///     1   2
+            ///   4   3   5
+            /// 8   6   7   9
+            ///      ...
+            ///     </code>
             /// </summary>
             public static readonly AbstractFormation FilledWedge = new FilledWedgeFormation();
 
@@ -633,17 +599,20 @@ namespace Space.ComponentSystem.Systems
             }
 
             /// <summary>
-            /// This is an implementation for a block formation, i.e. the formation will look
-            /// like this:
+            ///     This is an implementation for a block formation, i.e. the formation will look like this:
+            ///     <code>
             ///  F  F  L  F  F
             ///  F  F  F  F  F
             ///       ...
-            /// The balance that a formation is determined how it expands: it toggles between
-            /// vertical and horizontal expansion whenever the formation becomes "full". So
-            /// in numbers:
+            ///     </code>
+            ///     <para/>
+            ///     The balance that a formation is determined how it expands: it toggles between vertical and horizontal expansion
+            ///     whenever the formation becomes "full". So in numbers:
+            ///     <code>
             /// 6 1 0 2 7
             /// 8 4 3 5 9
             ///    ...
+            ///     </code>
             /// </summary>
             public static readonly AbstractFormation Block = new BlockFormation();
 
@@ -652,10 +621,7 @@ namespace Space.ComponentSystem.Systems
                 public BlockFormation() : base(BlockBase) {}
             }
 
-            /// <summary>
-            /// This in an implementation for a Sierpinski formation. See
-            /// https://en.wikipedia.org/wiki/Sierpinski_triangle
-            /// </summary>
+            /// <summary>This in an implementation for a Sierpinski formation. See https://en.wikipedia.org/wiki/Sierpinski_triangle</summary>
             public static readonly AbstractFormation Sierpinski = new SierpinskiFormation();
 
             private sealed class SierpinskiFormation : SimpleFormation
@@ -667,7 +633,7 @@ namespace Space.ComponentSystem.Systems
                     FilledWedgeBase
                         // Translate coordinates back to be full integers and all positive.
                         .Select(t => Tuple.Create((t.Item1 + t.Item2) / 2, t.Item2))
-                        // Transform to rectangluar space (offset y to x axis).
+                        // Transform to rectangular space (offset y to x axis).
                         .Select(t => Tuple.Create(t.Item1, t.Item2 - t.Item1))
                         // Because then we can wave our magic wand...
                         .Select(t => (t.Item1 & t.Item2) == 0)
@@ -690,9 +656,9 @@ namespace Space.ComponentSystem.Systems
                     var line = 1;
                     for (;;)
                     {
-                        var pos = (((k & 1) == 0) ? -2 : 2) * ((k + 1) >> 1) - (line & 1);
+                        var position = (((k & 1) == 0) ? -2 : 2) * ((k + 1) >> 1) - (line & 1);
 
-                        yield return Tuple.Create(pos, line);
+                        yield return Tuple.Create(position, line);
 
                         var nk = (k + 1) % (line + 1);
                         var nl = line + k / line;
@@ -728,9 +694,7 @@ namespace Space.ComponentSystem.Systems
 
             // ReSharper restore FunctionNeverReturns
 
-            /// <summary>
-            /// A simple wrapper for parameterless formation implementations.
-            /// </summary>
+            /// <summary>A simple wrapper for parameterless formation implementations.</summary>
             private class SimpleFormation : AbstractFormation
             {
                 [PacketizerIgnore]
@@ -748,58 +712,38 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Tracks information about a single squad.
-        /// </summary>
+        /// <summary>Tracks information about a single squad.</summary>
         private sealed class SquadData
         {
-            /// <summary>
-            /// The list of ships in this squad.
-            /// </summary>
+            /// <summary>The list of ships in this squad.</summary>
             public readonly List<int> Members = new List<int>();
 
-            /// <summary>
-            /// The current formation of this squad.
-            /// </summary>
+            /// <summary>The current formation of this squad.</summary>
             public AbstractFormation Formation;
 
-            /// <summary>
-            /// The current formation spacing of this squad.
-            /// </summary>
+            /// <summary>The current formation spacing of this squad.</summary>
             public float Spacing;
 
-            /// <summary>
-            /// The cache used for position lookups in the current formation.
-            /// </summary>
+            /// <summary>The cache used for position lookups in the current formation.</summary>
             public FormationCache Cache;
         }
 
-        /// <summary>
-        /// Helper class for formation implementations, taking care of result
-        /// caching for fast lookups.
-        /// </summary>
+        /// <summary>Helper class for formation implementations, taking care of result caching for fast lookups.</summary>
         private sealed class FormationCache
         {
-            /// <summary>
-            /// The formation implementation.
-            /// </summary>
+            /// <summary>The formation implementation.</summary>
             private readonly IEnumerator<Vector2> _formation;
 
-            /// <summary>
-            /// Internal cache of already-computed coordiantes. This simply
-            /// holds the coordinate at the corresponding index.
-            /// </summary>
+            /// <summary>Internal cache of already-computed coordinates. This simply holds the coordinate at the corresponding index.</summary>
             private readonly List<Vector2> _cache = new List<Vector2>();
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="FormationCache"/> class.
+            ///     Initializes a new instance of the <see cref="FormationCache"/> class.
             /// </summary>
-            /// <param name="formation">The formation implementation. This
-            /// should compute the relative offset to the leading squad
-            /// member, based on the index the member has inside the squad.
-            /// The result must be in unit scale (i.e. it will be scaled by
-            /// the squad's <see cref="Squad.FormationSpacing"/> property to
-            /// get the final position.
+            /// <param name="formation">
+            ///     The formation implementation. This should compute the relative offset to the leading squad member, based on the
+            ///     index the member has inside the squad. The result must be in unit scale (i.e. it will be scaled by the squad's
+            ///     <see cref="Squad.FormationSpacing"/> property to get the final position.
             /// </param>
             public FormationCache(IEnumerable<Vector2> formation)
             {
@@ -807,8 +751,8 @@ namespace Space.ComponentSystem.Systems
             }
 
             /// <summary>
-            /// Gets the relative position of the squad member at the specified
-            /// offset to the leader of the squad. This is in unit scale.
+            ///     Gets the relative position of the squad member at the specified offset to the leader of the squad. This is in
+            ///     unit scale.
             /// </summary>
             /// <param name="index">The index of the squad member.</param>
             /// <returns></returns>

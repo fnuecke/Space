@@ -4,32 +4,25 @@ using Engine.ComponentSystem.Systems;
 
 namespace Engine.ComponentSystem.RPG.Systems
 {
-    /// <summary>
-    /// Handles keeping modified character attributes up-to-date.
-    /// </summary>
+    /// <summary>Handles keeping modified character attributes up-to-date.</summary>
     /// <typeparam name="TAttribute">Possible attribute values.</typeparam>
     public sealed class CharacterSystem<TAttribute> : AbstractSystem, IMessagingSystem
         where TAttribute : struct
     {
         #region Logic
-        
-        /// <summary>
-        /// Called by the manager when a new component was added.
-        /// </summary>
+
+        /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
         public override void OnComponentAdded(ComponentSystem.Components.Component component)
         {
             // Check if the component is of the right type.
             if (component is Attributes<TAttribute>)
             {
-                ((Attributes<TAttribute>)component).RecomputeAttributes();
+                ((Attributes<TAttribute>) component).RecomputeAttributes();
             }
         }
 
-        /// <summary>
-        /// Handles messages to trigger recomputation of modified attribute
-        /// values.
-        /// </summary>
+        /// <summary>Handles messages to trigger recomputation of modified attribute values.</summary>
         /// <typeparam name="T">The type of the messages.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -42,7 +35,9 @@ namespace Engine.ComponentSystem.RPG.Systems
                     var m = cm.Value;
                     if (Manager.GetComponent(m.Item, Attribute<TAttribute>.TypeId) != null)
                     {
-                        var attributes = ((Attributes<TAttribute>)Manager.GetComponent(m.Slot.Root.Entity, Attributes<TAttribute>.TypeId));
+                        var attributes =
+                            ((Attributes<TAttribute>)
+                             Manager.GetComponent(m.Slot.Root.Entity, Attributes<TAttribute>.TypeId));
                         if (attributes != null)
                         {
                             attributes.RecomputeAttributes();
@@ -59,10 +54,12 @@ namespace Engine.ComponentSystem.RPG.Systems
                     var m = cm.Value;
                     if (Manager.GetComponent(m.Item, Attribute<TAttribute>.TypeId) != null)
                     {
-                        var attributes = ((Attributes<TAttribute>)Manager.GetComponent(m.Slot.Root.Entity, Attributes<TAttribute>.TypeId));
+                        var attributes =
+                            ((Attributes<TAttribute>)
+                             Manager.GetComponent(m.Slot.Root.Entity, Attributes<TAttribute>.TypeId));
                         if (attributes != null)
                         {
-                            attributes.RecomputeAttributes();   
+                            attributes.RecomputeAttributes();
                         }
                     }
                 }

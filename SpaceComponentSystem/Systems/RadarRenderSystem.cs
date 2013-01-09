@@ -12,16 +12,12 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// This system handles rendering whatever the local player's radar picks up.
-    /// </summary>
+    /// <summary>This system handles rendering whatever the local player's radar picks up.</summary>
     public sealed class RadarRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Types
 
-        /// <summary>
-        /// Readable direction indexes for the radar images.
-        /// </summary>
+        /// <summary>Readable direction indexes for the radar images.</summary>
         private enum RadarDirection
         {
             Top,
@@ -45,54 +41,36 @@ namespace Space.ComponentSystem.Systems
 
         #region Constants
 
-        /// <summary>
-        /// Width of a single radar icon.
-        /// </summary>
+        /// <summary>Width of a single radar icon.</summary>
         private const int RadarIconWidth = 48;
 
-        /// <summary>
-        /// Height of a single radar icon.
-        /// </summary>
+        /// <summary>Height of a single radar icon.</summary>
         private const int RadarIconHeight = 48;
 
-        /// <summary>
-        /// Vertical offset of the distance number display relative to the
-        /// center of the radar icons.
-        /// </summary>
+        /// <summary>Vertical offset of the distance number display relative to the center of the radar icons.</summary>
         private const int DistanceOffset = 5;
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should perform
-        /// updates and react to events.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
         public bool Enabled { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The spritebatch to use for rendering.
-        /// </summary>
+        /// <summary>The spritebatch to use for rendering.</summary>
         private SpriteBatch _spriteBatch;
 
-        /// <summary>
-        /// Background image for radar icons.
-        /// </summary>
+        /// <summary>Background image for radar icons.</summary>
         private readonly Texture2D[] _radarDirection = new Texture2D[8];
 
-        /// <summary>
-        /// Background for rendering the distance to a target.
-        /// </summary>
+        /// <summary>Background for rendering the distance to a target.</summary>
         private Texture2D _radarDistance;
 
-        /// <summary>
-        /// Font used to render the distance on radar icons.
-        /// </summary>
+        /// <summary>Font used to render the distance on radar icons.</summary>
         private SpriteFont _distanceFont;
 
         #endregion
@@ -100,9 +78,8 @@ namespace Space.ComponentSystem.Systems
         #region Single-Allocation
 
         /// <summary>
-        /// Reused for iterating components. This should be a sorted set, to avoid
-        /// random order of elements, leading to random flipping of render order.
-        /// (looks pretty much like z-fighting then)
+        ///     Reused for iterating components. This should be a sorted set, to avoid random order of elements, leading to
+        ///     random flipping of render order. (looks pretty much like z-fighting then)
         /// </summary>
         private ISet<int> _reusableNeighborList = new SortedSet<int>();
 
@@ -110,29 +87,26 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Render our local radar system, with whatever detectables are close
-        /// enough.
-        /// </summary>
+        /// <summary>Render our local radar system, with whatever detectables are close enough.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
             // Get local player's avatar.
-            var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
+            var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             if (avatar <= 0)
             {
                 return;
             }
 
             // Get info on the local player's ship.
-            var info = ((ShipInfo)Manager.GetComponent(avatar, ShipInfo.TypeId));
+            var info = ((ShipInfo) Manager.GetComponent(avatar, ShipInfo.TypeId));
 
             // Get the index we use for looking up nearby objects.
-            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
 
             // Get camera information.
-            var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
+            var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Get the actual position we're rendering at. Note that this will
             // actually allow the player to "extend" his radar by the maximum
@@ -164,7 +138,7 @@ namespace Space.ComponentSystem.Systems
             // Get the inner bounds in which to display the icon, i.e. minus
             // half the size of the icon, so deflate by that.
             var innerBounds = screenBounds;
-            innerBounds.Inflate(-(int)backgroundOrigin.X, -(int)backgroundOrigin.Y);
+            innerBounds.Inflate(-(int) backgroundOrigin.X, -(int) backgroundOrigin.Y);
 
             // Now this is the tricky part: we take the minimal bounding sphere
             // (or rather, circle) that fits our screen space. For each
@@ -175,7 +149,7 @@ namespace Space.ComponentSystem.Systems
             // again. See below for that.
             var a = center.X - backgroundOrigin.X;
             var b = center.Y - backgroundOrigin.Y;
-            var radius = (float)Math.Sqrt(a * a + b * b);
+            var radius = (float) Math.Sqrt(a * a + b * b);
 
             // Loop through all our neighbors.
             index.Find(position, radarRange, ref _reusableNeighborList, DetectableSystem.IndexGroupMask);
@@ -185,9 +159,9 @@ namespace Space.ComponentSystem.Systems
             foreach (var neighbor in _reusableNeighborList)
             {
                 // Get the components we need.
-                var neighborTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
-                var neighborDetectable = ((Detectable)Manager.GetComponent(neighbor, Detectable.TypeId));
-                var faction = ((Faction)Manager.GetComponent(neighbor, Faction.TypeId));
+                var neighborTransform = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId));
+                var neighborDetectable = ((Detectable) Manager.GetComponent(neighbor, Detectable.TypeId));
+                var faction = ((Faction) Manager.GetComponent(neighbor, Faction.TypeId));
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)
@@ -198,12 +172,12 @@ namespace Space.ComponentSystem.Systems
                 // We don't show the icons for anything that's inside our
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
-                var direction = (Vector2)(neighborTransform.Translation - position);
+                var direction = (Vector2) (neighborTransform.Translation - position);
                 var distance = direction.Length();
 
                 // Check if the object's inside. If so, skip it. Take camera
                 // zoom into account here.
-                if (screenBounds.Contains((int)(direction.X * zoom + center.X), (int)(direction.Y * zoom + center.Y)))
+                if (screenBounds.Contains((int) (direction.X * zoom + center.X), (int) (direction.Y * zoom + center.Y)))
                 {
                     continue;
                 }
@@ -278,9 +252,16 @@ namespace Space.ComponentSystem.Systems
                 iconPosition.Y = MathHelper.Clamp(iconPosition.Y, innerBounds.Top, innerBounds.Bottom);
 
                 // And, finally, draw it. First the background.
-                _spriteBatch.Draw(_radarDirection[(int)GetRadarDirection(ref iconPosition, ref innerBounds)],
-                                  iconPosition, null,
-                                  color, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
+                _spriteBatch.Draw(
+                    _radarDirection[(int) GetRadarDirection(ref iconPosition, ref innerBounds)],
+                    iconPosition,
+                    null,
+                    color,
+                    0,
+                    backgroundOrigin,
+                    ld,
+                    SpriteEffects.None,
+                    0);
 
                 // Get the texture origin (middle of the texture).
                 Vector2 origin;
@@ -288,19 +269,42 @@ namespace Space.ComponentSystem.Systems
                 origin.Y = neighborDetectable.Texture.Height / 2.0f;
 
                 // And draw that, too.
-                _spriteBatch.Draw(neighborDetectable.Texture, iconPosition, null,
-                                  Color.White * ld, neighborDetectable.RotateIcon ? neighborTransform.Rotation : 0,
-                                  origin, ld, SpriteEffects.None, 0);
+                _spriteBatch.Draw(
+                    neighborDetectable.Texture,
+                    iconPosition,
+                    null,
+                    Color.White * ld,
+                    neighborDetectable.RotateIcon ? neighborTransform.Rotation : 0,
+                    origin,
+                    ld,
+                    SpriteEffects.None,
+                    0);
 
                 // Draw the distance to the object.
-                _spriteBatch.Draw(_radarDistance, iconPosition, null,
-                                  Color.White * ld, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
+                _spriteBatch.Draw(
+                    _radarDistance,
+                    iconPosition,
+                    null,
+                    Color.White * ld,
+                    0,
+                    backgroundOrigin,
+                    ld,
+                    SpriteEffects.None,
+                    0);
 
                 string formattedDistance = FormatDistance(distance);
                 origin.X = _distanceFont.MeasureString(formattedDistance).X / 2f;
                 origin.Y = -DistanceOffset;
-                _spriteBatch.DrawString(_distanceFont, formattedDistance, iconPosition,
-                                        Color.White * ld, 0, origin, ld, SpriteEffects.None, 0);
+                _spriteBatch.DrawString(
+                    _distanceFont,
+                    formattedDistance,
+                    iconPosition,
+                    Color.White * ld,
+                    0,
+                    origin,
+                    ld,
+                    SpriteEffects.None,
+                    0);
             }
             // Done drawing.
             _spriteBatch.End();
@@ -309,9 +313,7 @@ namespace Space.ComponentSystem.Systems
             _reusableNeighborList.Clear();
         }
 
-        /// <summary>
-        /// Handle a message of the specified type.
-        /// </summary>
+        /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -322,14 +324,20 @@ namespace Space.ComponentSystem.Systems
                 {
                     _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
 
-                    _radarDirection[(int)RadarDirection.Top] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top");
-                    _radarDirection[(int)RadarDirection.Left] = cm.Value.Content.Load<Texture2D>("Textures/Radar/left");
-                    _radarDirection[(int)RadarDirection.Right] = cm.Value.Content.Load<Texture2D>("Textures/Radar/right");
-                    _radarDirection[(int)RadarDirection.Bottom] = cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom");
-                    _radarDirection[(int)RadarDirection.TopLeft] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top_left");
-                    _radarDirection[(int)RadarDirection.TopRight] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top_right");
-                    _radarDirection[(int)RadarDirection.BottomLeft] = cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_left");
-                    _radarDirection[(int)RadarDirection.BottomRight] = cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_right");
+                    _radarDirection[(int) RadarDirection.Top] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top");
+                    _radarDirection[(int) RadarDirection.Left] = cm.Value.Content.Load<Texture2D>("Textures/Radar/left");
+                    _radarDirection[(int) RadarDirection.Right] =
+                        cm.Value.Content.Load<Texture2D>("Textures/Radar/right");
+                    _radarDirection[(int) RadarDirection.Bottom] =
+                        cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom");
+                    _radarDirection[(int) RadarDirection.TopLeft] =
+                        cm.Value.Content.Load<Texture2D>("Textures/Radar/top_left");
+                    _radarDirection[(int) RadarDirection.TopRight] =
+                        cm.Value.Content.Load<Texture2D>("Textures/Radar/top_right");
+                    _radarDirection[(int) RadarDirection.BottomLeft] =
+                        cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_left");
+                    _radarDirection[(int) RadarDirection.BottomRight] =
+                        cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_right");
                     _radarDistance = cm.Value.Content.Load<Texture2D>("Textures/Radar/distance");
                     _distanceFont = cm.Value.Content.Load<SpriteFont>("Fonts/visitor");
                 }
@@ -348,8 +356,8 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Gets the actual direction background to display. This checks which
-        /// borders the icon touches and returns the according direction.
+        ///     Gets the actual direction background to display. This checks which borders the icon touches and returns the
+        ///     according direction.
         /// </summary>
         /// <param name="position">The icon's position.</param>
         /// <param name="bounds">The bounds.</param>
@@ -404,14 +412,10 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// List of SI units, used for distance formatting.
-        /// </summary>
+        /// <summary>List of SI units, used for distance formatting.</summary>
         private static readonly string[] UnitNames = new[] {"", "k", "m", "g", "t", "p", "e", "z", "y"};
 
-        /// <summary>
-        /// Formats a distance to a string to be displayed in a radar icon.
-        /// </summary>
+        /// <summary>Formats a distance to a string to be displayed in a radar icon.</summary>
         /// <param name="distance">The distance to format.</param>
         /// <returns>The formatted distance.</returns>
         private string FormatDistance(float distance)

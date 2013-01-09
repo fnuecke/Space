@@ -9,9 +9,8 @@ using Engine.Simulation.Commands;
 namespace Engine.Controller
 {
     /// <summary>
-    /// Base class for TSS based multiplayer servers using a UDP connection.
-    /// This takes care of synchronizing the game states between server and
-    /// client, and getting the run speed synchronized as well.
+    ///     Base class for TSS based multiplayer servers using a UDP connection. This takes care of synchronizing the game
+    ///     states between server and client, and getting the run speed synchronized as well.
     /// </summary>
     public abstract class AbstractTssServer : AbstractTssController<IServerSession>
     {
@@ -24,9 +23,8 @@ namespace Engine.Controller
         #region Constants
 
         /// <summary>
-        /// The number of frames a command may be ahead of the server's current frame
-        /// to still allow it to be applied. Anything further ahead is considered
-        /// invalid/cheating.
+        ///     The number of frames a command may be ahead of the server's current frame to still allow it to be applied.
+        ///     Anything further ahead is considered invalid/cheating.
         /// </summary>
         private const long MaxCommandLead = 50;
 
@@ -35,19 +33,17 @@ namespace Engine.Controller
         #region Fields
 
         /// <summary>
-        /// Keeping track of how stressed each client is. This is used to figure
-        /// out the "weakest link" to adjust the game speed accordingly.
+        ///     Keeping track of how stressed each client is. This is used to figure out the "weakest link" to adjust the game
+        ///     speed accordingly.
         /// </summary>
         private readonly float[] _clientLoads;
 
-        /// <summary>
-        /// Trailing frame we last did a hash check in, to avoid doing them twice.
-        /// </summary>
+        /// <summary>Trailing frame we last did a hash check in, to avoid doing them twice.</summary>
         private long _lastHashedFrame;
 
         /// <summary>
-        /// Some game state dumps from the past we keep to compare them to any
-        /// we receive from clients due to hash check failure.
+        ///     Some game state dumps from the past we keep to compare them to any we receive from clients due to hash check
+        ///     failure.
         /// </summary>
         private readonly Dictionary<long, IManager> _gameStates = new Dictionary<long, IManager>();
 
@@ -56,15 +52,19 @@ namespace Engine.Controller
         #region Constructor
 
         /// <summary>
-        /// Base constructor, creates simulation. You'll need to initialize it
-        /// by calling its <c>Initialize()</c> method yourself.
+        ///     Base constructor, creates simulation. You'll need to initialize it by calling its <c>Initialize()</c> method
+        ///     yourself.
         /// </summary>
         /// <param name="session">The session.</param>
         protected AbstractTssServer(IServerSession session)
-            : base(session, session.MaxPlayers > 1 ? new[] {
-                (uint)System.Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
-                (uint)System.Math.Ceiling(300 / TargetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
-            } : new uint[0]) //< If it's single player only we don't need trailing states.
+            : base(session, session.MaxPlayers > 1
+                                ? new[]
+                                {
+                                    (uint)System.Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
+                                    (uint)System.Math.Ceiling(300 / TargetElapsedMilliseconds)
+                                    //< To avoid discrimination of laggy connections.
+                                }
+                                : new uint[0]) //< If it's single player only we don't need trailing states.
         {
             _clientLoads = new float[Session.MaxPlayers];
 
@@ -72,9 +72,7 @@ namespace Engine.Controller
             Session.PlayerLeft += HandlePlayerLeft;
         }
 
-        /// <summary>
-        /// Remove ourselves as listeners.
-        /// </summary>
+        /// <summary>Remove ourselves as listeners.</summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -89,10 +87,7 @@ namespace Engine.Controller
 
         #region Logic
 
-        /// <summary>
-        /// Drives the game loop, right after driving the network protocol
-        /// in the base class.
-        /// </summary>
+        /// <summary>Drives the game loop, right after driving the network protocol in the base class.</summary>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
         public override void Update(float elapsedMilliseconds)
         {
@@ -105,25 +100,22 @@ namespace Engine.Controller
             AdjustSpeed();
         }
 
-        /// <summary>
-        /// Do hash checking if the frame is one in which hashing should be performed.
-        /// </summary>
+        /// <summary>Do hash checking if the frame is one in which hashing should be performed.</summary>
         protected override void PerformAdditionalUpdateActions()
         {
             // Send hash check every now and then, to check for loss of synchronization.
             // We want to use the trailing frame for this because at this point it's
             // guaranteed not to change anymore (from incoming commands -- they will be
             // discarded now).
-            if (Session.MaxPlayers > 1 && Tss.TrailingFrame > _lastHashedFrame && ((Tss.TrailingFrame % HashInterval) == 0))
+            if (Session.MaxPlayers > 1 && Tss.TrailingFrame > _lastHashedFrame &&
+                ((Tss.TrailingFrame % HashInterval) == 0))
             {
                 DumpGameState();
                 PerformHashCheck();
             }
         }
 
-        /// <summary>
-        /// Dumps the state of all components.
-        /// </summary>
+        /// <summary>Dumps the state of all components.</summary>
         [Conditional("DEBUG")]
         private void DumpGameState()
         {
@@ -142,9 +134,8 @@ namespace Engine.Controller
         }
 
         /// <summary>
-        /// Perform a hash check by hashing the local simulation and sending the values
-        /// to our clients so they can compare it to the hash of their simulation at
-        /// that frame.
+        ///     Perform a hash check by hashing the local simulation and sending the values to our clients so they can compare
+        ///     it to the hash of their simulation at that frame.
         /// </summary>
         private void PerformHashCheck()
         {
@@ -167,9 +158,8 @@ namespace Engine.Controller
         }
 
         /// <summary>
-        /// Adjust the game speed by finding the slowest participant (the one
-        /// with the highest load), and adjusting the speed so that he will
-        /// not fall behind.
+        ///     Adjust the game speed by finding the slowest participant (the one with the highest load), and adjusting the
+        ///     speed so that he will not fall behind.
         /// </summary>
         private void AdjustSpeed()
         {
@@ -198,9 +188,7 @@ namespace Engine.Controller
 
         #region Modify simulation
 
-        /// <summary>
-        /// Apply a command.
-        /// </summary>
+        /// <summary>Apply a command.</summary>
         /// <param name="command">the command to send.</param>
         protected override void Apply(FrameCommand command)
         {
@@ -210,7 +198,8 @@ namespace Engine.Controller
             }
             else if (command.Frame > Tss.CurrentFrame + MaxCommandLead)
             {
-                Logger.Trace("Client command too far into the future: {0} > {1}. Ignoring.", command.Frame, Tss.CurrentFrame + MaxCommandLead);
+                Logger.Trace("Client command too far into the future: {0} > {1}. Ignoring.", command.Frame,
+                             Tss.CurrentFrame + MaxCommandLead);
             }
             else
             {
@@ -227,9 +216,7 @@ namespace Engine.Controller
 
         #region Event handling
 
-        /// <summary>
-        /// Reset speed and load information for a client when he leaves.
-        /// </summary>
+        /// <summary>Reset speed and load information for a client when he leaves.</summary>
         private void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs)e;
@@ -245,9 +232,7 @@ namespace Engine.Controller
 
         #region Protocol layer
 
-        /// <summary>
-        /// Takes care of server side TSS synchronization logic.
-        /// </summary>
+        /// <summary>Takes care of server side TSS synchronization logic.</summary>
         protected override FrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
         {
             var args = (ServerDataEventArgs)e;
@@ -255,102 +240,102 @@ namespace Engine.Controller
             switch (type)
             {
                 case TssControllerMessage.Command:
+                {
+                    // Normal command, forward it if it's valid.
+                    var command = base.UnwrapDataForReceive(e);
+
+                    // Validate player number (avoid command injection for
+                    // other players).
+                    if (command.PlayerNumber == args.Player.Number)
                     {
-                        // Normal command, forward it if it's valid.
-                        var command = base.UnwrapDataForReceive(e);
-
-                        // Validate player number (avoid command injection for
-                        // other players).
-                        if (command.PlayerNumber == args.Player.Number)
-                        {
-                            // All green.
-                            return command;
-                        }
-
-                        Logger.Warn("Received invalid packet (player number mismatch).");
-
-                        // Disconnect the player, as this might have been a
-                        // hacking attempt.
-                        Session.Disconnect(Session.GetPlayer(args.Player.Number));
-
-                        // Ignore the command.
-                        return null;
+                        // All green.
+                        return command;
                     }
+
+                    Logger.Warn("Received invalid packet (player number mismatch).");
+
+                    // Disconnect the player, as this might have been a
+                    // hacking attempt.
+                    Session.Disconnect(Session.GetPlayer(args.Player.Number));
+
+                    // Ignore the command.
+                    return null;
+                }
                 case TssControllerMessage.Synchronize:
+                {
+                    // Client re-synchronizing.
+
+                    // Get the frame the client is at.
+                    var clientFrame = args.Data.ReadInt64();
+
+                    // Get performance information of the client.
+                    _clientLoads[args.Player.Number] = args.Data.ReadSingle();
+
+                    // Re-evaluate at what speed we want to run.
+                    AdjustSpeed();
+
+                    // Send our reply.
+                    using (var packet = new Packet())
                     {
-                        // Client re-synchronizing.
-
-                        // Get the frame the client is at.
-                        var clientFrame = args.Data.ReadInt64();
-
-                        // Get performance information of the client.
-                        _clientLoads[args.Player.Number] = args.Data.ReadSingle();
-
-                        // Re-evaluate at what speed we want to run.
-                        AdjustSpeed();
-
-                        // Send our reply.
-                        using (var packet = new Packet())
-                        {
-                            packet
-                                // Message type.
-                                .Write((byte)TssControllerMessage.Synchronize)
-                                // For reference, the frame the client sent this message.
-                                .Write(clientFrame)
-                                // The current server frame, to allow the client to compute
-                                // the round trip time.
-                                .Write(Tss.CurrentFrame)
-                                // The current speed the game should run at.
-                                .Write(AdjustedSpeed);
-                            Session.SendTo(args.Player, packet);
-                        }
-                        break;
+                        packet
+                            // Message type.
+                            .Write((byte)TssControllerMessage.Synchronize)
+                            // For reference, the frame the client sent this message.
+                            .Write(clientFrame)
+                            // The current server frame, to allow the client to compute
+                            // the round trip time.
+                            .Write(Tss.CurrentFrame)
+                            // The current speed the game should run at.
+                            .Write(AdjustedSpeed);
+                        Session.SendTo(args.Player, packet);
                     }
+                    break;
+                }
 
                 case TssControllerMessage.GameState:
+                {
+                    // Client needs game state.
+                    var hasher = new Hasher();
+                    hasher.Write(Tss.TrailingSimulation);
+                    using (var packet = new Packet())
                     {
-                        // Client needs game state.
-                        var hasher = new Hasher();
-                        hasher.Write(Tss.TrailingSimulation);
-                        using (var packet = new Packet())
-                        {
-                            packet
-                                // Message type.
-                                .Write((byte)TssControllerMessage.GameState)
-                                // Hash value for validation.
-                                .Write(hasher.Value)
-                                // Actual game state, including the TSS wrapper.
-                                .Write(Tss);
-                            Session.SendTo(args.Player, packet);
-                        }
-                        break;
+                        packet
+                            // Message type.
+                            .Write((byte)TssControllerMessage.GameState)
+                            // Hash value for validation.
+                            .Write(hasher.Value)
+                            // Actual game state, including the TSS wrapper.
+                            .Write(Tss);
+                        Session.SendTo(args.Player, packet);
                     }
+                    break;
+                }
 
                 case TssControllerMessage.GameStateDump:
+                {
+                    // Got a game state dump from a client due to hash check failure.
+                    var frame = args.Data.ReadInt64();
+                    if (!_gameStates.ContainsKey(frame))
                     {
-                        // Got a game state dump from a client due to hash check failure.
-                        var frame = args.Data.ReadInt64();
-                        if (!_gameStates.ContainsKey(frame))
-                        {
-                            Logger.Warn("Got a game state dump for a frame we don't have the local dump for anymore.");
-                            return null;
-                        }
-
-                        // Get the id for the dump for easier file matching.
-                        var dumpId = args.Data.ReadString();
-
-                        try
-                        {
-                            // Create actual game dump and write it to file.
-                            WriteGameState(frame, _gameStates[frame], dumpId + "_server.txt");
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.ErrorException("Failed writing server desynchronization dump.", ex);
-                        }
-
-                        break;
+                        Logger.Warn("Got a game state dump for a frame we don't have the local dump for anymore.");
+                        return null;
                     }
+
+                    // Get the id for the dump for easier file matching.
+                    var dumpId = args.Data.ReadString();
+
+                    try
+                    {
+                        // Create actual game dump and write it to file.
+                        WriteGameState(frame, _gameStates[frame], dumpId + "_server.txt");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Failed writing server desynchronization dump.", ex);
+                    }
+
+                    break;
+                }
             }
             return null;
         }

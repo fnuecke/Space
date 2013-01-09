@@ -12,16 +12,12 @@ using WorldBounds = Engine.Math.RectangleF;
 
 namespace Engine.Physics.Components
 {
-    /// <summary>
-    /// A circular fixture with a set radius and offset to the body's local origin.
-    /// </summary>
+    /// <summary>A circular fixture with a set radius and offset to the body's local origin.</summary>
     public sealed class CircleFixture : Fixture
     {
         #region Fields
 
-        /// <summary>
-        /// The position relative to the local origin of the body this circle is attached to.
-        /// </summary>
+        /// <summary>The position relative to the local origin of the body this circle is attached to.</summary>
         internal LocalPoint Center;
 
         #endregion
@@ -29,30 +25,26 @@ namespace Engine.Physics.Components
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CircleFixture"/> class.
+        ///     Initializes a new instance of the <see cref="CircleFixture"/> class.
         /// </summary>
-        public CircleFixture() : base(FixtureType.Circle)
-        {
-        }
+        public CircleFixture() : base(FixtureType.Circle) {}
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         /// <returns></returns>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherCircle = (CircleFixture)other;
+            var otherCircle = (CircleFixture) other;
             Center = otherCircle.Center;
 
             return this;
         }
 
         /// <summary>
-        /// Initializes the component with the specified offset relative to the body's
-        /// local origin and the specified radius.
+        ///     Initializes the component with the specified offset relative to the body's local origin and the specified
+        ///     radius.
         /// </summary>
         /// <param name="radius">The radius.</param>
         /// <param name="position">The position.</param>
@@ -67,10 +59,7 @@ namespace Engine.Physics.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -82,10 +71,8 @@ namespace Engine.Physics.Components
 
         #region Methods
 
-        /// <summary>
-        /// Test the specified point for containment in this fixture.
-        /// </summary>
-        /// <param name="localPoint">The point in local coordiantes.</param>
+        /// <summary>Test the specified point for containment in this fixture.</summary>
+        /// <param name="localPoint">The point in local coordinates.</param>
         /// <returns>Whether the point is contained in this fixture or not.</returns>
         public override bool TestPoint(Vector2 localPoint)
         {
@@ -94,9 +81,8 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Get the mass data for this fixture. The mass data is based on the density and
-        /// the shape. The rotational inertia is about the shape's origin. This operation
-        /// may be expensive.
+        ///     Get the mass data for this fixture. The mass data is based on the density and the shape. The rotational
+        ///     inertia is about the shape's origin. This operation may be expensive.
         /// </summary>
         /// <param name="mass">The mass of this fixture.</param>
         /// <param name="center">The center of mass relative to the local origin.</param>
@@ -110,9 +96,7 @@ namespace Engine.Physics.Components
             inertia = mass * (0.5f * Radius * Radius + Vector2.Dot(Center, Center));
         }
 
-        /// <summary>
-        /// Computes the global bounds of this fixture given the specified body transform.
-        /// </summary>
+        /// <summary>Computes the global bounds of this fixture given the specified body transform.</summary>
         /// <param name="transform">The world transform of the body.</param>
         /// <returns>The global bounds of this fixture.</returns>
         internal override WorldBounds ComputeBounds(WorldTransform transform)

@@ -4,16 +4,12 @@ using System.Reflection;
 
 namespace Space
 {
-    /// <summary>
-    /// Program entry.
-    /// </summary>
+    /// <summary>Program entry.</summary>
     partial class Program
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
+        /// <summary>The main entry point for the application.</summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             using (var game = new Program())
             {
@@ -25,8 +21,12 @@ namespace Space
                 const string build = "Release";
 #endif
                 Logger.Info("--------------------------------------------------------------------------------");
-                Logger.Info("{0} {1} (Attached debugger: {2}) running under {3}",
-                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
+                Logger.Info(
+                    "{0} {1} (Attached debugger: {2}) running under {3}",
+                    assembly.Name,
+                    build,
+                    Debugger.IsAttached,
+                    Environment.OSVersion.VersionString);
                 Logger.Info("Build Version: {0}", assembly.Version);
                 Logger.Info("CLR Version: {0}", Environment.Version);
                 Logger.Info("CPU Count: {0}", Environment.ProcessorCount);

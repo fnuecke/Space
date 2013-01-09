@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Engine.Collections;
 using Engine.FarCollections;
@@ -18,40 +19,31 @@ using Microsoft.Xna.Framework;
 namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
-    /// This class represents a simple index structure for nearest neighbor
-    /// queries. It uses a grid structure for indexing, and will return lists
-    /// of entities in cells near a query point.
+    ///     This class represents a simple index structure for nearest neighbor queries. It uses a grid structure for
+    ///     indexing, and will return lists of entities in cells near a query point.
     /// </summary>
     public sealed class IndexSystem : AbstractComponentSystem<Index>, IUpdatingSystem, IMessagingSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
 
         #region Group number distribution
 
-        /// <summary>
-        /// Next group index dealt out.
-        /// </summary>
+        /// <summary>Next group index dealt out.</summary>
         private static byte _nextGroup = 1;
 
-        /// <summary>
-        /// Reserves a group number for use.
-        /// </summary>
+        /// <summary>Reserves a group number for use.</summary>
         /// <returns>The reserved group number.</returns>
         public static byte GetGroup()
         {
             return GetGroups(1);
         }
 
-        /// <summary>
-        /// Reserves multiple group numbers for use.
-        /// </summary>
+        /// <summary>Reserves multiple group numbers for use.</summary>
         /// <param name="range">The number of group numbers to reserve.</param>
         /// <returns>The start of the range of reserved group numbers.</returns>
         public static byte GetGroups(byte range)
@@ -69,48 +61,20 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Properties
 
-        /// <summary>
-        /// Total number of index structures currently in use.
-        /// </summary>
-        public int NumIndexes
+        /// <summary>Total number of index structures currently in use.</summary>
+        public int IndexCount
         {
-            get
-            {
-                var count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        ++count;
-                    }
-                }
-                return count;
-            }
+            get { return _trees.Count(index => index != null); }
         }
 
-        /// <summary>
-        /// Total number of entries over all index structures.
-        /// </summary>
+        /// <summary>Total number of entries over all index structures.</summary>
         public int Count
         {
-            get
-            {
-                var count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        count += index.Count;
-                    }
-                }
-                return count;
-            }
+            get { return _trees.Where(index => index != null).Sum(index => index.Count); }
         }
 
-        /// <summary>
-        /// Gets the list of entites for which the index entry changed.
-        /// </summary>
-        public IEnumerable<int> ChangedEntites
+        /// <summary>Gets the list of entities for which the index entry changed.</summary>
+        public IEnumerable<int> ChangedEntities
         {
             get { return _changed; }
         }
@@ -119,27 +83,18 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Fields
 
-        /// <summary>
-        /// The number of items in a single cell allowed before we try splitting it.
-        /// </summary>
-        private int _maxEntriesPerNode;
+        /// <summary>The number of items in a single cell allowed before we try splitting it.</summary>
+        private readonly int _maxEntriesPerNode;
 
-        /// <summary>
-        /// The minimum bounds size of a node along an axis, used to stop splitting
-        /// at a defined accuracy.
-        /// </summary>
-        private int _minNodeBounds;
+        /// <summary>The minimum bounds size of a node along an axis, used to stop splitting at a defined accuracy.</summary>
+        private readonly int _minNodeBounds;
 
-        /// <summary>
-        /// The actual indexes we're using, mapping entity positions to the
-        /// entities, allowing faster range queries.
-        /// </summary>
+        /// <summary>The actual indexes we're using, mapping entity positions to the entities, allowing faster range queries.</summary>
         [CopyIgnore, PacketizerIgnore]
-        private FarCollections.SpatialHashedQuadTree<int>[] _trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof(ulong) * 8];
+        private FarCollections.SpatialHashedQuadTree<int>[] _trees =
+            new FarCollections.SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
 
-        /// <summary>
-        /// List of entities for which the index entry changed in the last update.
-        /// </summary>
+        /// <summary>List of entities for which the index entry changed in the last update.</summary>
         [CopyIgnore, PacketizerIgnore]
         private HashSet<int> _changed = new HashSet<int>();
 
@@ -147,14 +102,12 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new index system using the specified constraints for indexes.
-        /// </summary>
-        /// <param name="maxEntriesPerNode">The maximum number of entries per
-        /// node before the node will be split.</param>
-        /// <param name="minNodeBounds">The minimum bounds size of a node, i.e.
-        /// nodes of this size or smaller won't be split regardless of the
-        /// number of entries in them.</param>
+        /// <summary>Creates a new index system using the specified constraints for indexes.</summary>
+        /// <param name="maxEntriesPerNode">The maximum number of entries per node before the node will be split.</param>
+        /// <param name="minNodeBounds">
+        ///     The minimum bounds size of a node, i.e. nodes of this size or smaller won't be split
+        ///     regardless of the number of entries in them.
+        /// </param>
         public IndexSystem(int maxEntriesPerNode, int minNodeBounds)
         {
             _maxEntriesPerNode = maxEntriesPerNode;
@@ -165,45 +118,40 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Adds entities that got an index component to all their indexes.
-        /// </summary>
+        /// <summary>Adds entities that got an index component to all their indexes.</summary>
         /// <param name="component">The component that was added.</param>
         public override void OnComponentAdded(Component component)
         {
             base.OnComponentAdded(component);
 
-            if (component is Index)
+            var index = component as Index;
+            if (index != null)
             {
-                AddEntity(component.Entity, ((Index)component).IndexGroupsMask);
+                AddEntity(index.Entity, index.IndexGroupsMask);
             }
         }
 
-        /// <summary>
-        /// Remove entities that had their index component removed from all
-        /// indexes.
-        /// </summary>
+        /// <summary>Remove entities that had their index component removed from all indexes.</summary>
         /// <param name="component">The component.</param>
         public override void OnComponentRemoved(Component component)
         {
             base.OnComponentRemoved(component);
 
-            if (component is Index)
+            var index = component as Index;
+            if (index != null)
             {
                 // Remove from any indexes the entity was part of.
-                foreach (var tree in TreesForGroups(((Index)component).IndexGroupsMask))
+                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
-                    tree.Remove(component.Entity);
+                    tree.Remove(index.Entity);
                 }
 
                 // Remove from changed list.
-                _changed.Remove(component.Entity);
+                _changed.Remove(index.Entity);
             }
         }
 
-        /// <summary>
-        /// Updates the index based on translations that happened this frame.
-        /// </summary>
+        /// <summary>Updates the index based on translations that happened this frame.</summary>
         /// <param name="frame">The current simulation frame.</param>
         public void Update(long frame)
         {
@@ -211,12 +159,10 @@ namespace Engine.ComponentSystem.Common.Systems
             _changed.Clear();
 
             // Reset query count until next run.
-            _numQueriesSinceLastUpdate = 0;
+            _queryCountSinceLastUpdate = 0;
         }
 
-        /// <summary>
-        /// Handles position changes of indexed components.
-        /// </summary>
+        /// <summary>Handles position changes of indexed components.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -252,18 +198,18 @@ namespace Engine.ComponentSystem.Common.Systems
                     var m = cm.Value;
 
                     // Check if the entity is indexable.
-                    var index = ((Index)Manager.GetComponent(m.Entity, Index.TypeId));
+                    var index = ((Index) Manager.GetComponent(m.Entity, Index.TypeId));
                     if (index == null)
                     {
                         return;
                     }
 
                     var bounds = m.Bounds;
-                    var transform = ((Transform)Manager.GetComponent(m.Entity, Transform.TypeId));
+                    var transform = ((Transform) Manager.GetComponent(m.Entity, Transform.TypeId));
                     if (transform != null)
                     {
-                        bounds.X = (int)transform.Translation.X - bounds.Width / 2;
-                        bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
+                        bounds.X = (int) transform.Translation.X - bounds.Width / 2;
+                        bounds.Y = (int) transform.Translation.Y - bounds.Height / 2;
                     }
 
                     // Update all indexes the entity is part of.
@@ -290,17 +236,17 @@ namespace Engine.ComponentSystem.Common.Systems
                     var m = cm.Value;
 
                     // Check if the entity is indexable.
-                    var index = ((Index)Manager.GetComponent(m.Entity, Index.TypeId));
+                    var index = ((Index) Manager.GetComponent(m.Entity, Index.TypeId));
                     if (index == null)
                     {
                         return;
                     }
 
                     var bounds = index.Bounds;
-                    bounds.X = (int)m.CurrentPosition.X - bounds.Width / 2;
-                    bounds.Y = (int)m.CurrentPosition.Y - bounds.Height / 2;
+                    bounds.X = (int) m.CurrentPosition.X - bounds.Width / 2;
+                    bounds.Y = (int) m.CurrentPosition.Y - bounds.Height / 2;
 
-                    var velocity = ((Velocity)Manager.GetComponent(m.Entity, Velocity.TypeId));
+                    var velocity = ((Velocity) Manager.GetComponent(m.Entity, Velocity.TypeId));
                     var delta = velocity != null ? velocity.Value : Vector2.Zero;
 
                     var changed = false;
@@ -324,9 +270,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Entity lookup
 
-        /// <summary>
-        /// Get all entities in the specified range of the query point.
-        /// </summary>
+        /// <summary>Get all entities in the specified range of the query point.</summary>
         /// <param name="center">The point to use as a query point.</param>
         /// <param name="radius">The distance up to which to get neighbors.</param>
         /// <param name="results">The list to use for storing the results.</param>
@@ -336,14 +280,12 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
+                Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
                 tree.Find(center, radius, results);
             }
         }
 
-        /// <summary>
-        /// Get all entities contained in the specified rectangle.
-        /// </summary>
+        /// <summary>Get all entities contained in the specified rectangle.</summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
@@ -352,15 +294,12 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
+                Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
                 tree.Find(rectangle, results);
             }
         }
 
-        /// <summary>
-        /// Gets the bounds for the specified entity in the first of the specified
-        /// groups containing the entity.
-        /// </summary>
+        /// <summary>Gets the bounds for the specified entity in the first of the specified groups containing the entity.</summary>
         /// <param name="entity">The entity.</param>
         /// <param name="groups">The groups.</param>
         /// <returns></returns>
@@ -380,10 +319,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Utility methods
 
-        /// <summary>
-        /// Utility method used to create indexes flagged in the specified bit mask
-        /// if they don't already exist.
-        /// </summary>
+        /// <summary>Utility method used to create indexes flagged in the specified bit mask if they don't already exist.</summary>
         /// <param name="groups">The groups to create index structures for.</param>
         private void EnsureIndexesExist(ulong groups)
         {
@@ -400,9 +336,8 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>
-        /// Utility method that returns a list of all trees flagged in the
-        /// specified bit mask. Calling this a second time invalidates the
-        /// reference to a list returned by the previous call.
+        ///     Utility method that returns a list of all trees flagged in the specified bit mask. Calling this a second time
+        ///     invalidates the reference to a list returned by the previous call.
         /// </summary>
         /// <param name="groups">The groups to get the indexes for.</param>
         /// <returns>A list of the specified indexes.</returns>
@@ -420,9 +355,7 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        /// <summary>
-        /// Adds the specified entity to all indexes specified in groups.
-        /// </summary>
+        /// <summary>Adds the specified entity to all indexes specified in groups.</summary>
         /// <param name="entity">The entity to add.</param>
         /// <param name="groups">The indexes to add to.</param>
         private void AddEntity(int entity, ulong groups)
@@ -432,16 +365,16 @@ namespace Engine.ComponentSystem.Common.Systems
 
             // Compute the bounds for the indexable as well as possible.
             var bounds = new FarRectangle();
-            var collidable = ((Collidable)Manager.GetComponent(entity, Collidable.TypeId));
+            var collidable = ((Collidable) Manager.GetComponent(entity, Collidable.TypeId));
             if (collidable != null)
             {
                 bounds = collidable.ComputeBounds();
             }
-            var transform = ((Transform)Manager.GetComponent(entity, Transform.TypeId));
+            var transform = ((Transform) Manager.GetComponent(entity, Transform.TypeId));
             if (transform != null)
             {
-                bounds.X = (int)transform.Translation.X - bounds.Width / 2;
-                bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
+                bounds.X = (int) transform.Translation.X - bounds.Width / 2;
+                bounds.Y = (int) transform.Translation.Y - bounds.Height / 2;
             }
 
             // Add the entity to all its indexes.
@@ -459,24 +392,18 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <remarks>
-        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        /// to true.
+        ///     Must be overridden in subclasses setting <c>ShouldSynchronize</c>
+        ///     to true.
         /// </remarks>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
-            for (var i = 0; i < _trees.Length; ++i)
-            {
-                var tree = _trees[i];
+            foreach (var tree in _trees) {
                 if (tree == null)
                 {
                     packet.Write(0);
@@ -499,12 +426,10 @@ namespace Engine.ComponentSystem.Common.Systems
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <remarks>
-        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        /// to true.
+        ///     Must be overridden in subclasses setting <c>ShouldSynchronize</c>
+        ///     to true.
         /// </remarks>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
@@ -554,7 +479,9 @@ namespace Engine.ComponentSystem.Common.Systems
                 {
                     continue;
                 }
-                w.AppendIndent(indent + 1).Write(i); w.Write(" = "); w.Dump(tree, indent + 1);
+                w.AppendIndent(indent + 1).Write(i);
+                w.Write(" = ");
+                w.Dump(tree, indent + 1);
             }
             w.AppendIndent(indent).Write("}");
 
@@ -579,42 +506,34 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        ///     Servers as a copy constructor that returns a new instance of the same type that is freshly initialized.
+        ///     <para>This takes care of duplicating reference types to a new copy of that type (e.g. collections).</para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (IndexSystem)base.NewInstance();
+            var copy = (IndexSystem) base.NewInstance();
 
-            copy._trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof(ulong) * 8];
+            copy._trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
             copy._changed = new HashSet<int>();
 
             return copy;
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
+        /// <remarks>The manager for the system to copy into must be set to the manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (IndexSystem)into;
+            var copy = (IndexSystem) into;
 
             foreach (var tree in copy._trees)
             {
@@ -646,23 +565,20 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Debug stuff
 
         /// <summary>
-        /// Total number of queries over all index structures since the
-        /// last update. This will always be zero when not running in
-        /// debug mode.
+        ///     Total number of queries over all index structures since the last update. This will always be zero when not
+        ///     running in debug mode.
         /// </summary>
-        public int NumQueriesSinceLastUpdate
+        public int QueryCountSinceLastUpdate
         {
-            get { return _numQueriesSinceLastUpdate; }
+            get { return _queryCountSinceLastUpdate; }
         }
 
-        /// <summary>
-        /// For ref usage in interlocked update.
-        /// </summary>
-        private int _numQueriesSinceLastUpdate;
+        /// <summary>For ref usage in interlocked update.</summary>
+        private int _queryCountSinceLastUpdate;
 
         /// <summary>
-        /// Renders all index structures matching the specified index group bit mask
-        /// using the specified shape at the specified translation.
+        ///     Renders all index structures matching the specified index group bit mask using the specified shape at the
+        ///     specified translation.
         /// </summary>
         /// <param name="groups">Bit mask determining which indexes to draw.</param>
         /// <param name="shape">Shape to use for drawing.</param>

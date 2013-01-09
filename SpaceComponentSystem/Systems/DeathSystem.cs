@@ -9,17 +9,12 @@ using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Handles the death of entities due to leaving the valid area or being
-    /// killed an not respawning.
-    /// </summary>
+    /// <summary>Handles the death of entities due to leaving the valid area or being killed an not respawning.</summary>
     public sealed class DeathSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
@@ -27,8 +22,8 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// List of entities to kill when we update. This is accumulated from
-        /// translation events, to allow thread safe removal in one go.
+        ///     List of entities to kill when we update. This is accumulated from translation events, to allow thread safe
+        ///     removal in one go.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private HashSet<int> _entitiesToRemove = new HashSet<int>();
@@ -37,9 +32,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Removes entities that died this frame from the manager.
-        /// </summary>
+        /// <summary>Removes entities that died this frame from the manager.</summary>
         /// <param name="frame">The current simulation frame.</param>
         public void Update(long frame)
         {
@@ -51,9 +44,7 @@ namespace Space.ComponentSystem.Systems
             _entitiesToRemove.Clear();
         }
 
-        /// <summary>
-        /// Kill of an entity, marking it for removal.
-        /// </summary>
+        /// <summary>Kill of an entity, marking it for removal.</summary>
         /// <param name="entity">The entity to kill.</param>
         public void MarkForRemoval(int entity)
         {
@@ -63,9 +54,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Checks if an entity died, and handles death accordingly.
-        /// </summary>
+        /// <summary>Checks if an entity died, and handles death accordingly.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -78,19 +67,19 @@ namespace Space.ComponentSystem.Systems
 
                     // Play explosion effect at point of death.
                     var particleSystem =
-                        (CameraCenteredParticleEffectSystem)Manager.GetSystem(ParticleEffectSystem.TypeId);
+                        (CameraCenteredParticleEffectSystem) Manager.GetSystem(ParticleEffectSystem.TypeId);
                     if (particleSystem != null)
                     {
                         particleSystem.Play("Effects/BasicExplosion", entity);
                     }
-                    var soundSystem = (CameraCenteredSoundSystem)Manager.GetSystem(SoundSystem.TypeId);
+                    var soundSystem = (CameraCenteredSoundSystem) Manager.GetSystem(SoundSystem.TypeId);
                     if (soundSystem != null)
                     {
                         soundSystem.Play("Explosion", entity);
                     }
 
                     // See if the entity respawns.
-                    var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
+                    var respawn = ((Respawn) Manager.GetComponent(entity, Respawn.TypeId));
                     if (respawn == null)
                     {
                         // Entity does not respawn, remove it. This can be triggered from
@@ -118,11 +107,11 @@ namespace Space.ComponentSystem.Systems
                     // Check our new cell after the position change.
                     var position = m.CurrentPosition;
                     var cellId = BitwiseMagic.Pack(
-                        (int)position.X >> CellSystem.CellSizeShiftAmount,
-                        (int)position.Y >> CellSystem.CellSizeShiftAmount);
+                        (int) position.X >> CellSystem.CellSizeShiftAmount,
+                        (int) position.Y >> CellSystem.CellSizeShiftAmount);
 
                     // If the cell changed, check if we're out of bounds.
-                    if (!((CellSystem)Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
+                    if (!((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
                     {
                         // Dead space, kill it.
                         Manager.RemoveEntity(m.Entity);
@@ -132,22 +121,17 @@ namespace Space.ComponentSystem.Systems
         }
 
         #endregion
-        
+
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        ///     Servers as a copy constructor that returns a new instance of the same type that is freshly initialized.
+        ///     <para>This takes care of duplicating reference types to a new copy of that type (e.g. collections).</para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (DeathSystem)base.NewInstance();
+            var copy = (DeathSystem) base.NewInstance();
 
             copy._entitiesToRemove = new HashSet<int>();
 
@@ -155,19 +139,18 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (DeathSystem)into;
+            var copy = (DeathSystem) into;
 
             copy._entitiesToRemove.Clear();
             copy._entitiesToRemove.UnionWith(_entitiesToRemove);

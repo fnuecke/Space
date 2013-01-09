@@ -8,36 +8,30 @@ using Engine.Simulation.Commands;
 namespace Engine.Simulation
 {
     /// <summary>
-    /// Base class for state implementation.
-    /// 
-    /// <para>
-    /// State implementations sub-classing this base class must take care of
-    /// (at least) two things:
-    /// - Handling of commands (via the HandleCommand function).
-    /// - Cloning of the state (may use CloneTo to take care of the basics).
-    /// </para>
+    ///     Base class for state implementation.
+    ///     <para>
+    ///         State implementations sub-classing this base class must take care of (at least) two things:
+    ///         <list type="bullet">
+    ///             <item>Handling of commands (via the HandleCommand function).</item>
+    ///             <item>Cloning of the state (may use CloneTo to take care of the basics).</item>
+    ///         </list>
+    ///     </para>
     /// </summary>
     public abstract class AbstractSimulation : ISimulation
     {
         #region Properties
 
-        /// <summary>
-        /// The current frame of the simulation the state represents.
-        /// </summary>
+        /// <summary>The current frame of the simulation the state represents.</summary>
         public long CurrentFrame { get; private set; }
 
-        /// <summary>
-        /// All entities registered with this manager.
-        /// </summary>
+        /// <summary>All entities registered with this manager.</summary>
         public IManager Manager { get; private set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// List of queued commands to execute in the next step.
-        /// </summary>
+        /// <summary>List of queued commands to execute in the next step.</summary>
         [PacketizerIgnore]
         protected List<Command> Commands = new List<Command>();
 
@@ -46,7 +40,7 @@ namespace Engine.Simulation
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AbstractSimulation"/> class.
+        ///     Initializes a new instance of the <see cref="AbstractSimulation"/> class.
         /// </summary>
         protected AbstractSimulation()
         {
@@ -57,9 +51,7 @@ namespace Engine.Simulation
 
         #region Accessors
 
-        /// <summary>
-        /// Apply a given command to the simulation state.
-        /// </summary>
+        /// <summary>Apply a given command to the simulation state.</summary>
         /// <param name="command">the command to apply.</param>
         public virtual void PushCommand(Command command)
         {
@@ -71,9 +63,7 @@ namespace Engine.Simulation
 
         #region Logic
 
-        /// <summary>
-        /// Advance the simulation by one frame.
-        /// </summary>
+        /// <summary>Advance the simulation by one frame.</summary>
         public void Update()
         {
             // Increment frame number.
@@ -91,10 +81,9 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Implement this to handle commands. This will be called for each command
-        /// at the moment it should be applied. The implementation must be done in
-        /// a way that behaves the same for any permutation of a given set of non-equal
-        /// commands. I.e. the order of the command execution must not make a difference.
+        ///     Implement this to handle commands. This will be called for each command at the moment it should be applied.
+        ///     The implementation must be done in a way that behaves the same for any permutation of a given set of non-equal
+        ///     commands. I.e. the order of the command execution must not make a difference.
         /// </summary>
         /// <param name="command">the command to handle.</param>
         protected abstract void HandleCommand(Command command);
@@ -107,7 +96,7 @@ namespace Engine.Simulation
         public IWritablePacket Packetize(IWritablePacket packet)
         {
             // Serialize all pending commands for the next frame.
-            packet.WriteWithTypeInfo((ICollection<Command>)Commands);
+            packet.WriteWithTypeInfo((ICollection<Command>) Commands);
 
             return packet;
         }
@@ -140,14 +129,11 @@ namespace Engine.Simulation
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public ISimulation NewInstance()
         {
-            var copy = (AbstractSimulation)MemberwiseClone();
+            var copy = (AbstractSimulation) MemberwiseClone();
 
             copy.CurrentFrame = 0;
             copy.Manager = new Manager();
@@ -156,9 +142,7 @@ namespace Engine.Simulation
             return copy;
         }
 
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
         public virtual void CopyInto(ISimulation into)
@@ -166,7 +150,7 @@ namespace Engine.Simulation
             Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
             Debug.Assert(into != this);
 
-            var copy = (AbstractSimulation)into;
+            var copy = (AbstractSimulation) into;
 
             copy.CurrentFrame = CurrentFrame;
             Manager.CopyInto(copy.Manager);

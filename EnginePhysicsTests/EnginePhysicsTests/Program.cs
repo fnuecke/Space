@@ -11,7 +11,7 @@ namespace Engine.Physics.Tests
         /// </summary>
         private static void Main(string[] args)
         {
-            Packetizable.AddValueTypeOverloads(typeof(PacketXnaExtensions));
+            Packetizable.AddValueTypeOverloads(typeof(PacketExtensions));
 
             using (var game = new TestRunner())
             {

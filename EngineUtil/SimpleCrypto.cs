@@ -5,19 +5,16 @@ using System.Security.Cryptography;
 namespace Engine.Util
 {
     /// <summary>
-    /// Utility class that provides a simplified interface to
-    /// encrypting and decrypting data in the form of byte[]
-    /// using AES (via the RijndaelManaged class).
+    ///     Utility class that provides a simplified interface to encrypting and decrypting data in the form of byte[]
+    ///     using AES (via the RijndaelManaged class).
     /// </summary>
     public sealed class SimpleCrypto
     {
         #region Statics
 
-        /// <summary>
-        /// Generates a random key.
-        /// </summary>
+        /// <summary>Generates a random key.</summary>
         /// <returns>a new, random key.</returns>
-        static public byte[] GenerateKey()
+        public static byte[] GenerateKey()
         {
             using (var rm = new RijndaelManaged())
             {
@@ -26,11 +23,9 @@ namespace Engine.Util
             }
         }
 
-        /// <summary>
-        /// Generates a random initialization vector.
-        /// </summary>
+        /// <summary>Generates a random initialization vector.</summary>
         /// <returns>a new, random initialization vector.</returns>
-        static public byte[] GenerateVector()
+        public static byte[] GenerateVector()
         {
             using (var rm = new RijndaelManaged())
             {
@@ -43,23 +38,17 @@ namespace Engine.Util
 
         #region Fields
 
-        /// <summary>
-        /// The key to use for encrypting / decrypting data.
-        /// </summary>
+        /// <summary>The key to use for encrypting / decrypting data.</summary>
         private readonly byte[] _key;
 
-        /// <summary>
-        /// The initial vector to use.
-        /// </summary>
+        /// <summary>The initial vector to use.</summary>
         private readonly byte[] _vector;
 
         #endregion
 
         #region Constructor / Cleanup
 
-        /// <summary>
-        /// Creates a new cryptography provider using the given key and initialization vector.
-        /// </summary>
+        /// <summary>Creates a new cryptography provider using the given key and initialization vector.</summary>
         /// <param name="key">the key to use.</param>
         /// <param name="vector">the initialization vector to use.</param>
         public SimpleCrypto(byte[] key, byte[] vector)
@@ -80,9 +69,7 @@ namespace Engine.Util
 
         #region Methods
 
-        /// <summary>
-        /// Encrypts a complete byte array.
-        /// </summary>
+        /// <summary>Encrypts a complete byte array.</summary>
         /// <param name="value">the byte array to encrypt.</param>
         /// <returns>the encrypted data.</returns>
         public byte[] Encrypt(byte[] value)
@@ -90,9 +77,7 @@ namespace Engine.Util
             return Encrypt(value, 0, value.Length);
         }
 
-        /// <summary>
-        /// Encrypts part of a byte array.
-        /// </summary>
+        /// <summary>Encrypts part of a byte array.</summary>
         /// <param name="value">the byte array to encrypt.</param>
         /// <param name="offset">the position to start reading at.</param>
         /// <param name="length">the number of bytes to read.</param>
@@ -106,18 +91,20 @@ namespace Engine.Util
             using (var output = new MemoryStream())
             {
                 using (var rijndael = new RijndaelManaged())
-                using (var transform = rijndael.CreateEncryptor(_key, _vector))
-                using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
                 {
-                    stream.Write(value, offset, length);
+                    using (var transform = rijndael.CreateEncryptor(_key, _vector))
+                    {
+                        using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
+                        {
+                            stream.Write(value, offset, length);
+                        }
+                    }
                 }
                 return output.ToArray();
             }
         }
 
-        /// <summary>
-        /// Decrypts a complete byte array.
-        /// </summary>
+        /// <summary>Decrypts a complete byte array.</summary>
         /// <param name="value">the byte array to decrypt.</param>
         /// <returns>the decrypted data.</returns>
         public byte[] Decrypt(byte[] value)
@@ -125,9 +112,7 @@ namespace Engine.Util
             return Decrypt(value, 0, value.Length);
         }
 
-        /// <summary>
-        /// Decrypts part of a byte array.
-        /// </summary>
+        /// <summary>Decrypts part of a byte array.</summary>
         /// <param name="value">the byte array to decrypt.</param>
         /// <param name="offset">the position to start reading at.</param>
         /// <param name="length">the number of bytes to read.</param>
@@ -143,10 +128,14 @@ namespace Engine.Util
                 try
                 {
                     using (var rijndael = new RijndaelManaged())
-                    using (var transform = rijndael.CreateDecryptor(_key, _vector))
-                    using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
                     {
-                        stream.Write(value, offset, length);
+                        using (var transform = rijndael.CreateDecryptor(_key, _vector))
+                        {
+                            using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
+                            {
+                                stream.Write(value, offset, length);
+                            }
+                        }
                     }
                     return output.ToArray();
                 }

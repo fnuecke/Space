@@ -17,28 +17,21 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Handles firing of equipped weapons.
-    /// </summary>
+    /// <summary>Handles firing of equipped weapons.</summary>
     public sealed class WeaponControlSystem : AbstractParallelComponentSystem<WeaponControl>, IMessagingSystem
     {
         #region Fields
 
-        /// <summary>
-        /// Cooldowns of known weapon components.
-        /// </summary>
+        /// <summary>Cooldowns of known weapon components.</summary>
         [CopyIgnore, PacketizerIgnore]
         private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
 
-        /// <summary>
-        /// Randomizer used for sampling projectiles.
-        /// </summary>
+        /// <summary>Randomizer used for sampling projectiles.</summary>
         private MersenneTwister _random = new MersenneTwister(0);
 
         /// <summary>
-        /// List of projectiles we want to create. We iterate in parallel, but
-        /// the creation has do be done synchronously because the manager is
-        /// not thread safe.
+        ///     List of projectiles we want to create. We iterate in parallel, but the creation has do be done synchronously
+        ///     because the manager is not thread safe.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private List<PendingProjectile> _projectilesToCreate = new List<PendingProjectile>(16);
@@ -48,8 +41,8 @@ namespace Space.ComponentSystem.Systems
         #region Single allocation
 
         /// <summary>
-        /// Used to iterate the cooldown mapping. We change it (by changing single fields,
-        /// which seems to suffice) so we can't directly iterate over the key collection.
+        ///     Used to iterate the cooldown mapping. We change it (by changing single fields, which seems to suffice) so we
+        ///     can't directly iterate over the key collection.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private List<int> _reusableEntities = new List<int>();
@@ -80,14 +73,19 @@ namespace Space.ComponentSystem.Systems
             // Sort for arrays/collections isn't.
             foreach (var projectile in _projectilesToCreate.OrderBy(x => x.Entity))
             {
-                projectile.Factory.SampleProjectile(Manager, projectile.Entity, projectile.Offset, projectile.Rotation, projectile.Weapon, projectile.Faction, _random);
+                projectile.Factory.SampleProjectile(
+                    Manager,
+                    projectile.Entity,
+                    projectile.Offset,
+                    projectile.Rotation,
+                    projectile.Weapon,
+                    projectile.Faction,
+                    _random);
             }
             _projectilesToCreate.Clear();
         }
 
-        /// <summary>
-        /// Updates the component.
-        /// </summary>
+        /// <summary>Updates the component.</summary>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, WeaponControl component)
@@ -99,10 +97,11 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get components.
-            var attributes = (Attributes<AttributeType>)Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
-            var equipment = (ItemSlot)Manager.GetComponent(component.Entity, ItemSlot.TypeId);
-            var energy = (Energy)Manager.GetComponent(component.Entity, Energy.TypeId);
-            var faction = (Faction)Manager.GetComponent(component.Entity, Faction.TypeId);
+            var attributes =
+                (Attributes<AttributeType>) Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
+            var equipment = (ItemSlot) Manager.GetComponent(component.Entity, ItemSlot.TypeId);
+            var energy = (Energy) Manager.GetComponent(component.Entity, Energy.TypeId);
+            var faction = (Faction) Manager.GetComponent(component.Entity, Faction.TypeId);
 
             // Check all equipped weapon.
             foreach (var slot in equipment.AllSlots)
@@ -114,7 +113,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Skip if it's not a weapon.
-                var weapon = (Weapon)Manager.GetComponent(slot.Item, Weapon.TypeId);
+                var weapon = (Weapon) Manager.GetComponent(slot.Item, Weapon.TypeId);
                 if (weapon == null)
                 {
                     continue;
@@ -130,8 +129,9 @@ namespace Space.ComponentSystem.Systems
                 var energyConsumption = 0f;
                 if (weapon.Attributes.ContainsKey(AttributeType.WeaponEnergyConsumption))
                 {
-                    energyConsumption = attributes.GetValue(AttributeType.WeaponEnergyConsumption,
-                                                            weapon.Attributes[AttributeType.WeaponEnergyConsumption]);
+                    energyConsumption = attributes.GetValue(
+                        AttributeType.WeaponEnergyConsumption,
+                        weapon.Attributes[AttributeType.WeaponEnergyConsumption]);
                 }
                 if (energy.Value < energyConsumption)
                 {
@@ -142,10 +142,11 @@ namespace Space.ComponentSystem.Systems
                 var cooldown = 0f;
                 if (weapon.Attributes.ContainsKey(AttributeType.WeaponCooldown))
                 {
-                    cooldown = attributes.GetValue(AttributeType.WeaponCooldown,
-                                                   weapon.Attributes[AttributeType.WeaponCooldown]);
+                    cooldown = attributes.GetValue(
+                        AttributeType.WeaponCooldown,
+                        weapon.Attributes[AttributeType.WeaponCooldown]);
                 }
-                _cooldowns[weapon.Entity] = (int)(cooldown * Settings.TicksPerSecond);
+                _cooldowns[weapon.Entity] = (int) (cooldown * Settings.TicksPerSecond);
 
                 // Consume our energy.
                 energy.SetValue(energy.Value - energyConsumption);
@@ -153,24 +154,25 @@ namespace Space.ComponentSystem.Systems
                 // Compute spawn offset.
                 var offset = Vector2.Zero;
                 var rotation = 0f;
-                ((SpaceItemSlot)slot).Accumulate(ref offset, ref rotation);
-                
+                ((SpaceItemSlot) slot).Accumulate(ref offset, ref rotation);
+
                 // Generate projectiles.
                 foreach (var projectile in weapon.Projectiles)
                 {
-                    _projectilesToCreate.Add(new PendingProjectile
-                    {
-                        Factory = projectile,
-                        Entity = component.Entity,
-                        Offset = offset,
-                        Rotation = rotation,
-                        Weapon = weapon,
-                        Faction = faction.Value
-                    });
+                    _projectilesToCreate.Add(
+                        new PendingProjectile
+                        {
+                            Factory = projectile,
+                            Entity = component.Entity,
+                            Offset = offset,
+                            Rotation = rotation,
+                            Weapon = weapon,
+                            Faction = faction.Value
+                        });
                 }
 
                 // Play sound.
-                var soundSystem = (SoundSystem)Manager.GetSystem(SoundSystem.TypeId);
+                var soundSystem = (SoundSystem) Manager.GetSystem(SoundSystem.TypeId);
                 if (soundSystem != null)
                 {
                     soundSystem.Play(weapon.Sound, component.Entity);
@@ -178,9 +180,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Called when a component is removed.
-        /// </summary>
+        /// <summary>Called when a component is removed.</summary>
         /// <param name="component">The component.</param>
         public override void OnComponentRemoved(Component component)
         {
@@ -193,9 +193,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Handles item equipment to track cooldowns.
-        /// </summary>
+        /// <summary>Handles item equipment to track cooldowns.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -231,13 +229,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
@@ -252,17 +246,15 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
         {
             base.Depacketize(packet);
 
             _cooldowns.Clear();
-            var numCooldowns = packet.ReadInt32();
-            for (var i = 0; i < numCooldowns; i++)
+            var cooldownsCount = packet.ReadInt32();
+            for (var i = 0; i < cooldownsCount; i++)
             {
                 var key = packet.ReadInt32();
                 var value = packet.ReadInt32();
@@ -281,7 +273,9 @@ namespace Space.ComponentSystem.Systems
             w.AppendIndent(indent).Write("Cooldowns = {");
             foreach (var cooldown in _cooldowns)
             {
-                w.AppendIndent(indent + 1).Write(cooldown.Key); w.Write(" = "); w.Write(cooldown.Value);
+                w.AppendIndent(indent + 1).Write(cooldown.Key);
+                w.Write(" = ");
+                w.Write(cooldown.Value);
             }
             w.AppendIndent(indent).Write("}");
 
@@ -293,18 +287,13 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        ///     Servers as a copy constructor that returns a new instance of the same type that is freshly initialized.
+        ///     <para>This takes care of duplicating reference types to a new copy of that type (e.g. collections).</para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (WeaponControlSystem)base.NewInstance();
+            var copy = (WeaponControlSystem) base.NewInstance();
 
             copy._cooldowns = new Dictionary<int, int>();
             copy._random = new MersenneTwister(0);
@@ -315,22 +304,19 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
+        /// <remarks>The manager for the system to copy into must be set to the manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (WeaponControlSystem)into;
+            var copy = (WeaponControlSystem) into;
 
             copy._cooldowns.Clear();
             foreach (var item in _cooldowns)
@@ -343,39 +329,25 @@ namespace Space.ComponentSystem.Systems
 
         #region Types
 
-        /// <summary>
-        /// Storage for pending projectile generation.
-        /// </summary>
+        /// <summary>Storage for pending projectile generation.</summary>
         private sealed class PendingProjectile
         {
-            /// <summary>
-            /// The projectile type to create (via its factory).
-            /// </summary>
+            /// <summary>The projectile type to create (via its factory).</summary>
             public ProjectileFactory Factory;
 
-            /// <summary>
-            /// The entity that emitted the projectile.
-            /// </summary>
+            /// <summary>The entity that emitted the projectile.</summary>
             public int Entity;
 
-            /// <summary>
-            /// The offset of the projectile from its emitter.
-            /// </summary>
+            /// <summary>The offset of the projectile from its emitter.</summary>
             public Vector2 Offset;
 
-            /// <summary>
-            /// The rotation (angle) in which to emit the projectile.
-            /// </summary>
+            /// <summary>The rotation (angle) in which to emit the projectile.</summary>
             public float Rotation;
 
-            /// <summary>
-            /// The weapon that shot the projectile.
-            /// </summary>
+            /// <summary>The weapon that shot the projectile.</summary>
             public Weapon Weapon;
 
-            /// <summary>
-            /// The faction the shooter belongs to.
-            /// </summary>
+            /// <summary>The faction the shooter belongs to.</summary>
             public Factions Faction;
         }
 

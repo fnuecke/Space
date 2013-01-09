@@ -12,23 +12,16 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Messages
 {
-    /// <summary>
-    /// Called for each active contact before the solver runs.
-    /// </summary>
+    /// <summary>Called for each active contact before the solver runs.</summary>
     public struct PreSolve
     {
-        /// <summary>
-        /// The contact for which this message was sent.
-        /// </summary>
+        /// <summary>The contact for which this message was sent.</summary>
         public Contact Contact;
 
-        /// <summary>
-        /// The old manifold state.
-        /// </summary>
+        /// <summary>The old manifold state.</summary>
         internal Manifold OldManifold;
 
-        /// <summary>Computes the world manifold data for this contact. This is relatively
-        /// expensive, so use with care.</summary>
+        /// <summary>Computes the world manifold data for this contact. This is relatively expensive, so use with care.</summary>
         /// <param name="normal">The world contact normal.</param>
         /// <param name="points">The contact points.</param>
         public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
@@ -48,9 +41,13 @@ namespace Engine.Physics.Messages
             var radiusB = Contact.FixtureB.Radius;
 
             FixedArray2<WorldPoint> worldPoints;
-            OldManifold.ComputeWorldManifold(transformA, radiusA,
-                                             transformB, radiusB,
-                                             out normal, out worldPoints);
+            OldManifold.ComputeWorldManifold(
+                transformA,
+                radiusA,
+                transformB,
+                radiusB,
+                out normal,
+                out worldPoints);
             worldPoints.Count = OldManifold.PointCount;
             points = worldPoints;
         }

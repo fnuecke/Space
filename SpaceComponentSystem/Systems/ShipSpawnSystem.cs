@@ -13,23 +13,17 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Manages spawning dynamic objects for cells, such as random ships.
-    /// </summary>
+    /// <summary>Manages spawning dynamic objects for cells, such as random ships.</summary>
     public sealed class ShipSpawnSystem : AbstractUpdatingComponentSystem<ShipSpawner>, IMessagingSystem
     {
         #region Fields
 
-        /// <summary>
-        /// Randomizer used for sampling new ships and, when it applies, their
-        /// positions.
-        /// </summary>
+        /// <summary>Randomizer used for sampling new ships and, when it applies, their positions.</summary>
         private MersenneTwister _random = new MersenneTwister(0);
 
         /// <summary>
-        /// Tracks remaining number of mob groups to spawn per cell
-        /// (after a cell was toggled to 'living'). This is used to
-        /// spread the spawning across several frames to reduce freezes.
+        ///     Tracks remaining number of mob groups to spawn per cell (after a cell was toggled to 'living'). This is used
+        ///     to spread the spawning across several frames to reduce freezes.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private List<Tuple<ulong, int>> _cellSpawns = new List<Tuple<ulong, int>>();
@@ -44,11 +38,11 @@ namespace Space.ComponentSystem.Systems
             if (_cellSpawns.Count > 0)
             {
                 // Prefer cells with players in them.
-                var avatars = (AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId);
+                var avatars = (AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId);
                 var index = -1;
                 foreach (var avatar in avatars.Avatars)
                 {
-                    var avatarPosition = ((Transform)Manager.GetComponent(avatar, Transform.TypeId)).Translation;
+                    var avatarPosition = ((Transform) Manager.GetComponent(avatar, Transform.TypeId)).Translation;
                     var avatarCell = CellSystem.GetCellIdFromCoordinates(avatarPosition);
                     index = _cellSpawns.FindIndex(x => x.Item1 == avatarCell);
                     if (index >= 0)
@@ -68,7 +62,7 @@ namespace Space.ComponentSystem.Systems
                 _cellSpawns.RemoveAt(index);
 
                 // If the cell is still active (if it died we drop this entry) do the spawn.
-                if (((CellSystem)Manager.GetSystem(CellSystem.TypeId)).IsCellActive(spawn.Item1))
+                if (((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsCellActive(spawn.Item1))
                 {
                     ProcessSpawn(spawn.Item1);
                     // If there's stuff left to do push it back again.
@@ -82,9 +76,7 @@ namespace Space.ComponentSystem.Systems
             base.Update(frame);
         }
 
-        /// <summary>
-        /// Updates the component by checking if it's time to spawn a new entity.
-        /// </summary>
+        /// <summary>Updates the component by checking if it's time to spawn a new entity.</summary>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, ShipSpawner component)
@@ -95,8 +87,8 @@ namespace Space.ComponentSystem.Systems
             }
             else
             {
-                var faction = ((Faction)Manager.GetComponent(component.Entity, Faction.TypeId));
-                var translation = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
+                var faction = ((Faction) Manager.GetComponent(component.Entity, Faction.TypeId));
+                var translation = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
                 foreach (var target in component.Targets)
                 {
                     CreateAttackingShip(ref translation, target, faction.Value);
@@ -106,9 +98,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Processes a single spawn from the top of the spawn queue.
-        /// </summary>
+        /// <summary>Processes a single spawn from the top of the spawn queue.</summary>
         private void ProcessSpawn(ulong id)
         {
             // Get the cell position.
@@ -116,7 +106,7 @@ namespace Space.ComponentSystem.Systems
             CellSystem.GetCellCoordinatesFromId(id, out x, out y);
 
             // Get the cell info to know what faction we're spawning for.
-            var cellInfo = ((UniverseSystem)Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(id);
+            var cellInfo = ((UniverseSystem) Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(id);
 
             // The area covered by the cell.
             FarRectangle cellArea;
@@ -127,8 +117,8 @@ namespace Space.ComponentSystem.Systems
 
             // Get center point for spawn group.
             FarPosition spawnPoint;
-            spawnPoint.X = _random.NextInt32((int)cellArea.Left, (int)cellArea.Right);
-            spawnPoint.Y = _random.NextInt32((int)cellArea.Top, (int)cellArea.Bottom);
+            spawnPoint.X = _random.NextInt32((int) cellArea.Left, (int) cellArea.Right);
+            spawnPoint.Y = _random.NextInt32((int) cellArea.Top, (int) cellArea.Bottom);
 
             // Configuration for spawned ships.
             string[] ships;
@@ -183,18 +173,19 @@ namespace Space.ComponentSystem.Systems
                 // Get the configuration for this particular ship. If we don't have enough configurations
                 // we just re-use the last existing one.
                 var configuration = configurations != null && configurations.Length > 0
-                                 ? configurations[Math.Min(i, configurations.Length - 1)]
-                                 : null;
-                
+                                        ? configurations[Math.Min(i, configurations.Length - 1)]
+                                        : null;
+
                 // Get a position nearby the spawn (avoids spawning all ships in one point).
                 var spawnPosition = spawnPoint;
                 spawnPoint.X += _random.NextInt32(-100, 100);
                 spawnPoint.Y += _random.NextInt32(-100, 100);
 
                 // Create the ship and get the AI component.
-                var ship = EntityFactory.CreateAIShip(Manager, ships[i], cellInfo.Faction, spawnPosition, _random, configuration);
-                var ai = (ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId);
-                
+                var ship = EntityFactory.CreateAIShip(
+                    Manager, ships[i], cellInfo.Faction, spawnPosition, _random, configuration);
+                var ai = (ArtificialIntelligence) Manager.GetComponent(ship, ArtificialIntelligence.TypeId);
+
                 // Push fallback roam behavior, if an area has been specified.
                 ai.Roam(ref cellArea);
 
@@ -218,35 +209,29 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Creates an attacking ship.
-        /// </summary>
+        /// <summary>Creates an attacking ship.</summary>
         /// <param name="startPosition">The start position.</param>
         /// <param name="targetEntity">The target entity.</param>
         /// <param name="faction">The faction.</param>
         public void CreateAttackingShip(ref FarPosition startPosition, int targetEntity, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
-            var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
+            var ai = ((ArtificialIntelligence) Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
             ai.Attack(targetEntity);
         }
 
-        /// <summary>
-        /// Creates an attacking ship.
-        /// </summary>
+        /// <summary>Creates an attacking ship.</summary>
         /// <param name="startPosition">The start position.</param>
         /// <param name="targetPosition">The target position.</param>
         /// <param name="faction">The faction.</param>
         public void CreateAttackingShip(ref FarPosition startPosition, ref FarPosition targetPosition, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
-            var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
+            var ai = ((ArtificialIntelligence) Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
             ai.AttackMove(ref targetPosition);
         }
 
-        /// <summary>
-        /// Called by the manager when an entity was removed.
-        /// </summary>
+        /// <summary>Called by the manager when an entity was removed.</summary>
         /// <param name="entity">The entity that was removed.</param>
         public override void OnEntityRemoved(int entity)
         {
@@ -258,10 +243,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Checks for cells being activated and spawns some initial ships in
-        /// them, to have some base population.
-        /// </summary>
+        /// <summary>Checks for cells being activated and spawns some initial ships in them, to have some base population.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -286,13 +268,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             packet.Write(_cellSpawns.Count);
@@ -304,9 +282,7 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
         {
@@ -325,18 +301,13 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        ///     Servers as a copy constructor that returns a new instance of the same type that is freshly initialized.
+        ///     <para>This takes care of duplicating reference types to a new copy of that type (e.g. collections).</para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (ShipSpawnSystem)base.NewInstance();
+            var copy = (ShipSpawnSystem) base.NewInstance();
 
             copy._random = new MersenneTwister(0);
             copy._cellSpawns = new List<Tuple<ulong, int>>();
@@ -345,22 +316,19 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
-        /// <remarks>The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.</remarks>
+        /// <remarks>The manager for the system to copy into must be set to the manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (ShipSpawnSystem)into;
+            var copy = (ShipSpawnSystem) into;
 
             copy._cellSpawns.Clear();
             copy._cellSpawns.AddRange(_cellSpawns);

@@ -6,35 +6,28 @@ using Microsoft.Xna.Framework.Content;
 namespace Engine.XnaExtensions
 {
     /// <summary>
-    /// Implements a localized content manager, that tries to load assets for
-    /// its set culture, before falling back to an invariant version.
+    ///     Implements a localized content manager, that tries to load assets for its set culture, before falling back to
+    ///     an invariant version.
     /// </summary>
     public class LocalizedContentManager : ContentManager
     {
         #region Properties
-        
-        /// <summary>
-        /// The culture used in this manager to determine the actual files to
-        /// load when loading.
-        /// </summary>
+
+        /// <summary>The culture used in this manager to determine the actual files to load when loading.</summary>
         public CultureInfo Culture { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// Used for locking to support multi-threaded loading.
-        /// </summary>
+        /// <summary>Used for locking to support multi-threaded loading.</summary>
         private readonly object _lock = new object();
 
         #endregion
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new localized content manager for the specified culture.
-        /// </summary>
+        /// <summary>Creates a new localized content manager for the specified culture.</summary>
         /// <param name="service"></param>
         public LocalizedContentManager(IServiceProvider service)
             : base(service)
@@ -46,15 +39,11 @@ namespace Engine.XnaExtensions
         #endregion
 
         #region Logic
-        
-        /// <summary>
-        /// Loads an asset that has been processed by the Content Pipeline.
-        /// </summary>
+
+        /// <summary>Loads an asset that has been processed by the Content Pipeline.</summary>
         /// <typeparam name="T">The type of asset to load.</typeparam>
-        /// <param name="assetName">Asset name, relative to the loader root
-        /// directory, and not including the .xnb extension.</param>
-        /// <returns>The loaded asset. Repeated calls to load the same asset
-        /// will return the same object instance.</returns>
+        /// <param name="assetName">Asset name, relative to the loader root directory, and not including the .xnb extension.</param>
+        /// <returns>The loaded asset. Repeated calls to load the same asset will return the same object instance.</returns>
         public override T Load<T>(string assetName)
         {
             if (string.IsNullOrEmpty(assetName))

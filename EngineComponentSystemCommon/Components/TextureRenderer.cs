@@ -5,22 +5,15 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Common.Components
 {
-    /// <summary>
-    /// Graphics object holding information about a texture and how it should
-    /// base drawn.
-    /// </summary>
+    /// <summary>Graphics object holding information about a texture and how it should base drawn.</summary>
     public sealed class TextureRenderer : Component
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -30,24 +23,16 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Fields
 
-        /// <summary>
-        /// The color to use for tinting when rendering.
-        /// </summary>
+        /// <summary>The color to use for tinting when rendering.</summary>
         public Color Tint;
 
-        /// <summary>
-        /// The scale at which to render the texture.
-        /// </summary>
+        /// <summary>The scale at which to render the texture.</summary>
         public float Scale;
 
-        /// <summary>
-        /// The name of the texture to use for rendering the physics object.
-        /// </summary>
+        /// <summary>The name of the texture to use for rendering the physics object.</summary>
         public string TextureName;
 
-        /// <summary>
-        /// The actual texture with the set name.
-        /// </summary>
+        /// <summary>The actual texture with the set name.</summary>
         [PacketizerIgnore]
         public Texture2D Texture;
 
@@ -55,15 +40,13 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherTexture = (TextureRenderer)other;
+            var otherTexture = (TextureRenderer) other;
             Tint = otherTexture.Tint;
             Scale = otherTexture.Scale;
             TextureName = otherTexture.TextureName;
@@ -72,9 +55,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified values.
-        /// </summary>
+        /// <summary>Initialize with the specified values.</summary>
         /// <param name="textureName">Name of the texture.</param>
         /// <param name="tint">The tint.</param>
         /// <param name="scale">The scale.</param>
@@ -88,9 +69,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified values.
-        /// </summary>
+        /// <summary>Initialize with the specified values.</summary>
         /// <param name="textureName">Name of the texture.</param>
         /// <param name="scale">The scale.</param>
         public TextureRenderer Initialize(string textureName, float scale)
@@ -100,9 +79,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified values.
-        /// </summary>
+        /// <summary>Initialize with the specified values.</summary>
         /// <param name="textureName">Name of the texture.</param>
         public TextureRenderer Initialize(string textureName)
         {
@@ -111,10 +88,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -129,13 +103,11 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Serialization
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(IReadablePacket packet)
+        public override void Depacketize(IReadablePacket packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             Texture = null;
         }

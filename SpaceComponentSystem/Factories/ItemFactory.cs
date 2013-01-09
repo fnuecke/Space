@@ -15,17 +15,13 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// Base class for item constraints.
-    /// </summary>
+    /// <summary>Base class for item constraints.</summary>
     [DefaultProperty("Name")]
     public abstract class ItemFactory : IFactory
     {
         #region Properties
-        
-        /// <summary>
-        /// Unique name for this item type.
-        /// </summary>
+
+        /// <summary>Unique name for this item type.</summary>
         [Category("General")]
         [Description("The name of this item, by which it can be referenced.")]
         public string Name
@@ -34,13 +30,10 @@ namespace Space.ComponentSystem.Factories
             set { _name = value; }
         }
 
-        /// <summary>
-        /// Asset name of the texture to use for this item type to render it in
-        /// menus and the inventory.
-        /// </summary>
+        /// <summary>Asset name of the texture to use for this item type to render it in menus and the inventory.</summary>
         [ContentSerializer(Optional = true)]
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [DefaultValue("Images/Icons/Buffs/default")]
         [Category("Media")]
         [Description("The icon used to represent the item in the GUI, e.g. in the inventory.")]
@@ -50,14 +43,11 @@ namespace Space.ComponentSystem.Factories
             set { _icon = value; }
         }
 
-        /// <summary>
-        /// The ingame texture to be displayed for items floating around in
-        /// space.
-        /// </summary>
+        /// <summary>The ingame texture to be displayed for items floating around in space.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue("Textures/Items/default")]
         [Editor("Space.Tools.DataEditor.TextureAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [Category("Media")]
         [Description("The texture used to represent the item in-game, e.g. when lying on the ground or equipped on a ship.")]
         public string Model
@@ -66,9 +56,7 @@ namespace Space.ComponentSystem.Factories
             set { _model = value; }
         }
 
-        /// <summary>
-        /// The offset with which to render the items model texture relative to its mount point.
-        /// </summary>
+        /// <summary>The offset with which to render the items model texture relative to its mount point.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Media")]
@@ -79,9 +67,7 @@ namespace Space.ComponentSystem.Factories
             set { _modelOffset = value; }
         }
 
-        /// <summary>
-        /// Determines whether the model should be rendered below the parent, e.g. for wings and torpedo mounts.
-        /// </summary>
+        /// <summary>Determines whether the model should be rendered below the parent, e.g. for wings and torpedo mounts.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(false)]
         [Category("Media")]
@@ -92,10 +78,7 @@ namespace Space.ComponentSystem.Factories
             set { _modelBelowParent = value; }
         }
 
-        /// <summary>
-        /// Asset name of the particle effect to trigger when this thruster is
-        /// active (accelerating).
-        /// </summary>
+        /// <summary>Asset name of the particle effect to trigger when this thruster is active (accelerating).</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Media")]
@@ -106,9 +89,7 @@ namespace Space.ComponentSystem.Factories
             set { _effects = value; }
         }
 
-        /// <summary>
-        /// The quality of the item, to give a rough idea of the value.
-        /// </summary>
+        /// <summary>The quality of the item, to give a rough idea of the value.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(ItemQuality.Common)]
         [Category("Equipment")]
@@ -119,9 +100,7 @@ namespace Space.ComponentSystem.Factories
             set { _quality = value; }
         }
 
-        /// <summary>
-        /// The slot size of the item.
-        /// </summary>
+        /// <summary>The slot size of the item.</summary>
         [ContentSerializer(Optional = true)]
         [TriggersFullValidation]
         [DefaultValue(ItemSlotSize.Small)]
@@ -133,14 +112,13 @@ namespace Space.ComponentSystem.Factories
             set { _requiredSlotSize = value; }
         }
 
-        /// <summary>
-        /// Slots this item provides for other items to be equipped into.
-        /// </summary>
+        /// <summary>Slots this item provides for other items to be equipped into.</summary>
         [ContentSerializer(Optional = true)]
         [TriggersFullValidation]
         [DefaultValue(null)]
         [Category("Equipment")]
-        [Description("The slots this item provides, allowing other items to be equipped into this item, e.g. for socketing.")]
+        [Description(
+            "The slots this item provides, allowing other items to be equipped into this item, e.g. for socketing.")]
         public ItemSlotInfo[] Slots
         {
             get { return _slots; }
@@ -148,8 +126,8 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// A list of attribute modifiers that are guaranteed to be applied to
-        /// the generated item, just with random values.
+        ///     A list of attribute modifiers that are guaranteed to be applied to the generated item, just with random
+        ///     values.
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
@@ -162,24 +140,22 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// A list of attribute modifiers from which a certain number is
-        /// randomly sampled, and from the chosen attribute modifiers will then
-        /// be sampled the actual values to be applied to the generated item.
+        ///     A list of attribute modifiers from which a certain number is randomly sampled, and from the chosen attribute
+        ///     modifiers will then be sampled the actual values to be applied to the generated item.
         /// </summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Stats")]
-        [Description("Possible attribute bonuses items of this type might have. Additional attributes are sampled from these pools.")]
+        [Description(
+            "Possible attribute bonuses items of this type might have. Additional attributes are sampled from these pools."
+            )]
         public string[] AdditionalAttributes
         {
             get { return _additionalAttributes; }
             set { _additionalAttributes = value; }
         }
 
-        /// <summary>
-        /// The number of additional attribute modifiers to apply to a
-        /// generated item.
-        /// </summary>
+        /// <summary>The number of additional attribute modifiers to apply to a generated item.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Stats")]
@@ -222,14 +198,10 @@ namespace Space.ComponentSystem.Factories
 
         #region Sampling
 
-        /// <summary>
-        /// Samples a new item.
-        /// </summary>
+        /// <summary>Samples a new item.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled item.
-        /// </returns>
+        /// <returns>The sampled item.</returns>
         public virtual int Sample(IManager manager, IUniformRandom random)
         {
             var entity = manager.AddEntity();
@@ -256,8 +228,11 @@ namespace Space.ComponentSystem.Factories
                 for (var i = 0; i < _slots.Length; i++)
                 {
                     manager.AddComponent<SpaceItemSlot>(entity).
-                        Initialize(ItemSlotInfo.TypeMap[_slots[i].Type], _slots[i].Size,
-                                   _slots[i].Offset.HasValue ? _slots[i].Offset.Value : Vector2.Zero, MathHelper.ToRadians(_slots[i].Rotation));
+                            Initialize(
+                                ItemSlotInfo.TypeMap[_slots[i].Type],
+                                _slots[i].Size,
+                                _slots[i].Offset.HasValue ? _slots[i].Offset.Value : Vector2.Zero,
+                                MathHelper.ToRadians(_slots[i].Rotation));
                 }
             }
 
@@ -269,7 +244,8 @@ namespace Space.ComponentSystem.Factories
                     if (!string.IsNullOrWhiteSpace(info.Name))
                     {
                         manager.AddComponent<ItemEffect>(entity)
-                            .Initialize(info.Group, info.Name, info.Scale, info.Offset, MathHelper.ToRadians(info.Direction));
+                               .Initialize(
+                                   info.Group, info.Name, info.Scale, info.Offset, MathHelper.ToRadians(info.Direction));
                     }
                 }
             }
@@ -288,7 +264,9 @@ namespace Space.ComponentSystem.Factories
             if (_additionalAttributes != null && _additionalAttributes.Length > 0 && _additionalAttributeCount != null)
             {
                 // Get how many attributes to sample.
-                foreach (var attribute in SampleAttributes(SampleAdditionalAttributeCount(random), _additionalAttributes, random))
+                foreach (
+                    var attribute in
+                        SampleAttributes(SampleAdditionalAttributeCount(random), _additionalAttributes, random))
                 {
                     manager.AddComponent<Attribute<AttributeType>>(entity).Initialize(attribute);
                 }
@@ -298,13 +276,14 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// Samples the specified number of attributes from the list of
-        /// available attributes in the specified attribute pools.
+        ///     Samples the specified number of attributes from the list of available attributes in the specified attribute
+        ///     pools.
         /// </summary>
         /// <param name="count">The number of attributes to sample.</param>
         /// <param name="attributePools">The attribute pools to sample from.</param>
         /// <param name="random">The randomizer to use.</param>
-        protected IEnumerable<AttributeModifier<AttributeType>> SampleAttributes(int count, string[] attributePools, IUniformRandom random)
+        protected IEnumerable<AttributeModifier<AttributeType>> SampleAttributes(
+            int count, string[] attributePools, IUniformRandom random)
         {
             if (count <= 0)
             {
@@ -359,7 +338,7 @@ namespace Space.ComponentSystem.Factories
                 // likely to be hit!
 
                 // Get a random number determining the attribute we want.
-                var roll = (int)(random.NextDouble() * summedWeights);
+                var roll = (int) (random.NextDouble() * summedWeights);
 
                 // Figure out the interval, starting with the first.
                 var j = 0;
@@ -395,18 +374,13 @@ namespace Space.ComponentSystem.Factories
 
         #region Types
 
-        /// <summary>
-        /// Utility class for serializing item slots.
-        /// </summary>
-        [TypeConverter(typeof(ExpandableObjectConverter))]
+        /// <summary>Utility class for serializing item slots.</summary>
+        [TypeConverter(typeof (ExpandableObjectConverter))]
         public sealed class ItemSlotInfo
         {
             #region Constants
 
-            /// <summary>
-            /// Possible item types for slots. This is used for string representation
-            /// in the serialized state.
-            /// </summary>
+            /// <summary>Possible item types for slots. This is used for string representation in the serialized state.</summary>
             public enum ItemType
             {
                 [Browsable(false)]
@@ -421,9 +395,7 @@ namespace Space.ComponentSystem.Factories
                 Wing
             }
 
-            /// <summary>
-            /// Maps names used in XML representation to type ids.
-            /// </summary>
+            /// <summary>Maps names used in XML representation to type ids.</summary>
             public static readonly Dictionary<ItemType, int> TypeMap = new Dictionary<ItemType, int>
             {
                 {ItemType.Fuselage, Fuselage.TypeId},
@@ -439,9 +411,7 @@ namespace Space.ComponentSystem.Factories
 
             #region Properties
 
-            /// <summary>
-            /// The supported item type.
-            /// </summary>
+            /// <summary>The supported item type.</summary>
             [Description("The type of item that can be equipped in this slot.")]
             public ItemType Type
             {
@@ -449,9 +419,7 @@ namespace Space.ComponentSystem.Factories
                 set { _type = value; }
             }
 
-            /// <summary>
-            /// Size supported by this slot.
-            /// </summary>
+            /// <summary>Size supported by this slot.</summary>
             [ContentSerializer(Optional = true)]
             [DefaultValue(ItemSlotSize.Small)]
             [Description("The size of the item slot, i.e. the maximum item size this slot supports.")]
@@ -461,9 +429,7 @@ namespace Space.ComponentSystem.Factories
                 set { _size = value; }
             }
 
-            /// <summary>
-            /// The offset of this items origin from its parent slot.
-            /// </summary>
+            /// <summary>The offset of this items origin from its parent slot.</summary>
             [ContentSerializer(Optional = true)]
             [DefaultValue(null)]
             [Description("The offset of the slot relative to its parent.")]
@@ -473,9 +439,7 @@ namespace Space.ComponentSystem.Factories
                 set { _offset = value; }
             }
 
-            /// <summary>
-            /// The rotation of this item relative to its parent slot.
-            /// </summary>
+            /// <summary>The rotation of this item relative to its parent slot.</summary>
             [ContentSerializer(Optional = true)]
             [DefaultValue(null)]
             [Description("The rotation of the slot relative to its parent.")]
@@ -502,10 +466,10 @@ namespace Space.ComponentSystem.Factories
             #region ToString
 
             /// <summary>
-            /// Returns a <see cref="System.String"/> that represents this instance.
+            ///     Returns a <see cref="System.String"/> that represents this instance.
             /// </summary>
             /// <returns>
-            /// A <see cref="System.String"/> that represents this instance.
+            ///     A <see cref="System.String"/> that represents this instance.
             /// </returns>
             public override string ToString()
             {
@@ -515,33 +479,28 @@ namespace Space.ComponentSystem.Factories
             #endregion
         }
 
-        /// <summary>
-        /// Holds information for a single thruster effect attachment.
-        /// </summary>
-        [TypeConverter(typeof(ExpandableObjectConverter))]
+        /// <summary>Holds information for a single thruster effect attachment.</summary>
+        [TypeConverter(typeof (ExpandableObjectConverter))]
         public sealed class EffectInfo
         {
             /// <summary>
-            /// Gets or sets the group to which this effect belongs. This allows the
-            /// game to trigger the effect when appropriate, e.g. it will trigger
-            /// weapon effects when a weapon is fired, thruster effects when accelerating.
+            ///     Gets or sets the group to which this effect belongs. This allows the game to trigger the effect when
+            ///     appropriate, e.g. it will trigger weapon effects when a weapon is fired, thruster effects when accelerating.
             /// </summary>
             [ContentSerializer(Optional = true)]
             [DefaultValue(ParticleEffects.EffectGroup.None)]
             [Category("Logic")]
-            [Description("The group this effect belongs to, which will allow the game to trigger the effect when appropriate.")]
+            [Description(
+                "The group this effect belongs to, which will allow the game to trigger the effect when appropriate.")]
             public ParticleEffects.EffectGroup Group
             {
                 get { return _group; }
                 set { _group = value; }
             }
 
-            /// <summary>
-            /// Asset name of the particle effect to trigger when this thruster is
-            /// active (accelerating).
-            /// </summary>
+            /// <summary>Asset name of the particle effect to trigger when this thruster is active (accelerating).</summary>
             [Editor("Space.Tools.DataEditor.EffectAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                    "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
             [ContentSerializer(Optional = true)]
             [DefaultValue(null)]
             [Category("General")]
@@ -552,9 +511,7 @@ namespace Space.ComponentSystem.Factories
                 set { _name = value; }
             }
 
-            /// <summary>
-            /// The scale at which to render the thruster effect.
-            /// </summary>
+            /// <summary>The scale at which to render the thruster effect.</summary>
             [ContentSerializer(Optional = true)]
             [DefaultValue(1f)]
             [Category("Media")]
@@ -565,9 +522,7 @@ namespace Space.ComponentSystem.Factories
                 set { _scale = value; }
             }
 
-            /// <summary>
-            /// Offset for the thruster effect relative to the texture.
-            /// </summary>
+            /// <summary>Offset for the thruster effect relative to the texture.</summary>
             [ContentSerializer(Optional = true)]
             [Category("Media")]
             [Description("The offset relative to the slot the item is equipped in at which to emit particle effects when accelerating.")]
@@ -578,8 +533,8 @@ namespace Space.ComponentSystem.Factories
             }
 
             /// <summary>
-            /// Gets or sets the direction in which the effect should be emitted. It will be
-            /// triggered when the ship accelerates in the opposite direction.
+            ///     Gets or sets the direction in which the effect should be emitted. It will be triggered when the ship
+            ///     accelerates in the opposite direction.
             /// </summary>
             [ContentSerializer(Optional = true)]
             [Category("Media")]
@@ -607,10 +562,10 @@ namespace Space.ComponentSystem.Factories
             #region ToString
 
             /// <summary>
-            /// Returns a <see cref="System.String"/> that represents this instance.
+            ///     Returns a <see cref="System.String"/> that represents this instance.
             /// </summary>
             /// <returns>
-            /// A <see cref="System.String"/> that represents this instance.
+            ///     A <see cref="System.String"/> that represents this instance.
             /// </returns>
             public override string ToString()
             {
@@ -623,33 +578,31 @@ namespace Space.ComponentSystem.Factories
         #endregion
     }
 
-    /// <summary>
-    /// Converter methods for item type enum.
-    /// </summary>
+    /// <summary>Converter methods for item type enum.</summary>
     public static class ItemTypeExtensions
     {
         private static readonly Dictionary<ItemFactory.ItemSlotInfo.ItemType, Type> TypeMapping =
             new Dictionary<ItemFactory.ItemSlotInfo.ItemType, Type>
             {
-                {ItemFactory.ItemSlotInfo.ItemType.Fuselage, typeof(FuselageFactory)},
-                {ItemFactory.ItemSlotInfo.ItemType.Reactor, typeof(ReactorFactory)},
-                {ItemFactory.ItemSlotInfo.ItemType.Sensor, typeof(SensorFactory)},
-                {ItemFactory.ItemSlotInfo.ItemType.Shield, typeof(ShieldFactory)},
-                {ItemFactory.ItemSlotInfo.ItemType.Thruster, typeof(ThrusterFactory)},
-                {ItemFactory.ItemSlotInfo.ItemType.Weapon, typeof(WeaponFactory)},
-                {ItemFactory.ItemSlotInfo.ItemType.Wing, typeof(WingFactory)}
+                {ItemFactory.ItemSlotInfo.ItemType.Fuselage, typeof (FuselageFactory)},
+                {ItemFactory.ItemSlotInfo.ItemType.Reactor, typeof (ReactorFactory)},
+                {ItemFactory.ItemSlotInfo.ItemType.Sensor, typeof (SensorFactory)},
+                {ItemFactory.ItemSlotInfo.ItemType.Shield, typeof (ShieldFactory)},
+                {ItemFactory.ItemSlotInfo.ItemType.Thruster, typeof (ThrusterFactory)},
+                {ItemFactory.ItemSlotInfo.ItemType.Weapon, typeof (WeaponFactory)},
+                {ItemFactory.ItemSlotInfo.ItemType.Wing, typeof (WingFactory)}
             };
 
         private static readonly Dictionary<Type, ItemFactory.ItemSlotInfo.ItemType> EnumMapping =
             new Dictionary<Type, ItemFactory.ItemSlotInfo.ItemType>
             {
-                {typeof(FuselageFactory), ItemFactory.ItemSlotInfo.ItemType.Fuselage},
-                {typeof(ReactorFactory), ItemFactory.ItemSlotInfo.ItemType.Reactor},
-                {typeof(SensorFactory), ItemFactory.ItemSlotInfo.ItemType.Sensor},
-                {typeof(ShieldFactory), ItemFactory.ItemSlotInfo.ItemType.Shield},
-                {typeof(ThrusterFactory), ItemFactory.ItemSlotInfo.ItemType.Thruster},
-                {typeof(WeaponFactory), ItemFactory.ItemSlotInfo.ItemType.Weapon},
-                {typeof(WingFactory), ItemFactory.ItemSlotInfo.ItemType.Wing}
+                {typeof (FuselageFactory), ItemFactory.ItemSlotInfo.ItemType.Fuselage},
+                {typeof (ReactorFactory), ItemFactory.ItemSlotInfo.ItemType.Reactor},
+                {typeof (SensorFactory), ItemFactory.ItemSlotInfo.ItemType.Sensor},
+                {typeof (ShieldFactory), ItemFactory.ItemSlotInfo.ItemType.Shield},
+                {typeof (ThrusterFactory), ItemFactory.ItemSlotInfo.ItemType.Thruster},
+                {typeof (WeaponFactory), ItemFactory.ItemSlotInfo.ItemType.Weapon},
+                {typeof (WingFactory), ItemFactory.ItemSlotInfo.ItemType.Wing}
             };
 
         public static Type ToFactoryType(this ItemFactory.ItemSlotInfo.ItemType type)

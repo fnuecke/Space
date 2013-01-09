@@ -14,65 +14,51 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// A weld joint essentially glues two bodies together. A weld joint may
-    /// distort somewhat because the island constraint solver is approximate.
+    ///     A weld joint essentially glues two bodies together. A weld joint may distort somewhat because the island
+    ///     constraint solver is approximate.
     /// </summary>
     public sealed class WeldJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the first body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in local coordinates.</summary>
         public LocalPoint LocalAnchorA
         {
             get { return _localAnchorA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in local coordinates.</summary>
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
         }
 
-        /// <summary>
-        /// Get the reference angle.
-        /// </summary>
+        /// <summary>Get the reference angle.</summary>
         public float ReferenceAngle
         {
             get { return _referenceAngle; }
         }
 
-        /// <summary>
-        /// Set/get frequency in Hz.
-        /// </summary>
+        /// <summary>Set/get frequency in Hz.</summary>
         public float Frequency
         {
             get { return _frequency; }
             set { _frequency = value; }
         }
 
-        /// <summary>
-        /// Set/get damping ratio.
-        /// </summary>
+        /// <summary>Set/get damping ratio.</summary>
         public float DampingRatio
         {
             get { return _dampingRatio; }
@@ -132,25 +118,21 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WeldJoint"/> class.
+        ///     Initializes a new instance of the <see cref="WeldJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public WeldJoint() : base(JointType.Weld)
-        {
-        }
+        public WeldJoint() : base(JointType.Weld) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
+        /// <summary>Initializes this joint with the specified parameters.</summary>
         internal void Initialize(WorldPoint anchor, float frequency, float dampingRatio)
         {
             _localAnchorA = BodyA.GetLocalPoint(anchor);
             _localAnchorB = BodyB.GetLocalPoint(anchor);
             _referenceAngle = BodyB.Angle - BodyA.Angle;
 
-            _frequency= frequency;
+            _frequency = frequency;
             _dampingRatio = dampingRatio;
 
             _impulse = Vector3.Zero;
@@ -174,9 +156,7 @@ namespace Engine.Physics.Joints
         // J = [0 0 -1 0 0 1]
         // K = invI1 + invI2
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -292,13 +272,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -358,15 +335,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             var cA = positions[_tmp.IndexA].Point;
             var aA = positions[_tmp.IndexA].Angle;
@@ -400,7 +374,7 @@ namespace Engine.Physics.Joints
             if (_frequency > 0.0f)
             {
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var c1 = (Vector2)(cB - cA) + (rB - rA);
+                var c1 = (Vector2) (cB - cA) + (rB - rA);
 // ReSharper restore RedundantCast
 
                 positionError = c1.Length();
@@ -417,7 +391,7 @@ namespace Engine.Physics.Joints
             else
             {
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var c1 = (Vector2)(cB - cA) + (rB - rA);
+                var c1 = (Vector2) (cB - cA) + (rB - rA);
 // ReSharper restore RedundantCast
                 var c2 = aB - aA - _referenceAngle;
 

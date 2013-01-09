@@ -9,21 +9,15 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
-    /// <summary>
-    /// AIs in this state try to destroy a target entity 
-    /// </summary>
+    /// <summary>AIs in this state try to destroy a target entity</summary>
     internal sealed class AttackBehavior : Behavior
     {
         #region Fields
 
-        /// <summary>
-        /// The entity we want to destroy. Utterly.
-        /// </summary>
+        /// <summary>The entity we want to destroy. Utterly.</summary>
         public int Target;
 
-        /// <summary>
-        /// The position we were at when we started attacking.
-        /// </summary>
+        /// <summary>The position we were at when we started attacking.</summary>
         [PacketizerIgnore]
         private FarPosition? _start;
 
@@ -32,18 +26,14 @@ namespace Space.ComponentSystem.Components.Behaviors
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttackBehavior"/> class.
+        ///     Initializes a new instance of the <see cref="AttackBehavior"/> class.
         /// </summary>
         /// <param name="ai">The ai component this behavior belongs to.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
         public AttackBehavior(ArtificialIntelligence ai, IUniformRandom random)
-            : base(ai, random, 0.25f)
-        {
-        }
+            : base(ai, random, 0.25f) {}
 
-        /// <summary>
-        /// Reset this behavior so it can be reused later on.
-        /// </summary>
+        /// <summary>Reset this behavior so it can be reused later on.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -56,16 +46,12 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Logic
 
-        /// <summary>
-        /// Behavior specific update logic, e.g. checking for nearby enemies.
-        /// </summary>
-        /// <returns>
-        /// Whether to do the rest of the update.
-        /// </returns>
+        /// <summary>Behavior specific update logic, e.g. checking for nearby enemies.</summary>
+        /// <returns>Whether to do the rest of the update.</returns>
         protected override bool UpdateInternal()
         {
             // Get our ship control.
-            var control = ((ShipControl)AI.Manager.GetComponent(AI.Entity, ShipControl.TypeId));
+            var control = ((ShipControl) AI.Manager.GetComponent(AI.Entity, ShipControl.TypeId));
 
             // If our target died, we're done here.
             if (!AI.Manager.HasEntity(Target))
@@ -77,12 +63,13 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
 
             // Get our position.
-            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
 
             // Check if we've traveled too far.
             if (_start.HasValue)
             {
-                if (FarPosition.DistanceSquared(_start.Value, position) > AI.Configuration.ChaseDistance * AI.Configuration.ChaseDistance)
+                if (FarPosition.DistanceSquared(_start.Value, position) >
+                    AI.Configuration.ChaseDistance * AI.Configuration.ChaseDistance)
                 {
                     // Yeah, that's it, let's give up and return to what we
                     // were doing before.
@@ -99,20 +86,21 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
 
             // Get our ship info.
-            var info = (ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
+            var info = (ShipInfo) AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
 
             // Target still lives, see how far away it is.
-            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = (Vector2)(targetPosition - position);
-            var targetAngle = (float)Math.Atan2(toTarget.Y, toTarget.X);
+            var targetPosition = ((Transform) AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
+            var toTarget = (Vector2) (targetPosition - position);
+            var targetAngle = (float) Math.Atan2(toTarget.Y, toTarget.X);
             var weaponRange = info.WeaponRange + AI.Configuration.WeaponRangeEpsilon;
 
             // If we're close enough and the target is somewhat in front of us, open fire.
             control.Shooting = (toTarget.LengthSquared() < weaponRange * weaponRange) &&
-                Math.Abs(Angle.MinAngle(targetAngle, info.Rotation)) < AI.Configuration.WeaponFiringAngle * 0.5f;
+                               Math.Abs(Angle.MinAngle(targetAngle, info.Rotation)) <
+                               AI.Configuration.WeaponFiringAngle * 0.5f;
 
             // If we're in a squad we want the other members to help us.
-            var squad = (Squad)AI.Manager.GetComponent(AI.Entity, Squad.TypeId);
+            var squad = (Squad) AI.Manager.GetComponent(AI.Entity, Squad.TypeId);
             if (squad != null)
             {
                 foreach (var member in squad.Members)
@@ -122,7 +110,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                     {
                         continue;
                     }
-                    var ai = (ArtificialIntelligence)AI.Manager.GetComponent(member, ArtificialIntelligence.TypeId);
+                    var ai = (ArtificialIntelligence) AI.Manager.GetComponent(member, ArtificialIntelligence.TypeId);
                     if (ai != null && ai.CurrentBehavior != ArtificialIntelligence.BehaviorType.Attack)
                     {
                         ai.Attack(Target);
@@ -135,9 +123,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         }
 
         /// <summary>
-        /// Called when an entity becomes an invalid target (removed from the
-        /// system or died). This is intended to allow behaviors to stop in
-        /// case their related entity is removed (e.g. target when attacking).
+        ///     Called when an entity becomes an invalid target (removed from the system or died). This is intended to allow
+        ///     behaviors to stop in case their related entity is removed (e.g. target when attacking).
         /// </summary>
         /// <param name="entity">The entity that was removed.</param>
         internal override void OnEntityInvalidated(int entity)
@@ -152,53 +139,41 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Behavior type specifics
 
-        /// <summary>
-        /// Figure out where we want to go.
-        /// </summary>
-        /// <returns>
-        /// The coordinate we want to fly to.
-        /// </returns>
+        /// <summary>Figure out where we want to go.</summary>
+        /// <returns>The coordinate we want to fly to.</returns>
         protected override FarPosition GetTargetPosition()
         {
             // We can just fly straight at our enemy, the vegetative evasion mechanism
             // will prevent us to crash into it, as well as lead to a circling effect.
-            return ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
+            return ((Transform) AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
         }
 
-        /// <summary>
-        /// Gets the target rotation we want to be facing.
-        /// </summary>
+        /// <summary>Gets the target rotation we want to be facing.</summary>
         /// <param name="direction">The direction we're accelerating in.</param>
-        /// <returns>
-        /// The desired target rotation.
-        /// </returns>
+        /// <returns>The desired target rotation.</returns>
         protected override float GetTargetRotation(Vector2 direction)
         {
             // Always try to face our target.
             // TODO predict which way we need to face to actually hit
             //      based on target velocity and weapon projectile speed...
-            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = (Vector2)(targetPosition - position);
-            return (float)Math.Atan2(toTarget.Y, toTarget.X);
+            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var targetPosition = ((Transform) AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
+            var toTarget = (Vector2) (targetPosition - position);
+            return (float) Math.Atan2(toTarget.Y, toTarget.X);
         }
 
-        /// <summary>
-        /// How fast do we want to fly, relative to our maximum speed?
-        /// </summary>
-        /// <returns>
-        /// The relative speed we want to fly at.
-        /// </returns>
+        /// <summary>How fast do we want to fly, relative to our maximum speed?</summary>
+        /// <returns>The relative speed we want to fly at.</returns>
         protected override float GetThrusterPower()
         {
             // Get our ship info.
-            var info = ((ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
+            var info = ((ShipInfo) AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
 
             // Decrease output if we're getting closer to our target than
             // we need to to shoot.
-            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
-            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
-            var toTarget = (Vector2)(targetPosition - position);
+            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var targetPosition = ((Transform) AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
+            var toTarget = (Vector2) (targetPosition - position);
             var weaponRange = info.WeaponRange;
             var thrusterPower = Math.Min(1, toTarget.LengthSquared() / (weaponRange * weaponRange));
 
@@ -225,13 +200,9 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Serialization
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet).Write(_start.HasValue);
@@ -243,8 +214,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// after automatic depacketization has been performed.
+        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
+        ///     performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
@@ -261,7 +232,8 @@ namespace Space.ComponentSystem.Components.Behaviors
         {
             base.Dump(w, indent);
 
-            w.AppendIndent(indent).Write("Start = "); w.Write(_start.HasValue ? _start.Value.ToString() : "null");
+            w.AppendIndent(indent).Write("Start = ");
+            w.Write(_start.HasValue ? _start.Value.ToString() : "null");
 
             return w;
         }

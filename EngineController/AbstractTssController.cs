@@ -11,51 +11,35 @@ using Engine.Simulation.Commands;
 
 namespace Engine.Controller
 {
-    /// <summary>
-    /// Base class for clients and servers using the UDP protocol and a TSS state.
-    /// </summary>
+    /// <summary>Base class for clients and servers using the UDP protocol and a TSS state.</summary>
     public abstract class AbstractTssController<TSession>
         : AbstractController<TSession, FrameCommand>, ISimulationController<TSession>
         where TSession : ISession
     {
         #region Types
 
-        /// <summary>
-        /// Used in abstract TSS server and client implementations.
-        /// </summary>
+        /// <summary>Used in abstract TSS server and client implementations.</summary>
         internal enum TssControllerMessage
         {
-            /// <summary>
-            /// Normal simulation command, handled in base class.
-            /// </summary>
+            /// <summary>Normal simulation command, handled in base class.</summary>
             Command,
 
-            /// <summary>
-            /// Server sends current frame to clients, used to synchronize
-            /// run speeds of clients to server.
-            /// </summary>
+            /// <summary>Server sends current frame to clients, used to synchronize run speeds of clients to server.</summary>
             Synchronize,
 
-            /// <summary>
-            /// Client requested the game state, e.g. because it could not
-            /// roll back to a required state.
-            /// </summary>
+            /// <summary>Client requested the game state, e.g. because it could not roll back to a required state.</summary>
             GameState,
 
-            /// <summary>
-            /// Server tells players to remove an object from the simulation.
-            /// </summary>
+            /// <summary>Server tells players to remove an object from the simulation.</summary>
             RemoveGameObject,
 
             /// <summary>
-            /// Compare the hash of the leading game state at a given frame. If
-            /// the client fails the check, it'll have to request a new snapshot.
+            ///     Compare the hash of the leading game state at a given frame. If the client fails the check, it'll have to
+            ///     request a new snapshot.
             /// </summary>
             HashCheck,
 
-            /// <summary>
-            /// Client sent a dump of his game state because a hash check failed.
-            /// </summary>
+            /// <summary>Client sent a dump of his game state because a hash check failed.</summary>
             GameStateDump
         }
 
@@ -63,20 +47,15 @@ namespace Engine.Controller
 
         #region Constants
 
-        /// <summary>
-        /// The number of milliseconds a single update should take.
-        /// </summary>
+        /// <summary>The number of milliseconds a single update should take.</summary>
         protected const float TargetElapsedMilliseconds = 1000f / 20f;
 
-        /// <summary>
-        /// The interval in ticks after which to send a hash check to the clients.
-        /// </summary>
+        /// <summary>The interval in ticks after which to send a hash check to the clients.</summary>
         protected const int HashInterval = (int)(10000f / TargetElapsedMilliseconds); // ~10s
 
         /// <summary>
-        /// The actual load is multiplied with this factor to provide a little
-        /// buffer, allowing server/clients to react to slow downs before the
-        /// game becomes unresponsive.
+        ///     The actual load is multiplied with this factor to provide a little buffer, allowing server/clients to react to
+        ///     slow downs before the game becomes unresponsive.
         /// </summary>
         private const float LoadBufferFactor = 1.75f;
 
@@ -84,85 +63,72 @@ namespace Engine.Controller
 
         #region Properties
 
-        /// <summary>
-        /// The underlying simulation controlled by this controller.
-        /// </summary>
-        public ISimulation Simulation { get { return _simulation; } }
+        /// <summary>The underlying simulation controlled by this controller.</summary>
+        public ISimulation Simulation
+        {
+            get { return _simulation; }
+        }
 
-        /// <summary>
-        /// The current 'load', i.e. how much of the available time is actually
-        /// needed to perform an update.
-        /// </summary>
-        public override float CurrentLoad { get { return (float)_updateLoad.Mean(); } }
+        /// <summary>The current 'load', i.e. how much of the available time is actually needed to perform an update.</summary>
+        public override float CurrentLoad
+        {
+            get { return (float)_updateLoad.Mean(); }
+        }
 
-        /// <summary>
-        /// The target game speed we try to run at, if possible.
-        /// </summary>
+        /// <summary>The target game speed we try to run at, if possible.</summary>
         public float TargetSpeed { get; set; }
 
-        /// <summary>
-        /// The current actual game speed, based on possible slow-downs due
-        /// to the server or other clients.
-        /// </summary>
-        public float ActualSpeed { get { return AdjustedSpeed; } }
+        /// <summary>The current actual game speed, based on possible slow-downs due to the server or other clients.</summary>
+        public float ActualSpeed
+        {
+            get { return AdjustedSpeed; }
+        }
 
-        /// <summary>
-        /// Adjusted load value to allow reacting to slow downs of server or
-        /// clients before the game becomes unresponsive.
-        /// </summary>
-        protected float SafeLoad { get { return CurrentLoad * LoadBufferFactor; } }
+        /// <summary>Adjusted load value to allow reacting to slow downs of server or clients before the game becomes unresponsive.</summary>
+        protected float SafeLoad
+        {
+            get { return CurrentLoad * LoadBufferFactor; }
+        }
 
         #endregion
 
         #region Fields
 
         /// <summary>
-        /// The underlying simulation used. Directly changing this is strongly
-        /// discouraged, as it will lead to clients having to resynchronize
-        /// themselves by getting a snapshot of the complete simulation.
+        ///     The underlying simulation used. Directly changing this is strongly discouraged, as it will lead to clients
+        ///     having to resynchronize themselves by getting a snapshot of the complete simulation.
         /// </summary>
         protected TSS Tss;
 
         /// <summary>
-        /// The adjusted speed we're currently running at, based on how well
-        /// other clients (and the server) currently fare.
+        ///     The adjusted speed we're currently running at, based on how well other clients (and the server) currently
+        ///     fare.
         /// </summary>
         protected float AdjustedSpeed;
 
-        /// <summary>
-        /// Wrapper to restrict interaction with TSS.
-        /// </summary>
+        /// <summary>Wrapper to restrict interaction with TSS.</summary>
         private readonly ISimulation _simulation;
 
-        /// <summary>
-        /// Keeps track of time elapsed inside one update run.
-        /// </summary>
+        /// <summary>Keeps track of time elapsed inside one update run.</summary>
         private readonly Stopwatch _updateElapsed = new Stopwatch();
 
         /// <summary>
-        /// The remainder of time we did not update last frame, which we'll add to the
-        /// elapsed time in the next frame update.
+        ///     The remainder of time we did not update last frame, which we'll add to the elapsed time in the next frame
+        ///     update.
         /// </summary>
         private float _lastUpdateRemainder;
 
-        /// <summary>
-        /// Remaining time to be compensated for as requested via frame skipping.
-        /// </summary>
+        /// <summary>Remaining time to be compensated for as requested via frame skipping.</summary>
         private float _frameskipRemainder;
 
-        /// <summary>
-        /// Used to sample how long it takes for us to perform our simulation
-        /// updates in relation to the available time.
-        /// </summary>
+        /// <summary>Used to sample how long it takes for us to perform our simulation updates in relation to the available time.</summary>
         private readonly DoubleSampling _updateLoad = new DoubleSampling(30);
 
         #endregion
 
         #region Construction / Destruction
 
-        /// <summary>
-        /// Initialize session and base classes.
-        /// </summary>
+        /// <summary>Initialize session and base classes.</summary>
         /// <param name="session">The session.</param>
         /// <param name="delays">The delays.</param>
         protected AbstractTssController(TSession session, uint[] delays)
@@ -177,10 +143,7 @@ namespace Engine.Controller
 
         #region Logic
 
-        /// <summary>
-        /// Update the simulation. This determines how many steps to perform,
-        /// based on the elapsed time.
-        /// </summary>
+        /// <summary>Update the simulation. This determines how many steps to perform, based on the elapsed time.</summary>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds since the last call.</param>
         protected void UpdateSimulation(float elapsedMilliseconds)
         {
@@ -251,17 +214,14 @@ namespace Engine.Controller
         }
 
         /// <summary>
-        /// Callback that allows subclasses to perform additional logic that
-        /// should be executed per actual simulation update.
+        ///     Callback that allows subclasses to perform additional logic that should be executed per actual simulation
+        ///     update.
         /// </summary>
         protected virtual void PerformAdditionalUpdateActions()
         {
         }
 
-        /// <summary>
-        /// Allows subclasses to request skipping frames / waiting for a
-        /// specific number of frames.
-        /// </summary>
+        /// <summary>Allows subclasses to request skipping frames / waiting for a specific number of frames.</summary>
         /// <param name="frames">The number of frames to skip, positive or negative.</param>
         protected void ScheduleFrameskip(long frames)
         {
@@ -282,9 +242,7 @@ namespace Engine.Controller
 
         #region Modify simulation
 
-        /// <summary>
-        /// Apply a command. This will apply the command to the frame it was issued in.
-        /// </summary>
+        /// <summary>Apply a command. This will apply the command to the frame it was issued in.</summary>
         /// <param name="command">The command to push.</param>
         protected virtual void Apply(FrameCommand command)
         {
@@ -295,18 +253,14 @@ namespace Engine.Controller
 
         #region Protocol layer
 
-        /// <summary>
-        /// Got command data from another client or the server.
-        /// </summary>
+        /// <summary>Got command data from another client or the server.</summary>
         /// <param name="command">the received command.</param>
         protected override void HandleRemoteCommand(FrameCommand command)
         {
             Apply(command);
         }
 
-        /// <summary>
-        /// Prepends all normal command messages with the corresponding flag.
-        /// </summary>
+        /// <summary>Prepends all normal command messages with the corresponding flag.</summary>
         /// <param name="command">the command to send.</param>
         /// <param name="packet">the final packet to send.</param>
         /// <returns>the given packet, after writing.</returns>
@@ -318,7 +272,7 @@ namespace Engine.Controller
         #endregion
 
         #region Utility
-        
+
         protected static void WriteGameState(long frame, IManager manager, string filename)
         {
             // Get some general system information, for reference.
@@ -344,7 +298,8 @@ namespace Engine.Controller
                 w.Write("--------------------------------------------------------------------------------\n");
 
                 // Dump actual game state.
-                w.Write("Manager = "); w.Dump(manager);
+                w.Write("Manager = ");
+                w.Dump(manager);
             }
         }
 
@@ -352,41 +307,36 @@ namespace Engine.Controller
 
         #region Simulation wrapper
 
-        /// <summary>
-        /// Wrapper for the encapsulated simulation, to minimize points in API
-        /// that could corrupt the simulation.
-        /// </summary>
+        /// <summary>Wrapper for the encapsulated simulation, to minimize points in API that could corrupt the simulation.</summary>
         private sealed class TssSimulationWrapper : ISimulation
         {
             #region Properties
 
-            /// <summary>
-            /// The current frame of the simulation the state represents.
-            /// </summary>
-            public long CurrentFrame { get { return _controller.Tss.CurrentFrame; } }
+            /// <summary>The current frame of the simulation the state represents.</summary>
+            public long CurrentFrame
+            {
+                get { return _controller.Tss.CurrentFrame; }
+            }
 
-            /// <summary>
-            /// The component system manager in use in this simulation.
-            /// </summary>
-            public IManager Manager { get { return _controller.Tss.Manager; } }
+            /// <summary>The component system manager in use in this simulation.</summary>
+            public IManager Manager
+            {
+                get { return _controller.Tss.Manager; }
+            }
 
             #endregion
 
             #region Fields
-            
-            /// <summary>
-            /// The controller this managed wrapper belongs to.
-            /// </summary>
+
+            /// <summary>The controller this managed wrapper belongs to.</summary>
             [PacketizerIgnore]
             private readonly AbstractTssController<TSession> _controller;
 
             #endregion
 
             #region Constructor
-            
-            /// <summary>
-            /// Creates a new wrapper for the specified controller.
-            /// </summary>
+
+            /// <summary>Creates a new wrapper for the specified controller.</summary>
             /// <param name="controller">The controller.</param>
             public TssSimulationWrapper(AbstractTssController<TSession> controller)
             {
@@ -397,17 +347,13 @@ namespace Engine.Controller
 
             #region Logic
 
-            /// <summary>
-            /// Advance the simulation by one frame.
-            /// </summary>
+            /// <summary>Advance the simulation by one frame.</summary>
             public void Update()
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Apply a given command to the simulation state.
-            /// </summary>
+            /// <summary>Apply a given command to the simulation state.</summary>
             /// <param name="command">the command to apply.</param>
             public void PushCommand(Command command)
             {
@@ -422,7 +368,8 @@ namespace Engine.Controller
             [OnStringify]
             public StreamWriter Dump(StreamWriter w, int indent)
             {
-                w.Write("TrailingState = "); w.Dump(_controller.Tss.TrailingSimulation, indent);
+                w.Write("TrailingState = ");
+                w.Dump(_controller.Tss.TrailingSimulation, indent);
                 return w;
             }
 
@@ -430,18 +377,14 @@ namespace Engine.Controller
 
             #region Copying
 
-            /// <summary>
-            /// Creates a deep copy of the object.
-            /// </summary>
+            /// <summary>Creates a deep copy of the object.</summary>
             /// <returns>The copy.</returns>
             public ISimulation NewInstance()
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Creates a deep copy of the object, reusing the given object.
-            /// </summary>
+            /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
             /// <param name="into">The object to copy into.</param>
             /// <returns>The copy.</returns>
             public void CopyInto(ISimulation into)

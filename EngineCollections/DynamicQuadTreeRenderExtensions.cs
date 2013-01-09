@@ -19,20 +19,13 @@ namespace Engine.FarCollections
 namespace Engine.Collections
 #endif
 {
-    /// <summary>
-    /// Add extension methods for a QuadTree to allow rendering its nodes
-    /// and entries.
-    /// </summary>
+    /// <summary>Add extension methods for a QuadTree to allow rendering its nodes and entries.</summary>
     public static class DynamicQuadTreeRenderExtensions
     {
-        /// <summary>
-        /// Renders a graphical representation of this tree's cells using the
-        /// specified shape renderer.
-        /// </summary>
+        /// <summary>Renders a graphical representation of this tree's cells using the specified shape renderer.</summary>
         /// <param name="tree">The tree to render.</param>
         /// <param name="shape">The shape renderer to paint with.</param>
-        /// <param name="translation">The translation to apply to all draw
-        /// operation.</param>
+        /// <param name="translation">The translation to apply to all draw operation.</param>
         public static void Draw<T>(this DynamicQuadTree<T> tree, AbstractShape shape, TPoint translation)
         {
             var screenBounds = new TRectangle(-5000, -5000, 10000, 10000);
@@ -40,13 +33,15 @@ namespace Engine.Collections
             {
                 var bounds = node.Item1;
                 bounds.Offset(translation);
-                var center = (Vector2)bounds.Center;
+// ReSharper disable RedundantCast Necessary for FarCollections.
+                var center = (Vector2) bounds.Center;
+// ReSharper restore RedundantCast
 
                 if (screenBounds.Intersects(bounds) &&
                     !bounds.Contains(screenBounds))
                 {
                     shape.SetCenter(center.X, center.Y);
-                    shape.SetSize((int)bounds.Width - 1, (int)bounds.Height - 1);
+                    shape.SetSize((int) bounds.Width - 1, (int) bounds.Height - 1);
                     shape.Draw();
                 }
 
@@ -55,13 +50,15 @@ namespace Engine.Collections
                 {
                     bounds = tree[entry];
                     bounds.Offset(translation);
-                    center = (Vector2)bounds.Center;
+// ReSharper disable RedundantCast Necessary for FarCollections.
+                    center = (Vector2) bounds.Center;
+// ReSharper restore RedundantCast
 
                     if (screenBounds.Intersects(bounds) &&
                         !bounds.Contains(screenBounds))
                     {
                         shape.SetCenter(center.X, center.Y);
-                        shape.SetSize((int)bounds.Width, (int)bounds.Height);
+                        shape.SetSize((int) bounds.Width, (int) bounds.Height);
                         shape.Draw();
                     }
                 }

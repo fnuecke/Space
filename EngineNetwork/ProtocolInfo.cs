@@ -4,21 +4,15 @@ using Engine.Math;
 
 namespace Engine.Network
 {
-    /// <summary>
-    /// Represents some statistics for a protocol.
-    /// </summary>
+    /// <summary>Represents some statistics for a protocol.</summary>
     public sealed class ProtocolInfo : IProtocolInfo
     {
         #region Properties
 
-        /// <summary>
-        /// Number of seconds that are being tracked in this protocol info.
-        /// </summary>
+        /// <summary>Number of seconds that are being tracked in this protocol info.</summary>
         public int HistoryLength { get; private set; }
 
-        /// <summary>
-        /// Represents incoming traffic over a certain interval of time, tracked by type, and stored as number of bytes.
-        /// </summary>
+        /// <summary>Represents incoming traffic over a certain interval of time, tracked by type, and stored as number of bytes.</summary>
         public LinkedList<Dictionary<TrafficTypes, int>> IncomingTraffic
         {
             get
@@ -28,9 +22,7 @@ namespace Engine.Network
             }
         }
 
-        /// <summary>
-        /// Represents outgoing traffic over a certain interval of time, tracked by type, and stored as number of bytes.
-        /// </summary>
+        /// <summary>Represents outgoing traffic over a certain interval of time, tracked by type, and stored as number of bytes.</summary>
         public LinkedList<Dictionary<TrafficTypes, int>> OutgoingTraffic
         {
             get
@@ -40,44 +32,44 @@ namespace Engine.Network
             }
         }
 
-        /// <summary>
-        /// Sampling of the sizes of packet sizes of incoming packets.
-        /// </summary>
-        public ISampling<int> IncomingPacketSizes { get { return _inPacketSizes; } }
+        /// <summary>Sampling of the sizes of packet sizes of incoming packets.</summary>
+        public ISampling<int> IncomingPacketSizes
+        {
+            get { return _inPacketSizes; }
+        }
 
-        /// <summary>
-        /// Sampling of the sizes of packet sizes of outgoing packets.
-        /// </summary>
-        public ISampling<int> OutgoingPacketSizes { get { return _outPacketSizes; } }
+        /// <summary>Sampling of the sizes of packet sizes of outgoing packets.</summary>
+        public ISampling<int> OutgoingPacketSizes
+        {
+            get { return _outPacketSizes; }
+        }
 
-        /// <summary>
-        /// Sampling of the compression ratio of received packets.
-        /// </summary>
-        public ISampling<double> IncomingPacketCompression { get { return _inPacketCompression; } }
+        /// <summary>Sampling of the compression ratio of received packets.</summary>
+        public ISampling<double> IncomingPacketCompression
+        {
+            get { return _inPacketCompression; }
+        }
 
-        /// <summary>
-        /// Sampling of the compression ratio of sent packets.
-        /// </summary>
-        public ISampling<double> OutgoingPacketCompression { get { return _outPacketCompression; } }
+        /// <summary>Sampling of the compression ratio of sent packets.</summary>
+        public ISampling<double> OutgoingPacketCompression
+        {
+            get { return _outPacketCompression; }
+        }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// Keeps track of incoming traffic over a certain interval of time.
-        /// </summary>
-        private readonly LinkedList<Dictionary<TrafficTypes, int>> _inTraffic = new LinkedList<Dictionary<TrafficTypes, int>>();
+        /// <summary>Keeps track of incoming traffic over a certain interval of time.</summary>
+        private readonly LinkedList<Dictionary<TrafficTypes, int>> _inTraffic =
+            new LinkedList<Dictionary<TrafficTypes, int>>();
 
-        /// <summary>
-        /// Keeps track of outgoing traffic over a certain interval of time.
-        /// </summary>
-        private readonly LinkedList<Dictionary<TrafficTypes, int>> _outTraffic = new LinkedList<Dictionary<TrafficTypes, int>>();
+        /// <summary>Keeps track of outgoing traffic over a certain interval of time.</summary>
+        private readonly LinkedList<Dictionary<TrafficTypes, int>> _outTraffic =
+            new LinkedList<Dictionary<TrafficTypes, int>>();
 
-        /// <summary>
-        /// The time we last added something to the history.
-        /// </summary>
-        private long _currentSecond = (long)(new TimeSpan(DateTime.UtcNow.Ticks).TotalSeconds);
+        /// <summary>The time we last added something to the history.</summary>
+        private long _currentSecond = (long) (new TimeSpan(DateTime.UtcNow.Ticks).TotalSeconds);
 
         private readonly IntSampling _inPacketSizes = new IntSampling(100);
         private readonly IntSampling _outPacketSizes = new IntSampling(100);
@@ -88,9 +80,7 @@ namespace Engine.Network
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new protocol info object.
-        /// </summary>
+        /// <summary>Creates a new protocol info object.</summary>
         /// <param name="history">the length of the history in seconds.</param>
         public ProtocolInfo(int history)
         {
@@ -116,9 +106,7 @@ namespace Engine.Network
 
         #region Internals
 
-        /// <summary>
-        /// Add a new sample of incoming traffic for the current time.
-        /// </summary>
+        /// <summary>Add a new sample of incoming traffic for the current time.</summary>
         /// <param name="bytes">the number of bytes of traffic.</param>
         /// <param name="type">the type of traffic.</param>
         public void PutIncomingTraffic(int bytes, TrafficTypes type)
@@ -141,9 +129,7 @@ namespace Engine.Network
             _inTraffic.First.Value[TrafficTypes.Any] += bytes;
         }
 
-        /// <summary>
-        /// Add a new sample of outgoing traffic for the current time.
-        /// </summary>
+        /// <summary>Add a new sample of outgoing traffic for the current time.</summary>
         /// <param name="bytes">the number of bytes of traffic.</param>
         /// <param name="type">the type of traffic.</param>
         public void PutOutgoingTraffic(int bytes, TrafficTypes type)
@@ -187,12 +173,10 @@ namespace Engine.Network
 
         #region Utility methods
 
-        /// <summary>
-        /// Helper method, loops list as necessary.
-        /// </summary>
+        /// <summary>Helper method, loops list as necessary.</summary>
         private void UpdateLists()
         {
-            var nowSecond = (long)(new TimeSpan(DateTime.UtcNow.Ticks).TotalSeconds);
+            var nowSecond = (long) (new TimeSpan(DateTime.UtcNow.Ticks).TotalSeconds);
             for (; _currentSecond < nowSecond; ++_currentSecond)
             {
                 var dictInc = _inTraffic.Last.Value;

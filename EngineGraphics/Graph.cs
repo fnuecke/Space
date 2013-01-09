@@ -9,58 +9,45 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
 {
-    /// <summary>
-    /// A class for rendering graphs, based on float data.
-    /// </summary>
+    /// <summary>A class for rendering graphs, based on float data.</summary>
     public sealed class Graph : IDisposable
     {
         #region Types
 
-        /// <summary>
-        /// Possible render types for graphs.
-        /// </summary>
+        /// <summary>Possible render types for graphs.</summary>
         public enum GraphType
         {
-            /// <summary>
-            /// Invalid type, won't render anything.
-            /// </summary>
+            /// <summary>Invalid type, won't render anything.</summary>
             None,
 
-            /// <summary>
-            /// Line graph, drawing each data source as a line.
-            /// </summary>
+            /// <summary>Line graph, drawing each data source as a line.</summary>
             Line,
 
             /// <summary>
-            /// Stacked area graph, drawing each data source as an area, where
-            /// the areas are stacked on top of each other (in vertical space)
-            /// to give a direct feedback of the sum of the individual data.
+            ///     Stacked area graph, drawing each data source as an area, where the areas are stacked on top of each other (in
+            ///     vertical space) to give a direct feedback of the sum of the individual data.
             /// </summary>
             StackedArea
         }
 
-        /// <summary>
-        /// Shortening types for displayed values.
-        /// </summary>
+        /// <summary>Shortening types for displayed values.</summary>
         public enum UnitPrefixes
         {
             /// <summary>
-            /// No prefix convention, won't shorten value display in captions. This
-            /// may lead to text overflowing the set bounds.
+            ///     No prefix convention, won't shorten value display in captions. This may lead to text overflowing the set
+            ///     bounds.
             /// </summary>
             None,
 
             /// <summary>
-            /// SI prefix convention will shorten value display in captions by
-            /// dividing them by 1000, and using the according SI unit prefixes
-            /// of k, M, G, T, P, E, Z, Y.
+            ///     SI prefix convention will shorten value display in captions by dividing them by 1000, and using the according
+            ///     SI unit prefixes of k, M, G, T, P, E, Z, Y.
             /// </summary>
             SI,
 
             /// <summary>
-            /// IEC prefix convention will shorten the display in captions by
-            /// dividing them by 1024, and using the according IEC unit prefixes
-            /// of Ki, Mi, Gi, Ti, Pi, Ei, Zi, Yi.
+            ///     IEC prefix convention will shorten the display in captions by dividing them by 1024, and using the according
+            ///     IEC unit prefixes of Ki, Mi, Gi, Ti, Pi, Ei, Zi, Yi.
             /// </summary>
             IEC
         }
@@ -69,62 +56,45 @@ namespace Engine.Graphics
 
         #region Constants
 
-        /// <summary>
-        /// Padding on sides and between captions and graph.
-        /// </summary>
+        /// <summary>Padding on sides and between captions and graph.</summary>
         private const int Padding = 5;
 
-        /// <summary>
-        /// Height of area to use for text rendering.
-        /// </summary>
+        /// <summary>Height of area to use for text rendering.</summary>
         private const int VerticalCaptionSize = 16;
 
-        /// <summary>
-        /// Minimum width to use for graphs (actually more for captions).
-        /// </summary>
+        /// <summary>Minimum width to use for graphs (actually more for captions).</summary>
         private const int MinGraphWidth = 230;
 
-        /// <summary>
-        /// Minimum height of the actual graph area.
-        /// </summary>
+        /// <summary>Minimum height of the actual graph area.</summary>
         private const int MinGraphHeight = 20 + Padding * 2;
 
-        /// <summary>
-        /// SI unit prefixes, sorted by order of magnitude.
-        /// </summary>
+        /// <summary>SI unit prefixes, sorted by order of magnitude.</summary>
         private static readonly string[] SIPrefixes = new[] {"", "k", "M", "G", "T", "P", "E", "Z", "Y"};
 
-        /// <summary>
-        /// IEC unit prefixes, sorted by order of magnitude.
-        /// </summary>
+        /// <summary>IEC unit prefixes, sorted by order of magnitude.</summary>
         private static readonly string[] IECPrefixes = new[] {"", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"};
 
-        /// <summary>
-        /// For garbage free string formatting.
-        /// </summary>
-        private static readonly char[] Digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+        /// <summary>For garbage free string formatting.</summary>
+        private static readonly char[] Digits = new[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// The bounds in which to render the graph. This must be large enough
-        /// to allow room for captions, i.e. this does not equal the area of
-        /// the actual graph.
+        ///     The bounds in which to render the graph. This must be large enough to allow room for captions, i.e. this does
+        ///     not equal the area of the actual graph.
         /// </summary>
         public Microsoft.Xna.Framework.Rectangle Bounds { get; set; }
 
-        /// <summary>
-        /// How to render the graph.
-        /// </summary>
+        /// <summary>How to render the graph.</summary>
         public GraphType Type { get; set; }
 
         /// <summary>
-        /// Defines how to compute values to render. If a value <c>n > 1</c>
-        /// is set, the rendered value will be the average over the last <c>n</c>
-        /// data points. This will also mean the actually rendered data points
-        /// will be <c>n - 1</c> less than actually available.
+        ///     Defines how to compute values to render. If a value <c>n > 1</c>
+        ///     is set, the rendered value will be the average over the last <c>n</c>
+        ///     data points. This will also mean the actually rendered data points will be <c>n - 1</c> less than actually
+        ///     available.
         /// </summary>
         public int Smoothing
         {
@@ -136,116 +106,74 @@ namespace Engine.Graphics
             }
         }
 
-        /// <summary>
-        /// The unit prefix to use when shortening values for display. Defaults
-        /// to SI prefix convention.
-        /// </summary>
+        /// <summary>The unit prefix to use when shortening values for display. Defaults to SI prefix convention.</summary>
         public UnitPrefixes UnitPrefix { get; set; }
 
-        /// <summary>
-        /// The unit name of the values. Defaults to an empty string (unit less).
-        /// </summary>
+        /// <summary>The unit name of the values. Defaults to an empty string (unit less).</summary>
         public string Unit { get; set; }
 
-        /// <summary>
-        /// A title to show above the graph.
-        /// </summary>
+        /// <summary>A title to show above the graph.</summary>
         public string Title { get; set; }
 
-        /// <summary>
-        /// A fixed maximum value, so as to not automatically scale the graph
-        /// in vertical direction.
-        /// </summary>
+        /// <summary>A fixed maximum value, so as to not automatically scale the graph in vertical direction.</summary>
         public float? FixedMaximum { get; set; }
 
-        /// <summary>
-        /// The data provider we iterate to render the graph.
-        /// </summary>
-        public IEnumerable<float> Data { set { _enumerator = value.GetEnumerator(); } }
+        /// <summary>The data provider we iterate to render the graph.</summary>
+        public IEnumerable<float> Data
+        {
+            set { _enumerator = value.GetEnumerator(); }
+        }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The content manager used to load our assets.
-        /// </summary>
+        /// <summary>The content manager used to load our assets.</summary>
         private readonly ContentManager _content;
 
-        /// <summary>
-        /// The graphics device service used to keep track of our graphics device.
-        /// </summary>
+        /// <summary>The graphics device service used to keep track of our graphics device.</summary>
         private readonly IGraphicsDeviceService _graphics;
 
-        /// <summary>
-        /// Used to render overall outline and outline around graph area.
-        /// </summary>
+        /// <summary>Used to render overall outline and outline around graph area.</summary>
         private readonly Rectangle _outlines;
 
-        /// <summary>
-        /// Used to render overall background.
-        /// </summary>
+        /// <summary>Used to render overall background.</summary>
         private readonly GradientRectangle _background;
 
-        /// <summary>
-        /// The spritebatch to use for rendering.
-        /// </summary>
+        /// <summary>The spritebatch to use for rendering.</summary>
         private SpriteBatch _spriteBatch;
 
-        /// <summary>
-        /// The font to use for rendering.
-        /// </summary>
+        /// <summary>The font to use for rendering.</summary>
         private SpriteFont _font;
 
-        /// <summary>
-        /// The texture we use to (manually...) render the curves.
-        /// </summary>
+        /// <summary>The texture we use to (manually...) render the curves.</summary>
         private Texture2D _graphCanvas;
 
-        /// <summary>
-        /// Actual image data we manipulate.
-        /// </summary>
+        /// <summary>Actual image data we manipulate.</summary>
         private Color[] _graphImageData;
 
-        /// <summary>
-        /// The reused enumerator.
-        /// </summary>
+        /// <summary>The reused enumerator.</summary>
         private IEnumerator<float> _enumerator;
 
-        /// <summary>
-        /// Use a maximum from recent time to interpolate from to avoid
-        /// sudden scale jumps.
-        /// </summary>
+        /// <summary>Use a maximum from recent time to interpolate from to avoid sudden scale jumps.</summary>
         private float _recentMax = 1;
 
-        /// <summary>
-        /// The smoothing to use (how many values to average over).
-        /// </summary>
+        /// <summary>The smoothing to use (how many values to average over).</summary>
         private int _smoothing;
 
-        /// <summary>
-        /// The sampler to use to generate the moving average.
-        /// </summary>
+        /// <summary>The sampler to use to generate the moving average.</summary>
         private FloatSampling _movingAverage = new FloatSampling(1);
 
-        /// <summary>
-        /// Reused data accumulator to avoid garbage.
-        /// </summary>
+        /// <summary>Reused data accumulator to avoid garbage.</summary>
         private readonly List<float> _points;
 
-        /// <summary>
-        /// The most recent min, max, average and current value (from last update).
-        /// </summary>
+        /// <summary>The most recent min, max, average and current value (from last update).</summary>
         private float _min, _max, _average, _now;
 
-        /// <summary>
-        /// String builder used to format texts to be displayed.
-        /// </summary>
+        /// <summary>String builder used to format texts to be displayed.</summary>
         private readonly StringBuilder _formatter = new StringBuilder(32);
 
-        /// <summary>
-        /// Timer we use to render only every now and then.
-        /// </summary>
+        /// <summary>Timer we use to render only every now and then.</summary>
         private readonly Stopwatch _renderTimer = new Stopwatch();
 
         #endregion
@@ -253,7 +181,7 @@ namespace Engine.Graphics
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Graph"/> class.
+        ///     Initializes a new instance of the <see cref="Graph"/> class.
         /// </summary>
         /// <param name="content">The content manager used to load assets.</param>
         /// <param name="graphics">The graphics device service.</param>
@@ -269,11 +197,12 @@ namespace Engine.Graphics
 
             _background = new GradientRectangle(content, graphics);
             _background.LoadContent();
-            _background.SetGradients(new[]
-                                     {
-                                         Color.Black * 0.5f,
-                                         Color.Black * 0.8f
-                                     });
+            _background.SetGradients(
+                new[]
+                {
+                    Color.Black * 0.5f,
+                    Color.Black * 0.8f
+                });
             _outlines = new Rectangle(content, graphics) {Color = Color.DarkGray};
             _outlines.LoadContent();
 
@@ -283,20 +212,17 @@ namespace Engine.Graphics
 
             _renderTimer.Start();
         }
-        
+
         /// <summary>
-        /// Releases unmanaged resources and performs other cleanup operations before the
-        /// <see cref="Graph"/> is reclaimed by garbage collection.
+        ///     Releases unmanaged resources and performs other cleanup operations before the
+        ///     <see cref="Graph"/> is reclaimed by garbage collection.
         /// </summary>
         ~Graph()
         {
             Dispose(false);
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing,
-        /// or resetting unmanaged resources.
-        /// </summary>
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
         public void Dispose()
         {
             Dispose(true);
@@ -328,9 +254,7 @@ namespace Engine.Graphics
 
         #region Drawing
 
-        /// <summary>
-        /// Render the graph with its current settings.
-        /// </summary>
+        /// <summary>Render the graph with its current settings.</summary>
         public void Draw()
         {
             var minSize = ComputeMinimumSize();
@@ -359,9 +283,10 @@ namespace Engine.Graphics
                     {
                         _graphCanvas.Dispose();
                     }
-                    _graphCanvas = new Texture2D(_spriteBatch.GraphicsDevice,
-                                                 graphBounds.Width,
-                                                 graphBounds.Height);
+                    _graphCanvas = new Texture2D(
+                        _spriteBatch.GraphicsDevice,
+                        graphBounds.Width,
+                        graphBounds.Height);
                     _graphImageData = new Color[graphBounds.Width * graphBounds.Height];
                 }
 
@@ -410,9 +335,7 @@ namespace Engine.Graphics
             _outlines.Draw();
         }
 
-        /// <summary>
-        /// Draws the captions for the graph.
-        /// </summary>
+        /// <summary>Draws the captions for the graph.</summary>
         private void DrawCaptions()
         {
             _spriteBatch.Begin();
@@ -443,18 +366,16 @@ namespace Engine.Graphics
             _spriteBatch.End();
         }
 
-        /// <summary>
-        /// Draws lines for each data set.
-        /// </summary>
+        /// <summary>Draws lines for each data set.</summary>
         private void DrawLines()
         {
-            var w = (_points.Count - 1) / (float)_graphCanvas.Width;
+            var w = (_points.Count - 1) / (float) _graphCanvas.Width;
             var lastY = 0f;
             for (var x = 0; x < _graphCanvas.Width; x++)
             {
                 var bucket = x * w;
-                var a = (int)System.Math.Floor(bucket);
-                var b = (int)System.Math.Ceiling(bucket);
+                var a = (int) System.Math.Floor(bucket);
+                var b = (int) System.Math.Ceiling(bucket);
                 float targetY;
                 if (a == b)
                 {
@@ -476,7 +397,8 @@ namespace Engine.Graphics
                 {
                     // Draw line.
                     var local = y - lastY;
-                    var alpha = System.Math.Max(0, System.Math.Min(1, System.Math.Max(0, 1.5f - System.Math.Abs(local - 0.5f))));
+                    var alpha = System.Math.Max(
+                        0, System.Math.Min(1, System.Math.Max(0, 1.5f - System.Math.Abs(local - 0.5f))));
 
                     // Draw min/max/average lines
                     local = y - minY;
@@ -491,7 +413,7 @@ namespace Engine.Graphics
                         local = y - avgY;
                         alpha += 0.3f * System.Math.Max(0, 1.8f - 2 * System.Math.Abs(local - 0.5f));
                     }
-                        
+
                     // Set final color.
                     _graphImageData[x + y * _graphCanvas.Width] = Color.White * alpha;
                 }
@@ -505,9 +427,7 @@ namespace Engine.Graphics
 
         #region Utility methods
 
-        /// <summary>
-        /// Computes the minimum size of the graph.
-        /// </summary>
+        /// <summary>Computes the minimum size of the graph.</summary>
         /// <returns></returns>
         private Microsoft.Xna.Framework.Rectangle ComputeMinimumSize()
         {
@@ -515,15 +435,14 @@ namespace Engine.Graphics
             r.X = Bounds.X;
             r.Y = Bounds.Y;
             const int mw = Padding * 2 + MinGraphWidth;
-            var mh = Padding * 3 + VerticalCaptionSize * 2 + MinGraphHeight + (string.IsNullOrWhiteSpace(Title) ? 0 : VerticalCaptionSize + Padding);
+            var mh = Padding * 3 + VerticalCaptionSize * 2 + MinGraphHeight +
+                     (string.IsNullOrWhiteSpace(Title) ? 0 : VerticalCaptionSize + Padding);
             r.Width = System.Math.Max(Bounds.Width, mw);
             r.Height = System.Math.Max(Bounds.Height, mh);
             return r;
         }
 
-        /// <summary>
-        /// Computes the current graph bounds (actual graph area).
-        /// </summary>
+        /// <summary>Computes the current graph bounds (actual graph area).</summary>
         /// <returns></returns>
         private Microsoft.Xna.Framework.Rectangle ComputeGraphBounds()
         {
@@ -537,10 +456,7 @@ namespace Engine.Graphics
             return r;
         }
 
-        /// <summary>
-        /// Process data to build actual data points to draw the graph through,
-        /// in relative values.
-        /// </summary>
+        /// <summary>Process data to build actual data points to draw the graph through, in relative values.</summary>
         /// <returns></returns>
         private void BuildCurves()
         {
@@ -573,7 +489,7 @@ namespace Engine.Graphics
 
                 // Build average based on smoothing parameter.
                 _movingAverage.Put(data);
-                var value = (float)_movingAverage.Mean();
+                var value = (float) _movingAverage.Mean();
 
                 if (++processed > Smoothing)
                 {
@@ -624,14 +540,10 @@ namespace Engine.Graphics
             _average /= count;
         }
 
-        /// <summary>
-        /// Formats a value based on the set unit settings for rendering.
-        /// </summary>
+        /// <summary>Formats a value based on the set unit settings for rendering.</summary>
         /// <param name="caption">The caption to prepend the formatted value.</param>
         /// <param name="value">The value to format.</param>
-        /// <returns>
-        /// The formatted string representing the value.
-        /// </returns>
+        /// <returns>The formatted string representing the value.</returns>
         private StringBuilder Format(string caption, float value)
         {
             // Reset our formatter.
@@ -646,7 +558,7 @@ namespace Engine.Graphics
                 _formatter.Append("N/A");
                 return _formatter;
             }
-            
+
             // See how to process values.
             string[] prefixes;
             float divisor;
@@ -691,8 +603,8 @@ namespace Engine.Graphics
 
         private void AppendFloat(float value)
         {
-            var preDecimal = (int)value;
-            var postDecimal = (int)((value - preDecimal) * 10);
+            var preDecimal = (int) value;
+            var postDecimal = (int) ((value - preDecimal) * 10);
 
             if (preDecimal < 0)
             {
@@ -714,11 +626,11 @@ namespace Engine.Graphics
                 tmp /= 10;
             }
 
-            var pos = _formatter.Length;
+            var index = _formatter.Length;
             _formatter.Append('0', length);
             for (var i = length - 1; i >= 0; --i)
             {
-                _formatter[pos + i] = Digits[value % 10];
+                _formatter[index + i] = Digits[value % 10];
                 value /= 10;
             }
         }

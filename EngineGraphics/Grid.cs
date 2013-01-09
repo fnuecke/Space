@@ -4,22 +4,15 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
 {
-    /// <summary>
-    /// Renders a grid.
-    /// </summary>
+    /// <summary>Renders a grid.</summary>
     public sealed class Grid : AbstractShape
     {
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the size of the a small grid cell. This essentially determins
-        /// how fine the grid is.
-        /// </summary>
+        /// <summary>Gets or sets the size of the a small grid cell. This essentially determines how fine the grid is.</summary>
         public float SmallGridCellSize { get; set; }
 
-        /// <summary>
-        /// Determines every how many small grid cells a thick line should be drawn.
-        /// </summary>
+        /// <summary>Determines every how many small grid cells a thick line should be drawn.</summary>
         public int ThickLineEvery { get; set; }
 
         #endregion
@@ -27,7 +20,7 @@ namespace Engine.Graphics
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Grid"/> class.
+        ///     Initializes a new instance of the <see cref="Grid"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="graphics">The graphics device service.</param>
@@ -42,9 +35,7 @@ namespace Engine.Graphics
 
         #region Draw
 
-        /// <summary>
-        /// Adjusts effect parameters prior to the draw call.
-        /// </summary>
+        /// <summary>Adjusts effect parameters prior to the draw call.</summary>
         protected override void AdjustParameters()
         {
             base.AdjustParameters();

@@ -17,14 +17,10 @@ namespace Engine.FarCollections
 namespace Engine.Collections
 #endif
 {
-    /// <summary>
-    /// Utility methods for intersection operations of index structures.
-    /// </summary>
+    /// <summary>Utility methods for intersection operations of index structures.</summary>
     public static class IntersectionExtensions
     {
-        /// <summary>
-        /// Compute minimal bounding rectangle around a circle.
-        /// </summary>
+        /// <summary>Compute minimal bounding rectangle around a circle.</summary>
         /// <param name="center">The center.</param>
         /// <param name="radius">The radius.</param>
         /// <returns></returns>
@@ -37,43 +33,41 @@ namespace Engine.Collections
             return rectangle;
         }
 
-        /// <summary>
-        /// Compute minimal bounding rectangle around line.
-        /// </summary>
+        /// <summary>Compute minimal bounding rectangle around line.</summary>
         /// <param name="a">Start of the line.</param>
         /// <param name="b">End of the line.</param>
         /// <param name="t">The fraction of the line to bound.</param>
         /// <returns></returns>
         public static TRectangle BoundsFor(TPoint a, TPoint b, float t)
         {
+// ReSharper disable RedundantCast Necessary for FarCollections.
             TRectangle rectangle;
-            var c = a + (Microsoft.Xna.Framework.Vector2)(b - a) * t;
+            var c = a + (Microsoft.Xna.Framework.Vector2) (b - a) * t;
             if (a.X < c.X)
             {
                 rectangle.X = a.X;
-                rectangle.Width = (float)(c.X - a.X);
+                rectangle.Width = (float) (c.X - a.X);
             }
             else
             {
                 rectangle.X = c.X;
-                rectangle.Width = (float)(a.X - c.X);
+                rectangle.Width = (float) (a.X - c.X);
             }
             if (a.Y < c.Y)
             {
                 rectangle.Y = a.Y;
-                rectangle.Height = (float)(c.Y - a.Y);
+                rectangle.Height = (float) (c.Y - a.Y);
             }
             else
             {
                 rectangle.Y = c.Y;
-                rectangle.Height = (float)(a.Y - c.Y);
+                rectangle.Height = (float) (a.Y - c.Y);
             }
             return rectangle;
+// ReSharper restore RedundantCast
         }
 
-        /// <summary>
-        /// Test for intersection between two rectangles.
-        /// </summary>
+        /// <summary>Test for intersection between two rectangles.</summary>
         /// <param name="a">First rectangle.</param>
         /// <param name="b">Second rectangle.</param>
         /// <returns></returns>
@@ -111,18 +105,15 @@ namespace Engine.Collections
 #endif
         }
 
-        /// <summary>
-        /// Test for intersection between rectangle and circle.
-        /// </summary>
+        /// <summary>Test for intersection between rectangle and circle.</summary>
         /// <param name="rectangle">The rectangle.</param>
         /// <param name="center">The center.</param>
         /// <param name="radius">The radius.</param>
         /// <returns></returns>
         /// <remarks>
-        /// This method assumes the bounds of the circle intersect the rectangle.
-        /// It will still work otherwise, but it takes no steps to optimize in that
-        /// regard, as it's normally assumed this is known and thus would be
-        /// unnecessary work to check for.
+        ///     This method assumes the bounds of the circle intersect the rectangle. It will still work otherwise, but it
+        ///     takes no steps to optimize in that regard, as it's normally assumed this is known and thus would be unnecessary
+        ///     work to check for.
         /// </remarks>
         public static bool Intersects(this TRectangle rectangle, TPoint center, float radius)
         {
@@ -168,16 +159,14 @@ namespace Engine.Collections
 #endif
         }
 
-        /// <summary>
-        /// Test for intersection between a rectangle and a line.
-        /// </summary>
+        /// <summary>Test for intersection between a rectangle and a line.</summary>
         /// <param name="rectangle">The rectangle.</param>
         /// <param name="a">Start of the line.</param>
         /// <param name="b">End of the line.</param>
         /// <param name="t">The fraction of the line to consider.</param>
-        /// <param name="thit">The fraction at which the intersection occurred.</param>
+        /// <param name="tHit">The fraction at which the intersection occurred.</param>
         /// <returns></returns>
-        public static bool Intersects(this TRectangle rectangle, TPoint a, TPoint b, float t, out float thit)
+        public static bool Intersects(this TRectangle rectangle, TPoint a, TPoint b, float t, out float tHit)
         {
 #if FARMATH
             // Move points to local coordinate system of rectangle and do normal float
@@ -193,18 +182,20 @@ namespace Engine.Collections
             Microsoft.Xna.Framework.Vector2 lb;
             lb.X = (float)(b.X - rectangle.X);
             lb.Y = (float)(b.Y - rectangle.Y);
-            return lr.Intersects(la, lb, t, out thit);
+            return lr.Intersects(la, lb, t, out tHit);
 #else
             const float e = 1.192092896e-07f;
 
-            thit = 0f;
-            var tmin = float.MinValue;
-            var tmax = float.MaxValue;
+            tHit = 0f;
+            var tMin = float.MinValue;
+            var tMax = float.MaxValue;
 
             var left = rectangle.X;
             var right = left + rectangle.Width;
 
-            var dx = (float)(b.X - a.X);
+// ReSharper disable RedundantCast Necessary for FarCollections.
+            var dx = (float) (b.X - a.X);
+// ReSharper restore RedundantCast
             var parallelToYAxis = dx >= 0 ? (dx < e) : (dx > -e);
 
             if (parallelToYAxis)
@@ -219,8 +210,10 @@ namespace Engine.Collections
             else
             {
                 var inverseDistanceX = 1f / dx;
-                var t1 = (float)(left - a.X) * inverseDistanceX;
-                var t2 = (float)(right - a.X) * inverseDistanceX;
+// ReSharper disable RedundantCast Necessary for FarCollections.
+                var t1 = (float) (left - a.X) * inverseDistanceX;
+                var t2 = (float) (right - a.X) * inverseDistanceX;
+// ReSharper restore RedundantCast
 
                 if (t1 > t2)
                 {
@@ -230,18 +223,18 @@ namespace Engine.Collections
                 }
 
                 // Push the min up.
-                if (t1 > tmin)
+                if (t1 > tMin)
                 {
-                    tmin = t1;
+                    tMin = t1;
                 }
 
                 // Pull the max down.
-                if (t2 < tmax)
+                if (t2 < tMax)
                 {
-                    tmax = t2;
+                    tMax = t2;
                 }
 
-                if (tmin > tmax)
+                if (tMin > tMax)
                 {
                     return false;
                 }
@@ -250,7 +243,9 @@ namespace Engine.Collections
             var top = rectangle.Y;
             var bottom = top + rectangle.Height;
 
-            var dy = (float)(b.Y - a.Y);
+// ReSharper disable RedundantCast Necessary for FarCollections.
+            var dy = (float) (b.Y - a.Y);
+// ReSharper restore RedundantCast
             var parallelToXAxis = dy >= 0 ? (dy < e) : (dy > -e);
 
             if (parallelToXAxis)
@@ -265,8 +260,10 @@ namespace Engine.Collections
             else
             {
                 var inverseDistanceY = 1f / dy;
-                var t1 = (float)(top - a.Y) * inverseDistanceY;
-                var t2 = (float)(bottom - a.Y) * inverseDistanceY;
+// ReSharper disable RedundantCast Necessary for FarCollections.
+                var t1 = (float) (top - a.Y) * inverseDistanceY;
+                var t2 = (float) (bottom - a.Y) * inverseDistanceY;
+// ReSharper restore RedundantCast
 
                 if (t1 > t2)
                 {
@@ -276,28 +273,28 @@ namespace Engine.Collections
                 }
 
                 // Push the min up.
-                if (t1 > tmin)
+                if (t1 > tMin)
                 {
-                    tmin = t1;
+                    tMin = t1;
                 }
 
                 // Pull the max down.
-                if (t2 < tmax)
+                if (t2 < tMax)
                 {
-                    tmax = t2;
+                    tMax = t2;
                 }
 
-                if (tmin > tmax)
+                if (tMin > tMax)
                 {
                     return false;
                 }
             }
-            
+
             // Set out value to intersection value.
-            thit = tmin;
+            tHit = tMin;
 
             // See if we hit something in the allowed interval.
-            return tmin >= 0.0f && tmin < t;
+            return tMin >= 0.0f && tMin < t;
 #endif
         }
     }

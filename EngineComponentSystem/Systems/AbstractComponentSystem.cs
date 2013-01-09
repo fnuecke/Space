@@ -6,19 +6,14 @@ using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Base class for component systems, pre-implementing adding / removal
-    /// of components.
-    /// </summary>
+    /// <summary>Base class for component systems, pre-implementing adding / removal of components.</summary>
     /// <typeparam name="TComponent">The type of component handled in this system.</typeparam>
     public abstract class AbstractComponentSystem<TComponent> : AbstractSystem
         where TComponent : Component
     {
         #region Fields
 
-        /// <summary>
-        /// List of all currently registered components.
-        /// </summary>
+        /// <summary>List of all currently registered components.</summary>
         [CopyIgnore, PacketizerIgnore]
         protected List<TComponent> Components = new List<TComponent>();
 
@@ -26,9 +21,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Manager Events
 
-        /// <summary>
-        /// Called by the manager when a new component was added.
-        /// </summary>
+        /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
         public override void OnComponentAdded(Component component)
         {
@@ -40,7 +33,7 @@ namespace Engine.ComponentSystem.Systems
             // Check if the component is of the right type.
             if (component is TComponent)
             {
-                var typedComponent = (TComponent)component;
+                var typedComponent = (TComponent) component;
 
                 // Keep components in order, to stay deterministic.
                 var index = Components.BinarySearch(typedComponent, Component.Comparer);
@@ -49,9 +42,7 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Called by the manager when a new component was removed.
-        /// </summary>
+        /// <summary>Called by the manager when a new component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
         public override void OnComponentRemoved(Component component)
         {
@@ -63,7 +54,7 @@ namespace Engine.ComponentSystem.Systems
             // Check if the component is of the right type.
             if (component is TComponent)
             {
-                var typedComponent = (TComponent)component;
+                var typedComponent = (TComponent) component;
 
                 // Take advantage of the fact that the list is sorted.
                 var index = Components.BinarySearch(typedComponent, Component.Comparer);
@@ -72,10 +63,7 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Called by the manager when the complete environment has been
-        /// depacketized.
-        /// </summary>
+        /// <summary>Called by the manager when the complete environment has been depacketized.</summary>
         public override void OnDepacketized()
         {
             base.OnDepacketized();
@@ -83,10 +71,7 @@ namespace Engine.ComponentSystem.Systems
             RebuildComponentList();
         }
 
-        /// <summary>
-        /// Called by the manager when the complete environment has been
-        /// copied from another manager.
-        /// </summary>
+        /// <summary>Called by the manager when the complete environment has been copied from another manager.</summary>
         public override void OnCopied()
         {
             base.OnCopied();
@@ -94,9 +79,7 @@ namespace Engine.ComponentSystem.Systems
             RebuildComponentList();
         }
 
-        /// <summary>
-        /// Rebuilds the component list by fetching all components handled by us.
-        /// </summary>
+        /// <summary>Rebuilds the component list by fetching all components handled by us.</summary>
         private void RebuildComponentList()
         {
             Components.Clear();
@@ -104,7 +87,7 @@ namespace Engine.ComponentSystem.Systems
             {
                 if (component is TComponent)
                 {
-                    var typedComponent = (TComponent)component;
+                    var typedComponent = (TComponent) component;
 
                     // Components are in order (we are iterating in order), so
                     // just add it at the end.
@@ -119,18 +102,13 @@ namespace Engine.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        ///     Servers as a copy constructor that returns a new instance of the same type that is freshly initialized.
+        ///     <para>This takes care of duplicating reference types to a new copy of that type (e.g. collections).</para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (AbstractComponentSystem<TComponent>)base.NewInstance();
+            var copy = (AbstractComponentSystem<TComponent>) base.NewInstance();
 
             copy.Components = new List<TComponent>();
 
@@ -138,26 +116,23 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// 
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         /// <remarks>
-        /// This will <em>not</em> fill the copy with the same components as this
-        /// one has; this is done in the <see cref="OnCopied"/> callback, to allow
-        /// proper copying even for systems that may not be present in the manager
-        /// that was the source (in particular: presentation related systems).
+        ///     This will <em>not</em> fill the copy with the same components as this one has; this is done in the
+        ///     <see cref="OnCopied"/> callback, to allow proper copying even for systems that may not be present in the manager
+        ///     that was the source (in particular: presentation related systems).
         /// </remarks>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            ((AbstractComponentSystem<TComponent>)into).Components.Clear();
+            ((AbstractComponentSystem<TComponent>) into).Components.Clear();
         }
 
         #endregion

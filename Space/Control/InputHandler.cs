@@ -17,31 +17,22 @@ using Space.Util;
 
 namespace Space.Control
 {
-    /// <summary>
-    /// Handles player input and converts it to simulation commands.
-    /// </summary>
+    /// <summary>Handles player input and converts it to simulation commands.</summary>
     internal sealed class InputHandler : GameComponent
     {
         #region Constants
 
-        /// <summary>
-        /// The interval in milliseconds in which to check for new rotation
-        /// based on mouse movement.
-        /// </summary>
+        /// <summary>The interval in milliseconds in which to check for new rotation based on mouse movement.</summary>
         private const int AnalogPollInterval = 50;
 
-        /// <summary>
-        /// The interval in seconds in which to scan input devices.
-        /// </summary>
+        /// <summary>The interval in seconds in which to scan input devices.</summary>
         private const int InputDeviceScanInterval = 5;
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Returns whether we are currently in a game.
-        /// </summary>
+        /// <summary>Returns whether we are currently in a game.</summary>
         private bool IsConnected
         {
             get { return _game.Client != null && _game.Client.Controller.Session.ConnectionState == ClientState.Connected; }
@@ -51,77 +42,46 @@ namespace Space.Control
 
         #region Fields
 
-        /// <summary>
-        /// The game we belong to.
-        /// </summary>
+        /// <summary>The game we belong to.</summary>
         private readonly Program _game;
 
-        /// <summary>
-        /// The current primary gamepad.
-        /// </summary>
+        /// <summary>The current primary gamepad.</summary>
         private IGamePad _gamePad;
 
-        /// <summary>
-        /// The time at which we last scanned for input devices.
-        /// </summary>
+        /// <summary>The time at which we last scanned for input devices.</summary>
         private DateTime _lastInputDeviceScan;
 
-        /// <summary>
-        /// The time at which we last check whether the mouse had moved.
-        /// </summary>
+        /// <summary>The time at which we last check whether the mouse had moved.</summary>
         private DateTime _lastUpdate;
 
-        /// <summary>
-        /// The current player acceleration direction.
-        /// </summary>
+        /// <summary>The current player acceleration direction.</summary>
         private Directions _accelerationDirection;
 
-        /// <summary>
-        /// The current player acceleration vector (converted from
-        /// direction or read from gamepad).
-        /// </summary>
+        /// <summary>The current player acceleration vector (converted from direction or read from gamepad).</summary>
         private Vector2 _accelerationVector;
 
-        /// <summary>
-        /// The last registered time that the mouse has moved.
-        /// </summary>
+        /// <summary>The last registered time that the mouse has moved.</summary>
         private DateTime _accelerationChanged;
 
-        /// <summary>
-        /// Whether we're currently stabilizing our position or not (avoid resends).
-        /// </summary>
+        /// <summary>Whether we're currently stabilizing our position or not (avoid resends).</summary>
         private bool _stabilizing;
 
-        /// <summary>
-        /// Whether we're currently using our shield or not (avoid resends).
-        /// </summary>
+        /// <summary>Whether we're currently using our shield or not (avoid resends).</summary>
         private bool _shielding;
 
-        /// <summary>
-        /// Whether we're currently shooting (avoid resends).
-        /// </summary>
+        /// <summary>Whether we're currently shooting (avoid resends).</summary>
         private bool _shooting;
 
-        /// <summary>
-        /// The target rotation based on the current mouse position.
-        /// </summary>
+        /// <summary>The target rotation based on the current mouse position.</summary>
         private float _targetRotation;
 
-        /// <summary>
-        /// The last registered time that the mouse has moved.
-        /// </summary>
+        /// <summary>The last registered time that the mouse has moved.</summary>
         private DateTime _rotationChanged;
 
-        /// <summary>
-        /// Left game pad stick state from the last update, to check for
-        /// changes.
-        /// </summary>
+        /// <summary>Left game pad stick state from the last update, to check for changes.</summary>
         private Vector2 _previousGamepadAcceleration;
 
-        /// <summary>
-        /// Right game pad stick state from the last update, to check for
-        /// changes.
-        /// </summary>
+        /// <summary>Right game pad stick state from the last update, to check for changes.</summary>
         private Vector2 _previousGamepadLook;
 
         #endregion
@@ -178,7 +138,7 @@ namespace Space.Control
                 var gamepadLook = GamePadHelper.GetLook(_gamePad);
                 if (gamepadLook != _previousGamepadLook && gamepadLook != Vector2.Zero)
                 {
-                    _targetRotation = (float)Math.Atan2(gamepadLook.Y, gamepadLook.X);
+                    _targetRotation = (float) Math.Atan2(gamepadLook.Y, gamepadLook.X);
                     _rotationChanged = DateTime.UtcNow;
                 }
                 _previousGamepadLook = gamepadLook;
@@ -209,9 +169,7 @@ namespace Space.Control
 
         #region Listener registration/removal
 
-        /// <summary>
-        /// Attach listeners to all known devices.
-        /// </summary>
+        /// <summary>Attach listeners to all known devices.</summary>
         private void AttachListeners()
         {
             // Detach first, to avoid multiple registrations.
@@ -266,9 +224,7 @@ namespace Space.Control
             }
         }
 
-        /// <summary>
-        /// Remove listeners from all known devices.
-        /// </summary>
+        /// <summary>Remove listeners from all known devices.</summary>
         private void DetachListeners()
         {
             var im = _game.InputManager;
@@ -317,17 +273,13 @@ namespace Space.Control
 
         #region Keyboard
 
-        /// <summary>
-        /// Player pressed a key.
-        /// </summary>
+        /// <summary>Player pressed a key.</summary>
         private void HandleKeyPressed(Keys key)
         {
             BeginCommand(Settings.Instance.GameBindings.GetCommand(key));
         }
 
-        /// <summary>
-        /// Player released a key.
-        /// </summary>
+        /// <summary>Player released a key.</summary>
         private void HandleKeyReleased(Keys key)
         {
             EndCommand(Settings.Instance.GameBindings.GetCommand(key));
@@ -337,41 +289,33 @@ namespace Space.Control
 
         #region Mouse
 
-        /// <summary>
-        /// Handle mouse presses.
-        /// </summary>
+        /// <summary>Handle mouse presses.</summary>
         private void HandleMousePressed(MouseButtons buttons)
         {
             BeginCommand(Settings.Instance.GameBindings.GetCommand(buttons));
         }
 
-        /// <summary>
-        /// Handle mouse releases.
-        /// </summary>
+        /// <summary>Handle mouse releases.</summary>
         private void HandleMouseReleased(MouseButtons buttons)
         {
             EndCommand(Settings.Instance.GameBindings.GetCommand(buttons));
         }
 
-        /// <summary>
-        /// Handle mouse wheel rotation.
-        /// </summary>
+        /// <summary>Handle mouse wheel rotation.</summary>
         /// <param name="ticks"></param>
         private void HandleMouseWheelRotated(float ticks)
         {
             BeginCommand(Settings.Instance.GameBindings.GetCommand(ticks > 0 ? MouseWheel.Up : MouseWheel.Down));
         }
 
-        /// <summary>
-        /// Update facing direction on mouse move.
-        /// </summary>
+        /// <summary>Update facing direction on mouse move.</summary>
         private void HandleMouseMoved(float x, float y)
         {
             // Get angle to middle of screen (position of our ship), which
             // will be our new target rotation.
             var rx = x - _game.GraphicsDevice.Viewport.Width / 2f;
             var ry = y - _game.GraphicsDevice.Viewport.Height / 2f;
-            _targetRotation = (float)Math.Atan2(ry, rx);
+            _targetRotation = (float) Math.Atan2(ry, rx);
             _rotationChanged = DateTime.UtcNow;
         }
 
@@ -379,17 +323,13 @@ namespace Space.Control
 
         #region Gamepad
 
-        /// <summary>
-        /// Handle game pad button presses.
-        /// </summary>
+        /// <summary>Handle game pad button presses.</summary>
         private void HandleGamePadPressed(Buttons buttons)
         {
             BeginCommand(Settings.Instance.GameBindings.GetCommand(buttons));
         }
 
-        /// <summary>
-        /// Handle game pad key releases.
-        /// </summary>
+        /// <summary>Handle game pad key releases.</summary>
         private void HandleGamePadReleased(Buttons buttons)
         {
             EndCommand(Settings.Instance.GameBindings.GetCommand(buttons));
@@ -398,7 +338,7 @@ namespace Space.Control
         #endregion
 
         #region Command handling
-        
+
         private void BeginCommand(GameCommand gameCommand)
         {
             // Figure out what to do.
@@ -427,14 +367,16 @@ namespace Space.Control
 
                 case GameCommand.Rotate:
                     // Rotation changed and we should send the new target rotation.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate,
-                                                     new Vector2(_targetRotation, 0));
+                    command = new PlayerInputCommand(
+                        PlayerInputCommand.PlayerInputCommandType.Rotate,
+                        new Vector2(_targetRotation, 0));
                     break;
-                    
+
                 case GameCommand.Accelerate:
                     // Acceleration vector changed and we should send the new one.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate,
-                                                     _accelerationVector);
+                    command = new PlayerInputCommand(
+                        PlayerInputCommand.PlayerInputCommandType.Accelerate,
+                        _accelerationVector);
                     break;
 
                 case GameCommand.Stabilize:
@@ -517,12 +459,19 @@ namespace Space.Control
 
                 case GameCommand.TestCommand:
                     //Testing time
-                    var move = new MoveCamera {Player = 0, Position = new List<MoveCamera.Positions>(), Return = true, ReturnSpeed = 10};
-                    var pos = new MoveCamera.Positions {Speed = 10,Zoom = 0.3f};
-                    move.Position.Add(pos);
-                    pos = new MoveCamera.Positions {Destination = new FarPosition(51000, 49000),Speed = 10};
-                    move.Position.Add(pos);
-                    move.Position.Add(new MoveCamera.Positions { Destination = new FarPosition(51000, 49000), Speed = 100, Zoom = 0.7f });
+                    var move = new MoveCamera
+                    {
+                        Player = 0,
+                        Position = new List<MoveCamera.Positions>(),
+                        Return = true,
+                        ReturnSpeed = 10
+                    };
+                    var positions = new MoveCamera.Positions {Speed = 10, Zoom = 0.3f};
+                    move.Position.Add(positions);
+                    positions = new MoveCamera.Positions {Destination = new FarPosition(51000, 49000), Speed = 10};
+                    move.Position.Add(positions);
+                    move.Position.Add(
+                        new MoveCamera.Positions {Destination = new FarPosition(51000, 49000), Speed = 100, Zoom = 0.7f});
                     _game.Client.GetSystem<CameraMovementSystem>().Move(move);
                     break;
             }
@@ -565,7 +514,11 @@ namespace Space.Control
                     if (Settings.Instance.StabilizeToggles)
                     {
                         // Toggle stabilizers.
-                        command = new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing);
+                        command =
+                            new PlayerInputCommand(
+                                _stabilizing
+                                    ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing
+                                    : PlayerInputCommand.PlayerInputCommandType.StopStabilizing);
                         _stabilizing = !_stabilizing;
                     }
                     else
@@ -581,7 +534,11 @@ namespace Space.Control
                     if (Settings.Instance.ShieldToggles)
                     {
                         // Toggle shields.
-                        command = new PlayerInputCommand(_shielding ? PlayerInputCommand.PlayerInputCommandType.BeginShielding : PlayerInputCommand.PlayerInputCommandType.StopShielding);
+                        command =
+                            new PlayerInputCommand(
+                                _shielding
+                                    ? PlayerInputCommand.PlayerInputCommandType.BeginShielding
+                                    : PlayerInputCommand.PlayerInputCommandType.StopShielding);
                         _shielding = !_shielding;
                     }
                     else
@@ -609,10 +566,8 @@ namespace Space.Control
             }
         }
 
-        /// <summary>
-        /// Begin accelerating in the specified direction.
-        /// </summary>
-        /// <param name="direction">The direcion to begin accelerating into.</param>
+        /// <summary>Begin accelerating in the specified direction.</summary>
+        /// <param name="direction">The direction to begin accelerating into.</param>
         private void AddAccelerationDirection(Directions direction)
         {
             if ((_accelerationDirection & direction) == Directions.None)
@@ -623,10 +578,8 @@ namespace Space.Control
             }
         }
 
-        /// <summary>
-        /// Stop accelerating in the specified direction.
-        /// </summary>
-        /// <param name="direction">The direcion to stop accelerating into.</param>
+        /// <summary>Stop accelerating in the specified direction.</summary>
+        /// <param name="direction">The direction to stop accelerating into.</param>
         private void RemoveAccelerationDirection(Directions direction)
         {
             if ((_accelerationDirection & direction) != Directions.None)

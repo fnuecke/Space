@@ -43,51 +43,35 @@ using Engine.Util;
 
 namespace Engine.Random
 {
-    /// <summary>
-    /// Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).
-    /// </summary>
+    /// <summary>Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).</summary>
     public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICopyable<MersenneTwister>
     {
         #region Constants: period parameters
 
-        /// <summary>
-        /// Degree of recurrence.
-        /// </summary>
+        /// <summary>Degree of recurrence.</summary>
         private const int N = 624;
 
-        /// <summary>
-        /// Middle word, or the number of parallel sequences.
-        /// </summary>
+        /// <summary>Middle word, or the number of parallel sequences.</summary>
         private const int M = 397;
 
-        /// <summary>
-        /// Constant vector A.
-        /// </summary>
+        /// <summary>Constant vector A.</summary>
         private const ulong MatrixA = 0x9908b0dfUL;
 
-        /// <summary>
-        /// Most significant w-r bits.
-        /// </summary>
+        /// <summary>Most significant w-r bits.</summary>
         private const ulong UpperMask = 0x80000000UL;
 
-        /// <summary>
-        /// Least significant r bits.
-        /// </summary>
+        /// <summary>Least significant r bits.</summary>
         private const ulong LowerMask = 0x7fffffffUL;
 
         #endregion
 
         #region Fields
-        
-        /// <summary>
-        /// The array for the state vector.
-        /// </summary>
+
+        /// <summary>The array for the state vector.</summary>
         [DeepCopy, PacketizerIgnore]
         private readonly ulong[] _mt = new ulong[N];
 
-        /// <summary>
-        /// Current state of this randomizer.
-        /// </summary>
+        /// <summary>Current state of this randomizer.</summary>
         private int _index;
 
         #endregion
@@ -95,37 +79,30 @@ namespace Engine.Random
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <c>MersenneTwister</c> class,
-        /// using a time-dependent default seed value.
+        ///     Initializes a new instance of the <c>MersenneTwister</c> class, using a time-dependent default seed value.
         /// </summary>
         public MersenneTwister()
-            : this((ulong)Environment.TickCount)
-        {
-        }
+            : this((ulong) Environment.TickCount) {}
 
         /// <summary>
-        /// Initializes a new instance of the <c>MersenneTwister</c> class,
-        /// using the specified seed value.
+        ///     Initializes a new instance of the <c>MersenneTwister</c> class, using the specified seed value.
         /// </summary>
-        /// <param name="seed">A number used to calculate a starting value for
-        /// the pseudo-random number sequence.</param>
+        /// <param name="seed">A number used to calculate a starting value for the pseudo-random number sequence.</param>
         public MersenneTwister(ulong seed)
         {
             Seed(seed);
         }
 
         /// <summary>
-        /// Reinitializes this instance of the <c>MersenneTwister</c> class,
-        /// using the specified seed value.
+        ///     Reinitializes this instance of the <c>MersenneTwister</c> class, using the specified seed value.
         /// </summary>
-        /// <param name="seed">A number used to calculate a starting value for
-        /// the pseudo-random number sequence.</param>
+        /// <param name="seed">A number used to calculate a starting value for the pseudo-random number sequence.</param>
         public void Seed(ulong seed)
         {
             _mt[0] = seed & 0xffffffffUL;
             for (_index = 1; _index < N; _index++)
             {
-                _mt[_index] = (1812433253UL * (_mt[_index - 1] ^ (_mt[_index - 1] >> 30)) + (ulong)_index);
+                _mt[_index] = (1812433253UL * (_mt[_index - 1] ^ (_mt[_index - 1] >> 30)) + (ulong) _index);
                 /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
                 /* In the previous versions, MSBs of the seed affect   */
                 /* only MSBs of the array mt[].                        */
@@ -139,30 +116,24 @@ namespace Engine.Random
 
         #region Public API
 
-        /// <summary>
-        /// Returns a random number between 0.0 and 1.0, i.e. [0.0, 1.0).
-        /// </summary>
-        /// <returns>A double-precision floating point number greater than or
-        /// equal to 0.0, and less than 1.0.</returns>
+        /// <summary>Returns a random number between 0.0 and 1.0, i.e. [0.0, 1.0).</summary>
+        /// <returns>A double-precision floating point number greater than or equal to 0.0, and less than 1.0.</returns>
         public double NextDouble()
         {
             return Sample() * (1.0 / 4294967296.0);
         }
 
-        /// <summary>
-        /// Returns a random number within a specified range.
-        /// </summary>
-        /// <param name="minValue">The inclusive lower bound of the random
-        /// number returned.</param>
-        /// <param name="maxValue">The exclusive upper bound of the random
-        /// number returned. <em>maxValue</em> must be greater than or equal
-        /// to <em>minValue</em>.</param>
+        /// <summary>Returns a random number within a specified range.</summary>
+        /// <param name="minValue">The inclusive lower bound of the random number returned.</param>
+        /// <param name="maxValue">
+        ///     The exclusive upper bound of the random number returned. <em>maxValue</em> must be greater than or equal to
+        ///     <em>minValue</em>.
+        /// </param>
         /// <returns>
-        /// A double-precision floating point number greater than or
-        /// equal to <em>minValue</em>, and less than <em>maxValue</em>; that
-        /// is, the range of return values includes <em>minValue</em> but not
-        /// <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
-        /// <em>minValue</em> is returned.
+        ///     A double-precision floating point number greater than or equal to <em>minValue</em>, and less than
+        ///     <em>maxValue</em>; that is, the range of return values includes <em>minValue</em> but not
+        ///     <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
+        ///     <em>minValue</em> is returned.
         /// </returns>
         public double NextDouble(double minValue, double maxValue)
         {
@@ -173,50 +144,49 @@ namespace Engine.Random
             return minValue + NextDouble() * (maxValue - minValue);
         }
 
-        /// <summary>
-        /// Returns a nonnegative random number.
-        /// </summary>
-        /// <returns>A 32-bit signed integer greater than or equal to zero and
-        /// less than <see cref="int.MaxValue"/>.</returns>
+        /// <summary>Returns a nonnegative random number.</summary>
+        /// <returns>
+        ///     A 32-bit signed integer greater than or equal to zero and less than <see cref="int.MaxValue"/>.
+        /// </returns>
         public int NextInt32()
         {
             return NextInt32(int.MaxValue);
         }
 
-        /// <summary>
-        /// Returns a nonnegative random number less than the specified maximum.
-        /// </summary>
-        /// <param name="maxValue">The exclusive upper bound of the random
-        /// number to be generated. maxValue must be greater than or equal to
-        /// zero.</param>
-        /// <returns>A 32-bit signed integer greater than or equal to zero, and
-        /// less than maxValue; that is, the range of return values ordinarily
-        /// includes zero but not maxValue. However, if maxValue equals zero,
-        /// maxValue is returned.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><em>maxValue</em> is
-        /// less than zero. </exception>
+        /// <summary>Returns a nonnegative random number less than the specified maximum.</summary>
+        /// <param name="maxValue">
+        ///     The exclusive upper bound of the random number to be generated. maxValue must be greater than or
+        ///     equal to zero.
+        /// </param>
+        /// <returns>
+        ///     A 32-bit signed integer greater than or equal to zero, and less than maxValue; that is, the range of return
+        ///     values ordinarily includes zero but not maxValue. However, if maxValue equals zero, maxValue is returned.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///     <em>maxValue</em> is less than zero.
+        /// </exception>
         public int NextInt32(int maxValue)
         {
             if (maxValue < 0)
             {
                 throw new ArgumentOutOfRangeException("maxValue");
             }
-            return (int)NextUInt32((uint)maxValue);
+            return (int) NextUInt32((uint) maxValue);
         }
 
-        /// <summary>
-        /// Returns a random number within a specified range.
-        /// </summary>
-        /// <param name="minValue">The inclusive lower bound of the random
-        /// number returned.</param>
-        /// <param name="maxValue">The exclusive upper bound of the random
-        /// number returned. <em>maxValue</em> must be greater than or equal
-        /// to <em>minValue</em>.</param>
-        /// <returns>A 32-bit signed integer greater than or equal to
-        /// <em>minValue</em> and less than <em>maxValue</em>; that is, the
-        /// range of return values includes <em>minValue</em> but not
-        /// <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
-        /// <em>minValue</em> is returned.</returns>
+        /// <summary>Returns a random number within a specified range.</summary>
+        /// <param name="minValue">The inclusive lower bound of the random number returned.</param>
+        /// <param name="maxValue">
+        ///     The exclusive upper bound of the random number returned. <em>maxValue</em> must be greater than or equal to
+        ///     <em>minValue</em>.
+        /// </param>
+        /// <returns>
+        ///     A 32-bit signed integer greater than or equal to
+        ///     <em>minValue</em> and less than <em>maxValue</em>; that is, the range of return values includes <em>minValue</em>
+        ///     but not
+        ///     <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
+        ///     <em>minValue</em> is returned.
+        /// </returns>
         public int NextInt32(int minValue, int maxValue)
         {
             if (minValue > maxValue)
@@ -226,46 +196,45 @@ namespace Engine.Random
             return minValue + NextInt32(maxValue - minValue);
         }
 
-        /// <summary>
-        /// Returns a nonnegative random number.
-        /// </summary>
-        /// <returns>A 32-bit signed integer greater than or equal to zero and
-        /// less than <see cref="uint.MaxValue"/>.</returns>
+        /// <summary>Returns a nonnegative random number.</summary>
+        /// <returns>
+        ///     A 32-bit signed integer greater than or equal to zero and less than <see cref="uint.MaxValue"/>.
+        /// </returns>
         public uint NextUInt32()
         {
             return Sample();
         }
 
-        /// <summary>
-        /// Returns a nonnegative random number less than the specified maximum.
-        /// </summary>
-        /// <param name="maxValue">The exclusive upper bound of the random
-        /// number to be generated. maxValue must be greater than or equal to
-        /// zero.</param>
-        /// <returns>A 32-bit signed integer greater than or equal to zero, and
-        /// less than maxValue; that is, the range of return values ordinarily
-        /// includes zero but not maxValue. However, if maxValue equals zero,
-        /// maxValue is returned.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><em>maxValue</em> is
-        /// less than zero. </exception>
+        /// <summary>Returns a nonnegative random number less than the specified maximum.</summary>
+        /// <param name="maxValue">
+        ///     The exclusive upper bound of the random number to be generated. maxValue must be greater than or
+        ///     equal to zero.
+        /// </param>
+        /// <returns>
+        ///     A 32-bit signed integer greater than or equal to zero, and less than maxValue; that is, the range of return
+        ///     values ordinarily includes zero but not maxValue. However, if maxValue equals zero, maxValue is returned.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///     <em>maxValue</em> is less than zero.
+        /// </exception>
         public uint NextUInt32(uint maxValue)
         {
-            return (uint)(NextUInt32() * (maxValue / 4294967296.0));
+            return (uint) (NextUInt32() * (maxValue / 4294967296.0));
         }
 
-        /// <summary>
-        /// Returns a random number within a specified range.
-        /// </summary>
-        /// <param name="minValue">The inclusive lower bound of the random
-        /// number returned.</param>
-        /// <param name="maxValue">The exclusive upper bound of the random
-        /// number returned. <em>maxValue</em> must be greater than or equal
-        /// to <em>minValue</em>.</param>
-        /// <returns>A 32-bit signed integer greater than or equal to
-        /// <em>minValue</em> and less than <em>maxValue</em>; that is, the
-        /// range of return values includes <em>minValue</em> but not
-        /// <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
-        /// <em>minValue</em> is returned.</returns>
+        /// <summary>Returns a random number within a specified range.</summary>
+        /// <param name="minValue">The inclusive lower bound of the random number returned.</param>
+        /// <param name="maxValue">
+        ///     The exclusive upper bound of the random number returned. <em>maxValue</em> must be greater than or equal to
+        ///     <em>minValue</em>.
+        /// </param>
+        /// <returns>
+        ///     A 32-bit signed integer greater than or equal to
+        ///     <em>minValue</em> and less than <em>maxValue</em>; that is, the range of return values includes <em>minValue</em>
+        ///     but not
+        ///     <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
+        ///     <em>minValue</em> is returned.
+        /// </returns>
         public uint NextUInt32(uint minValue, uint maxValue)
         {
             if (minValue > maxValue)
@@ -279,16 +248,14 @@ namespace Engine.Random
 
         #region Internals
 
-        /// <summary>
-        /// Generates a random number on [0,0xffffffff]-interval.
-        /// </summary>
+        /// <summary>Generates a random number on [0,0xFFFFFFFF]-interval.</summary>
         /// <returns></returns>
         private uint Sample()
         {
             ulong y;
             if (_index == N)
             {
-                var mag01 = new[] { 0x0UL, MatrixA };
+                var mag01 = new[] {0x0UL, MatrixA};
                 // generate N words at one time
                 int kk;
                 for (kk = 0; kk < N - M; kk++)
@@ -311,20 +278,16 @@ namespace Engine.Random
             y ^= (y << 7) & 0x9d2c5680UL;
             y ^= (y << 15) & 0xefc60000UL;
             y ^= (y >> 18);
-            return (uint)y;
+            return (uint) y;
         }
 
         #endregion
 
         #region Serializing / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         [OnPacketize]
         public IWritablePacket Packetize(IWritablePacket packet)
         {
@@ -336,8 +299,8 @@ namespace Engine.Random
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// after automatic depacketization has been performed.
+        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
+        ///     performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
@@ -357,7 +320,8 @@ namespace Engine.Random
             {
                 hasher.Write(_mt[i]);
             }
-            w.AppendIndent(indent).Write("_mt (hash) = "); w.Write(hasher.Value);
+            w.AppendIndent(indent).Write("_mt (hash) = ");
+            w.Write(hasher.Value);
 
             return w;
         }
@@ -366,19 +330,14 @@ namespace Engine.Random
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public MersenneTwister NewInstance()
         {
             return new MersenneTwister(0);
         }
 
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
         public void CopyInto(MersenneTwister into)
@@ -391,10 +350,10 @@ namespace Engine.Random
         #region ToString
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        ///     Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
+        ///     A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
         {

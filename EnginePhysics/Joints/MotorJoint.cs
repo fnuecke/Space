@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.Physics.Math;
+﻿using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -15,33 +14,26 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// A motor joint is used to control the relative motion between two bodies.
-    /// A typical usage is to control the movement of a dynamic body with respect
-    /// to the ground.
+    ///     A motor joint is used to control the relative motion between two bodies. A typical usage is to control the
+    ///     movement of a dynamic body with respect to the ground.
     /// </summary>
     public sealed class MotorJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.Position; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.Position; }
         }
 
-        /// <summary>
-        /// Set/Get the target linear offset, in frame A, in meters.
-        /// </summary>
+        /// <summary>Set/Get the target linear offset, in frame A, in meters.</summary>
         public Vector2 LinearOffset
         {
             get { return _linearOffset; }
@@ -58,9 +50,7 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get the target angular offset, in radians.
-        /// </summary>
+        /// <summary>Set/Get the target angular offset, in radians.</summary>
         public float AngularOffset
         {
             get { return _angularOffset; }
@@ -77,18 +67,14 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get the maximum friction force in N.
-        /// </summary>
+        /// <summary>Set/Get the maximum friction force in N.</summary>
         public float MaxForce
         {
             get { return _maxForce; }
             set { _maxForce = value; }
         }
 
-        /// <summary>
-        /// Set/Get the maximum friction torque in N*m.
-        /// </summary>
+        /// <summary>Set/Get the maximum friction torque in N*m.</summary>
         public float MaxTorque
         {
             get { return _maxTorque; }
@@ -152,18 +138,14 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MotorJoint"/> class.
+        ///     Initializes a new instance of the <see cref="MotorJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public MotorJoint() : base(JointType.Motor)
-        {
-        }
+        public MotorJoint() : base(JointType.Motor) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
+        /// <summary>Initializes this joint with the specified parameters.</summary>
         internal void Initialize(float maxForce, float maxTorque, float correctionFactor)
         {
             _linearOffset = BodyA.GetLocalPoint(BodyB.Position);
@@ -193,9 +175,7 @@ namespace Engine.Physics.Joints
         // J = [0 0 -1 0 0 1]
         // K = invI1 + invI2
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -254,9 +234,9 @@ namespace Engine.Physics.Joints
             {
                 _tmp.AngularMass = 1.0f / _tmp.AngularMass;
             }
-            
+
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            _tmp.LinearError = (Vector2)(cB - cA) + (_tmp.RotB - _tmp.RotA) - qA * _linearOffset;
+            _tmp.LinearError = (Vector2) (cB - cA) + (_tmp.RotB - _tmp.RotA) - qA * _linearOffset;
 // ReSharper restore RedundantCast
             _tmp.AngularError = aB - aA - _angularOffset;
 
@@ -272,13 +252,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -339,15 +316,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             return true;
         }
