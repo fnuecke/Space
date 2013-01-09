@@ -11,35 +11,26 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// Allows lookup of constraints by name.
-    /// </summary>
+    /// <summary>Allows lookup of constraints by name.</summary>
     public static class FactoryLibrary
     {
         #region Fields
 
-        /// <summary>
-        /// Mapping of names to factories.
-        /// </summary>
+        /// <summary>Mapping of names to factories.</summary>
         private static readonly Dictionary<string, IFactory> Factories = new Dictionary<string, IFactory>();
 
-        /// <summary>
-        /// Mapping of names to item pools.
-        /// </summary>
+        /// <summary>Mapping of names to item pools.</summary>
         private static readonly Dictionary<string, ItemPool> ItemPools = new Dictionary<string, ItemPool>();
 
-        /// <summary>
-        /// Mapping of names to attribute pools.
-        /// </summary>
-        private static readonly Dictionary<string, AttributePool> AttributePools = new Dictionary<string, AttributePool>();
+        /// <summary>Mapping of names to attribute pools.</summary>
+        private static readonly Dictionary<string, AttributePool> AttributePools =
+            new Dictionary<string, AttributePool>();
 
         #endregion
 
         #region Initialization
-        
-        /// <summary>
-        /// Initializes the library with the specified content manager.
-        /// </summary>
+
+        /// <summary>Initializes the library with the specified content manager.</summary>
         /// <param name="content">The content manager to use to load constraints.</param>
         public static void LoadContent(ContentManager content)
         {
@@ -57,7 +48,6 @@ namespace Space.ComponentSystem.Factories
                 "Data/ThrusterFactory",
                 "Data/WeaponFactory",
                 "Data/WingFactory",
-
                 "Data/PlanetFactory",
                 "Data/SunFactory",
                 "Data/SunSystemFactory"
@@ -77,9 +67,7 @@ namespace Space.ComponentSystem.Factories
             }
         }
 
-        /// <summary>
-        /// Helper for initializing a specific type.
-        /// </summary>
+        /// <summary>Helper for initializing a specific type.</summary>
         private static void Load(string assetName, ContentManager content)
         {
             foreach (var factory in content.Load<IFactory[]>(assetName))
@@ -92,9 +80,7 @@ namespace Space.ComponentSystem.Factories
 
         #region Accessors
 
-        /// <summary>
-        /// Gets the factory with the specified name, or null if no such factory exists.
-        /// </summary>
+        /// <summary>Gets the factory with the specified name, or null if no such factory exists.</summary>
         /// <param name="name">The name of the factory.</param>
         /// <returns>The factory with that name, or null.</returns>
         public static IFactory GetFactory(string name)
@@ -104,15 +90,11 @@ namespace Space.ComponentSystem.Factories
             return factory;
         }
 
-        /// <summary>
-        /// Samples a new item with the specified name.
-        /// </summary>
+        /// <summary>Samples a new item with the specified name.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the item to sample.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled item.
-        /// </returns>
+        /// <returns>The sampled item.</returns>
         public static int SampleItem(IManager manager, string name, IUniformRandom random)
         {
             if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
@@ -127,16 +109,12 @@ namespace Space.ComponentSystem.Factories
             return 0;
         }
 
-        /// <summary>
-        /// Samples a new item with the specified name at the specified position.
-        /// </summary>
+        /// <summary>Samples a new item with the specified name at the specified position.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the item to sample.</param>
         /// <param name="position">The position at which to spawn the item.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled item.
-        /// </returns>
+        /// <returns>The sampled item.</returns>
         public static int SampleItem(IManager manager, string name, FarPosition position, IUniformRandom random)
         {
             if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
@@ -149,7 +127,7 @@ namespace Space.ComponentSystem.Factories
                 return 0;
             }
             var item = factory.Sample(manager, random);
-            var transform = ((Transform)manager.GetComponent(item, Transform.TypeId));
+            var transform = ((Transform) manager.GetComponent(item, Transform.TypeId));
             if (transform != null)
             {
                 transform.SetTranslation(position);
@@ -158,18 +136,15 @@ namespace Space.ComponentSystem.Factories
             return item;
         }
 
-        /// <summary>
-        /// Samples a new ship with the specified name.
-        /// </summary>
+        /// <summary>Samples a new ship with the specified name.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the ship to sample.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <param name="position">The initial position of the ship.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled ship.
-        /// </returns>
-        public static int SampleShip(IManager manager, string name, Factions faction, FarPosition position, IUniformRandom random)
+        /// <returns>The sampled ship.</returns>
+        public static int SampleShip(
+            IManager manager, string name, Factions faction, FarPosition position, IUniformRandom random)
         {
             if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
             {
@@ -179,19 +154,16 @@ namespace Space.ComponentSystem.Factories
             return factory != null ? factory.Sample(manager, faction, position, random) : 0;
         }
 
-        /// <summary>
-        /// Samples a new sun with the specified name.
-        /// </summary>
+        /// <summary>Samples a new sun with the specified name.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the ship to sample.</param>
         /// <param name="center">The entity the planet should orbit around.</param>
         /// <param name="angle">The base angle for orbit ellipses.</param>
         /// <param name="radius">The base orbiting radius this planet will have.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled sun.
-        /// </returns>
-        public static int SamplePlanet(IManager manager, string name, int center, float angle, float radius, IUniformRandom random)
+        /// <returns>The sampled sun.</returns>
+        public static int SamplePlanet(
+            IManager manager, string name, int center, float angle, float radius, IUniformRandom random)
         {
             if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
             {
@@ -205,16 +177,12 @@ namespace Space.ComponentSystem.Factories
             return 0;
         }
 
-        /// <summary>
-        /// Samples a new sun with the specified name.
-        /// </summary>
+        /// <summary>Samples a new sun with the specified name.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the ship to sample.</param>
         /// <param name="cellCenter">The center of the cell for which the sun is created.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled sun.
-        /// </returns>
+        /// <returns>The sampled sun.</returns>
         public static int SampleSun(IManager manager, string name, FarPosition cellCenter, IUniformRandom random)
         {
             if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
@@ -229,16 +197,12 @@ namespace Space.ComponentSystem.Factories
             return 0;
         }
 
-        /// <summary>
-        /// Samples a new sun system with the specified name.
-        /// </summary>
+        /// <summary>Samples a new sun system with the specified name.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the ship to sample.</param>
         /// <param name="cellCenter">The center of the cell for which the sun is created.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled sun.
-        /// </returns>
+        /// <returns>The sampled sun.</returns>
         public static void SampleSunSystem(IManager manager, string name, FarPosition cellCenter, IUniformRandom random)
         {
             if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
@@ -251,13 +215,12 @@ namespace Space.ComponentSystem.Factories
                 factory.SampleSunSystem(manager, cellCenter, random);
             }
         }
-        /// <summary>
-        /// Samples a new sun system with the specified name.
-        /// </summary>
+
+        /// <summary>Samples a new sun system with the specified name.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="cellCenter">The center of the cell for which the sun is created.</param>
         /// <param name="random">The randomizer to use.</param>
-        public static void SampleTestObject(IManager manager,  FarPosition cellCenter, IUniformRandom random)
+        public static void SampleTestObject(IManager manager, FarPosition cellCenter, IUniformRandom random)
         {
             var radius = 10f;
             var entity = manager.AddEntity();
@@ -271,14 +234,12 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Index>(entity).Initialize(
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CameraSystem.IndexGroupMask, // Must be detectable by the camera.
-                (int)(radius + radius));
-
+                CameraSystem.IndexGroupMask,
+                // Must be detectable by the camera.
+                (int) (radius + radius));
         }
 
-        /// <summary>
-        /// Gets the item pool with the specified name.
-        /// </summary>
+        /// <summary>Gets the item pool with the specified name.</summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
         public static ItemPool GetItemPool(string name)
@@ -288,9 +249,7 @@ namespace Space.ComponentSystem.Factories
             return result;
         }
 
-        /// <summary>
-        /// Gets the attribute pool with the specified name.
-        /// </summary>
+        /// <summary>Gets the attribute pool with the specified name.</summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
         public static AttributePool GetAttributePool(string name)

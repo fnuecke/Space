@@ -5,14 +5,10 @@ using System.Reflection;
 
 namespace Engine.Diagnostics
 {
-    /// <summary>
-    /// Utility proxy for easier viewing of deep hierarchy objects in debugger.
-    /// </summary>
+    /// <summary>Utility proxy for easier viewing of deep hierarchy objects in debugger.</summary>
     public sealed class FlattenHierarchyProxy
     {
-        /// <summary>
-        /// Entries representing members, to allow further inspection.
-        /// </summary>
+        /// <summary>Entries representing members, to allow further inspection.</summary>
         [DebuggerDisplay("{Value}", Name = "{Name,nq}", Type = "{Type.ToString(),nq}")]
         private struct Member
         {
@@ -26,21 +22,15 @@ namespace Engine.Diagnostics
             internal object Value;
         }
 
-        /// <summary>
-        /// The object we're a proxy for.
-        /// </summary>
+        /// <summary>The object we're a proxy for.</summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly object _target;
 
-        /// <summary>
-        /// Flat list of members of the target.
-        /// </summary>
+        /// <summary>Flat list of members of the target.</summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private Member[] _memberList;
 
-        /// <summary>
-        /// Lazy initialization of member list. This is what's actually shown in the debugger.
-        /// </summary>
+        /// <summary>Lazy initialization of member list. This is what's actually shown in the debugger.</summary>
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         private Member[] Items
         {
@@ -48,7 +38,7 @@ namespace Engine.Diagnostics
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FlattenHierarchyProxy"/> class.
+        ///     Initializes a new instance of the <see cref="FlattenHierarchyProxy"/> class.
         /// </summary>
         /// <param name="target">The target.</param>
         public FlattenHierarchyProxy(object target)
@@ -56,9 +46,7 @@ namespace Engine.Diagnostics
             _target = target;
         }
 
-        /// <summary>
-        /// Lazy initialization of the list representing the flat hierarchy of our target.
-        /// </summary>
+        /// <summary>Lazy initialization of the list representing the flat hierarchy of our target.</summary>
         /// <returns>The flat list of fields and properties of our target.</returns>
         private List<Member> BuildMemberList()
         {

@@ -4,24 +4,18 @@ using Space.Data;
 namespace Space.ComponentSystem.Messages
 {
     /// <summary>
-    /// This message is fired when damage should actually be applied (this
-    /// is essentially the alternative branch to <c>DamageBlocked</c>).
+    ///     This message is fired when damage should actually be applied (this is essentially the alternative branch to
+    ///     <c>DamageBlocked</c>).
     /// </summary>
-    struct DamageReceived
+    internal struct DamageReceived
     {
-        /// <summary>
-        /// The root cause for the damage.
-        /// </summary>
+        /// <summary>The root cause for the damage.</summary>
         public int Owner;
 
-        /// <summary>
-        /// Attributes of the entity doing the damage.
-        /// </summary>
+        /// <summary>Attributes of the entity doing the damage.</summary>
         public Attributes<AttributeType> Attributes;
 
-        /// <summary>
-        /// The entity being damaged.
-        /// </summary>
+        /// <summary>The entity being damaged.</summary>
         public int Damagee;
     }
 }

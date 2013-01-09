@@ -13,56 +13,41 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Joints
 {
-    /// <summary>
-    /// A rope joint enforces a maximum distance between two points
-    /// on two bodies. It has no other effect.
-    /// </summary>
+    /// <summary>A rope joint enforces a maximum distance between two points on two bodies. It has no other effect.</summary>
     /// <remarks>
-    /// Changing the maximum length during the simulation would result in
-    /// non-physical behavior, thus it is not allowed. A model that would
-    /// allow you to dynamically modify the length would have some sponginess,
-    /// so Erin chose not to implement it that way. See b2DistanceJoint if you
-    /// want to dynamically control length.
+    ///     Changing the maximum length during the simulation would result in non-physical behavior, thus it is not
+    ///     allowed. A model that would allow you to dynamically modify the length would have some sponginess, so Erin chose
+    ///     not to implement it that way. See b2DistanceJoint if you want to dynamically control length.
     /// </remarks>
     public sealed class RopeJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the first body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in local coordinates.</summary>
         public LocalPoint LocalAnchorA
         {
             get { return _localAnchorA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in local coordinates.</summary>
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
         }
 
-        /// <summary>
-        /// Set/Get the maximum length of the rope.
-        /// </summary>
+        /// <summary>Set/Get the maximum length of the rope.</summary>
         public float MaxLength
         {
             get { return _maxLength; }
@@ -118,18 +103,14 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RopeJoint"/> class.
+        ///     Initializes a new instance of the <see cref="RopeJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public RopeJoint() : base(JointType.Rope)
-        {
-        }
+        public RopeJoint() : base(JointType.Rope) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
+        /// <summary>Initializes this joint with the specified parameters.</summary>
         internal void Initialize(WorldPoint anchorA, WorldPoint anchorB, float length)
         {
             _localAnchorA = BodyA.GetLocalPoint(anchorA);
@@ -152,9 +133,7 @@ namespace Engine.Physics.Joints
         // K = J * invM * JT
         //   = invMassA + invIA * cross(rA, u)^2 + invMassB + invIB * cross(rB, u)^2
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -185,7 +164,7 @@ namespace Engine.Physics.Joints
             _tmp.RotA = qA * (_localAnchorA - _tmp.LocalCenterA);
             _tmp.RotB = qB * (_localAnchorB - _tmp.LocalCenterB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            _tmp.Axis = (Vector2)(cB - cA) + (_tmp.RotB - _tmp.RotA);
+            _tmp.Axis = (Vector2) (cB - cA) + (_tmp.RotB - _tmp.RotA);
 // ReSharper restore RedundantCast
 
             _length = _tmp.Axis.Length();
@@ -205,7 +184,8 @@ namespace Engine.Physics.Joints
             // Compute effective mass.
             var crA = Vector2Util.Cross(_tmp.RotA, _tmp.Axis);
             var crB = Vector2Util.Cross(_tmp.RotB, _tmp.Axis);
-            var invMass = _tmp.InverseMassA + _tmp.InverseInertiaA * crA * crA + _tmp.InverseMassB + _tmp.InverseInertiaB * crB * crB;
+            var invMass = _tmp.InverseMassA + _tmp.InverseInertiaA * crA * crA + _tmp.InverseMassB +
+                          _tmp.InverseInertiaB * crB * crB;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (invMass != 0.0f)
@@ -230,13 +210,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -272,15 +249,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             var cA = positions[_tmp.IndexA].Point;
             var aA = positions[_tmp.IndexA].Angle;
@@ -293,7 +267,7 @@ namespace Engine.Physics.Joints
             var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
             var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var u = (Vector2)(cB - cA) + (rB - rA);
+            var u = (Vector2) (cB - cA) + (rB - rA);
 // ReSharper restore RedundantCast
 
             var length = u.Length();

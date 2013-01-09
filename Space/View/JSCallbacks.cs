@@ -13,9 +13,7 @@ using Space.Util;
 
 namespace Space.View
 {
-    /// <summary>
-    /// Utility class that defines methods to expose to JavaScript in the GUI.
-    /// </summary>
+    /// <summary>Utility class that defines methods to expose to JavaScript in the GUI.</summary>
     internal sealed class JSCallbacks
     {
         #region Logger
@@ -28,18 +26,14 @@ namespace Space.View
 
         private static JSCallbacks _instance;
 
-        /// <summary>
-        /// The game we work for.
-        /// </summary>
+        /// <summary>The game we work for.</summary>
         private readonly Program _game;
 
         #endregion
 
         #region Constructor
-        
-        /// <summary>
-        /// Registers all callbacks for the specified game.
-        /// </summary>
+
+        /// <summary>Registers all callbacks for the specified game.</summary>
         /// <param name="game">The instance of the game to initialize for.</param>
         private JSCallbacks(Program game)
         {
@@ -49,9 +43,7 @@ namespace Space.View
             SetupJavaScriptApi();
         }
 
-        /// <summary>
-        /// Registers all callbacks for the specified game.
-        /// </summary>
+        /// <summary>Registers all callbacks for the specified game.</summary>
         /// <param name="game">The instance of the game to initialize for.</param>
         public static void Initialize(Program game)
         {
@@ -66,11 +58,13 @@ namespace Space.View
         #region Events
 
         /// <summary>
-        /// Handle client re-initialization, which means we have a new session
-        /// to which to add listeners for forwarding events.
+        ///     Handle client re-initialization, which means we have a new session to which to add listeners for forwarding
+        ///     events.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Space.ClientInitializedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">
+        ///     The <see cref="Space.ClientInitializedEventArgs"/> instance containing the event data.
+        /// </param>
         private void HandleClientInitialized(object sender, ClientInitializedEventArgs e)
         {
             var session = e.Client.Controller.Session;
@@ -81,74 +75,72 @@ namespace Space.View
             session.PlayerLeft += SessionOnPlayerLeft;
         }
 
-        /// <summary>
-        /// Forwards info received on a running game session.
-        /// </summary>
+        /// <summary>Forwards info received on a running game session.</summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Engine.Session.GameInfoReceivedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">
+        ///     The <see cref="Engine.Session.GameInfoReceivedEventArgs"/> instance containing the event data.
+        /// </param>
         private void SessionOnGameInfoReceived(object sender, GameInfoReceivedEventArgs e)
         {
             var args = new JSObject();
             args["host"] = e.Host.Address.ToString();
-            args["numPlayers"] = e.NumPlayers;
+            args["playerCount"] = e.PlayerCount;
             args["maxPlayers"] = e.MaxPlayers;
             args["data"] = JSValue.Null; // TODO think of what else we might want to send
             _game.ScreenManager.Call("Space", "onGameInfoReceived", new[] {new JSValue(args)});
         }
 
-        /// <summary>
-        /// Forwards the info that we successfully connected to a game.
-        /// </summary>
+        /// <summary>Forwards the info that we successfully connected to a game.</summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Engine.Session.JoinResponseEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">
+        ///     The <see cref="Engine.Session.JoinResponseEventArgs"/> instance containing the event data.
+        /// </param>
         private void SessionOnJoinResponse(object sender, JoinResponseEventArgs e)
         {
             _game.ScreenManager.Call("Space", "onConnected");
         }
 
-        /// <summary>
-        /// Forwards the info that we have been disconnected from a gaem.
-        /// </summary>
+        /// <summary>Forwards the info that we have been disconnected from a game.</summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">
+        ///     The <see cref="System.EventArgs"/> instance containing the event data.
+        /// </param>
         private void SessionOnDisconnected(object sender, EventArgs e)
         {
             _game.ScreenManager.Call("Space", "onDisconnected");
         }
 
-        /// <summary>
-        /// Forwards the info that another player has joined the game.
-        /// </summary>
+        /// <summary>Forwards the info that another player has joined the game.</summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Engine.Session.PlayerEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">
+        ///     The <see cref="Engine.Session.PlayerEventArgs"/> instance containing the event data.
+        /// </param>
         private void SessionOnPlayerJoined(object sender, PlayerEventArgs e)
         {
             var args = new JSObject();
             args["number"] = e.Player.Number;
             args["name"] = e.Player.Name;
-            _game.ScreenManager.Call("Space", "onPlayerJoined", new[] { new JSValue(args) });
+            _game.ScreenManager.Call("Space", "onPlayerJoined", new[] {new JSValue(args)});
         }
 
-        /// <summary>
-        /// Forwards the info that another player has left the game.
-        /// </summary>
+        /// <summary>Forwards the info that another player has left the game.</summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Engine.Session.PlayerEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">
+        ///     The <see cref="Engine.Session.PlayerEventArgs"/> instance containing the event data.
+        /// </param>
         private void SessionOnPlayerLeft(object sender, PlayerEventArgs e)
         {
             var args = new JSObject();
             args["number"] = e.Player.Number;
             args["name"] = e.Player.Name;
-            _game.ScreenManager.Call("Space", "onPlayerLeft", new[] { new JSValue(args) });
+            _game.ScreenManager.Call("Space", "onPlayerLeft", new[] {new JSValue(args)});
         }
 
         #endregion
 
         #region Setup
 
-        /// <summary>
-        /// Registers all callbacks for the JavaScript API.
-        /// </summary>
+        /// <summary>Registers all callbacks for the JavaScript API.</summary>
         private void SetupJavaScriptApi()
         {
             // Shorthand.
@@ -165,13 +157,13 @@ namespace Space.View
             s.AddCallback("Space", "searchGames", SearchGames);
 
             // Settings related callbacks.
-            s.AddCallback("Space", "getSettingInfos", AsyncCallbackWithResult(GetSettingInfos));
+            s.AddCallback("Space", "getSettingInfo", AsyncCallbackWithResult(GetSettingInfo));
             s.AddCallback("Space", "getSetting", AsyncCallbackWithResult(GetSetting, 1));
             s.AddCallback("Space", "setSetting", SetSetting);
             s.AddCallback("Space", "getGameCommands", AsyncCallbackWithResult(GetGameCommands));
 
             // Ingame information.
-            s.AddCallback("Space", "getNumPlayers", AsyncCallbackWithResult(GetNumPlayers));
+            s.AddCallback("Space", "getPlayerCount", AsyncCallbackWithResult(GetPlayerCount));
             s.AddCallback("Space", "getMaxPlayers", AsyncCallbackWithResult(GetMaxPlayers));
             s.AddCallback("Space", "getLocalPlayerNumber", AsyncCallbackWithResult(GetLocalPlayerNumber));
             s.AddCallback("Space", "getHealth", AsyncCallbackWithResult(GetHealth));
@@ -193,15 +185,15 @@ namespace Space.View
 
         #region Javascript API
 
-        private static JavascriptMethodEventHandler AsyncCallbackWithResult(Func<JSValue[], JSValue> f, int numArgs = 0)
+        private static JavascriptMethodEventHandler AsyncCallbackWithResult(Func<JSValue[], JSValue> f, int argumentCount = 0)
         {
             return (sender, args) =>
             {
                 // The webview that triggered the callback.
-                var webView = (WebView)sender;
+                var webView = (WebView) sender;
 
                 // Make sure we have the right number of args.
-                if (args.Arguments.Length != 1 + numArgs)
+                if (args.Arguments.Length != 1 + argumentCount)
                 {
                     Logger.Warn("Wrong number of arguments passed to callback '{0}'.", args.MethodName);
                     return;
@@ -218,7 +210,7 @@ namespace Space.View
                 // Run actual handler
                 try
                 {
-                    var result = f(new ArraySegment<JSValue>(args.Arguments, 0, numArgs).Array);
+                    var result = f(new ArraySegment<JSValue>(args.Arguments, 0, argumentCount).Array);
                     webView.ExecuteJavascript(callback + "(JSON.parse(" + ToJSON(result) + "))");
                 }
                 catch (Exception ex)
@@ -244,7 +236,7 @@ namespace Space.View
                 //// Run actual handler
                 //try
                 //{
-                //    var result = f(new ArraySegment<JSValue>(args.Arguments, 0, numArgs).Array);
+                //    var result = f(new ArraySegment<JSValue>(args.Arguments, 0, argumentCount).Array);
                 //    callback.Invoke("call", JSValue.Null, result);
                 //}
                 //catch (Exception ex)
@@ -265,7 +257,7 @@ namespace Space.View
         {
             if (value.IsObject)
             {
-                var obj = (JSObject)value;
+                var obj = (JSObject) value;
                 s.Append('{');
                 var entries = obj.GetPropertyNames();
                 if (entries.Length > 0)
@@ -286,7 +278,7 @@ namespace Space.View
             else if (value.IsArray)
             {
                 s.Append('[');
-                var entries = (JSValue[])value;
+                var entries = (JSValue[]) value;
                 if (entries.Length > 0)
                 {
                     Stringify(entries[0], s);
@@ -301,15 +293,14 @@ namespace Space.View
             else if (value.IsString)
             {
                 s.Append('"');
-                var sval = (string)value;
-                for (var i = 0; i < sval.Length; i++)
-                {
-                    switch (sval[i])
+                var stringValue = (string) value;
+                foreach (var c in stringValue) {
+                    switch (c)
                     {
                         case '\\':
                         case '"':
                             s.Append('\\');
-                            s.Append(sval[i]);
+                            s.Append(c);
                             break;
                         case '\b':
                             s.Append('\\');
@@ -332,7 +323,7 @@ namespace Space.View
                             s.Append('t');
                             break;
                         default:
-                            s.Append(sval[i]);
+                            s.Append(c);
                             break;
                     }
                 }
@@ -340,15 +331,15 @@ namespace Space.View
             }
             else if (value.IsInteger)
             {
-                s.Append((int)value);
+                s.Append((int) value);
             }
             else if (value.IsDouble)
             {
-                s.Append((double)value);
+                s.Append((double) value);
             }
             else if (value.IsBoolean)
             {
-                s.Append((bool)value ? "true" : "false");
+                s.Append((bool) value ? "true" : "false");
             }
             else if (value.IsNull)
             {
@@ -362,9 +353,7 @@ namespace Space.View
 
         #region Localization
 
-        /// <summary>
-        /// Gets the GUI string for the specified id.
-        /// </summary>
+        /// <summary>Gets the GUI string for the specified id.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The name of the GUI string to get.</param>
         private static void GetGuiString(object sender, JavascriptMethodEventArgs args)
@@ -372,7 +361,8 @@ namespace Space.View
             if (args.Arguments.Length != 1 || !args.Arguments[0].IsString)
             {
                 Logger.Warn("Invalid call to 'L', must specify one string argument.");
-                args.Result = JSValue.Undefined; return;
+                args.Result = JSValue.Undefined;
+                return;
             }
             var s = GuiStrings.ResourceManager.GetString(args.Arguments[0].ToString());
             args.Result = s ?? ("!!" + args.Arguments[0] + "!!");
@@ -382,9 +372,7 @@ namespace Space.View
 
         #region Main Menu
 
-        /// <summary>
-        /// Hosts a new game, launching a local server and connecting to it.
-        /// </summary>
+        /// <summary>Hosts a new game, launching a local server and connecting to it.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
         private void StartLocalGame(object sender, JavascriptMethodEventArgs args)
@@ -393,9 +381,7 @@ namespace Space.View
             _game.RestartClient(true);
         }
 
-        /// <summary>
-        /// Hosts a new game, launching a local server and connecting to it.
-        /// </summary>
+        /// <summary>Hosts a new game, launching a local server and connecting to it.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
         private void HostGame(object sender, JavascriptMethodEventArgs args)
@@ -405,14 +391,14 @@ namespace Space.View
             _game.RestartClient(true);
             /*/
             _game.RestartClient();
-            _game.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777),
-                                                 Settings.Instance.PlayerName, Settings.Instance.CurrentProfile);
+            _game.Client.Controller.Session.Join(
+                new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777),
+                Settings.Instance.PlayerName,
+                Settings.Instance.CurrentProfile);
             //*/
         }
 
-        /// <summary>
-        /// Joins a game running on the specified server.
-        /// </summary>
+        /// <summary>Joins a game running on the specified server.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
         private void JoinGame(object sender, JavascriptMethodEventArgs args)
@@ -424,13 +410,13 @@ namespace Space.View
             }
             _game.DisposeServer();
             _game.RestartClient();
-            _game.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args.Arguments[0].ToString()), 7777),
-                                                 Settings.Instance.PlayerName, Settings.Instance.CurrentProfile);
+            _game.Client.Controller.Session.Join(
+                new IPEndPoint(IPAddress.Parse(args.Arguments[0].ToString()), 7777),
+                Settings.Instance.PlayerName,
+                Settings.Instance.CurrentProfile);
         }
 
-        /// <summary>
-        /// Leaves the game we are currently in, if any.
-        /// </summary>
+        /// <summary>Leaves the game we are currently in, if any.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
         private void LeaveGame(object sender, JavascriptMethodEventArgs args)
@@ -438,9 +424,7 @@ namespace Space.View
             _game.DisposeControllers();
         }
 
-        /// <summary>
-        /// Searches for games in the local network.
-        /// </summary>
+        /// <summary>Searches for games in the local network.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
         private void SearchGames(object sender, JavascriptMethodEventArgs args)
@@ -452,40 +436,34 @@ namespace Space.View
 
         #region Settings
 
-        /// <summary>
-        /// The name of settings exposed to the scripting environment.
-        /// </summary>
+        /// <summary>The name of settings exposed to the scripting environment.</summary>
         private static readonly Dictionary<string, Tuple<string, ScriptAccessAttribute>> SettingInfo = InitSettings();
 
-        /// <summary>
-        /// Inits the setting names dictionary.
-        /// </summary>
+        /// <summary>Initializes the setting names dictionary.</summary>
         /// <returns></returns>
         private static Dictionary<string, Tuple<string, ScriptAccessAttribute>> InitSettings()
         {
             var settings = new Dictionary<string, Tuple<string, ScriptAccessAttribute>>();
-            var info = typeof(Settings);
+            var info = typeof (Settings);
             foreach (var field in info.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (!field.IsDefined(typeof(ScriptAccessAttribute), false))
+                if (!field.IsDefined(typeof (ScriptAccessAttribute), false))
                 {
                     continue;
                 }
-                var attributes = field.GetCustomAttributes(typeof(ScriptAccessAttribute), false);
+                var attributes = field.GetCustomAttributes(typeof (ScriptAccessAttribute), false);
                 if (attributes.Length > 0)
                 {
-                    var sa = (ScriptAccessAttribute)attributes[0];
+                    var sa = (ScriptAccessAttribute) attributes[0];
                     settings.Add(sa.Name, Tuple.Create(field.Name, sa));
                 }
             }
             return settings;
         }
 
-        /// <summary>
-        /// Gets the setting names available for scripting environment.
-        /// </summary>
+        /// <summary>Gets the setting names available for scripting environment.</summary>
         /// <param name="args">The args.</param>
-        private static JSValue GetSettingInfos(JSValue[] args)
+        private static JSValue GetSettingInfo(JSValue[] args)
         {
             var settings = new JSObject();
             foreach (var setting in SettingInfo)
@@ -521,7 +499,8 @@ namespace Space.View
                 obj["show"] = attribute.ShouldList;
 
                 // Localized strings.
-                obj["title"] = GuiStrings.ResourceManager.GetString(attribute.TitleLocalizationId) ?? ("!!" + attribute.TitleLocalizationId + "!!");
+                obj["title"] = GuiStrings.ResourceManager.GetString(attribute.TitleLocalizationId) ??
+                               ("!!" + attribute.TitleLocalizationId + "!!");
                 var description = GuiStrings.ResourceManager.GetString(attribute.DescriptionLocalizationId);
                 if (description != null)
                 {
@@ -534,8 +513,8 @@ namespace Space.View
         }
 
         /// <summary>
-        /// Gets the current value of the setting with the specified name,
-        /// which must be one of the array that can be read via GetSettingNames.
+        ///     Gets the current value of the setting with the specified name, which must be one of the array that can be read
+        ///     via GetSettingNames.
         /// </summary>
         /// <param name="args">The args.</param>
         private static JSValue GetSetting(JSValue[] args)
@@ -551,21 +530,20 @@ namespace Space.View
                 Logger.Warn("Invalid call to 'Space.getSetting', unknown setting.");
                 return JSValue.Undefined;
             }
-            var info = typeof(Settings);
+            var info = typeof (Settings);
             var fieldInfo = info.GetField(settingInfo.Item1);
             return ObjectToJSValue(fieldInfo.GetValue(Settings.Instance));
         }
 
-        /// <summary>
-        /// Sets a new value for a setting.
-        /// </summary>
+        /// <summary>Sets a new value for a setting.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The args.</param>
         private static void SetSetting(object sender, JavascriptMethodEventArgs args)
         {
             if (args.Arguments.Length != 2 || !args.Arguments[0].IsString)
             {
-                Logger.Warn("Invalid call to 'Space.setSetting', must specify two arguments, of which the first must be a string.");
+                Logger.Warn(
+                    "Invalid call to 'Space.setSetting', must specify two arguments, of which the first must be a string.");
                 return;
             }
 
@@ -576,7 +554,7 @@ namespace Space.View
                 return;
             }
 
-            var info = typeof(Settings);
+            var info = typeof (Settings);
             var fieldInfo = info.GetField(settingInfo.Item1);
             try
             {
@@ -588,71 +566,62 @@ namespace Space.View
             }
         }
 
-        /// <summary>
-        /// Gets a list of all commands that can be handled in the GUI.
-        /// </summary>
+        /// <summary>Gets a list of all commands that can be handled in the GUI.</summary>
         /// <param name="args">The args.</param>
         private static JSValue GetGameCommands(JSValue[] args)
         {
-            return Enum.GetNames(typeof(GameCommand)).Select(name => new JSValue(name)).ToArray();
+            return Enum.GetNames(typeof (GameCommand)).Select(name => new JSValue(name)).ToArray();
         }
 
         #region Value conversion
 
-        /// <summary>
-        /// Method that converts a C# value to a JSValue.
-        /// </summary>
+        /// <summary>Method that converts a C# value to a JSValue.</summary>
         /// <param name="o">The object to convert.</param>
         /// <returns>The JSValue wrapper for that type.</returns>
         private delegate JSValue ToJSValue(object o);
 
-        /// <summary>
-        /// Method that converts a JSValue to a C# value.
-        /// </summary>
+        /// <summary>Method that converts a JSValue to a C# value.</summary>
         /// <param name="v">The value to convert.</param>
         /// <returns>The C# value for that wrapper.</returns>
         private delegate object FromJSValue(JSValue v);
 
-        /// <summary>
-        /// Simple type conversions, mapping type to converter, object->JSValue.
-        /// </summary>
+        /// <summary>Simple type conversions, mapping type to converter, object->JSValue.</summary>
         private static readonly Dictionary<Type, ToJSValue> ToJSValueConverters =
             new Dictionary<Type, ToJSValue>
             {
-                {typeof(string), o => new JSValue((string)o)},
-                {typeof(int), o => new JSValue((int)o)},
-                {typeof(short), o => new JSValue((short)o)},
-                {typeof(ushort), o => new JSValue((ushort)o)},
-                {typeof(byte), o => new JSValue((byte)o)},
-                {typeof(float), o => new JSValue((float)o)},
-                {typeof(double), o => new JSValue((double)o)},
-                {typeof(bool), o => new JSValue((bool)o)},
-                {typeof(Point), o => ((Point)o).X + "x" + ((Point)o).Y},
+                {typeof (string), o => new JSValue((string) o)},
+                {typeof (int), o => new JSValue((int) o)},
+                {typeof (short), o => new JSValue((short) o)},
+                {typeof (ushort), o => new JSValue((ushort) o)},
+                {typeof (byte), o => new JSValue((byte) o)},
+                {typeof (float), o => new JSValue((float) o)},
+                {typeof (double), o => new JSValue((double) o)},
+                {typeof (bool), o => new JSValue((bool) o)},
+                {typeof (Point), o => ((Point) o).X + "x" + ((Point) o).Y},
             };
 
-        /// <summary>
-        /// Simple type conversions, mapping type to converter, JSValue->object.
-        /// </summary>
+        /// <summary>Simple type conversions, mapping type to converter, JSValue->object.</summary>
         private static readonly Dictionary<Type, FromJSValue> FromJSValueConverters =
             new Dictionary<Type, FromJSValue>
             {
-                {typeof(string), v => v.ToString()},
-                {typeof(int), v => (int)v},
-                {typeof(short), v => (short)v},
-                {typeof(ushort), v => (ushort)v},
-                {typeof(byte), v => (byte)v},
-                {typeof(float), v => (float)v},
-                {typeof(double), v => (double)v},
-                {typeof(bool), v => (bool)v},
-                {typeof(Point), v => {
-                    var a = v.ToString().Split('x');
-                    return new Point(int.Parse(a[0]), int.Parse(a[1]));
-                }},
+                {typeof (string), v => v.ToString()},
+                {typeof (int), v => (int) v},
+                {typeof (short), v => (short) v},
+                {typeof (ushort), v => (ushort) v},
+                {typeof (byte), v => (byte) v},
+                {typeof (float), v => (float) v},
+                {typeof (double), v => (double) v},
+                {typeof (bool), v => (bool) v},
+                {
+                    typeof (Point), v =>
+                    {
+                        var a = v.ToString().Split('x');
+                        return new Point(int.Parse(a[0]), int.Parse(a[1]));
+                    }
+                },
             };
 
-        /// <summary>
-        /// Converts an object to a JSValue, based on the object's type.
-        /// </summary>
+        /// <summary>Converts an object to a JSValue, based on the object's type.</summary>
         /// <param name="obj">The object to wrap.</param>
         /// <returns>The JSValue wrapper, or undefined if there is no converter.</returns>
         private static JSValue ObjectToJSValue(object obj)
@@ -671,10 +640,10 @@ namespace Space.View
             }
 
             // Custom conversions.
-            if (type.GetInterfaces().Contains(typeof(IDictionary)))
+            if (type.GetInterfaces().Contains(typeof (IDictionary)))
             {
                 var result = new JSObject();
-                var dict = (IDictionary)obj;
+                var dict = (IDictionary) obj;
                 foreach (var key in dict.Keys)
                 {
                     result[key.ToString()] = new JSValue(dict[key].ToString());
@@ -708,7 +677,7 @@ namespace Space.View
             }
 
             // Custom conversions.
-            if (fieldType.GetInterfaces().Contains(typeof(IDictionary)))
+            if (fieldType.GetInterfaces().Contains(typeof (IDictionary)))
             {
                 // TODO
             }
@@ -723,10 +692,10 @@ namespace Space.View
 
         #region Ingame
 
-        private JSValue GetNumPlayers(JSValue[] args)
+        private JSValue GetPlayerCount(JSValue[] args)
         {
             var session = _game.Client.Controller.Session;
-            return session.ConnectionState != ClientState.Connected ? JSValue.Undefined : session.NumPlayers;
+            return session.ConnectionState != ClientState.Connected ? JSValue.Undefined : session.PlayerCount;
         }
 
         private JSValue GetMaxPlayers(JSValue[] args)
@@ -768,13 +737,13 @@ namespace Space.View
         private JSValue GetPositionX(JSValue[] args)
         {
             var info = _game.Client.GetPlayerShipInfo();
-            return info == null ? JSValue.Undefined : (JSValue)info.Position.X.ToString();
+            return info == null ? JSValue.Undefined : (JSValue) info.Position.X.ToString();
         }
 
         private JSValue GetPositionY(JSValue[] args)
         {
             var info = _game.Client.GetPlayerShipInfo();
-            return info == null ? JSValue.Undefined : (JSValue)info.Position.Y.ToString();
+            return info == null ? JSValue.Undefined : (JSValue) info.Position.Y.ToString();
         }
 
         private JSValue GetCellX(JSValue[] args)
@@ -784,12 +753,10 @@ namespace Space.View
             {
                 return JSValue.Undefined;
             }
-            else
-            {
-                var pos = info.Position.X;
-                var cellX = ((int)pos) >> CellSystem.CellSizeShiftAmount;
-                return cellX;
-            }
+
+            var position = info.Position.X;
+            var cellX = ((int) position) >> CellSystem.CellSizeShiftAmount;
+            return cellX;
         }
 
         private JSValue GetCellY(JSValue[] args)
@@ -799,12 +766,10 @@ namespace Space.View
             {
                 return JSValue.Undefined;
             }
-            else
-            {
-                var pos = info.Position.Y;
-                var cell = ((int)pos) >> CellSystem.CellSizeShiftAmount;
-                return cell;
-            }
+            
+            var position = info.Position.Y;
+            var cell = ((int) position) >> CellSystem.CellSizeShiftAmount;
+            return cell;
         }
 
         private JSValue GetSpeed(JSValue[] args)
@@ -834,6 +799,5 @@ namespace Space.View
         #endregion
 
         #endregion
-
     }
 }

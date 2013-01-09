@@ -2,17 +2,13 @@
 
 namespace Space.Simulation.Commands
 {
-    /// <summary>
-    /// Makes a player use an item from his inventory.
-    /// </summary>
+    /// <summary>Makes a player use an item from his inventory.</summary>
     internal sealed class UseCommand : FrameCommand
     {
         #region Fields
 
-        /// <summary>
-        /// The index in the inventory of the item to be used.
-        /// </summary>
-        public int InventoryIndex;
+        /// <summary>The index in the inventory of the item to be used.</summary>
+        public readonly int InventoryIndex;
 
         #endregion
 
@@ -24,13 +20,9 @@ namespace Space.Simulation.Commands
             InventoryIndex = inventoryIndex;
         }
 
-        /// <summary>
-        /// For deserialization.
-        /// </summary>
+        /// <summary>For deserialization.</summary>
         public UseCommand()
-            : this(-1)
-        {
-        }
+            : this(-1) {}
 
         #endregion
     }

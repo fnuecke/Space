@@ -7,14 +7,10 @@ namespace Space.ComponentSystem.Components
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public new static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -24,15 +20,13 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>
-        /// Initializes the specified amount.
-        /// </summary>
+        /// <summary>Initializes the specified amount.</summary>
         /// <param name="amount">The amount.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
         public ArmorReductionStatusEffect Initialize(float amount, AttributeType type)
         {
-            base.Initialize(new AttributeModifier<AttributeType>(type, amount));
+            Initialize(new AttributeModifier<AttributeType>(type, amount));
 
             return this;
         }

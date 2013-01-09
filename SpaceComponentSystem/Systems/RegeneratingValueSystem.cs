@@ -4,16 +4,13 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Triggers refilling regenerating values.
-    /// </summary>
-    public sealed class RegeneratingValueSystem : AbstractParallelComponentSystem<AbstractRegeneratingValue>, IMessagingSystem
+    /// <summary>Triggers refilling regenerating values.</summary>
+    public sealed class RegeneratingValueSystem
+        : AbstractParallelComponentSystem<AbstractRegeneratingValue>, IMessagingSystem
     {
         #region Logic
-        
-        /// <summary>
-        /// Updates the component's current value or timeout.
-        /// </summary>
+
+        /// <summary>Updates the component's current value or timeout.</summary>
         /// <param name="frame">The current simulation frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, AbstractRegeneratingValue component)
@@ -28,9 +25,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Receives the specified message.
-        /// </summary>
+        /// <summary>Receives the specified message.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -43,7 +38,7 @@ namespace Space.ComponentSystem.Systems
 
             foreach (var component in Manager.GetComponents(cm.Value.Entity, AbstractRegeneratingValue.TypeId))
             {
-                ((AbstractRegeneratingValue)component).RecomputeValues();
+                ((AbstractRegeneratingValue) component).RecomputeValues();
             }
         }
 

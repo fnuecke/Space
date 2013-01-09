@@ -58,7 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PacketFarMathExtensions.cs" />
+    <Compile Include="PacketExtensions.cs" />
     <Compile Include="FarPosition.cs" />
     <Compile Include="FarRectangle.cs" />
     <Compile Include="FarTransform.cs" />

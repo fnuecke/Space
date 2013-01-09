@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem;
+﻿using Engine.ComponentSystem;
 using Engine.Physics.Components;
 using Engine.Physics.Math;
 using Engine.Serialization;
@@ -17,72 +16,54 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// A gear joint is used to connect two joints together. Either joint
-    /// can be a revolute or prismatic joint. You specify a gear ratio
-    /// to bind the motions together:
-    /// coordinate1 + ratio * coordinate2 = constant
-    /// The ratio can be negative or positive. If one joint is a revolute joint
-    /// and the other joint is a prismatic joint, then the ratio will have units
-    /// of length or units of 1/length.
-    /// @warning You have to manually destroy the gear joint if joint1 or joint2
-    /// is destroyed.
+    ///     A gear joint is used to connect two joints together. Either joint can be a revolute or prismatic joint. You
+    ///     specify a gear ratio to bind the motions together: coordinate1 + ratio * coordinate2 = constant The ratio can be
+    ///     negative or positive. If one joint is a revolute joint and the other joint is a prismatic joint, then the ratio
+    ///     will have units of length or units of 1/length. @warning You have to manually destroy the gear joint if joint1 or
+    ///     joint2 is destroyed.
     /// </summary>
     public sealed class GearJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the first body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in local coordinates.</summary>
         public LocalPoint LocalAnchorA
         {
             get { return _localAnchorA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in local coordinates.</summary>
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
         }
 
-        /// <summary>
-        /// Gets or sets the gear ratio.
-        /// </summary>
+        /// <summary>Gets or sets the gear ratio.</summary>
         public float Ratio
         {
             get { return _ratio; }
             set { _ratio = value; }
         }
 
-        /// <summary>
-        /// Body A is connected to body C.
-        /// </summary>
+        /// <summary>Body A is connected to body C.</summary>
         private Body BodyC
         {
             get { return _bodyIdC != 0 ? Manager.GetComponentById(_bodyIdC) as Body : null; }
         }
 
-        /// <summary>
-        /// Body B is connected to body D.
-        /// </summary>
+        /// <summary>Body B is connected to body D.</summary>
         private Body BodyD
         {
             get { return _bodyIdD != 0 ? Manager.GetComponentById(_bodyIdD) as Body : null; }
@@ -147,18 +128,14 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GearJoint"/> class.
+        ///     Initializes a new instance of the <see cref="GearJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public GearJoint() : base(JointType.Gear)
-        {
-        }
+        public GearJoint() : base(JointType.Gear) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
+        /// <summary>Initializes this joint with the specified parameters.</summary>
         internal void Initialize(IManager manager, Joint jointA, Joint jointB, float ratio)
         {
             Manager = manager;
@@ -184,7 +161,7 @@ namespace Engine.Physics.Joints
 
             if (_typeA == JointType.Revolute)
             {
-                var revolute = (RevoluteJoint)jointA;
+                var revolute = (RevoluteJoint) jointA;
                 _localAnchorC = revolute.LocalAnchorA;
                 _localAnchorA = revolute.LocalAnchorB;
                 _referenceAngleA = revolute.ReferenceAngle;
@@ -194,7 +171,7 @@ namespace Engine.Physics.Joints
             }
             else
             {
-                var prismatic = (PrismaticJoint)jointA;
+                var prismatic = (PrismaticJoint) jointA;
                 _localAnchorC = prismatic.LocalAnchorA;
                 _localAnchorA = prismatic.LocalAnchorB;
                 _referenceAngleA = prismatic.ReferenceAngle;
@@ -202,7 +179,8 @@ namespace Engine.Physics.Joints
 
                 var pC = _localAnchorC;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var pA = -xfC.Rotation * ((xfA.Rotation * _localAnchorA) + (Vector2)(xfA.Translation - xfC.Translation));
+                var pA = -xfC.Rotation *
+                         ((xfA.Rotation * _localAnchorA) + (Vector2) (xfA.Translation - xfC.Translation));
 // ReSharper restore RedundantCast
                 coordinateA = Vector2.Dot(pA - pC, _localAxisC);
             }
@@ -218,7 +196,7 @@ namespace Engine.Physics.Joints
 
             if (_typeB == JointType.Revolute)
             {
-                var revolute = (RevoluteJoint)jointB;
+                var revolute = (RevoluteJoint) jointB;
                 _localAnchorD = revolute.LocalAnchorA;
                 _localAnchorB = revolute.LocalAnchorB;
                 _referenceAngleB = revolute.ReferenceAngle;
@@ -228,7 +206,7 @@ namespace Engine.Physics.Joints
             }
             else
             {
-                var prismatic = (PrismaticJoint)jointB;
+                var prismatic = (PrismaticJoint) jointB;
                 _localAnchorD = prismatic.LocalAnchorA;
                 _localAnchorB = prismatic.LocalAnchorB;
                 _referenceAngleB = prismatic.ReferenceAngle;
@@ -236,7 +214,8 @@ namespace Engine.Physics.Joints
 
                 var pD = _localAnchorD;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var pB = -xfD.Rotation * ((xfB.Rotation * _localAnchorB) + (Vector2)(xfB.Translation - xfD.Translation));
+                var pB = -xfD.Rotation *
+                         ((xfB.Rotation * _localAnchorB) + (Vector2) (xfB.Translation - xfD.Translation));
 // ReSharper restore RedundantCast
                 coordinateB = Vector2.Dot(pB - pD, _localAxisD);
             }
@@ -270,9 +249,7 @@ namespace Engine.Physics.Joints
         // J = [ug cross(r, ug)]
         // K = J * invM * JT = invMass + invI * cross(r, ug)^2
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -333,7 +310,8 @@ namespace Engine.Physics.Joints
                 _tmp.JvAC = u;
                 _tmp.JwC = Vector2Util.Cross(rC, u);
                 _tmp.JwA = Vector2Util.Cross(rA, u);
-                _tmp.Mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * _tmp.JwC * _tmp.JwC + _tmp.InverseInertiaA * _tmp.JwA * _tmp.JwA;
+                _tmp.Mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * _tmp.JwC * _tmp.JwC +
+                             _tmp.InverseInertiaA * _tmp.JwA * _tmp.JwA;
             }
 
             if (_typeB == JointType.Revolute)
@@ -351,7 +329,8 @@ namespace Engine.Physics.Joints
                 _tmp.JvBD = _ratio * u;
                 _tmp.JwD = _ratio * Vector2Util.Cross(rD, u);
                 _tmp.JwB = _ratio * Vector2Util.Cross(rB, u);
-                _tmp.Mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) + _tmp.InverseInertiaD * _tmp.JwD * _tmp.JwD + _tmp.InverseInertiaB * _tmp.JwB * _tmp.JwB;
+                _tmp.Mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) +
+                             _tmp.InverseInertiaD * _tmp.JwD * _tmp.JwD + _tmp.InverseInertiaB * _tmp.JwB * _tmp.JwB;
             }
 
             // Compute effective mass.
@@ -376,13 +355,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexD].AngularVelocity = wD;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -393,10 +369,10 @@ namespace Engine.Physics.Joints
             var vD = velocities[_tmp.IndexD].LinearVelocity;
             var wD = velocities[_tmp.IndexD].AngularVelocity;
 
-            var cdot = Vector2.Dot(_tmp.JvAC, vA - vC) + Vector2.Dot(_tmp.JvBD, vB - vD);
-            cdot += (_tmp.JwA * wA - _tmp.JwC * wC) + (_tmp.JwB * wB - _tmp.JwD * wD);
+            var cDot = Vector2.Dot(_tmp.JvAC, vA - vC) + Vector2.Dot(_tmp.JvBD, vB - vD);
+            cDot += (_tmp.JwA * wA - _tmp.JwC * wC) + (_tmp.JwB * wB - _tmp.JwD * wD);
 
-            var impulse = -_tmp.Mass * cdot;
+            var impulse = -_tmp.Mass * cDot;
             _impulse += impulse;
 
             vA += (_tmp.InverseMassA * impulse) * _tmp.JvAC;
@@ -418,15 +394,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexD].AngularVelocity = wD;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             var cA = positions[_tmp.IndexA].Point;
             var aA = positions[_tmp.IndexA].Angle;
@@ -467,11 +440,12 @@ namespace Engine.Physics.Joints
                 JvAC = u;
                 JwC = Vector2Util.Cross(rC, u);
                 JwA = Vector2Util.Cross(rA, u);
-                mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * JwC * JwC + _tmp.InverseInertiaA * JwA * JwA;
+                mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * JwC * JwC +
+                        _tmp.InverseInertiaA * JwA * JwA;
 
                 var pC = _localAnchorC - _tmp.LcC;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var pA = -qC * (rA + (Vector2)(cA - cC));
+                var pA = -qC * (rA + (Vector2) (cA - cC));
 // ReSharper restore RedundantCast
                 coordinateA = Vector2.Dot(pA - pC, _localAxisC);
             }
@@ -493,11 +467,12 @@ namespace Engine.Physics.Joints
                 JvBD = _ratio * u;
                 JwD = _ratio * Vector2Util.Cross(rD, u);
                 JwB = _ratio * Vector2Util.Cross(rB, u);
-                mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) + _tmp.InverseInertiaD * JwD * JwD + _tmp.InverseInertiaB * JwB * JwB;
+                mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) + _tmp.InverseInertiaD * JwD * JwD +
+                        _tmp.InverseInertiaB * JwB * JwB;
 
                 var pD = _localAnchorD - _tmp.LcD;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var pB = -qD * (rB + (Vector2)(cB - cD));
+                var pB = -qD * (rB + (Vector2) (cB - cD));
 // ReSharper restore RedundantCast
                 coordinateB = Vector2.Dot(pB - pD, _localAxisD);
             }

@@ -12,16 +12,14 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// Handles input to control how a ship flies, i.e. its acceleration and
-    /// rotation, as well as whether it's shooting or not.
+    ///     Handles input to control how a ship flies, i.e. its acceleration and rotation, as well as whether it's
+    ///     shooting or not.
     /// </summary>
     public sealed class ShipControlSystem : AbstractParallelComponentSystem<ShipControl>
     {
         #region Logic
 
-        /// <summary>
-        /// Updates the component.
-        /// </summary>
+        /// <summary>Updates the component.</summary>
         /// <param name="frame">The current simulation frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, ShipControl component)
@@ -29,14 +27,15 @@ namespace Space.ComponentSystem.Systems
             //TODO: Add flag to component to check if we actually need to recompute anything?
 
             // Get components we depend upon / modify.
-            var transform = (Transform)Manager.GetComponent(component.Entity, Transform.TypeId);
-            var spin = (Spin)Manager.GetComponent(component.Entity, Spin.TypeId);
-            var attributes = (Attributes<AttributeType>)Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
-            var info = (ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId);
-            var weaponControl = (WeaponControl)Manager.GetComponent(component.Entity, WeaponControl.TypeId);
-            var acceleration = (Acceleration)Manager.GetComponent(component.Entity, Acceleration.TypeId);
-            var effects = (ParticleEffects)Manager.GetComponent(component.Entity, ParticleEffects.TypeId);
-            var sound = (Sound)Manager.GetComponent(component.Entity, Sound.TypeId);
+            var transform = (Transform) Manager.GetComponent(component.Entity, Transform.TypeId);
+            var spin = (Spin) Manager.GetComponent(component.Entity, Spin.TypeId);
+            var attributes =
+                (Attributes<AttributeType>) Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
+            var info = (ShipInfo) Manager.GetComponent(component.Entity, ShipInfo.TypeId);
+            var weaponControl = (WeaponControl) Manager.GetComponent(component.Entity, WeaponControl.TypeId);
+            var acceleration = (Acceleration) Manager.GetComponent(component.Entity, Acceleration.TypeId);
+            var effects = (ParticleEffects) Manager.GetComponent(component.Entity, ParticleEffects.TypeId);
+            var sound = (Sound) Manager.GetComponent(component.Entity, Sound.TypeId);
             var maxAccelerationForce = attributes.GetValue(AttributeType.AccelerationForce) / Settings.TicksPerSecond;
 
             // Get the mass of the ship.
@@ -51,7 +50,7 @@ namespace Space.ComponentSystem.Systems
                 if (component.Stabilizing)
                 {
                     // We want to stabilize.
-                    var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
+                    var velocity = (Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId);
                     direction = -(velocity.Value + acceleration.Value);
                     desiredAccelerationForce = direction.Length() * mass;
                 }
@@ -69,13 +68,17 @@ namespace Space.ComponentSystem.Systems
                 direction.Normalize();
 
                 // Get the needed energy and thruster power.
-                var maxEnergyConsumption = attributes.GetValue(AttributeType.ThrusterEnergyConsumption) / Settings.TicksPerSecond;
+                var maxEnergyConsumption = attributes.GetValue(AttributeType.ThrusterEnergyConsumption) /
+                                           Settings.TicksPerSecond;
 
                 // Apply some dampening on how fast we accelerate when accelerating
                 // sideways/backwards. We do this before computing energy consumption
                 // and such, to avoid using full energy even though we're moving
                 // slower.
-                var angle = Math.Abs(MathHelper.ToDegrees(Angle.MinAngle(transform.Rotation, (float)Math.Atan2(direction.Y, direction.X))));
+                var angle =
+                    Math.Abs(
+                        MathHelper.ToDegrees(
+                            Angle.MinAngle(transform.Rotation, (float) Math.Atan2(direction.Y, direction.X))));
                 maxAccelerationForce *= Math.Max(0, 200f - Math.Max(0, angle - 60f)) / 200f;
 
                 // Get the percentage of the overall thrusters' power we
@@ -91,7 +94,7 @@ namespace Space.ComponentSystem.Systems
                 var accelerationForce = maxAccelerationForce * load;
 
                 // Make sure we have enough energy. If we don't we have to slow down.
-                var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
+                var energy = ((Energy) Manager.GetComponent(component.Entity, Energy.TypeId));
                 if (energy.Value <= energyConsumption)
                 {
                     // Not enough energy, adjust our output.
@@ -117,7 +120,10 @@ namespace Space.ComponentSystem.Systems
 
                 // Adjust thruster PFX based on acceleration, if it just started.
                 effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
-                effects.SetGroupDirection(ParticleEffects.EffectGroup.Thruster, (float)Math.Atan2(-direction.Y, -direction.X) - transform.Rotation, Math.Max(0.3f, load));
+                effects.SetGroupDirection(
+                    ParticleEffects.EffectGroup.Thruster,
+                    (float) Math.Atan2(-direction.Y, -direction.X) - transform.Rotation,
+                    Math.Max(0.3f, load));
 
                 // Enable thruster sound for this ship.
                 sound.Enabled = true;

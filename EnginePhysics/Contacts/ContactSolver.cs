@@ -14,8 +14,8 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Contacts
 {
     /// <summary>
-    /// This class contains the actual logic for solving velocity and position
-    /// constraints (i.e. implements movement and handles collisions).
+    ///     This class contains the actual logic for solving velocity and position constraints (i.e. implements movement
+    ///     and handles collisions).
     /// </summary>
     internal sealed class ContactSolver
     {
@@ -78,10 +78,10 @@ namespace Engine.Physics.Contacts
                 vc.Restitution = contact.Restitution;
                 vc.IndexA = bodyA.IslandIndex;
                 vc.IndexB = bodyB.IslandIndex;
-                vc.InvMassA = bodyA.InverseMass;
-                vc.InvMassB = bodyB.InverseMass;
-                vc.InvInertiaA = bodyA.InverseInertia;
-                vc.InvInertiaB = bodyB.InverseInertia;
+                vc.InverseMassA = bodyA.InverseMass;
+                vc.InverseMassB = bodyB.InverseMass;
+                vc.InverseInertiaA = bodyA.InverseInertia;
+                vc.InverseInertiaB = bodyB.InverseInertia;
                 vc.ContactIndex = i;
                 vc.PointCount = contact.Manifold.PointCount;
                 vc.K = Matrix22.Zero;
@@ -90,12 +90,12 @@ namespace Engine.Physics.Contacts
                 var pc = _positionConstraints[i];
                 pc.IndexA = bodyA.IslandIndex;
                 pc.IndexB = bodyB.IslandIndex;
-                pc.InvMassA = bodyA.InverseMass;
-                pc.InvMassB = bodyB.InverseMass;
+                pc.InverseMassA = bodyA.InverseMass;
+                pc.InverseMassB = bodyB.InverseMass;
                 pc.LocalCenterA = bodyA.Sweep.LocalCenter;
                 pc.LocalCenterB = bodyB.Sweep.LocalCenter;
-                pc.InvInertiaA = bodyA.InverseInertia;
-                pc.InvInertiaB = bodyB.InverseInertia;
+                pc.InverseInertiaA = bodyA.InverseInertia;
+                pc.InverseInertiaB = bodyB.InverseInertia;
                 pc.LocalNormal = contact.Manifold.LocalNormal;
                 pc.LocalPoint = contact.Manifold.LocalPoint;
                 pc.PointCount = contact.Manifold.PointCount;
@@ -144,10 +144,10 @@ namespace Engine.Physics.Contacts
                 var indexA = vc.IndexA;
                 var indexB = vc.IndexB;
 
-                var mA = vc.InvMassA;
-                var mB = vc.InvMassB;
-                var iA = vc.InvInertiaA;
-                var iB = vc.InvInertiaB;
+                var mA = vc.InverseMassA;
+                var mB = vc.InverseMassB;
+                var iA = vc.InverseInertiaA;
+                var iB = vc.InverseInertiaB;
                 var localCenterA = pc.LocalCenterA;
                 var localCenterB = pc.LocalCenterB;
 
@@ -164,26 +164,29 @@ namespace Engine.Physics.Contacts
                 System.Diagnostics.Debug.Assert(contact.Manifold.PointCount > 0);
 
                 WorldTransform xfA, xfB;
-                xfA.Rotation.Sin = (float)System.Math.Sin(aA);
-                xfA.Rotation.Cos = (float)System.Math.Cos(aA);
-                xfB.Rotation.Sin = (float)System.Math.Sin(aB);
-                xfB.Rotation.Cos = (float)System.Math.Cos(aB);
+                xfA.Rotation.Sin = (float) System.Math.Sin(aA);
+                xfA.Rotation.Cos = (float) System.Math.Cos(aA);
+                xfB.Rotation.Sin = (float) System.Math.Sin(aB);
+                xfB.Rotation.Cos = (float) System.Math.Cos(aB);
                 xfA.Translation = cA - xfA.Rotation * localCenterA;
                 xfB.Translation = cB - xfB.Rotation * localCenterB;
 
                 FixedArray2<WorldPoint> points;
-                contact.Manifold.ComputeWorldManifold(xfA, radiusA,
-                                                      xfB, radiusB,
-                                                      out vc.Normal,
-                                                      out points);
+                contact.Manifold.ComputeWorldManifold(
+                    xfA,
+                    radiusA,
+                    xfB,
+                    radiusB,
+                    out vc.Normal,
+                    out points);
 
                 for (var j = 0; j < vc.PointCount; ++j)
                 {
                     var vcp = vc.Points[j];
-                    
+
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    vcp.RelativeA = (Vector2)(points[j] - cA);
-                    vcp.RelativeB = (Vector2)(points[j] - cB);
+                    vcp.RelativeA = (Vector2) (points[j] - cA);
+                    vcp.RelativeB = (Vector2) (points[j] - cB);
 // ReSharper restore RedundantCast
 
                     var rnA = Vector2Util.Cross(vcp.RelativeA, vc.Normal);
@@ -204,7 +207,8 @@ namespace Engine.Physics.Contacts
 
                     // Setup a velocity bias for restitution.
                     vcp.VelocityBias = 0.0f;
-                    var vRel = Vector2.Dot(vc.Normal, vB + Vector2Util.Cross(wB, vcp.RelativeB) - vA - Vector2Util.Cross(wA, vcp.RelativeA));
+                    var vRel = Vector2.Dot(
+                        vc.Normal, vB + Vector2Util.Cross(wB, vcp.RelativeB) - vA - Vector2Util.Cross(wA, vcp.RelativeA));
                     if (vRel < -Settings.VelocityThreshold)
                     {
                         vcp.VelocityBias = -vc.Restitution * vRel;
@@ -256,10 +260,10 @@ namespace Engine.Physics.Contacts
 
                 var indexA = vc.IndexA;
                 var indexB = vc.IndexB;
-                var mA = vc.InvMassA;
-                var iA = vc.InvInertiaA;
-                var mB = vc.InvMassB;
-                var iB = vc.InvInertiaB;
+                var mA = vc.InverseMassA;
+                var iA = vc.InverseInertiaA;
+                var mB = vc.InverseMassB;
+                var iB = vc.InverseInertiaB;
                 var pointCount = vc.PointCount;
 
                 var vA = _velocities[indexA].LinearVelocity;
@@ -295,10 +299,10 @@ namespace Engine.Physics.Contacts
 
                 var indexA = vc.IndexA;
                 var indexB = vc.IndexB;
-                var mA = vc.InvMassA;
-                var iA = vc.InvInertiaA;
-                var mB = vc.InvMassB;
-                var iB = vc.InvInertiaB;
+                var mA = vc.InverseMassA;
+                var iA = vc.InverseInertiaA;
+                var mB = vc.InverseMassB;
+                var iB = vc.InverseInertiaB;
                 var pointCount = vc.PointCount;
 
                 var vA = _velocities[indexA].LinearVelocity;
@@ -487,7 +491,6 @@ namespace Engine.Physics.Contacts
                             break;
                         }
 
-
                         //
                         // Case 3: vn2 = 0 and x1 = 0
                         //
@@ -565,7 +568,8 @@ namespace Engine.Physics.Contacts
         {
             for (var i = 0; i < _contacts.Count; ++i)
             {
-                StoreImpulseInManifold(_velocityConstraints[i], ref _contacts[_velocityConstraints[i].ContactIndex].Manifold);
+                StoreImpulseInManifold(
+                    _velocityConstraints[i], ref _contacts[_velocityConstraints[i].ContactIndex].Manifold);
             }
         }
 
@@ -582,10 +586,14 @@ namespace Engine.Physics.Contacts
             }
         }
 
-        private static void InitializePositionSolverManifold(ContactPositionConstraint pc, WorldTransform xfA,
-                                                             WorldTransform xfB, int index,
-                                                             out Vector2 normal, out WorldPoint point,
-                                                             out float separation)
+        private static void InitializePositionSolverManifold(
+            ContactPositionConstraint pc,
+            WorldTransform xfA,
+            WorldTransform xfB,
+            int index,
+            out Vector2 normal,
+            out WorldPoint point,
+            out float separation)
         {
             System.Diagnostics.Debug.Assert(pc.PointCount > 0);
 
@@ -596,12 +604,12 @@ namespace Engine.Physics.Contacts
                     var pointA = xfA.ToGlobal(pc.LocalPoint);
                     var pointB = xfB.ToGlobal(pc.LocalPoints[0]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    normal = (Vector2)(pointB - pointA);
+                    normal = (Vector2) (pointB - pointA);
 // ReSharper restore RedundantCast
                     normal.Normalize();
                     point = 0.5f * (pointA + pointB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2.Dot((Vector2)(pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
+                    separation = Vector2.Dot((Vector2) (pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
 // ReSharper restore RedundantCast
                 }
                     break;
@@ -613,7 +621,7 @@ namespace Engine.Physics.Contacts
 
                     var clipPoint = xfB.ToGlobal(pc.LocalPoints[index]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2.Dot((Vector2)(clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+                    separation = Vector2.Dot((Vector2) (clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
 // ReSharper restore RedundantCast
                     point = clipPoint;
                 }
@@ -626,7 +634,7 @@ namespace Engine.Physics.Contacts
 
                     var clipPoint = xfA.ToGlobal(pc.LocalPoints[index]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2.Dot((Vector2)(clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+                    separation = Vector2.Dot((Vector2) (clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
 // ReSharper restore RedundantCast
                     point = clipPoint;
 
@@ -650,11 +658,11 @@ namespace Engine.Physics.Contacts
                 var indexA = pc.IndexA;
                 var indexB = pc.IndexB;
                 var localCenterA = pc.LocalCenterA;
-                var mA = pc.InvMassA;
-                var iA = pc.InvInertiaA;
+                var mA = pc.InverseMassA;
+                var iA = pc.InverseInertiaA;
                 var localCenterB = pc.LocalCenterB;
-                var mB = pc.InvMassB;
-                var iB = pc.InvInertiaB;
+                var mB = pc.InverseMassB;
+                var iB = pc.InverseInertiaB;
                 var pointCount = pc.PointCount;
 
                 var cA = _positions[indexA].Point;
@@ -667,10 +675,10 @@ namespace Engine.Physics.Contacts
                 for (var j = 0; j < pointCount; ++j)
                 {
                     WorldTransform xfA, xfB;
-                    xfA.Rotation.Sin = (float)System.Math.Sin(aA);
-                    xfA.Rotation.Cos = (float)System.Math.Cos(aA);
-                    xfB.Rotation.Sin = (float)System.Math.Sin(aB);
-                    xfB.Rotation.Cos = (float)System.Math.Cos(aB);
+                    xfA.Rotation.Sin = (float) System.Math.Sin(aA);
+                    xfA.Rotation.Cos = (float) System.Math.Cos(aA);
+                    xfB.Rotation.Sin = (float) System.Math.Sin(aB);
+                    xfB.Rotation.Cos = (float) System.Math.Cos(aB);
                     xfA.Translation = cA - (xfA.Rotation * localCenterA);
                     xfB.Translation = cB - (xfB.Rotation * localCenterB);
 
@@ -678,17 +686,18 @@ namespace Engine.Physics.Contacts
                     WorldPoint point;
                     float separation;
                     InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
-                    
+
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    var rA = (Vector2)(point - cA);
-                    var rB = (Vector2)(point - cB);
+                    var rA = (Vector2) (point - cA);
+                    var rB = (Vector2) (point - cB);
 // ReSharper restore RedundantCast
 
                     // Track max constraint error.
                     minSeparation = System.Math.Min(minSeparation, separation);
 
                     // Prevent large corrections and allow slop.
-                    var c = MathHelper.Clamp(Settings.Baumgarte * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
+                    var c = MathHelper.Clamp(
+                        Settings.Baumgarte * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
 
                     // Compute the effective mass.
                     var rnA = Vector2Util.Cross(rA, normal);
@@ -714,7 +723,7 @@ namespace Engine.Physics.Contacts
                 _positions[indexB].Angle = aB;
             }
 
-            // We can't expect minSpeparation >= -Settings.LinearSlop because we don't
+            // We can't expect minSeparation >= -Settings.LinearSlop because we don't
             // push the separation above -Settings.LinearSlop.
             return minSeparation >= -3.0f * Settings.LinearSlop;
         }
@@ -737,16 +746,16 @@ namespace Engine.Physics.Contacts
                 var iA = 0.0f;
                 if (indexA == toiIndexA || indexA == toiIndexB)
                 {
-                    mA = pc.InvMassA;
-                    iA = pc.InvInertiaA;
+                    mA = pc.InverseMassA;
+                    iA = pc.InverseInertiaA;
                 }
 
                 var mB = 0.0f;
                 var iB = 0.0f;
                 if (indexB == toiIndexA || indexB == toiIndexB)
                 {
-                    mB = pc.InvMassB;
-                    iB = pc.InvInertiaB;
+                    mB = pc.InverseMassB;
+                    iB = pc.InverseInertiaB;
                 }
 
                 var cA = _positions[indexA].Point;
@@ -759,10 +768,10 @@ namespace Engine.Physics.Contacts
                 for (var j = 0; j < pointCount; ++j)
                 {
                     WorldTransform xfA, xfB;
-                    xfA.Rotation.Sin = (float)System.Math.Sin(aA);
-                    xfA.Rotation.Cos = (float)System.Math.Cos(aA);
-                    xfB.Rotation.Sin = (float)System.Math.Sin(aB);
-                    xfB.Rotation.Cos = (float)System.Math.Cos(aB);
+                    xfA.Rotation.Sin = (float) System.Math.Sin(aA);
+                    xfA.Rotation.Cos = (float) System.Math.Cos(aA);
+                    xfB.Rotation.Sin = (float) System.Math.Sin(aB);
+                    xfB.Rotation.Cos = (float) System.Math.Cos(aB);
                     xfA.Translation = cA - (xfA.Rotation * localCenterA);
                     xfB.Translation = cB - (xfB.Rotation * localCenterB);
 
@@ -770,17 +779,18 @@ namespace Engine.Physics.Contacts
                     WorldPoint point;
                     float separation;
                     InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
-                    
+
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    var rA = (Vector2)(point - cA);
-                    var rB = (Vector2)(point - cB);
+                    var rA = (Vector2) (point - cA);
+                    var rB = (Vector2) (point - cB);
 // ReSharper restore RedundantCast
 
                     // Track max constraint error.
                     minSeparation = System.Math.Min(minSeparation, separation);
 
                     // Prevent large corrections and allow slop.
-                    var c = MathHelper.Clamp(Settings.BaugarteTOI * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
+                    var c = MathHelper.Clamp(
+                        Settings.BaumgarteTOI * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
 
                     // Compute the effective mass.
                     var rnA = Vector2Util.Cross(rA, normal);
@@ -806,7 +816,7 @@ namespace Engine.Physics.Contacts
                 _positions[indexB].Angle = aB;
             }
 
-            // We can't expect minSpeparation >= -Settings.LinearSlop because we don't
+            // We can't expect minSeparation >= -Settings.LinearSlop because we don't
             // push the separation above -Settings.LinearSlop.
             return minSeparation >= -1.5f * Settings.LinearSlop;
         }
@@ -829,9 +839,9 @@ namespace Engine.Physics.Contacts
 
             public int IndexB;
 
-            public float InvMassA, InvMassB;
+            public float InverseMassA, InverseMassB;
 
-            public float InvInertiaA, InvInertiaB;
+            public float InverseInertiaA, InverseInertiaB;
 
             public float Friction;
 
@@ -861,7 +871,7 @@ namespace Engine.Physics.Contacts
 
         private sealed class ContactPositionConstraint
         {
-            public Vector2[] LocalPoints = new Vector2[2];
+            public readonly Vector2[] LocalPoints = new Vector2[2];
 
             public Vector2 LocalNormal;
 
@@ -871,11 +881,11 @@ namespace Engine.Physics.Contacts
 
             public int IndexB;
 
-            public float InvMassA, InvMassB;
+            public float InverseMassA, InverseMassB;
 
             public Vector2 LocalCenterA, LocalCenterB;
 
-            public float InvInertiaA, InvInertiaB;
+            public float InverseInertiaA, InverseInertiaB;
 
             public Manifold.ManifoldType Type;
 

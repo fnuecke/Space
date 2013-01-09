@@ -6,27 +6,21 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Loads icons for detectable components.
-    /// </summary>
+    /// <summary>Loads icons for detectable components.</summary>
     public sealed class DetectableSystem : AbstractComponentSystem<Detectable>, IDrawingSystem, IMessagingSystem
     {
         #region Constants
 
-        /// <summary>
-        /// Index group to use for gravitational computations.
-        /// </summary>
+        /// <summary>Index group to use for gravitational computations.</summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should draw.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
-        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool Enabled { get; set; }
 
@@ -34,9 +28,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Handle a message of the specified type.
-        /// </summary>
+        /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -53,9 +45,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Loads textures for detectables.
-        /// </summary>
+        /// <summary>Loads textures for detectables.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
@@ -65,7 +55,7 @@ namespace Space.ComponentSystem.Systems
                 // Load our texture, if it's not set.
                 if (component.Texture == null)
                 {
-                    var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                    var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
                     component.Texture = graphicsSystem.Content.Load<Texture2D>(component.TextureName);
                 }
             }

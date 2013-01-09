@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Engine.Physics.Components;
 using Engine.Physics.Contacts;
 using Engine.Physics.Joints;
@@ -7,24 +8,21 @@ using Microsoft.Xna.Framework;
 namespace Engine.Physics
 {
     /// <summary>
-    /// This class represents a graph made up from bodies as vertices and the
-    /// contacts between them as edges. This is used for more efficient solving,
-    /// because it is only necessary to solve inside an island.
+    ///     This class represents a graph made up from bodies as vertices and the contacts between them as edges. This is
+    ///     used for more efficient solving, because it is only necessary to solve inside an island.
     /// </summary>
     internal sealed class Island
     {
         #region Properties
 
-        /// <summary>
-        /// Gets the list of all bodies currently in this island.
-        /// </summary>
+        /// <summary>Gets the list of all bodies currently in this island.</summary>
         public IEnumerable<Body> Bodies
         {
             get { return _bodies; }
         }
 
         /// <summary>
-        /// Gets the list of processed bodie, set via <see cref="MarkProcessed(Engine.Physics.Components.Body)"/>.
+        ///     Gets the list of processed bodies, set via <see cref="MarkProcessed(Engine.Physics.Components.Body)"/>.
         /// </summary>
         public IEnumerable<Body> ProcessedBodies
         {
@@ -32,9 +30,8 @@ namespace Engine.Physics
         }
 
         /// <summary>
-        /// Whether this island is full. This is used during TOI solving, where
-        /// we limit the island size (for normal solving the island is always
-        /// scaled for the worst case).
+        ///     Whether this island is full. This is used during TOI solving, where we limit the island size (for normal
+        ///     solving the island is always scaled for the worst case).
         /// </summary>
         public bool IsFull
         {
@@ -49,20 +46,19 @@ namespace Engine.Physics
 
         #region Fields
 
-        /// <summary>The solver that does the actual work. We keep a copy that we re-use
-        /// every update.</summary>
+        /// <summary>Profiling information.</summary>
+        private readonly Profile _profile;
+
+        /// <summary>The solver that does the actual work. We keep a copy that we re-use every update.</summary>
         private readonly ContactSolver _solver;
 
-        /// <summary>This list is used to flag bodies as processed, to avoid double work
-        /// when building islands.</summary>
+        /// <summary>This list is used to flag bodies as processed, to avoid double work when building islands.</summary>
         private readonly HashSet<Body> _processedBodies = new HashSet<Body>();
 
-        /// <summary>This is used to flag contacts as processed, to avoid double work when
-        /// building islands.</summary>
+        /// <summary>This is used to flag contacts as processed, to avoid double work when building islands.</summary>
         private readonly HashSet<Contact> _processedContacts = new HashSet<Contact>();
 
-        /// <summary>This is used to flag joints as processed, to avoid double work when
-        /// building islands.</summary>
+        /// <summary>This is used to flag joints as processed, to avoid double work when building islands.</summary>
         private readonly HashSet<Joint> _processedJoints = new HashSet<Joint>();
 
         /// <summary>The list of bodies in this island.</summary>
@@ -80,14 +76,13 @@ namespace Engine.Physics
         /// <summary>Velocity buffer for solver.</summary>
         private Velocity[] _velocities = new Velocity[0];
 
-        /// <summary>Profiling information.</summary>
-        private Profile _profile;
-
         #endregion
 
         #region Initialization
 
-        /// <summary>Initializes a new instance of the <see cref="Island"/> class.</summary>
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Island"/> class.
+        /// </summary>
         /// <param name="profile"> </param>
         public Island(Profile profile)
         {
@@ -176,7 +171,9 @@ namespace Engine.Physics
 
         /// <summary>Determines whether the specified body is already processed.</summary>
         /// <param name="body">The body.</param>
-        /// <returns><c>true</c> if the specified body is processed; otherwise, <c>false</c>.</returns>
+        /// <returns>
+        ///     <c>true</c> if the specified body is processed; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsProcessed(Body body)
         {
             return _processedBodies.Contains(body);
@@ -184,7 +181,9 @@ namespace Engine.Physics
 
         /// <summary>Determines whether the specified contact is already processed.</summary>
         /// <param name="contact">The contact.</param>
-        /// <returns><c>true</c> if the specified contact is processed; otherwise, <c>false</c>.</returns>
+        /// <returns>
+        ///     <c>true</c> if the specified contact is processed; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsProcessed(Contact contact)
         {
             return _processedContacts.Contains(contact);
@@ -192,23 +191,21 @@ namespace Engine.Physics
 
         /// <summary>Determines whether the specified joint is already processed.</summary>
         /// <param name="joint">The joint.</param>
-        /// <returns><c>true</c> if the specified joint is processed; otherwise, <c>false</c>.</returns>
+        /// <returns>
+        ///     <c>true</c> if the specified joint is processed; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsProcessed(Joint joint)
         {
             return _processedJoints.Contains(joint);
         }
 
-        /// <summary>Clears all bodies from being marked as processed so they can
-        /// be processed again with other islands.</summary>
+        /// <summary>Clears all bodies from being marked as processed so they can be processed again with other islands.</summary>
         public void UnmarkAllBodies()
         {
             _processedBodies.Clear();
         }
 
-        /// <summary>
-        /// Clears all static bodies from being marked as processed so they
-        /// can be processed again with other islands.
-        /// </summary>
+        /// <summary>Clears all static bodies from being marked as processed so they can be processed again with other islands.</summary>
         public void UnmarkStaticBodies()
         {
             _processedBodies.RemoveWhere(x => x.TypeInternal == Body.BodyType.Static);
@@ -240,7 +237,9 @@ namespace Engine.Physics
         /// <summary>Perform normal solve step.</summary>
         /// <param name="step">The time step information.</param>
         /// <param name="gravity">The global gravity.</param>
-        /// <param name="allowSleep">if set to <c>true</c> allow putting bodies to sleep.</param>
+        /// <param name="allowSleep">
+        ///     if set to <c>true</c> allow putting bodies to sleep.
+        /// </param>
         public void Solve(TimeStep step, Vector2 gravity, bool allowSleep)
         {
             _profile.BeginSolveInit();
@@ -304,7 +303,7 @@ namespace Engine.Physics
             {
                 foreach (var joint in _joints)
                 {
-                    joint.SolveVelocityConstraints(step, _positions, _velocities);
+                    joint.SolveVelocityConstraints(step, _velocities);
                 }
                 _solver.SolveVelocityConstraints();
             }
@@ -358,7 +357,7 @@ namespace Engine.Physics
                 foreach (var joint in _joints)
                 {
                     jointsFinished = jointsFinished &&
-                                     joint.SolvePositionConstraints(step, _positions, _velocities);
+                                     joint.SolvePositionConstraints(_positions);
                 }
                 if (contactsFinished && jointsFinished)
                 {
@@ -382,39 +381,34 @@ namespace Engine.Physics
             _profile.EndSolvePosition();
 
             // Check for bodies that we can put to sleep.
-            if (allowSleep) {
+            if (allowSleep)
+            {
                 var minSleepTime = float.MaxValue;
 
                 const float linTolSqr = Settings.LinearSleepTolerance * Settings.LinearSleepTolerance;
                 const float angTolSqr = Settings.AngularSleepTolerance * Settings.AngularSleepTolerance;
 
-                for (var i = 0; i < _bodies.Count; ++i)
+                foreach (var body in _bodies.Where(body => body.TypeInternal != Body.BodyType.Static))
                 {
-                    var b = _bodies[i];
-                    if (b.TypeInternal == Body.BodyType.Static)
+                    if (!body.IsSleepAllowedInternal ||
+                        body.AngularVelocityInternal * body.AngularVelocityInternal > angTolSqr ||
+                        Vector2.Dot(body.LinearVelocityInternal, body.LinearVelocityInternal) > linTolSqr)
                     {
-                        continue;
-                    }
-
-                    if (!b.IsSleepAllowedInternal || b.AngularVelocityInternal * b.AngularVelocityInternal > angTolSqr ||
-                        Vector2.Dot(b.LinearVelocityInternal, b.LinearVelocityInternal) > linTolSqr)
-                    {
-                        b.SleepTime = 0.0f;
+                        body.SleepTime = 0.0f;
                         minSleepTime = 0.0f;
                     }
                     else
                     {
-                        b.SleepTime += h;
-                        minSleepTime = System.Math.Min(minSleepTime, b.SleepTime);
+                        body.SleepTime += h;
+                        minSleepTime = System.Math.Min(minSleepTime, body.SleepTime);
                     }
                 }
 
                 if (minSleepTime >= Settings.TimeToSleep && positionsSolved)
                 {
-                    for (var i = 0; i < _bodies.Count; ++i)
+                    foreach (var body in _bodies)
                     {
-                        var b = _bodies[i];
-                        b.IsAwake = false;
+                        body.IsAwake = false;
                     }
                 }
             }

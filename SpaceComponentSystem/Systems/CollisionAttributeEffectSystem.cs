@@ -14,32 +14,23 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Handles applying effects defined through attributes when two entities collide.
-    /// </summary>
+    /// <summary>Handles applying effects defined through attributes when two entities collide.</summary>
     public sealed class CollisionAttributeEffectSystem : AbstractComponentSystem<DamagingStatusEffect>, IMessagingSystem
     {
         #region Fields
 
-        /// <summary>
-        /// List of current collisions, mapping to their damage effect.
-        /// </summary>
+        /// <summary>List of current collisions, mapping to their damage effect.</summary>
         [CopyIgnore, PacketizerIgnore]
         private Dictionary<ulong, int> _collisions = new Dictionary<ulong, int>();
 
-        /// <summary>
-        /// Randomizer used for determining whether certain effects should be applied
-        /// (e.g. dots, blocking, ...).
-        /// </summary>
+        /// <summary>Randomizer used for determining whether certain effects should be applied (e.g. dots, blocking, ...).</summary>
         private MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
         #region Logic
 
-        /// <summary>
-        /// Handle collision messages by applying damage, if possible.
-        /// </summary>
+        /// <summary>Handle collision messages by applying damage, if possible.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -71,7 +62,7 @@ namespace Space.ComponentSystem.Systems
         private void BeginCollision(int damagee, int damager, Vector2 normal)
         {
             // Do we do any damage at all?
-            var damage = (CollisionDamage)Manager.GetComponent(damager, CollisionDamage.TypeId);
+            var damage = (CollisionDamage) Manager.GetComponent(damager, CollisionDamage.TypeId);
             if (damage == null)
             {
                 // Damager does not apply any damage, forget about it.
@@ -82,7 +73,7 @@ namespace Space.ComponentSystem.Systems
             if (damage.RemoveOnCollision)
             {
                 // Yep, mark it for removal.
-                ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
+                ((DeathSystem) Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
             }
 
             // Apply damage to second entity if it has health, otherwise stop.
@@ -101,10 +92,11 @@ namespace Space.ComponentSystem.Systems
 
                 // Figure out the root owner of the damager. We need to keep track of
                 // this to allow us to eventually attribute kills properly.
-                message.Owner = ((OwnerSystem)Manager.GetSystem(OwnerSystem.TypeId)).GetRootOwner(damager);
+                message.Owner = ((OwnerSystem) Manager.GetSystem(OwnerSystem.TypeId)).GetRootOwner(damager);
 
                 // Apply damages, debuffs, ... get the damager attributes for actual values.
-                message.Attributes = (Attributes<AttributeType>)Manager.GetComponent(damager, Attributes<AttributeType>.TypeId);
+                message.Attributes =
+                    (Attributes<AttributeType>) Manager.GetComponent(damager, Attributes<AttributeType>.TypeId);
 
                 // Pass on the entity that's being damaged.
                 message.Damagee = damagee;
@@ -117,17 +109,15 @@ namespace Space.ComponentSystem.Systems
             //_collisions.Add(BitwiseMagic.Pack(damagee, damager), effect.Id);
         }
 
-        /// <summary>
-        /// Checks if the damagee can and will block damage coming in from the specified direction.
-        /// </summary>
+        /// <summary>Checks if the damagee can and will block damage coming in from the specified direction.</summary>
         /// <param name="damagee">The damagee to check for.</param>
         /// <param name="normal">The normal from which the damage is coming.</param>
         /// <returns>
-        ///   <c>true</c> if the damage was blocked; <c>false</c> otherwise.
+        ///     <c>true</c> if the damage was blocked; <c>false</c> otherwise.
         /// </returns>
         private bool TryBlock(int damagee, Vector2 normal)
         {
-            var attributes = (Attributes<AttributeType>)Manager.GetComponent(damagee, Attributes<AttributeType>.TypeId);
+            var attributes = (Attributes<AttributeType>) Manager.GetComponent(damagee, Attributes<AttributeType>.TypeId);
             if (attributes == null)
             {
                 // No attributes, so we can't block.
@@ -142,15 +132,16 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Check if our shields are up.
-            if (!((ShipControl)Manager.GetComponent(damagee, ShipControl.TypeId)).ShieldsActive)
+            if (!((ShipControl) Manager.GetComponent(damagee, ShipControl.TypeId)).ShieldsActive)
             {
                 // Shields are not active, so we cannot block.
                 return false;
             }
 
             // Check if shields are oriented properly to intercept the damage.
-            var rotation = (((Transform)Manager.GetComponent(damagee, Transform.TypeId)).Rotation + MathHelper.TwoPi) % MathHelper.TwoPi;
-            var normalAngle = ((float)Math.Atan2(normal.Y, normal.X) + MathHelper.TwoPi) % MathHelper.TwoPi;
+            var rotation = (((Transform) Manager.GetComponent(damagee, Transform.TypeId)).Rotation + MathHelper.TwoPi) %
+                           MathHelper.TwoPi;
+            var normalAngle = ((float) Math.Atan2(normal.Y, normal.X) + MathHelper.TwoPi) % MathHelper.TwoPi;
             var coverage = attributes.GetValue(AttributeType.ShieldCoverage) * MathHelper.Pi;
             if (Math.Abs(rotation - normalAngle) > coverage)
             {
@@ -187,16 +178,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
-        /// <returns>
-        /// The copy.
-        /// </returns>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
+        /// <returns>The copy.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (CollisionAttributeEffectSystem)base.NewInstance();
+            var copy = (CollisionAttributeEffectSystem) base.NewInstance();
 
             copy._collisions = new Dictionary<ulong, int>();
             copy._random = new MersenneTwister(0);
@@ -205,19 +191,18 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
         public override void CopyInto(AbstractSystem into)
         {
             base.CopyInto(into);
 
-            var copy = (CollisionAttributeEffectSystem)into;
+            var copy = (CollisionAttributeEffectSystem) into;
 
             copy._collisions.Clear();
             foreach (var collision in _collisions)

@@ -3,9 +3,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Util
 {
-    /// <summary>
-    /// Utility methods for player classes.
-    /// </summary>
+    /// <summary>Utility methods for player classes.</summary>
     public static class PlayerClassExtensions
     {
         #region Constants
@@ -20,10 +18,7 @@ namespace Space.ComponentSystem.Util
 
         #region Methods
 
-        /// <summary>
-        /// Gets the ship constraints that define the player class' ship
-        /// information.
-        /// </summary>
+        /// <summary>Gets the ship constraints that define the player class' ship information.</summary>
         /// <param name="playerClass">The player class.</param>
         /// <returns>The ship constraints.</returns>
         public static string GetShipFactoryName(this PlayerClassType playerClass)

@@ -16,20 +16,17 @@ using Space.Util;
 
 namespace Space.Control
 {
-    /// <summary>
-    /// Utility class for creating new game server and client instances.
-    /// </summary>
+    /// <summary>Utility class for creating new game server and client instances.</summary>
     internal static class ControllerFactory
     {
-        /// <summary>
-        /// Creates a new game server.
-        /// </summary>
+        /// <summary>Creates a new game server.</summary>
         /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
         /// <returns>A new server.</returns>
         public static ISimulationController<IServerSession> CreateServer(bool purelyLocal = false)
         {
             // Create actual controller.
-            var controller = new SimpleServerController<Profile>(7777, purelyLocal ? 1 : 8, SpaceCommandHandler.HandleCommand);
+            var controller = new SimpleServerController<Profile>(
+                7777, purelyLocal ? 1 : 8, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
             AddSpaceServerSystems(controller.Simulation.Manager);
@@ -38,9 +35,7 @@ namespace Space.Control
             return controller;
         }
 
-        /// <summary>
-        /// Creates a new client that can be used to join remote games.
-        /// </summary>
+        /// <summary>Creates a new client that can be used to join remote games.</summary>
         /// <param name="game">The game to create the client for.</param>
         /// <returns>A new client.</returns>
         public static IClientController<FrameCommand> CreateRemoteClient(Program game)
@@ -57,16 +52,18 @@ namespace Space.Control
         }
 
         /// <summary>
-        /// Creates a new client that will automatically connect to the given
-        /// local server, and reuse the server's game state.
+        ///     Creates a new client that will automatically connect to the given local server, and reuse the server's game
+        ///     state.
         /// </summary>
         /// <param name="game">The game to create the client for.</param>
         /// <param name="server">The server to couple the client with.</param>
         /// <returns>A new client.</returns>
-        public static IClientController<FrameCommand> CreateLocalClient(Program game, ISimulationController<IServerSession> server)
+        public static IClientController<FrameCommand> CreateLocalClient(
+            Program game, ISimulationController<IServerSession> server)
         {
             // Create actual controller.
-            var controller = new ThinClientController<Profile>(server, Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile);
+            var controller = new ThinClientController<Profile>(
+                server, Settings.Instance.PlayerName, (Profile) Settings.Instance.CurrentProfile);
 
             // Check if the server has all the services we need (enough to
             // check for one, because we only add all at once -- here).
@@ -81,9 +78,7 @@ namespace Space.Control
             return controller;
         }
 
-        /// <summary>
-        /// Adds systems used by the server and the client.
-        /// </summary>
+        /// <summary>Adds systems used by the server and the client.</summary>
         /// <param name="manager">The manager.</param>
         private static void AddSpaceServerSystems(IManager manager)
         {
@@ -236,19 +231,19 @@ namespace Space.Control
                 });
         }
 
-        /// <summary>
-        /// Adds systems only used by the client.
-        /// </summary>
+        /// <summary>Adds systems only used by the client.</summary>
         /// <typeparam name="TSession">The type of the session.</typeparam>
         /// <param name="manager">The manager.</param>
         /// <param name="game">The game.</param>
         /// <param name="session">The session.</param>
         /// <param name="controller">The controller.</param>
-        private static void AddSpaceClientSystems<TSession>(IManager manager, Program game, IClientSession session, ISimulationController<TSession> controller) where TSession : ISession
+        private static void AddSpaceClientSystems<TSession>(
+            IManager manager, Program game, IClientSession session, ISimulationController<TSession> controller)
+            where TSession : ISession
         {
-            var audioEngine = (AudioEngine)game.Services.GetService(typeof(AudioEngine));
+            var audioEngine = (AudioEngine) game.Services.GetService(typeof (AudioEngine));
             var audioRange = audioEngine.GetGlobalVariable("MaxAudibleDistance");
-            var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
+            var soundBank = (SoundBank) game.Services.GetService(typeof (SoundBank));
             var simulationFps = new Func<float>(() => controller.ActualSpeed * Settings.TicksPerSecond);
 
             manager.AddSystems(
@@ -269,7 +264,7 @@ namespace Space.Control
                     // Provides interpolation of objects in view space. This uses the camera
                     // for the viewport, but the camera uses it for its own position (based
                     // on the avatar position). It's not so bad if we use the viewport of the
-                    // previous frame, but it's noticable if the avatar is no longer at the
+                    // previous frame, but it's noticeable if the avatar is no longer at the
                     // center, so we do it this way around.
                     new CameraCenteredInterpolationSystem(simulationFps) {Enabled = true},
 
@@ -297,7 +292,6 @@ namespace Space.Control
                     new CameraCenteredTextureRenderSystem {Enabled = true},
                     new ShieldRenderSystem {Enabled = true},
                     new CameraCenteredParticleEffectSystem(simulationFps) {Enabled = true},
-
                     new InformationDisplaySystem {Enabled = true},
 
                     // Perform post processing on the rendered scene.
@@ -316,9 +310,7 @@ namespace Space.Control
             AddDebugSystems(manager);
         }
 
-        /// <summary>
-        /// Tries to parse the bloom setting, which is stored as a string.
-        /// </summary>
+        /// <summary>Tries to parse the bloom setting, which is stored as a string.</summary>
         private static PostProcessingPostRenderSystem.BloomType ParseBloomFromSettings()
         {
             PostProcessingPostRenderSystem.BloomType bloomType;
@@ -329,10 +321,7 @@ namespace Space.Control
             return PostProcessingPostRenderSystem.BloomType.None;
         }
 
-        /// <summary>
-        /// Adds systems that are purely for debugging purposes (display additional
-        /// information).
-        /// </summary>
+        /// <summary>Adds systems that are purely for debugging purposes (display additional information).</summary>
         /// <param name="manager">The manager.</param>
         [Conditional("DEBUG")]
         private static void AddDebugSystems(IManager manager)

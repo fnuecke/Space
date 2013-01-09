@@ -3,10 +3,8 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.XnaExtensions
 {
-    /// <summary>
-    /// Packet write and read methods for XNA types.
-    /// </summary>
-    public static class PacketXnaExtensions
+    /// <summary>Packet write and read methods for XNA types.</summary>
+    public static class PacketExtensions
     {
         /// <summary>Writes the specified vector value.</summary>
         /// <param name="packet">The packet.</param>
@@ -33,9 +31,9 @@ namespace Engine.XnaExtensions
         public static IWritablePacket Write(this IWritablePacket packet, Matrix data)
         {
             return packet.Write(data.M11).Write(data.M12).Write(data.M13).Write(data.M14).
-                Write(data.M21).Write(data.M22).Write(data.M23).Write(data.M24).
-                Write(data.M31).Write(data.M32).Write(data.M33).Write(data.M34).
-                Write(data.M41).Write(data.M42).Write(data.M43).Write(data.M44);
+                          Write(data.M21).Write(data.M22).Write(data.M23).Write(data.M24).
+                          Write(data.M31).Write(data.M32).Write(data.M33).Write(data.M34).
+                          Write(data.M41).Write(data.M42).Write(data.M43).Write(data.M44);
         }
 
         /// <summary>Writes the specified rectangle value.</summary>
@@ -60,8 +58,7 @@ namespace Engine.XnaExtensions
         /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out Vector2 result)
         {
             result = packet.ReadVector2();
@@ -72,8 +69,7 @@ namespace Engine.XnaExtensions
         /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out Vector3 result)
         {
             result = packet.ReadVector3();
@@ -84,8 +80,7 @@ namespace Engine.XnaExtensions
         /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out Matrix result)
         {
             result = packet.ReadMatrix();
@@ -96,8 +91,7 @@ namespace Engine.XnaExtensions
         /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out Rectangle result)
         {
             result = packet.ReadRectangle();
@@ -108,8 +102,7 @@ namespace Engine.XnaExtensions
         /// <param name="packet">The packet.</param>
         /// <param name="result">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out Color result)
         {
             result = packet.ReadColor();
@@ -119,8 +112,7 @@ namespace Engine.XnaExtensions
         /// <summary>Reads a vector value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static Vector2 ReadVector2(this IReadablePacket packet)
         {
             Vector2 result;
@@ -132,8 +124,7 @@ namespace Engine.XnaExtensions
         /// <summary>Reads a vector value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static Vector3 ReadVector3(this IReadablePacket packet)
         {
             Vector3 result;
@@ -146,8 +137,7 @@ namespace Engine.XnaExtensions
         /// <summary>Reads a matrix value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static Matrix ReadMatrix(this IReadablePacket packet)
         {
             Matrix result;
@@ -173,8 +163,7 @@ namespace Engine.XnaExtensions
         /// <summary>Reads a rectangle value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static Rectangle ReadRectangle(this IReadablePacket packet)
         {
             Rectangle result;
@@ -188,8 +177,7 @@ namespace Engine.XnaExtensions
         /// <summary>Reads a vector value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static Color ReadColor(this IReadablePacket packet)
         {
             return new Color {PackedValue = packet.ReadUInt32()};

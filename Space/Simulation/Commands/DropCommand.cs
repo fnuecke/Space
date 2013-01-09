@@ -6,14 +6,10 @@ namespace Space.Simulation.Commands
     {
         #region Fields
 
-        /// <summary>
-        /// The position of the item to equip in the player's inventory.
-        /// </summary>
+        /// <summary>The position of the item to equip in the player's inventory.</summary>
         public int InventoryIndex;
 
-        /// <summary>
-        /// The Source of the command
-        /// </summary>
+        /// <summary>The Source of the command</summary>
         public Source Source;
 
         #endregion
@@ -28,9 +24,7 @@ namespace Space.Simulation.Commands
         }
 
         public DropCommand()
-            : this(-1, Source.None)
-        {
-        }
+            : this(-1, Source.None) {}
 
         #endregion
     }

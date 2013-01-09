@@ -15,94 +15,72 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// A revolute joint constrains two bodies to share a common point while they
-    /// are free to rotate about the point. The relative rotation about the shared
-    /// point is the joint angle. You can limit the relative rotation with
-    /// a joint limit that specifies a lower and upper angle. You can use a motor
-    /// to drive the relative rotation about the shared point. A maximum motor torque
-    /// is provided so that infinite forces are not generated.
+    ///     A revolute joint constrains two bodies to share a common point while they are free to rotate about the point.
+    ///     The relative rotation about the shared point is the joint angle. You can limit the relative rotation with a joint
+    ///     limit that specifies a lower and upper angle. You can use a motor to drive the relative rotation about the shared
+    ///     point. A maximum motor torque is provided so that infinite forces are not generated.
     /// </summary>
     public sealed class RevoluteJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the first body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in local coordinates.</summary>
         public LocalPoint LocalAnchorA
         {
             get { return _localAnchorA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in local coordinates.</summary>
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
         }
 
-        /// <summary>
-        /// Get the reference angle.
-        /// </summary>
+        /// <summary>Get the reference angle.</summary>
         public float ReferenceAngle
         {
             get { return _referenceAngle; }
         }
 
-        /// <summary>
-        /// Get the current joint angle in radians.
-        /// </summary>
+        /// <summary>Get the current joint angle in radians.</summary>
         public float JointAngle
         {
             get { return BodyB.Sweep.Angle - BodyA.Sweep.Angle - _referenceAngle; }
         }
 
-        /// <summary>
-        /// Get the current joint angle speed in radians per second.
-        /// </summary>
+        /// <summary>Get the current joint angle speed in radians per second.</summary>
         public float JointSpeed
         {
             get { return BodyB.AngularVelocityInternal - BodyA.AngularVelocityInternal; }
         }
 
-        /// <summary>
-        /// Set/Get the lower joint limit in radians.
-        /// </summary>
+        /// <summary>Set/Get the lower joint limit in radians.</summary>
         public float LowerLimit
         {
             get { return _lowerAngle; }
             set { SetLimits(value, _upperAngle); }
         }
 
-        /// <summary>
-        /// Set/Get the upper joint limit in radians.
-        /// </summary>
+        /// <summary>Set/Get the upper joint limit in radians.</summary>
         public float UpperLimit
         {
             get { return _upperAngle; }
             set { SetLimits(_lowerAngle, value); }
         }
 
-        /// <summary>
-        /// Set/Get whether the lower and upper angle limits are used.
-        /// </summary>
+        /// <summary>Set/Get whether the lower and upper angle limits are used.</summary>
         public bool IsLimitEnabled
         {
             get { return _enableLimit; }
@@ -115,13 +93,10 @@ namespace Engine.Physics.Joints
                     _enableLimit = value;
                     _impulse.Z = 0.0f;
                 }
-
             }
         }
 
-        /// <summary>
-        /// Set/Get the motor speed in radians per second.
-        /// </summary>
+        /// <summary>Set/Get the motor speed in radians per second.</summary>
         public float MotorSpeed
         {
             get { return _motorSpeed; }
@@ -138,9 +113,7 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get the maximum motor torque, usually in N-m.
-        /// </summary>
+        /// <summary>Set/Get the maximum motor torque, usually in N-m.</summary>
         public float MaxMotorTorque
         {
             get { return _maxMotorTorque; }
@@ -157,9 +130,7 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Set/Get whether the motor is enabled.
-        /// </summary>
+        /// <summary>Set/Get whether the motor is enabled.</summary>
         public bool IsMotorEnabled
         {
             get { return _enableMotor; }
@@ -222,7 +193,7 @@ namespace Engine.Physics.Joints
 
             public float InverseInertiaA;
 
-            public float InverseIneratiaB;
+            public float InverseInertiaB;
 
             public Matrix33 Mass; // effective mass for point-to-point constraint.
 
@@ -237,20 +208,22 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RevoluteJoint"/> class.
+        ///     Initializes a new instance of the <see cref="RevoluteJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public RevoluteJoint() : base(JointType.Revolute)
-        {
-        }
+        public RevoluteJoint() : base(JointType.Revolute) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
-        internal void Initialize(WorldPoint anchor, float lowerAngle = 0, float upperAngle = 0, float maxMotorTorque = 0,
-                                 float motorSpeed = 0, bool enableLimit = false, bool enableMotor = false)
+        /// <summary>Initializes this joint with the specified parameters.</summary>
+        internal void Initialize(
+            WorldPoint anchor,
+            float lowerAngle = 0,
+            float upperAngle = 0,
+            float maxMotorTorque = 0,
+            float motorSpeed = 0,
+            bool enableLimit = false,
+            bool enableMotor = false)
         {
             _localAnchorA = BodyA.GetLocalPoint(anchor);
             _localAnchorB = BodyB.GetLocalPoint(anchor);
@@ -270,9 +243,7 @@ namespace Engine.Physics.Joints
 
         #region Accessors
 
-        /// <summary>
-        /// Set the joint limits, usually in meters.
-        /// </summary>
+        /// <summary>Set the joint limits, usually in meters.</summary>
         public void SetLimits(float lower, float upper)
         {
             if (lower > upper)
@@ -309,9 +280,7 @@ namespace Engine.Physics.Joints
         // J = [0 0 -1 0 0 1]
         // K = invI1 + invI2
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -324,7 +293,7 @@ namespace Engine.Physics.Joints
             _tmp.InverseMassA = BodyA.InverseMass;
             _tmp.InverseMassB = BodyB.InverseMass;
             _tmp.InverseInertiaA = BodyA.InverseInertia;
-            _tmp.InverseIneratiaB = BodyB.InverseInertia;
+            _tmp.InverseInertiaB = BodyB.InverseInertia;
 
             var aA = positions[_tmp.IndexA].Angle;
             var vA = velocities[_tmp.IndexA].LinearVelocity;
@@ -352,7 +321,7 @@ namespace Engine.Physics.Joints
             var mA = _tmp.InverseMassA;
             var mB = _tmp.InverseMassB;
             var iA = _tmp.InverseInertiaA;
-            var iB = _tmp.InverseIneratiaB;
+            var iB = _tmp.InverseInertiaB;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             var fixedRotation = (iA + iB == 0.0f);
@@ -425,13 +394,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -441,7 +407,7 @@ namespace Engine.Physics.Joints
             var mA = _tmp.InverseMassA;
             var mB = _tmp.InverseMassB;
             var iA = _tmp.InverseInertiaA;
-            var iB = _tmp.InverseIneratiaB;
+            var iB = _tmp.InverseInertiaB;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             var fixedRotation = (iA + iB == 0.0f);
@@ -543,15 +509,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             var cA = positions[_tmp.IndexA].Point;
             var aA = positions[_tmp.IndexA].Angle;
@@ -565,7 +528,7 @@ namespace Engine.Physics.Joints
             float positionError;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
-            var fixedRotation = (_tmp.InverseInertiaA + _tmp.InverseIneratiaB == 0.0f);
+            var fixedRotation = (_tmp.InverseInertiaA + _tmp.InverseInertiaB == 0.0f);
 // ReSharper restore CompareOfFloatsByEqualityOperator
 
             // Solve angular limit constraint.
@@ -577,8 +540,10 @@ namespace Engine.Physics.Joints
                 if (_limitState == LimitState.Equal)
                 {
                     // Prevent large angular corrections
-                    var c = MathHelper.Clamp(angle - _lowerAngle, -Settings.MaxAngularCorrection,
-                                             Settings.MaxAngularCorrection);
+                    var c = MathHelper.Clamp(
+                        angle - _lowerAngle,
+                        -Settings.MaxAngularCorrection,
+                        Settings.MaxAngularCorrection);
                     limitImpulse = -_tmp.MotorMass * c;
                     angularError = System.Math.Abs(c);
                 }
@@ -602,7 +567,7 @@ namespace Engine.Physics.Joints
                 }
 
                 aA -= _tmp.InverseInertiaA * limitImpulse;
-                aB += _tmp.InverseIneratiaB * limitImpulse;
+                aB += _tmp.InverseInertiaB * limitImpulse;
             }
 
             // Solve point-to-point constraint.
@@ -611,16 +576,16 @@ namespace Engine.Physics.Joints
                 qB.Set(aB);
                 var rA = qA * (_localAnchorA - _tmp.LocalCenterA);
                 var rB = qB * (_localAnchorB - _tmp.LocalCenterB);
-                
+
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                var c = (Vector2)(cB - cA) + (rB - rA);
+                var c = (Vector2) (cB - cA) + (rB - rA);
 // ReSharper restore RedundantCast
                 positionError = c.Length();
 
                 var mA = _tmp.InverseMassA;
                 var mB = _tmp.InverseMassB;
                 var iA = _tmp.InverseInertiaA;
-                var iB = _tmp.InverseIneratiaB;
+                var iB = _tmp.InverseInertiaB;
 
                 Matrix22 k;
                 k.Column1.X = mA + mB + iA * rA.Y * rA.Y + iB * rB.Y * rB.Y;

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using Engine.Collections;
 using Engine.ComponentSystem;
 using Engine.Physics.Components;
@@ -19,140 +18,95 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Contacts
 {
-    /// <summary>
-    /// Represents a contact between two fixtures.
-    /// </summary>
+    /// <summary>Represents a contact between two fixtures.</summary>
     [DebuggerDisplay("FixtureA = {FixtureIdA}, FixtureB = {FixtureIdB}, IsTouching = {IsTouching}")]
     public sealed class Contact : ICopyable<Contact>, IPacketizable
     {
         #region Linked list data (unused/free)
 
-        /// <summary>
-        /// Index of previous entry in the global linked list.
-        /// </summary>
+        /// <summary>Index of previous entry in the global linked list.</summary>
         internal int Previous;
 
-        /// <summary>
-        /// Index of next entry in the global linked list.
-        /// </summary>
+        /// <summary>Index of next entry in the global linked list.</summary>
         internal int Next;
 
         #endregion
 
         #region Context
 
-        /// <summary>
-        /// Component id of the first fixture.
-        /// </summary>
+        /// <summary>Component id of the first fixture.</summary>
         internal int FixtureIdA;
 
-        /// <summary>
-        /// Component id of the second fixture.
-        /// </summary>
+        /// <summary>Component id of the second fixture.</summary>
         internal int FixtureIdB;
 
-        /// <summary>
-        /// The friction between the two fixtures.
-        /// </summary>
+        /// <summary>The friction between the two fixtures.</summary>
         internal float Friction;
 
-        /// <summary>
-        /// The restitution between the two fixtures.
-        /// </summary>
+        /// <summary>The restitution between the two fixtures.</summary>
         internal float Restitution;
 
-        /// <summary>
-        /// Whether the two involved fixtures are intersecting.
-        /// </summary>
+        /// <summary>Whether the two involved fixtures are intersecting.</summary>
         internal bool IsTouching;
 
-        /// <summary>
-        /// Whether this contact is currently enabled.
-        /// </summary>
+        /// <summary>Whether this contact is currently enabled.</summary>
         internal bool IsEnabled;
 
-        /// <summary>
-        /// Whether the contact is flagged for refiltering (from changes
-        /// to the involved bodies, e.g. from adding joints).
-        /// </summary>
+        /// <summary>Whether the contact is flagged for refiltering (from changes to the involved bodies, e.g. from adding joints).</summary>
         internal bool ShouldFilter;
 
-        /// <summary>
-        /// The contact manifold for this contact.
-        /// </summary>
+        /// <summary>The contact manifold for this contact.</summary>
         internal Manifold Manifold;
 
-        /// <summary>
-        /// The type of this contact (used to look-up evaluation method).
-        /// </summary>
+        /// <summary>The type of this contact (used to look-up evaluation method).</summary>
         private ContactType _type;
 
         #endregion
 
         #region TOI Cache
 
-        /// <summary>
-        /// The number of iterations this contact was involved in.
-        /// </summary>
+        /// <summary>The number of iterations this contact was involved in.</summary>
         internal int ToiCount;
 
-        /// <summary>
-        /// Whether the contact has a valid, cached TOI value.
-        /// </summary>
+        /// <summary>Whether the contact has a valid, cached TOI value.</summary>
         internal bool HasCachedTOI;
 
-        /// <summary>
-        /// The cached TOI value.
-        /// </summary>
+        /// <summary>The cached TOI value.</summary>
         internal float TOI;
 
         #endregion
 
         #region Interface
 
-        /// <summary>
-        /// The manager of the simulation this contact lives in. Used to look up
-        /// involved members.
-        /// </summary>
+        /// <summary>The manager of the simulation this contact lives in. Used to look up involved members.</summary>
         [CopyIgnore, PacketizerIgnore]
         internal IManager Manager;
 
-        /// <summary>
-        /// Gets the first fixture involved in this contact.
-        /// </summary>
+        /// <summary>Gets the first fixture involved in this contact.</summary>
         public Fixture FixtureA
         {
             get { return Manager.GetComponentById(FixtureIdA) as Fixture; }
         }
 
-        /// <summary>
-        /// Gets the second fixture involved in this contact.
-        /// </summary>
+        /// <summary>Gets the second fixture involved in this contact.</summary>
         public Fixture FixtureB
         {
             get { return Manager.GetComponentById(FixtureIdB) as Fixture; }
         }
 
-        /// <summary>
-        /// Gets the normal impulse of the specified contact point (separation).
-        /// </summary>
+        /// <summary>Gets the normal impulse of the specified contact point (separation).</summary>
         public float GetNormalImpulse(int point)
         {
             return Manifold.Points[point].NormalImpulse;
         }
 
-        /// <summary>
-        /// Gets the tangent impulse of the specified contact point (friction).
-        /// </summary>
+        /// <summary>Gets the tangent impulse of the specified contact point (friction).</summary>
         public float GetTangentImpulse(int point)
         {
             return Manifold.Points[point].TangentImpulse;
         }
 
-        /// <summary>
-        /// Computes the world manifold data for this contact. This is relatively
-        /// expensive, so use with care.
-        /// </summary>
+        /// <summary>Computes the world manifold data for this contact. This is relatively expensive, so use with care.</summary>
         /// <param name="normal">The world contact normal.</param>
         /// <param name="points">The contact points.</param>
         public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
@@ -181,14 +135,12 @@ namespace Engine.Physics.Contacts
 
         #region Logic
 
-        /// <summary>
-        /// Initializes the contact to represent a contact between the two specified fixtures.
-        /// </summary>
+        /// <summary>Initializes the contact to represent a contact between the two specified fixtures.</summary>
         /// <param name="fixtureA">The first fixture.</param>
         /// <param name="fixtureB">The second fixture.</param>
         internal void Initialize(ref Fixture fixtureA, ref Fixture fixtureB)
         {
-            if (SwapFixtures[(int)fixtureA.Type, (int)fixtureB.Type])
+            if (SwapFixtures[(int) fixtureA.Type, (int) fixtureB.Type])
             {
                 var tmp = fixtureA;
                 fixtureA = fixtureB;
@@ -196,30 +148,31 @@ namespace Engine.Physics.Contacts
             }
             FixtureIdA = fixtureA.Id;
             FixtureIdB = fixtureB.Id;
-            _type = ContactTypes[(int)fixtureA.Type, (int)fixtureB.Type];
+            _type = ContactTypes[(int) fixtureA.Type, (int) fixtureB.Type];
             Friction = MixFriction(fixtureA.Friction, fixtureB.Friction);
             Restitution = MixRestitution(fixtureA.Restitution, fixtureB.Restitution);
             IsTouching = false;
         }
 
-        /// <summary>
-        /// Updates the contact manifold and touching status.
-        /// </summary>
+        /// <summary>Updates the contact manifold and touching status.</summary>
         /// <param name="fixtureA">The first involved fixture.</param>
         /// <param name="fixtureB">The second involved fixture.</param>
         /// <param name="bodyA">The first involved body.</param>
         /// <param name="bodyB">The second involved body.</param>
-        /// <param name="proxyA">The distance proxy ro use for the first fixture.</param>
-        /// <param name="proxyB">The distance proxy ro use for the first fixture.</param>
+        /// <param name="proxyA">The distance proxy to use for the first fixture.</param>
+        /// <param name="proxyB">The distance proxy to use for the first fixture.</param>
         /// <remarks>
-        /// We pass the proxy singletons along to avoid having to recreate them
-        /// or store static versions in the collision module. This is not exactly
-        /// nice, but at least it avoid running into issues when running multiple
-        /// simulations at a time (in different threads).
+        ///     We pass the proxy singletons along to avoid having to recreate them or store static versions in the collision
+        ///     module. This is not exactly nice, but at least it avoid running into issues when running multiple simulations at a
+        ///     time (in different threads).
         /// </remarks>
-        internal void Update(Fixture fixtureA, Fixture fixtureB,
-                             Body bodyA, Body bodyB,
-                             Algorithms.DistanceProxy proxyA, Algorithms.DistanceProxy proxyB)
+        internal void Update(
+            Fixture fixtureA,
+            Fixture fixtureB,
+            Body bodyA,
+            Body bodyB,
+            Algorithms.DistanceProxy proxyA,
+            Algorithms.DistanceProxy proxyB)
         {
             // Note: do not assume the fixture AABBs are overlapping or are valid.
             var oldManifold = Manifold;
@@ -240,15 +193,21 @@ namespace Engine.Physics.Contacts
                 // Just check if the fixtures overlap.
                 proxyA.Set(fixtureA);
                 proxyB.Set(fixtureB);
-                nowTouching = Algorithms.TestOverlap(proxyA, proxyB,
-                                                     bodyA.Transform, bodyB.Transform);
+                nowTouching = Algorithms.TestOverlap(
+                    proxyA,
+                    proxyB,
+                    bodyA.Transform,
+                    bodyB.Transform);
             }
             else
             {
                 // Update the contact manifold and touching status.
-                nowTouching = ContactEvaluators[(int)_type](fixtureA, bodyA.Transform,
-                                                            fixtureB, bodyB.Transform,
-                                                            out Manifold);
+                nowTouching = ContactEvaluators[(int) _type](
+                    fixtureA,
+                    bodyA.Transform,
+                    fixtureB,
+                    bodyB.Transform,
+                    out Manifold);
 
                 // Match old contact ids to new contact ids and copy the
                 // stored impulses to warm start the solver.
@@ -299,7 +258,7 @@ namespace Engine.Physics.Contacts
                 Manager.SendMessage(message);
             }
 
-            // Send presolve message if we're not a sensor.
+            // Send pre-solve message if we're not a sensor.
             if (!sensor && IsTouching)
             {
                 PreSolve message;
@@ -309,45 +268,31 @@ namespace Engine.Physics.Contacts
             }
         }
 
-        /// <summary>
-        /// Possible contact types (i.e. possible fixture type permutations).
-        /// </summary>
+        /// <summary>Possible contact types (i.e. possible fixture type permutations).</summary>
         private enum ContactType
         {
-            /// <summary>
-            /// Circle collides with circle.
-            /// </summary>
+            /// <summary>Circle collides with circle.</summary>
             Circle,
 
-            /// <summary>
-            /// Edge collides with edge. This is unused.
-            /// </summary>
+            /// <summary>Edge collides with edge. This is unused.</summary>
             Edge,
 
-            /// <summary>
-            /// Polygon collides with polygon.
-            /// </summary>
+            /// <summary>Polygon collides with polygon.</summary>
             Polygon,
 
-            /// <summary>
-            /// Edge collides with circle.
-            /// </summary>
+            /// <summary>Edge collides with circle.</summary>
             EdgeCircle,
 
-            /// <summary>
-            /// Edge collides with polygon.
-            /// </summary>
+            /// <summary>Edge collides with polygon.</summary>
             EdgePolygon,
 
-            /// <summary>
-            /// Polygon collides with circle.
-            /// </summary>
+            /// <summary>Polygon collides with circle.</summary>
             PolygonCircle
         }
 
         /// <summary>
-        /// Lookup table for contact types by fixture types. This table must be
-        /// symmetric, i.e. for any x,y it must hold that table[x,y] == table[y,x].
+        ///     Lookup table for contact types by fixture types. This table must be symmetric, i.e. for any x,y it must hold
+        ///     that table[x,y] == table[y,x].
         /// </summary>
         private static readonly ContactType[,] ContactTypes = new[,]
         {
@@ -381,9 +326,8 @@ namespace Engine.Physics.Contacts
         };
 
         /// <summary>
-        /// Lookup table marking whether fixtures should be stored in reverse
-        /// order. This is necessary for the collision detection routines that
-        /// depend on the order of shapes.
+        ///     Lookup table marking whether fixtures should be stored in reverse order. This is necessary for the collision
+        ///     detection routines that depend on the order of shapes.
         /// </summary>
         private static readonly bool[,] SwapFixtures = new[,]
         {
@@ -416,22 +360,22 @@ namespace Engine.Physics.Contacts
             }
         };
 
-        /// <summary>
-        /// Signature for contact evaluation methods for contacts.
-        /// </summary>
+        /// <summary>Signature for contact evaluation methods for contacts.</summary>
         /// <param name="fixtureA">The first fixture.</param>
         /// <param name="xfA">The world transform of the body of the first fixture.</param>
         /// <param name="fixtureB">The second fixture.</param>
         /// <param name="xfB">The world transform of the body of the second fixture.</param>
         /// <param name="manifold">The resulting contact manifold.</param>
         /// <returns></returns>
-        private delegate bool ContactEvaluator(Fixture fixtureA, WorldTransform xfA,
-                                               Fixture fixtureB, WorldTransform xfB,
+        private delegate bool ContactEvaluator(Fixture fixtureA,
+                                               WorldTransform xfA,
+                                               Fixture fixtureB,
+                                               WorldTransform xfB,
                                                out Manifold manifold);
 
         /// <summary>
-        /// Lookup table for contact evaluators, taking values of the <see cref="ContactType"/>
-        /// enum as keys.
+        ///     Lookup table for contact evaluators, taking values of the <see cref="ContactType"/>
+        ///     enum as keys.
         /// </summary>
         private static readonly ContactEvaluator[] ContactEvaluators = new ContactEvaluator[]
         {
@@ -444,17 +388,17 @@ namespace Engine.Physics.Contacts
         };
 
         /// <summary>
-        /// Friction mixing law. The idea is to allow either fixture to drive the restitution to zero.
-        /// For example, anything slides on ice.
+        ///     Friction mixing law. The idea is to allow either fixture to drive the restitution to zero. For example,
+        ///     anything slides on ice.
         /// </summary>
         private static float MixFriction(float friction1, float friction2)
         {
-            return (float)System.Math.Sqrt(friction1 * friction2);
+            return (float) System.Math.Sqrt(friction1 * friction2);
         }
 
         /// <summary>
-        /// Restitution mixing law. The idea is allow for anything to bounce off an inelastic surface.
-        /// For example, a superball bounces on anything.
+        ///     Restitution mixing law. The idea is allow for anything to bounce off an inelastic surface. For example, a
+        ///     superball bounces on anything.
         /// </summary>
         private static float MixRestitution(float restitution1, float restitution2)
         {
@@ -465,19 +409,14 @@ namespace Engine.Physics.Contacts
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public Contact NewInstance()
         {
             return new Contact();
         }
 
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
         public void CopyInto(Contact into)
@@ -488,53 +427,35 @@ namespace Engine.Physics.Contacts
         #endregion
     }
 
-    /// <summary>
-    /// Represents a connection between two (potentially) colliding
-    /// objects.
-    /// </summary>
+    /// <summary>Represents a connection between two (potentially) colliding objects.</summary>
     internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable
     {
         #region Fields
 
-        /// <summary>
-        /// The index of the actual contact.
-        /// </summary>
+        /// <summary>The index of the actual contact.</summary>
         public int Contact;
 
-        /// <summary>
-        /// The id of the other entity involved in this contact.
-        /// </summary>
+        /// <summary>The id of the other entity involved in this contact.</summary>
         public int Other;
 
-        /// <summary>
-        /// The index of the previous contact edge, for the entity this
-        /// edge belongs to.
-        /// </summary>
+        /// <summary>The index of the previous contact edge, for the entity this edge belongs to.</summary>
         public int Previous;
 
-        /// <summary>
-        /// The index of the next contact edge, for the entity this
-        /// edge belongs to.
-        /// </summary>
+        /// <summary>The index of the next contact edge, for the entity this edge belongs to.</summary>
         public int Next;
 
         #endregion
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public ContactEdge NewInstance()
         {
             return new ContactEdge();
         }
 
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
         public void CopyInto(ContactEdge into)

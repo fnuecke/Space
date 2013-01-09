@@ -9,32 +9,24 @@ namespace Space.Graphics
     {
         #region Properties
 
-        /// <summary>
-        /// The shield's coverage, i.e. the percentual angle it covers.
-        /// </summary>
+        /// <summary>The shield's coverage, i.e. the percentual angle it covers.</summary>
         public float Coverage
         {
             get { return _coverage; }
             set { _coverage = MathHelper.Clamp(value, 0f, MathHelper.TwoPi); }
         }
 
-        /// <summary>
-        /// Gets or sets the texture to use as a structure overlay.
-        /// </summary>
+        /// <summary>Gets or sets the texture to use as a structure overlay.</summary>
         public Texture2D Structure { get; set; }
 
-        /// <summary>
-        /// The rotation of the surface structure (i.e. of the texture coordinates).
-        /// </summary>
+        /// <summary>The rotation of the surface structure (i.e. of the texture coordinates).</summary>
         public float StructureRotation { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// Actual value for coverage.
-        /// </summary>
+        /// <summary>Actual value for coverage.</summary>
         private float _coverage = 1f;
 
         #endregion
@@ -42,22 +34,18 @@ namespace Space.Graphics
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Shield"/> class.
+        ///     Initializes a new instance of the <see cref="Shield"/> class.
         /// </summary>
         /// <param name="content">The content manager.</param>
         /// <param name="graphics">The graphics device service.</param>
         public Shield(ContentManager content, IGraphicsDeviceService graphics)
-            : base(content, graphics, "Shaders/Shield")
-        {
-        }
+            : base(content, graphics, "Shaders/Shield") {}
 
         #endregion
 
         #region Draw
 
-        /// <summary>
-        /// Adjusts effect parameters prior to the draw call.
-        /// </summary>
+        /// <summary>Adjusts effect parameters prior to the draw call.</summary>
         protected override void AdjustParameters()
         {
             base.AdjustParameters();

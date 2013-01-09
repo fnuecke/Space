@@ -7,19 +7,15 @@ using Space.ComponentSystem.Components;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// This system takes care of putting AI components to sleep for ships that
-    /// are very far away from players, to reduce CPU load.
+    ///     This system takes care of putting AI components to sleep for ships that are very far away from players, to
+    ///     reduce CPU load.
     /// </summary>
     public sealed class SleepSystem : AbstractComponentSystem<ArtificialIntelligence>, IUpdatingSystem
     {
-        /// <summary>
-        /// The distance at which ships are put to sleep.
-        /// </summary>
+        /// <summary>The distance at which ships are put to sleep.</summary>
         private const float SleepDistance = CellSystem.CellSize / 4;
 
-        /// <summary>
-        /// Updates the system.
-        /// </summary>
+        /// <summary>Updates the system.</summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
@@ -29,12 +25,12 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
-            var avatars = (AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId);
-            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            var avatars = (AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId);
+            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> awake = new HashSet<int>();
             foreach (var avatar in avatars.Avatars)
             {
-                var transform = (Transform)Manager.GetComponent(avatar, Transform.TypeId);
+                var transform = (Transform) Manager.GetComponent(avatar, Transform.TypeId);
                 index.Find(transform.Translation, SleepDistance, ref awake, ArtificialIntelligence.AIIndexGroupMask);
             }
             foreach (var component in Components)
@@ -46,7 +42,7 @@ namespace Space.ComponentSystem.Systems
                 // Wake up other squad members as well. This avoids squads
                 // getting separated due to only a couple of the members
                 // waking up.
-                var squad = (Squad)Manager.GetComponent(entity, Squad.TypeId);
+                var squad = (Squad) Manager.GetComponent(entity, Squad.TypeId);
                 if (squad != null)
                 {
                     foreach (var member in squad.Members)
@@ -63,12 +59,13 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Sets the awake state for an entity. This toggles the enabled state for
-        /// a couple of relevant components (e.g. velocity, to avoid the entity to
-        /// idle straight into the sun).
+        ///     Sets the awake state for an entity. This toggles the enabled state for a couple of relevant components (e.g.
+        ///     velocity, to avoid the entity to idle straight into the sun).
         /// </summary>
         /// <param name="entity">The entity.</param>
-        /// <param name="awake">if set to <c>true</c> [awake].</param>
+        /// <param name="awake">
+        ///     if set to <c>true</c> [awake].
+        /// </param>
         private void SetAwake(int entity, bool awake)
         {
             Manager.GetComponent(entity, ArtificialIntelligence.TypeId).Enabled = awake;

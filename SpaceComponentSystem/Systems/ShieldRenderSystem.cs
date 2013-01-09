@@ -16,27 +16,22 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// This system renders active shields, detecting them via their energy consumption debuff.
-    /// </summary>
-    public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem, IMessagingSystem
+    /// <summary>This system renders active shields, detecting them via their energy consumption debuff.</summary>
+    public sealed class ShieldRenderSystem
+        : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should draw.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
-        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool Enabled { get; set; }
 
@@ -44,29 +39,20 @@ namespace Space.ComponentSystem.Systems
 
         #region Fields
 
-        /// <summary>
-        /// For low energy shield flickering.
-        /// </summary>
-        private readonly static Random Random = new Random(0);
+        /// <summary>For low energy shield flickering.</summary>
+        private static readonly Random Random = new Random(0);
 
-        /// <summary>
-        /// The renderer we use to render our shield.
-        /// </summary>
+        /// <summary>The renderer we use to render our shield.</summary>
         private Graphics.Shield _shader;
 
-        /// <summary>
-        /// The list of actual shield components, for reloading shield textures
-        /// on device recreation.
-        /// </summary>
+        /// <summary>The list of actual shield components, for reloading shield textures on device recreation.</summary>
         private readonly List<Shield> _shields = new List<Shield>();
 
         #endregion
 
         #region Logic
 
-        /// <summary>
-        /// Handle a message of the specified type.
-        /// </summary>
+        /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -91,15 +77,13 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Draws the system.
-        /// </summary>
+        /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).Transform;
-            var interpolation = (CameraCenteredInterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+            var camera = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).Transform;
+            var interpolation = (CameraCenteredInterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
 
             foreach (var effect in Components)
             {
@@ -108,7 +92,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Get energy, start fading out when below half energy.
                 var power = 0f;
-                var energy = (Energy)Manager.GetComponent(effect.Entity, Energy.TypeId);
+                var energy = (Energy) Manager.GetComponent(effect.Entity, Energy.TypeId);
                 if (energy != null)
                 {
                     // Compute relative energy in lower half.
@@ -122,12 +106,14 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Got some energy left, figure out coverage.
-                var equipment = (SpaceItemSlot)Manager.GetComponent(effect.Entity, ItemSlot.TypeId);
-                var attributes = (Attributes<AttributeType>)Manager.GetComponent(effect.Entity, Attributes<AttributeType>.TypeId);
+                var equipment = (SpaceItemSlot) Manager.GetComponent(effect.Entity, ItemSlot.TypeId);
+                var attributes =
+                    (Attributes<AttributeType>) Manager.GetComponent(effect.Entity, Attributes<AttributeType>.TypeId);
                 var coverage = 0f;
                 if (attributes != null)
                 {
-                    coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage), 0f, 1f) * MathHelper.Pi;
+                    coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage), 0f, 1f) *
+                               MathHelper.Pi;
                 }
 
                 // Skip render if we have no coverage.
@@ -147,7 +133,7 @@ namespace Space.ComponentSystem.Systems
                     }
 
                     // Skip all non-shields.
-                    var shield = (Shield)Manager.GetComponent(slot.Item, ComponentSystem.Components.Shield.TypeId);
+                    var shield = (Shield) Manager.GetComponent(slot.Item, ComponentSystem.Components.Shield.TypeId);
                     if (shield == null)
                     {
                         continue;
@@ -161,7 +147,7 @@ namespace Space.ComponentSystem.Systems
                         // Load texture if necessary.
                         if (shield.Structure == null && !string.IsNullOrWhiteSpace(shield.Factory.Structure))
                         {
-                            var graphicsSystem = ((GraphicsDeviceSystem)Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                            var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
                             shield.Structure = graphicsSystem.Content.Load<Texture2D>(shield.Factory.Structure);
                         }
 
@@ -177,10 +163,10 @@ namespace Space.ComponentSystem.Systems
                 // Position the shader. Only rotation differs for equipped shields.
                 FarPosition position;
                 interpolation.GetInterpolatedPosition(effect.Entity, out position);
-                _shader.Center = (Vector2)(position + camera.Translation);
+                _shader.Center = (Vector2) (position + camera.Translation);
 
                 // Set size.
-                var collidable = (Collidable)Manager.GetComponent(effect.Entity, Collidable.TypeId);
+                var collidable = (Collidable) Manager.GetComponent(effect.Entity, Collidable.TypeId);
                 var bounds = collidable.ComputeBounds();
                 _shader.SetSize(bounds.Width, bounds.Height);
 
@@ -204,18 +190,17 @@ namespace Space.ComponentSystem.Systems
 
         #region Shield list maintenance
 
-        /// <summary>
-        /// Called by the manager when a new component was added.
-        /// </summary>
+        /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
         public override void OnComponentAdded(Component component)
         {
             base.OnComponentAdded(component);
 
             // Check if the component is of the right type.
-            if (component is Shield)
+            var shield = component as Shield;
+            if (shield != null)
             {
-                var typedComponent = (Shield)component;
+                var typedComponent = shield;
 
                 // Keep components in order, to stay deterministic.
                 var index = _shields.BinarySearch(typedComponent, Component.Comparer);
@@ -224,18 +209,17 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Called by the manager when a new component was removed.
-        /// </summary>
+        /// <summary>Called by the manager when a new component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
         public override void OnComponentRemoved(Component component)
         {
             base.OnComponentRemoved(component);
 
             // Check if the component is of the right type.
-            if (component is Shield)
+            var shield = component as Shield;
+            if (shield != null)
             {
-                var typedComponent = (Shield)component;
+                var typedComponent = shield;
 
                 // Take advantage of the fact that the list is sorted.
                 var index = _shields.BinarySearch(typedComponent, Component.Comparer);
@@ -244,10 +228,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Called by the manager when the complete environment has been
-        /// depacketized.
-        /// </summary>
+        /// <summary>Called by the manager when the complete environment has been depacketized.</summary>
         public override void OnDepacketized()
         {
             base.OnDepacketized();
@@ -255,10 +236,7 @@ namespace Space.ComponentSystem.Systems
             RebuildComponentList();
         }
 
-        /// <summary>
-        /// Called by the manager when the complete environment has been
-        /// copied from another manager.
-        /// </summary>
+        /// <summary>Called by the manager when the complete environment has been copied from another manager.</summary>
         public override void OnCopied()
         {
             base.OnCopied();
@@ -266,17 +244,16 @@ namespace Space.ComponentSystem.Systems
             RebuildComponentList();
         }
 
-        /// <summary>
-        /// Rebuilds the component list by fetching all components handled by us.
-        /// </summary>
+        /// <summary>Rebuilds the component list by fetching all components handled by us.</summary>
         private void RebuildComponentList()
         {
             _shields.Clear();
             foreach (var component in Manager.Components)
             {
-                if (component is Shield)
+                var shield = component as Shield;
+                if (shield != null)
                 {
-                    var typedComponent = (Shield)component;
+                    var typedComponent = shield;
 
                     // Components are in order (we are iterating in order), so
                     // just add it at the end.

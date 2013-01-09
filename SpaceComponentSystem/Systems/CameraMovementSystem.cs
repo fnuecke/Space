@@ -10,16 +10,15 @@ namespace Space.ComponentSystem.Systems
 {
     public class CameraMovementSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should draw.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
-        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool Enabled { get; set; }
 
         [PacketizerIgnore]
         private List<MoveCamera.Positions> _positions = new List<MoveCamera.Positions>();
+
         private long _frame;
         private FarPosition _lastPosition;
         private FarPosition _step;
@@ -32,20 +31,20 @@ namespace Space.ComponentSystem.Systems
         {
             if (_positions.Count <= 0)
             {
-                if (_returnToSender)//we need to get back
+                if (_returnToSender) //we need to get back
                 {
-                    var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
+                    var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
                     if (avatar <= 0)
                     {
                         return;
                     }
-                    var cam = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
+                    var cam = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId));
                     if (_frame == 0)
                     {
                         _lastPosition = cam.CameraPositon;
                         _lastZoom = cam.Zoom;
                         FarPosition desPosition;
-                        var interpolation = (InterpolationSystem)Manager.GetSystem(InterpolationSystem.TypeId);
+                        var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
                         interpolation.GetInterpolatedPosition(avatar, out desPosition);
 
                         _step = (desPosition - _lastPosition) / _returnSpeed;
@@ -75,7 +74,7 @@ namespace Space.ComponentSystem.Systems
             }
             else
             {
-                var cam = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
+                var cam = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId));
                 if (_frame == 0)
                 {
                     _lastPosition = cam.CameraPositon;
@@ -104,7 +103,6 @@ namespace Space.ComponentSystem.Systems
                         cam.ResetCamera();
                         cam.ResetZoom();
                     }
-
                 }
                 else
                 {
@@ -115,9 +113,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Receives the specified message.
-        /// </summary>
+        /// <summary>Receives the specified message.</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct

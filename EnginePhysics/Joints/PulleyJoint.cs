@@ -15,102 +15,76 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// The pulley joint is connected to two bodies and two fixed ground points.
-    /// The pulley supports a ratio such that:
-    /// length1 + ratio * length2 &lt;= constant
-    /// Thus, the force transmitted is scaled by the ratio.
-    /// Warning: the pulley joint can get a bit squirrelly by itself. They often
-    /// work better when combined with prismatic joints. You should also cover the
-    /// the anchor points with static shapes to prevent one side from going to
-    /// zero length.
+    ///     The pulley joint is connected to two bodies and two fixed ground points. The pulley supports a ratio such
+    ///     that: length1 + ratio * length2 &lt;= constant Thus, the force transmitted is scaled by the ratio. Warning: the
+    ///     pulley joint can get a bit squirrelly by itself. They often work better when combined with prismatic joints. You
+    ///     should also cover the the anchor points with static shapes to prevent one side from going to zero length.
     /// </summary>
     public sealed class PulleyJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the first body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in local coordinates.</summary>
         public LocalPoint LocalAnchorA
         {
             get { return _localAnchorA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in local coordinates.</summary>
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
         }
 
-        /// <summary>
-        /// Get the first ground anchor.
-        /// </summary>
+        /// <summary>Get the first ground anchor.</summary>
         public WorldPoint GroundAnchorA
         {
             get { return _groundAnchorA; }
         }
 
-        /// <summary>
-        /// Get the second ground anchor.
-        /// </summary>
+        /// <summary>Get the second ground anchor.</summary>
         public WorldPoint GroundAnchorB
         {
             get { return _groundAnchorB; }
         }
 
-        /// <summary>
-        /// Get the original length of the segment attached to the first body.
-        /// </summary>
+        /// <summary>Get the original length of the segment attached to the first body.</summary>
         public float LengthA
         {
             get { return _lengthA; }
         }
 
-        /// <summary>
-        /// Get the original length of the segment attached to the second body.
-        /// </summary>
+        /// <summary>Get the original length of the segment attached to the second body.</summary>
         public float LengthB
         {
             get { return _lengthB; }
         }
 
-        /// <summary>
-        /// Get the pulley ratio.
-        /// </summary>
+        /// <summary>Get the pulley ratio.</summary>
         public float Ratio
         {
             get { return _ratio; }
         }
 
-        /// <summary>
-        /// Get the current length of the segment attached to the first body.
-        /// </summary>
+        /// <summary>Get the current length of the segment attached to the first body.</summary>
         public float CurrentLengthA
         {
             get { return WorldPoint.Distance(_groundAnchorA, BodyA.GetWorldPoint(_localAnchorA)); }
         }
 
-        /// <summary>
-        /// Get the current length of the segment attached to the second body.
-        /// </summary>
+        /// <summary>Get the current length of the segment attached to the second body.</summary>
         public float CurrentLengthB
         {
             get { return WorldPoint.Distance(_groundAnchorB, BodyB.GetWorldPoint(_localAnchorB)); }
@@ -175,19 +149,16 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PulleyJoint"/> class.
+        ///     Initializes a new instance of the <see cref="PulleyJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public PulleyJoint() : base(JointType.Pulley)
-        {
-        }
+        public PulleyJoint() : base(JointType.Pulley) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
-        internal void Initialize(WorldPoint groundAnchorA, WorldPoint groundAnchorB, WorldPoint anchorA, WorldPoint anchorB, float ratio)
+        /// <summary>Initializes this joint with the specified parameters.</summary>
+        internal void Initialize(
+            WorldPoint groundAnchorA, WorldPoint groundAnchorB, WorldPoint anchorA, WorldPoint anchorB, float ratio)
         {
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional.
             if (ratio == 0.0f)
@@ -225,9 +196,7 @@ namespace Engine.Physics.Joints
         // K = J * invM * JT
         //   = invMass1 + invI1 * cross(r1, u1)^2 + ratio^2 * (invMass2 + invI2 * cross(r2, u2)^2)
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -260,8 +229,8 @@ namespace Engine.Physics.Joints
 
             // Get the pulley axes.
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            _tmp.AxisA = (Vector2)(cA - _groundAnchorA) + _tmp.RotA;
-            _tmp.AxisB = (Vector2)(cB - _groundAnchorB) + _tmp.RotB;
+            _tmp.AxisA = (Vector2) (cA - _groundAnchorA) + _tmp.RotA;
+            _tmp.AxisB = (Vector2) (cB - _groundAnchorB) + _tmp.RotB;
 // ReSharper restore RedundantCast
 
             var lengthA = _tmp.AxisA.Length();
@@ -312,13 +281,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -345,15 +311,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             var cA = positions[_tmp.IndexA].Point;
             var aA = positions[_tmp.IndexA].Angle;
@@ -368,8 +331,8 @@ namespace Engine.Physics.Joints
 
             // Get the pulley axes.
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var uA = (Vector2)(cA - _groundAnchorA) + rA;
-            var uB = (Vector2)(cB - _groundAnchorB) + rB;
+            var uA = (Vector2) (cA - _groundAnchorA) + rA;
+            var uB = (Vector2) (cB - _groundAnchorB) + rB;
 // ReSharper restore RedundantCast
 
             var lengthA = uA.Length();

@@ -16,9 +16,7 @@ using Space.Data;
 
 namespace Space.Simulation.Commands
 {
-    /// <summary>
-    /// Used to apply commands to simulations.
-    /// </summary>
+    /// <summary>Used to apply commands to simulations.</summary>
     internal static class SpaceCommandHandler
     {
         #region Logger
@@ -29,11 +27,9 @@ namespace Space.Simulation.Commands
 
         #region Scripting environment
 
-        /// <summary>
-        /// Symbol imports for scripting convenience.
-        /// </summary>
+        /// <summary>Symbol imports for scripting convenience.</summary>
         private const string ScriptNamespaces =
-@"
+            @"
 from Engine.ComponentSystem import *
 from Engine.ComponentSystem.Components import *
 from Engine.ComponentSystem.Systems import *
@@ -49,21 +45,13 @@ from Space.ComponentSystem.Systems import *
 from Space.Data import *
 ";
 
-        /// <summary>
-        /// The global scripting engine we'll be using.
-        /// </summary>
+        /// <summary>The global scripting engine we'll be using.</summary>
         private static readonly ScriptEngine Script = Python.CreateEngine();
 
-        /// <summary>
-        /// Used to keep multiple threads (TSS) from trying to execute
-        /// scripts at the same time.
-        /// </summary>
+        /// <summary>Used to keep multiple threads (TSS) from trying to execute scripts at the same time.</summary>
         private static readonly object ScriptLock = new object();
 
-        /// <summary>
-        /// We only use this in debug mode, so don't even bother setting
-        /// it up in if we're not debugging.
-        /// </summary>
+        /// <summary>We only use this in debug mode, so don't even bother setting it up in if we're not debugging.</summary>
         [Conditional("DEBUG")]
         public static void InitializeScriptEnvironment(ContentManager content)
         {
@@ -103,23 +91,17 @@ from Space.Data import *
             }
         }
 
-        /// <summary>
-        /// Gets the global names currently registered in the scripting environment.
-        /// </summary>
+        /// <summary>Gets the global names currently registered in the scripting environment.</summary>
         /// <returns>List of global variable names.</returns>
         public static IEnumerable<string> GetGlobalNames()
         {
             return Script.Runtime.Globals.GetVariableNames();
         }
 
-        /// <summary>
-        /// The frame number in which we executed the last command.
-        /// </summary>
+        /// <summary>The frame number in which we executed the last command.</summary>
         private static long _lastScriptFrame;
 
-        /// <summary>
-        /// Whether to currently ignore script output.
-        /// </summary>
+        /// <summary>Whether to currently ignore script output.</summary>
         private static bool _ignoreScriptOutput;
 
         #endregion
@@ -132,46 +114,43 @@ from Space.Data import *
 
         #region Logic
 
-        /// <summary>
-        /// Takes a command and applies it to the simulation state
-        /// represented by the given entity manager.
-        /// </summary>
+        /// <summary>Takes a command and applies it to the simulation state represented by the given entity manager.</summary>
         /// <param name="command">The command to process.</param>
         /// <param name="manager">The manager to apply it to.</param>
         public static void HandleCommand(Command command, IManager manager)
         {
-            switch ((SpaceCommandType)command.Type)
+            switch ((SpaceCommandType) command.Type)
             {
                 case SpaceCommandType.RestoreProfile:
-                    RestoreProfile((RestoreProfileCommand)command, manager);
+                    RestoreProfile((RestoreProfileCommand) command, manager);
                     break;
 
                 case SpaceCommandType.PlayerInput:
-                    PlayerInput((PlayerInputCommand)command, manager);
+                    PlayerInput((PlayerInputCommand) command, manager);
                     break;
 
                 case SpaceCommandType.Equip:
-                    Equip((EquipCommand)command, manager);
+                    Equip((EquipCommand) command, manager);
                     break;
 
                 case SpaceCommandType.MoveItem:
-                    MoveItem((MoveItemCommand)command, manager);
+                    MoveItem((MoveItemCommand) command, manager);
                     break;
 
                 case SpaceCommandType.PickUp:
-                    PickUp((PickUpCommand)command, manager);
+                    PickUp((PickUpCommand) command, manager);
                     break;
 
                 case SpaceCommandType.DropItem:
-                    DropItem((DropCommand)command, manager);
+                    DropItem((DropCommand) command, manager);
                     break;
 
                 case SpaceCommandType.UseItem:
-                    UseItem((UseCommand)command, manager);
+                    UseItem((UseCommand) command, manager);
                     break;
 
                 case SpaceCommandType.ScriptCommand:
-                    ScriptCommand((ScriptCommand)command, manager);
+                    ScriptCommand((ScriptCommand) command, manager);
                     break;
             }
         }
@@ -183,7 +162,7 @@ from Space.Data import *
         private static void RestoreProfile(RestoreProfileCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(~command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(~command.PlayerNumber);
 
             // Only allow loading once a session, so skip if he already has an avatar.
             if (avatar > 0)
@@ -202,7 +181,7 @@ from Space.Data import *
         private static void PlayerInput(PlayerInputCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (avatar <= 0)
@@ -211,23 +190,23 @@ from Space.Data import *
             }
 
             // Get the ship control.
-            var control = ((ShipControl)manager.GetComponent(avatar, ShipControl.TypeId));
+            var control = ((ShipControl) manager.GetComponent(avatar, ShipControl.TypeId));
 
             // What type of player input should we process?
             switch (command.Input)
             {
-                // Accelerating in the given direction (or stop if
-                // a zero vector  is given).
+                    // Accelerating in the given direction (or stop if
+                    // a zero vector  is given).
                 case PlayerInputCommand.PlayerInputCommandType.Accelerate:
                     control.SetAcceleration(command.Value);
                     break;
 
-                // Begin rotating.
+                    // Begin rotating.
                 case PlayerInputCommand.PlayerInputCommandType.Rotate:
                     control.SetTargetRotation(command.Value.X);
                     break;
 
-                // Begin/stop to stabilize our position.
+                    // Begin/stop to stabilize our position.
                 case PlayerInputCommand.PlayerInputCommandType.BeginStabilizing:
                     control.Stabilizing = true;
                     break;
@@ -235,7 +214,7 @@ from Space.Data import *
                     control.Stabilizing = false;
                     break;
 
-                // Begin/stop shooting.
+                    // Begin/stop shooting.
                 case PlayerInputCommand.PlayerInputCommandType.BeginShooting:
                     control.Shooting = true;
                     break;
@@ -243,7 +222,7 @@ from Space.Data import *
                     control.Shooting = false;
                     break;
 
-                // Begin/stop shielding.
+                    // Begin/stop shielding.
                 case PlayerInputCommand.PlayerInputCommandType.BeginShielding:
                     if (!control.ShieldsActive)
                     {
@@ -264,7 +243,7 @@ from Space.Data import *
         private static void Equip(EquipCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (avatar <= 0)
@@ -273,8 +252,8 @@ from Space.Data import *
             }
 
             // Get the player's inventory and equipment.
-            var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
-            var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
+            var inventory = (Inventory) manager.GetComponent(avatar, Inventory.TypeId);
+            var equipment = (ItemSlot) manager.GetComponent(avatar, ItemSlot.TypeId);
 
             // Make sure the inventory index is valid.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -302,9 +281,9 @@ from Space.Data import *
                 Logger.Warn("Invalid equip command, equipment slot is invalid.");
                 return;
             }
-            
+
             // Make sure the item type is correct.
-            var itemComponent = (Item)manager.GetComponent(item, Item.TypeId);
+            var itemComponent = (Item) manager.GetComponent(item, Item.TypeId);
             if (!slot.Validate(itemComponent))
             {
                 Logger.Warn("Invalid equip command, item not valid for this equipment slot.");
@@ -329,7 +308,7 @@ from Space.Data import *
         private static void MoveItem(MoveItemCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (avatar <= 0)
@@ -338,7 +317,7 @@ from Space.Data import *
             }
 
             // The the player's inventory.
-            var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
+            var inventory = ((Inventory) manager.GetComponent(avatar, Inventory.TypeId));
 
             // Validate the indexes.
             if (command.FirstIndex < 0 || command.SecondIndex < 0 ||
@@ -356,7 +335,7 @@ from Space.Data import *
         private static void PickUp(PickUpCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (avatar <= 0)
@@ -365,9 +344,9 @@ from Space.Data import *
             }
 
             // Get the inventory of the player and the index system.
-            var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
-            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-            var transform = ((Transform)manager.GetComponent(avatar, Transform.TypeId));
+            var inventory = ((Inventory) manager.GetComponent(avatar, Inventory.TypeId));
+            var index = (IndexSystem) manager.GetSystem(IndexSystem.TypeId);
+            var transform = ((Transform) manager.GetComponent(avatar, Transform.TypeId));
 
             // We may be called from a multi threaded environment (TSS), so
             // lock this shared list.
@@ -381,7 +360,7 @@ from Space.Data import *
                     inventory.Add(item);
 
                     // Disable rendering, if available.
-                    var renderer = (TextureRenderer)manager.GetComponent(item, TextureRenderer.TypeId);
+                    var renderer = (TextureRenderer) manager.GetComponent(item, TextureRenderer.TypeId);
                     if (renderer != null)
                     {
                         renderer.Enabled = false;
@@ -394,7 +373,7 @@ from Space.Data import *
         private static void DropItem(DropCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (avatar <= 0)
@@ -406,57 +385,58 @@ from Space.Data import *
             switch (command.Source)
             {
                 case Source.Inventory:
+                {
+                    // From our inventory, so get it.
+                    var inventory = ((Inventory) manager.GetComponent(avatar, Inventory.TypeId));
+
+                    // Validate the index.
+                    if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
                     {
-                        // From our inventory, so get it.
-                        var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
+                        Logger.Warn("Invalid drop command, index out of bounds.");
+                        return;
+                    }
 
-                        // Validate the index.
-                        if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
+                    // Get the item to drop.
+                    var item = inventory[command.InventoryIndex];
+
+                    // Do we really drop anything?
+                    if (item > 0)
+                    {
+                        inventory.RemoveAt(command.InventoryIndex);
+
+                        // Position the item to be at the position of the
+                        // player that dropped it.
+                        var transform = (Transform) manager.GetComponent(item, Transform.TypeId);
+                        transform.SetTranslation(
+                            ((Transform) manager.GetComponent(avatar, Transform.TypeId)).Translation);
+                        transform.ApplyTranslation();
+
+                        // Enable rendering, if available.
+                        var renderer = (TextureRenderer) manager.GetComponent(item, TextureRenderer.TypeId);
+                        if (renderer != null)
                         {
-                            Logger.Warn("Invalid drop command, index out of bounds.");
-                            return;
-                        }
-
-                        // Get the item to drop.
-                        var item = inventory[command.InventoryIndex];
-
-                        // Do we really drop anything?
-                        if (item > 0)
-                        {
-                            inventory.RemoveAt(command.InventoryIndex);
-
-                            // Position the item to be at the position of the
-                            // player that dropped it.
-                            var transform = (Transform)manager.GetComponent(item, Transform.TypeId);
-                            transform.SetTranslation(((Transform)manager.GetComponent(avatar, Transform.TypeId)).Translation);
-                            transform.ApplyTranslation();
-
-                            // Enable rendering, if available.
-                            var renderer = (TextureRenderer)manager.GetComponent(item, TextureRenderer.TypeId);
-                            if (renderer != null)
-                            {
-                                renderer.Enabled = true;
-                            }
+                            renderer.Enabled = true;
                         }
                     }
+                }
                     break;
                 case Source.Equipment:
-                    {
-                        //var equipment = ((Equipment)avatar.GetComponent(, Equipment.TypeId));
-                        //var item = equipment[dropCommand.InventoryIndex];
-                        //equipment.RemoveAt(dropCommand.InventoryIndex);
+                {
+                    //var equipment = ((Equipment)avatar.GetComponent(, Equipment.TypeId));
+                    //var item = equipment[dropCommand.InventoryIndex];
+                    //equipment.RemoveAt(dropCommand.InventoryIndex);
 
-                        //var transform = ((Transform)item.GetComponent(, Transform.TypeId));
-                        //if (transform != null)
-                        //{
-                        //    transform.Translation = ((Transform)avatar.GetComponent(, Transform.TypeId)).Translation;
-                        //    var renderer = ((TransformedRenderer)item.GetComponent(, TransformedRenderer.TypeId));
-                        //    if (renderer != null)
-                        //    {
-                        //        renderer.Enabled = true;
-                        //    }
-                        //}
-                    }
+                    //var transform = ((Transform)item.GetComponent(, Transform.TypeId));
+                    //if (transform != null)
+                    //{
+                    //    transform.Translation = ((Transform)avatar.GetComponent(, Transform.TypeId)).Translation;
+                    //    var renderer = ((TransformedRenderer)item.GetComponent(, TransformedRenderer.TypeId));
+                    //    if (renderer != null)
+                    //    {
+                    //        renderer.Enabled = true;
+                    //    }
+                    //}
+                }
                     break;
             }
         }
@@ -464,7 +444,7 @@ from Space.Data import *
         private static void UseItem(UseCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (avatar <= 0)
@@ -473,7 +453,7 @@ from Space.Data import *
             }
 
             // Get the inventory of the player, containing the item to use.
-            var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
+            var inventory = (Inventory) manager.GetComponent(avatar, Inventory.TypeId);
 
             // Validate inventory index.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -484,8 +464,8 @@ from Space.Data import *
 
             // Get the item.
             var id = inventory[command.InventoryIndex];
-            var usable = (Usable<UsableResponse>)manager.GetComponent(id, Usable<UsableResponse>.TypeId);
-            var item = (SpaceItem)manager.GetComponent(id, Item.TypeId);
+            var usable = (Usable<UsableResponse>) manager.GetComponent(id, Usable<UsableResponse>.TypeId);
+            var item = (SpaceItem) manager.GetComponent(id, Item.TypeId);
 
             // Check if there really is an item there.
             if (id <= 0)
@@ -498,13 +478,13 @@ from Space.Data import *
             if (usable != null)
             {
                 // Usable item, use it.
-                ((SpaceUsablesSystem)manager.GetSystem(SpaceUsablesSystem.TypeId)).Use(usable);
+                ((SpaceUsablesSystem) manager.GetSystem(SpaceUsablesSystem.TypeId)).Use(usable);
             }
             else if (item != null)
             {
                 // If we have a free slot for that item type equip it there,
                 // otherwise swap with the first item.
-                var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
+                var equipment = (ItemSlot) manager.GetComponent(avatar, ItemSlot.TypeId);
 
                 // Find free slot that can take the item, or failing that, the first
                 // slot that can hold the item.
@@ -526,7 +506,7 @@ from Space.Data import *
                             // And we're done.
                             return;
                         }
-                        else if (firstValid == null)
+                        if (firstValid == null)
                         {
                             // Already occupied, but remember the first valid one
                             // to force swapping if necessary.
@@ -551,8 +531,8 @@ from Space.Data import *
         }
 
         /// <summary>
-        /// Handles scripting commands. These are ignored in release mode, as
-        /// they would essentially allow uncontrolled cheating.
+        ///     Handles scripting commands. These are ignored in release mode, as they would essentially allow uncontrolled
+        ///     cheating.
         /// </summary>
         /// <param name="command">The command to execute.</param>
         /// <param name="manager">The manager to apply the command to.</param>
@@ -560,7 +540,7 @@ from Space.Data import *
         private static void ScriptCommand(ScriptCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem) manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (avatar <= 0)
@@ -600,15 +580,22 @@ from Space.Data import *
                 // Try executing our script.
                 try
                 {
-                    if (!_ignoreScriptOutput) Logger.Info("> {0}", command.Script);
+                    if (!_ignoreScriptOutput)
+                    {
+                        Logger.Info("> {0}", command.Script);
+                    }
                     var result = Script.Execute(command.Script, scope);
-                    if (!_ignoreScriptOutput) Logger.Info("< {0}", result != null ? result.ToString() : "null");
+                    if (!_ignoreScriptOutput)
+                    {
+                        Logger.Info("< {0}", result != null ? result.ToString() : "null");
+                    }
                 }
                 catch (Exception ex)
                 {
                     if (!_ignoreScriptOutput)
                     {
-                        Logger.Error("Error executing script.\n{0}", Script.GetService<ExceptionOperations>().FormatException(ex));
+                        Logger.Error(
+                            "Error executing script.\n{0}", Script.GetService<ExceptionOperations>().FormatException(ex));
                     }
                 }
                 finally
@@ -626,15 +613,11 @@ from Space.Data import *
 
         #region Stream classes for script IO
 
-        /// <summary>
-        /// Writes informational messages from the scripting VM to the log.
-        /// </summary>
+        /// <summary>Writes informational messages from the scripting VM to the log.</summary>
         private sealed class InfoStreamWriter : System.IO.StreamWriter
         {
             public InfoStreamWriter(System.IO.Stream stream)
-                : base(stream)
-            {
-            }
+                : base(stream) {}
 
             public override void Write(string value)
             {
@@ -645,15 +628,11 @@ from Space.Data import *
             }
         }
 
-        /// <summary>
-        /// Writes error messages from the scripting VM to the log.
-        /// </summary>
+        /// <summary>Writes error messages from the scripting VM to the log.</summary>
         private sealed class ErrorStreamWriter : System.IO.StreamWriter
         {
             public ErrorStreamWriter(System.IO.Stream stream)
-                : base(stream)
-            {
-            }
+                : base(stream) {}
 
             public override void Write(string value)
             {

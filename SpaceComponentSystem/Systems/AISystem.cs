@@ -4,16 +4,12 @@ using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Handles AI logic updates.
-    /// </summary>
+    /// <summary>Handles AI logic updates.</summary>
     public sealed class AISystem : AbstractUpdatingComponentSystem<ArtificialIntelligence>, IMessagingSystem
     {
         #region Logic
 
-        /// <summary>
-        /// Updates AI component behaviors.
-        /// </summary>
+        /// <summary>Updates AI component behaviors.</summary>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, ArtificialIntelligence component)
@@ -21,9 +17,7 @@ namespace Space.ComponentSystem.Systems
             component.Update();
         }
 
-        /// <summary>
-        /// Called by the manager when an entity was removed.
-        /// </summary>
+        /// <summary>Called by the manager when an entity was removed.</summary>
         /// <param name="entity">The entity that was removed.</param>
         public override void OnEntityRemoved(int entity)
         {
@@ -35,9 +29,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Handle a message of the specified type.
-        /// </summary>
+        /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -61,7 +53,8 @@ namespace Space.ComponentSystem.Systems
                 var cm = message as DamageReceived?;
                 if (cm != null && cm.Value.Owner != 0)
                 {
-                    var ai = (ArtificialIntelligence)Manager.GetComponent(cm.Value.Damagee, ArtificialIntelligence.TypeId);
+                    var ai =
+                        (ArtificialIntelligence) Manager.GetComponent(cm.Value.Damagee, ArtificialIntelligence.TypeId);
                     if (ai != null && ai.CurrentBehavior != ArtificialIntelligence.BehaviorType.Attack)
                     {
                         ai.Attack(cm.Value.Owner);

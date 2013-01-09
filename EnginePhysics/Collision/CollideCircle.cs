@@ -10,14 +10,15 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Collision
 {
-    /// <summary>
-    /// Methods for circle vs. circle and circle vs. polygon collisions.
-    /// </summary>
+    /// <summary>Methods for circle vs. circle and circle vs. polygon collisions.</summary>
     internal static partial class Algorithms
     {
-        public static bool CollideCircles(Fixture fixtureA, WorldTransform xfA,
-                                          Fixture fixtureB, WorldTransform xfB,
-                                          out Manifold manifold)
+        public static bool CollideCircles(
+            Fixture fixtureA,
+            WorldTransform xfA,
+            Fixture fixtureB,
+            WorldTransform xfB,
+            out Manifold manifold)
         {
             manifold = new Manifold();
 
@@ -31,12 +32,12 @@ namespace Engine.Physics.Collision
             var pB = xfB.ToGlobal(circleB.Center);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var d = (Vector2)(pB - pA);
+            var d = (Vector2) (pB - pA);
 // ReSharper restore RedundantCast
 
-            var distSqr = Vector2.Dot(d, d);
+            var distanceSquared = Vector2.Dot(d, d);
             var radius = circleA.Radius + circleB.Radius;
-            if (distSqr > radius * radius)
+            if (distanceSquared > radius * radius)
             {
                 return false;
             }
@@ -51,9 +52,12 @@ namespace Engine.Physics.Collision
             return true;
         }
 
-        public static bool CollidePolygonAndCircle(Fixture fixtureA, WorldTransform xfA,
-                                                   Fixture fixtureB, WorldTransform xfB,
-                                                   out Manifold manifold)
+        public static bool CollidePolygonAndCircle(
+            Fixture fixtureA,
+            WorldTransform xfA,
+            Fixture fixtureB,
+            WorldTransform xfB,
+            out Manifold manifold)
         {
             manifold = new Manifold();
 
@@ -119,7 +123,6 @@ namespace Engine.Physics.Collision
             {
                 if (LocalPoint.DistanceSquared(centerInA, vertexA1) <= totalRadius * totalRadius)
                 {
-
                     var normalInA = centerInA - vertexA1;
                     normalInA.Normalize();
 

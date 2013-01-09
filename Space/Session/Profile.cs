@@ -16,9 +16,7 @@ using Space.Util;
 
 namespace Space.Session
 {
-    /// <summary>
-    /// Implements profile save and restore functionality.
-    /// </summary>
+    /// <summary>Implements profile save and restore functionality.</summary>
     internal sealed class Profile : IProfile
     {
         #region Logger
@@ -30,36 +28,36 @@ namespace Space.Session
         #region Constants
 
         /// <summary>
-        /// File version of the saved profiles. In case we change something
-        /// fundamentally so that we can handle files differently. This is
-        /// the version we write to new snapshots.
+        ///     File version of the saved profiles. In case we change something fundamentally so that we can handle files
+        ///     differently. This is the version we write to new snapshots.
         /// </summary>
         private const int Version = 8;
 
-        /// <summary>
-        /// Header for our save game files.
-        /// </summary>
+        /// <summary>Header for our save game files.</summary>
         private static readonly byte[] Header = Encoding.ASCII.GetBytes("MPSAV");
 
-        /// <summary>
-        /// Pattern used to eliminate invalid chars from profile names, for saving.
-        /// </summary>
-        private static readonly Regex InvalidCharPattern = new Regex(string.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))), RegexOptions.Compiled);
+        /// <summary>Pattern used to eliminate invalid chars from profile names, for saving.</summary>
+        private static readonly Regex InvalidCharPattern =
+            new Regex(
+                string.Format(
+                    "[{0}]",
+                    Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))),
+                RegexOptions.Compiled);
 
-        /// <summary>
-        /// Cryptography service we use to encrypt our save files.
-        /// </summary>
+        /// <summary>Cryptography service we use to encrypt our save files.</summary>
         private static readonly SimpleCrypto Crypto = new SimpleCrypto(
-            new byte[] { 174, 190, 179, 189, 31, 66, 187, 235, 115, 253, 233, 119, 144, 33, 238, 191, 210, 244, 101, 247, 193, 75, 136, 202, 188, 1, 124, 237, 118, 223, 99, 140 },
-            new byte[] { 123, 239, 208, 52, 86, 203, 255, 232, 156, 225, 31, 219, 2, 65, 143, 155 });
+            new byte[]
+            {
+                174, 190, 179, 189, 31, 66, 187, 235, 115, 253, 233, 119, 144, 33, 238, 191, 210, 244, 101, 247, 193, 75,
+                136, 202, 188, 1, 124, 237, 118, 223, 99, 140
+            },
+            new byte[] {123, 239, 208, 52, 86, 203, 255, 232, 156, 225, 31, 219, 2, 65, 143, 155});
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// A list of all existing profiles.
-        /// </summary>
+        /// <summary>A list of all existing profiles.</summary>
         public IEnumerable<string> Profiles
         {
             get
@@ -75,23 +73,17 @@ namespace Space.Session
             }
         }
 
-        /// <summary>
-        /// The profile name. This is equal to the profile's file name.
-        /// </summary>
+        /// <summary>The profile name. This is equal to the profile's file name.</summary>
         public string Name { get; private set; }
 
-        /// <summary>
-        /// The player class of this profile.
-        /// </summary>
+        /// <summary>The player class of this profile.</summary>
         public PlayerClassType PlayerClass { get; private set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The serialized character data.
-        /// </summary>
+        /// <summary>The serialized character data.</summary>
         [PacketizerCreate]
         private Packet _data;
 
@@ -112,10 +104,7 @@ namespace Space.Session
 
         #region Create / Load / Save
 
-        /// <summary>
-        /// Creates a new profile with the specified name and the specified
-        /// player class.
-        /// </summary>
+        /// <summary>Creates a new profile with the specified name and the specified player class.</summary>
         /// <param name="name">The name of the profile.</param>
         /// <param name="playerClass">The player class.</param>
         /// <exception cref="ArgumentException">profile name is invalid.</exception>
@@ -129,7 +118,7 @@ namespace Space.Session
             // Save name and class, initialization will be done when restore
             // is called for the first time.
             Reset();
-            this.Name = name;
+            Name = name;
             PlayerClass = playerClass;
 
             if (File.Exists(GetFullProfilePath()))
@@ -139,8 +128,8 @@ namespace Space.Session
         }
 
         /// <summary>
-        /// Loads this profile from disk. If loading fails this will default to
-        /// a new profile with the fall-back character class.
+        ///     Loads this profile from disk. If loading fails this will default to a new profile with the fall-back character
+        ///     class.
         /// </summary>
         /// <exception cref="ArgumentException">Profile name is invalid.</exception>
         public void Load(string name)
@@ -182,14 +171,14 @@ namespace Space.Session
                     var hash = packet.ReadInt32();
 
                     // Get the player class.
-                    var playerClass = (PlayerClassType)packet.ReadByte();
+                    var playerClass = (PlayerClassType) packet.ReadByte();
 
                     // And the actual data.
                     var data = packet.ReadByteArray();
 
                     // Check if the hash matches.
                     var hasher = new Hasher();
-                    hasher.Write((byte)playerClass);
+                    hasher.Write((byte) playerClass);
                     if (data != null)
                     {
                         hasher.Write(data);
@@ -208,17 +197,15 @@ namespace Space.Session
             }
         }
 
-        /// <summary>
-        /// Stores the profile to disk, under the specified profile name.
-        /// </summary>
+        /// <summary>Stores the profile to disk, under the specified profile name.</summary>
         public void Save()
         {
             // Get our plain data and hash it.
             var hasher = new Hasher();
-            hasher.Write((byte)PlayerClass);
+            hasher.Write((byte) PlayerClass);
             if (_data != null)
             {
-                hasher.Write((byte[])_data);
+                hasher.Write((byte[]) _data);
             }
 
             // Write it to a packet, compress it, encrypt it and save it.
@@ -227,8 +214,8 @@ namespace Space.Session
                 // Put our hash and plain data.
                 packet.Write(Header);
                 packet.Write(hasher.Value);
-                packet.Write((byte)PlayerClass);
-                packet.Write((IWritablePacket)_data);
+                packet.Write((byte) PlayerClass);
+                packet.Write((IWritablePacket) _data);
 
                 // Compress and encrypt, then save.
                 var compressed = SimpleCompression.Compress(packet.GetBuffer(), packet.Length);
@@ -267,7 +254,7 @@ namespace Space.Session
 #if DEBUG
                         if (_data != null)
                         {
-                            File.WriteAllBytes(profilePath + ".raw", (byte[])_data);
+                            File.WriteAllBytes(profilePath + ".raw", (byte[]) _data);
                         }
 #endif
                     }
@@ -304,9 +291,7 @@ namespace Space.Session
 
         #region Snapshots
 
-        /// <summary>
-        /// Take a snapshot of a character's current state in a running game.
-        /// </summary>
+        /// <summary>Take a snapshot of a character's current state in a running game.</summary>
         /// <param name="manager">The component system manager.</param>
         /// <param name="avatar">The avatar to take a snapshot of.</param>
         public void Capture(IManager manager, int avatar)
@@ -321,12 +306,12 @@ namespace Space.Session
             }
 
             // Get the elements we need to save.
-            var playerClass = (PlayerClass)manager.GetComponent(avatar, ComponentSystem.Components.PlayerClass.TypeId);
-            var respawn = (Respawn)manager.GetComponent(avatar, Respawn.TypeId);
-            var experience = (Experience)manager.GetComponent(avatar, Experience.TypeId);
-            var attributes = (Attributes<AttributeType>)manager.GetComponent(avatar, Attributes<AttributeType>.TypeId);
-            var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
-            var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
+            var playerClass = (PlayerClass) manager.GetComponent(avatar, ComponentSystem.Components.PlayerClass.TypeId);
+            var respawn = (Respawn) manager.GetComponent(avatar, Respawn.TypeId);
+            var experience = (Experience) manager.GetComponent(avatar, Experience.TypeId);
+            var attributes = (Attributes<AttributeType>) manager.GetComponent(avatar, Attributes<AttributeType>.TypeId);
+            var equipment = (ItemSlot) manager.GetComponent(avatar, ItemSlot.TypeId);
+            var inventory = (Inventory) manager.GetComponent(avatar, Inventory.TypeId);
 
             // Check if we have everything we need.
             if (playerClass == null ||
@@ -352,7 +337,7 @@ namespace Space.Session
             // loading. Also update the profile accordingly (should never
             // change, but who knows...)
             PlayerClass = playerClass.Value;
-            _data.Write((byte)playerClass.Value);
+            _data.Write((byte) playerClass.Value);
 
             // Save the current spawning position.
             _data.Write(respawn.Position);
@@ -406,16 +391,10 @@ namespace Space.Session
             }
         }
 
-        /// <summary>
-        /// Restores a character snapshot stored in this profile.
-        /// </summary>
-        /// <param name="manager">The entity manager to add the restored
-        /// entities to.</param>
-        /// <param name="playerNumber">The number of the player in the game
-        /// he is restored to.</param>
-        /// <returns>
-        /// The restored avatar.
-        /// </returns>
+        /// <summary>Restores a character snapshot stored in this profile.</summary>
+        /// <param name="manager">The entity manager to add the restored entities to.</param>
+        /// <param name="playerNumber">The number of the player in the game he is restored to.</param>
+        /// <returns>The restored avatar.</returns>
         public int Restore(IManager manager, int playerNumber)
         {
             if (manager == null)
@@ -457,16 +436,14 @@ namespace Space.Session
 
         #region Restore implementations
 
-        /// <summary>
-        /// Load saves of version 0.
-        /// </summary>
+        /// <summary>Load saves of version 0.</summary>
         private int Restore0(IManager manager, int playerNumber)
         {
             var undo = new Stack<Action>();
             try
             {
                 // Read the player's class and create the ship.
-                var playerClass = (PlayerClassType)_data.ReadByte();
+                var playerClass = (PlayerClassType) _data.ReadByte();
                 PlayerClass = playerClass;
 
                 // Read the respawn position.
@@ -477,10 +454,11 @@ namespace Space.Session
                 undo.Push(() => manager.RemoveEntity(avatar));
 
                 // Get the elements we need to save.
-                var attributes = (Attributes<AttributeType>)manager.GetComponent(avatar, Attributes<AttributeType>.TypeId);
-                var experience = (Experience)manager.GetComponent(avatar, Experience.TypeId);
-                var equipment = (ItemSlot)manager.GetComponent(avatar, ItemSlot.TypeId);
-                var inventory = (Inventory)manager.GetComponent(avatar, Inventory.TypeId);
+                var attributes =
+                    (Attributes<AttributeType>) manager.GetComponent(avatar, Attributes<AttributeType>.TypeId);
+                var experience = (Experience) manager.GetComponent(avatar, Experience.TypeId);
+                var equipment = (ItemSlot) manager.GetComponent(avatar, ItemSlot.TypeId);
+                var inventory = (Inventory) manager.GetComponent(avatar, Inventory.TypeId);
 
                 // Clean out default equipment.
                 if (equipment.Item > 0)
@@ -557,7 +535,7 @@ namespace Space.Session
                     if (componentIdMap.ContainsKey(oldSlotId))
                     {
                         // Known component, so it has to be a slot on an item.
-                        var newSlot = (ItemSlot)manager.GetComponentById(componentIdMap[oldSlotId]);
+                        var newSlot = (ItemSlot) manager.GetComponentById(componentIdMap[oldSlotId]);
 
                         // Set the slot's content to the item's new id.
                         newSlot.SetItemUnchecked(newItemId);
@@ -623,21 +601,17 @@ namespace Space.Session
 
         #region Utility methods
 
-        /// <summary>
-        /// Get a cleaned up, full path to the file to save this profile in.
-        /// </summary>
+        /// <summary>Get a cleaned up, full path to the file to save this profile in.</summary>
         /// <returns>The path to this profile.</returns>
         private string GetFullProfilePath()
         {
             return Path.Combine(InvalidCharPattern.Replace(Settings.Instance.ProfileFolder, "_"), Name + ".sav");
         }
 
-        /// <summary>
-        /// Check if the header is correct.
-        /// </summary>
+        /// <summary>Check if the header is correct.</summary>
         /// <param name="header">The header.</param>
         /// <returns></returns>
-        private bool CheckHeader(byte[] header)
+        private static bool CheckHeader(byte[] header)
         {
             if (header == null || header.Length != Header.Length)
             {
@@ -654,10 +628,7 @@ namespace Space.Session
             return true;
         }
 
-        /// <summary>
-        /// Resets the profile to an uninitialized state with the default
-        /// player class.
-        /// </summary>
+        /// <summary>Resets the profile to an uninitialized state with the default player class.</summary>
         private void Reset()
         {
             PlayerClass = PlayerClassType.Default;

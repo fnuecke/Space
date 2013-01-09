@@ -6,84 +6,63 @@ using Engine.Util;
 namespace Engine.ComponentSystem.RPG.Components
 {
     /// <summary>
-    /// Computation types of module attributes. This is how they should be
-    /// computed when evaluating a specific attribute type (determined by its
-    /// actual class).
+    ///     Computation types of module attributes. This is how they should be computed when evaluating a specific
+    ///     attribute type (determined by its actual class).
     /// </summary>
     public enum AttributeComputationType
     {
-        /// <summary>
-        /// Additive operation. For reducing influences use a
-        /// negative value.
-        /// </summary>
+        /// <summary>Additive operation. For reducing influences use a negative value.</summary>
         Additive,
 
-        /// <summary>
-        /// Multiplicative operation. For reducing influences use
-        /// a value smaller than one.
-        /// </summary>
+        /// <summary>Multiplicative operation. For reducing influences use a value smaller than one.</summary>
         Multiplicative
     }
 
     /// <summary>
-    /// Base class for describing attribute values in the way this value should
-    /// computed in the overall attribute value.
+    ///     Base class for describing attribute values in the way this value should computed in the overall attribute
+    ///     value.
     /// </summary>
     /// <typeparam name="TAttribute">The enum of possible attributes.</typeparam>
-    [TypeConverter(typeof(ExpandableObjectConverter))]
+    [TypeConverter(typeof (ExpandableObjectConverter))]
     public sealed class AttributeModifier<TAttribute> : IPacketizable, ICopyable<AttributeModifier<TAttribute>>
     {
         #region Fields
 
-        /// <summary>
-        /// The actual type of this attribute, which tells the game how to
-        /// handle it.
-        /// </summary>
+        /// <summary>The actual type of this attribute, which tells the game how to handle it.</summary>
         public TAttribute Type;
 
-        /// <summary>
-        /// The actual value for this specific attribute.
-        /// </summary>
+        /// <summary>The actual value for this specific attribute.</summary>
         public float Value;
 
-        /// <summary>
-        /// The computation type of this attribute, i.e. how it should be used
-        /// in computation.
-        /// </summary>
+        /// <summary>The computation type of this attribute, i.e. how it should be used in computation.</summary>
         public AttributeComputationType ComputationType;
 
         #endregion
 
         #region Constructor
 
-        public AttributeModifier(TAttribute type, float value, AttributeComputationType computationType = AttributeComputationType.Additive)
+        public AttributeModifier(
+            TAttribute type, float value, AttributeComputationType computationType = AttributeComputationType.Additive)
         {
             Type = type;
             Value = value;
             ComputationType = computationType;
         }
 
-        public AttributeModifier()
-        {
-        }
+        public AttributeModifier() {}
 
         #endregion
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public AttributeModifier<TAttribute> NewInstance()
         {
-            return (AttributeModifier<TAttribute>)MemberwiseClone();
+            return (AttributeModifier<TAttribute>) MemberwiseClone();
         }
 
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
         public void CopyInto(AttributeModifier<TAttribute> into)
@@ -96,10 +75,10 @@ namespace Engine.ComponentSystem.RPG.Components
         #region ToString
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        ///     Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
+        ///     A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
         {

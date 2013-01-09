@@ -25,39 +25,32 @@ namespace Engine.Physics.Math
         /// <summary>Sine and cosine of the rotation.</summary>
         public float Sin, Cos;
 
-        /// <summary>Initializes a new instance of the <see cref="Rotation"/> struct.</summary>
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Rotation"/> struct.
+        /// </summary>
         /// <param name="angle">The angle.</param>
         public Rotation(float angle)
         {
-            Sin = (float)System.Math.Sin(angle);
-            Cos = (float)System.Math.Cos(angle);
+            Sin = (float) System.Math.Sin(angle);
+            Cos = (float) System.Math.Cos(angle);
         }
 
         /// <summary>Set using an angle in radians.</summary>
         /// <param name="angle">the angle to set to.</param>
         public void Set(float angle)
         {
-            Sin = (float)System.Math.Sin(angle);
-            Cos = (float)System.Math.Cos(angle);
-        }
-
-        /// <summary>Get the angle of the rotation in radians.</summary>
-        /// <returns>The rotation in radians.</returns>
-        public float GetAngle()
-        {
-            return (float)System.Math.Atan2(Sin, Cos);
+            Sin = (float) System.Math.Sin(angle);
+            Cos = (float) System.Math.Cos(angle);
         }
 
         #region Operators
 
         /// <summary>
-        /// Inverts the rotation. This may be used to apply an inverse rotation
-        /// to a vector or other rotation. I.e. -q * r is the inverse of q * r.
+        ///     Inverts the rotation. This may be used to apply an inverse rotation to a vector or other rotation. I.e. -q * r
+        ///     is the inverse of q * r.
         /// </summary>
         /// <param name="q">The rotation to invert.</param>
-        /// <returns>
-        /// The inverted rotation.
-        /// </returns>
+        /// <returns>The inverted rotation.</returns>
         public static Rotation operator -(Rotation q)
         {
             Rotation result;
@@ -66,9 +59,7 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>
-        /// Rotate a vector.
-        /// </summary>
+        /// <summary>Rotate a vector.</summary>
         /// <param name="q">The rotation to rotate the vector by.</param>
         /// <param name="v">The vector to rotate.</param>
         /// <returns>The rotated vector.</returns>
@@ -80,14 +71,10 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>
-        /// Multiply two rotations: q * r.
-        /// </summary>
+        /// <summary>Multiply two rotations: q * r.</summary>
         /// <param name="q">The first rotation.</param>
         /// <param name="r">The other rotation.</param>
-        /// <returns>
-        /// The combined rotations.
-        /// </returns>
+        /// <returns>The combined rotations.</returns>
         public static Rotation operator *(Rotation q, Rotation r)
         {
             // [qc -qs] * [rc -rs] = [qc*rc-qs*rs -qc*rs-qs*rc]
@@ -104,8 +91,8 @@ namespace Engine.Physics.Math
     };
 
     /// <summary>
-    /// A transform contains translation and rotation. It is used to represent
-    /// the position and orientation of rigid frames.
+    ///     A transform contains translation and rotation. It is used to represent the position and orientation of rigid
+    ///     frames.
     /// </summary>
     internal struct LocalTransform
     {
@@ -126,12 +113,9 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>
-        /// Transforms a local coordinate from another frame of reference back
-        /// to its original frame of reference.
-        /// </summary>
+        /// <summary>Transforms a local coordinate from another frame of reference back to its original frame of reference.</summary>
         /// <param name="v">The world coordinate to apply the inverse transform to.</param>
-        /// <returns>The result of the inverse transform (a local coordiante).</returns>
+        /// <returns>The result of the inverse transform (a local coordinate).</returns>
         public Vector2 FromOther(Vector2 v)
         {
             var px = v.X - Translation.X;
@@ -145,14 +129,14 @@ namespace Engine.Physics.Math
     }
 
     /// <summary>
-    /// A transform contains translation and rotation. It is used to represent
-    /// the position and orientation of rigid frames.
+    ///     A transform contains translation and rotation. It is used to represent the position and orientation of rigid
+    ///     frames.
     /// </summary>
     internal struct WorldTransform
     {
         static WorldTransform()
         {
-            Packetizable.AddValueTypeOverloads(typeof(PacketTransformExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (PacketTransformExtensions));
         }
 
         /// <summary>Gets the identity transform.</summary>
@@ -186,12 +170,12 @@ namespace Engine.Physics.Math
 
         /// <summary>Transforms a global coordinate to a local one.</summary>
         /// <param name="v">The world coordinate to apply the inverse transform to.</param>
-        /// <returns>The result of the inverse transform (a local coordiante).</returns>
+        /// <returns>The result of the inverse transform (a local coordinate).</returns>
         public Vector2 ToLocal(WorldPoint v)
         {
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var px = (float)(v.X - Translation.X);
-            var py = (float)(v.Y - Translation.Y);
+            var px = (float) (v.X - Translation.X);
+            var py = (float) (v.Y - Translation.Y);
 // ReSharper restore RedundantCast
 
             Vector2 result;
@@ -201,13 +185,11 @@ namespace Engine.Physics.Math
         }
 
         /// <summary>
-        /// Combines this transform with the specified world transform, resulting
-        /// in a transform that maps coordinates from tje ptjer transform's local
-        /// frame of reference to the one defined by this transform.
+        ///     Combines this transform with the specified world transform, resulting in a transform that maps coordinates
+        ///     from the other transform's local frame of reference to the one defined by this transform.
         /// </summary>
         /// <param name="xf">The other world transform.</param>
-        /// <returns>A transform mapping coordinates from the other frame
-        /// of reference to this one.</returns>
+        /// <returns>A transform mapping coordinates from the other frame of reference to this one.</returns>
         public LocalTransform MulT(WorldTransform xf)
         {
             // v2 = A.q' * (B.q * v1 + B.p - A.p)
@@ -215,7 +197,7 @@ namespace Engine.Physics.Math
             LocalTransform result;
             result.Rotation = -Rotation * xf.Rotation;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            result.Translation = -Rotation * (Vector2)(xf.Translation - Translation);
+            result.Translation = -Rotation * (Vector2) (xf.Translation - Translation);
 // ReSharper restore RedundantCast
             return result;
         }
@@ -266,8 +248,8 @@ namespace Engine.Physics.Math
         }
 
         /// <summary>
-        /// Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector.
-        /// This is more efficient than computing the inverse in one-shot cases.
+        ///     Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector. This is more efficient than computing the
+        ///     inverse in one-shot cases.
         /// </summary>
         public Vector2 Solve(Vector2 v)
         {
@@ -289,8 +271,8 @@ namespace Engine.Physics.Math
         }
 
         /// <summary>
-        /// Multiply a matrix times a vector. If a rotation matrix is provided,
-        /// then this transforms the vector from one frame to another.
+        ///     Multiply a matrix times a vector. If a rotation matrix is provided, then this transforms the vector from one
+        ///     frame to another.
         /// </summary>
         /// <param name="xf">The transformation matrix.</param>
         /// <param name="v">The vector to transform.</param>
@@ -310,8 +292,8 @@ namespace Engine.Physics.Math
         public Vector3 Column1, Column2, Column3;
 
         /// <summary>
-        /// Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector.
-        /// This is more efficient than computing the inverse in one-shot cases.
+        ///     Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector. This is more efficient than computing the
+        ///     inverse in one-shot cases.
         /// </summary>
         public Vector3 Solve33(Vector3 v)
         {
@@ -330,9 +312,8 @@ namespace Engine.Physics.Math
         }
 
         /// <summary>
-        /// Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector.
-        /// This is more efficient than computing the inverse in one-shot cases.
-        /// Solve only the upper 2-by-2 matrix equation.
+        ///     Solve <c>A * x = v</c>, where <paramref name="v"/> is a column vector. This is more efficient than computing the
+        ///     inverse in one-shot cases. Solve only the upper 2-by-2 matrix equation.
         /// </summary>
         public Vector2 Solve22(Vector2 v)
         {
@@ -353,8 +334,7 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>Get the inverse of this matrix as a 2-by-2.
-        /// Returns the zero matrix if singular.</summary>
+        /// <summary>Get the inverse of this matrix as a 2-by-2. Returns the zero matrix if singular.</summary>
         public void GetInverse22(out Matrix33 m)
         {
             var a = Column1.X;
@@ -369,13 +349,18 @@ namespace Engine.Physics.Math
                 det = 1.0f / det;
             }
 
-            m.Column1.X = det * d; m.Column2.X = -det * b; m.Column1.Z = 0.0f;
-            m.Column1.Y = -det * c; m.Column2.Y = det * a; m.Column2.Z = 0.0f;
-            m.Column3.X = 0.0f; m.Column3.Y = 0.0f; m.Column3.Z = 0.0f;
+            m.Column1.X = det * d;
+            m.Column2.X = -det * b;
+            m.Column1.Z = 0.0f;
+            m.Column1.Y = -det * c;
+            m.Column2.Y = det * a;
+            m.Column2.Z = 0.0f;
+            m.Column3.X = 0.0f;
+            m.Column3.Y = 0.0f;
+            m.Column3.Z = 0.0f;
         }
 
-        /// <summary>Get the symmetric inverse of this matrix as a 3-by-3.
-        /// Returns the zero matrix if singular.</summary>
+        /// <summary>Get the symmetric inverse of this matrix as a 3-by-3. Returns the zero matrix if singular.</summary>
         public void GetSymInverse33(out Matrix33 m)
         {
             var det = Vector3.Dot(Column1, Vector3.Cross(Column2, Column3));
@@ -410,7 +395,7 @@ namespace Engine.Physics.Math
         /// <param name="m">The matrix.</param>
         /// <param name="v">The vector.</param>
         /// <returns>The result of the multiplication.</returns>
-        public static Vector3 operator*(Matrix33 m, Vector3 v)
+        public static Vector3 operator *(Matrix33 m, Vector3 v)
         {
             return v.X * m.Column1 + v.Y * m.Column2 + v.Z * m.Column3;
         }
@@ -419,10 +404,11 @@ namespace Engine.Physics.Math
         /// <param name="m">The matrix.</param>
         /// <param name="v">The vector.</param>
         /// <returns>The result of the multiplication.</returns>
-        public static Vector2 operator*(Matrix33 m, Vector2 v)
+        public static Vector2 operator *(Matrix33 m, Vector2 v)
         {
-            return new Vector2(m.Column1.X * v.X + m.Column2.X * v.Y,
-                               m.Column1.Y * v.X + m.Column2.Y * v.Y);
+            return new Vector2(
+                m.Column1.X * v.X + m.Column2.X * v.Y,
+                m.Column1.Y * v.X + m.Column2.Y * v.Y);
         }
     }
 
@@ -442,8 +428,7 @@ namespace Engine.Physics.Math
         /// <param name="packet">The packet.</param>
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static IReadablePacket Read(this IReadablePacket packet, out WorldTransform data)
         {
             data = packet.ReadWorldTransform();
@@ -453,8 +438,7 @@ namespace Engine.Physics.Math
         /// <summary>Reads a world transform value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         public static WorldTransform ReadWorldTransform(this IReadablePacket packet)
         {
             WorldTransform result;
@@ -479,8 +463,7 @@ namespace Engine.Physics.Math
         /// <summary>Reads a rotation value.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
+        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
         private static Rotation ReadRotation(this IReadablePacket packet)
         {
             Rotation result;

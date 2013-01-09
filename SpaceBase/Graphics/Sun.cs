@@ -6,44 +6,33 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.Graphics
 {
-    /// <summary>
-    /// Utility class for rendering suns.
-    /// </summary>
+    /// <summary>Utility class for rendering suns.</summary>
     public sealed class Sun : AbstractShape
     {
         #region Properties
 
-        /// <summary>
-        /// The rotational direction of the sun's surface.
-        /// </summary>
+        /// <summary>The rotational direction of the sun's surface.</summary>
         public Vector2 SurfaceRotation
         {
             get { return _surfaceRotation; }
             set { _surfaceRotation = value; }
         }
 
-        /// <summary>
-        /// The rotational direction of the sun's primary turbulence layer.
-        /// </summary>
+        /// <summary>The rotational direction of the sun's primary turbulence layer.</summary>
         public Vector2 PrimaryTurbulenceRotation
         {
             get { return _turbulenceOneRotation; }
             set { _turbulenceOneRotation = value; }
         }
 
-        /// <summary>
-        /// The rotational direction of the sun's secondary turbulence layer.
-        /// </summary>
+        /// <summary>The rotational direction of the sun's secondary turbulence layer.</summary>
         public Vector2 SecondaryTurbulenceRotation
         {
             get { return _turbulenceTwoRotation; }
             set { _turbulenceTwoRotation = value; }
         }
 
-        /// <summary>
-        /// The current game time, which is used to determine the current
-        /// rotation of the sun.
-        /// </summary>
+        /// <summary>The current game time, which is used to determine the current rotation of the sun.</summary>
         public float Time
         {
             get { return _time; }
@@ -54,74 +43,45 @@ namespace Space.Graphics
 
         #region Fields
 
-        /// <summary>
-        /// Sprite batch used for rendering.
-        /// </summary>
+        /// <summary>Sprite batch used for rendering.</summary>
         private SpriteBatch _spriteBatch;
 
-        /// <summary>
-        /// The sun base texture.
-        /// </summary>
+        /// <summary>The sun base texture.</summary>
         private Texture2D _surface;
 
-        /// <summary>
-        /// The first turbulence texture.
-        /// </summary>
+        /// <summary>The first turbulence texture.</summary>
         private Texture2D _turbulenceOne;
 
-        /// <summary>
-        /// The second turbulence texture.
-        /// </summary>
+        /// <summary>The second turbulence texture.</summary>
         private Texture2D _turbulenceTwo;
 
-        /// <summary>
-        /// The color gradient to use for turbulence.
-        /// </summary>
         //private Texture2D _turbulenceColor;
-
-        /// <summary>
-        /// Gaussian blur shader used on the turbulence.
-        /// </summary>
+        /// <summary>The color gradient to use for turbulence.</summary>
+        /// <summary>Gaussian blur shader used on the turbulence.</summary>
         private Effect _gaussianBlur;
 
-        /// <summary>
-        /// Shader used to put mipmaps of turbulence back together.
-        /// </summary>
+        /// <summary>Shader used to put mipmaps of turbulence back together.</summary>
         private Effect _additiveBlend;
 
-        /// <summary>
-        /// The base image of the sun, rendered as a sphere.
-        /// </summary>
+        /// <summary>The base image of the sun, rendered as a sphere.</summary>
         private RenderTarget2D _surfaceSphere;
 
-        /// <summary>
-        /// The base turbulence.
-        /// </summary>
+        /// <summary>The base turbulence.</summary>
         private RenderTarget2D _turbulenceSphere;
 
-        /// <summary>
-        /// Lower resolution versions of the turbulence.
-        /// </summary>
+        /// <summary>Lower resolution versions of the turbulence.</summary>
         private readonly RenderTarget2D[] _mipmaps = new RenderTarget2D[7];
 
-        /// <summary>
-        /// Rotation direction (and speed) of the base image.
-        /// </summary>
+        /// <summary>Rotation direction (and speed) of the base image.</summary>
         private Vector2 _surfaceRotation;
 
-        /// <summary>
-        /// Rotation direction (and speed) of the first turbulence.
-        /// </summary>
+        /// <summary>Rotation direction (and speed) of the first turbulence.</summary>
         private Vector2 _turbulenceOneRotation;
 
-        /// <summary>
-        /// Rotation direction (and speed) of the second turbulence.
-        /// </summary>
+        /// <summary>Rotation direction (and speed) of the second turbulence.</summary>
         private Vector2 _turbulenceTwoRotation;
 
-        /// <summary>
-        /// The current game time to base our rotation on.
-        /// </summary>
+        /// <summary>The current game time to base our rotation on.</summary>
         private float _time;
 
         #endregion
@@ -129,7 +89,7 @@ namespace Space.Graphics
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Sun"/> class.
+        ///     Initializes a new instance of the <see cref="Sun"/> class.
         /// </summary>
         /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics device to render to.</param>
@@ -217,12 +177,24 @@ namespace Space.Graphics
             var height = pp.BackBufferHeight;
 
             // Create a target for rendering the main sun texture.
-            _surfaceSphere = new RenderTarget2D(Graphics.GraphicsDevice, width, height, false, pp.BackBufferFormat,
-                                                DepthFormat.None);
+            _surfaceSphere = new RenderTarget2D(
+                Graphics.GraphicsDevice,
+                width,
+                height,
+                false,
+                pp.BackBufferFormat,
+                DepthFormat.None);
 
             // One for the turbulence.
-            _turbulenceSphere = new RenderTarget2D(Graphics.GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
-                                                   DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+            _turbulenceSphere = new RenderTarget2D(
+                Graphics.GraphicsDevice,
+                width,
+                height,
+                false,
+                SurfaceFormat.HalfVector4,
+                DepthFormat.None,
+                0,
+                RenderTargetUsage.PreserveContents);
 
             // And one for the mipmaps of the whole thing.
             for (var i = 0; i < _mipmaps.Length; i++)
@@ -237,8 +209,15 @@ namespace Space.Graphics
                 {
                     height = 1;
                 }
-                _mipmaps[i] = new RenderTarget2D(Graphics.GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
-                                                 DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+                _mipmaps[i] = new RenderTarget2D(
+                    Graphics.GraphicsDevice,
+                    width,
+                    height,
+                    false,
+                    SurfaceFormat.HalfVector4,
+                    DepthFormat.None,
+                    0,
+                    RenderTargetUsage.PreserveContents);
             }
         }
 
@@ -246,9 +225,7 @@ namespace Space.Graphics
 
         #region Draw
 
-        /// <summary>
-        /// Draw the shape.
-        /// </summary>
+        /// <summary>Draw the shape.</summary>
         public override void Draw()
         {
             // Update our paint canvas if necessary.
@@ -274,7 +251,8 @@ namespace Space.Graphics
 
             // And draw it.
             Effect.CurrentTechnique.Passes[0].Apply();
-            device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
+            device.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
 
             // Then get the turbulence.
             device.SetRenderTarget(_turbulenceSphere);
@@ -282,7 +260,8 @@ namespace Space.Graphics
 
             // And draw that, too.
             Effect.CurrentTechnique.Passes[1].Apply();
-            device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
+            device.DrawUserIndexedPrimitives(
+                PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
 
             // Create the down-sampled versions.
             device.SetRenderTarget(_mipmaps[0]);

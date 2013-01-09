@@ -9,24 +9,19 @@ using Engine.Serialization;
 namespace Engine.ComponentSystem.RPG.Components
 {
     /// <summary>
-    /// Represents a set of base attribute values, and modified values, for example
-    /// based on equipped items and active status effects.
+    ///     Represents a set of base attribute values, and modified values, for example based on equipped items and active
+    ///     status effects.
     /// </summary>
-    /// <typeparam name="TAttribute">The enum that holds the possible types of
-    /// attributes.</typeparam>
+    /// <typeparam name="TAttribute">The enum that holds the possible types of attributes.</typeparam>
     public sealed class Attributes<TAttribute> : Component
         where TAttribute : struct
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -36,17 +31,13 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Properties
 
-        /// <summary>
-        /// The number of base attributes of this character.
-        /// </summary>
+        /// <summary>The number of base attributes of this character.</summary>
         public int BaseAttributeCount
         {
             get { return _baseAttributes.Count; }
         }
 
-        /// <summary>
-        /// The types of base attributes of this character.
-        /// </summary>
+        /// <summary>The types of base attributes of this character.</summary>
         public IEnumerable<TAttribute> BaseAttributeTypes
         {
             get { return _baseAttributes.Keys; }
@@ -56,15 +47,13 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Fields
 
-        /// <summary>
-        /// Base values for attributes.
-        /// </summary>
+        /// <summary>Base values for attributes.</summary>
         [PacketizerIgnore]
         private readonly Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
-        /// Modified values, based on equipment and status effects. This stores
-        /// the absolute value as well as the multiplier for the value.
+        ///     Modified values, based on equipment and status effects. This stores the absolute value as well as the
+        ///     multiplier for the value.
         /// </summary>
         [PacketizerIgnore]
         private readonly Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
@@ -73,16 +62,12 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Single allocation
 
-        /// <summary>
-        /// Reusable list for modifier computation.
-        /// </summary>
+        /// <summary>Reusable list for modifier computation.</summary>
         [PacketizerIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList =
             new List<AttributeModifier<TAttribute>>();
 
-        /// <summary>
-        /// Reusable list for modifier computation.
-        /// </summary>
+        /// <summary>Reusable list for modifier computation.</summary>
         [PacketizerIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList =
             new List<AttributeModifier<TAttribute>>();
@@ -91,15 +76,13 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var attributes = (Attributes<TAttribute>)other;
+            var attributes = (Attributes<TAttribute>) other;
             foreach (var attribute in attributes._baseAttributes)
             {
                 _baseAttributes.Add(attribute.Key, attribute.Value);
@@ -112,10 +95,7 @@ namespace Engine.ComponentSystem.RPG.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -128,9 +108,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Accessors
 
-        /// <summary>
-        /// Set the base value of the specified attribute.
-        /// </summary>
+        /// <summary>Set the base value of the specified attribute.</summary>
         /// <param name="type">The attribute type.</param>
         /// <param name="value">The base value.</param>
         public void SetBaseValue(TAttribute type, float value)
@@ -140,9 +118,7 @@ namespace Engine.ComponentSystem.RPG.Components
             RecomputeAttributes();
         }
 
-        /// <summary>
-        /// Gets the base value for the specified attribute type.
-        /// </summary>
+        /// <summary>Gets the base value for the specified attribute type.</summary>
         /// <param name="type">The attribute type.</param>
         /// <returns>The base value for that type.</returns>
         public float GetBaseValue(TAttribute type)
@@ -155,10 +131,8 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// Gets the modified value for the specified attribute type.
-        /// Note that the specified base value will be added to the
-        /// base value stored in this attribute collection before the
-        /// multiplier is applied.
+        ///     Gets the modified value for the specified attribute type. Note that the specified base value will be added to
+        ///     the base value stored in this attribute collection before the multiplier is applied.
         /// </summary>
         /// <param name="type">The attribute type.</param>
         /// <param name="baseValue">The base value to use.</param>
@@ -177,9 +151,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Logic
 
-        /// <summary>
-        /// Recomputes the modified values of all attributes.
-        /// </summary>
+        /// <summary>Recomputes the modified values of all attributes.</summary>
         public void RecomputeAttributes()
         {
             // Ignore while disabled.
@@ -195,20 +167,20 @@ namespace Engine.ComponentSystem.RPG.Components
             Array.Sort(baseAttributeTypes);
 
             // Push base values as additive modifiers.
-            for (var i = 0; i < baseAttributeTypes.Length; i++)
+            foreach (var attribute in baseAttributeTypes)
             {
-                _reusableAdditiveList.Add(new AttributeModifier<TAttribute>(baseAttributeTypes[i], _baseAttributes[baseAttributeTypes[i]]));
+                _reusableAdditiveList.Add(new AttributeModifier<TAttribute>(attribute, _baseAttributes[attribute]));
             }
 
             // Parse all items.
-            var equipment = ((ItemSlot)Manager.GetComponent(Entity, ItemSlot.TypeId));
+            var equipment = ((ItemSlot) Manager.GetComponent(Entity, ItemSlot.TypeId));
             if (equipment != null)
             {
                 foreach (var item in equipment.AllItems)
                 {
                     foreach (var component in Manager.GetComponents(item, Attribute<TAttribute>.TypeId))
                     {
-                        var modifier = ((Attribute<TAttribute>)component).Value;
+                        var modifier = ((Attribute<TAttribute>) component).Value;
                         switch (modifier.ComputationType)
                         {
                             case AttributeComputationType.Additive:
@@ -226,7 +198,7 @@ namespace Engine.ComponentSystem.RPG.Components
             // Parse all status effects.
             foreach (var component in Manager.GetComponents(Entity, AttributeStatusEffect<TAttribute>.TypeId))
             {
-                foreach (var modifier in ((AttributeStatusEffect<TAttribute>)component).Modifiers)
+                foreach (var modifier in ((AttributeStatusEffect<TAttribute>) component).Modifiers)
                 {
                     switch (modifier.ComputationType)
                     {
@@ -276,13 +248,9 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Serialization
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
@@ -290,10 +258,7 @@ namespace Engine.ComponentSystem.RPG.Components
             return PacketizeLocal(packet);
         }
 
-        /// <summary>
-        /// Special purpose packetize method, only writing own data, not that
-        /// of the base class. Used for saving.
-        /// </summary>
+        /// <summary>Special purpose packetize method, only writing own data, not that of the base class. Used for saving.</summary>
         /// <param name="packet">The packet to write to.</param>
         /// <returns>The written to packet.</returns>
         public IWritablePacket PacketizeLocal(IWritablePacket packet)
@@ -301,13 +266,13 @@ namespace Engine.ComponentSystem.RPG.Components
             packet.Write(_baseAttributes.Count);
             foreach (var attribute in _baseAttributes)
             {
-                packet.Write(Enum.GetName(typeof(TAttribute), attribute.Key));
+                packet.Write(Enum.GetName(typeof (TAttribute), attribute.Key));
                 packet.Write(attribute.Value);
             }
             packet.Write(_modifiedAttributes.Count);
             foreach (var attribute in _modifiedAttributes)
             {
-                packet.Write(Enum.GetName(typeof(TAttribute), attribute.Key));
+                packet.Write(Enum.GetName(typeof (TAttribute), attribute.Key));
                 packet.Write(attribute.Value[0]);
                 packet.Write(attribute.Value[1]);
             }
@@ -316,35 +281,34 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// after automatic depacketization has been performed.
+        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
+        ///     performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(IReadablePacket packet)
+        public override void Depacketize(IReadablePacket packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             DepacketizeLocal(packet);
         }
 
         /// <summary>
-        /// Corresponds to <c>PacketizeLocal</c>, only reads own data and leaves
-        /// the base class alone.
+        ///     Corresponds to <c>PacketizeLocal</c>, only reads own data and leaves the base class alone.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         public void DepacketizeLocal(IReadablePacket packet)
         {
-            var numBaseAttributes = packet.ReadInt32();
-            for (var i = 0; i < numBaseAttributes; i++)
+            var baseAttributeCount = packet.ReadInt32();
+            for (var i = 0; i < baseAttributeCount; i++)
             {
-                var key = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
+                var key = (TAttribute) Enum.Parse(typeof (TAttribute), packet.ReadString());
                 var value = packet.ReadSingle();
                 _baseAttributes[key] = value;
             }
-            var numModifiedAttributes = packet.ReadInt32();
-            for (var i = 0; i < numModifiedAttributes; i++)
+            var modifiedAttributeCount = packet.ReadInt32();
+            for (var i = 0; i < modifiedAttributeCount; i++)
             {
-                var key = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
+                var key = (TAttribute) Enum.Parse(typeof (TAttribute), packet.ReadString());
                 var values = new float[2];
                 values[0] = packet.ReadSingle();
                 values[1] = packet.ReadSingle();
@@ -363,14 +327,21 @@ namespace Engine.ComponentSystem.RPG.Components
             w.AppendIndent(indent).Write("BaseAttributes = {");
             foreach (var attribute in _baseAttributes)
             {
-                w.AppendIndent(indent + 1).Write(Enum.GetName(typeof(TAttribute), attribute.Key)); w.Write(" = "); w.Write(attribute.Value);
+                w.AppendIndent(indent + 1).Write(Enum.GetName(typeof (TAttribute), attribute.Key));
+                w.Write(" = ");
+                w.Write(attribute.Value);
             }
             w.AppendIndent(indent).Write("}");
 
             w.AppendIndent(indent).Write("ModifiedAttributes = {");
             foreach (var attribute in _modifiedAttributes)
             {
-                w.AppendIndent(indent + 1).Write(Enum.GetName(typeof(TAttribute), attribute.Key)); w.Write(" = {Additive:"); w.Write(attribute.Value[0]); w.Write(" Multiplicative:"); w.Write(attribute.Value[1]); w.Write("}");
+                w.AppendIndent(indent + 1).Write(Enum.GetName(typeof (TAttribute), attribute.Key));
+                w.Write(" = {Additive:");
+                w.Write(attribute.Value[0]);
+                w.Write(" Multiplicative:");
+                w.Write(attribute.Value[1]);
+                w.Write("}");
             }
             w.AppendIndent(indent).Write("}");
 

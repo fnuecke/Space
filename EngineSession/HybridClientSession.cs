@@ -19,40 +19,28 @@ namespace Engine.Session
 
         #region Events
 
-        /// <summary>
-        /// Called when we receive information about an open game.
-        /// Only possibly called after Search() was called.
-        /// </summary>
+        /// <summary>Called when we receive information about an open game. Only possibly called after Search() was called.</summary>
         public event EventHandler<GameInfoReceivedEventArgs> GameInfoReceived;
 
         /// <summary>
-        /// Called when we got a response to our <c>Join</c> call, either
-        /// successfully or not.
+        ///     Called when we got a response to our <c>Join</c> call, either successfully or not.
         /// </summary>
         public event EventHandler<JoinResponseEventArgs> JoinResponse;
 
-        /// <summary>
-        /// Connection to the server shutting down.
-        /// </summary>
+        /// <summary>Connection to the server shutting down.</summary>
         public event EventHandler<EventArgs> Disconnecting;
 
-        /// <summary>
-        /// Connection to the server was lost.
-        /// </summary>
+        /// <summary>Connection to the server was lost.</summary>
         public event EventHandler<EventArgs> Disconnected;
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Current state of this session.
-        /// </summary>
+        /// <summary>Current state of this session.</summary>
         public ClientState ConnectionState { get; private set; }
 
-        /// <summary>
-        /// Reference to the data struct with info about the local player.
-        /// </summary>
+        /// <summary>Reference to the data struct with info about the local player.</summary>
         public Player LocalPlayer
         {
             get { return GetPlayer(_localPlayerNumber); }
@@ -62,34 +50,22 @@ namespace Engine.Session
 
         #region Fields
 
-        /// <summary>
-        /// The connection to the server, used to (reliably) receive data.
-        /// </summary>
+        /// <summary>The connection to the server, used to (reliably) receive data.</summary>
         private TcpClient _tcp;
 
-        /// <summary>
-        /// The packet stream used to send packets to and receive packets from the server.
-        /// </summary>
+        /// <summary>The packet stream used to send packets to and receive packets from the server.</summary>
         private IPacketStream _stream;
 
-        /// <summary>
-        /// Number of the local player.
-        /// </summary>
+        /// <summary>Number of the local player.</summary>
         private int _localPlayerNumber;
 
-        /// <summary>
-        /// The name of the local player (remembered from join for actual join request).
-        /// </summary>
+        /// <summary>The name of the local player (remembered from join for actual join request).</summary>
         private string _playerName;
 
-        /// <summary>
-        /// Player data (as for name, remembered for actual request).
-        /// </summary>
+        /// <summary>Player data (as for name, remembered for actual request).</summary>
         private TPlayerData _playerData;
 
-        /// <summary>
-        /// Reset was requested from async connection thread.
-        /// </summary>
+        /// <summary>Reset was requested from async connection thread.</summary>
         private bool _resetRequested;
 
         #endregion
@@ -155,13 +131,14 @@ namespace Engine.Session
                                 {
                                     break;
                                 }
-                                var type = (SessionMessage)packet.ReadByte();
+                                var type = (SessionMessage) packet.ReadByte();
 
                                 // Statistics.
-                                Info.PutIncomingTraffic(packet.Length,
-                                                        type == SessionMessage.Data
-                                                            ? TrafficTypes.Data
-                                                            : TrafficTypes.Protocol);
+                                Info.PutIncomingTraffic(
+                                    packet.Length,
+                                    type == SessionMessage.Data
+                                        ? TrafficTypes.Data
+                                        : TrafficTypes.Protocol);
                                 Info.PutIncomingPacketSize(packet.Length);
 
                                 using (var data = packet.ReadPacket())
@@ -193,23 +170,19 @@ namespace Engine.Session
 
         #region Public API
 
-        /// <summary>
-        /// Send a ping into the local network, looking for open games.
-        /// </summary>
+        /// <summary>Send a ping into the local network, looking for open games.</summary>
         public void Search()
         {
             // Send as a multicast / broadcast.
             Logger.Trace("Sending ping to search for open games.");
             using (var packet = new Packet())
             {
-                packet.Write((byte)SessionMessage.GameInfoRequest);
+                packet.Write((byte) SessionMessage.GameInfoRequest);
                 Udp.Send(packet, DefaultMulticastEndpoint);
             }
         }
 
-        /// <summary>
-        /// Join a game on the given host.
-        /// </summary>
+        /// <summary>Join a game on the given host.</summary>
         /// <param name="remote">the remote host that runs the session.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="playerData">additional data to be associated with our player.</param>
@@ -221,7 +194,7 @@ namespace Engine.Session
             }
             Logger.Debug("Begin connecting to host at '{0}'.", remote);
             _playerName = playerName;
-            _playerData = (TPlayerData)playerData;
+            _playerData = (TPlayerData) playerData;
             ConnectionState = ClientState.Connecting;
             _tcp = new TcpClient {NoDelay = true};
 #if DEBUG
@@ -232,9 +205,7 @@ namespace Engine.Session
             _tcp.BeginConnect(remote.Address, remote.Port, HandleConnected, _tcp);
         }
 
-        /// <summary>
-        /// Join a local game.
-        /// </summary>
+        /// <summary>Join a local game.</summary>
         /// <param name="server">the local server to join.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="playerData">additional data to be associated with our player.</param>
@@ -250,11 +221,11 @@ namespace Engine.Session
             }
             Logger.Debug("Begin connecting to local server.");
             _playerName = playerName;
-            _playerData = (TPlayerData)playerData;
+            _playerData = (TPlayerData) playerData;
             ConnectionState = ClientState.Connecting;
 
             // Check if the server is already full.
-            if (server.NumPlayers >= server.MaxPlayers)
+            if (server.PlayerCount >= server.MaxPlayers)
             {
                 Logger.Debug("Join failed, server already full.");
                 Reset();
@@ -270,31 +241,31 @@ namespace Engine.Session
             // The server gets one in the other direction (see below).
             _stream = new SlidingPacketStream(toClient, toServer);
             using (var packet = new Packet())
-            using (var packetInner = new Packet())
             {
-                packetInner.
-                    Write(_playerName).
-                    Write(_playerData);
-                packet.
-                    Write((byte)SessionMessage.JoinRequest).
-                    Write((IWritablePacket)packetInner);
-                var written = _stream.Write(packet);
+                using (var packetInner = new Packet())
+                {
+                    packetInner.
+                        Write(_playerName).
+                        Write(_playerData);
+                    packet.
+                        Write((byte) SessionMessage.JoinRequest).
+                        Write((IWritablePacket) packetInner);
+                    var written = _stream.Write(packet);
 
-                // Statistics.
-                Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
-                Info.PutOutgoingPacketSize(written);
-                Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                    // Statistics.
+                    Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                    Info.PutOutgoingPacketSize(written);
+                    Info.PutOutgoingPacketCompression((packet.Length / (float) written) - 1f);
+                }
             }
 
             // Let's try this. This can throw if the server is already
             // full, but that shouldn't happen, because we checked above.
-            ((HybridServerSession<TPlayerData>)server).
+            ((HybridServerSession<TPlayerData>) server).
                 Add(new SlidingPacketStream(toServer, toClient));
         }
 
-        /// <summary>
-        /// Leave the session.
-        /// </summary>
+        /// <summary>Leave the session.</summary>
         public void Leave()
         {
             if (ConnectionState == ClientState.Unconnected)
@@ -312,9 +283,7 @@ namespace Engine.Session
 
         #region Sending
 
-        /// <summary>
-        /// Sends a message of the specified type, with the specified data.
-        /// </summary>
+        /// <summary>Sends a message of the specified type, with the specified data.</summary>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
         protected override void Send(SessionMessage type, IWritablePacket packet = null)
@@ -327,17 +296,19 @@ namespace Engine.Session
             {
                 using (var wrapper = new Packet())
                 {
-                    wrapper.Write((byte)type).Write(packet);
+                    wrapper.Write((byte) type).Write(packet);
                     var written = _stream.Write(wrapper);
 
                     // Statistics.
-                    Info.PutOutgoingTraffic(written, type == SessionMessage.Data
-                                                         ? TrafficTypes.Data
-                                                         : TrafficTypes.Protocol);
+                    Info.PutOutgoingTraffic(
+                        written,
+                        type == SessionMessage.Data
+                            ? TrafficTypes.Data
+                            : TrafficTypes.Protocol);
                     Info.PutOutgoingPacketSize(written);
                     if (packet != null)
                     {
-                        Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                        Info.PutOutgoingPacketCompression((packet.Length / (float) written) - 1f);
                     }
                 }
             }
@@ -352,9 +323,7 @@ namespace Engine.Session
 
         #region Event Handling
 
-        /// <summary>
-        /// Connected successfully to the server, send login data.
-        /// </summary>
+        /// <summary>Connected successfully to the server, send login data.</summary>
         private void HandleConnected(IAsyncResult result)
         {
             lock (this)
@@ -367,22 +336,25 @@ namespace Engine.Session
                 {
                     Logger.Debug("Connected to host, sending actual join request.");
                     _tcp.EndConnect(result);
-                    _stream = new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
+                    _stream =
+                        new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
                     using (var packet = new Packet())
-                    using (var packetInner = new Packet())
                     {
-                        packetInner.
-                            Write(_playerName).
-                            Write(_playerData);
-                        packet.
-                            Write((byte)SessionMessage.JoinRequest).
-                            Write((IWritablePacket)packetInner);
-                        var written = _stream.Write(packet);
+                        using (var packetInner = new Packet())
+                        {
+                            packetInner.
+                                Write(_playerName).
+                                Write(_playerData);
+                            packet.
+                                Write((byte) SessionMessage.JoinRequest).
+                                Write((IWritablePacket) packetInner);
+                            var written = _stream.Write(packet);
 
-                        // Statistics.
-                        Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
-                        Info.PutOutgoingPacketSize(written);
-                        Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                            // Statistics.
+                            Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                            Info.PutOutgoingPacketSize(written);
+                            Info.PutOutgoingPacketCompression((packet.Length / (float) written) - 1f);
+                        }
                     }
                 }
                 catch (SocketException ex)
@@ -394,9 +366,7 @@ namespace Engine.Session
             }
         }
 
-        /// <summary>
-        /// Received some data from a client, let's see what we got.
-        /// </summary>
+        /// <summary>Received some data from a client, let's see what we got.</summary>
         protected override void HandleUdpData(object sender, ProtocolDataEventArgs e)
         {
             // Get the message type.
@@ -405,7 +375,7 @@ namespace Engine.Session
                 Logger.Warn("Received invalid packet, no SessionMessage type.");
                 return;
             }
-            var type = (SessionMessage)e.Data.ReadByte();
+            var type = (SessionMessage) e.Data.ReadByte();
 
             // Get additional data.
             using (var packet = e.Data.ReadPacket())
@@ -429,18 +399,25 @@ namespace Engine.Session
                                     var maxPlayers = packet.ReadInt32();
 
                                     // Get number of current players.
-                                    var numPlayers = packet.ReadInt32();
+                                    var playerCount = packet.ReadInt32();
 
                                     // Get additional data.
                                     using (var customData = packet.ReadPacket())
                                     {
                                         Logger.Trace(
                                             "Got game info from host '{0}': {1}/{2} players, data of length {3}.",
-                                            e.RemoteEndPoint, numPlayers, maxPlayers, customData.Length);
+                                            e.RemoteEndPoint,
+                                            playerCount,
+                                            maxPlayers,
+                                            customData.Length);
 
                                         // Propagate to local program.
-                                        OnGameInfoReceived(new GameInfoReceivedEventArgs(e.RemoteEndPoint, numPlayers,
-                                                                                         maxPlayers, customData));
+                                        OnGameInfoReceived(
+                                            new GameInfoReceivedEventArgs(
+                                                e.RemoteEndPoint,
+                                                playerCount,
+                                                maxPlayers,
+                                                customData));
                                     }
                                 }
                                 catch (PacketException ex)
@@ -458,8 +435,9 @@ namespace Engine.Session
                         {
                             try
                             {
-                                OnData(new ClientDataEventArgs(
-                                           packet, _tcp != null && Equals(e.RemoteEndPoint, _tcp.Client.RemoteEndPoint)));
+                                OnData(
+                                    new ClientDataEventArgs(
+                                        packet, _tcp != null && Equals(e.RemoteEndPoint, _tcp.Client.RemoteEndPoint)));
                             }
                             catch (PacketException ex)
                             {
@@ -476,9 +454,7 @@ namespace Engine.Session
             }
         }
 
-        /// <summary>
-        /// Got some data via our TCP connection, so it's from the server.
-        /// </summary>
+        /// <summary>Got some data via our TCP connection, so it's from the server.</summary>
         private void HandleTcpData(SessionMessage type, IReadablePacket packet)
         {
             switch (type)
@@ -491,13 +467,13 @@ namespace Engine.Session
                         _localPlayerNumber = packet.ReadInt32();
 
                         // Get info about other players in the session.
-                        NumPlayers = packet.ReadInt32();
+                        PlayerCount = packet.ReadInt32();
 
                         // Maximum number of players in the session?
                         MaxPlayers = packet.ReadInt32();
 
                         // Sanity checks.
-                        if (_localPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers ||
+                        if (_localPlayerNumber < 0 || PlayerCount < 0 || MaxPlayers < 0 || MaxPlayers < PlayerCount ||
                             _localPlayerNumber >= MaxPlayers)
                         {
                             throw new PacketException("Inconsistent session info.");
@@ -510,7 +486,7 @@ namespace Engine.Session
                         using (var joinData = packet.ReadPacket())
                         {
                             // Get info on players already in the session, including us.
-                            for (var i = 0; i < NumPlayers; i++)
+                            for (var i = 0; i < PlayerCount; i++)
                             {
                                 // Get player number.
                                 var playerNumber = packet.ReadInt32();
@@ -536,8 +512,9 @@ namespace Engine.Session
 
                             if (_tcp != null)
                             {
-                                Logger.Debug("Successfully joined game at '{0}'.",
-                                             (IPEndPoint)_tcp.Client.RemoteEndPoint);
+                                Logger.Debug(
+                                    "Successfully joined game at '{0}'.",
+                                    (IPEndPoint) _tcp.Client.RemoteEndPoint);
                             }
                             else
                             {
@@ -636,9 +613,7 @@ namespace Engine.Session
 
         #region Utility methods
 
-        /// <summary>
-        /// Resets the connection to its unconnected, initial state.
-        /// </summary>
+        /// <summary>Resets the connection to its unconnected, initial state.</summary>
         private void Reset()
         {
             _resetRequested = false;
@@ -653,7 +628,7 @@ namespace Engine.Session
 
                     Players = null;
                     _localPlayerNumber = -1;
-                    NumPlayers = 0;
+                    PlayerCount = 0;
                     MaxPlayers = 0;
 
                     if (_stream != null)

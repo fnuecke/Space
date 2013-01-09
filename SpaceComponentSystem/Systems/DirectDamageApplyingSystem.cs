@@ -8,24 +8,22 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// This system is used to apply 'direct' damage, i.e. damage that is applied once for
-    /// its full amount. This covers all possible damage types.
+    ///     This system is used to apply 'direct' damage, i.e. damage that is applied once for its full amount. This
+    ///     covers all possible damage types.
     /// </summary>
     public sealed class DirectDamageApplyingSystem : AbstractDamageApplyingSystem
     {
         private static readonly List<Tuple<AttributeType, AttributeType, DamageType>> DirectDamages =
             new List<Tuple<AttributeType, AttributeType, DamageType>>
-        {
-            Tuple.Create(AttributeType.AttackPhysicalMinDamage, AttributeType.AttackPhysicalMaxDamage, DamageType.Physical),
-            Tuple.Create(AttributeType.AttackFireMinDamage, AttributeType.AttackFireMaxDamage, DamageType.Fire),
-            Tuple.Create(AttributeType.AttackIceMinDamage, AttributeType.AttackIceMaxDamage, DamageType.Ice),
-            Tuple.Create(AttributeType.AttackAcidMinDamage, AttributeType.AttackAcidMaxDamage, DamageType.Acid),
-            Tuple.Create(AttributeType.AttackElectricMinDamage, AttributeType.AttackElectricMaxDamage, DamageType.Electric)
-        };
+            {
+                Tuple.Create(AttributeType.AttackPhysicalMinDamage, AttributeType.AttackPhysicalMaxDamage, DamageType.Physical),
+                Tuple.Create(AttributeType.AttackFireMinDamage, AttributeType.AttackFireMaxDamage, DamageType.Fire),
+                Tuple.Create(AttributeType.AttackIceMinDamage, AttributeType.AttackIceMaxDamage, DamageType.Ice),
+                Tuple.Create(AttributeType.AttackAcidMinDamage, AttributeType.AttackAcidMaxDamage, DamageType.Acid),
+                Tuple.Create(AttributeType.AttackElectricMinDamage, AttributeType.AttackElectricMaxDamage, DamageType.Electric)
+            };
 
-        /// <summary>
-        /// Applies the damage for this system.
-        /// </summary>
+        /// <summary>Applies the damage for this system.</summary>
         /// <param name="owner">The entity that caused the damage.</param>
         /// <param name="attributes">The attributes of the entity doing the damage.</param>
         /// <param name="damagee">The entity being damage.</param>
@@ -39,7 +37,8 @@ namespace Space.ComponentSystem.Systems
             var critMultiplier = attributes.GetValue(AttributeType.AttackCriticalDamageMultiplier);
 
             // Get damagee attributes for debuff duration reduction.
-            var damageeAttributes = (Attributes<AttributeType>)Manager.GetComponent(damagee, Attributes<AttributeType>.TypeId);
+            var damageeAttributes =
+                (Attributes<AttributeType>) Manager.GetComponent(damagee, Attributes<AttributeType>.TypeId);
 
             foreach (var value in DirectDamages)
             {
@@ -62,9 +61,13 @@ namespace Space.ComponentSystem.Systems
                 // Get the damage type and apply a damage debuff.
                 var type = value.Item3;
                 Manager.AddComponent<DamagingStatusEffect>(damagee).
-                    Initialize(minDamage, maxDamage,
-                               critChance, critMultiplier,
-                               type, owner);
+                        Initialize(
+                            minDamage,
+                            maxDamage,
+                            critChance,
+                            critMultiplier,
+                            type,
+                            owner);
 
                 // Special case: slow debuff on ice damage.
                 if (type == DamageType.Ice)
@@ -80,8 +83,12 @@ namespace Space.ComponentSystem.Systems
                     {
                         maxDuration = minDuration;
                     }
-                    var reduction = damageeAttributes != null ? damageeAttributes.GetValue(AttributeType.ColdAndFreezeDurationReduction) : 0;
-                    var duration = (int)Math.Round((Random.NextDouble(minDuration, maxDuration) - reduction) * Settings.TicksPerSecond);
+                    var reduction = damageeAttributes != null
+                                        ? damageeAttributes.GetValue(AttributeType.ColdAndFreezeDurationReduction)
+                                        : 0;
+                    var duration =
+                        (int)
+                        Math.Round((Random.NextDouble(minDuration, maxDuration) - reduction) * Settings.TicksPerSecond);
                     if (duration <= 0)
                     {
                         continue;
@@ -89,7 +96,7 @@ namespace Space.ComponentSystem.Systems
 
                     // See if the target is already cold-slowed, if so just prolong
                     // the effect (if our duration is longer).
-                    var effect = (ColdSlowStatusEffect)Manager.GetComponent(damagee, ColdSlowStatusEffect.TypeId);
+                    var effect = (ColdSlowStatusEffect) Manager.GetComponent(damagee, ColdSlowStatusEffect.TypeId);
                     if (effect != null)
                     {
                         effect.Remaining = Math.Max(effect.Remaining, duration);

@@ -11,16 +11,17 @@ using LocalPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Collision
 {
-    /// <summary>
-    /// Methods for edge vs. circle and edge vs. polygon collisions.
-    /// </summary>
+    /// <summary>Methods for edge vs. circle and edge vs. polygon collisions.</summary>
     internal static partial class Algorithms
     {
         // Compute contact points for edge versus circle.
         // This accounts for edge connectivity.
-        public static bool CollideEdgeAndCircle(Fixture fixtureA, WorldTransform xfA,
-                                                Fixture fixtureB, WorldTransform xfB,
-                                                out Manifold manifold)
+        public static bool CollideEdgeAndCircle(
+            Fixture fixtureA,
+            WorldTransform xfA,
+            Fixture fixtureB,
+            WorldTransform xfB,
+            out Manifold manifold)
         {
             manifold = new Manifold();
 
@@ -45,7 +46,7 @@ namespace Engine.Physics.Collision
 
             ContactFeature cf;
             cf.IndexB = 0;
-            cf.TypeB = (byte)ContactFeature.FeatureType.Vertex;
+            cf.TypeB = (byte) ContactFeature.FeatureType.Vertex;
 
             // Region A
             if (v <= 0.0f)
@@ -74,7 +75,7 @@ namespace Engine.Physics.Collision
                 }
 
                 cf.IndexA = 0;
-                cf.TypeA = (byte)ContactFeature.FeatureType.Vertex;
+                cf.TypeA = (byte) ContactFeature.FeatureType.Vertex;
 
                 manifold.Type = Manifold.ManifoldType.Circles;
                 manifold.LocalPoint = p;
@@ -114,7 +115,7 @@ namespace Engine.Physics.Collision
                 }
 
                 cf.IndexA = 1;
-                cf.TypeA = (byte)ContactFeature.FeatureType.Vertex;
+                cf.TypeA = (byte) ContactFeature.FeatureType.Vertex;
 
                 manifold.Type = Manifold.ManifoldType.Circles;
                 manifold.LocalPoint = p;
@@ -150,7 +151,7 @@ namespace Engine.Physics.Collision
             n.Normalize();
 
             cf.IndexA = 0;
-            cf.TypeA = (byte)ContactFeature.FeatureType.Face;
+            cf.TypeA = (byte) ContactFeature.FeatureType.Face;
 
             manifold.Type = Manifold.ManifoldType.FaceA;
             manifold.LocalPoint = a;
@@ -174,9 +175,12 @@ namespace Engine.Physics.Collision
         // 6. Visit each separating axes, only accept axes within the range
         // 7. Return if _any_ axis indicates separation
         // 8. Clip
-        public static bool CollideEdgeAndPolygon(Fixture fixtureA, WorldTransform xfA,
-                                                 Fixture fixtureB, WorldTransform xfB,
-                                                 out Manifold manifold)
+        public static bool CollideEdgeAndPolygon(
+            Fixture fixtureA,
+            WorldTransform xfA,
+            Fixture fixtureB,
+            WorldTransform xfB,
+            out Manifold manifold)
         {
             manifold = new Manifold();
 
@@ -539,9 +543,9 @@ namespace Engine.Physics.Collision
                             Feature =
                             {
                                 IndexA = 0,
-                                IndexB = (byte)i1,
-                                TypeA = (byte)ContactFeature.FeatureType.Face,
-                                TypeB = (byte)ContactFeature.FeatureType.Vertex
+                                IndexB = (byte) i1,
+                                TypeA = (byte) ContactFeature.FeatureType.Face,
+                                TypeB = (byte) ContactFeature.FeatureType.Vertex
                             }
                         }
                     },
@@ -553,9 +557,9 @@ namespace Engine.Physics.Collision
                             Feature =
                             {
                                 IndexA = 0,
-                                IndexB = (byte)i2,
-                                TypeA = (byte)ContactFeature.FeatureType.Face,
-                                TypeB = (byte)ContactFeature.FeatureType.Vertex
+                                IndexB = (byte) i2,
+                                TypeA = (byte) ContactFeature.FeatureType.Face,
+                                TypeB = (byte) ContactFeature.FeatureType.Vertex
                             }
                         }
                     }
@@ -592,9 +596,9 @@ namespace Engine.Physics.Collision
                             Feature =
                             {
                                 IndexA = 0,
-                                IndexB = (byte)primaryAxis.Index,
-                                TypeA = (byte)ContactFeature.FeatureType.Vertex,
-                                TypeB = (byte)ContactFeature.FeatureType.Face
+                                IndexB = (byte) primaryAxis.Index,
+                                TypeA = (byte) ContactFeature.FeatureType.Vertex,
+                                TypeB = (byte) ContactFeature.FeatureType.Face
                             }
                         }
                     },
@@ -606,9 +610,9 @@ namespace Engine.Physics.Collision
                             Feature =
                             {
                                 IndexA = 0,
-                                IndexB = (byte)primaryAxis.Index,
-                                TypeA = (byte)ContactFeature.FeatureType.Vertex,
-                                TypeB = (byte)ContactFeature.FeatureType.Face
+                                IndexB = (byte) primaryAxis.Index,
+                                TypeA = (byte) ContactFeature.FeatureType.Vertex,
+                                TypeB = (byte) ContactFeature.FeatureType.Face
                             }
                         }
                     }
@@ -631,8 +635,12 @@ namespace Engine.Physics.Collision
             FixedArray2<ClipVertex> clipPoints1, clipPoints2;
 
             // Clip to box side 1
-            var np = ClipSegmentToLine(out clipPoints1, incidentEdge,
-                                       rfsideNormal1, rfsideOffset1, rfi1);
+            var np = ClipSegmentToLine(
+                out clipPoints1,
+                incidentEdge,
+                rfsideNormal1,
+                rfsideOffset1,
+                rfi1);
 
             if (np < 2)
             {
@@ -640,8 +648,12 @@ namespace Engine.Physics.Collision
             }
 
             // Clip to negative box side 1
-            np = ClipSegmentToLine(out clipPoints2, clipPoints1,
-                                   rfsideNormal2, rfsideOffset2, rfi2);
+            np = ClipSegmentToLine(
+                out clipPoints2,
+                clipPoints1,
+                rfsideNormal2,
+                rfsideOffset2,
+                rfi2);
 
             if (np < 2)
             {

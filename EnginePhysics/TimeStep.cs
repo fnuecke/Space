@@ -35,7 +35,7 @@ namespace Engine.Physics
         /// <summary>The angular velocity component.</summary>
         public float AngularVelocity;
     }
-    
+
     /// <summary>Used to collect profiling data.</summary>
     public sealed class Profile
     {
@@ -174,7 +174,7 @@ namespace Engine.Physics
             _solverWatch.Stop();
             _solve = _solverWatch.ElapsedTicks;
         }
-        
+
         [Conditional("PROFILE")]
         internal void BeginSolveInit()
         {

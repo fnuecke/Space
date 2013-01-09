@@ -8,30 +8,22 @@ using Space.Simulation.Commands;
 
 namespace Space.Control
 {
-    /// <summary>
-    /// The game server, handling everything server logic related.
-    /// </summary>
+    /// <summary>The game server, handling everything server logic related.</summary>
     internal sealed class GameServer : GameComponent
     {
         #region Properties
-        
-        /// <summary>
-        /// The controller in use by this game server.
-        /// </summary>
+
+        /// <summary>The controller in use by this game server.</summary>
         public ISimulationController<IServerSession> Controller { get; private set; }
-        
-        /// <summary>
-        /// Whether controller updating is paused or not.
-        /// </summary>
+
+        /// <summary>Whether controller updating is paused or not.</summary>
         public bool Paused { get; set; }
 
         #endregion
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new game server for the specified game.
-        /// </summary>
+        /// <summary>Creates a new game server for the specified game.</summary>
         /// <param name="game">The game to create the server for.</param>
         /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
         public GameServer(Game game, bool purelyLocal = false)
@@ -46,9 +38,7 @@ namespace Space.Control
             Controller.Session.JoinRequested += HandleJoinRequested;
         }
 
-        /// <summary>
-        /// Cleans up listeners and disposes the controller.
-        /// </summary>
+        /// <summary>Cleans up listeners and disposes the controller.</summary>
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
@@ -70,9 +60,7 @@ namespace Space.Control
 
         #region Logic
 
-        /// <summary>
-        /// Update the controller.
-        /// </summary>
+        /// <summary>Update the controller.</summary>
         /// <param name="gameTime">Time elapsed since the last call to Update</param>
         public override void Update(GameTime gameTime)
         {
@@ -84,10 +72,10 @@ namespace Space.Control
             }
             else
             {
-                Controller.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+                Controller.Update((float) gameTime.ElapsedGameTime.TotalMilliseconds);
             }
         }
-        
+
         #endregion
 
         #region Events
@@ -97,31 +85,27 @@ namespace Space.Control
             e.Data.Write("Hello there!");
         }
 
-        /// <summary>
-        /// Remove ships of players that have left the game.
-        /// </summary>
+        /// <summary>Remove ships of players that have left the game.</summary>
         /// <param name="sender">Unused.</param>
         /// <param name="e">Used to figure out which player left.</param>
         private void HandlePlayerLeft(object sender, PlayerEventArgs e)
         {
             // Player left the game, remove his ship.
-            var avatarSystem = (AvatarSystem)Controller.Simulation.Manager.GetSystem(AvatarSystem.TypeId);
+            var avatarSystem = (AvatarSystem) Controller.Simulation.Manager.GetSystem(AvatarSystem.TypeId);
             var ship = avatarSystem.GetAvatar(e.Player.Number);
             if (ship > 0)
             {
                 Controller.Simulation.Manager.RemoveEntity(ship);
             }
         }
-        
-        /// <summary>
-        /// Create a ship for newly joined players.
-        /// </summary>
+
+        /// <summary>Create a ship for newly joined players.</summary>
         /// <param name="sender">Unused.</param>
         /// <param name="e">Used to figure out which player joined.</param>
         private void HandleJoinRequested(object sender, JoinRequestEventArgs e)
         {
             // Get the profile data of the player.
-            var profile = (Profile)e.Player.Data;
+            var profile = (Profile) e.Player.Data;
 
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
 
@@ -130,7 +114,8 @@ namespace Space.Control
             // We use the bitwise complement of the player number while storing
             // it in the command, so as not to interfere with sorting (as we
             // won't assign an id to the command).
-            Controller.Simulation.PushCommand(new RestoreProfileCommand(~e.Player.Number, profile, Controller.Simulation.CurrentFrame));
+            Controller.Simulation.PushCommand(
+                new RestoreProfileCommand(~e.Player.Number, profile, Controller.Simulation.CurrentFrame));
         }
 
         #endregion

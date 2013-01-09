@@ -7,10 +7,7 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// This system is used to apply DOTs, i.e. damage that is applied over
-    /// a certain period of time.
-    /// </summary>
+    /// <summary>This system is used to apply DOTs, i.e. damage that is applied over a certain period of time.</summary>
     public sealed class OverTimeDamageApplyingSystem : AbstractDamageApplyingSystem
     {
         private static readonly List<Tuple<AttributeType, AttributeType, AttributeType, AttributeType, AttributeType, AttributeType, DamageType>> OverTimeDamages =
@@ -30,9 +27,7 @@ namespace Space.ComponentSystem.Systems
                              DamageType.Electric),
             };
 
-        /// <summary>
-        /// Applies the damage for this system.
-        /// </summary>
+        /// <summary>Applies the damage for this system.</summary>
         /// <param name="owner">The entity that caused the damage.</param>
         /// <param name="attributes">The attributes of the entity doing the damage.</param>
         /// <param name="damagee">The entity being damage.</param>
@@ -46,7 +41,8 @@ namespace Space.ComponentSystem.Systems
             var critMultiplier = attributes.GetValue(AttributeType.AttackCriticalDamageMultiplier);
 
             // Get damagee attributes for debuff duration reduction.
-            var damageeAttributes = (Attributes<AttributeType>)Manager.GetComponent(damagee, Attributes<AttributeType>.TypeId);
+            var damageeAttributes =
+                (Attributes<AttributeType>) Manager.GetComponent(damagee, Attributes<AttributeType>.TypeId);
 
             foreach (var value in OverTimeDamages)
             {
@@ -87,7 +83,9 @@ namespace Space.ComponentSystem.Systems
 
                 // Apply duration reduction based on damagee 
                 var reduction = damageeAttributes != null ? damageeAttributes.GetValue(value.Item2) : 0;
-                var duration = (int)Math.Round((Random.NextDouble(minDuration, maxDuration) - reduction) * Settings.TicksPerSecond);
+                var duration =
+                    (int)
+                    Math.Round((Random.NextDouble(minDuration, maxDuration) - reduction) * Settings.TicksPerSecond);
                 if (duration <= 0)
                 {
                     continue;
@@ -96,10 +94,15 @@ namespace Space.ComponentSystem.Systems
                 // Get the damage type and apply a damage debuff.
                 var type = value.Item7;
                 Manager.AddComponent<DamagingStatusEffect>(damagee).
-                    Initialize(duration, GameLogicConstants.DamageDebuffInterval,
-                               minDamage, maxDamage,
-                               critChance, critMultiplier,
-                               type, owner);
+                        Initialize(
+                            duration,
+                            GameLogicConstants.DamageDebuffInterval,
+                            minDamage,
+                            maxDamage,
+                            critChance,
+                            critMultiplier,
+                            type,
+                            owner);
             }
         }
     }

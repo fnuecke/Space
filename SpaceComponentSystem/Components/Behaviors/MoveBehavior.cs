@@ -4,27 +4,19 @@ using Engine.Random;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
-    /// <summary>
-    /// Makes an AI move to a specified location without letting itself be
-    /// interrupted.
-    /// </summary>
+    /// <summary>Makes an AI move to a specified location without letting itself be interrupted.</summary>
     internal class MoveBehavior : Behavior
     {
         #region Constants
 
-        /// <summary>
-        /// Consider our target reached when we're in an epsilon range with
-        /// this radius of the target position.
-        /// </summary>
+        /// <summary>Consider our target reached when we're in an epsilon range with this radius of the target position.</summary>
         private const float ReachedEpsilon = 100;
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The position to move to.
-        /// </summary>
+        /// <summary>The position to move to.</summary>
         public FarPosition Target;
 
         #endregion
@@ -32,18 +24,14 @@ namespace Space.ComponentSystem.Components.Behaviors
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MoveBehavior"/> class.
+        ///     Initializes a new instance of the <see cref="MoveBehavior"/> class.
         /// </summary>
         /// <param name="ai">The ai component this behavior belongs to.</param>
         /// <param name="random">The randomizer to use for decision making.</param>
         public MoveBehavior(ArtificialIntelligence ai, IUniformRandom random)
-            : base(ai, random, 1)
-        {
-        }
+            : base(ai, random, 1) {}
 
-        /// <summary>
-        /// Reset this behavior so it can be reused later on.
-        /// </summary>
+        /// <summary>Reset this behavior so it can be reused later on.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -55,15 +43,11 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Logic
 
-        /// <summary>
-        /// Check if we reached our target.
-        /// </summary>
-        /// <returns>
-        /// Whether to do the rest of the update.
-        /// </returns>
+        /// <summary>Check if we reached our target.</summary>
+        /// <returns>Whether to do the rest of the update.</returns>
         protected override bool UpdateInternal()
         {
-            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             if (FarPosition.DistanceSquared(position, Target) < ReachedEpsilon * ReachedEpsilon)
             {
                 // We have reached our target, pop self.
@@ -74,12 +58,8 @@ namespace Space.ComponentSystem.Components.Behaviors
             return true;
         }
 
-        /// <summary>
-        /// Figure out where we want to go.
-        /// </summary>
-        /// <returns>
-        /// The coordinate we want to fly to.
-        /// </returns>
+        /// <summary>Figure out where we want to go.</summary>
+        /// <returns>The coordinate we want to fly to.</returns>
         protected override FarPosition GetTargetPosition()
         {
             return Target;

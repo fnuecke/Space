@@ -18,33 +18,25 @@ using WorldBounds = Engine.Math.RectangleF;
 namespace Engine.Physics.Components
 {
     /// <summary>
-    /// A polygonal fixture, which defines a shape based on a set of vertices
-    /// positioned relative to the local origin of the body.
+    ///     A polygonal fixture, which defines a shape based on a set of vertices positioned relative to the local origin
+    ///     of the body.
     /// </summary>
     public sealed class PolygonFixture : Fixture
     {
         #region Fields
 
-        /// <summary>
-        /// The vertices that make up this polygon.
-        /// </summary>
+        /// <summary>The vertices that make up this polygon.</summary>
         [PacketizerIgnore]
         internal readonly LocalPoint[] Vertices = new LocalPoint[Settings.MaxPolygonVertices];
 
-        /// <summary>
-        /// The surface normals of the edges of this polygon.
-        /// </summary>
+        /// <summary>The surface normals of the edges of this polygon.</summary>
         [PacketizerIgnore]
         internal readonly Vector2[] Normals = new Vector2[Settings.MaxPolygonVertices];
 
-        /// <summary>
-        /// The number of vertices in this fixture.
-        /// </summary>
+        /// <summary>The number of vertices in this fixture.</summary>
         internal int Count;
 
-        /// <summary>
-        /// The centroid of this polygon.
-        /// </summary>
+        /// <summary>The centroid of this polygon.</summary>
         internal LocalPoint Centroid;
 
         #endregion
@@ -52,23 +44,21 @@ namespace Engine.Physics.Components
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PolygonFixture"/> class.
+        ///     Initializes a new instance of the <see cref="PolygonFixture"/> class.
         /// </summary>
         public PolygonFixture() : base(FixtureType.Polygon)
         {
             Radius = Settings.PolygonRadius;
         }
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         /// <returns></returns>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherPolygon = (PolygonFixture)other;
+            var otherPolygon = (PolygonFixture) other;
             for (var i = 0; i < otherPolygon.Count; ++i)
             {
                 Vertices[i] = otherPolygon.Vertices[i];
@@ -81,11 +71,9 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Create a convex hull from the given array of local points.
-        /// The count must be in the range [3, b2_maxPolygonVertices].
-        /// @warning the points may be re-ordered, even if they form a convex polygon
-        /// @warning collinear points are handled but not removed. Collinear points
-        /// may lead to poor stacking behavior.
+        ///     Create a convex hull from the given array of local points. The count must be in the range [3,
+        ///     b2_maxPolygonVertices]. @warning the points may be re-ordered, even if they form a convex polygon @warning
+        ///     collinear points are handled but not removed. Collinear points may lead to poor stacking behavior.
         /// </summary>
         /// <param name="points">The points to generate the polygon from.</param>
         public PolygonFixture InitializeShape(IList<Vector2> points)
@@ -193,10 +181,7 @@ namespace Engine.Physics.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -214,10 +199,8 @@ namespace Engine.Physics.Components
 
         #region Methods
 
-        /// <summary>
-        /// Test the specified point for containment in this fixture.
-        /// </summary>
-        /// <param name="localPoint">The point in local coordiantes.</param>
+        /// <summary>Test the specified point for containment in this fixture.</summary>
+        /// <param name="localPoint">The point in local coordinates.</param>
         /// <returns>Whether the point is contained in this fixture or not.</returns>
         public override bool TestPoint(Vector2 localPoint)
         {
@@ -233,9 +216,8 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Get the mass data for this fixture. The mass data is based on the density and
-        /// the shape. The rotational inertia is about the shape's origin. This operation
-        /// may be expensive.
+        ///     Get the mass data for this fixture. The mass data is based on the density and the shape. The rotational
+        ///     inertia is about the shape's origin. This operation may be expensive.
         /// </summary>
         /// <param name="mass">The mass of this fixture.</param>
         /// <param name="center">The center of mass relative to the local origin.</param>
@@ -322,9 +304,7 @@ namespace Engine.Physics.Components
             inertia += mass * (Vector2.Dot(center, center) - Vector2.Dot(centroid, centroid));
         }
 
-        /// <summary>
-        /// Computes the global bounds of this fixture given the specified body transform.
-        /// </summary>
+        /// <summary>Computes the global bounds of this fixture given the specified body transform.</summary>
         /// <param name="transform">The world transform of the body.</param>
         /// <returns>The global bounds of this fixture.</returns>
         internal override WorldBounds ComputeBounds(WorldTransform transform)
@@ -343,8 +323,8 @@ namespace Engine.Physics.Components
 
             Vector2 size;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            size.X = (float)(upper.X - lower.X) + 2 * Radius;
-            size.Y = (float)(upper.Y - lower.Y) + 2 * Radius;
+            size.X = (float) (upper.X - lower.X) + 2 * Radius;
+            size.Y = (float) (upper.Y - lower.Y) + 2 * Radius;
 // ReSharper restore RedundantCast
 
             WorldBounds bounds;
@@ -359,9 +339,7 @@ namespace Engine.Physics.Components
 
         #region Utility
 
-        /// <summary>
-        /// Computes the centroid of the vertices, used in initialization.
-        /// </summary>
+        /// <summary>Computes the centroid of the vertices, used in initialization.</summary>
         /// <returns>The centroid.</returns>
         private LocalPoint ComputeCentroid()
         {
@@ -397,13 +375,9 @@ namespace Engine.Physics.Components
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
@@ -417,13 +391,11 @@ namespace Engine.Physics.Components
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(IReadablePacket packet)
+        public override void Depacketize(IReadablePacket packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             for (var i = 0; i < Count; ++i)
             {
@@ -444,8 +416,10 @@ namespace Engine.Physics.Components
             for (var i = 0; i < Count; i++)
             {
                 w.AppendIndent(indent + 1).Write("{");
-                w.AppendIndent(indent + 2).Write("Position = "); w.Write(Vertices[i]);
-                w.AppendIndent(indent + 2).Write("Normal = "); w.Write(Normals[i]);
+                w.AppendIndent(indent + 2).Write("Position = ");
+                w.Write(Vertices[i]);
+                w.AppendIndent(indent + 2).Write("Normal = ");
+                w.Write(Normals[i]);
                 w.AppendIndent(indent + 1).Write("}");
             }
             w.AppendIndent(indent).Write("}");

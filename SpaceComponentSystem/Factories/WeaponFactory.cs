@@ -11,9 +11,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// Constraints for generating weapons.
-    /// </summary>
+    /// <summary>Constraints for generating weapons.</summary>
     public sealed class WeaponFactory : ItemFactory
     {
         #region Logger
@@ -24,12 +22,10 @@ namespace Space.ComponentSystem.Factories
 
         #region Properties
 
-        /// <summary>
-        /// The sound this weapon emits when firing.
-        /// </summary>
+        /// <summary>The sound this weapon emits when firing.</summary>
         [Category("Media")]
         [Editor("Space.Tools.DataEditor.SoundAssetEditor, Space.Tools.DataEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-            "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
+                "System.Drawing.Design.UITypeEditor, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
         [Description("The cue name of the sound to play when the weapon fires its projectiles.")]
         public string Sound
         {
@@ -38,12 +34,10 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// A list of local attribute modifiers that are guaranteed to be applied to
-        /// the generated item, just with random values.
+        ///     A list of local attribute modifiers that are guaranteed to be applied to the generated item, just with random
+        ///     values.
         /// </summary>
-        /// <remarks>
-        /// These attributes only apply to the weapon itself.
-        /// </remarks>
+        /// <remarks>These attributes only apply to the weapon itself.</remarks>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Stats")]
@@ -55,13 +49,10 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// A list of attribute modifiers from which a certain number is
-        /// randomly sampled, and from the chosen attribute modifiers will then
-        /// be sampled the actual values to be applied to the generated item.
+        ///     A list of attribute modifiers from which a certain number is randomly sampled, and from the chosen attribute
+        ///     modifiers will then be sampled the actual values to be applied to the generated item.
         /// </summary>
-        /// <remarks>
-        /// These attributes only apply to the weapon itself.
-        /// </remarks>
+        /// <remarks>These attributes only apply to the weapon itself.</remarks>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Stats")]
@@ -72,10 +63,7 @@ namespace Space.ComponentSystem.Factories
             set { _additionalLocalAttributes = value; }
         }
 
-        /// <summary>
-        /// The number of local attribute modifiers to apply to a
-        /// generated weapon.
-        /// </summary>
+        /// <summary>The number of local attribute modifiers to apply to a generated weapon.</summary>
         [ContentSerializer(Optional = true)]
         [DefaultValue(null)]
         [Category("Stats")]
@@ -86,9 +74,7 @@ namespace Space.ComponentSystem.Factories
             set { _additionalLocalAttributeCount = value; }
         }
 
-        /// <summary>
-        /// Possible projectiles this weapon fires.
-        /// </summary>
+        /// <summary>Possible projectiles this weapon fires.</summary>
         [Category("Logic")]
         [Description("The list of projectiles to emit each time this weapon is fired.")]
         public ProjectileFactory[] Projectiles
@@ -115,14 +101,10 @@ namespace Space.ComponentSystem.Factories
 
         #region Sampling
 
-        /// <summary>
-        /// Samples a new weapon based on these constraints.
-        /// </summary>
+        /// <summary>Samples a new weapon based on these constraints.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled weapon.
-        /// </returns>
+        /// <returns>The sampled weapon.</returns>
         public override int Sample(IManager manager, IUniformRandom random)
         {
             var entity = base.Sample(manager, random);
@@ -144,7 +126,9 @@ namespace Space.ComponentSystem.Factories
             }
             if (_additionalLocalAttributes != null && _additionalLocalAttributes.Length > 0)
             {
-                foreach (var attributeModifier in SampleAttributes(SampleLocalAttributeCount(random), _additionalLocalAttributes, random))
+                foreach (
+                    var attributeModifier in
+                        SampleAttributes(SampleLocalAttributeCount(random), _additionalLocalAttributes, random))
                 {
                     AccumulateModifier(attributeModifier, ref attributes, ref multipliers);
                 }
@@ -161,25 +145,29 @@ namespace Space.ComponentSystem.Factories
                     }
                     else
                     {
-                        Logger.Warn("Invalid local attribute for weapon {0}: {1} does not have an additive base value.", Name, multiplier.Key);
+                        Logger.Warn(
+                            "Invalid local attribute for weapon {0}: {1} does not have an additive base value.",
+                            Name,
+                            multiplier.Key);
                     }
                 }
             }
 
             manager.AddComponent<Weapon>(entity)
-                .Initialize(_sound, attributes, _projectiles)
-                .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
+                   .Initialize(_sound, attributes, _projectiles)
+                   .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
 
             return entity;
         }
 
-        /// <summary>
-        /// Utility method for baking attribute modifiers into final values.
-        /// </summary>
+        /// <summary>Utility method for baking attribute modifiers into final values.</summary>
         /// <param name="attributeModifier">The attribute modifier.</param>
         /// <param name="additives">The additive attribute values.</param>
         /// <param name="multiplicatives">The multiplicative attribute values.</param>
-        private static void AccumulateModifier(AttributeModifier<AttributeType> attributeModifier, ref Dictionary<AttributeType, float> additives, ref Dictionary<AttributeType, float> multiplicatives)
+        private static void AccumulateModifier(
+            AttributeModifier<AttributeType> attributeModifier,
+            ref Dictionary<AttributeType, float> additives,
+            ref Dictionary<AttributeType, float> multiplicatives)
         {
             switch (attributeModifier.ComputationType)
             {
@@ -214,9 +202,7 @@ namespace Space.ComponentSystem.Factories
             }
         }
 
-        /// <summary>
-        /// Samples the local attribute count.
-        /// </summary>
+        /// <summary>Samples the local attribute count.</summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns></returns>
         private int SampleLocalAttributeCount(IUniformRandom random)

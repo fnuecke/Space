@@ -25,14 +25,22 @@ namespace Engine.Physics
         /// <param name="density">The density of the fixture.</param>
         /// <param name="friction">The friction of fixture.</param>
         /// <param name="restitution">The restitution fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>The created fixture.</returns>
-        public static CircleFixture AttachCircle(this IManager manager, Body body, LocalPoint localPosition,
-                                                 float radius, float density = 0, float friction = 0.2f,
-                                                 float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
+        public static CircleFixture AttachCircle(
+            this IManager manager,
+            Body body,
+            LocalPoint localPosition,
+            float radius,
+            float density = 0,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (body == null)
             {
@@ -59,17 +67,31 @@ namespace Engine.Physics
         /// <param name="density">The density of the fixture.</param>
         /// <param name="friction">The friction of fixture.</param>
         /// <param name="restitution">The restitution fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>The created fixture.</returns>
-        public static CircleFixture AttachCircle(this IManager manager, Body body, float radius, float density = 0,
-                                                 float friction = 0.2f, float restitution = 0, bool isSensor = false,
-                                                 uint collisionGroups = 0)
+        public static CircleFixture AttachCircle(
+            this IManager manager,
+            Body body,
+            float radius,
+            float density = 0,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
-            return manager.AttachCircle(body, LocalPoint.Zero, radius, density, friction, restitution, isSensor,
-                                        collisionGroups);
+            return manager.AttachCircle(
+                body,
+                LocalPoint.Zero,
+                radius,
+                density,
+                friction,
+                restitution,
+                isSensor,
+                collisionGroups);
         }
 
         #endregion
@@ -83,14 +105,21 @@ namespace Engine.Physics
         /// <param name="localEnd">The end point of the shape relative to the body's local origin.</param>
         /// <param name="friction">The friction of fixture.</param>
         /// <param name="restitution">The restitution fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>The created fixture.</returns>
-        public static EdgeFixture AttachEdge(this IManager manager, Body body, LocalPoint localStart,
-                                             LocalPoint localEnd, float friction = 0.2f, float restitution = 0,
-                                             bool isSensor = false, uint collisionGroups = 0)
+        public static EdgeFixture AttachEdge(
+            this IManager manager,
+            Body body,
+            LocalPoint localStart,
+            LocalPoint localEnd,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (body == null)
             {
@@ -98,8 +127,11 @@ namespace Engine.Physics
             }
 
             var fixture = manager.AddComponent<EdgeFixture>(body.Entity);
-            fixture.Initialize(friction: friction, restitution: restitution, isSensor: isSensor,
-                               collisionGroups: collisionGroups);
+            fixture.Initialize(
+                friction: friction,
+                restitution: restitution,
+                isSensor: isSensor,
+                collisionGroups: collisionGroups);
             fixture.InitializeShape(localStart, localEnd);
 
             return fixture;
@@ -114,15 +146,23 @@ namespace Engine.Physics
         /// <param name="ghostEnd">The ghost point for end point, for chained edges.</param>
         /// <param name="friction">The friction of fixture.</param>
         /// <param name="restitution">The restitution fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>The created fixture.</returns>
-        public static EdgeFixture AttachEdge(this IManager manager, Body body, LocalPoint ghostStart,
-                                             LocalPoint localStart, LocalPoint localEnd, LocalPoint ghostEnd,
-                                             float friction = 0.2f, float restitution = 0, bool isSensor = false,
-                                             uint collisionGroups = 0)
+        public static EdgeFixture AttachEdge(
+            this IManager manager,
+            Body body,
+            LocalPoint ghostStart,
+            LocalPoint localStart,
+            LocalPoint localEnd,
+            LocalPoint ghostEnd,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (body == null)
             {
@@ -130,8 +170,11 @@ namespace Engine.Physics
             }
 
             var fixture = manager.AddComponent<EdgeFixture>(body.Entity);
-            fixture.Initialize(friction: friction, restitution: restitution, isSensor: isSensor,
-                               collisionGroups: collisionGroups);
+            fixture.Initialize(
+                friction: friction,
+                restitution: restitution,
+                isSensor: isSensor,
+                collisionGroups: collisionGroups);
             fixture.InitializeShape(ghostStart, localStart, localEnd, ghostEnd);
 
             return fixture;
@@ -142,23 +185,28 @@ namespace Engine.Physics
         #region Chain / Loop
 
         /// <summary>
-        /// Creates an edge loop with the specified parameters. A loop consists in fact
-        /// of multiple edge fixtures with neighborhood information, which avoid collisions
-        /// with inner vertices. Note that is not actually Box2D's implementation of a chain,
-        /// but simply a factory for creating a single edge fixture per chain link.
+        ///     Creates an edge loop with the specified parameters. A loop consists in fact of multiple edge fixtures with
+        ///     neighborhood information, which avoid collisions with inner vertices. Note that is not actually Box2D's
+        ///     implementation of a chain, but simply a factory for creating a single edge fixture per chain link.
         /// </summary>
         /// <param name="manager">The manager to create the object in.</param>
         /// <param name="body">The body to attach the fixtures to.</param>
         /// <param name="vertices">The vertices relative to the body's local origin.</param>
         /// <param name="friction">The friction of the fixture.</param>
         /// <param name="restitution">The restitution of the fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
-        public static void AttachLoop(this IManager manager, Body body, IList<LocalPoint> vertices,
-                                      float friction = 0.2f, float restitution = 0, bool isSensor = false,
-                                      uint collisionGroups = 0)
+        public static void AttachLoop(
+            this IManager manager,
+            Body body,
+            IList<LocalPoint> vertices,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (body == null)
             {
@@ -170,24 +218,29 @@ namespace Engine.Physics
         }
 
         /// <summary>
-        /// Creates an edge chain with the specified parameters. A chain consists in fact
-        /// of multiple edge fixtures with neighborhood information, which avoid collisions
-        /// with inner vertices. Note that is not actually Box2D's implementation of a chain,
-        /// but simply a factory for creating a single edge fixture per chain link.
+        ///     Creates an edge chain with the specified parameters. A chain consists in fact of multiple edge fixtures with
+        ///     neighborhood information, which avoid collisions with inner vertices. Note that is not actually Box2D's
+        ///     implementation of a chain, but simply a factory for creating a single edge fixture per chain link.
         /// </summary>
         /// <param name="manager">The manager to create the object in.</param>
         /// <param name="body">The body to attach the fixtures to.</param>
         /// <param name="vertices">The vertices relative to the body's local origin.</param>
         /// <param name="friction">The friction of the fixture.</param>
         /// <param name="restitution">The restitution of the fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>A proxy object that may be used to interact with the created chain.</returns>
-        public static Chain AttachChain(this IManager manager, Body body, IList<LocalPoint> vertices,
-                                        float friction = 0.2f, float restitution = 0, bool isSensor = false,
-                                        uint collisionGroups = 0)
+        public static Chain AttachChain(
+            this IManager manager,
+            Body body,
+            IList<LocalPoint> vertices,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (body == null)
             {
@@ -198,9 +251,7 @@ namespace Engine.Physics
             return manager.AttachChainUnchecked(body, vertices, friction, restitution, isSensor, collisionGroups);
         }
 
-        /// <summary>
-        /// Validates vertex input.
-        /// </summary>
+        /// <summary>Validates vertex input.</summary>
         internal static void ValidateVertices(IList<LocalPoint> vertices, int minCount)
         {
             if (vertices == null)
@@ -222,12 +273,15 @@ namespace Engine.Physics
             }
         }
 
-        /// <summary>
-        /// Unchecked attach logic to avoid duplicate input validation.
-        /// </summary>
-        internal static void AttachLoopUnchecked(this IManager manager, Body body, IList<LocalPoint> vertices,
-                                                 float friction = 0.2f, float restitution = 0, bool isSensor = false,
-                                                 uint collisionGroups = 0)
+        /// <summary>Unchecked attach logic to avoid duplicate input validation.</summary>
+        internal static void AttachLoopUnchecked(
+            this IManager manager,
+            Body body,
+            IList<LocalPoint> vertices,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             for (var i = 0; i < vertices.Count; ++i)
             {
@@ -235,17 +289,28 @@ namespace Engine.Physics
                 var start = vertices[i];
                 var end = vertices[(i + 1) % vertices.Count];
                 var ghostEnd = vertices[(i + 2) % vertices.Count];
-                manager.AttachEdge(body, ghostStart, start, end, ghostEnd, friction, restitution, isSensor,
-                                   collisionGroups);
+                manager.AttachEdge(
+                    body,
+                    ghostStart,
+                    start,
+                    end,
+                    ghostEnd,
+                    friction,
+                    restitution,
+                    isSensor,
+                    collisionGroups);
             }
         }
 
-        /// <summary>
-        /// Unchecked attach logic to avoid duplicate input validation.
-        /// </summary>
-        internal static Chain AttachChainUnchecked(this IManager manager, Body body, IList<LocalPoint> vertices,
-                                                   float friction = 0.2f, float restitution = 0, bool isSensor = false,
-                                                   uint collisionGroups = 0)
+        /// <summary>Unchecked attach logic to avoid duplicate input validation.</summary>
+        internal static Chain AttachChainUnchecked(
+            this IManager manager,
+            Body body,
+            IList<LocalPoint> vertices,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             // See if it's just a single edge.
             if (vertices.Count == 2)
@@ -254,19 +319,39 @@ namespace Engine.Physics
                 return new Chain(body, edge, edge);
             }
 
-            var head = manager.AttachEdge(body, vertices[0], vertices[1], friction, restitution, isSensor,
-                                          collisionGroups);
+            var head = manager.AttachEdge(
+                body,
+                vertices[0],
+                vertices[1],
+                friction,
+                restitution,
+                isSensor,
+                collisionGroups);
             head.Vertex3 = vertices[2];
             head.HasVertex3 = true;
 
             for (var i = 1; i < vertices.Count - 2; ++i)
             {
-                manager.AttachEdge(body, vertices[i - 1], vertices[i], vertices[i + 1], vertices[i + 2], friction,
-                                   restitution, isSensor, collisionGroups);
+                manager.AttachEdge(
+                    body,
+                    vertices[i - 1],
+                    vertices[i],
+                    vertices[i + 1],
+                    vertices[i + 2],
+                    friction,
+                    restitution,
+                    isSensor,
+                    collisionGroups);
             }
 
-            var tail = manager.AttachEdge(body, vertices[vertices.Count - 2], vertices[vertices.Count - 1], friction,
-                                          restitution, isSensor, collisionGroups);
+            var tail = manager.AttachEdge(
+                body,
+                vertices[vertices.Count - 2],
+                vertices[vertices.Count - 1],
+                friction,
+                restitution,
+                isSensor,
+                collisionGroups);
             tail.Vertex0 = vertices[vertices.Count - 3];
             tail.HasVertex0 = true;
 
@@ -284,14 +369,21 @@ namespace Engine.Physics
         /// <param name="density">The density of the fixture.</param>
         /// <param name="friction">The friction of fixture.</param>
         /// <param name="restitution">The restitution fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>The created fixture.</returns>
-        public static PolygonFixture AttachPolygon(this IManager manager, Body body, IList<LocalPoint> vertices,
-                                                   float density = 0, float friction = 0.2f, float restitution = 0,
-                                                   bool isSensor = false, uint collisionGroups = 0)
+        public static PolygonFixture AttachPolygon(
+            this IManager manager,
+            Body body,
+            IList<LocalPoint> vertices,
+            float density = 0,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (body == null)
             {
@@ -323,14 +415,22 @@ namespace Engine.Physics
         /// <param name="density">The density of the fixture.</param>
         /// <param name="friction">The friction of fixture.</param>
         /// <param name="restitution">The restitution fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>The created fixture.</returns>
-        public static PolygonFixture AttachRectangle(this IManager manager, Body body, float width, float height,
-                                                     float density = 0, float friction = 0.2f, float restitution = 0,
-                                                     bool isSensor = false, uint collisionGroups = 0)
+        public static PolygonFixture AttachRectangle(
+            this IManager manager,
+            Body body,
+            float width,
+            float height,
+            float density = 0,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (width <= 0)
             {
@@ -366,15 +466,24 @@ namespace Engine.Physics
         /// <param name="density">The density of the fixture.</param>
         /// <param name="friction">The friction of fixture.</param>
         /// <param name="restitution">The restitution fixture.</param>
-        /// <param name="isSensor">if set to <c>true</c> the created fixture is marked
-        /// as a sensor (i.e. it will fire collision events but the collision
-        /// will not be handled by the solver).</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
+        ///     collision will not be handled by the solver).
+        /// </param>
         /// <param name="collisionGroups">The collision groups.</param>
         /// <returns>The created fixture.</returns>
-        public static PolygonFixture AttachRectangle(this IManager manager, Body body, float width, float height,
-                                                     LocalPoint localPosition, float localAngle = 0, float density = 0,
-                                                     float friction = 0.2f, float restitution = 0, bool isSensor = false,
-                                                     uint collisionGroups = 0)
+        public static PolygonFixture AttachRectangle(
+            this IManager manager,
+            Body body,
+            float width,
+            float height,
+            LocalPoint localPosition,
+            float localAngle = 0,
+            float density = 0,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             if (width <= 0)
             {
@@ -397,8 +506,8 @@ namespace Engine.Physics
             };
 
             // Transform vertices.
-            var sin = (float)System.Math.Sin(localAngle);
-            var cos = (float)System.Math.Cos(localAngle);
+            var sin = (float) System.Math.Sin(localAngle);
+            var cos = (float) System.Math.Cos(localAngle);
             for (var i = 0; i < vertices.Length; ++i)
             {
                 LocalPoint result;
@@ -415,10 +524,9 @@ namespace Engine.Physics
     }
 
     /// <summary>
-    /// This a helper construct to allow dynamic modification of pseudo-chains
-    /// at some point in time after their creation. This is necessary because
-    /// we do not actually implement Box2D's chain shape but generate actual
-    /// edges for each chain link, instead.
+    ///     This a helper construct to allow dynamic modification of pseudo-chains at some point in time after their
+    ///     creation. This is necessary because we do not actually implement Box2D's chain shape but generate actual edges for
+    ///     each chain link, instead.
     /// </summary>
     public sealed class Chain
     {
@@ -429,12 +537,12 @@ namespace Engine.Physics
         }
 
         /// <summary>
-        /// Establish connectivity to a vertex that precedes the first vertex.
-        /// This may be used to connect an edge or other chain shape to this one.
+        ///     Establish connectivity to a vertex that precedes the first vertex. This may be used to connect an edge or
+        ///     other chain shape to this one.
         /// </summary>
         public LocalPoint? PreviousVertex
         {
-            get { return _head.HasVertex0 ? (LocalPoint?)_head.Vertex0 : null; }
+            get { return _head.HasVertex0 ? (LocalPoint?) _head.Vertex0 : null; }
             set
             {
                 if (value != null)
@@ -450,12 +558,12 @@ namespace Engine.Physics
         }
 
         /// <summary>
-        /// Establish connectivity to a vertex that follows the last vertex.
-        /// This may be used to connect an edge or other chain shape to this one.
+        ///     Establish connectivity to a vertex that follows the last vertex. This may be used to connect an edge or other
+        ///     chain shape to this one.
         /// </summary>
         public LocalPoint? NextVertex
         {
-            get { return _tail.HasVertex3 ? (LocalPoint?)_tail.Vertex3 : null; }
+            get { return _tail.HasVertex3 ? (LocalPoint?) _tail.Vertex3 : null; }
             set
             {
                 if (value != null)
@@ -476,7 +584,9 @@ namespace Engine.Physics
         /// <summary>The head and tail edge fixtures of this chain.</summary>
         private readonly EdgeFixture _head, _tail;
 
-        /// <summary>Initializes a new instance of the <see cref="Chain"/> class.</summary>
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Chain"/> class.
+        /// </summary>
         /// <param name="body">The body the chain is attached to.</param>
         /// <param name="head">The head link of the chain.</param>
         /// <param name="tail">The tail link of the chain.</param>

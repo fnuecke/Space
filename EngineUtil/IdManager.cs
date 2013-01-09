@@ -7,17 +7,12 @@ using Engine.Serialization;
 
 namespace Engine.Util
 {
-    /// <summary>
-    /// Class that handles giving out unique ids, and releasing old ones so
-    /// they may be reused.
-    /// </summary>
+    /// <summary>Class that handles giving out unique ids, and releasing old ones so they may be reused.</summary>
     public sealed class IdManager : IPacketizable, ICopyable<IdManager>, IEnumerable<int>
     {
         #region Properties
 
-        /// <summary>
-        /// The number of IDs currently in use.
-        /// </summary>
+        /// <summary>The number of IDs currently in use.</summary>
         public int Count
         {
             get { return _nextId - 1 - _reusableIds.Count; }
@@ -27,25 +22,18 @@ namespace Engine.Util
 
         #region Fields
 
-        /// <summary>
-        /// The list of ids that were released and may be reused.
-        /// </summary>
+        /// <summary>The list of ids that were released and may be reused.</summary>
         [PacketizerIgnore]
         private SortedSet<int> _reusableIds = new SortedSet<int>();
 
-        /// <summary>
-        /// The next id we'll create if we have no reusable ids.
-        /// </summary>
+        /// <summary>The next id we'll create if we have no reusable ids.</summary>
         private int _nextId = 1;
 
         #endregion
 
         #region Accessors
 
-        /// <summary>
-        /// Check if a given id is currently in use, i.e. given out by this
-        /// manager.
-        /// </summary>
+        /// <summary>Check if a given id is currently in use, i.e. given out by this manager.</summary>
         /// <param name="id">The id to check.</param>
         /// <returns></returns>
         public bool InUse(int id)
@@ -53,9 +41,7 @@ namespace Engine.Util
             return id > 0 && id < _nextId && !_reusableIds.Contains(id);
         }
 
-        /// <summary>
-        /// Get a new unique id, relative to this manager.
-        /// </summary>
+        /// <summary>Get a new unique id, relative to this manager.</summary>
         /// <returns>A new, unique id.</returns>
         public int GetId()
         {
@@ -67,16 +53,11 @@ namespace Engine.Util
                 _reusableIds.Remove(result);
                 return result;
             }
-            else
-            {
-                // No, use a new id.
-                return _nextId++;
-            }
+            // No, use a new id.
+            return _nextId++;
         }
 
-        /// <summary>
-        /// Releases an id this manager produced, so it may be reused.
-        /// </summary>
+        /// <summary>Releases an id this manager produced, so it may be reused.</summary>
         /// <param name="id">The id to release.</param>
         public void ReleaseId(int id)
         {
@@ -110,12 +91,10 @@ namespace Engine.Util
         }
 
         #endregion
-        
+
         #region Serialization / Cloning
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <returns>The packet after writing.</returns>
         [OnPacketize]
@@ -131,21 +110,21 @@ namespace Engine.Util
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// after automatic depacketization has been performed.
+        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
+        ///     performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
         public void Depacketize(IReadablePacket packet)
         {
             _reusableIds.Clear();
-            var numReusableIds = packet.ReadInt32();
-            for (var i = 0; i < numReusableIds; i++)
+            var reusableIdCount = packet.ReadInt32();
+            for (var i = 0; i < reusableIdCount; i++)
             {
                 _reusableIds.Add(packet.ReadInt32());
             }
         }
-        
+
         [OnStringify]
         public StreamWriter Dump(StreamWriter w, int indent)
         {
@@ -165,14 +144,11 @@ namespace Engine.Util
             return w;
         }
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public IdManager NewInstance()
         {
-            var copy = (IdManager)MemberwiseClone();
+            var copy = (IdManager) MemberwiseClone();
 
             _reusableIds = new SortedSet<int>();
             _nextId = 1;
@@ -180,9 +156,7 @@ namespace Engine.Util
             return copy;
         }
 
-        /// <summary>
-        /// Creates a deep copy of the object, reusing the given object.
-        /// </summary>
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
         public void CopyInto(IdManager into)
@@ -198,13 +172,10 @@ namespace Engine.Util
 
         #region IEnumerable
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
+        /// <summary>Returns an enumerator that iterates through the collection.</summary>
         /// <returns>
-        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
+        ///     A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
         /// </returns>
-        /// <filterpriority>1</filterpriority>
         public IEnumerator<int> GetEnumerator()
         {
             for (var i = 1; i < _nextId; ++i)
@@ -216,13 +187,10 @@ namespace Engine.Util
             }
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
+        /// <summary>Returns an enumerator that iterates through a collection.</summary>
         /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+        ///     An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
         /// </returns>
-        /// <filterpriority>2</filterpriority>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

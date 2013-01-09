@@ -15,17 +15,13 @@ namespace Space.ComponentSystem.Messages
 
         public struct Positions
         {
-            ///<summary>
-            /// The Destination to move to can be the same as in the previous Position if Camera shall stand on one point
-            /// </summary>
+            /// <summary>The Destination to move to can be the same as in the previous Position if Camera shall stand on one point</summary>
             public FarPosition Destination;
-            /// <summary>
-            /// The speed How fast the Transition shall take place, in Frames
-            /// </summary>
+
+            /// <summary>The speed How fast the Transition shall take place, in Frames</summary>
             public long Speed;
-            /// <summary>
-            /// The zoom when Destination is reached
-            /// </summary>
+
+            /// <summary>The zoom when Destination is reached</summary>
             public float Zoom;
         }
     }

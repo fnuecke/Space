@@ -17,21 +17,17 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Components
 {
     /// <summary>
-    /// A body represents a physical object, tracking some of its global properties
-    /// such as mass, velocity and world transform.
+    ///     A body represents a physical object, tracking some of its global properties such as mass, velocity and world
+    ///     transform.
     /// </summary>
     public sealed class Body : Component
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -44,21 +40,15 @@ namespace Engine.Physics.Components
         /// <summary>The available body types.</summary>
         public enum BodyType
         {
-            /// <summary>
-            /// A static body has no mass and no velocity and can only be moved
-            /// manually, i.e. from outside the simulation.
-            /// </summary>
+            /// <summary>A static body has no mass and no velocity and can only be moved manually, i.e. from outside the simulation.</summary>
             Static,
 
-            /// <summary>
-            /// A kinematic body has a set velocity, but no mass.
-            /// </summary>
+            /// <summary>A kinematic body has a set velocity, but no mass.</summary>
             Kinematic,
 
             /// <summary>
-            /// A dynamic body has mass and a velocity determined by other
-            /// forces inside the simulation. Moving it manually will lead to
-            /// non-physical behavior.
+            ///     A dynamic body has mass and a velocity determined by other forces inside the simulation. Moving it manually
+            ///     will lead to non-physical behavior.
             /// </summary>
             Dynamic
         }
@@ -68,8 +58,8 @@ namespace Engine.Physics.Components
         #region Properties
 
         /// <summary>
-        /// Whether the component is enabled or not. Disabled components will
-        /// not be handled in the component's system's <c>Update()</c> method.
+        ///     Whether the component is enabled or not. Disabled components will not be handled in the component's system's
+        ///     <c>Update()</c> method.
         /// </summary>
         public override bool Enabled
         {
@@ -114,9 +104,7 @@ namespace Engine.Physics.Components
             }
         }
 
-        /// <summary>
-        /// Gets the type of this body.
-        /// </summary>
+        /// <summary>Gets the type of this body.</summary>
         public BodyType Type
         {
             get { return TypeInternal; }
@@ -158,10 +146,7 @@ namespace Engine.Physics.Components
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this body is allowed to enter
-        /// sleep state when it is not moving.
-        /// </summary>
+        /// <summary>Gets or sets a value indicating whether this body is allowed to enter sleep state when it is not moving.</summary>
         public bool IsSleepAllowed
         {
             get { return IsSleepAllowedInternal; }
@@ -175,9 +160,7 @@ namespace Engine.Physics.Components
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is awake.
-        /// </summary>
+        /// <summary>Gets or sets a value indicating whether this instance is awake.</summary>
         public bool IsAwake
         {
             get { return IsAwakeInternal; }
@@ -203,10 +186,7 @@ namespace Engine.Physics.Components
             }
         }
 
-        /// <summary>
-        /// Get or set whether this body has a fixed rotation. Changing this
-        /// value causes the mass to be reset.
-        /// </summary>
+        /// <summary>Get or set whether this body has a fixed rotation. Changing this value causes the mass to be reset.</summary>
         public bool IsRotationFixed
         {
             get { return _isRotationFixed; }
@@ -226,12 +206,10 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is acting as
-        /// a bullet. Dynamic bodies do usually not use the TOI solver to solve
-        /// against each other (only against static bodies). Bullets on the
-        /// other hand also use the TOI solver for processing collisions with
-        /// other dynamic bodies (the common example is shooting a ball into a
-        /// stack of boxes).
+        ///     Gets or sets a value indicating whether this instance is acting as a bullet. Dynamic bodies do usually not use
+        ///     the TOI solver to solve against each other (only against static bodies). Bullets on the other hand also use the TOI
+        ///     solver for processing collisions with other dynamic bodies (the common example is shooting a ball into a stack of
+        ///     boxes).
         /// </summary>
         public bool IsBullet
         {
@@ -240,13 +218,10 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Get or set the world body origin position. Setting this breaks any
-        /// contacts and wakes the other bodies. Manipulating a body's
-        /// transform may cause non-physical behavior.
+        ///     Get or set the world body origin position. Setting this breaks any contacts and wakes the other bodies.
+        ///     Manipulating a body's transform may cause non-physical behavior.
         /// </summary>
-        /// <value>
-        /// The world position of the body's local origin.
-        /// </value>
+        /// <value>The world position of the body's local origin.</value>
         public WorldPoint Position
         {
             get { return Transform.Translation; }
@@ -254,41 +229,30 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Get the angle in radians. Setting this breaks any contacts
-        /// and wakes the other bodies. Manipulating a body's transform
-        /// may cause non-physical behavior.
+        ///     Get the angle in radians. Setting this breaks any contacts and wakes the other bodies. Manipulating a body's
+        ///     transform may cause non-physical behavior.
         /// </summary>
-        /// <value>
-        /// The current world rotation angle in radians.
-        /// </value>
+        /// <value>The current world rotation angle in radians.</value>
         public float Angle
         {
             get { return Sweep.Angle; }
             set { SetTransform(Position, value); }
         }
 
-        /// <summary>
-        /// Get the world position of the center of mass.
-        /// </summary>
+        /// <summary>Get the world position of the center of mass.</summary>
         public WorldPoint WorldCenter
         {
             get { return Sweep.CenterOfMass; }
         }
 
-        /// <summary>
-        /// Get the local position of the center of mass.
-        /// </summary>
+        /// <summary>Get the local position of the center of mass.</summary>
         public LocalPoint LocalCenter
         {
             get { return Sweep.LocalCenter; }
         }
 
-        /// <summary>
-        /// Gets or sets the linear velocity of the center of mass.
-        /// </summary>
-        /// <value>
-        /// The linear velocity of the center of mass.
-        /// </value>
+        /// <summary>Gets or sets the linear velocity of the center of mass.</summary>
+        /// <value>The linear velocity of the center of mass.</value>
         public Vector2 LinearVelocity
         {
             get { return LinearVelocityInternal; }
@@ -308,12 +272,8 @@ namespace Engine.Physics.Components
             }
         }
 
-        /// <summary>
-        /// Gets or sets the angular velocity.
-        /// </summary>
-        /// <value>
-        /// The angular velocity in radians/second.
-        /// </value>
+        /// <summary>Gets or sets the angular velocity.</summary>
+        /// <value>The angular velocity in radians/second.</value>
         public float AngularVelocity
         {
             get { return AngularVelocityInternal; }
@@ -333,59 +293,46 @@ namespace Engine.Physics.Components
             }
         }
 
-        /// <summary>
-        /// Get or sets the linear damping of the body.
-        /// </summary>
+        /// <summary>Get or sets the linear damping of the body.</summary>
         public float LinearDamping
         {
             get { return LinearDampingInternal; }
             set { LinearDampingInternal = value; }
         }
 
-        /// <summary>
-        /// Get or sets the angular damping of the body.
-        /// </summary>
+        /// <summary>Get or sets the angular damping of the body.</summary>
         public float AngularDamping
         {
             get { return AngularDampingInternal; }
             set { AngularDampingInternal = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the mass of this body.
-        /// </summary>
-        public float Mass { get { return MassInternal; } }
+        /// <summary>Gets or sets the mass of this body.</summary>
+        public float Mass
+        {
+            get { return MassInternal; }
+        }
 
-        /// <summary>
-        /// Get the rotational inertia of the body about the local origin.
-        /// </summary>
-        /// <value>
-        /// The rotational inertia, usually in kg-m^2.
-        /// </value>
+        /// <summary>Get the rotational inertia of the body about the local origin.</summary>
+        /// <value>The rotational inertia, usually in kg-m^2.</value>
         public float Inertia
         {
             get { return _inertia + MassInternal * Vector2.Dot(Sweep.LocalCenter, Sweep.LocalCenter); }
         }
 
-        /// <summary>
-        /// Gets the list of fixtures attached to this body.
-        /// </summary>
+        /// <summary>Gets the list of fixtures attached to this body.</summary>
         public IEnumerable<Component> Fixtures
         {
             get { return Manager.GetComponents(Entity, Fixture.TypeId); }
         }
 
-        /// <summary>
-        /// Gets the list of all joints attached to this body.
-        /// </summary>
+        /// <summary>Gets the list of all joints attached to this body.</summary>
         public IEnumerable<Joint> Joints
         {
             get { return Simulation.GetJoints(this); }
         }
 
-        /// <summary>
-        /// Gets the physics system driving the simulation we're part of.
-        /// </summary>
+        /// <summary>Gets the physics system driving the simulation we're part of.</summary>
         private PhysicsSystem Simulation
         {
             get { return Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem; }
@@ -395,114 +342,75 @@ namespace Engine.Physics.Components
 
         #region Fields
 
-        /// <summary>
-        /// The type of this body.
-        /// </summary>
+        /// <summary>The type of this body.</summary>
         internal BodyType TypeInternal;
 
-        /// <summary>
-        /// Whether this body is allowed to sleep.
-        /// </summary>
+        /// <summary>Whether this body is allowed to sleep.</summary>
         internal bool IsSleepAllowedInternal = true;
 
-        /// <summary>
-        /// Tracks whether this body is awake or not.
-        /// </summary>
+        /// <summary>Tracks whether this body is awake or not.</summary>
         internal bool IsAwakeInternal = true;
 
-        /// <summary>
-        /// Whether the rotation for this body is fixed or not.
-        /// </summary>
+        /// <summary>Whether the rotation for this body is fixed or not.</summary>
         private bool _isRotationFixed;
 
-        /// <summary>
-        /// Whether this body should act as a bullet, if dynamic.
-        /// </summary>
+        /// <summary>Whether this body should act as a bullet, if dynamic.</summary>
         internal bool IsBulletInternal;
 
-        /// <summary>
-        /// Used by the solver to look up body data inside the island data
-        /// structure.
-        /// </summary>
+        /// <summary>Used by the solver to look up body data inside the island data structure.</summary>
         internal int IslandIndex;
 
-        /// <summary>
-        /// The world transform of this body.
-        /// </summary>
+        /// <summary>The world transform of this body.</summary>
         internal WorldTransform Transform = WorldTransform.Identity;
 
-        /// <summary>
-        /// Representation of this body's movement over time.
-        /// </summary>
+        /// <summary>Representation of this body's movement over time.</summary>
         internal Sweep Sweep;
 
-        /// <summary>
-        /// The linear velocity of the body, i.e. the directed speed at which it moves.
-        /// </summary>
+        /// <summary>The linear velocity of the body, i.e. the directed speed at which it moves.</summary>
         internal Vector2 LinearVelocityInternal;
 
-        /// <summary>
-        /// The angular velocity of this body, i.e. how fast it spins.
-        /// </summary>
+        /// <summary>The angular velocity of this body, i.e. how fast it spins.</summary>
         internal float AngularVelocityInternal;
 
         /// <summary>
-        /// The force to apply to this body in the next update. This is reset
-        /// after each update and only serves as an accumulator.
+        ///     The force to apply to this body in the next update. This is reset after each update and only serves as an
+        ///     accumulator.
         /// </summary>
         internal Vector2 Force;
 
         /// <summary>
-        /// The torque to apply to this body in the next update. This is reset
-        /// after each update and only serves as an accumulator.
+        ///     The torque to apply to this body in the next update. This is reset after each update and only serves as an
+        ///     accumulator.
         /// </summary>
         internal float Torque;
 
-        /// <summary>
-        /// Start of the list of joints attached to this body.
-        /// </summary>
+        /// <summary>Start of the list of joints attached to this body.</summary>
         internal int JointList = -1;
 
-        /// <summary>
-        /// Start of the list of contacts this body is involved in (i.e. any of its
-        /// fixtures are involved in).
-        /// </summary>
+        /// <summary>Start of the list of contacts this body is involved in (i.e. any of its fixtures are involved in).</summary>
         internal int ContactList = -1;
 
-        /// <summary>
-        /// The mass of this body.
-        /// </summary>
+        /// <summary>The mass of this body.</summary>
         internal float MassInternal;
 
-        /// <summary>
-        /// The inverse mass of this body (precomputed for performance).
-        /// </summary>
+        /// <summary>The inverse mass of this body (precomputed for performance).</summary>
         internal float InverseMass;
 
-        /// <summary>
-        /// The inertia of this body (rotation around local origin).
-        /// </summary>
+        /// <summary>The inertia of this body (rotation around local origin).</summary>
         private float _inertia;
 
-        /// <summary>
-        /// The inverse of the inertia (precomputed for performance).
-        /// </summary>
+        /// <summary>The inverse of the inertia (precomputed for performance).</summary>
         internal float InverseInertia;
 
-        /// <summary>
-        /// The linear damping of the body.
-        /// </summary>
+        /// <summary>The linear damping of the body.</summary>
         internal float LinearDampingInternal;
 
-        /// <summary>
-        /// The angular damping of the body.
-        /// </summary>
+        /// <summary>The angular damping of the body.</summary>
         internal float AngularDampingInternal;
 
         /// <summary>
-        /// Accumulates the total time the body has not moved (angular and
-        /// linear velocity below threshold), to know when to put the body
-        /// to sleep.
+        ///     Accumulates the total time the body has not moved (angular and linear velocity below threshold), to know when
+        ///     to put the body to sleep.
         /// </summary>
         internal float SleepTime;
 
@@ -510,16 +418,14 @@ namespace Engine.Physics.Components
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         /// <returns></returns>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherBody = (Body)other;
+            var otherBody = (Body) other;
 
             TypeInternal = otherBody.TypeInternal;
             IsSleepAllowedInternal = otherBody.IsSleepAllowedInternal;
@@ -547,9 +453,9 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Initializes the body with the specified type. This will not trigger
-        /// mass recomputation, you will have to call <see cref="ResetMassData"/>
-        /// to trigger that yourself.
+        ///     Initializes the body with the specified type. This will not trigger mass recomputation, you will have to call
+        ///     <see cref="ResetMassData"/>
+        ///     to trigger that yourself.
         /// </summary>
         /// <param name="position">The world position.</param>
         /// <param name="angle">The angle.</param>
@@ -558,7 +464,13 @@ namespace Engine.Physics.Components
         /// <param name="isBullet">Whether to set the body as a bullet.</param>
         /// <param name="allowSleep">Whether to allow the body to sleep.</param>
         /// <returns></returns>
-        public Body Initialize(WorldPoint position, float angle = 0, BodyType type = BodyType.Static, bool fixedRotation = false, bool isBullet = false, bool allowSleep = true)
+        public Body Initialize(
+            WorldPoint position,
+            float angle = 0,
+            BodyType type = BodyType.Static,
+            bool fixedRotation = false,
+            bool isBullet = false,
+            bool allowSleep = true)
         {
             Transform.Translation = position;
             Transform.Rotation.Set(angle);
@@ -583,24 +495,7 @@ namespace Engine.Physics.Components
             return this;
         }
 
-        /// <summary>
-        /// Initializes the body with the specified position and angle.
-        /// </summary>
-        /// <param name="angle">The angle.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="fixedRotation">Whether the rotation of this body is fixed.</param>
-        /// <param name="isBullet">Whether to set the body as a bullet.</param>
-        /// <param name="allowSleep">Whether to allow the body to sleep.</param>
-        /// <returns></returns>
-        public Body Initialize(float angle = 0, BodyType type = BodyType.Static, bool fixedRotation = false, bool isBullet = false, bool allowSleep = true)
-        {
-            return Initialize(WorldPoint.Zero, angle, type, isBullet, allowSleep);
-        }
-
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -631,9 +526,7 @@ namespace Engine.Physics.Components
 
         #region Accessors
 
-        /// <summary>
-        /// Get the world coordinates of a point given the local coordinates.
-        /// </summary>
+        /// <summary>Get the world coordinates of a point given the local coordinates.</summary>
         /// <param name="localPoint">The point on the body measured relative the the body's origin.</param>
         /// <returns>the same point expressed in world coordinates.</returns>
         public WorldPoint GetWorldPoint(LocalPoint localPoint)
@@ -641,9 +534,7 @@ namespace Engine.Physics.Components
             return Transform.ToGlobal(localPoint);
         }
 
-        /// <summary>
-        /// Gets the world coordinates of a vector given the local coordinates.
-        /// </summary>
+        /// <summary>Gets the world coordinates of a vector given the local coordinates.</summary>
         /// <param name="localVector">The vector fixed in the body.</param>
         /// <returns>The same vector expressed in world coordinates.</returns>
         public Vector2 GetWorldVector(Vector2 localVector)
@@ -651,9 +542,7 @@ namespace Engine.Physics.Components
             return Transform.Rotation * localVector;
         }
 
-        /// <summary>
-        /// Gets the local point relative to the body's origin given a world point.
-        /// </summary>
+        /// <summary>Gets the local point relative to the body's origin given a world point.</summary>
         /// <param name="worldPoint">The point in world coordinates.</param>
         /// <returns>The corresponding local point relative to the body's origin.</returns>
         public LocalPoint GetLocalPoint(WorldPoint worldPoint)
@@ -661,9 +550,7 @@ namespace Engine.Physics.Components
             return Transform.ToLocal(worldPoint);
         }
 
-        /// <summary>
-        /// Gets the local vector given a world vector.
-        /// </summary>
+        /// <summary>Gets the local vector given a world vector.</summary>
         /// <param name="worldVector">The vector in world coordinates.</param>
         /// <returns>The corresponding local vector.</returns>
         public Vector2 GetLocalVector(Vector2 worldVector)
@@ -671,21 +558,18 @@ namespace Engine.Physics.Components
             return -Transform.Rotation * worldVector;
         }
 
-        /// <summary>
-        /// Gets the world linear velocity of a world point attached to this body.
-        /// </summary>
+        /// <summary>Gets the world linear velocity of a world point attached to this body.</summary>
         /// <param name="worldPoint">The point in world coordinates.</param>
         /// <returns>The world velocity of a point.</returns>
         public Vector2 GetLinearVelocityFromWorldPoint(WorldPoint worldPoint)
         {
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            return LinearVelocityInternal + Vector2Util.Cross(AngularVelocityInternal, (Vector2)(worldPoint - Sweep.CenterOfMass));
+            return LinearVelocityInternal +
+                   Vector2Util.Cross(AngularVelocityInternal, (Vector2) (worldPoint - Sweep.CenterOfMass));
 // ReSharper restore RedundantCast
         }
 
-        /// <summary>
-        /// Gets the world velocity of a local point.
-        /// </summary>
+        /// <summary>Gets the world velocity of a local point.</summary>
         /// <param name="localPoint">The point in local coordinates.</param>
         /// <returns>The world velocity of a point.</returns>
         public Vector2 GetLinearVelocityFromLocalPoint(LocalPoint localPoint)
@@ -694,13 +578,14 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Apply a force at a world point. If the force is not
-        /// applied at the center of mass, it will generate a torque and
-        /// affect the angular velocity. This wakes up the body.
+        ///     Apply a force at a world point. If the force is not applied at the center of mass, it will generate a torque
+        ///     and affect the angular velocity. This wakes up the body.
         /// </summary>
         /// <param name="force">The world force vector, usually in Newtons (N).</param>
         /// <param name="point">The world position of the point of application.</param>
-        /// <param name="wake">if set to <c>true</c> also wake up the body.</param>
+        /// <param name="wake">
+        ///     if set to <c>true</c> also wake up the body.
+        /// </param>
         public void ApplyForce(Vector2 force, WorldPoint point, bool wake = true)
         {
             // Skip for non-dynamic bodies.
@@ -720,16 +605,16 @@ namespace Engine.Physics.Components
             {
                 Force += force;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                Torque += Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), force);
+                Torque += Vector2Util.Cross((Vector2) (point - Sweep.CenterOfMass), force);
 // ReSharper restore RedundantCast
             }
         }
 
-        /// <summary>
-        /// Apply a force to the center of mass. This wakes up the body.
-        /// </summary>
+        /// <summary>Apply a force to the center of mass. This wakes up the body.</summary>
         /// <param name="force">The world force vector, usually in Newtons (N).</param>
-        /// <param name="wake">if set to <c>true</c> also wake up the body.</param>
+        /// <param name="wake">
+        ///     if set to <c>true</c> also wake up the body.
+        /// </param>
         public void ApplyForceToCenter(Vector2 force, bool wake = true)
         {
             // Skip for non-dynamic bodies.
@@ -752,12 +637,13 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Apply a torque. This affects the angular velocity
-        /// without affecting the linear velocity of the center of mass.
-        /// This wakes up the body.
+        ///     Apply a torque. This affects the angular velocity without affecting the linear velocity of the center of mass.
+        ///     This wakes up the body.
         /// </summary>
         /// <param name="torque">The torque about the z-axis (out of the screen), usually in N-m.</param>
-        /// <param name="wake">if set to <c>true</c> also wake up the body.</param>
+        /// <param name="wake">
+        ///     if set to <c>true</c> also wake up the body.
+        /// </param>
         public void ApplyTorque(float torque, bool wake = true)
         {
             // Skip for non-dynamic bodies.
@@ -780,13 +666,14 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Apply an impulse at a point. This immediately modifies the velocity.
-        /// It also modifies the angular velocity if the point of application
-        /// is not at the center of mass. This wakes up the body.
+        ///     Apply an impulse at a point. This immediately modifies the velocity. It also modifies the angular velocity if
+        ///     the point of application is not at the center of mass. This wakes up the body.
         /// </summary>
         /// <param name="impulse">The the world impulse vector, usually in N-seconds or kg-m/s.</param>
         /// <param name="point">The world position of the point of application.</param>
-        /// <param name="wake">if set to <c>true</c> also wake up the body.</param>
+        /// <param name="wake">
+        ///     if set to <c>true</c> also wake up the body.
+        /// </param>
         public void ApplyLinearImpulse(Vector2 impulse, WorldPoint point, bool wake = true)
         {
             // Skip for non-dynamic bodies.
@@ -794,7 +681,7 @@ namespace Engine.Physics.Components
             {
                 return;
             }
-            
+
             // Wake up as necessary.
             if (wake && !IsAwake)
             {
@@ -806,16 +693,17 @@ namespace Engine.Physics.Components
             {
                 LinearVelocityInternal += InverseMass * impulse;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                AngularVelocityInternal += InverseInertia * Vector2Util.Cross((Vector2)(point - Sweep.CenterOfMass), impulse);
+                AngularVelocityInternal += InverseInertia *
+                                           Vector2Util.Cross((Vector2) (point - Sweep.CenterOfMass), impulse);
 // ReSharper restore RedundantCast
             }
         }
 
-        /// <summary>
-        /// Apply an angular impulse.
-        /// </summary>
+        /// <summary>Apply an angular impulse.</summary>
         /// <param name="impulse">The angular impulse in units of kg*m*m/s.</param>
-        /// <param name="wake">if set to <c>true</c> also wake up the body.</param>
+        /// <param name="wake">
+        ///     if set to <c>true</c> also wake up the body.
+        /// </param>
         public void ApplyAngularImpulse(float impulse, bool wake = true)
         {
             // Skip for non-dynamic bodies.
@@ -838,11 +726,9 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Sets the transform of this body, i.e. its world position and angle.
-        /// Use this when you need to set position and angle, as it is more
-        /// efficient than setting them separately via the properties.
-        /// Setting this breaks any contacts and wakes the other bodies.
-        /// Manipulating a body's transform may cause non-physical behavior.
+        ///     Sets the transform of this body, i.e. its world position and angle. Use this when you need to set position and
+        ///     angle, as it is more efficient than setting them separately via the properties. Setting this breaks any contacts
+        ///     and wakes the other bodies. Manipulating a body's transform may cause non-physical behavior.
         /// </summary>
         /// <param name="position">The new world position.</param>
         /// <param name="angle">The new world angle.</param>
@@ -868,10 +754,7 @@ namespace Engine.Physics.Components
             Simulation.FindContactsBeforeNextUpdate();
         }
 
-        /// <summary>
-        /// Sets the mass properties for this body, overriding properties from any
-        /// fixtures attached to this body.
-        /// </summary>
+        /// <summary>Sets the mass properties for this body, overriding properties from any fixtures attached to this body.</summary>
         /// <param name="mass">The overall mass of the body.</param>
         /// <param name="center">The center of mass, relative to the local origin.</param>
         /// <param name="inertia">The rotational inertia about the local origin.</param>
@@ -920,14 +803,14 @@ namespace Engine.Physics.Components
 
             // Update center of mass velocity.
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            LinearVelocityInternal += Vector2Util.Cross(AngularVelocityInternal, (Vector2)(Sweep.CenterOfMass - oldCenter));
+            LinearVelocityInternal += Vector2Util.Cross(
+                AngularVelocityInternal, (Vector2) (Sweep.CenterOfMass - oldCenter));
 // ReSharper restore RedundantCast
         }
 
         /// <summary>
-        /// This resets the mass properties to the sum of the mass properties of the fixtures.
-        /// This normally does not need to be called unless you called SetMassData to override
-        /// the mass and you later want to reset the mass.
+        ///     This resets the mass properties to the sum of the mass properties of the fixtures. This normally does not need
+        ///     to be called unless you called SetMassData to override the mass and you later want to reset the mass.
         /// </summary>
         public void ResetMassData()
         {
@@ -1000,20 +883,21 @@ namespace Engine.Physics.Components
 
             // Update center of mass velocity.
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            LinearVelocityInternal += Vector2Util.Cross(AngularVelocityInternal, (Vector2)(Sweep.CenterOfMass - oldCenter));
+            LinearVelocityInternal += Vector2Util.Cross(
+                AngularVelocityInternal, (Vector2) (Sweep.CenterOfMass - oldCenter));
 // ReSharper restore RedundantCast
         }
 
         /// <summary>
-        /// Updates all of the bodies fixtures, telling them to update their positions
-        /// in the index structure used for the broad phase.
+        ///     Updates all of the bodies fixtures, telling them to update their positions in the index structure used for the
+        ///     broad phase.
         /// </summary>
         internal void SynchronizeFixtures()
         {
             // Compute previous world transform.
             WorldTransform xf0;
-            xf0.Rotation.Sin = (float)System.Math.Sin(Sweep.Angle0);
-            xf0.Rotation.Cos = (float)System.Math.Cos(Sweep.Angle0);
+            xf0.Rotation.Sin = (float) System.Math.Sin(Sweep.Angle0);
+            xf0.Rotation.Cos = (float) System.Math.Cos(Sweep.Angle0);
             xf0.Translation = Sweep.CenterOfMass0 - xf0.Rotation * Sweep.LocalCenter;
 
             // Update all fixtures on this body in the index.
@@ -1023,9 +907,7 @@ namespace Engine.Physics.Components
             }
         }
 
-        /// <summary>
-        /// Advance to the new safe time. This doesn't sync the broad-phase.
-        /// </summary>
+        /// <summary>Advance to the new safe time. This doesn't sync the broad-phase.</summary>
         /// <param name="alpha">The time to advance.</param>
         internal void Advance(float alpha)
         {
@@ -1036,19 +918,14 @@ namespace Engine.Physics.Components
             Transform.Translation = Sweep.CenterOfMass - Transform.Rotation * Sweep.LocalCenter;
         }
 
-        /// <summary>
-        /// Updates the transform of this body by setting it to the end state of the
-        /// body's sweep data.
-        /// </summary>
+        /// <summary>Updates the transform of this body by setting it to the end state of the body's sweep data.</summary>
         internal void SynchronizeTransform()
         {
             Transform.Rotation.Set(Sweep.Angle);
             Transform.Translation = Sweep.CenterOfMass - Transform.Rotation * Sweep.LocalCenter;
         }
 
-        /// <summary>
-        /// Clears the forces currently active on this body.
-        /// </summary>
+        /// <summary>Clears the forces currently active on this body.</summary>
         internal void ClearForces()
         {
             Force = Vector2.Zero;
@@ -1059,13 +936,9 @@ namespace Engine.Physics.Components
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             System.Diagnostics.Debug.Assert(!Simulation.IsLocked);

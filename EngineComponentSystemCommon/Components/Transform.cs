@@ -7,21 +7,15 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components
 {
-    /// <summary>
-    /// Represents transformation of a 2d object (position/translation + rotation).
-    /// </summary>
+    /// <summary>Represents transformation of a 2d object (position/translation + rotation).</summary>
     public sealed class Transform : Component
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -31,52 +25,40 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Properties
 
-        /// <summary>
-        /// Current position of the object.
-        /// </summary>
+        /// <summary>Current position of the object.</summary>
         /// <remarks>
-        /// This is not ideal performance wise, as we cannot pass this value
-        /// per reference directly, but it's worth it regarding the security
-        /// it brings regarding that it cannot be set directly, as we must
-        /// make sure the <c>TranslationChanged</c> message is sent whenever
-        /// this value changes.
+        ///     This is not ideal performance wise, as we cannot pass this value per reference directly, but it's worth it
+        ///     regarding the security it brings regarding that it cannot be set directly, as we must make sure the
+        ///     <c>TranslationChanged</c> message is sent whenever this value changes.
         /// </remarks>
         public FarPosition Translation
 #if DEBUG
-        // Don't allow directly changing from outside.
+            // Don't allow directly changing from outside.
         { get; private set; }
 #else
             ;
 #endif
 
-        /// <summary>
-        /// The angle of the current orientation.
-        /// </summary>
+        /// <summary>The angle of the current orientation.</summary>
         public float Rotation
 #if DEBUG
-        // Don't allow directly changing from outside.
+            // Don't allow directly changing from outside.
         { get; private set; }
 #else
         ;
 #endif
 
-        /// <summary>
-        /// The translation to move to when performing the position update.
-        /// </summary>
+        /// <summary>The translation to move to when performing the position update.</summary>
         private FarPosition _nextTranslation;
 
-        /// <summary>
-        /// Don't rely on float equality checks.
-        /// </summary>
+        /// <summary>Don't rely on float equality checks.</summary>
         private bool _translationChanged;
 
         #endregion
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         public override Component Initialize(Component other)
         {
@@ -85,7 +67,7 @@ namespace Engine.ComponentSystem.Common.Components
             // We do not want to trigger an update here, as it's the copy-
             // constructor, which must only be used when copying the whole
             // environment the component belongs to.
-            var otherTransform = (Transform)other;
+            var otherTransform = (Transform) other;
             Translation = otherTransform.Translation;
             _nextTranslation = Translation;
             _translationChanged = false;
@@ -94,9 +76,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified values.
-        /// </summary>
+        /// <summary>Initialize with the specified values.</summary>
         /// <param name="translation">The translation.</param>
         /// <param name="rotation">The rotation.</param>
         public Transform Initialize(FarPosition translation, float rotation)
@@ -112,9 +92,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified translation.
-        /// </summary>
+        /// <summary>Initialize with the specified translation.</summary>
         /// <param name="translation">The translation.</param>
         public Transform Initialize(FarPosition translation)
         {
@@ -123,9 +101,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified rotation.
-        /// </summary>
+        /// <summary>Initialize with the specified rotation.</summary>
         /// <param name="rotation">The rotation.</param>
         public Transform Initialize(float rotation)
         {
@@ -134,10 +110,7 @@ namespace Engine.ComponentSystem.Common.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -152,9 +125,7 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Modifiers
 
-        /// <summary>
-        /// Add the given translation to the current translation.
-        /// </summary>
+        /// <summary>Add the given translation to the current translation.</summary>
         /// <param name="x">The new x translation to add.</param>
         /// <param name="y">The new y translation to add.</param>
         public void AddTranslation(float x, float y)
@@ -164,9 +135,7 @@ namespace Engine.ComponentSystem.Common.Components
             _translationChanged = true;
         }
 
-        /// <summary>
-        /// Add the given translation to the current translation.
-        /// </summary>
+        /// <summary>Add the given translation to the current translation.</summary>
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(ref FarPosition value)
         {
@@ -174,9 +143,7 @@ namespace Engine.ComponentSystem.Common.Components
             _translationChanged = true;
         }
 
-        /// <summary>
-        /// Add the given translation to the current translation.
-        /// </summary>
+        /// <summary>Add the given translation to the current translation.</summary>
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(FarPosition value)
         {
@@ -184,9 +151,7 @@ namespace Engine.ComponentSystem.Common.Components
             _translationChanged = true;
         }
 
-        /// <summary>
-        /// Add the given translation to the current translation.
-        /// </summary>
+        /// <summary>Add the given translation to the current translation.</summary>
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(ref Vector2 value)
         {
@@ -194,9 +159,7 @@ namespace Engine.ComponentSystem.Common.Components
             _translationChanged = true;
         }
 
-        /// <summary>
-        /// Add the given translation to the current translation.
-        /// </summary>
+        /// <summary>Add the given translation to the current translation.</summary>
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(Vector2 value)
         {
@@ -204,12 +167,10 @@ namespace Engine.ComponentSystem.Common.Components
             _translationChanged = true;
         }
 
-        /// <summary>
-        /// Set the translation to the specified values.
-        /// </summary>
+        /// <summary>Set the translation to the specified values.</summary>
         /// <remarks>
-        /// This is not part of the property, to make sure at least the getter
-        /// of it gets inlined properly (or at least increase chances it is).
+        ///     This is not part of the property, to make sure at least the getter of it gets inlined properly (or at least
+        ///     increase chances it is).
         /// </remarks>
         /// <param name="x">The new x coordinate.</param>
         /// <param name="y">The new y coordinate.</param>
@@ -220,9 +181,7 @@ namespace Engine.ComponentSystem.Common.Components
             _translationChanged = true;
         }
 
-        /// <summary>
-        /// Set the translation to the specified value.
-        /// </summary>
+        /// <summary>Set the translation to the specified value.</summary>
         /// <param name="value">The new translation.</param>
         public void SetTranslation(ref FarPosition value)
         {
@@ -230,9 +189,7 @@ namespace Engine.ComponentSystem.Common.Components
             _translationChanged = true;
         }
 
-        /// <summary>
-        /// Set the translation to the specified value.
-        /// </summary>
+        /// <summary>Set the translation to the specified value.</summary>
         /// <param name="value">The new translation.</param>
         public void SetTranslation(FarPosition value)
         {
@@ -241,14 +198,10 @@ namespace Engine.ComponentSystem.Common.Components
         }
 
         /// <summary>
-        /// Applies the translation set to be used next. Called from system,
-        /// because we want to keep the setter in debug private to make sure
-        /// no one actually writes directly to the translation variable.
+        ///     Applies the translation set to be used next. Called from system, because we want to keep the setter in debug
+        ///     private to make sure no one actually writes directly to the translation variable.
         /// </summary>
-        /// <remarks>
-        /// This must be called from a synchronous context (i.e. not from a
-        /// parallel system).
-        /// </remarks>
+        /// <remarks>This must be called from a synchronous context (i.e. not from a parallel system).</remarks>
         public void ApplyTranslation()
         {
             // Only update if we have to.
@@ -269,12 +222,10 @@ namespace Engine.ComponentSystem.Common.Components
         }
 
         /// <summary>
-        /// Add the given rotation to the current rotation
-        /// 
-        /// <para>
-        /// This method will ensure that the value will remain in the
-        /// interval of <c>(-PI, PI]</c>
-        /// </para>
+        ///     Add the given rotation to the current rotation
+        ///     <para>
+        ///         This method will ensure that the value will remain in the interval of <c>(-PI, PI]</c>
+        ///     </para>
         /// </summary>
         /// <param name="value"></param>
         public void AddRotation(float value)
@@ -283,8 +234,7 @@ namespace Engine.ComponentSystem.Common.Components
         }
 
         /// <summary>
-        /// Sets the rotation to the specified value. Clamps the rotation to be
-        /// in the interval of <c>(-PI, PI]</c>.
+        ///     Sets the rotation to the specified value. Clamps the rotation to be in the interval of <c>(-PI, PI]</c>.
         /// </summary>
         /// <param name="value">The value.</param>
         public void SetRotation(float value)
@@ -297,13 +247,9 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             Debug.Assert(!_translationChanged);

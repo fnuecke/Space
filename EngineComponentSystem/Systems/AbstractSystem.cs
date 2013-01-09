@@ -9,23 +9,20 @@ using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Base class for systems, implementing default basic functionality.
-    /// </summary>
-    [DebuggerTypeProxy(typeof(FlattenHierarchyProxy))]
+    /// <summary>Base class for systems, implementing default basic functionality.</summary>
+    [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
     public abstract class AbstractSystem : ICopyable<AbstractSystem>, IPacketizable
     {
         #region Type ID
 
         /// <summary>
-        /// Gets the component type id for the calling currently-being-initialized
-        /// component type class. This will create a new ID if necessary.
+        ///     Gets the component type id for the calling currently-being-initialized component type class. This will create
+        ///     a new ID if necessary.
         /// </summary>
         /// <returns>The type id for that component.</returns>
         /// <remarks>
-        /// Utility method for subclasses, this just redirects to the same method in
-        /// the component system manager. Uses execution stack to determine calling
-        /// type.
+        ///     Utility method for subclasses, this just redirects to the same method in the component system manager. Uses
+        ///     execution stack to determine calling type.
         /// </remarks>
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected static int CreateTypeId()
@@ -37,9 +34,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Properties
 
-        /// <summary>
-        /// The component system manager this system is part of.
-        /// </summary>
+        /// <summary>The component system manager this system is part of.</summary>
         [CopyIgnore, PacketizerIgnore]
         public IManager Manager { get; set; }
 
@@ -47,61 +42,40 @@ namespace Engine.ComponentSystem.Systems
 
         #region Manager Events
 
-        /// <summary>
-        /// Called by the manager when an entity was removed.
-        /// </summary>
+        /// <summary>Called by the manager when an entity was removed.</summary>
         /// <param name="entity">The entity that was removed.</param>
-        public virtual void OnEntityRemoved(int entity)
-        {
-        }
+        public virtual void OnEntityRemoved(int entity) {}
 
-        /// <summary>
-        /// Called by the manager when a new component was added.
-        /// </summary>
+        /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
-        public virtual void OnComponentAdded(Component component)
-        {
-        }
+        public virtual void OnComponentAdded(Component component) {}
 
-        /// <summary>
-        /// Called by the manager when a component was removed.
-        /// </summary>
+        /// <summary>Called by the manager when a component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
-        public virtual void OnComponentRemoved(Component component)
-        {
-        }
+        public virtual void OnComponentRemoved(Component component) {}
 
         /// <summary>
-        /// Called by the manager when the complete environment has been
-        /// depacketized. Called from the <see cref="Manager"/>.
+        ///     Called by the manager when the complete environment has been depacketized. Called from the <see cref="Manager"/>.
         /// </summary>
-        public virtual void OnDepacketized()
-        {
-        }
+        public virtual void OnDepacketized() {}
 
         /// <summary>
-        /// Called by the manager when the complete environment has been
-        /// copied from another manager. Called from the <see cref="Manager"/>.
+        ///     Called by the manager when the complete environment has been copied from another manager. Called from the
+        ///     <see cref="Manager"/>.
         /// </summary>
-        public virtual void OnCopied()
-        {
-        }
+        public virtual void OnCopied() {}
 
         #endregion
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
         /// <remarks>
-        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        /// to true.
+        ///     Must be overridden in subclasses setting <c>ShouldSynchronize</c>
+        ///     to true.
         /// </remarks>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         [OnPacketize]
         public virtual IWritablePacket Packetize(IWritablePacket packet)
         {
@@ -109,14 +83,12 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet. This is called
-        /// before automatic depacketization is performed.
+        ///     Bring the object to the state in the given packet. This is called before automatic depacketization is
+        ///     performed.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
-        public virtual void Depacketize(IReadablePacket packet)
-        {
-        }
+        public virtual void Depacketize(IReadablePacket packet) {}
 
         [OnStringify]
         public virtual StreamWriter Dump(StreamWriter w, int indent)
@@ -128,10 +100,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public virtual AbstractSystem NewInstance()
         {
@@ -141,7 +110,7 @@ namespace Engine.ComponentSystem.Systems
                 throw new InvalidOperationException("Drawing systems cannot be copied.");
             }
 
-            var copy = (AbstractSystem)MemberwiseClone();
+            var copy = (AbstractSystem) MemberwiseClone();
 
             copy.Manager = null;
 
@@ -149,18 +118,14 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the
-        /// same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that
-        /// represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
-        /// <remarks>
-        /// The manager for the system to copy into must be set to the
-        /// manager into which the system is being copied.
-        /// </remarks>
+        /// <remarks>The manager for the system to copy into must be set to the manager into which the system is being copied.</remarks>
         public virtual void CopyInto(AbstractSystem into)
         {
             // Not supported for presentation types.

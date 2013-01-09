@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -12,28 +13,28 @@ using Nuclex.Input;
 namespace Engine.Util
 {
     /// <summary>
-    /// This is a simple console which can easily be plugged into an XNA game.
-    /// 
-    /// It supports:
-    /// <list type="bullet">
-    /// <item>custom background / foreground color.</item>
-    /// <item>custom font (not necessarily monospace).</item>
-    /// <item>automatic line wrapping.</item>
-    /// <item>scrolling through the buffer ([shift+]page up / [shift+]page down).</item>
-    /// <item>command history (up / down).</item>
-    /// <item>navigation in and manipulation of current input ([ctrl+]left / [ctrl+]right / home / end / delete / backspace).</item>
-    /// <item>command completion (tab, only command names, not parameters).</item>
-    /// <item>string literals ("").</item>
-    /// </list>
-    /// 
-    /// It does not support:
-    /// <list type="bullet">
-    /// <item>animation on open / close.</item>
-    /// <item>custom size / layout.</item>
-    /// </list>
+    ///     This is a simple console which can easily be plugged into an XNA game. It supports:
+    ///     <list type="bullet">
+    ///         <item>custom background / foreground color.</item>
+    ///         <item>custom font (not necessarily mono-space).</item>
+    ///         <item>automatic line wrapping.</item>
+    ///         <item>scrolling through the buffer ([shift+]page up / [shift+]page down).</item>
+    ///         <item>command history (up / down).</item>
+    ///         <item>
+    ///             navigation in and manipulation of current input ([ctrl+]left / [ctrl+]right / home / end / delete /
+    ///             backspace).
+    ///         </item>
+    ///         <item>command completion (tab, only command names, not parameters).</item>
+    ///         <item>string literals ("").</item>
+    ///     </list>
+    ///     It does not support:
+    ///     <list type="bullet">
+    ///         <item>animation on open / close.</item>
+    ///         <item>custom size / layout.</item>
+    ///     </list>
     /// </summary>
     /// <example>
-    /// <code>
+    ///     <code>
     /// class MyGame : Game {
     /// 
     ///   GameConsole console;
@@ -47,21 +48,17 @@ namespace Engine.Util
     ///     console.SpriteBatch = spriteBatch;
     ///     console.Font = Content.Load&lt;SpriteFont&gt;("Fonts/ConsoleFont");
     ///   }
-    /// </code>
+    ///     </code>
     /// </example>
     public sealed class GameConsole : DrawableGameComponent, IGameConsole
     {
         #region Constants
 
-        /// <summary>
-        /// Overall padding of the console.
-        /// </summary>
+        /// <summary>Overall padding of the console.</summary>
         private const int Padding = 4;
 
-        /// <summary>
-        /// Regex used to parse parameters from input.
-        /// </summary>
-        private static readonly Regex ArgPattern = new Regex(@"
+        /// <summary>Regex used to parse parameters from input.</summary>
+        private static readonly Regex ArgumentPattern = new Regex(@"
             \s*             # Leading whitespace.
             (               # Capture a string literal.
                 ""              # String literal - open.
@@ -81,29 +78,20 @@ namespace Engine.Util
 
         #region Events
 
-        /// <summary>
-        /// Fired when an entry is added via WriteLine().
-        /// </summary>
+        /// <summary>Fired when an entry is added via WriteLine().</summary>
         public event EventHandler<EventArgs> LineWritten;
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// The texture used as the console background.
-        /// </summary>
+        /// <summary>The texture used as the console background.</summary>
         public Color BackgroundColor { get; set; }
 
-        /// <summary>
-        /// The maximum number of lines to keep.
-        /// </summary>
+        /// <summary>The maximum number of lines to keep.</summary>
         public int BufferSize
         {
-            get
-            {
-                return _bufferSize;
-            }
+            get { return _bufferSize; }
             set
             {
                 _bufferSize = Math.Max(1, value);
@@ -115,40 +103,25 @@ namespace Engine.Util
             }
         }
 
-        /// <summary>
-        /// The color of the caret (input position marker).
-        /// </summary>
+        /// <summary>The color of the caret (input position marker).</summary>
         public Color CaretColor { get; set; }
 
-        /// <summary>
-        /// The number of entries to skip when scrolling either via page up / down or the mouse wheel.
-        /// </summary>
+        /// <summary>The number of entries to skip when scrolling either via page up / down or the mouse wheel.</summary>
         public int EntriesToScroll { get; set; }
 
-        /// <summary>
-        /// The font to use for rendering text on the console.
-        /// </summary>
+        /// <summary>The font to use for rendering text on the console.</summary>
         public SpriteFont Font { get; set; }
 
-        /// <summary>
-        /// The list of recent commands a user entered.
-        /// </summary>
+        /// <summary>The list of recent commands a user entered.</summary>
         public ICollection<string> History
         {
-            get
-            {
-                return new List<string>(_history.ToArray());
-            }
+            get { return new List<string>(_history.ToArray()); }
         }
 
-        /// <summary>
-        /// The hot-key used for opening the console.
-        /// </summary>
+        /// <summary>The hot-key used for opening the console.</summary>
         public Keys Hotkey { get; set; }
 
-        /// <summary>
-        /// Whether the console is currently open (visible) or not.
-        /// </summary>
+        /// <summary>Whether the console is currently open (visible) or not.</summary>
         public bool IsOpen
         {
             get { return _isOpen; }
@@ -162,136 +135,85 @@ namespace Engine.Util
             }
         }
 
-        /// <summary>
-        /// SpriteBatch used for rendering.
-        /// </summary>
+        /// <summary>SpriteBatch used for rendering.</summary>
         public SpriteBatch SpriteBatch { get; set; }
 
-        /// <summary>
-        /// Color to use for console text.
-        /// </summary>
+        /// <summary>Color to use for console text.</summary>
         public Color TextColor { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// Internal line buffer (lines of text).
-        /// </summary>
+        /// <summary>Internal line buffer (lines of text).</summary>
         private readonly List<string> _buffer = new List<string>();
 
-        /// <summary>
-        /// Actual value for the maximum number of lines to keep.
-        /// </summary>
+        /// <summary>Actual value for the maximum number of lines to keep.</summary>
         private int _bufferSize = 200;
 
-        /// <summary>
-        /// List of known commands.
-        /// </summary>
+        /// <summary>List of known commands.</summary>
         private readonly Dictionary<string, CommandInfo> _commands = new Dictionary<string, CommandInfo>();
 
-        /// <summary>
-        /// List of additional callbacks to query for possible input.
-        /// </summary>
-        private readonly List<Func<IEnumerable<string>>> _additionalCommandNameGetters = new List<Func<IEnumerable<string>>>();
+        /// <summary>List of additional callbacks to query for possible input.</summary>
+        private readonly List<Func<IEnumerable<string>>> _additionalCommandNameGetters =
+            new List<Func<IEnumerable<string>>>();
 
-        /// <summary>
-        /// Default command handler, used when an unknown command is
-        /// encountered.
-        /// </summary>
+        /// <summary>Default command handler, used when an unknown command is encountered.</summary>
         private DefaultHandler _defaultHandler;
 
-        /// <summary>
-        /// Input cursor offset.
-        /// </summary>
+        /// <summary>Input cursor offset.</summary>
         private int _cursor;
 
-        /// <summary>
-        /// The history of commands a user entered.
-        /// </summary>
+        /// <summary>The history of commands a user entered.</summary>
         private readonly List<string> _history = new List<string>();
 
-        /// <summary>
-        /// Which history index we last copied.
-        /// </summary>
+        /// <summary>Which history index we last copied.</summary>
         private int _historyIndex = -1;
 
-        /// <summary>
-        /// Current user input.
-        /// </summary>
+        /// <summary>Current user input.</summary>
         private readonly StringBuilder _input = new StringBuilder();
 
-        /// <summary>
-        /// Backup of our last input, before cycling through the history.
-        /// </summary>
+        /// <summary>Backup of our last input, before cycling through the history.</summary>
         private string _inputBackup;
 
-        /// <summary>
-        /// Text we had before pressing tab the first time, to allow cycling through
-        /// possible solutions.
-        /// </summary>
+        /// <summary>Text we had before pressing tab the first time, to allow cycling through possible solutions.</summary>
         private string _inputBeforeTab;
 
-        /// <summary>
-        /// Last time a key was pressed (to suppress blinking for a bit while / after typing).
-        /// </summary>
+        /// <summary>Last time a key was pressed (to suppress blinking for a bit while / after typing).</summary>
         private DateTime _lastKeyPress = DateTime.MinValue;
 
-        /// <summary>
-        /// Texture used for rendering the background.
-        /// </summary>
+        /// <summary>Texture used for rendering the background.</summary>
         private Texture2D _pixelTexture;
 
-        /// <summary>
-        /// The current scrolling offset.
-        /// </summary>
+        /// <summary>The current scrolling offset.</summary>
         private int _scroll;
 
-        /// <summary>
-        /// Index of last used tab completion option.
-        /// </summary>
+        /// <summary>Index of last used tab completion option.</summary>
         private int _tabCompleteIndex = -1;
 
-        /// <summary>
-        /// Tracks whether we're currently at the last matching command for
-        /// auto complete cycling.
-        /// </summary>
+        /// <summary>Tracks whether we're currently at the last matching command for auto complete cycling.</summary>
         private bool _tabCompleteAtEnd;
 
-        /// <summary>
-        /// Whether to open the console in the next update. Used to skip the
-        /// hot key from being printed in the console.
-        /// </summary>
+        /// <summary>Whether to open the console in the next update. Used to skip the hot key from being printed in the console.</summary>
         private bool _shouldOpen;
 
-        /// <summary>
-        /// Whether the console actually is open at the moment.
-        /// </summary>
+        /// <summary>Whether the console actually is open at the moment.</summary>
         private bool _isOpen;
 
-        /// <summary>
-        /// Reused string buffer for lines to actually draw.
-        /// </summary>
+        /// <summary>Reused string buffer for lines to actually draw.</summary>
         private readonly List<StringBuilder> _lines = new List<StringBuilder>();
 
-        /// <summary>
-        /// Reused buffer for wrapping a single line of text.
-        /// </summary>
+        /// <summary>Reused buffer for wrapping a single line of text.</summary>
         private readonly StringBuilder _wrap = new StringBuilder();
 
-        /// <summary>
-        /// Reused buffer for extracting substrings for measurement.
-        /// </summary>
+        /// <summary>Reused buffer for extracting substrings for measurement.</summary>
         private readonly StringBuilder _substring = new StringBuilder();
 
         #endregion
 
         #region Constructor
 
-        /// <summary>
-        /// Creates a new game console and adds it as a service to the game.
-        /// </summary>
+        /// <summary>Creates a new game console and adds it as a service to the game.</summary>
         /// <param name="game">the game the console will be used in.</param>
         public GameConsole(Game game)
             : base(game)
@@ -304,18 +226,21 @@ namespace Engine.Util
             Hotkey = Keys.OemTilde;
 
             // Add inbuilt functions.
-            AddCommand(new[] { "help", "?", "commands", "cmdlist" },
+            AddCommand(
+                new[] {"help", "?", "commands", "cmdlist"},
                 HandleShowHelp,
                 "Shows this help text.");
-            AddCommand(new[] { "quit", "exit" },
+            AddCommand(
+                new[] {"quit", "exit"},
                 HandleExit,
                 "Exits the program.");
-            AddCommand(new[] { "clear", "cls" },
+            AddCommand(
+                new[] {"clear", "cls"},
                 HandleClear,
                 "Clears the console screen.");
 
             // Register with game.
-            game.Services.AddService(typeof(IGameConsole), this);
+            game.Services.AddService(typeof (IGameConsole), this);
 
             // Draw on top of everything else.
             DrawOrder = int.MaxValue;
@@ -325,12 +250,10 @@ namespace Engine.Util
 
         #region Init / Update / Cleanup
 
-        /// <summary>
-        /// Initializes the console, attaching event listeners.
-        /// </summary>
+        /// <summary>Initializes the console, attaching event listeners.</summary>
         public override void Initialize()
         {
-            var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
+            var inputManager = (InputManager) Game.Services.GetService(typeof (InputManager));
             foreach (var keyboard in inputManager.Keyboards)
             {
                 if (keyboard.IsAttached)
@@ -351,26 +274,22 @@ namespace Engine.Util
             base.Initialize();
         }
 
-        /// <summary>
-        /// Loads content for this console, generating the pixel texture.
-        /// </summary>
+        /// <summary>Loads content for this console, generating the pixel texture.</summary>
         protected override void LoadContent()
         {
             _pixelTexture = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            _pixelTexture.SetData(new[] { Color.White });
+            _pixelTexture.SetData(new[] {Color.White});
 
             base.LoadContent();
         }
 
-        /// <summary>
-        /// Free any resources we hold and clean up event listeners.
-        /// </summary>
+        /// <summary>Free any resources we hold and clean up event listeners.</summary>
         /// <param name="disposing">Whether we're currently disposing.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
+                var inputManager = (InputManager) Game.Services.GetService(typeof (InputManager));
                 foreach (var keyboard in inputManager.Keyboards)
                 {
                     if (keyboard.IsAttached)
@@ -397,9 +316,7 @@ namespace Engine.Util
             base.Dispose(disposing);
         }
 
-        /// <summary>
-        /// Checks if we should open the console.
-        /// </summary>
+        /// <summary>Checks if we should open the console.</summary>
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime)
         {
@@ -412,30 +329,28 @@ namespace Engine.Util
             }
         }
 
-        /// <summary>
-        /// Draws the console to the screen.
-        /// </summary>
+        /// <summary>Draws the console to the screen.</summary>
         /// <param name="gameTime">Unused.</param>
         public override void Draw(GameTime gameTime)
         {
             if (IsOpen && SpriteBatch != null && Font != null)
             {
                 var bounds = ComputeBounds();
-                var numBufferLines = ComputeNumberOfVisibleLines() - 1;
+                var lineCount = ComputeNumberOfVisibleLines() - 1;
 
                 // Allocate string builders for individual lines.
-                if (_lines.Count != numBufferLines)
+                if (_lines.Count != lineCount)
                 {
-                    if (_lines.Count < numBufferLines)
+                    if (_lines.Count < lineCount)
                     {
-                        for (var i = numBufferLines - _lines.Count; i > 0; --i)
+                        for (var i = lineCount - _lines.Count; i > 0; --i)
                         {
                             _lines.Add(new StringBuilder());
                         }
                     }
                     else
                     {
-                        for (var i = _lines.Count - numBufferLines; i > 0; --i)
+                        for (var i = _lines.Count - lineCount; i > 0; --i)
                         {
                             _lines.RemoveAt(0);
                         }
@@ -451,9 +366,13 @@ namespace Engine.Util
                 SpriteBatch.Draw(_pixelTexture, bounds, BackgroundColor);
 
                 // Content.
-                SpriteBatch.Draw(_pixelTexture,
-                    new Rectangle(bounds.X + Padding / 2, bounds.Y + Padding / 2,
-                        bounds.Width - Padding, bounds.Height - Padding),
+                SpriteBatch.Draw(
+                    _pixelTexture,
+                    new Rectangle(
+                        bounds.X + Padding / 2,
+                        bounds.Y + Padding / 2,
+                        bounds.Width - Padding,
+                        bounds.Height - Padding),
                     BackgroundColor);
 
                 _wrap.Clear();
@@ -461,28 +380,33 @@ namespace Engine.Util
                 _wrap.Append(_input);
 
                 // Command line. We need to know the number of lines we have to properly render the background.
-                var wrappedLines = WrapText(_wrap, bounds.Width - Padding * 2, _lines, numBufferLines);
+                var wrappedLines = WrapText(_wrap, bounds.Width - Padding * 2, _lines, lineCount);
 
-                SpriteBatch.Draw(_pixelTexture,
-                    new Rectangle(bounds.X + Padding, bounds.Y + Padding + (numBufferLines - wrappedLines + 1) * Font.LineSpacing,
-                        bounds.Width - Padding * 2, Font.LineSpacing * wrappedLines),
+                SpriteBatch.Draw(
+                    _pixelTexture,
+                    new Rectangle(
+                        bounds.X + Padding,
+                        bounds.Y + Padding + (lineCount - wrappedLines + 1) * Font.LineSpacing,
+                        bounds.Width - Padding * 2,
+                        Font.LineSpacing * wrappedLines),
                     BackgroundColor);
 
                 // Draw text. From bottom to top, for line wrapping.
 
                 // Get rendering position.
-                var position = new Vector2(bounds.X + Padding, bounds.Y + Padding + numBufferLines * Font.LineSpacing);
+                var position = new Vector2(bounds.X + Padding, bounds.Y + Padding + lineCount * Font.LineSpacing);
 
                 // Draw the current command line.
                 {
-                    for (var i = wrappedLines - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
+                    for (var i = wrappedLines - 1; i >= 0 && lineCount >= 0; --i, --lineCount)
                     {
                         SpriteBatch.DrawString(Font, _lines[i], position, TextColor);
                         position.Y -= Font.LineSpacing;
                     }
 
                     // Draw the cursor.
-                    if (((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (new TimeSpan(DateTime.UtcNow.Ticks - _lastKeyPress.Ticks).TotalSeconds < 1))
+                    if (((int) gameTime.TotalGameTime.TotalSeconds & 1) == 0 ||
+                        (new TimeSpan(DateTime.UtcNow.Ticks - _lastKeyPress.Ticks).TotalSeconds < 1))
                     {
                         int cursorLine;
                         var cursorCounter = _cursor + 2;
@@ -499,30 +423,35 @@ namespace Engine.Util
                         {
                             _substring.Append(_lines[cursorLine][i]);
                         }
-                        var cursorX = bounds.X + Padding + (int)Font.MeasureString(_substring).X;
-                        var cursorY = bounds.Y + Padding + (ComputeNumberOfVisibleLines() - (wrappedLines - cursorLine)) * Font.LineSpacing;
+                        var cursorX = bounds.X + Padding + (int) Font.MeasureString(_substring).X;
+                        var cursorY = bounds.Y + Padding +
+                                      (ComputeNumberOfVisibleLines() - (wrappedLines - cursorLine)) * Font.LineSpacing;
                         int cursorWidth;
                         if (_lines[cursorLine].Length > cursorCounter)
                         {
-                            cursorWidth = (int)Font.MeasureString(_lines[cursorLine][cursorCounter].ToString(CultureInfo.InvariantCulture)).X;
+                            cursorWidth =
+                                (int)
+                                Font.MeasureString(
+                                    _lines[cursorLine][cursorCounter].ToString(CultureInfo.InvariantCulture)).X;
                         }
                         else
                         {
-                            cursorWidth = (int)Font.MeasureString(" ").X;
+                            cursorWidth = (int) Font.MeasureString(" ").X;
                         }
 
-                        SpriteBatch.Draw(_pixelTexture, new Rectangle(cursorX, cursorY, cursorWidth, Font.LineSpacing), CaretColor);
+                        SpriteBatch.Draw(
+                            _pixelTexture, new Rectangle(cursorX, cursorY, cursorWidth, Font.LineSpacing), CaretColor);
                     }
                 }
 
                 // Draw text buffer.
-                for (var j = _buffer.Count - 1 - _scroll; j >= 0 && numBufferLines >= 0; --j)
+                for (var j = _buffer.Count - 1 - _scroll; j >= 0 && lineCount >= 0; --j)
                 {
                     _wrap.Clear();
                     _wrap.Append(_buffer[j]);
-                    wrappedLines = WrapText(_wrap, bounds.Width - Padding * 2, _lines, numBufferLines);
+                    wrappedLines = WrapText(_wrap, bounds.Width - Padding * 2, _lines, lineCount);
 
-                    for (var i = wrappedLines - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
+                    for (var i = wrappedLines - 1; i >= 0 && lineCount >= 0; --i, --lineCount)
                     {
                         SpriteBatch.DrawString(Font, _lines[i], position, TextColor);
                         position.Y -= Font.LineSpacing;
@@ -538,9 +467,7 @@ namespace Engine.Util
 
         #region Public interface
 
-        /// <summary>
-        /// Register a new command with the given name.
-        /// </summary>
+        /// <summary>Register a new command with the given name.</summary>
         /// <param name="name">the name of the command.</param>
         /// <param name="handler">the function that will handle the command.</param>
         /// <param name="help">optional help that may be displayed for this command.</param>
@@ -548,7 +475,7 @@ namespace Engine.Util
         {
             if (!String.IsNullOrWhiteSpace(name))
             {
-                AddCommand(new[] { name }, handler, help);
+                AddCommand(new[] {name}, handler, help);
             }
             else
             {
@@ -556,9 +483,7 @@ namespace Engine.Util
             }
         }
 
-        /// <summary>
-        /// Register a new command with aliases.
-        /// </summary>
+        /// <summary>Register a new command with aliases.</summary>
         /// <param name="names">command names  (first is considered the main name).</param>
         /// <param name="handler">the function that will handle the command.</param>
         /// <param name="help">optional help that may be displayed for this command.</param>
@@ -567,7 +492,8 @@ namespace Engine.Util
             if (Array.TrueForAll(names, s => !String.IsNullOrWhiteSpace(s)) &&
                 handler != null && (help == null || Array.TrueForAll(help, s => !String.IsNullOrWhiteSpace(s))))
             {
-                var info = new CommandInfo((string[])names.Clone(), handler, help == null ? null : (string[])help.Clone());
+                var info = new CommandInfo(
+                    (string[]) names.Clone(), handler, help == null ? null : (string[]) help.Clone());
                 foreach (var command in names)
                 {
                     // Remove old variant, if there is one.
@@ -582,25 +508,22 @@ namespace Engine.Util
         }
 
         /// <summary>
-        /// Sets a command handler to be invoked when an unknown command is
-        /// executed. Pass <c>null</c> to unset the default handler, back to
-        /// the default.
+        ///     Sets a command handler to be invoked when an unknown command is executed. Pass <c>null</c> to unset the default
+        ///     handler, back to the default.
         /// </summary>
-        /// <param name="handler">The command handler to use for unknown
-        /// commands.</param>
+        /// <param name="handler">The command handler to use for unknown commands.</param>
         public void SetDefaultCommandHandler(DefaultHandler handler)
         {
             _defaultHandler = handler;
         }
 
         /// <summary>
-        /// Registers a callback that can be used to query names for
-        /// auto completion. This method will be called each time we need
-        /// to complete the input, i.e. the result is not cached.
+        ///     Registers a callback that can be used to query names for auto completion. This method will be called each time
+        ///     we need to complete the input, i.e. the result is not cached.
         /// </summary>
         /// <remarks>
-        /// This is intended to allow providing auto completion hints
-        /// for commands handled in a custom default command handler.
+        ///     This is intended to allow providing auto completion hints for commands handled in a custom default command
+        ///     handler.
         /// </remarks>
         /// <param name="getGlobalNames">Callback used to get available commands.</param>
         public void AddAutoCompletionLookup(Func<IEnumerable<string>> getGlobalNames)
@@ -608,9 +531,7 @@ namespace Engine.Util
             _additionalCommandNameGetters.Add(getGlobalNames);
         }
 
-        /// <summary>
-        /// Clears the complete buffer.
-        /// </summary>
+        /// <summary>Clears the complete buffer.</summary>
         public void Clear()
         {
             _scroll = 0;
@@ -618,9 +539,7 @@ namespace Engine.Util
             _buffer.TrimExcess();
         }
 
-        /// <summary>
-        /// Execute a command in the format it would be written in the console, i.e. 'command arg0 arg1 ...'.
-        /// </summary>
+        /// <summary>Execute a command in the format it would be written in the console, i.e. 'command arg0 arg1 ...'.</summary>
         /// <param name="command">the command to execute.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Execute(string command)
@@ -639,7 +558,7 @@ namespace Engine.Util
             _scroll = 0;
 
             // Parse the input into separate strings, allowing for string literals.
-            var matches = ArgPattern.Matches(command);
+            var matches = ArgumentPattern.Matches(command);
             var args = new List<string>();
             for (var i = 0; i < matches.Count; ++i)
             {
@@ -679,15 +598,14 @@ namespace Engine.Util
                 }
                 else
                 {
-                    WriteLine("Error: unknown command '" + args[0] +
+                    WriteLine(
+                        "Error: unknown command '" + args[0] +
                         "'. Try 'help' to see a list of available commands.");
                 }
             }
         }
 
-        /// <summary>
-        /// Log some formatted text to the console.
-        /// </summary>
+        /// <summary>Log some formatted text to the console.</summary>
         /// <param name="format">the text format.</param>
         /// <param name="args">the parameters to insert.</param>
         public void WriteLine(string format, params object[] args)
@@ -729,9 +647,7 @@ namespace Engine.Util
 
         #region Input
 
-        /// <summary>
-        /// Handle keyboard input.
-        /// </summary>
+        /// <summary>Handle keyboard input.</summary>
         private void HandleKeyPressed(Keys key)
         {
             if (IsOpen)
@@ -796,7 +712,9 @@ namespace Engine.Util
                         _scroll = IsShiftPressed() ? 0 : Math.Max(0, _scroll - EntriesToScroll);
                         break;
                     case Keys.PageUp:
-                        _scroll = IsShiftPressed() ? Math.Max(0, _buffer.Count - 1) : Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
+                        _scroll = IsShiftPressed()
+                                      ? Math.Max(0, _buffer.Count - 1)
+                                      : Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
                         break;
                     case Keys.Right:
                         if (IsControlPressed())
@@ -837,7 +755,7 @@ namespace Engine.Util
                                 var previousIndex = _tabCompleteIndex;
                                 // Tracks the index in the command list we're
                                 // currently at.
-                                var numMatches = -1;
+                                var matchCount = -1;
                                 // This flag is set if we find something, and
                                 // unset if we continue iterating. This allows
                                 // us to wrap back to the beginning.
@@ -862,7 +780,7 @@ namespace Engine.Util
                                     if (command.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
                                     {
                                         // Got a match.
-                                        ++numMatches;
+                                        ++matchCount;
                                         // Check which way we're actually searching.
                                         if (IsShiftPressed())
                                         {
@@ -870,7 +788,7 @@ namespace Engine.Util
                                             // are past the current element,
                                             // stop now. Otherwise go as far to
                                             // the right as we can.
-                                            if (flag && previousIndex == numMatches)
+                                            if (flag && previousIndex == matchCount)
                                             {
                                                 break;
                                             }
@@ -878,19 +796,19 @@ namespace Engine.Util
                                             _input.Clear();
                                             _input.Append(command);
                                             _cursor = _input.Length;
-                                            _tabCompleteIndex = numMatches;
+                                            _tabCompleteIndex = matchCount;
                                             flag = true;
                                         }
                                         else
                                         {
                                             // Forwards.
-                                            if (!flag && (_tabCompleteAtEnd || _tabCompleteIndex < numMatches))
+                                            if (!flag && (_tabCompleteAtEnd || _tabCompleteIndex < matchCount))
                                             {
                                                 // Found a match we can use.
                                                 _input.Clear();
                                                 _input.Append(command);
                                                 _cursor = _input.Length;
-                                                _tabCompleteIndex = numMatches;
+                                                _tabCompleteIndex = matchCount;
                                                 flag = true;
                                             }
                                             else if (flag)
@@ -955,11 +873,11 @@ namespace Engine.Util
                                     text.Remove(i, 1);
                                 }
                             }
-                            var str = text.ToString();
-                            if (!string.IsNullOrWhiteSpace(str))
+                            var value = text.ToString();
+                            if (!string.IsNullOrWhiteSpace(value))
                             {
-                                _input.Insert(_cursor, str);
-                                _cursor += str.Length;
+                                _input.Insert(_cursor, value);
+                                _cursor += value.Length;
                                 ResetTabCompletion();
                             }
                         }
@@ -1004,9 +922,7 @@ namespace Engine.Util
             ResetTabCompletion();
         }
 
-        /// <summary>
-        /// Handle mouse scrolling of the console buffer
-        /// </summary>
+        /// <summary>Handle mouse scrolling of the console buffer</summary>
         private void HandleMouseScrolled(float ticks)
         {
             if (IsOpen)
@@ -1021,36 +937,20 @@ namespace Engine.Util
 
         private bool IsControlPressed()
         {
-            var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
-            foreach (var keyboard in inputManager.Keyboards)
-            {
-                if (keyboard.IsAttached)
-                {
-                    var state = keyboard.GetState();
-                    if (state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            var inputManager = (InputManager) Game.Services.GetService(typeof (InputManager));
+            return (from keyboard in inputManager.Keyboards
+                    where keyboard.IsAttached
+                    select keyboard.GetState()).Any(
+                        state => state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl));
         }
 
         private bool IsShiftPressed()
         {
-            var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
-            foreach (var keyboard in inputManager.Keyboards)
-            {
-                if (keyboard.IsAttached)
-                {
-                    var state = keyboard.GetState();
-                    if (state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            var inputManager = (InputManager) Game.Services.GetService(typeof (InputManager));
+            return (from keyboard in inputManager.Keyboards
+                    where keyboard.IsAttached
+                    select keyboard.GetState()).Any(
+                        state => state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift));
         }
 
         private Rectangle ComputeBounds()
@@ -1062,8 +962,11 @@ namespace Engine.Util
                 height = height - (height % Font.LineSpacing);
             }
             height += 2 * Padding;
-            return new Rectangle(GraphicsDevice.Viewport.X, GraphicsDevice.Viewport.Y,
-                                 GraphicsDevice.Viewport.Width, height);
+            return new Rectangle(
+                GraphicsDevice.Viewport.X,
+                GraphicsDevice.Viewport.Y,
+                GraphicsDevice.Viewport.Width,
+                height);
         }
 
         private int ComputeNumberOfVisibleLines()
@@ -1090,9 +993,9 @@ namespace Engine.Util
             return i;
         }
 
-        private int FindSplit(StringBuilder text, int start, int low, int high, bool ceil, int width)
+        private int FindSplit(StringBuilder text, int start, int low, int high, bool ceiling, int width)
         {
-            var mid = low + (high - low + (ceil ? 1 : 0)) / 2;
+            var mid = low + (high - low + (ceiling ? 1 : 0)) / 2;
             if (mid == low)
             {
                 return low;
@@ -1102,8 +1005,10 @@ namespace Engine.Util
             {
                 _substring.Append(text[i]);
             }
-            var measure = (int)Font.MeasureString(_substring).X;
-            return measure <= width ? FindSplit(text, start, mid, high, true, width) : FindSplit(text, start, low, mid, false, width);
+            var measure = (int) Font.MeasureString(_substring).X;
+            return measure <= width
+                       ? FindSplit(text, start, mid, high, true, width)
+                       : FindSplit(text, start, low, mid, false, width);
         }
 
         private void ResetInput()
@@ -1146,7 +1051,11 @@ namespace Engine.Util
                     continue;
                 }
 
-                WriteLine(" " + command.Names[0] + (command.Names.Length > 1 ? (" [" + String.Join(", ", command.Names, 1, command.Names.Length - 1) + "]") : ""));
+                WriteLine(
+                    " " + command.Names[0] +
+                    (command.Names.Length > 1
+                         ? (" [" + String.Join(", ", command.Names, 1, command.Names.Length - 1) + "]")
+                         : ""));
                 if (command.Help != null)
                 {
                     foreach (var entry in command.Help)
@@ -1176,30 +1085,19 @@ namespace Engine.Util
 
         #region Command helper
 
-        /// <summary>
-        /// Utility class that represents a single known command with all
-        /// its aliases, handler and help text.
-        /// </summary>
+        /// <summary>Utility class that represents a single known command with all its aliases, handler and help text.</summary>
         private sealed class CommandInfo
         {
-            /// <summary>
-            /// All names for this command.
-            /// </summary>
+            /// <summary>All names for this command.</summary>
             public readonly string[] Names;
 
-            /// <summary>
-            /// The handler method for this command.
-            /// </summary>
+            /// <summary>The handler method for this command.</summary>
             public readonly CommandHandler Handler;
 
-            /// <summary>
-            /// Help text to display via the help command.
-            /// </summary>
+            /// <summary>Help text to display via the help command.</summary>
             public readonly string[] Help;
 
-            /// <summary>
-            /// Creates a new helper object with the given values.
-            /// </summary>
+            /// <summary>Creates a new helper object with the given values.</summary>
             public CommandInfo(string[] names, CommandHandler handler, string[] help)
             {
                 Names = names;

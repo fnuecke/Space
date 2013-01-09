@@ -7,63 +7,43 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// Part of image post processing, this system uses the rendered image
-    /// taken from the render target set up in the <see cref="PostProcessingPreRenderSystem"/>
-    /// to apply post processing effects.
-    /// 
-    /// This system should run after all other render systems.
+    ///     Part of image post processing, this system uses the rendered image taken from the render target set up in the
+    ///     <see cref="PostProcessingPreRenderSystem"/>
+    ///     to apply post processing effects. This system should run after all other render systems.
     /// </summary>
     public sealed class PostProcessingPostRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
 
         #region Types
 
-        /// <summary>
-        /// Available bloom presets.
-        /// </summary>
+        /// <summary>Available bloom presets.</summary>
         public enum BloomType
         {
-            /// <summary>
-            /// Disables bloom.
-            /// </summary>
+            /// <summary>Disables bloom.</summary>
             None,
 
-            /// <summary>
-            /// Default bloom preset.
-            /// </summary>
+            /// <summary>Default bloom preset.</summary>
             Default,
 
-            /// <summary>
-            /// Soft bloom preset.
-            /// </summary>
+            /// <summary>Soft bloom preset.</summary>
             Soft,
 
-            /// <summary>
-            /// Desaturated bloom preset.
-            /// </summary>
+            /// <summary>Desaturated bloom preset.</summary>
             Desaturated,
 
-            /// <summary>
-            /// Saturated bloom preset.
-            /// </summary>
+            /// <summary>Saturated bloom preset.</summary>
             Saturated,
 
-            /// <summary>
-            /// Blurry bloom preset.
-            /// </summary>
+            /// <summary>Blurry bloom preset.</summary>
             Blurry,
 
-            /// <summary>
-            /// Subtle bloom preset.
-            /// </summary>
+            /// <summary>Subtle bloom preset.</summary>
             Subtle
         }
 
@@ -71,11 +51,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Properties
 
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should draw.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
-        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool Enabled
         {
@@ -86,53 +64,36 @@ namespace Space.ComponentSystem.Systems
             set { _enabled = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the bloom preset in use.
-        /// </summary>
+        /// <summary>Gets or sets the bloom preset in use.</summary>
         public BloomType Bloom { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The sprite batch we will render the final output to.
-        /// </summary>
+        /// <summary>The sprite batch we will render the final output to.</summary>
         private SpriteBatch _spriteBatch;
 
-        /// <summary>
-        /// The shader we use to extract bright areas from the original scene render.
-        /// </summary>
+        /// <summary>The shader we use to extract bright areas from the original scene render.</summary>
         private Effect _bloomExtractEffect;
 
-        /// <summary>
-        /// The shader we use to blur the extracted bright areas.
-        /// </summary>
+        /// <summary>The shader we use to blur the extracted bright areas.</summary>
         private Effect _gaussianBlurEffect;
 
-        /// <summary>
-        /// The shader we use to combine the result of our blurring with the original
-        /// scene render.
-        /// </summary>
+        /// <summary>The shader we use to combine the result of our blurring with the original scene render.</summary>
         private Effect _bloomCombineEffect;
 
-        /// <summary>
-        /// Temporary render targets at half screen size.
-        /// </summary>
+        /// <summary>Temporary render targets at half screen size.</summary>
         private RenderTarget2D _renderTarget1, _renderTarget2;
 
-        /// <summary>
-        /// Whether to apply any post processing at all or not.
-        /// </summary>
+        /// <summary>Whether to apply any post processing at all or not.</summary>
         private bool _enabled;
 
         #endregion
 
         #region Logic
 
-        /// <summary>
-        /// Handle a message of the specified type.
-        /// </summary>
+        /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -156,10 +117,20 @@ namespace Space.ComponentSystem.Systems
                     var pp = device.PresentationParameters;
                     var width = pp.BackBufferWidth / 2;
                     var height = pp.BackBufferHeight / 2;
-                    _renderTarget1 = new RenderTarget2D(device, width, height, false,
-                                                        pp.BackBufferFormat, DepthFormat.None);
-                    _renderTarget2 = new RenderTarget2D(device, width, height, false,
-                                                        pp.BackBufferFormat, DepthFormat.None);
+                    _renderTarget1 = new RenderTarget2D(
+                        device,
+                        width,
+                        height,
+                        false,
+                        pp.BackBufferFormat,
+                        DepthFormat.None);
+                    _renderTarget2 = new RenderTarget2D(
+                        device,
+                        width,
+                        height,
+                        false,
+                        pp.BackBufferFormat,
+                        DepthFormat.None);
                 }
             }
             {
@@ -185,14 +156,12 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Draws the system.
-        /// </summary>
+        /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            var preprocessor = (PostProcessingPreRenderSystem)Manager.GetSystem(PostProcessingPreRenderSystem.TypeId);
+            var preprocessor = (PostProcessingPreRenderSystem) Manager.GetSystem(PostProcessingPreRenderSystem.TypeId);
 
             if (!_enabled || Bloom == BloomType.None)
             {
@@ -201,14 +170,16 @@ namespace Space.ComponentSystem.Systems
 
                 // Dump everything we rendered into our buffer to the screen.
                 _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
-                _spriteBatch.Draw(preprocessor.RenderTarget, _spriteBatch.GraphicsDevice.PresentationParameters.Bounds,
-                                  Color.White);
+                _spriteBatch.Draw(
+                    preprocessor.RenderTarget,
+                    _spriteBatch.GraphicsDevice.PresentationParameters.Bounds,
+                    Color.White);
                 _spriteBatch.End();
             }
             else
             {
                 // Get settings based on preset.
-                var settings = BloomSettings.Presets[(int)Bloom - 1];
+                var settings = BloomSettings.Presets[(int) Bloom - 1];
 
                 // XNA buggyness workaround.
                 _spriteBatch.GraphicsDevice.SamplerStates[1] = SamplerState.LinearClamp;
@@ -249,10 +220,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Helper for drawing a texture into a render target, using
-        /// a custom shader to apply post processing effects.
-        /// </summary>
+        /// <summary>Helper for drawing a texture into a render target, using a custom shader to apply post processing effects.</summary>
         private void DrawFullscreenQuad(Texture2D texture, RenderTarget2D renderTarget, Effect effect)
         {
             _spriteBatch.GraphicsDevice.SetRenderTarget(renderTarget);
@@ -260,8 +228,8 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Helper for drawing a texture into the current render target,
-        /// using a custom shader to apply post processing effects.
+        ///     Helper for drawing a texture into the current render target, using a custom shader to apply post processing
+        ///     effects.
         /// </summary>
         private void DrawFullscreenQuad(Texture2D texture, int width, int height, Effect effect)
         {
@@ -270,10 +238,7 @@ namespace Space.ComponentSystem.Systems
             _spriteBatch.End();
         }
 
-        /// <summary>
-        /// Computes sample weightings and texture coordinate offsets
-        /// for one pass of a separable gaussian blur filter.
-        /// </summary>
+        /// <summary>Computes sample weightings and texture coordinate offsets for one pass of a separable gaussian blur filter.</summary>
         private void SetBlurEffectParameters(float dx, float dy, float theta)
         {
             // Look up the sample weight and offset effect parameters.
@@ -334,23 +299,18 @@ namespace Space.ComponentSystem.Systems
             offsetsParameter.SetValue(sampleOffsets);
         }
 
-        /// <summary>
-        /// Evaluates a single point on the gaussian falloff curve.
-        /// Used for setting up the blur filter weightings.
-        /// </summary>
+        /// <summary>Evaluates a single point on the gaussian falloff curve. Used for setting up the blur filter weightings.</summary>
         private static float ComputeGaussian(float n, float theta)
         {
-            return (float)((1.0 / Math.Sqrt(2 * Math.PI * theta)) *
-                           Math.Exp(-(n * n) / (2 * theta * theta)));
+            return (float) ((1.0 / Math.Sqrt(2 * Math.PI * theta)) *
+                            Math.Exp(-(n * n) / (2 * theta * theta)));
         }
 
         #endregion
 
         #region Types
 
-        /// <summary>
-        /// Class holds all the settings used to tweak the bloom effect.
-        /// </summary>
+        /// <summary>Class holds all the settings used to tweak the bloom effect.</summary>
         private sealed class BloomSettings
         {
             #region Fields
@@ -379,12 +339,14 @@ namespace Space.ComponentSystem.Systems
 
             #endregion
 
-            /// <summary>
-            /// Constructs a new bloom settings descriptor.
-            /// </summary>
-            private BloomSettings(float bloomThreshold, float blurAmount,
-                                  float bloomIntensity, float baseIntensity,
-                                  float bloomSaturation, float baseSaturation)
+            /// <summary>Constructs a new bloom settings descriptor.</summary>
+            private BloomSettings(
+                float bloomThreshold,
+                float blurAmount,
+                float bloomIntensity,
+                float baseIntensity,
+                float bloomSaturation,
+                float baseSaturation)
             {
                 BloomThreshold = bloomThreshold;
                 BlurAmount = blurAmount;
@@ -394,19 +356,17 @@ namespace Space.ComponentSystem.Systems
                 BaseSaturation = baseSaturation;
             }
 
-            /// <summary>
-            /// Table of preset bloom settings, used by the sample program.
-            /// </summary>
+            /// <summary>Table of preset bloom settings, used by the sample program.</summary>
             public static readonly BloomSettings[] Presets =
-                {
-                    //                     Name           Thresh  Blur Bloom  Base  BloomSat BaseSat
-                    new BloomSettings( /* "Default",    */ 0.25f, 4, 1.25f, 1, 1, 1),
-                    new BloomSettings( /* "Soft",       */ 0, 3, 1, 1, 1, 1),
-                    new BloomSettings( /* "Desaturated",*/ 0.5f, 8, 2, 1, 0, 1),
-                    new BloomSettings( /* "Saturated",  */ 0.25f, 4, 2, 1, 2, 0),
-                    new BloomSettings( /* "Blurry",     */ 0, 2, 1, 0.1f, 1, 1),
-                    new BloomSettings( /* "Subtle",     */ 0.5f, 2, 1, 1, 1, 1)
-                };
+            {
+                //                     Name           Thresh  Blur Bloom  Base  BloomSat BaseSat
+                new BloomSettings( /* "Default",    */ 0.25f, 4, 1.25f, 1, 1, 1),
+                new BloomSettings( /* "Soft",       */ 0, 3, 1, 1, 1, 1),
+                new BloomSettings( /* "Desaturated",*/ 0.5f, 8, 2, 1, 0, 1),
+                new BloomSettings( /* "Saturated",  */ 0.25f, 4, 2, 1, 2, 0),
+                new BloomSettings( /* "Blurry",     */ 0, 2, 1, 0.1f, 1, 1),
+                new BloomSettings( /* "Subtle",     */ 0.5f, 2, 1, 1, 1, 1)
+            };
         }
 
         #endregion

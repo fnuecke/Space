@@ -1,45 +1,36 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 
 namespace Engine.ComponentSystem
 {
-    /// <summary>
-    /// Entity utility type, for keeping track of components attached to an entity.
-    /// </summary>
+    /// <summary>Entity utility type, for keeping track of components attached to an entity.</summary>
     public sealed partial class Manager
     {
         /// <summary>
-        /// Represents an entity, for easier internal access. We do not expose
-        /// this class, to keep the whole component system's representation to
-        /// the outside world 'flatter', which also means it's easier to copy
-        /// and serialize, and to guarantee that everything in the system is in
-        /// a valid state.
+        ///     Represents an entity, for easier internal access. We do not expose this class, to keep the whole component
+        ///     system's representation to the outside world 'flatter', which also means it's easier to copy and serialize, and to
+        ///     guarantee that everything in the system is in a valid state.
         /// </summary>
         [DebuggerDisplay("Components = {Components.Count}")]
         private sealed class Entity
         {
             #region Fields
 
-            /// <summary>
-            /// List of all components attached to this entity.
-            /// </summary>
+            /// <summary>List of all components attached to this entity.</summary>
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
             public readonly List<Component> Components = new List<Component>();
 
-            /// <summary>
-            /// Cache used for faster look-up of components of a specific type.
-            /// </summary>
+            /// <summary>Cache used for faster look-up of components of a specific type.</summary>
             public readonly SparseArray<List<Component>> TypeCache = new SparseArray<List<Component>>();
 
             #endregion
 
             #region Accessors
 
-            /// <summary>
-            /// Adds the specified component.
-            /// </summary>
+            /// <summary>Adds the specified component.</summary>
             /// <param name="component">The component.</param>
             public void Add(Component component)
             {
@@ -68,9 +59,7 @@ namespace Engine.ComponentSystem
                 }
             }
 
-            /// <summary>
-            /// Removes the specified component.
-            /// </summary>
+            /// <summary>Removes the specified component.</summary>
             /// <param name="component">The component.</param>
             public void Remove(Component component)
             {
@@ -89,9 +78,7 @@ namespace Engine.ComponentSystem
                 }
             }
 
-            /// <summary>
-            /// Gets the first component of the specified type.
-            /// </summary>
+            /// <summary>Gets the first component of the specified type.</summary>
             /// <param name="typeId">The type id of the component.</param>
             /// <returns>The first component of that type.</returns>
             public Component GetComponent(int typeId)
@@ -100,12 +87,11 @@ namespace Engine.ComponentSystem
                 {
                     BuildTypeCache(typeId);
                 }
+                Contract.Assume(TypeCache[typeId] != null);
                 return TypeCache[typeId].Count > 0 ? TypeCache[typeId][0] : null;
             }
 
-            /// <summary>
-            /// Gets the components of the specified type.
-            /// </summary>
+            /// <summary>Gets the components of the specified type.</summary>
             /// <param name="typeId">The type of the components to get.</param>
             /// <returns>The components of that type.</returns>
             public IEnumerable<Component> GetComponents(int typeId)
@@ -118,8 +104,8 @@ namespace Engine.ComponentSystem
             }
 
             /// <summary>
-            /// Builds the type cache for the specified type. We may need to do this
-            /// for types that were registered after the creation of this entity.
+            ///     Builds the type cache for the specified type. We may need to do this for types that were registered after the
+            ///     creation of this entity.
             /// </summary>
             /// <param name="typeId">The type id.</param>
             private void BuildTypeCache(int typeId)
@@ -148,7 +134,8 @@ namespace Engine.ComponentSystem
                             if (componentTypeId == typeId)
                             {
                                 // Found this type as a parent, add the component.
-                                TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
+                                TypeCache[typeId].Insert(
+                                    ~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
 
                                 // No need to go further up the hierarchy.
                                 break;

@@ -8,70 +8,48 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace Engine.ComponentSystem.Common.Systems
 {
-    /// <summary>
-    /// System that manages sound components, querying them for cue names to play
-    /// in a single update.
-    /// </summary>
+    /// <summary>System that manages sound components, querying them for cue names to play in a single update.</summary>
     public abstract class SoundSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
 
         #region Constants
 
-        /// <summary>
-        /// Index group to use for sound computations.
-        /// </summary>
+        /// <summary>Index group to use for sound computations.</summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should perform
-        /// updates and react to events.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
         public bool Enabled { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The sound bank we use to get actual sounds for our cue names.
-        /// </summary>
+        /// <summary>The sound bank we use to get actual sounds for our cue names.</summary>
         private readonly SoundBank _soundBank;
 
-        /// <summary>
-        /// The squared maximum range ate which sound can be heard.
-        /// </summary>
+        /// <summary>The squared maximum range ate which sound can be heard.</summary>
         private readonly float _maxAudibleDistance;
 
-        /// <summary>
-        /// The squared maximum range ate which sound can be heard.
-        /// </summary>
+        /// <summary>The squared maximum range ate which sound can be heard.</summary>
         private readonly float _maxAudibleDistanceSquared;
 
-        /// <summary>
-        /// The sound listener to use for relative position.
-        /// </summary>
+        /// <summary>The sound listener to use for relative position.</summary>
         private readonly AudioListener _listener = new AudioListener();
 
-        /// <summary>
-        /// The sound emitter to use for emitted sound positioning.
-        /// </summary>
+        /// <summary>The sound emitter to use for emitted sound positioning.</summary>
         private readonly AudioEmitter _emitter = new AudioEmitter();
 
-        /// <summary>
-        /// All Currently playing sounds mapped to the entry id
-        /// </summary>
+        /// <summary>All Currently playing sounds mapped to the entry id</summary>
         private Dictionary<int, Cue> _playingSounds = new Dictionary<int, Cue>();
 
         #endregion
@@ -79,15 +57,12 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Single-Allocation
 
         /// <summary>
-        /// Reused for iterating components. As its only used by the drawing
-        /// instance we don't need to clone it, so it can be readonly.
+        ///     Reused for iterating components. As its only used by the drawing instance we don't need to clone it, so it can
+        ///     be readonly.
         /// </summary>
         private ISet<int> _reusableNeighborList = new HashSet<int>();
 
-        /// <summary>
-        /// Used to swap between this dict and the one assigned to _playingSounds
-        /// to avoid reallocating each update.
-        /// </summary>
+        /// <summary>Used to swap between this dict and the one assigned to _playingSounds to avoid reallocating each update.</summary>
         private Dictionary<int, Cue> _reusablePlayingSounds = new Dictionary<int, Cue>();
 
         #endregion
@@ -95,7 +70,7 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SoundSystem"/> class.
+        ///     Initializes a new instance of the <see cref="SoundSystem"/> class.
         /// </summary>
         /// <param name="soundBank">The sound bank.</param>
         /// <param name="maxAudibleDistance">The maximum distance at which sound is heard.</param>
@@ -110,9 +85,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Check for sound in range and play.
-        /// </summary>
+        /// <summary>Check for sound in range and play.</summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
@@ -131,7 +104,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 return;
             }
 
-            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
             Debug.Assert(index != null);
 
             // Update listener information.
@@ -147,7 +120,7 @@ namespace Engine.ComponentSystem.Common.Systems
             foreach (var neighbor in _reusableNeighborList)
             {
                 // Get the sound component of the neighbor.
-                var sound = (Sound)Manager.GetComponent(neighbor, Sound.TypeId);
+                var sound = (Sound) Manager.GetComponent(neighbor, Sound.TypeId);
 
                 // Skip this neighbor if its sound is not enabled.
                 if (!sound.Enabled)
@@ -156,10 +129,10 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Get sound position and velocity.
-                var emitterPosition = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                var emitterPosition = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
 
                 // The velocity is optional, so we must check if it exists.
-                var neighborVelocity = (Velocity)Manager.GetComponent(neighbor, Velocity.TypeId);
+                var neighborVelocity = (Velocity) Manager.GetComponent(neighbor, Velocity.TypeId);
                 var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
 
                 // Check whether to update or start playing.
@@ -177,7 +150,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         // We make the emitter position relative to the listener, which is
                         // equivalent to having the listener at the actual origin at all
                         // times, so we don't have to to update its position.
-                        var relativeEmitterPosition = (Vector2)(emitterPosition - listenerPosition);
+                        var relativeEmitterPosition = (Vector2) (emitterPosition - listenerPosition);
 
                         // Get position and velocity of emitter.
                         _emitter.Position = ToV3(ref relativeEmitterPosition);
@@ -212,7 +185,7 @@ namespace Engine.ComponentSystem.Common.Systems
             // Clear for next update.
             _reusableNeighborList.Clear();
 
-            // Stop all sound thats not in range.
+            // Stop all sound that's not in range.
             foreach (var cue in _playingSounds)
             {
                 cue.Value.Stop(AudioStopOptions.Immediate);
@@ -230,10 +203,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Playback
 
-        /// <summary>
-        /// Plays a sound cue with the specified name at the specified location
-        /// and with the specified emitter velocity.
-        /// </summary>
+        /// <summary>Plays a sound cue with the specified name at the specified location and with the specified emitter velocity.</summary>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
         /// <param name="velocity">The velocity of the sound's emitter.</param>
@@ -254,7 +224,7 @@ namespace Engine.ComponentSystem.Common.Systems
             // Transform all sounds so as to be relative to the origin. This way
             // listener is implicitly always at the center, so we don't have to
             // adjust its position.
-            var relativePosition = (Vector2)(position - listenerPosition);
+            var relativePosition = (Vector2) (position - listenerPosition);
 
             // Skip if too far away.
             if (relativePosition.LengthSquared() > _maxAudibleDistanceSquared)
@@ -284,32 +254,27 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        /// <summary>
-        /// Plays a sound cue with the specified name at the specified location.
-        /// </summary>
+        /// <summary>Plays a sound cue with the specified name at the specified location.</summary>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
         public Cue Play(string soundCue, ref FarPosition position)
         {
             var zero = Vector2.Zero;
-            return Play(soundCue, ref  position, ref zero);
+            return Play(soundCue, ref position, ref zero);
         }
 
-        /// <summary>
-        /// Plays a sound cue with the specified name as if it were emitted by
-        /// the specified entity.
-        /// </summary>
+        /// <summary>Plays a sound cue with the specified name as if it were emitted by the specified entity.</summary>
         /// <remarks>
-        /// The entity must have a <c>Transform</c> component. A <c>Velocity</c>
-        /// component is optional.
+        ///     The entity must have a <c>Transform</c> component. A <c>Velocity</c>
+        ///     component is optional.
         /// </remarks>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="entity">The entity that emits the sound.</param>
         public Cue Play(string soundCue, int entity)
         {
-            var position = ((Transform)Manager.GetComponent(entity, Transform.TypeId)).Translation;
+            var position = ((Transform) Manager.GetComponent(entity, Transform.TypeId)).Translation;
             var velocity = Vector2.Zero;
-            var velocityComponent = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
+            var velocityComponent = ((Velocity) Manager.GetComponent(entity, Velocity.TypeId));
             if (velocityComponent != null)
             {
                 velocity = velocityComponent.Value;
@@ -321,18 +286,14 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Overrides for positional sound systems
 
-        /// <summary>
-        /// Get the position of the listener (e.g. player avatar).
-        /// </summary>
+        /// <summary>Get the position of the listener (e.g. player avatar).</summary>
         /// <returns>The position of the listener.</returns>
         protected virtual FarPosition GetListenerPosition()
         {
             return FarPosition.Zero;
         }
 
-        /// <summary>
-        /// Get the velocity of the listener (e.g. player avatar).
-        /// </summary>
+        /// <summary>Get the velocity of the listener (e.g. player avatar).</summary>
         /// <returns>The velocity of the listener.</returns>
         protected virtual Vector2 GetListenerVelocity()
         {
@@ -343,9 +304,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Utility methods
 
-        /// <summary>
-        /// Converts a 2D vector to a XACT compatible 3D vector.
-        /// </summary>
+        /// <summary>Converts a 2D vector to a XACT compatible 3D vector.</summary>
         /// <param name="v2">The vector to convert.</param>
         /// <returns>The converted vector.</returns>
         private static Vector3 ToV3(ref Vector2 v2)

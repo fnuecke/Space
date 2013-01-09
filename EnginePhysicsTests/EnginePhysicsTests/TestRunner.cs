@@ -23,16 +23,12 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Tests
 {
-    /// <summary>
-    /// Test runner framework, knows tests and switches between them.
-    /// </summary>
+    /// <summary>Test runner framework, knows tests and switches between them.</summary>
     internal sealed class TestRunner : Game
     {
         #region Constants
 
-        /// <summary>
-        /// The list of known tests between we can cycle.
-        /// </summary>
+        /// <summary>The list of known tests between we can cycle.</summary>
         private static readonly AbstractTest[] Tests = new AbstractTest[]
         {
             new Pyramid(),
@@ -50,120 +46,76 @@ namespace Engine.Physics.Tests
             new TheoJansen()
         };
 
-        /// <summary>
-        /// The updates per second to perform on the simulation.
-        /// </summary>
+        /// <summary>The updates per second to perform on the simulation.</summary>
         private const float UpdatesPerSecond = 60;
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// A string buffer used to accumulate text messages to print each frame.
-        /// </summary>
+        /// <summary>A string buffer used to accumulate text messages to print each frame.</summary>
         private static readonly StringBuilder StringBuffer = new StringBuilder();
 
-        /// <summary>
-        /// The graphics device manager we use.
-        /// </summary>
+        /// <summary>The graphics device manager we use.</summary>
         private readonly GraphicsDeviceManager _graphics;
 
-        /// <summary>
-        /// The manager in which the current test runs.
-        /// </summary>
+        /// <summary>The manager in which the current test runs.</summary>
         private readonly Manager _manager = new Manager();
 
-        /// <summary>
-        /// Profiling data accumulated over time.
-        /// </summary>
+        /// <summary>Profiling data accumulated over time.</summary>
         private readonly Profile _profile = new Profile();
 
-        /// <summary>
-        /// Used to render messages.
-        /// </summary>
+        /// <summary>Used to render messages.</summary>
         private SpriteBatch _spriteBatch;
 
-        /// <summary>
-        /// The font to render messages with.
-        /// </summary>
+        /// <summary>The font to render messages with.</summary>
         private SpriteFont _font;
 
-        /// <summary>
-        /// The last keyboard state, used to check for changes.
-        /// </summary>
+        /// <summary>The last keyboard state, used to check for changes.</summary>
         private KeyboardState _lastKeyboardState;
 
-        /// <summary>
-        /// The last mouse state, to check for changes.
-        /// </summary>
+        /// <summary>The last mouse state, to check for changes.</summary>
         private MouseState _lastMouseState;
 
-        /// <summary>
-        /// The id of the current test.
-        /// </summary>
+        /// <summary>The id of the current test.</summary>
         private int _currentTest;
 
-        /// <summary>
-        /// Whether the simulation is currently allowed to run.
-        /// </summary>
+        /// <summary>Whether the simulation is currently allowed to run.</summary>
         private bool _running = true;
 
-        /// <summary>
-        /// Override for running state to force stepping a single update.
-        /// </summary>
+        /// <summary>Override for running state to force stepping a single update.</summary>
         private bool _runOnce;
 
-        /// <summary>
-        /// The physics system we use.
-        /// </summary>
+        /// <summary>The physics system we use.</summary>
         private PhysicsSystem _physics;
 
-        /// <summary>
-        /// The debug render system we use.
-        /// </summary>
+        /// <summary>The debug render system we use.</summary>
         private DebugPhysicsRenderSystem _renderer;
 
-        /// <summary>
-        /// Whether to render the help text.
-        /// </summary>
+        /// <summary>Whether to render the help text.</summary>
         private bool _showHelp;
 
-        /// <summary>
-        /// Whether to show profiling information.
-        /// </summary>
+        /// <summary>Whether to show profiling information.</summary>
         private bool _showProfile;
 
-        /// <summary>
-        /// The accumulated elapsed time since the last simulation update.
-        /// </summary>
+        /// <summary>The accumulated elapsed time since the last simulation update.</summary>
         private float _elapsedTimeAccumulator;
 
-        /// <summary>
-        /// The id of the mouse joint used for dragging bodies around.
-        /// </summary>
+        /// <summary>The id of the mouse joint used for dragging bodies around.</summary>
         private int _mouseJoint = -1;
 
-        /// <summary>
-        /// A serialized snapshot of the scene.
-        /// </summary>
+        /// <summary>A serialized snapshot of the scene.</summary>
         private Packet _snapshot;
 
-        /// <summary>
-        /// The hash of the simulation when the snapshot was created.
-        /// </summary>
+        /// <summary>The hash of the simulation when the snapshot was created.</summary>
         private uint _snapshotHash;
 
-        /// <summary>
-        /// The zipped size of the snapshot.
-        /// </summary>
+        /// <summary>The zipped size of the snapshot.</summary>
         private int _snapshotCompressedSize;
 
         #endregion
 
-        /// <summary>
-        /// Draws the string in the next draw call.
-        /// </summary>
+        /// <summary>Draws the string in the next draw call.</summary>
         /// <param name="format">The format string.</param>
         /// <param name="args">The arguments to put into the format string.</param>
         public static void DrawString(string format, params object[] args)
@@ -173,7 +125,7 @@ namespace Engine.Physics.Tests
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestRunner"/> class.
+        ///     Initializes a new instance of the <see cref="TestRunner"/> class.
         /// </summary>
         public TestRunner()
         {
@@ -188,9 +140,7 @@ namespace Engine.Physics.Tests
             Content.RootDirectory = "data";
         }
 
-        /// <summary>
-        /// Initialize to the first test when the graphics device has been set up.
-        /// </summary>
+        /// <summary>Initialize to the first test when the graphics device has been set up.</summary>
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
@@ -198,7 +148,8 @@ namespace Engine.Physics.Tests
 
             _manager.AddSystem(_physics = new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
             _manager.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
-            _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
+            _manager.AddSystem(
+                _renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
             _renderer.RenderFixtures = true;
             _renderer.RenderJoints = true;
@@ -206,10 +157,7 @@ namespace Engine.Physics.Tests
             LoadTest(0);
         }
 
-        /// <summary>
-        /// Updates the simulation running the current test and checks
-        /// whether we should switch to another test.
-        /// </summary>
+        /// <summary>Updates the simulation running the current test and checks whether we should switch to another test.</summary>
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
@@ -220,7 +168,7 @@ namespace Engine.Physics.Tests
             if (IsActive)
             {
                 // Check for key presses and releases.
-                foreach (Keys key in Enum.GetValues(typeof(Keys)))
+                foreach (Keys key in Enum.GetValues(typeof (Keys)))
                 {
                     if (keyboardState[key] == KeyState.Down && _lastKeyboardState[key] == KeyState.Up)
                     {
@@ -266,7 +214,10 @@ namespace Engine.Physics.Tests
                 if (mouseState.X != _lastMouseState.X || mouseState.Y != _lastMouseState.Y)
                 {
                     var mousePosition = new Vector2(mouseState.X, GraphicsDevice.Viewport.Height - mouseState.Y);
-                    OnMouseMove(mousePosition, mousePosition - new Vector2(_lastMouseState.X, GraphicsDevice.Viewport.Height - _lastMouseState.Y));
+                    OnMouseMove(
+                        mousePosition,
+                        mousePosition -
+                        new Vector2(_lastMouseState.X, GraphicsDevice.Viewport.Height - _lastMouseState.Y));
                 }
             }
             _lastKeyboardState = Keyboard.GetState();
@@ -281,7 +232,8 @@ namespace Engine.Physics.Tests
 
             if (_snapshot != null)
             {
-                DrawString("Got a save state: [{0:X}] @ {1:0.00}KB ({3:0.00}% compressed @ {2:0.00}KB)",
+                DrawString(
+                    "Got a save state: [{0:X}] @ {1:0.00}KB ({3:0.00}% compressed @ {2:0.00}KB)",
                     _snapshotHash,
                     (_snapshot.Length / 1024f),
                     (_snapshotCompressedSize / 1024f),
@@ -296,7 +248,7 @@ namespace Engine.Physics.Tests
             if (_showHelp)
             {
                 DrawString(
-@"
+                    @"
 Hotkeys:
 F1           - Toggles this help message.
 F2           - Toggles profiler information and stats (current: {0}).
@@ -315,9 +267,13 @@ R            - Reload current test (keeping pause state).
 K            - Create snapshot (for testing serialization).
 L            - Load snapshot created with K.
 C            - Test copying (creates simulation copy and uses it).",
-                _showProfile, _renderer.RenderJoints, _renderer.RenderContactPoints,
-                _renderer.RenderContactPointNormalImpulse, _renderer.RenderCenterOfMass,
-                _renderer.RenderFixtureBounds, _physics.AllowSleep);
+                    _showProfile,
+                    _renderer.RenderJoints,
+                    _renderer.RenderContactPoints,
+                    _renderer.RenderContactPointNormalImpulse,
+                    _renderer.RenderCenterOfMass,
+                    _renderer.RenderFixtureBounds,
+                    _physics.AllowSleep);
             }
             else
             {
@@ -326,7 +282,8 @@ C            - Test copying (creates simulation copy and uses it).",
 
             if (_showProfile && _physics != null)
             {
-                DrawString(@"
+                DrawString(
+                    @"
 Bodies/Fixtures/Contacts/Joints/Tree depth: {25}/{26}/{27}/{28}/{29}
 HPT: {24,5}       Last [Average] (Maximum)
 Step          {0,7:0.00} [{1,7:0.00}] ({2,7:0.00})
@@ -337,17 +294,36 @@ SolveVelocity {12,7:0.00} [{13,7:0.00}] ({14,7:0.00})
 SolvePosition {15,7:0.00} [{16,7:0.00}] ({17,7:0.00})
 Broadphase    {18,7:0.00} [{19,7:0.00}] ({20,7:0.00})
 SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
-                _profile.Step.Last, _profile.Step.Mean(), _profile.Step.Max,
-                _profile.Collide.Last, _profile.Collide.Mean(), _profile.Collide.Max,
-                _profile.Solve.Last, _profile.Solve.Mean(), _profile.Solve.Max,
-                _profile.SolveInit.Last, _profile.SolveInit.Mean(), _profile.SolveInit.Max,
-                _profile.SolveVelocity.Last, _profile.SolveVelocity.Mean(), _profile.SolveVelocity.Max,
-                _profile.SolvePosition.Last, _profile.SolvePosition.Mean(), _profile.SolvePosition.Max,
-                _profile.Broadphase.Last, _profile.Broadphase.Mean(), _profile.Broadphase.Max,
-                _profile.SolveTOI.Last, _profile.SolveTOI.Mean(), _profile.SolveTOI.Max,
-                Stopwatch.IsHighResolution,
-                _physics.BodyCount, _physics.FixtureCount, _physics.ContactCount, _physics.JointCount,
-                _physics.IndexDepth);
+                    _profile.Step.Last,
+                    _profile.Step.Mean(),
+                    _profile.Step.Max,
+                    _profile.Collide.Last,
+                    _profile.Collide.Mean(),
+                    _profile.Collide.Max,
+                    _profile.Solve.Last,
+                    _profile.Solve.Mean(),
+                    _profile.Solve.Max,
+                    _profile.SolveInit.Last,
+                    _profile.SolveInit.Mean(),
+                    _profile.SolveInit.Max,
+                    _profile.SolveVelocity.Last,
+                    _profile.SolveVelocity.Mean(),
+                    _profile.SolveVelocity.Max,
+                    _profile.SolvePosition.Last,
+                    _profile.SolvePosition.Mean(),
+                    _profile.SolvePosition.Max,
+                    _profile.Broadphase.Last,
+                    _profile.Broadphase.Mean(),
+                    _profile.Broadphase.Max,
+                    _profile.SolveTOI.Last,
+                    _profile.SolveTOI.Mean(),
+                    _profile.SolveTOI.Max,
+                    Stopwatch.IsHighResolution,
+                    _physics.BodyCount,
+                    _physics.FixtureCount,
+                    _physics.ContactCount,
+                    _physics.JointCount,
+                    _physics.IndexDepth);
             }
 
             // Newline before any text current test may want to display.
@@ -356,7 +332,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             // Allow simulating?
             if ((_running || _runOnce) && _manager != null)
             {
-                _elapsedTimeAccumulator += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                _elapsedTimeAccumulator += (float) gameTime.ElapsedGameTime.TotalMilliseconds;
                 if (_elapsedTimeAccumulator >= 1000f / UpdatesPerSecond)
                 {
                     _manager.Update(0);
@@ -383,9 +359,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Renders the current test scene.
-        /// </summary>
+        /// <summary>Renders the current test scene.</summary>
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
@@ -406,8 +380,8 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
         }
 
         /// <summary>
-        /// Loads the test at the specified index. Returns silently if there are
-        /// no tests known. Will wrap the number to the valid range.
+        ///     Loads the test at the specified index. Returns silently if there are no tests known. Will wrap the number to
+        ///     the valid range.
         /// </summary>
         /// <param name="number">The number.</param>
         /// <param name="reset">Whether to reset system settings.</param>
@@ -444,9 +418,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Called when the specified key was pressed.
-        /// </summary>
+        /// <summary>Called when the specified key was pressed.</summary>
         /// <param name="key">The key that was pressed.</param>
         private void OnKeyDown(Keys key)
         {
@@ -499,7 +471,8 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                         var hasher = new Hasher();
                         hasher.Write(_manager);
                         _snapshotHash = hasher.Value;
-                        _snapshotCompressedSize = SimpleCompression.Compress(_snapshot.GetBuffer(), _snapshot.Length).Length;
+                        _snapshotCompressedSize =
+                            SimpleCompression.Compress(_snapshot.GetBuffer(), _snapshot.Length).Length;
                     }
                     break;
                 case Keys.L:
@@ -524,7 +497,8 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                         var copy = new Manager();
                         copy.AddSystem(new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
                         copy.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
-                        copy.AddSystem(new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
+                        copy.AddSystem(
+                            new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
                         _manager.CopyInto(copy);
                         _manager.Clear();
@@ -555,7 +529,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                     _renderer.RenderContactNormals = !_renderer.RenderContactNormals;
                     break;
                 case Keys.F5:
-                    // Toggle contact point normal imulse.
+                    // Toggle contact point normal impulse.
                     _renderer.RenderContactPointNormalImpulse = !_renderer.RenderContactPointNormalImpulse;
                     break;
                 case Keys.F7:
@@ -574,9 +548,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Called when the specified key was released.
-        /// </summary>
+        /// <summary>Called when the specified key was released.</summary>
         /// <param name="key">The key that was released.</param>
         private void OnKeyUp(Keys key)
         {
@@ -586,9 +558,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Called when the left button was pressed.
-        /// </summary>
+        /// <summary>Called when the left button was pressed.</summary>
         private void OnLeftButtonDown()
         {
             if (_manager != null)
@@ -598,20 +568,21 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                     _manager.RemoveJoint(_mouseJoint);
                     _mouseJoint = -1;
                 }
-                var mouseWorldPoint = _renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
-                                                                               Mouse.GetState().Y));
+                var mouseWorldPoint = _renderer.ScreenToSimulation(
+                    new Vector2(
+                        Mouse.GetState().X,
+                        Mouse.GetState().Y));
                 var fixture = _physics.GetFixtureAt(mouseWorldPoint);
                 if (fixture != null)
                 {
-                    _mouseJoint = _manager.AddMouseJoint(fixture.Body, mouseWorldPoint, maxForce: fixture.Body.Mass * 1000).Id;
+                    _mouseJoint =
+                        _manager.AddMouseJoint(fixture.Body, mouseWorldPoint, fixture.Body.Mass * 1000).Id;
                 }
                 Tests[_currentTest].OnLeftButtonDown();
             }
         }
 
-        /// <summary>
-        /// Called when the left button was released.
-        /// </summary>
+        /// <summary>Called when the left button was released.</summary>
         private void OnLeftButtonUp()
         {
             if (_manager != null)
@@ -625,9 +596,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Called when the right button was pressed.
-        /// </summary>
+        /// <summary>Called when the right button was pressed.</summary>
         private void OnRightButtonDown()
         {
             if (_manager != null)
@@ -636,9 +605,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Called when the right button was released.
-        /// </summary>
+        /// <summary>Called when the right button was released.</summary>
         private void OnRightButtonUp()
         {
             if (_manager != null)
@@ -647,9 +614,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Called when the right button was pressed.
-        /// </summary>
+        /// <summary>Called when the right button was pressed.</summary>
         private void OnWheelDown()
         {
             if (_manager != null)
@@ -658,9 +623,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             }
         }
 
-        /// <summary>
-        /// Called when the right button was released.
-        /// </summary>
+        /// <summary>Called when the right button was released.</summary>
         private void OnWheelUp()
         {
             if (_manager != null)
@@ -676,18 +639,18 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                 // Check if dragging a body. If so update the target.
                 if (_mouseJoint >= 0)
                 {
-                    var mouseWorldPoint = _renderer.ScreenToSimulation(new Vector2(Mouse.GetState().X,
-                                                                                   Mouse.GetState().Y));
-                    ((MouseJoint)_manager.GetJointById(_mouseJoint)).Target = mouseWorldPoint;
+                    var mouseWorldPoint = _renderer.ScreenToSimulation(
+                        new Vector2(
+                            Mouse.GetState().X,
+                            Mouse.GetState().Y));
+                    ((MouseJoint) _manager.GetJointById(_mouseJoint)).Target = mouseWorldPoint;
                 }
 
                 Tests[_currentTest].OnMouseMove(mousePosition, delta);
             }
         }
 
-        /// <summary>
-        /// Used to accumulate profiling data over time.
-        /// </summary>
+        /// <summary>Used to accumulate profiling data over time.</summary>
         private sealed class Profile
         {
             private const int SampleCount = 240;
@@ -711,7 +674,6 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
             /// <summary>Resets all samplings.</summary>
             public void Reset()
             {
-
                 Step.Reset();
                 Collide.Reset();
                 Solve.Reset();

@@ -24,182 +24,122 @@ namespace Engine.Physics.Systems
     {
         #region Constants
 
-        /// <summary>
-        /// Scale factor for impulse vectors.
-        /// </summary>
+        /// <summary>Scale factor for impulse vectors.</summary>
         private const float ImpulseScale = 0.1f;
 
-        /// <summary>
-        /// Scale factor for normals.
-        /// </summary>
+        /// <summary>Scale factor for normals.</summary>
         private const float NormalScale = 0.3f;
 
-        /// <summary>
-        /// Scale factor for transform axes.
-        /// </summary>
+        /// <summary>Scale factor for transform axes.</summary>
         private const float AxisScale = 0.3f;
 
-        /// <summary>
-        /// The color to render enabled and awake, dynamic bodies in.
-        /// </summary>
+        /// <summary>The color to render enabled and awake, dynamic bodies in.</summary>
         private static readonly Color DefaultShapeColor = new Color(0.9f, 0.7f, 0.7f);
 
-        /// <summary>
-        /// The color to render disabled bodies in.
-        /// </summary>
+        /// <summary>The color to render disabled bodies in.</summary>
         private static readonly Color DisabledShapeColor = new Color(0.5f, 0.5f, 0.3f);
 
-        /// <summary>
-        /// The color to render enabled, kinematic bodies in.
-        /// </summary>
+        /// <summary>The color to render enabled, kinematic bodies in.</summary>
         private static readonly Color KinematicShapeColor = new Color(0.5f, 0.5f, 0.9f);
 
-        /// <summary>
-        /// The color to render sleeping, dynamic bodies in.
-        /// </summary>
+        /// <summary>The color to render sleeping, dynamic bodies in.</summary>
         private static readonly Color SleepingShapeColor = new Color(0.6f, 0.6f, 0.6f);
 
-        /// <summary>
-        /// The color to render enabled, static bodies in.
-        /// </summary>
+        /// <summary>The color to render enabled, static bodies in.</summary>
         private static readonly Color StaticShapeColor = new Color(0.5f, 0.9f, 0.5f);
 
-        /// <summary>
-        /// The color to render contact points in.
-        /// </summary>
+        /// <summary>The color to render contact points in.</summary>
         private static readonly Color ContactColor = Color.Yellow;
 
-        /// <summary>
-        /// The color to render contact normals in.
-        /// </summary>
+        /// <summary>The color to render contact normals in.</summary>
         private static readonly Color ContactNormalColor = new Color(0.4f, 0.9f, 0.4f);
 
-        /// <summary>
-        /// The color to render contact point imulse vectors in.
-        /// </summary>
+        /// <summary>The color to render contact point impulse vectors in.</summary>
         private static readonly Color ContactNormalImpulseColor = Color.Yellow;
 
-        /// <summary>
-        /// The color to render bounding boxes in.
-        /// </summary>
+        /// <summary>The color to render bounding boxes in.</summary>
         private static readonly Color FixtureBoundsColor = new Color(0.9f, 0.3f, 0.9f);
 
-        /// <summary>
-        /// The color to render joint anchor points in.
-        /// </summary>
+        /// <summary>The color to render joint anchor points in.</summary>
         private static readonly Color JointAnchorColor = new Color(0.0f, 1.0f, 0.0f);
 
-        /// <summary>
-        /// The color to render joint edges/shapes in.
-        /// </summary>
+        /// <summary>The color to render joint edges/shapes in.</summary>
         private static readonly Color JointEdgeColor = new Color(0.8f, 0.8f, 0.8f);
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should draw.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
-        /// 	<c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
         public bool Enabled { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether to render fixture shapes.
-        /// </summary>
+        /// <summary>Gets or sets whether to render fixture shapes.</summary>
         public bool RenderFixtures { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether to render fixture bounding boxes.
-        /// </summary>
+        /// <summary>Gets or sets whether to render fixture bounding boxes.</summary>
         public bool RenderFixtureBounds { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether to render the center of mass of bodies.
-        /// </summary>
+        /// <summary>Gets or sets whether to render the center of mass of bodies.</summary>
         public bool RenderCenterOfMass { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether to render contact points.
-        /// </summary>
+        /// <summary>Gets or sets whether to render contact points.</summary>
         public bool RenderContactPoints { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether to render contact normals.
-        /// </summary>
+        /// <summary>Gets or sets whether to render contact normals.</summary>
         public bool RenderContactNormals { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether to render contact points' normal impulse.
-        /// </summary>
+        /// <summary>Gets or sets whether to render contact points' normal impulse.</summary>
         public bool RenderContactPointNormalImpulse { get; set; }
 
-        /// <summary>
-        /// Gets or sets whether to render joint edges.
-        /// </summary>
+        /// <summary>Gets or sets whether to render joint edges.</summary>
         public bool RenderJoints { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// Keep a reference to the graphics device for projecting/unprojecting.
-        /// </summary>
+        /// <summary>Keep a reference to the graphics device for projecting/unprojecting.</summary>
         private GraphicsDevice _graphicsDevice;
 
-        /// <summary>
-        /// The primitive batch we use to render shapes.
-        /// </summary>
+        /// <summary>The primitive batch we use to render shapes.</summary>
         private PrimitiveBatch _primitiveBatch;
 
         #endregion
 
         #region Implementation
 
-        /// <summary>
-        /// Gets the display scaling factor (camera zoom).
-        /// </summary>
+        /// <summary>Gets the display scaling factor (camera zoom).</summary>
         protected abstract float GetScale();
 
-        /// <summary>
-        /// Gets the display transform (camera position/rotation).
-        /// </summary>
+        /// <summary>Gets the display transform (camera position/rotation).</summary>
         protected abstract WorldTransform GetTransform();
 
-        /// <summary>
-        /// Gets the visible bodies.
-        /// </summary>
+        /// <summary>Gets the visible bodies.</summary>
         protected virtual IEnumerable<Body> GetVisibleBodies()
         {
-            return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Bodies;
+            return ((PhysicsSystem) Manager.GetSystem(PhysicsSystem.TypeId)).Bodies;
         }
 
-        /// <summary>
-        /// Gets the visible contacts.
-        /// </summary>
+        /// <summary>Gets the visible contacts.</summary>
         protected virtual IEnumerable<Contact> GetVisibleContacts()
         {
-            return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Contacts;
+            return ((PhysicsSystem) Manager.GetSystem(PhysicsSystem.TypeId)).Contacts;
         }
 
-        /// <summary>
-        /// Gets the visible joints.
-        /// </summary>
+        /// <summary>Gets the visible joints.</summary>
         protected virtual IEnumerable<Joint> GetVisibleJoints()
         {
-            return ((PhysicsSystem)Manager.GetSystem(PhysicsSystem.TypeId)).Joints;
+            return ((PhysicsSystem) Manager.GetSystem(PhysicsSystem.TypeId)).Joints;
         }
 
         #endregion
 
         #region Accessors
 
-        /// <summary>
-        /// Converts a coordinate in simulation space to screen space.
-        /// </summary>
+        /// <summary>Converts a coordinate in simulation space to screen space.</summary>
         /// <param name="point">The point in simulation space.</param>
         /// <returns>The unprojected point.</returns>
         public WorldPoint ScreenToSimulation(Vector2 point)
@@ -211,14 +151,13 @@ namespace Engine.Physics.Systems
             var unprojected = _graphicsDevice.Viewport.Unproject(new Vector3(point, 0), projection, view.Matrix, Matrix.Identity);
             return PhysicsSystem.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y)) - view.Translation;
 #else
-            var unprojected = _graphicsDevice.Viewport.Unproject(new Vector3(point, 0), projection, view, Matrix.Identity);
+            var unprojected = _graphicsDevice.Viewport.Unproject(
+                new Vector3(point, 0), projection, view, Matrix.Identity);
             return PhysicsSystem.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y));
 #endif
         }
 
-        /// <summary>
-        /// Converts a coordinate in screen space to simulation space.
-        /// </summary>
+        /// <summary>Converts a coordinate in screen space to simulation space.</summary>
         /// <param name="point">The point in screen space.</param>
         /// <returns>The projected point.</returns>
         public Vector2 SimulationToScreen(WorldPoint point)
@@ -229,21 +168,22 @@ namespace Engine.Physics.Systems
 #if FARMATH
             var projected = _graphicsDevice.Viewport.Project(new Vector3(PhysicsSystem.ToScreenUnits((Vector2)(point + view.Translation)), 0), projection, view.Matrix, Matrix.Identity);
 #else
-            var projected = _graphicsDevice.Viewport.Project(new Vector3(PhysicsSystem.ToScreenUnits(point), 0), projection, view, Matrix.Identity);
+            var projected = _graphicsDevice.Viewport.Project(
+                new Vector3(PhysicsSystem.ToScreenUnits(point), 0), projection, view, Matrix.Identity);
 #endif
             return new Vector2(projected.X, projected.Y);
         }
 
-        /// <summary>
-        /// Computes the view matrix.
-        /// </summary>
+        /// <summary>Computes the view matrix.</summary>
         /// <returns></returns>
         private WorldTransform ComputeViewTransform()
         {
             var scale = GetScale();
             var view = GetTransform();
-            var world = Matrix.CreateTranslation(_graphicsDevice.Viewport.Width / 2f,
-                                                 _graphicsDevice.Viewport.Height / 2f, 0);
+            var world = Matrix.CreateTranslation(
+                _graphicsDevice.Viewport.Width / 2f,
+                _graphicsDevice.Viewport.Height / 2f,
+                0);
 #if FARMATH
             view.Translation /= 100f;
             view.Matrix = view.Matrix * Matrix.CreateScale(scale) * world;
@@ -257,20 +197,20 @@ namespace Engine.Physics.Systems
 
         #region Rendering
 
-        /// <summary>
-        /// Draws the system.
-        /// </summary>
+        /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
             // Skip if we have nothing to draw.
-            if (!(RenderFixtureBounds || RenderFixtures || RenderCenterOfMass || RenderContactPoints || RenderContactNormals || RenderContactPointNormalImpulse))
+            if (
+                !(RenderFixtureBounds || RenderFixtures || RenderCenterOfMass || RenderContactPoints ||
+                  RenderContactNormals || RenderContactPointNormalImpulse))
             {
                 return;
             }
 
-            // Get phyisics system from which to get bodies and contacts.
+            // Get physics system from which to get bodies and contacts.
             var physics = Manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
             if (physics == null)
             {
@@ -295,10 +235,11 @@ namespace Engine.Physics.Systems
 #else
                     var center = aabb.Center;
 #endif
-                    _primitiveBatch.DrawRectangle(PhysicsSystem.ToScreenUnits(center),
-                                                  PhysicsSystem.ToScreenUnits(aabb.Width),
-                                                  PhysicsSystem.ToScreenUnits(aabb.Height),
-                                                  FixtureBoundsColor);
+                    _primitiveBatch.DrawRectangle(
+                        PhysicsSystem.ToScreenUnits(center),
+                        PhysicsSystem.ToScreenUnits(aabb.Width),
+                        PhysicsSystem.ToScreenUnits(aabb.Height),
+                        FixtureBoundsColor);
                 }
                 _primitiveBatch.End();
             }
@@ -319,8 +260,10 @@ namespace Engine.Physics.Systems
                     DrawBody(body, PhysicsSystem.ToScreenUnits);
 #else
                     var model = Matrix.CreateRotationZ(body.Sweep.Angle) *
-                                Matrix.CreateTranslation(PhysicsSystem.ToScreenUnits(body.Transform.Translation.X),
-                                                         PhysicsSystem.ToScreenUnits(body.Transform.Translation.Y), 0);
+                                Matrix.CreateTranslation(
+                                    PhysicsSystem.ToScreenUnits(body.Transform.Translation.X),
+                                    PhysicsSystem.ToScreenUnits(body.Transform.Translation.Y),
+                                    0);
                     _primitiveBatch.Begin(model * view);
 
                     DrawBody(body, PhysicsSystem.ToScreenUnits);
@@ -348,7 +291,7 @@ namespace Engine.Physics.Systems
                 }
                 _primitiveBatch.End();
             }
-            
+
             // Render joints.
             if (RenderJoints)
             {
@@ -408,28 +351,31 @@ namespace Engine.Physics.Systems
                         {
                             var circle = fixture as CircleFixture;
                             System.Diagnostics.Debug.Assert(circle != null);
-                            _primitiveBatch.DrawSolidCircle(toScreen(circle.Center),
-                                                            PhysicsSystem.ToScreenUnits(circle.Radius),
-                                                            color);
+                            _primitiveBatch.DrawSolidCircle(
+                                toScreen(circle.Center),
+                                PhysicsSystem.ToScreenUnits(circle.Radius),
+                                color);
                         }
                             break;
                         case Fixture.FixtureType.Edge:
                         {
                             var edge = fixture as EdgeFixture;
                             System.Diagnostics.Debug.Assert(edge != null);
-                            _primitiveBatch.DrawLine(toScreen(edge.Vertex1),
-                                                     toScreen(edge.Vertex2),
-                                                     color);
+                            _primitiveBatch.DrawLine(
+                                toScreen(edge.Vertex1),
+                                toScreen(edge.Vertex2),
+                                color);
                         }
                             break;
                         case Fixture.FixtureType.Polygon:
                         {
                             var polygon = fixture as PolygonFixture;
                             System.Diagnostics.Debug.Assert(polygon != null);
-                            _primitiveBatch.DrawFilledPolygon(polygon.Vertices
-                                                                 .Take(polygon.Count)
-                                                                 .Select(toScreen).ToList(),
-                                                             color);
+                            _primitiveBatch.DrawFilledPolygon(
+                                polygon.Vertices
+                                       .Take(polygon.Count)
+                                       .Select(toScreen).ToList(),
+                                color);
                         }
                             break;
                         default:
@@ -461,21 +407,26 @@ namespace Engine.Physics.Systems
 
                 if (RenderContactPoints)
                 {
-                    _primitiveBatch.DrawFilledRectangle(point, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), ContactColor);
+                    _primitiveBatch.DrawFilledRectangle(
+                        point, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), ContactColor);
                 }
 
                 if (RenderContactNormals)
                 {
                     // We want to use the normal (untransformed in FarValue case) method
                     // for mapping to screen space when computing our axis length.
-                    _primitiveBatch.DrawLine(point, point + PhysicsSystem.ToScreenUnits(normal * NormalScale), ContactNormalColor);
+                    _primitiveBatch.DrawLine(
+                        point, point + PhysicsSystem.ToScreenUnits(normal * NormalScale), ContactNormalColor);
                 }
 
                 if (RenderContactPointNormalImpulse)
                 {
                     // We want to use the normal (untransformed in FarValue case) method
                     // for mapping to screen space when computing our axis length.
-                    _primitiveBatch.DrawLine(point, point + PhysicsSystem.ToScreenUnits(normal * contact.GetNormalImpulse(i) * ImpulseScale), ContactNormalImpulseColor);
+                    _primitiveBatch.DrawLine(
+                        point,
+                        point + PhysicsSystem.ToScreenUnits(normal * contact.GetNormalImpulse(i) * ImpulseScale),
+                        ContactNormalImpulseColor);
                 }
             }
         }
@@ -485,8 +436,10 @@ namespace Engine.Physics.Systems
             var anchorA = toScreen(joint.AnchorA);
             var anchorB = toScreen(joint.AnchorB);
 
-            _primitiveBatch.DrawFilledRectangle(anchorA, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
-            _primitiveBatch.DrawFilledRectangle(anchorB, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+            _primitiveBatch.DrawFilledRectangle(
+                anchorA, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+            _primitiveBatch.DrawFilledRectangle(
+                anchorB, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
 
             switch (joint.Type)
             {
@@ -496,11 +449,13 @@ namespace Engine.Physics.Systems
                     break;
                 case Joint.JointType.Pulley:
                 {
-                    var pulleyJoint = (PulleyJoint)joint;
+                    var pulleyJoint = (PulleyJoint) joint;
                     var anchorA0 = toScreen(pulleyJoint.GroundAnchorA);
                     var anchorB0 = toScreen(pulleyJoint.GroundAnchorB);
-                    _primitiveBatch.DrawFilledRectangle(anchorA0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
-                    _primitiveBatch.DrawFilledRectangle(anchorB0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                    _primitiveBatch.DrawFilledRectangle(
+                        anchorA0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                    _primitiveBatch.DrawFilledRectangle(
+                        anchorB0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
 
                     _primitiveBatch.DrawLine(anchorA0, anchorA, JointEdgeColor);
                     _primitiveBatch.DrawLine(anchorB0, anchorB, JointEdgeColor);
@@ -526,9 +481,7 @@ namespace Engine.Physics.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Handle a message of the specified type.
-        /// </summary>
+        /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct

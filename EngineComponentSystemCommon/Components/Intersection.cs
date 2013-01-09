@@ -5,23 +5,22 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components
 {
-    /// <summary>
-    /// Contains methods for intersection computation between various shapes.
-    /// </summary>
+    /// <summary>Contains methods for intersection computation between various shapes.</summary>
     internal static class Intersection
     {
         #region Simple tests
 
-        /// <summary>
-        /// Tests if two rectangles, defined by the specified centers and sizes, intersect.
-        /// </summary>
+        /// <summary>Tests if two rectangles, defined by the specified centers and sizes, intersect.</summary>
         /// <param name="sizeA">The size of the first rectangle.</param>
         /// <param name="positionA">The center of the first rectangle.</param>
         /// <param name="sizeB">The size of the second rectangle.</param>
         /// <param name="positionB">The center of the second rectangle.</param>
         /// <returns></returns>
-        public static bool Test(ref Vector2 sizeA, ref FarPosition positionA,
-                                ref Vector2 sizeB, ref FarPosition positionB)
+        public static bool Test(
+            ref Vector2 sizeA,
+            ref FarPosition positionA,
+            ref Vector2 sizeB,
+            ref FarPosition positionB)
         {
             // Move second rectangle to local coordinate system of first rectangle and
             // do a normal float check, for faster computation.
@@ -31,45 +30,47 @@ namespace Engine.ComponentSystem.Common.Components
             localA.Width = sizeA.X;
             localA.Height = sizeA.Y;
             RectangleF localB;
-            localB.X = (float)(positionB.X - positionA.X) + (sizeA.X - sizeB.X) * 0.5f;
-            localB.Y = (float)(positionB.Y - positionA.Y) + (sizeA.Y - sizeB.Y) * 0.5f;
+            localB.X = (float) (positionB.X - positionA.X) + (sizeA.X - sizeB.X) * 0.5f;
+            localB.Y = (float) (positionB.Y - positionA.Y) + (sizeA.Y - sizeB.Y) * 0.5f;
             localB.Width = sizeB.X;
             localB.Height = sizeB.Y;
 
             return localA.Intersects(localB);
         }
 
-        /// <summary>
-        /// Tests if two circles intersect.
-        /// </summary>
+        /// <summary>Tests if two circles intersect.</summary>
         /// <param name="radiusA">The radius of the first circle.</param>
         /// <param name="positionA">The center of the first circle.</param>
         /// <param name="radiusB">The radius of the second circle.</param>
         /// <param name="positionB">The center of the second circle.</param>
         /// <returns></returns>
-        public static bool Test(float radiusA, ref FarPosition positionA,
-                                float radiusB, ref FarPosition positionB)
+        public static bool Test(
+            float radiusA,
+            ref FarPosition positionA,
+            float radiusB,
+            ref FarPosition positionB)
         {
-            var d = (Vector2)(positionB - positionA);
+            var d = (Vector2) (positionB - positionA);
             var r = radiusA + radiusB;
             return (d.X * d.X + d.Y * d.Y) <= r * r;
         }
 
-        /// <summary>
-        /// Tests if a sphere and a rectangle overlap.
-        /// </summary>
+        /// <summary>Tests if a sphere and a rectangle overlap.</summary>
         /// <param name="sizeA">The size of the rectangle.</param>
         /// <param name="positionA">The center of the rectangle.</param>
         /// <param name="radiusB">The radius of the circle.</param>
         /// <param name="positionB">The center the circle.</param>
         /// <returns></returns>
-        public static bool Test(ref Vector2 sizeA, ref FarPosition positionA,
-                                float radiusB, ref FarPosition positionB)
+        public static bool Test(
+            ref Vector2 sizeA,
+            ref FarPosition positionA,
+            float radiusB,
+            ref FarPosition positionB)
         {
             // Translate rectangle to circle's local coordinate system and do normal
             // float check for faster computation.
-            var localALeft = (float)(positionA.X - positionB.X) - sizeA.X * 0.5f;
-            var localATop = (float)(positionA.Y - positionB.Y) - sizeA.Y * 0.5f;
+            var localALeft = (float) (positionA.X - positionB.X) - sizeA.X * 0.5f;
+            var localATop = (float) (positionA.Y - positionB.Y) - sizeA.Y * 0.5f;
             var localARight = localALeft + sizeA.X;
             var localABottom = localATop + sizeA.Y;
 
@@ -100,31 +101,31 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Sweeping tests
 
-        /// <summary>
-        /// Sweep two AABB's to see if and when they first and last were overlapping.
-        /// </summary>
+        /// <summary>Sweep two AABB's to see if and when they first and last were overlapping.</summary>
         /// <param name="sizeA">extents of first rectangle.</param>
         /// <param name="positionA0">previous center of first rectangle.</param>
         /// <param name="positionA1">current center of first rectangle.</param>
         /// <param name="sizeB">extents of second rectangle.</param>
         /// <param name="positionB0">previous center of second rectangle.</param>
         /// <param name="positionB1">current center of second rectangle.</param>
-        /// <param name="t">The relative time between previous and current
-        /// position at which the rectangles intersected.</param>
-        /// <returns>
-        /// true if the boxes (did) collide.
-        /// </returns>
+        /// <param name="t">The relative time between previous and current position at which the rectangles intersected.</param>
+        /// <returns>true if the boxes (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=3"/>
-        public static bool Test(ref Vector2 sizeA, ref FarPosition positionA0, ref FarPosition positionA1,
-                                ref Vector2 sizeB, ref FarPosition positionB0, ref FarPosition positionB1,
-                                out float t)
+        public static bool Test(
+            ref Vector2 sizeA,
+            ref FarPosition positionA0,
+            ref FarPosition positionA1,
+            ref Vector2 sizeB,
+            ref FarPosition positionB0,
+            ref FarPosition positionB1,
+            out float t)
         {
             // previous state of AABB A in local co-sy
             var localARight = sizeA.X;
             var localABottom = sizeA.Y;
             // previous state of AABB B in A's local co-sy
-            var localBLeft = (float)(positionB0.X - positionA0.X) + (sizeA.X - sizeB.X) * 0.5f;
-            var localBTop = (float)(positionB0.Y - positionA0.Y) + (sizeA.Y - sizeB.Y) * 0.5f;
+            var localBLeft = (float) (positionB0.X - positionA0.X) + (sizeA.X - sizeB.X) * 0.5f;
+            var localBTop = (float) (positionB0.Y - positionA0.Y) + (sizeA.Y - sizeB.Y) * 0.5f;
             var localBRight = localBLeft + sizeB.X;
             var localBBottom = localBTop + sizeB.Y;
 
@@ -140,9 +141,9 @@ namespace Engine.ComponentSystem.Common.Components
             }
 
             //displacement of A
-            var va = (Vector2)(positionA0 - positionA1);
+            var va = (Vector2) (positionA0 - positionA1);
             //displacement of B
-            var vb = (Vector2)(positionB0 - positionB1);
+            var vb = (Vector2) (positionB0 - positionB1);
 
             //the problem is solved in A's frame of reference
 
@@ -209,32 +210,32 @@ namespace Engine.ComponentSystem.Common.Components
             return u0 <= u1;
         }
 
-        /// <summary>
-        /// Test for collision between two moving spheres.
-        /// </summary>
+        /// <summary>Test for collision between two moving spheres.</summary>
         /// <param name="radiusA">radius of first sphere.</param>
         /// <param name="positionA0">previous center of first sphere.</param>
         /// <param name="positionA1">current center of first sphere.</param>
         /// <param name="radiusB">radius of second sphere.</param>
         /// <param name="positionB0">previous center of second sphere.</param>
         /// <param name="positionB1">current center of second sphere.</param>
-        /// <param name="t">The relative time between previous and current
-        /// position at which the spheres intersected.</param>
-        /// <returns>
-        /// true if the spheres (did) collide.
-        /// </returns>
+        /// <param name="t">The relative time between previous and current position at which the spheres intersected.</param>
+        /// <returns>true if the spheres (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=2"/>
-        public static bool Test(float radiusA, ref FarPosition positionA0, ref FarPosition positionA1,
-                                float radiusB, ref FarPosition positionB0, ref FarPosition positionB1,
-                                out float t)
+        public static bool Test(
+            float radiusA,
+            ref FarPosition positionA0,
+            ref FarPosition positionA1,
+            float radiusB,
+            ref FarPosition positionB0,
+            ref FarPosition positionB1,
+            out float t)
         {
             //displacement of A
-            var va = (Vector2)(positionA1 - positionA0);
+            var va = (Vector2) (positionA1 - positionA0);
             //displacement of B
-            var vb = (Vector2)(positionB1 - positionB0);
+            var vb = (Vector2) (positionB1 - positionB0);
 
             // relative position of B to A
-            var ab = (Vector2)(positionB0 - positionA0);
+            var ab = (Vector2) (positionB0 - positionA0);
 
             // relative velocity (in normalized time)
             var vab = vb - va;
@@ -265,7 +266,7 @@ namespace Engine.ComponentSystem.Common.Components
                 return false;
             }
 
-            var sq = (float)System.Math.Sqrt(q);
+            var sq = (float) System.Math.Sqrt(q);
             var d = 1f / (a + a);
             var r1 = (b + sq) * d;
             var r2 = (b - sq) * d;
@@ -275,33 +276,31 @@ namespace Engine.ComponentSystem.Common.Components
             return t >= 0f && t <= 1f;
         }
 
-        /// <summary>
-        /// Test for collision between moving box and sphere.
-        /// </summary>
+        /// <summary>Test for collision between moving box and sphere.</summary>
         /// <param name="radiusA">radius of the sphere.</param>
         /// <param name="positionA0">previous center of the sphere.</param>
         /// <param name="positionA1">current center of the sphere.</param>
         /// <param name="sizeB">extents of the AABB.</param>
         /// <param name="positionB0">previous center of the AABB.</param>
         /// <param name="positionB1">current center of the AABB.</param>
-        /// <param name="t">The relative time between previous and current
-        /// positions at which the sphere and box intersected.</param>
-        /// <returns>
-        /// true if the objects (did) collide.
-        /// </returns>
-        /// <remarks>
-        /// See http://www.geometrictools.com/LibMathematics/Intersection/Wm5IntrBox2Circle2.cpp"
-        /// </remarks>
-        public static bool Test(float radiusA, ref FarPosition positionA0, ref FarPosition positionA1,
-                                ref Vector2 sizeB, ref FarPosition positionB0, ref FarPosition positionB1,
-                                out float t)
+        /// <param name="t">The relative time between previous and current positions at which the sphere and box intersected.</param>
+        /// <returns>true if the objects (did) collide.</returns>
+        /// <remarks>See http://www.geometrictools.com/LibMathematics/Intersection/Wm5IntrBox2Circle2.cpp"</remarks>
+        public static bool Test(
+            float radiusA,
+            ref FarPosition positionA0,
+            ref FarPosition positionA1,
+            ref Vector2 sizeB,
+            ref FarPosition positionB0,
+            ref FarPosition positionB1,
+            out float t)
         {
             t = 0;
             throw new NotImplementedException(); // TODO return intersection time and re-check code in general
 
             // Convert circle center to box coordinates.
-            var diff = (Vector2)(positionA1 - positionB1) - (sizeB / 2);
-            var vel = (Vector2)(positionB1 - positionB0) - (Vector2)(positionA1 - positionA0);
+            var diff = (Vector2) (positionA1 - positionB1) - (sizeB / 2);
+            var vel = (Vector2) (positionB1 - positionB0) - (Vector2) (positionA1 - positionA0);
 
             if (diff.X < -sizeB.X)
             {

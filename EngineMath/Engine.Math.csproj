@@ -62,7 +62,7 @@
     <Compile Include="ISampling.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RectangleF.cs" />
-    <Compile Include="PacketRectangleFExtensions.cs" />
+    <Compile Include="PacketExtensions.cs" />
     <Compile Include="Sampling.cs" />
   </ItemGroup>
   <ItemGroup>

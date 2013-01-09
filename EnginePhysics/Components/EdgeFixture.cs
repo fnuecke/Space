@@ -12,23 +12,15 @@ using WorldBounds = Engine.Math.RectangleF;
 
 namespace Engine.Physics.Components
 {
-    /// <summary>
-    /// An edge fixture which defines a line with two end points, relative to the
-    /// body's local origin.
-    /// </summary>
+    /// <summary>An edge fixture which defines a line with two end points, relative to the body's local origin.</summary>
     public sealed class EdgeFixture : Fixture
     {
         #region Fields
 
-        /// <summary>
-        /// The end points of the edge, relative to the body's local origin,
-        /// as well as the ghost vertices.
-        /// </summary>
+        /// <summary>The end points of the edge, relative to the body's local origin, as well as the ghost vertices.</summary>
         internal LocalPoint Vertex0, Vertex1, Vertex2, Vertex3;
 
-        /// <summary>
-        /// Whether this edge has ghost vertices.
-        /// </summary>
+        /// <summary>Whether this edge has ghost vertices.</summary>
         internal bool HasVertex0, HasVertex3;
 
         #endregion
@@ -36,23 +28,21 @@ namespace Engine.Physics.Components
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EdgeFixture"/> class.
+        ///     Initializes a new instance of the <see cref="EdgeFixture"/> class.
         /// </summary>
         public EdgeFixture() : base(FixtureType.Edge)
         {
             Radius = Settings.PolygonRadius;
         }
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         /// <returns></returns>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherEdge = (EdgeFixture)other;
+            var otherEdge = (EdgeFixture) other;
             Vertex0 = otherEdge.Vertex0;
             Vertex1 = otherEdge.Vertex1;
             Vertex2 = otherEdge.Vertex2;
@@ -63,10 +53,7 @@ namespace Engine.Physics.Components
             return this;
         }
 
-        /// <summary>
-        /// Initializes the edge with specified end vertices. This will not use
-        /// ghost vertices.
-        /// </summary>
+        /// <summary>Initializes the edge with specified end vertices. This will not use ghost vertices.</summary>
         /// <param name="v1">The first vertex.</param>
         /// <param name="v2">The the second vertex.</param>
         /// <returns></returns>
@@ -85,17 +72,24 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Initialize the component with the specified values. Note that this
-        /// does not automatically change the mass of the body. You have to call
-        /// <see cref="Body.ResetMassData"/> to update it.
+        ///     Initialize the component with the specified values. Note that this does not automatically change the mass of the
+        ///     body. You have to call
+        ///     <see cref="Body.ResetMassData"/> to update it.
         /// </summary>
         /// <param name="density">The density.</param>
         /// <param name="friction">The friction.</param>
         /// <param name="restitution">The restitution.</param>
-        /// <param name="isSensor">if set to <c>true</c> this fixture is marked as a sensor.</param>
+        /// <param name="isSensor">
+        ///     if set to <c>true</c> this fixture is marked as a sensor.
+        /// </param>
         /// <param name="collisionGroups">The collision groups for this fixture.</param>
         /// <returns></returns>
-        public override Fixture Initialize(float density = 0, float friction = 0.2f, float restitution = 0, bool isSensor = false, uint collisionGroups = 0)
+        public override Fixture Initialize(
+            float density = 0,
+            float friction = 0.2f,
+            float restitution = 0,
+            bool isSensor = false,
+            uint collisionGroups = 0)
         {
             // Edges can't have density because they have no area.
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional
@@ -106,9 +100,7 @@ namespace Engine.Physics.Components
             return this;
         }
 
-        /// <summary>
-        /// Initializes the specified vertices. This uses ghost vertices.
-        /// </summary>
+        /// <summary>Initializes the specified vertices. This uses ghost vertices.</summary>
         /// <param name="v0">The first ghost vertex.</param>
         /// <param name="v1">The first vertex.</param>
         /// <param name="v2">The second vertex.</param>
@@ -128,10 +120,7 @@ namespace Engine.Physics.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -144,10 +133,8 @@ namespace Engine.Physics.Components
 
         #region Methods
 
-        /// <summary>
-        /// Test the specified point for containment in this fixture.
-        /// </summary>
-        /// <param name="localPoint">The point in local coordiantes.</param>
+        /// <summary>Test the specified point for containment in this fixture.</summary>
+        /// <param name="localPoint">The point in local coordinates.</param>
         /// <returns>Whether the point is contained in this fixture or not.</returns>
         public override bool TestPoint(Vector2 localPoint)
         {
@@ -155,9 +142,8 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>
-        /// Get the mass data for this fixture. The mass data is based on the density and
-        /// the shape. The rotational inertia is about the shape's origin. This operation
-        /// may be expensive.
+        ///     Get the mass data for this fixture. The mass data is based on the density and the shape. The rotational
+        ///     inertia is about the shape's origin. This operation may be expensive.
         /// </summary>
         /// <param name="mass">The mass of this fixture.</param>
         /// <param name="center">The center of mass relative to the local origin.</param>
@@ -169,13 +155,9 @@ namespace Engine.Physics.Components
             inertia = 0;
         }
 
-        /// <summary>
-        /// Computes the global bounds of this fixture given the specified body transform.
-        /// </summary>
+        /// <summary>Computes the global bounds of this fixture given the specified body transform.</summary>
         /// <param name="transform">The world transform of the body.</param>
-        /// <returns>
-        /// The global bounds of this fixture.
-        /// </returns>
+        /// <returns>The global bounds of this fixture.</returns>
         internal override WorldBounds ComputeBounds(WorldTransform transform)
         {
             var v1 = transform.ToGlobal(Vertex1);
@@ -185,12 +167,12 @@ namespace Engine.Physics.Components
             var lowerY = (v1.Y < v2.Y) ? v1.Y : v2.Y;
             var upperX = (v1.X > v2.X) ? v1.X : v2.X;
             var upperY = (v1.Y > v2.Y) ? v1.Y : v2.Y;
-            
+
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var sizeX = (float)(upperX - lowerX) + 2 * Radius;
-            var sizeY = (float)(upperY - lowerY) + 2 * Radius;
+            var sizeX = (float) (upperX - lowerX) + 2 * Radius;
+            var sizeY = (float) (upperY - lowerY) + 2 * Radius;
 // ReSharper restore RedundantCast
-            
+
             WorldBounds bounds;
             bounds.X = lowerX - Radius;
             bounds.Y = lowerY - Radius;
@@ -198,7 +180,7 @@ namespace Engine.Physics.Components
             bounds.Height = sizeY;
             return bounds;
         }
-        
+
         #endregion
     }
 }

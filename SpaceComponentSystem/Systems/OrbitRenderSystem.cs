@@ -16,73 +16,50 @@ namespace Space.ComponentSystem.Systems
     {
         #region Constants
 
-        /// <summary>
-        /// Thickness of the rendered orbit ellipses.
-        /// </summary>
+        /// <summary>Thickness of the rendered orbit ellipses.</summary>
         private const int OrbitThickness = 6;
 
-        /// <summary>
-        /// Diffuse area of the dead zone (no immediate cutoff but fade to
-        /// red).
-        /// </summary>
+        /// <summary>Diffuse area of the dead zone (no immediate cutoff but fade to red).</summary>
         private const int DeadZoneDiffuseWidth = 100;
 
-        /// <summary>
-        /// Color to paint orbits in.
-        /// </summary>
+        /// <summary>Color to paint orbits in.</summary>
         private static readonly Color OrbitColor = Color.Turquoise * 0.5f;
 
-        /// <summary>
-        /// Color to paint the dead zone around gravitational attractors in.
-        /// </summary>
+        /// <summary>Color to paint the dead zone around gravitational attractors in.</summary>
         private static readonly Color DeadZoneColor = Color.FromNonPremultiplied(255, 0, 0, 64);
 
         #endregion
 
         #region Properties
 
-        /// <summary>
-        /// Determines whether this system is enabled, i.e. whether it should perform
-        /// updates and react to events.
-        /// </summary>
+        /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
         public bool Enabled { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// The spritebatch to use for rendering.
-        /// </summary>
+        /// <summary>The spritebatch to use for rendering.</summary>
         private SpriteBatch _spriteBatch;
 
-        /// <summary>
-        /// Used to draw orbits.
-        /// </summary>
+        /// <summary>Used to draw orbits.</summary>
         private Ellipse _ellipse;
 
-        /// <summary>
-        /// Used to draw areas where gravitation force is stronger than ship's
-        /// thrusters' force.
-        /// </summary>
+        /// <summary>Used to draw areas where gravitation force is stronger than ship's thrusters' force.</summary>
         private FilledEllipse _filledEllipse;
 
         #endregion
 
         #region Single-Allocation
 
-        /// <summary>
-        /// Reused for iterating components.
-        /// </summary>
+        /// <summary>Reused for iterating components.</summary>
         private ISet<int> _reusableNeighborList = new HashSet<int>();
 
         #endregion
-        
+
         #region Logic
 
-        /// <summary>
-        /// Handle a message of the specified type.
-        /// </summary>
+        /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
@@ -126,36 +103,33 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Render our local radar system, with whatever detectables are close
-        /// enough.
-        /// </summary>
+        /// <summary>Render our local radar system, with whatever detectables are close enough.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
             // Get local player's avatar.
-            var avatar = ((LocalPlayerSystem)Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
+            var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             if (avatar <= 0)
             {
                 return;
             }
 
             // Get info on the local player's ship.
-            var info = (ShipInfo)Manager.GetComponent(avatar, ShipInfo.TypeId);
+            var info = (ShipInfo) Manager.GetComponent(avatar, ShipInfo.TypeId);
 
             // Get the index we use for looking up nearby objects.
-            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
 
             // Get camera information.
-            var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
+            var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Get camera position.
             var position = camera.CameraPositon;
 
             // Get zoom from camera.
             var zoom = camera.Zoom;
-            
+
             // Scale ellipse based on camera zoom.
             _filledEllipse.Scale = zoom;
             _ellipse.Scale = zoom;
@@ -180,11 +154,11 @@ namespace Space.ComponentSystem.Systems
             var radarRangeSquared = radarRange * radarRange;
 
             // Get the radius of the minimal bounding sphere of our viewport.
-            var radius = (float)Math.Sqrt(center.X * center.X + center.Y * center.Y);
+            var radius = (float) Math.Sqrt(center.X * center.X + center.Y * center.Y);
 
             // Increase radius accordingly, to include stuff possibly further away.
             radius /= zoom;
-            
+
             // Loop through all our neighbors.
             index.Find(position, radarRange, ref _reusableNeighborList, DetectableSystem.IndexGroupMask);
 
@@ -193,8 +167,8 @@ namespace Space.ComponentSystem.Systems
             foreach (var neighbor in _reusableNeighborList)
             {
                 // Get the components we need.
-                var neighborTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
-                var neighborDetectable = ((Detectable)Manager.GetComponent(neighbor, Detectable.TypeId));
+                var neighborTransform = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId));
+                var neighborDetectable = ((Detectable) Manager.GetComponent(neighbor, Detectable.TypeId));
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)
@@ -205,7 +179,7 @@ namespace Space.ComponentSystem.Systems
                 // We don't show the icons for anything that's inside our
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
-                var direction = (Vector2)(neighborTransform.Translation - position);
+                var direction = (Vector2) (neighborTransform.Translation - position);
 
                 // We'll make stuff far away a little less opaque. First get
                 // the linear relative distance.
@@ -217,18 +191,21 @@ namespace Space.ComponentSystem.Systems
 
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
-                var ellipse = ((EllipsePath)Manager.GetComponent(neighbor, EllipsePath.TypeId));
+                var ellipse = ((EllipsePath) Manager.GetComponent(neighbor, EllipsePath.TypeId));
                 if (ellipse != null)
                 {
                     // The entity we're orbiting around is at one of the two
                     // foci of the ellipse. We want the center, though.
 
                     // Get the current position of the entity we're orbiting.
-                    var focusTransform = ((Transform)Manager.GetComponent(ellipse.CenterEntityId, Transform.TypeId)).Translation;
+                    var focusTransform =
+                        ((Transform) Manager.GetComponent(ellipse.CenterEntityId, Transform.TypeId)).Translation;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.
-                    var ellipseFocusDistance = (float)Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
+                    var ellipseFocusDistance =
+                        (float)
+                        Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
                     Vector2 ellipseCenter;
                     ellipseCenter.X = ellipseFocusDistance;
                     ellipseCenter.Y = 0;
@@ -237,7 +214,7 @@ namespace Space.ComponentSystem.Systems
                     focusTransform += ellipseCenter;
 
                     // Get relative vector from position to ellipse center.
-                    var toCenter = (Vector2)(focusTransform - position);
+                    var toCenter = (Vector2) (focusTransform - position);
 
                     // Far clipping, i.e. don't render if we're outside and
                     // not seeing the ellipse.
@@ -275,8 +252,8 @@ namespace Space.ComponentSystem.Systems
                 // If the neighbor does collision damage and is an attractor,
                 // show the "dead zone" (i.e. the area beyond the point of no
                 // return).
-                var neighborGravitation = ((Gravitation)Manager.GetComponent(neighbor, Gravitation.TypeId));
-                var neighborCollisionDamage = ((CollisionDamage)Manager.GetComponent(neighbor, CollisionDamage.TypeId));
+                var neighborGravitation = ((Gravitation) Manager.GetComponent(neighbor, Gravitation.TypeId));
+                var neighborCollisionDamage = ((CollisionDamage) Manager.GetComponent(neighbor, CollisionDamage.TypeId));
                 if (neighborCollisionDamage == null || neighborGravitation == null ||
                     (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) == 0)
                 {
@@ -288,7 +265,9 @@ namespace Space.ComponentSystem.Systems
                 // output.
                 var maxAcceleration = info.MaxAcceleration;
                 var neighborMass = neighborGravitation.Mass;
-                var dangerPoint = (float)Math.Sqrt(mass * neighborMass / (maxAcceleration * 0.4f * Settings.TicksPerSecond)) + DeadZoneDiffuseWidth;
+                var dangerPoint =
+                    (float) Math.Sqrt(mass * neighborMass / (maxAcceleration * 0.4f * Settings.TicksPerSecond)) +
+                    DeadZoneDiffuseWidth;
                 _filledEllipse.Center = direction + center;
                 var distToCenter = Vector2.Distance(_filledEllipse.Center, center);
                 // Check if we're potentially seeing the marker.
@@ -297,7 +276,9 @@ namespace Space.ComponentSystem.Systems
                     _filledEllipse.Radius = dangerPoint;
                     _filledEllipse.Draw();
 
-                    var pointOfNoReturn = (float)Math.Sqrt(mass * neighborMass / (maxAcceleration * Settings.TicksPerSecond)) + DeadZoneDiffuseWidth;
+                    var pointOfNoReturn =
+                        (float) Math.Sqrt(mass * neighborMass / (maxAcceleration * Settings.TicksPerSecond)) +
+                        DeadZoneDiffuseWidth;
                     if (radius >= distToCenter - pointOfNoReturn)
                     {
                         _filledEllipse.Radius = pointOfNoReturn;

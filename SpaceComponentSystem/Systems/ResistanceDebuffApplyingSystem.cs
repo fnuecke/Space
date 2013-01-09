@@ -6,9 +6,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// This system is used to apply armor and resistance debuffs on hit.
-    /// </summary>
+    /// <summary>This system is used to apply armor and resistance debuffs on hit.</summary>
     public sealed class ResistanceDebuffApplyingSystem : AbstractDamageApplyingSystem
     {
         private static readonly List<Tuple<AttributeType, AttributeType>> DamageReductionDebuffs =
@@ -22,9 +20,7 @@ namespace Space.ComponentSystem.Systems
                 Tuple.Create(AttributeType.AttackReduceElectricDamageReduction, AttributeType.AttackReduceElectricDamageReduction)
             };
 
-        /// <summary>
-        /// Applies the damage for this system.
-        /// </summary>
+        /// <summary>Applies the damage for this system.</summary>
         /// <param name="owner">The entity that caused the damage.</param>
         /// <param name="attributes">The attributes of the entity doing the damage.</param>
         /// <param name="damagee">The entity being damage.</param>

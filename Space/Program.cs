@@ -20,9 +20,7 @@ using Space.View;
 
 namespace Space
 {
-    /// <summary>
-    /// Main class, sets up services and basic components.
-    /// </summary>
+    /// <summary>Main class, sets up services and basic components.</summary>
     internal sealed partial class Program : Game
     {
         #region Logger
@@ -33,9 +31,7 @@ namespace Space
 
         #region Constants
 
-        /// <summary>
-        /// Relative path to the file we store user settings in.
-        /// </summary>
+        /// <summary>Relative path to the file we store user settings in.</summary>
         private const string SettingsFile = "config.xml";
 
         #endregion
@@ -48,46 +44,34 @@ namespace Space
 
         #region Properties
 
-        /// <summary>
-        /// The graphics device manager used in this game.
-        /// </summary>
+        /// <summary>The graphics device manager used in this game.</summary>
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
 
-        /// <summary>
-        /// The currently active game client.
-        /// </summary>
+        /// <summary>The currently active game client.</summary>
         public GameClient Client
         {
             get { return _client; }
         }
 
-        /// <summary>
-        /// The game console we use.
-        /// </summary>
+        /// <summary>The game console we use.</summary>
         public IGameConsole GameConsole
         {
             get { return _console; }
         }
 
-        /// <summary>
-        /// The input manager in use.
-        /// </summary>
+        /// <summary>The input manager in use.</summary>
         public InputManager InputManager
         {
             get { return _inputManager; }
         }
 
-        /// <summary>
-        /// The screen manager used for rendering the GUI.
-        /// </summary>
+        /// <summary>The screen manager used for rendering the GUI.</summary>
         public ScreenManager ScreenManager
         {
             get { return _screenManager; }
         }
 
-        /// <summary>
-        /// Whether to draw graphs with debug / game information.
-        /// </summary>
+        /// <summary>Whether to draw graphs with debug / game information.</summary>
         public bool GraphsVisible { get; set; }
 
         #endregion
@@ -96,9 +80,7 @@ namespace Space
 
         private readonly List<IGameComponent> _pendingComponents = new List<IGameComponent>();
 
-        /// <summary>
-        /// The input manager used throughout this game.
-        /// </summary>
+        /// <summary>The input manager used throughout this game.</summary>
         private InputManager _inputManager;
 
         private SpriteBatch _spriteBatch;
@@ -151,9 +133,9 @@ namespace Space
             Window.Title = "Space. The Game. Seriously.";
             IsMouseVisible = true;
 
-            // XNAs fixed time step implementation doesn't suit us, to be gentle.
+            // XNA's fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading
-            // to almost no desyncs at all! Yay!
+            // to almost no desynchronizations at all! Yay!
             IsFixedTimeStep = false;
 
             // We use this to dispose game components that are disposable and
@@ -184,7 +166,7 @@ namespace Space
             Content = new LocalizedContentManager(Services) {RootDirectory = "data"};
 
             // Register packet overloads for XNA value types.
-            Packetizable.AddValueTypeOverloads(typeof(PacketXnaExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (Engine.XnaExtensions.PacketExtensions));
         }
 
         protected override void Dispose(bool disposing)
@@ -221,9 +203,7 @@ namespace Space
 
         #region Logic
 
-        /// <summary>
-        /// Updates whatever needs updating.
-        /// </summary>
+        /// <summary>Updates whatever needs updating.</summary>
         /// <param name="gameTime">Time passed since the last call to Update.</param>
         protected override void Update(GameTime gameTime)
         {
@@ -232,8 +212,6 @@ namespace Space
 
             // Update the rest of the game.
             base.Update(gameTime);
-
-            
 
             // Get ingame stats, if a game is running.
             IManager manager = null;
@@ -252,8 +230,8 @@ namespace Space
             if (manager != null)
             {
                 _componentsHistory.Put(manager.ComponentCount);
-                var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-                _indexQueryHistory.Put(index.NumQueriesSinceLastUpdate);
+                var index = (IndexSystem) manager.GetSystem(IndexSystem.TypeId);
+                _indexQueryHistory.Put(index.QueryCountSinceLastUpdate);
             }
 
             // Update the audio engine if we have one (setting one up can cause
@@ -278,12 +256,10 @@ namespace Space
 
             // Grab actual graph data.
             _watch.Stop();
-            _updateHistory.Put(1000 * _watch.ElapsedTicks / (float)Stopwatch.Frequency);
+            _updateHistory.Put(1000 * _watch.ElapsedTicks / (float) Stopwatch.Frequency);
         }
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
+        /// <summary>This is called when the game should draw itself.</summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
@@ -302,14 +278,14 @@ namespace Space
             // Draw world elements if we're in a game.
             if (_client != null)
             {
-                _client.Controller.Draw((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+                _client.Controller.Draw((float) gameTime.ElapsedGameTime.TotalMilliseconds);
             }
 
             // Draw other stuff (GUI for example).
             base.Draw(gameTime);
 
             // Collect graph data.
-            _fpsHistory.Put(1 / (float)gameTime.ElapsedGameTime.TotalSeconds);
+            _fpsHistory.Put(1 / (float) gameTime.ElapsedGameTime.TotalSeconds);
             _memoryHistory.Put(GC.GetTotalMemory(false));
 
             // Draw some debug info on top of everything.
@@ -317,7 +293,7 @@ namespace Space
 
             // Grab actual graph data.
             _watch.Stop();
-            _drawHistory.Put(1000 * _watch.ElapsedTicks / (float)Stopwatch.Frequency);
+            _drawHistory.Put(1000 * _watch.ElapsedTicks / (float) Stopwatch.Frequency);
 
             // Draw graphs after everything else, to avoid filters on the
             // other screen data to affect us.
@@ -338,9 +314,7 @@ namespace Space
 
         #region Server / Client
 
-        /// <summary>
-        /// Starts or restarts the game client.
-        /// </summary>
+        /// <summary>Starts or restarts the game client.</summary>
         /// <param name="local">Whether to join locally, or not.</param>
         public void RestartClient(bool local = false)
         {
@@ -356,9 +330,7 @@ namespace Space
             }
         }
 
-        /// <summary>
-        /// Starts or restarts the game server.
-        /// </summary>
+        /// <summary>Starts or restarts the game server.</summary>
         /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
         public void RestartServer(bool purelyLocal = false)
         {
@@ -368,9 +340,7 @@ namespace Space
             Components.Add(_server);
         }
 
-        /// <summary>
-        /// Kills the game client.
-        /// </summary>
+        /// <summary>Kills the game client.</summary>
         public void DisposeClient()
         {
             if (_client != null)
@@ -384,9 +354,7 @@ namespace Space
             _client = null;
         }
 
-        /// <summary>
-        /// Kills the game server.
-        /// </summary>
+        /// <summary>Kills the game server.</summary>
         public void DisposeServer()
         {
             if (_server != null)
@@ -396,9 +364,7 @@ namespace Space
             _server = null;
         }
 
-        /// <summary>
-        /// Kills the server and the client.
-        /// </summary>
+        /// <summary>Kills the server and the client.</summary>
         public void DisposeControllers()
         {
             DisposeClient();
@@ -427,9 +393,11 @@ namespace Space
                 if (GraphsVisible)
                 {
                     // Draw session info and netgraph.
-                    var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 240, GraphicsDevice.Viewport.Height - 180);
-                    var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 370,
-                                                    GraphicsDevice.Viewport.Height - 180);
+                    var ngOffset = new Vector2(
+                        GraphicsDevice.Viewport.Width - 240, GraphicsDevice.Viewport.Height - 180);
+                    var sessionOffset = new Vector2(
+                        GraphicsDevice.Viewport.Width - 370,
+                        GraphicsDevice.Viewport.Height - 180);
 
                     SessionInfo.Draw("Client", session, sessionOffset, _debugFont, _spriteBatch);
                     NetGraph.Draw(session.Information, ngOffset, _debugFont, _spriteBatch);

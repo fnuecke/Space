@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Physics.Collision;
@@ -27,26 +26,21 @@ using WorldBounds = Engine.Math.RectangleF;
 namespace Engine.Physics.Systems
 {
     /// <summary>
-    /// This system implements the stepping and solving logic of a physical simulation.
-    /// It uses all bodies registered in the local component system. Note that no
-    /// bodies/fixtures must be added or removed during an update step of this system
-    /// (e.g. in collision message handlers).
-    /// <para>
-    /// The whole implementation is more or less a port of Box2D, adjusted to the
-    /// component system architecture, and with some artistic license regarding code
-    /// structuring. This architecture may indeed be slower than other more literal
-    /// ports (e.g. FarSeer Physics) but the much improved usability and readability
-    /// is worth it in my opinion.
-    /// </para>
+    ///     This system implements the stepping and solving logic of a physical simulation. It uses all bodies registered in
+    ///     the local component system. Note that no bodies/fixtures must be added or removed during an update step of this
+    ///     system (e.g. in collision message handlers).
+    ///     <para>
+    ///         The whole implementation is more or less a port of Box2D, adjusted to the component system architecture, and
+    ///         with some artistic license regarding code structuring. This architecture may indeed be slower than other more
+    ///         literal ports (e.g. FarSeer Physics) but the much improved usability and readability is worth it in my opinion.
+    ///     </para>
     /// </summary>
     [DebuggerDisplay("Bodies = {BodyCount}, Contacts = {ContactCount}")]
     public sealed class PhysicsSystem : AbstractComponentSystem<Body>, IUpdatingSystem
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
@@ -66,10 +60,9 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to allow bodies to sleep.
-        /// Bodies that are asleep require nearly no CPU cycles per update,
-        /// allowing for a lot better performance. You'll probably never want
-        /// to disable this, unless it's for testing purposes.
+        ///     Gets or sets a value indicating whether to allow bodies to sleep. Bodies that are asleep require nearly no CPU
+        ///     cycles per update, allowing for a lot better performance. You'll probably never want to disable this, unless it's
+        ///     for testing purposes.
         /// </summary>
         public bool AllowSleep
         {
@@ -94,8 +87,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is locked. The system will lock
-        /// itself during an update, disallowing changes to its state from the outside.
+        ///     Gets a value indicating whether this instance is locked. The system will lock itself during an update,
+        ///     disallowing changes to its state from the outside.
         /// </summary>
         public bool IsLocked { get; private set; }
 
@@ -137,7 +130,7 @@ namespace Engine.Physics.Systems
         {
             get { return Components.Count; }
         }
-        
+
         /// <summary>Gets the number of (active) fixtures in this simulation.</summary>
         public int FixtureCount
         {
@@ -157,9 +150,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Profiling data for this simulation. This will be updated each time <see cref="Update"/>
-        /// is called and will hold the time in milliseconds that different parts of the simulation
-        /// took to run.
+        ///     Profiling data for this simulation. This will be updated each time <see cref="Update"/>
+        ///     is called and will hold the time in milliseconds that different parts of the simulation took to run.
         /// </summary>
         public Profile Profile
         {
@@ -175,13 +167,7 @@ namespace Engine.Physics.Systems
         /// <summary>Gets the fixture bounding boxes for the debug renderer.</summary>
         internal IEnumerable<WorldBounds> FixtureBounds
         {
-            get
-            {
-                foreach (var entry in _index)
-                {
-                    yield return entry.Item1;
-                }
-            }
+            get { return _index.Select(entry => entry.Item1); }
         }
 
         #endregion
@@ -198,8 +184,8 @@ namespace Engine.Physics.Systems
         private bool _allowSleep = true;
 
         /// <summary>
-        /// The number of used contacts. This is used to reserve all the memory
-        /// we might need in our islands used for solving we may need in advance.
+        ///     The number of used contacts. This is used to reserve all the memory we might need in our islands used for
+        ///     solving we may need in advance.
         /// </summary>
         private int _contactCount;
 
@@ -215,11 +201,9 @@ namespace Engine.Physics.Systems
         private int _usedContacts = -1;
 
         /// <summary>
-        /// The start of the linked list of available contacts.
-        /// It is important to note that the list of free contacts is maintained
-        /// using the 'Previous' reference, to allow keeping the 'Next' reference
-        /// intact when deleting contacts during interation of the active contact
-        /// list.
+        ///     The start of the linked list of available contacts. It is important to note that the list of free contacts is
+        ///     maintained using the 'Previous' reference, to allow keeping the 'Next' reference intact when deleting contacts
+        ///     during iteration of the active contact list.
         /// </summary>
         [PacketizerIgnore]
         private int _freeContacts = -1;
@@ -231,8 +215,7 @@ namespace Engine.Physics.Systems
         [DeepCopy, PacketizerIgnore]
         private Joint[] _joints = new Joint[0];
 
-        /// <summary>List of joint edges, two per joint (although sometimes only one might
-        /// actually be used).</summary>
+        /// <summary>List of joint edges, two per joint (although sometimes only one might actually be used).</summary>
         [DeepCopy, PacketizerIgnore]
         private JointEdge[] _jointEdges = new JointEdge[0];
 
@@ -244,17 +227,16 @@ namespace Engine.Physics.Systems
         private int _freeJoints = -1;
 
         /// <summary>
-        /// We keep track of our gear joints by mapping the joints they are attached to
-        /// to the ids of the gear joints attached to them. This way we can quickly
-        /// remove gear joints when one of the joints they are attached to is removed.
+        ///     We keep track of our gear joints by mapping the joints they are attached to to the ids of the gear joints
+        ///     attached to them. This way we can quickly remove gear joints when one of the joints they are attached to is
+        ///     removed.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private Dictionary<int, HashSet<int>> _gearJoints = new Dictionary<int, HashSet<int>>();
 
         /// <summary>
-        /// The index structure we use for our broad phase. We don't use the index
-        /// system because we want to track the individual fixtures, not the complete
-        /// body (and the index system only tracks complete entities).
+        ///     The index structure we use for our broad phase. We don't use the index system because we want to track the
+        ///     individual fixtures, not the complete body (and the index system only tracks complete entities).
         /// </summary>
 #if FARMATH
         private FarCollections.SpatialHashedQuadTree<int> _index =
@@ -262,20 +244,25 @@ namespace Engine.Physics.Systems
                 (packet, i) => packet.Write(i), packet => packet.ReadInt32());
 #else
         private Collections.DynamicQuadTree<int> _index =
-            new Collections.DynamicQuadTree<int>(16, 1, Settings.AabbExtension, Settings.AabbMultiplier,
-                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
+            new Collections.DynamicQuadTree<int>(
+                16,
+                1,
+                Settings.AabbExtension,
+                Settings.AabbMultiplier,
+                (packet, i) => packet.Write(i),
+                packet => packet.ReadInt32());
 #endif
 
         /// <summary>
-        /// The list of fixtures that have changed since the last update, i.e. for
-        /// which we need to scan for new/lost contacts.
+        ///     The list of fixtures that have changed since the last update, i.e. for which we need to scan for new/lost
+        ///     contacts.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private ISet<int> _touched = new HashSet<int>();
 
         /// <summary>
-        /// Tracks whether a new fixture was added since the last update. This will
-        /// trigger a search for new contacts at the beginning of the next update.
+        ///     Tracks whether a new fixture was added since the last update. This will trigger a search for new contacts at
+        ///     the beginning of the next update.
         /// </summary>
         private bool _findContactsBeforeNextUpdate;
 
@@ -284,16 +271,14 @@ namespace Engine.Physics.Systems
         private Island _island;
 
         /// <summary>
-        /// Proxies for fixtures used in time of impact computation. We keep those two
-        /// instances alive to avoid producing garbage.
+        ///     Proxies for fixtures used in time of impact computation. We keep those two instances alive to avoid producing
+        ///     garbage.
         /// </summary>
         [CopyIgnore, PacketizerIgnore]
         private Algorithms.DistanceProxy _proxyA = new Algorithms.DistanceProxy(),
                                          _proxyB = new Algorithms.DistanceProxy();
 
-        /// <summary>
-        /// Profiling data.
-        /// </summary>
+        /// <summary>Profiling data.</summary>
         [CopyIgnore, PacketizerIgnore]
         private Profile _profile = new Profile();
 
@@ -301,7 +286,9 @@ namespace Engine.Physics.Systems
 
         #region Constructor
 
-        /// <summary>Initializes a new instance of the <see cref="PhysicsSystem"/> class.</summary>
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PhysicsSystem"/> class.
+        /// </summary>
         /// <param name="timestep">The timestep.</param>
         /// <param name="gravity">The global gravity vector.</param>
         public PhysicsSystem(float timestep, Vector2 gravity)
@@ -310,11 +297,11 @@ namespace Engine.Physics.Systems
             _gravity = gravity;
         }
 
-        /// <summary>Initializes a new instance of the <see cref="PhysicsSystem"/> class.</summary>
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PhysicsSystem"/> class.
+        /// </summary>
         /// <param name="timestep">The timestep.</param>
-        public PhysicsSystem(float timestep) : this(timestep, Vector2.Zero)
-        {
-        }
+        public PhysicsSystem(float timestep) : this(timestep, Vector2.Zero) {}
 
         #endregion
 
@@ -356,7 +343,7 @@ namespace Engine.Physics.Systems
                 Solve(step);
             }
             _profile.EndSolve();
-            
+
             _profile.BeginBroadphase();
             {
                 // Synchronize fixtures, check for out of range bodies.
@@ -392,9 +379,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Converts a point in simulation space to screen space. This is used to
-        /// avoid using a one to one scale for pixels to meters, which generally
-        /// not recommended by Box2D.
+        ///     Converts a point in simulation space to screen space. This is used to avoid using a one to one scale for
+        ///     pixels to meters, which generally not recommended by Box2D.
         /// </summary>
         /// <param name="point">The point in simulation space.</param>
         /// <returns>The point in screen space.</returns>
@@ -404,9 +390,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Converts a point in simulation space to screen space. This is used to
-        /// avoid using a one to one scale for pixels to meters, which generally
-        /// not recommended by Box2D.
+        ///     Converts a point in simulation space to screen space. This is used to avoid using a one to one scale for
+        ///     pixels to meters, which generally not recommended by Box2D.
         /// </summary>
         /// <param name="point">The point in simulation space.</param>
         /// <returns>The point in screen space.</returns>
@@ -416,9 +401,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Converts a point in screen space to simulation space. This is used to
-        /// avoid using a one to one scale for pixels to meters, which generally
-        /// not recommended by Box2D.
+        ///     Converts a point in screen space to simulation space. This is used to avoid using a one to one scale for
+        ///     pixels to meters, which generally not recommended by Box2D.
         /// </summary>
         /// <param name="point">The point in screen space.</param>
         /// <returns>The point in simulation space.</returns>
@@ -428,9 +412,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Converts a point in screen space to simulation space. This is used to
-        /// avoid using a one to one scale for pixels to meters, which generally
-        /// not recommended by Box2D.
+        ///     Converts a point in screen space to simulation space. This is used to avoid using a one to one scale for
+        ///     pixels to meters, which generally not recommended by Box2D.
         /// </summary>
         /// <param name="point">The point in screen space.</param>
         /// <returns>The point in simulation space.</returns>
@@ -440,31 +423,33 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Gets the fixture at the specified world point. If there are multiple
-        /// fixtures (due to overlap e.g. from non-colliding groups) the first
-        /// best fixture is returned.
+        ///     Gets the fixture at the specified world point. If there are multiple fixtures (due to overlap e.g. from
+        ///     non-colliding groups) the first best fixture is returned.
         /// </summary>
         /// <param name="worldPoint">The world point.</param>
         /// <returns></returns>
         public Fixture GetFixtureAt(WorldPoint worldPoint)
         {
             Fixture result = null;
-            _index.Find(worldPoint, 0, value =>
-            {
-                // Get the fixture and its body.
-                var fixture = Manager.GetComponentById(value) as Fixture;
-                Debug.Assert(fixture != null);
-                var body = fixture.Body;
-
-                // Check if it's an actual hit.
-                if (fixture.TestPoint(body.GetLocalPoint(worldPoint)))
+            _index.Find(
+                worldPoint,
+                0,
+                value =>
                 {
-                    // Yep, we're done.
-                    result = fixture;
-                    return false;
-                }
-                return true;
-            });
+                    // Get the fixture and its body.
+                    var fixture = Manager.GetComponentById(value) as Fixture;
+                    Debug.Assert(fixture != null);
+                    var body = fixture.Body;
+
+                    // Check if it's an actual hit.
+                    if (fixture.TestPoint(body.GetLocalPoint(worldPoint)))
+                    {
+                        // Yep, we're done.
+                        result = fixture;
+                        return false;
+                    }
+                    return true;
+                });
             return result;
         }
 
@@ -474,7 +459,9 @@ namespace Engine.Physics.Systems
 
         /// <summary>Determines whether the specified joint is valid/exists.</summary>
         /// <param name="jointId">The ID of the joint.</param>
-        /// <returns><c>true</c> if the specified joint exists; otherwise, <c>false</c>.</returns>
+        /// <returns>
+        ///     <c>true</c> if the specified joint exists; otherwise, <c>false</c>.
+        /// </returns>
         public bool HasJoint(int jointId)
         {
             return jointId >= 0 && jointId < _joints.Length && _joints[jointId].Manager != null;
@@ -534,10 +521,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Marks the specified body as changed, forcing a search for new/lost
-        /// contacts with this body in the next update.
-        /// </summary>
+        /// <summary>Marks the specified body as changed, forcing a search for new/lost contacts with this body in the next update.</summary>
         /// <param name="body">The body for which to mark the fixtures.</param>
         internal void TouchFixtures(Body body)
         {
@@ -548,10 +532,9 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Frees the contacts the specified body is involved in. This is used to
-        /// invalidate contacts when a body significantly changes (e.g. its type
-        /// or enabled state). It also removes the fixtures of the body from the
-        /// list of changed fixtures, to avoid updating them.
+        ///     Frees the contacts the specified body is involved in. This is used to invalidate contacts when a body
+        ///     significantly changes (e.g. its type or enabled state). It also removes the fixtures of the body from the list of
+        ///     changed fixtures, to avoid updating them.
         /// </summary>
         /// <param name="body">The entity for which to remove the contacts.</param>
         internal void RemoveContacts(Body body)
@@ -585,9 +568,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Updates the specified fixture's position in the index structure
-        /// to the specified new bounds, within the context of the specified
-        /// displacement.
+        ///     Updates the specified fixture's position in the index structure to the specified new bounds, within the
+        ///     context of the specified displacement.
         /// </summary>
         /// <param name="bounds">The new bounds of the fixture.</param>
         /// <param name="delta">How much the fixture has moved.</param>
@@ -735,7 +717,7 @@ namespace Engine.Physics.Systems
         #endregion
 
         #region Contact/Joint allocation
-        
+
         /// <summary>Make sure we have enough contacts allocated to push a new one back.</summary>
         /// <returns></returns>
         private int AllocateContact()
@@ -765,9 +747,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Initializes the contact buffer starting from the specified index.
-        /// This is used after the contact buffer was resized to build the
-        /// linked list of free contacts.
+        ///     Initializes the contact buffer starting from the specified index. This is used after the contact buffer was
+        ///     resized to build the linked list of free contacts.
         /// </summary>
         /// <param name="start">The starting index.</param>
         private void InitializeContacts(int start)
@@ -792,20 +773,16 @@ namespace Engine.Physics.Systems
             _contacts[_contacts.Length - 1].Previous = -1;
             _freeContacts = start;
         }
-        
-        /// <summary>
-        /// Updates the global contact lists by popping the next free one and
-        /// appending it to the list of used contacts.
-        /// </summary>
+
+        /// <summary>Updates the global contact lists by popping the next free one and appending it to the list of used contacts.</summary>
         /// <param name="contact">The contact.</param>
         private void UpdateContactList(int contact)
         {
-            
             Debug.Assert(contact == _freeContacts);
-            
+
             // Remove it from the linked list of available joints.
             _freeContacts = _contacts[contact].Previous;
-            
+
             // Adjust global linked list.
             if (_usedContacts >= 0)
             {
@@ -867,7 +844,7 @@ namespace Engine.Physics.Systems
             }
             bodyB.ContactList = edgeB;
 
-            // Lock it in. This is the acutal "allocation", which we want to do
+            // Lock it in. This is the actual "allocation", which we want to do
             // at the very end to avoid entering an invalid state if any of the
             // initialization stuff throws an exception.
             UpdateContactList(contact);
@@ -963,7 +940,7 @@ namespace Engine.Physics.Systems
             // Decrement counter used for island allocation.
             --_contactCount;
         }
-        
+
         /// <summary>Make sure we have enough joints allocated to push a new one back.</summary>
         /// <returns></returns>
         private int AllocateJoint()
@@ -993,9 +970,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Initializes the joint buffer starting from the specified index.
-        /// This is used after the joint buffer was resized to build the
-        /// linked list of free contacts.
+        ///     Initializes the joint buffer starting from the specified index. This is used after the joint buffer was
+        ///     resized to build the linked list of free contacts.
         /// </summary>
         /// <param name="start">The starting index.</param>
         private void InitializeJoints(int start)
@@ -1016,11 +992,8 @@ namespace Engine.Physics.Systems
             _joints[_joints.Length - 1].Previous = -1;
             _freeJoints = start;
         }
-        
-        /// <summary>
-        /// Updates the global joint lists by popping the next free one and
-        /// appending it to the list of used joints.
-        /// </summary>
+
+        /// <summary>Updates the global joint lists by popping the next free one and appending it to the list of used joints.</summary>
         /// <param name="joint">The joint.</param>
         private void UpdateJointList(int joint)
         {
@@ -1049,7 +1022,8 @@ namespace Engine.Physics.Systems
         /// <param name="bodyB">The second body.</param>
         /// <param name="collideConnected">Whether to collide the connected bodies.</param>
         /// <returns>The allocated joint.</returns>
-        internal Joint CreateJoint(Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = true)
+        internal Joint CreateJoint(
+            Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = true)
         {
             // We need at least one body to attach the joint to.
             Debug.Assert(bodyA != null || bodyB != null);
@@ -1163,8 +1137,8 @@ namespace Engine.Physics.Systems
                     }
                 }
             }
-            
-            // Lock it in. This is the acutal "allocation", which we want to do
+
+            // Lock it in. This is the actual "allocation", which we want to do
             // at the very end to avoid entering an invalid state if any of the
             // initialization stuff throws an exception.
             UpdateJointList(joint);
@@ -1173,7 +1147,7 @@ namespace Engine.Physics.Systems
             return _joints[joint];
         }
 
-        /// <summary>Allocates a new gear joint and initializes it to the two speified joints.</summary>
+        /// <summary>Allocates a new gear joint and initializes it to the two specified joints.</summary>
         /// <param name="jointA">The first joint.</param>
         /// <param name="jointB">The second joint.</param>
         /// <param name="ratio">The gear ratio.</param>
@@ -1213,8 +1187,8 @@ namespace Engine.Physics.Systems
                 _gearJoints[jointIdB] = new HashSet<int>();
             }
             _gearJoints[jointIdB].Add(joint);
-            
-            // Lock it in. This is the acutal "allocation", which we want to do
+
+            // Lock it in. This is the actual "allocation", which we want to do
             // at the very end to avoid entering an invalid state if any of the
             // initialization stuff throws an exception.
             UpdateJointList(joint);
@@ -1352,9 +1326,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Validates the specified joint, checking if its in the system and it's ID is valud.
-        /// </summary>
+        /// <summary>Validates the specified joint, checking if its in the system and it's ID is valid.</summary>
         /// <param name="joint">The joint to check.</param>
         private void ValidateJoint(Joint joint)
         {
@@ -1371,15 +1343,10 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// This is a dummy joint implementation, used to fill the linked list
-        /// of free joints.
-        /// </summary>
+        /// <summary>This is a dummy joint implementation, used to fill the linked list of free joints.</summary>
         private sealed class NullJoint : Joint
         {
-            public NullJoint() : base(JointType.None)
-            {
-            }
+            public NullJoint() : base(JointType.None) {}
 
             public override WorldPoint AnchorA
             {
@@ -1391,17 +1358,18 @@ namespace Engine.Physics.Systems
                 get { throw new NotSupportedException(); }
             }
 
-            internal override void InitializeVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+            internal override void InitializeVelocityConstraints(
+                TimeStep step, Position[] positions, Velocity[] velocities)
             {
                 throw new NotSupportedException();
             }
 
-            internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+            internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
             {
                 throw new NotSupportedException();
             }
 
-            internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+            internal override bool SolvePositionConstraints(Position[] positions)
             {
                 throw new NotSupportedException();
             }
@@ -1411,10 +1379,7 @@ namespace Engine.Physics.Systems
 
         #region Contact updates
 
-        /// <summary>
-        /// Updates all contacts, checking if they're still valid and if they
-        /// result in actual intersections.
-        /// </summary>
+        /// <summary>Updates all contacts, checking if they're still valid and if they result in actual intersections.</summary>
         private void UpdateContacts()
         {
             // Check the list of contacts for actual collisions.
@@ -1437,12 +1402,12 @@ namespace Engine.Physics.Systems
                 if (contact.ShouldFilter)
                 {
                     // See if the collision is still valid.
-                    if (// Don't collide non-dynamic bodies against each other.
+                    if ( // Don't collide non-dynamic bodies against each other.
                         (bodyA.TypeInternal != Body.BodyType.Dynamic && bodyB.TypeInternal != Body.BodyType.Dynamic) ||
                         // Things that share at least one group do not collide.
                         (fixtureA.CollisionGroupsInternal & fixtureB.CollisionGroupsInternal) != 0 ||
                         // See if we have any joints that prevent collision.
-                        JointSupressesCollision(bodyA.JointList, bodyB.Entity))
+                        JointSuppressesCollision(bodyA.JointList, bodyB.Entity))
                     {
                         // No longer valid, free this contact.
                         var oldContactId = contactId;
@@ -1491,9 +1456,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Checks for new contacts for all entities that moved significantly in the index.
-        /// </summary>
+        /// <summary>Checks for new contacts for all entities that moved significantly in the index.</summary>
         private void FindContacts()
         {
             // Check the list of entities that moved in the index.
@@ -1538,12 +1501,12 @@ namespace Engine.Physics.Systems
                     }
 
                     // See if the two bodies should collide.
-                    if (// Don't collide non-dynamic bodies against each other.
+                    if ( // Don't collide non-dynamic bodies against each other.
                         (bodyA.TypeInternal != Body.BodyType.Dynamic && bodyB.TypeInternal != Body.BodyType.Dynamic) ||
                         // Things that share at least one group do not collide.
                         (fixtureA.CollisionGroupsInternal & fixtureB.CollisionGroupsInternal) != 0 ||
                         // See if we have any joints that prevent collision.
-                        JointSupressesCollision(bodyA.JointList, bodyB.Entity))
+                        JointSuppressesCollision(bodyA.JointList, bodyB.Entity))
                     {
                         continue;
                     }
@@ -1570,9 +1533,8 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Checks if a contact exists in the specified contact edge list for the
-        /// two specified entities. The entity ids are expected to be sorted (i.e.
-        /// entityA &lt; entityB).
+        ///     Checks if a contact exists in the specified contact edge list for the two specified entities. The entity ids
+        ///     are expected to be sorted (i.e. entityA &lt; entityB).
         /// </summary>
         /// <param name="edgeList">The edge list offset of a fixture.</param>
         /// <param name="fixtureA">The first fixture.</param>
@@ -1609,14 +1571,13 @@ namespace Engine.Physics.Systems
             return false;
         }
 
-        /// <summary>
-        /// Checks if any joint on a body (given its joint list) suppresses
-        /// collision with the specified other body.
-        /// </summary>
+        /// <summary>Checks if any joint on a body (given its joint list) suppresses collision with the specified other body.</summary>
         /// <param name="jointList">The joint list on the body.</param>
         /// <param name="other">The entity id of the other body.</param>
-        /// <returns><c>true</c> if the collision should be suppressed.</returns>
-        private bool JointSupressesCollision(int jointList, int other)
+        /// <returns>
+        ///     <c>true</c> if the collision should be suppressed.
+        /// </returns>
+        private bool JointSuppressesCollision(int jointList, int other)
         {
             for (var edge = jointList; edge >= 0; edge = _jointEdges[edge].Next)
             {
@@ -1634,9 +1595,8 @@ namespace Engine.Physics.Systems
         #region Solver logic
 
         /// <summary>
-        /// Advances the simulation by finding islands (graph defined by bodies that
-        /// have connections between them) and solving the collisions between the
-        /// individual bodies. This uses the normal island solver.
+        ///     Advances the simulation by finding islands (graph defined by bodies that have connections between them) and
+        ///     solving the collisions between the individual bodies. This uses the normal island solver.
         /// </summary>
         private void Solve(TimeStep step)
         {
@@ -1800,10 +1760,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Post-processing step after the simple solver, checking for possibly skipped
-        /// collosions (tunneling effect).
-        /// </summary>
+        /// <summary>Post-processing step after the simple solver, checking for possibly skipped collisions (tunneling effect).</summary>
         private void SolveTOI(TimeStep step)
         {
             // Resize island; we limit the number of considered contacts and bodies
@@ -2027,9 +1984,7 @@ namespace Engine.Physics.Systems
             }
         }
 
-        /// <summary>
-        /// Utility method checking all contact edges of a body for other bodies.
-        /// </summary>
+        /// <summary>Utility method checking all contact edges of a body for other bodies.</summary>
         private void AddConnectedBodiesForTOI(Body body, float minAlpha)
         {
             // We only handle TOI from the dynamic side.
@@ -2132,13 +2087,9 @@ namespace Engine.Physics.Systems
 
         #region Serialization / Hashing
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             Debug.Assert(!IsLocked);
@@ -2183,9 +2134,7 @@ namespace Engine.Physics.Systems
             return packet;
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
         {
@@ -2271,35 +2220,48 @@ namespace Engine.Physics.Systems
         {
             base.Dump(w, indent);
 
-            w.AppendIndent(indent).Write("ContactCapacity = "); w.Write(_contacts.Length);
+            w.AppendIndent(indent).Write("ContactCapacity = ");
+            w.Write(_contacts.Length);
             w.AppendIndent(indent).Write("Contacts = {");
             for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
             {
-                w.AppendIndent(indent + 1).Write(contact); w.Write(" = {");
-                w.AppendIndent(indent + 2).Write("Contact = "); w.Dump(_contacts[contact], indent + 2);
-                w.AppendIndent(indent + 2).Write("EdgeA = "); w.Dump(_contactEdges[contact * 2], indent + 2);
-                w.AppendIndent(indent + 2).Write("EdgeB = "); w.Dump(_contactEdges[contact * 2 + 1], indent + 2);
+                w.AppendIndent(indent + 1).Write(contact);
+                w.Write(" = {");
+                w.AppendIndent(indent + 2).Write("Contact = ");
+                w.Dump(_contacts[contact], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeA = ");
+                w.Dump(_contactEdges[contact * 2], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeB = ");
+                w.Dump(_contactEdges[contact * 2 + 1], indent + 2);
                 w.AppendIndent(indent + 1).Write("}");
             }
             w.AppendIndent(indent).Write("}");
-            
-            w.AppendIndent(indent).Write("JointCapacity = "); w.Write(_joints.Length);
+
+            w.AppendIndent(indent).Write("JointCapacity = ");
+            w.Write(_joints.Length);
             w.AppendIndent(indent).Write("Joints = {");
             for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
             {
-                w.AppendIndent(indent + 1).Write(joint); w.Write(" = {");
-                w.AppendIndent(indent + 2).Write("Joint = "); w.Dump(_joints[joint], indent + 2);
-                w.AppendIndent(indent + 2).Write("EdgeA = "); w.Dump(_jointEdges[joint * 2], indent + 2);
-                w.AppendIndent(indent + 2).Write("EdgeB = "); w.Dump(_jointEdges[joint * 2 + 1], indent + 2);
+                w.AppendIndent(indent + 1).Write(joint);
+                w.Write(" = {");
+                w.AppendIndent(indent + 2).Write("Joint = ");
+                w.Dump(_joints[joint], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeA = ");
+                w.Dump(_jointEdges[joint * 2], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeB = ");
+                w.Dump(_jointEdges[joint * 2 + 1], indent + 2);
                 w.AppendIndent(indent + 1).Write("}");
             }
             w.AppendIndent(indent).Write("}");
-            
-            w.AppendIndent(indent).Write("JointsWithGearsCount = "); w.Write(_gearJoints.Count);
+
+            w.AppendIndent(indent).Write("JointsWithGearsCount = ");
+            w.Write(_gearJoints.Count);
             w.AppendIndent(indent).Write("JointsWithGears = {");
             foreach (var pair in _gearJoints)
             {
-                w.AppendIndent(indent + 1).Write("Joint "); w.Write(pair.Key); w.Write(" = {");
+                w.AppendIndent(indent + 1).Write("Joint ");
+                w.Write(pair.Key);
+                w.Write(" = {");
                 var first = true;
                 foreach (var gearJoint in pair.Value)
                 {
@@ -2313,8 +2275,9 @@ namespace Engine.Physics.Systems
                 w.Write("}");
             }
             w.AppendIndent(indent).Write("}");
-            
-            w.AppendIndent(indent).Write("TouchedCount = "); w.Write(_touched.Count);
+
+            w.AppendIndent(indent).Write("TouchedCount = ");
+            w.Write(_touched.Count);
             w.AppendIndent(indent).Write("Touched = {");
             {
                 var first = true;
@@ -2337,14 +2300,13 @@ namespace Engine.Physics.Systems
 
         #region Copying
 
-        /// <summary>Creates a new copy of the object, that shares no mutable
-        /// references with this instance.</summary>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public override AbstractSystem NewInstance()
         {
             Debug.Assert(!IsLocked);
 
-            var copy = (PhysicsSystem)base.NewInstance();
+            var copy = (PhysicsSystem) base.NewInstance();
 
             copy._contacts = new Contact[0];
             copy._contactEdges = new ContactEdge[0];
@@ -2367,10 +2329,11 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        /// Creates a deep copy of the system. The passed system must be of the same type.
-        /// <para>
-        /// This clones any contained data types to return an instance that represents a complete copy of the one passed in.
-        /// </para>
+        ///     Creates a deep copy of the system. The passed system must be of the same type.
+        ///     <para>
+        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
+        ///         in.
+        ///     </para>
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
         public override void CopyInto(AbstractSystem into)
@@ -2379,11 +2342,10 @@ namespace Engine.Physics.Systems
 
             base.CopyInto(into);
 
-            var copy = (PhysicsSystem)into;
+            var copy = (PhysicsSystem) into;
 
-            for (var i = 0; i < copy._contacts.Length; ++i)
-            {
-                copy._contacts[i].Manager = copy.Manager;
+            foreach (var contact in copy._contacts) {
+                contact.Manager = copy.Manager;
             }
 
             for (var i = 0; i < copy._joints.Length; ++i)
@@ -2407,75 +2369,5 @@ namespace Engine.Physics.Systems
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Some helper methods to access joints via the <see cref="IManager"/>
-    /// to have a common place for everything.
-    /// </summary>
-    public static class JointManagerExtensions
-    {
-        /// <summary>Determines whether the specified joint is valid/exists.</summary>
-        /// <param name="manager">The manager to check in.</param>
-        /// <param name="jointId">The ID of the joint.</param>
-        /// <returns><c>true</c> if the specified joint exists in the manager's context; otherwise, <c>false</c>.</returns>
-        public static bool HasJoint(this IManager manager, int jointId)
-        {
-            return manager.GetSimulation().HasJoint(jointId);
-        }
-
-        /// <summary>Gets a joint by its ID.</summary>
-        /// <param name="manager">The manager.</param>
-        /// <param name="jointId">The joint id.</param>
-        /// <returns>A reference to the joint with the specified ID.</returns>
-        public static Joint GetJointById(this IManager manager, int jointId)
-        {
-            return manager.GetSimulation().GetJointById(jointId);
-        }
-
-        /// <summary>Gets all joints attached to the body with the specified entity ID.</summary>
-        /// <param name="manager">The manager to check in.</param>
-        /// <param name="bodyId">The ID of the entity the body belongs to.</param>
-        /// <returns>A list of all joints attached to that body.</returns>
-        public static IEnumerable<Joint> GetJoints(this IManager manager, int bodyId)
-        {
-            var body = manager.GetComponent(bodyId, Body.TypeId) as Body;
-            if (body == null)
-            {
-                throw new ArgumentException("The specified entity is not a body.", "bodyId");
-            }
-            return manager.GetSimulation().GetJoints(body);
-        }
-
-        /// <summary>Gets all joints attached to the specified body.</summary>
-        /// <param name="manager">The manager to check in.</param>
-        /// <param name="body">The body to check for.</param>
-        /// <returns>A list of all joints attached to that body.</returns>
-        public static IEnumerable<Joint> GetJoints(this IManager manager, Body body)
-        {
-            return manager.GetSimulation().GetJoints(body);
-        }
-
-        /// <summary>Removes the specified joint from the simulation.</summary>
-        /// <param name="manager">The manager.</param>
-        /// <param name="joint">The joint to remove.</param>
-        public static void RemoveJoint(this IManager manager, Joint joint)
-        {
-            joint.Destroy();
-        }
-
-        /// <summary>Removes the joint with the specified id from the simulation.</summary>
-        /// <param name="manager">The manager.</param>
-        /// <param name="jointId">The joint id.</param>
-        public static void RemoveJoint(this IManager manager, int jointId)
-        {
-            manager.GetJointById(jointId).Destroy();
-        }
-
-        /// <summary>Gets the simulation for the specified manager.</summary>
-        private static PhysicsSystem GetSimulation(this IManager manager)
-        {
-            return manager.GetSystem(PhysicsSystem.TypeId) as PhysicsSystem;
-        }
     }
 }

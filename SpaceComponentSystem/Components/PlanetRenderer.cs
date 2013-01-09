@@ -7,24 +7,17 @@ using Space.ComponentSystem.Factories;
 namespace Space.ComponentSystem.Components
 {
     /// <summary>
-    /// Special renderer for a planet or moon.
-    /// 
-    /// <para>
-    /// Draws its atmosphere and shadow based on the sun it orbits.
-    /// </para>
+    ///     Special renderer for a planet or moon.
+    ///     <para>Draws its atmosphere and shadow based on the sun it orbits.</para>
     /// </summary>
     public sealed class PlanetRenderer : Component
     {
         #region Type ID
 
-        /// <summary>
-        /// The unique type ID for this object, by which it is referred to in the manager.
-        /// </summary>
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
-        /// <summary>
-        /// The type id unique to the entity/component system in the current program.
-        /// </summary>
+        /// <summary>The type id unique to the entity/component system in the current program.</summary>
         public override int GetTypeId()
         {
             return TypeId;
@@ -34,49 +27,33 @@ namespace Space.ComponentSystem.Components
 
         #region Fields
 
-        /// <summary>
-        /// The factory of this planet, it's "type".
-        /// </summary>
+        /// <summary>The factory of this planet, it's "type".</summary>
         [PacketizerIgnore]
         public PlanetFactory Factory;
 
-        /// <summary>
-        /// The scale at which to render the texture.
-        /// </summary>
+        /// <summary>The scale at which to render the texture.</summary>
         public float Radius;
 
-        /// <summary>
-        /// The rotation direction of the planet's surface.
-        /// </summary>
+        /// <summary>The rotation direction of the planet's surface.</summary>
         public float SurfaceRotation;
 
-        /// <summary>
-        /// The actual texture with the set name.
-        /// </summary>
+        /// <summary>The actual texture with the set name.</summary>
         [PacketizerIgnore]
         public Texture2D Albedo;
 
-        /// <summary>
-        /// The actual texture with the set name.
-        /// </summary>
+        /// <summary>The actual texture with the set name.</summary>
         [PacketizerIgnore]
         public Texture2D Normals;
 
-        /// <summary>
-        /// The actual texture with the set name.
-        /// </summary>
+        /// <summary>The actual texture with the set name.</summary>
         [PacketizerIgnore]
         public Texture2D Specular;
 
-        /// <summary>
-        /// The actual texture with the set name.
-        /// </summary>
+        /// <summary>The actual texture with the set name.</summary>
         [PacketizerIgnore]
         public Texture2D Lights;
 
-        /// <summary>
-        /// The actual texture with the set name.
-        /// </summary>
+        /// <summary>The actual texture with the set name.</summary>
         [PacketizerIgnore]
         public Texture2D Clouds;
 
@@ -84,15 +61,13 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>
-        /// Initialize the component by using another instance of its type.
-        /// </summary>
+        /// <summary>Initialize the component by using another instance of its type.</summary>
         /// <param name="other">The component to copy the values from.</param>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherPlanet = (PlanetRenderer)other;
+            var otherPlanet = (PlanetRenderer) other;
             Factory = otherPlanet.Factory;
             Radius = otherPlanet.Radius;
             SurfaceRotation = otherPlanet.SurfaceRotation;
@@ -105,9 +80,7 @@ namespace Space.ComponentSystem.Components
             return this;
         }
 
-        /// <summary>
-        /// Initialize with the specified parameters.
-        /// </summary>
+        /// <summary>Initialize with the specified parameters.</summary>
         /// <param name="factory">The factory.</param>
         /// <param name="planetRadius">The planet radius.</param>
         /// <param name="surfaceRotation">The rotation direction of the planet's surface</param>
@@ -121,10 +94,7 @@ namespace Space.ComponentSystem.Components
             return this;
         }
 
-        /// <summary>
-        /// Reset the component to its initial state, so that it may be reused
-        /// without side effects.
-        /// </summary>
+        /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
             base.Reset();
@@ -143,26 +113,20 @@ namespace Space.ComponentSystem.Components
 
         #region Serialization 
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
+        /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             return base.Packetize(packet)
-                .Write(Factory.Name);
+                       .Write(Factory.Name);
         }
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
+        /// <summary>Bring the object to the state in the given packet.</summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void PostDepacketize(IReadablePacket packet)
+        public override void Depacketize(IReadablePacket packet)
         {
-            base.PostDepacketize(packet);
+            base.Depacketize(packet);
 
             Factory = FactoryLibrary.GetFactory(packet.ReadString()) as PlanetFactory;
 
@@ -181,7 +145,8 @@ namespace Space.ComponentSystem.Components
         {
             base.Dump(w, indent);
 
-            w.AppendIndent(indent).Write("Factory = "); w.Write(Factory.Name);
+            w.AppendIndent(indent).Write("Factory = ");
+            w.Write(Factory.Name);
 
             return w;
         }

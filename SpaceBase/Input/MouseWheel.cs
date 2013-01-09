@@ -1,23 +1,15 @@
 ﻿namespace Space.Input
 {
-    /// <summary>
-    /// Possible mouse wheel event types.
-    /// </summary>
+    /// <summary>Possible mouse wheel event types.</summary>
     public enum MouseWheel
     {
-        /// <summary>
-        /// Invalid value.
-        /// </summary>
+        /// <summary>Invalid value.</summary>
         None,
 
-        /// <summary>
-        /// Mouse wheel scrolled up.
-        /// </summary>
+        /// <summary>Mouse wheel scrolled up.</summary>
         Up,
 
-        /// <summary>
-        /// Mouse wheel scrolled down.
-        /// </summary>
+        /// <summary>Mouse wheel scrolled down.</summary>
         Down
     }
 }

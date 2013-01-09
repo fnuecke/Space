@@ -8,31 +8,25 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// This system takes care of applying damaging status effects each tick.
-    /// </summary>
+    /// <summary>This system takes care of applying damaging status effects each tick.</summary>
     public sealed class DamageSystem : AbstractParallelComponentSystem<DamagingStatusEffect>
     {
         #region Fields
 
-        /// <summary>
-        /// Randomizer used for determining actual damage (from [min,max] interval).
-        /// </summary>
+        /// <summary>Randomizer used for determining actual damage (from [min,max] interval).</summary>
         private MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
         #region Logic
-        
-        /// <summary>
-        /// Updates the component.
-        /// </summary>
+
+        /// <summary>Updates the component.</summary>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, DamagingStatusEffect component)
         {
             // We trigger in certain intervals, as defined by the component's
-            // inverval field. We do this via keeping track of the delay before
+            // interval field. We do this via keeping track of the delay before
             // the next damage is dealt.
             if (component.Delay > 0)
             {
@@ -56,7 +50,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
-            var damage = damageMultiplier * (float)_random.NextDouble(component.MinValue, component.MaxValue);
+            var damage = damageMultiplier * (float) _random.NextDouble(component.MinValue, component.MaxValue);
             var typeEffectiveness = GameLogicConstants.DamageReductionEffectiveness[component.Type];
 
             // We fill in some data over the course of the next checks.
@@ -68,7 +62,8 @@ namespace Space.ComponentSystem.Systems
             message.ShieldedAmount = 0;
 
             // Check for attribute info that could modify damage values.
-            var attributes = (Attributes<AttributeType>)Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
+            var attributes =
+                (Attributes<AttributeType>) Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
             if (attributes != null)
             {
                 // Apply our resistances.
@@ -113,11 +108,11 @@ namespace Space.ComponentSystem.Systems
                     if (effectiveness > 0)
                     {
                         // Are the shields up?
-                        var control = (ShipControl)Manager.GetComponent(component.Entity, ShipControl.TypeId);
+                        var control = (ShipControl) Manager.GetComponent(component.Entity, ShipControl.TypeId);
                         if (control != null && control.ShieldsActive)
                         {
                             // Yes, shields are up, see if we have any energy to operate them.
-                            var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
+                            var energy = ((Energy) Manager.GetComponent(component.Entity, Energy.TypeId));
                             if (energy.Value > 0f)
                             {
                                 // See how much damage we can reduce, and apply our effectiveness.
@@ -179,7 +174,8 @@ namespace Space.ComponentSystem.Systems
                                     // Negative reduction means increased damage. This is possible from debuffs
                                     // which may reduce the armor rating. We don't want to absorb anything
                                     // in that case, just cap the damage increase.
-                                    damage -= System.Math.Max(GameLogicConstants.NegativeDamageReductionCap * damage, reduction);
+                                    damage -= System.Math.Max(
+                                        GameLogicConstants.NegativeDamageReductionCap * damage, reduction);
                                 }
                             }
                         }
@@ -191,7 +187,7 @@ namespace Space.ComponentSystem.Systems
             if (damage > 0f)
             {
                 // Apply whatever remains as direct physical damage.
-                var health = (Health)Manager.GetComponent(component.Entity, Health.TypeId);
+                var health = (Health) Manager.GetComponent(component.Entity, Health.TypeId);
                 health.SetValue(health.Value - damage, component.Owner);
             }
 
@@ -204,16 +200,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
-        /// <summary>
-        /// Creates a new copy of the object, that shares no mutable
-        /// references with this instance.
-        /// </summary>
-        /// <returns>
-        /// The copy.
-        /// </returns>
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
+        /// <returns>The copy.</returns>
         public override AbstractSystem NewInstance()
         {
-            var copy = (DamageSystem)base.NewInstance();
+            var copy = (DamageSystem) base.NewInstance();
 
             copy._random = new MersenneTwister(0);
 

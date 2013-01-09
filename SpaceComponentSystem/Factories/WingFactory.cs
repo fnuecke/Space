@@ -4,27 +4,22 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Factories
 {
-    /// <summary>
-    /// Factory for generating wings.
-    /// </summary>
+    /// <summary>Factory for generating wings.</summary>
     public sealed class WingFactory : ItemFactory
     {
         #region Sampling
 
-        /// <summary>
-        /// Samples a new wing based on these constraints.
-        /// </summary>
+        /// <summary>Samples a new wing based on these constraints.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>
-        /// The sampled wing.
-        /// </returns>
+        /// <returns>The sampled wing.</returns>
         public override int Sample(IManager manager, IUniformRandom random)
         {
             var entity = base.Sample(manager, random);
 
-            manager.AddComponent<Wing>(entity).Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
-            
+            manager.AddComponent<Wing>(entity)
+                   .Initialize(Name, Icon, Quality, RequiredSlotSize, ModelOffset, ModelBelowParent);
+
             return entity;
         }
 

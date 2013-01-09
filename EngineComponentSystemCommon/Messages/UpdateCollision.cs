@@ -4,26 +4,16 @@ namespace Engine.ComponentSystem.Common.Messages
 {
     public struct UpdateCollision
     {
-        /// <summary>
-        /// A unique ID for a contact, which allows associating
-        /// begin and end events.
-        /// </summary>
+        /// <summary>A unique ID for a contact, which allows associating begin and end events.</summary>
         public int ContactId;
 
-        /// <summary>
-        /// The first entity that was involved in the collision.
-        /// </summary>
+        /// <summary>The first entity that was involved in the collision.</summary>
         public int EntityA;
 
-        /// <summary>
-        /// The second entity that was involved in the collision.
-        /// </summary>
+        /// <summary>The second entity that was involved in the collision.</summary>
         public int EntityB;
 
-        /// <summary>
-        /// The normal giving the direction pointing from EntityA
-        /// to EntityB at the time the collision occurred.
-        /// </summary>
+        /// <summary>The normal giving the direction pointing from EntityA to EntityB at the time the collision occurred.</summary>
         public Vector2 Normal;
     }
 }

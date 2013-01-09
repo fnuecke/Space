@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.Physics.Math;
+﻿using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -15,34 +14,26 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.Physics.Joints
 {
     /// <summary>
-    /// A mouse joint is used to make a point on a body track a
-    /// specified world point. This a soft constraint with a maximum
-    /// force. This allows the constraint to stretch and without
-    /// applying huge forces.
+    ///     A mouse joint is used to make a point on a body track a specified world point. This a soft constraint with a
+    ///     maximum force. This allows the constraint to stretch and without applying huge forces.
     /// </summary>
     public sealed class MouseJoint : Joint
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return _targetA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Gets or sets the target world point. This wakes up the body.
-        /// </summary>
+        /// <summary>Gets or sets the target world point. This wakes up the body.</summary>
         public WorldPoint Target
         {
             get { return _targetA; }
@@ -53,27 +44,21 @@ namespace Engine.Physics.Joints
             }
         }
 
-        /// <summary>
-        /// Gets or sets the maximum force we apply to the body.
-        /// </summary>
+        /// <summary>Gets or sets the maximum force we apply to the body.</summary>
         public float MaxForce
         {
             get { return _maxForce; }
             set { _maxForce = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the update frequency in Hz.
-        /// </summary>
+        /// <summary>Gets or sets the update frequency in Hz.</summary>
         public float Frequency
         {
             get { return _frequency; }
             set { _frequency = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the damping ratio.
-        /// </summary>
+        /// <summary>Gets or sets the damping ratio.</summary>
         public float DampingRatio
         {
             get { return _dampingRatio; }
@@ -125,24 +110,19 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MouseJoint"/> class.
+        ///     Initializes a new instance of the <see cref="MouseJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public MouseJoint() : base(JointType.Mouse)
-        {
-        }
+        public MouseJoint() : base(JointType.Mouse) {}
 
-        /// <summary>
-        /// Initializes the joint with the specified properties.
-        /// </summary>
-        /// <param name="target">The initial world target point. This is assumed
-        /// to coincide with the body anchor initially.
+        /// <summary>Initializes the joint with the specified properties.</summary>
+        /// <param name="target">The initial world target point. This is assumed to coincide with the body anchor initially.</param>
+        /// <param name="maxForce">
+        ///     The maximum constraint force that can be exerted to move the candidate body. Usually you will
+        ///     express as some multiple of the weight (multiplier * mass * gravity).
         /// </param>
-        /// <param name="maxForce">The maximum constraint force that can be exerted
-        /// to move the candidate body. Usually you will express as some multiple
-        /// of the weight (multiplier * mass * gravity).</param>
         /// <param name="frequency">The response speed in Hz.</param>
         /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
         internal void Initialize(WorldPoint target, float maxForce, float frequency, float dampingRatio)
@@ -176,9 +156,7 @@ namespace Engine.Physics.Joints
         // Identity used:
         // w k % (rx i + ry j) = w * (-ry i + rx j)
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -234,9 +212,9 @@ namespace Engine.Physics.Joints
             k.Column2.Y = _tmp.InverseMassB + _tmp.InverseInertiaB * _tmp.RotB.X * _tmp.RotB.X + _tmp.Gamma;
 
             _tmp.Mass = k.GetInverse();
-            
+
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            _tmp.C = (Vector2)(cB - _targetA) + _tmp.RotB;
+            _tmp.C = (Vector2) (cB - _targetA) + _tmp.RotB;
 // ReSharper restore RedundantCast
             _tmp.C *= _tmp.Beta;
 
@@ -250,13 +228,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vB = velocities[_tmp.IndexB].LinearVelocity;
             var wB = velocities[_tmp.IndexB].AngularVelocity;
@@ -281,15 +256,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             return true;
         }

@@ -2,9 +2,7 @@
 
 namespace Engine.Physics.Math
 {
-    /// <summary>
-    /// Implements cross product for 2D-Vectors.
-    /// </summary>
+    /// <summary>Implements cross product for 2D-Vectors.</summary>
     internal static class Vector2Util
     {
         /// <summary>Perform the cross product on two vectors. In 2D this produces a scalar.</summary>
@@ -16,8 +14,7 @@ namespace Engine.Physics.Math
             return a.X * b.Y - a.Y * b.X;
         }
 
-        /// <summary>Perform the cross product on a vector and a scalar. In 2D this produces
-        /// a vector.</summary>
+        /// <summary>Perform the cross product on a vector and a scalar. In 2D this produces a vector.</summary>
         /// <param name="v">The vector.</param>
         /// <param name="s">The scalar.</param>
         /// <returns>The cross product of the two.</returns>
@@ -29,8 +26,7 @@ namespace Engine.Physics.Math
             return result;
         }
 
-        /// <summary>Perform the cross product on a scalar and a vector. In 2D this produces
-        /// a vector.</summary>
+        /// <summary>Perform the cross product on a scalar and a vector. In 2D this produces a vector.</summary>
         /// <param name="s">The scalar.</param>
         /// <param name="v">The vector.</param>
         /// <returns>The cross product of the two.</returns>
@@ -53,9 +49,7 @@ namespace Engine.Physics.Math
         }
     }
 
-    /// <summary>
-    /// Utility for 3D vectors.
-    /// </summary>
+    /// <summary>Utility for 3D vectors.</summary>
     internal static class Vector3Util
     {
         /// <summary>Sets the specified values for the vector.</summary>

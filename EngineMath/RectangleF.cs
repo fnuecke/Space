@@ -4,16 +4,13 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Math
 {
-    /// <summary>
-    /// A floating point rectangle, that is otherwise equivalent to the integer
-    /// Rectangle from the XNA framework.
-    /// </summary>
+    /// <summary>A floating point rectangle, that is otherwise equivalent to the integer Rectangle from the XNA framework.</summary>
     public struct RectangleF
     {
         #region Constants
 
         /// <summary>
-        /// An empty <see cref="RectangleF"/> at the origin.
+        ///     An empty <see cref="RectangleF"/> at the origin.
         /// </summary>
         public static readonly RectangleF Empty = new RectangleF(0, 0, 0, 0);
 
@@ -21,41 +18,31 @@ namespace Engine.Math
 
         #region Properties
 
-        /// <summary>
-        /// Returns the x-coordinate of the left side of the rectangle.
-        /// </summary>
+        /// <summary>Returns the x-coordinate of the left side of the rectangle.</summary>
         public float Left
         {
             get { return X; }
         }
 
-        /// <summary>
-        /// Returns the y-coordinate of the top of the rectangle.
-        /// </summary>
+        /// <summary>Returns the y-coordinate of the top of the rectangle.</summary>
         public float Top
         {
             get { return Y; }
         }
 
-        /// <summary>
-        /// Returns the x-coordinate of the right side of the rectangle.
-        /// </summary>
+        /// <summary>Returns the x-coordinate of the right side of the rectangle.</summary>
         public float Right
         {
             get { return X + Width; }
         }
 
-        /// <summary>
-        /// Returns the y-coordinate of the bottom of the rectangle.
-        /// </summary>
+        /// <summary>Returns the y-coordinate of the bottom of the rectangle.</summary>
         public float Bottom
         {
             get { return Y + Height; }
         }
 
-        /// <summary>
-        /// Gets the Point that specifies the center of the rectangle.
-        /// </summary>
+        /// <summary>Gets the Point that specifies the center of the rectangle.</summary>
         public Vector2 Center
         {
             get
@@ -68,7 +55,7 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Gets or sets the upper-left value of the <see cref="RectangleF"/>.
+        ///     Gets or sets the upper-left value of the <see cref="RectangleF"/>.
         /// </summary>
         public Vector2 Location
         {
@@ -87,7 +74,7 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Gets a value that indicates whether the <see cref="RectangleF"/> is empty.
+        ///     Gets a value that indicates whether the <see cref="RectangleF"/> is empty.
         /// </summary>
         public bool IsEmpty
         {
@@ -99,25 +86,17 @@ namespace Engine.Math
         #endregion
 
         #region Fields
-        
-        /// <summary>
-        /// Specifies the x-coordinate of the rectangle.
-        /// </summary>
+
+        /// <summary>Specifies the x-coordinate of the rectangle.</summary>
         public float X;
 
-        /// <summary>
-        /// Specifies the y-coordinate of the rectangle.
-        /// </summary>
+        /// <summary>Specifies the y-coordinate of the rectangle.</summary>
         public float Y;
 
-        /// <summary>
-        /// Specifies the width of the rectangle.
-        /// </summary>
+        /// <summary>Specifies the width of the rectangle.</summary>
         public float Width;
 
-        /// <summary>
-        /// Specifies the height of the rectangle.
-        /// </summary>
+        /// <summary>Specifies the height of the rectangle.</summary>
         public float Height;
 
         #endregion
@@ -126,11 +105,11 @@ namespace Engine.Math
 
         static RectangleF()
         {
-            Packetizable.AddValueTypeOverloads(typeof(PacketRectangleFExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (PacketExtensions));
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RectangleF"/> struct.
+        ///     Initializes a new instance of the <see cref="RectangleF"/> struct.
         /// </summary>
         /// <param name="x">The x-coordinate of the rectangle.</param>
         /// <param name="y">The y-coordinate of the rectangle.</param>
@@ -149,11 +128,13 @@ namespace Engine.Math
         #region Logic
 
         /// <summary>
-        /// Determines whether this <see cref="RectangleF"/> entirely contains a specified <see cref="RectangleF"/>.
+        ///     Determines whether this <see cref="RectangleF"/> entirely contains a specified <see cref="RectangleF"/>.
         /// </summary>
-        /// <param name="value">The <see cref="RectangleF"/> to evaluate.</param>
+        /// <param name="value">
+        ///     The <see cref="RectangleF"/> to evaluate.
+        /// </param>
         /// <returns>
-        ///   <c>true</c> if the rectangle contains the specified value; otherwise, <c>false</c>.
+        ///     <c>true</c> if the rectangle contains the specified value; otherwise, <c>false</c>.
         /// </returns>
         public bool Contains(RectangleF value)
         {
@@ -164,11 +145,11 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Determines whether this <see cref="RectangleF"/> contains a specified Vector2.
+        ///     Determines whether this <see cref="RectangleF"/> contains a specified Vector2.
         /// </summary>
         /// <param name="value">The Vector2 to evaluate.</param>
         /// <returns>
-        ///   <c>true</c> if the rectangle contains the specified value; otherwise, <c>false</c>.
+        ///     <c>true</c> if the rectangle contains the specified value; otherwise, <c>false</c>.
         /// </returns>
         public bool Contains(Vector2 value)
         {
@@ -178,14 +159,14 @@ namespace Engine.Math
                    value.Y < (Y + Height);
         }
 
-        /// <summary>
-        /// Determines whether this <see cref="RectangleF"/> contains a specified point represented
         //  by its x- and y-coordinates.
+        /// <summary>
+        ///     Determines whether this <see cref="RectangleF"/> contains a specified point represented
         /// </summary>
         /// <param name="x">The x-coordinate of the specified point.</param>
         /// <param name="y">The y-coordinate of the specified point.</param>
         /// <returns>
-        ///   <c>true</c> if the rectangle contains the specified point; otherwise, <c>false</c>.
+        ///     <c>true</c> if the rectangle contains the specified point; otherwise, <c>false</c>.
         /// </returns>
         public bool Contains(float x, float y)
         {
@@ -196,11 +177,15 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Determines whether this <see cref="RectangleF"/> entirely contains a specified <see cref="RectangleF"/>.
+        ///     Determines whether this <see cref="RectangleF"/> entirely contains a specified <see cref="RectangleF"/>.
         /// </summary>
-        /// <param name="value">The <see cref="RectangleF"/> to evaluate.</param>
-        /// <param name="result">On exit, is true if this <see cref="RectangleF"/> entirely contains the specified
-        /// <see cref="RectangleF"/>, or false if not.</param>
+        /// <param name="value">
+        ///     The <see cref="RectangleF"/> to evaluate.
+        /// </param>
+        /// <param name="result">
+        ///     On exit, is true if this <see cref="RectangleF"/> entirely contains the specified
+        ///     <see cref="RectangleF"/>, or false if not.
+        /// </param>
         public void Contains(ref RectangleF value, out bool result)
         {
             result = X <= value.X &&
@@ -210,11 +195,12 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Determines whether this <see cref="RectangleF"/> contains a specified Vector2.
+        ///     Determines whether this <see cref="RectangleF"/> contains a specified Vector2.
         /// </summary>
         /// <param name="value">The Vector2 to evaluate.</param>
-        /// <param name="result">true if the specified Vector2 is contained within this <see cref="RectangleF"/>;
-        /// false otherwise.</param>
+        /// <param name="result">
+        ///     true if the specified Vector2 is contained within this <see cref="RectangleF"/>; false otherwise.
+        /// </param>
         public void Contains(ref Vector2 value, out bool result)
         {
             result = X <= value.X &&
@@ -224,8 +210,7 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Pushes the edges of the <see cref="RectangleF"/> out by the horizontal and vertical values
-        /// specified.
+        ///     Pushes the edges of the <see cref="RectangleF"/> out by the horizontal and vertical values specified.
         /// </summary>
         /// <param name="horizontalAmount">Value to push the sides out by.</param>
         /// <param name="verticalAmount">Value to push the top and bottom out by.</param>
@@ -238,11 +223,13 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Determines whether a specified <see cref="RectangleF"/> intersects with this <see cref="RectangleF"/>.
+        ///     Determines whether a specified <see cref="RectangleF"/> intersects with this <see cref="RectangleF"/>.
         /// </summary>
-        /// <param name="other">The <see cref="RectangleF"/> to evaluate.</param>
+        /// <param name="other">
+        ///     The <see cref="RectangleF"/> to evaluate.
+        /// </param>
         /// <returns>
-        ///   <c>true</c> if the rectangles intersect; otherwise, <c>false</c>.
+        ///     <c>true</c> if the rectangles intersect; otherwise, <c>false</c>.
         /// </returns>
         public bool Intersects(RectangleF other)
         {
@@ -253,11 +240,14 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Determines whether a specified <see cref="RectangleF"/> intersects with this <see cref="RectangleF"/>.
+        ///     Determines whether a specified <see cref="RectangleF"/> intersects with this <see cref="RectangleF"/>.
         /// </summary>
-        /// <param name="other">The <see cref="RectangleF"/> to evaluate.</param>
-        /// <param name="result">true if the specified <see cref="RectangleF"/> intersects with this one;
-        /// false otherwise.</param>
+        /// <param name="other">
+        ///     The <see cref="RectangleF"/> to evaluate.
+        /// </param>
+        /// <param name="result">
+        ///     true if the specified <see cref="RectangleF"/> intersects with this one; false otherwise.
+        /// </param>
         public void Intersects(RectangleF other, out bool result)
         {
             result = X < (other.X + other.Width) &&
@@ -267,9 +257,11 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Changes the position of the <see cref="RectangleF"/>.
+        ///     Changes the position of the <see cref="RectangleF"/>.
         /// </summary>
-        /// <param name="amount">The values to adjust the position of the <see cref="RectangleF"/> by.</param>
+        /// <param name="amount">
+        ///     The values to adjust the position of the <see cref="RectangleF"/> by.
+        /// </param>
         public void Offset(Vector2 amount)
         {
             X += amount.X;
@@ -277,7 +269,7 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Changes the position of the <see cref="RectangleF"/>.
+        ///     Changes the position of the <see cref="RectangleF"/>.
         /// </summary>
         /// <param name="offsetX">Change in the x-position.</param>
         /// <param name="offsetY">Change in the y-position.</param>
@@ -288,11 +280,14 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Creates a <see cref="RectangleF"/> defining the area where one rectangle overlaps with another
-        /// rectangle.
+        ///     Creates a <see cref="RectangleF"/> defining the area where one rectangle overlaps with another rectangle.
         /// </summary>
-        /// <param name="value1">The first <see cref="RectangleF"/> to compare.</param>
-        /// <param name="value2">The second <see cref="RectangleF"/> to compare.</param>
+        /// <param name="value1">
+        ///     The first <see cref="RectangleF"/> to compare.
+        /// </param>
+        /// <param name="value2">
+        ///     The second <see cref="RectangleF"/> to compare.
+        /// </param>
         /// <returns></returns>
         public static RectangleF Intersect(RectangleF value1, RectangleF value2)
         {
@@ -324,11 +319,14 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Creates a <see cref="RectangleF"/> defining the area where one rectangle overlaps with another
-        /// rectangle.
+        ///     Creates a <see cref="RectangleF"/> defining the area where one rectangle overlaps with another rectangle.
         /// </summary>
-        /// <param name="value1">The first <see cref="RectangleF"/> to compare.</param>
-        /// <param name="value2">The second <see cref="RectangleF"/> to compare.</param>
+        /// <param name="value1">
+        ///     The first <see cref="RectangleF"/> to compare.
+        /// </param>
+        /// <param name="value2">
+        ///     The second <see cref="RectangleF"/> to compare.
+        /// </param>
         /// <param name="result">The area where the two first parameters overlap.</param>
         public static void Intersect(ref RectangleF value1, ref RectangleF value2, out RectangleF result)
         {
@@ -357,11 +355,17 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Creates a new <see cref="RectangleF"/> that exactly contains two other rectangles.
+        ///     Creates a new <see cref="RectangleF"/> that exactly contains two other rectangles.
         /// </summary>
-        /// <param name="value1">The first <see cref="RectangleF"/> to contain.</param>
-        /// <param name="value2">The second <see cref="RectangleF"/> to contain.</param>
-        /// <returns>The <see cref="RectangleF"/> that must be the union of the first two rectangles.</returns>
+        /// <param name="value1">
+        ///     The first <see cref="RectangleF"/> to contain.
+        /// </param>
+        /// <param name="value2">
+        ///     The second <see cref="RectangleF"/> to contain.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="RectangleF"/> that must be the union of the first two rectangles.
+        /// </returns>
         public static RectangleF Union(RectangleF value1, RectangleF value2)
         {
             var right1 = value1.X + value1.Width;
@@ -382,11 +386,17 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Creates a new <see cref="RectangleF"/> that exactly contains two other rectangles.
+        ///     Creates a new <see cref="RectangleF"/> that exactly contains two other rectangles.
         /// </summary>
-        /// <param name="value1">The first <see cref="RectangleF"/> to contain.</param>
-        /// <param name="value2">The second <see cref="RectangleF"/> to contain.</param>
-        /// <param name="result">The <see cref="RectangleF"/> that must be the union of the first two rectangles.</param>
+        /// <param name="value1">
+        ///     The first <see cref="RectangleF"/> to contain.
+        /// </param>
+        /// <param name="value2">
+        ///     The second <see cref="RectangleF"/> to contain.
+        /// </param>
+        /// <param name="result">
+        ///     The <see cref="RectangleF"/> that must be the union of the first two rectangles.
+        /// </param>
         public static void Union(ref RectangleF value1, ref RectangleF value2, out RectangleF result)
         {
             var right1 = value1.X + value1.Width;
@@ -408,13 +418,11 @@ namespace Engine.Math
 
         #region Operators
 
-        /// <summary>
-        /// Compares two rectangles for equality.
-        /// </summary>
+        /// <summary>Compares two rectangles for equality.</summary>
         /// <param name="a">Source rectangle.</param>
         /// <param name="b">Source rectangle.</param>
         /// <returns>
-        ///   <c>true</c> if the rectangles are equal; otherwise, <c>false</c>.
+        ///     <c>true</c> if the rectangles are equal; otherwise, <c>false</c>.
         /// </returns>
         public static bool operator ==(RectangleF a, RectangleF b)
         {
@@ -423,13 +431,11 @@ namespace Engine.Math
 // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
-        /// <summary>
-        /// Compares two rectangles for inequality.
-        /// </summary>
+        /// <summary>Compares two rectangles for inequality.</summary>
         /// <param name="a">Source rectangle.</param>
         /// <param name="b">Source rectangle.</param>
         /// <returns>
-        ///   <c>true</c> if the rectangles are inequal; otherwise, <c>false</c>.
+        ///     <c>true</c> if the rectangles are unequal; otherwise, <c>false</c>.
         /// </returns>
         public static bool operator !=(RectangleF a, RectangleF b)
         {
@@ -439,12 +445,11 @@ namespace Engine.Math
         }
 
         /// <summary>
-        /// Performs an explicit conversion from <see cref="Microsoft.Xna.Framework.Rectangle"/> to <see cref="Engine.Math.RectangleF"/>.
+        ///     Performs an explicit conversion from <see cref="Microsoft.Xna.Framework.Rectangle"/> to
+        ///     <see cref="Engine.Math.RectangleF"/>.
         /// </summary>
         /// <param name="rectangle">The rectangle to convert.</param>
-        /// <returns>
-        /// The result of the conversion.
-        /// </returns>
+        /// <returns>The result of the conversion.</returns>
         public static explicit operator RectangleF(Rectangle rectangle)
         {
             RectangleF r;
@@ -458,13 +463,11 @@ namespace Engine.Math
         #endregion
 
         #region Equality Overrides
-        
-        /// <summary>
-        /// Compares two rectangles for equality.
-        /// </summary>
+
+        /// <summary>Compares two rectangles for equality.</summary>
         /// <param name="other">The other rectangle.</param>
         /// <returns>
-        ///   <c>true</c> if the rectangles are equal; otherwise, <c>false</c>.
+        ///     <c>true</c> if the rectangles are equal; otherwise, <c>false</c>.
         /// </returns>
         public bool Equals(RectangleF other)
         {
@@ -476,25 +479,21 @@ namespace Engine.Math
 // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
-        /// <summary>
-        /// Compares two rectangles for equality.
-        /// </summary>
-        /// <param name="obj">The <see cref="System.Object"/> to compare with this instance.</param>
+        /// <summary>Compares two rectangles for equality.</summary>
+        /// <param name="obj">
+        ///     The <see cref="System.Object"/> to compare with this instance.
+        /// </param>
         /// <returns>
-        ///   <c>true</c> if the specified value is a <see cref="RectangleF"/> and the rectangles
-        /// are equal; otherwise, <c>false</c>.
+        ///     <c>true</c> if the specified value is a <see cref="RectangleF"/> and the rectangles are equal; otherwise,
+        ///     <c>false</c>.
         /// </returns>
         public override bool Equals(object obj)
         {
-            return (obj is Rectangle) && Equals((Rectangle)obj);
+            return (obj is Rectangle) && Equals((Rectangle) obj);
         }
 
-        /// <summary>
-        /// Returns a hash code for this instance.
-        /// </summary>
-        /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
-        /// </returns>
+        /// <summary>Returns a hash code for this instance.</summary>
+        /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
         public override int GetHashCode()
         {
 // ReSharper disable NonReadonlyFieldInGetHashCode XNA's Rectangle does the same thing
@@ -507,14 +506,20 @@ namespace Engine.Math
         #region ToString
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        ///     Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
+        ///     A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
         {
-            return string.Format(CultureInfo.CurrentCulture, "{{X:{0} Y:{1} Width:{2} Height:{3}}}", X.ToString(CultureInfo.CurrentCulture), Y.ToString(CultureInfo.CurrentCulture), Width.ToString(CultureInfo.CurrentCulture), Height.ToString(CultureInfo.CurrentCulture));
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "{{X:{0} Y:{1} Width:{2} Height:{3}}}",
+                X.ToString(CultureInfo.CurrentCulture),
+                Y.ToString(CultureInfo.CurrentCulture),
+                Width.ToString(CultureInfo.CurrentCulture),
+                Height.ToString(CultureInfo.CurrentCulture));
         }
 
         #endregion

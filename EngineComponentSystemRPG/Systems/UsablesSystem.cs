@@ -3,18 +3,14 @@ using Engine.ComponentSystem.Systems;
 
 namespace Engine.ComponentSystem.RPG.Systems
 {
-    /// <summary>
-    /// Allows triggering usable items.
-    /// </summary>
+    /// <summary>Allows triggering usable items.</summary>
     /// <typeparam name="TAction">Possible actions taken upon activation.</typeparam>
     public abstract class UsablesSystem<TAction> : AbstractSystem
         where TAction : struct
     {
         #region Methods
-        
-        /// <summary>
-        /// Activates the specified usable.
-        /// </summary>
+
+        /// <summary>Activates the specified usable.</summary>
         /// <param name="usable">The usable.</param>
         public void Use(Usable<TAction> usable)
         {
@@ -24,9 +20,7 @@ namespace Engine.ComponentSystem.RPG.Systems
             }
         }
 
-        /// <summary>
-        /// Handle execution of a specific action.
-        /// </summary>
+        /// <summary>Handle execution of a specific action.</summary>
         /// <param name="action">The action to perform.</param>
         /// <param name="entity">The item that triggered the action.</param>
         protected abstract void Activate(TAction action, int entity);

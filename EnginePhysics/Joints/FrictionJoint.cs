@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Engine.Physics.Math;
+﻿using Engine.Physics.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -18,50 +17,38 @@ namespace Engine.Physics.Joints
     {
         #region Properties
 
-        /// <summary>
-        /// Get the anchor point on the first body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in world coordinates.</summary>
         public override WorldPoint AnchorA
         {
             get { return BodyA.GetWorldPoint(_localAnchorA); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in world coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in world coordinates.</summary>
         public override WorldPoint AnchorB
         {
             get { return BodyB.GetWorldPoint(_localAnchorB); }
         }
 
-        /// <summary>
-        /// Get the anchor point on the first body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the first body in local coordinates.</summary>
         public LocalPoint LocalAnchorA
         {
             get { return _localAnchorA; }
         }
 
-        /// <summary>
-        /// Get the anchor point on the second body in local coordinates.
-        /// </summary>
+        /// <summary>Get the anchor point on the second body in local coordinates.</summary>
         public LocalPoint LocalAnchorB
         {
             get { return _localAnchorB; }
         }
 
-        /// <summary>
-        /// Gets or sets the maximum friction force in N.
-        /// </summary>
+        /// <summary>Gets or sets the maximum friction force in N.</summary>
         public float MaxForce
         {
             get { return _maxForce; }
             set { _maxForce = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the maximum friction torque in N*m.
-        /// </summary>
+        /// <summary>Gets or sets the maximum friction torque in N*m.</summary>
         public float MaxTorque
         {
             get { return _maxTorque; }
@@ -119,22 +106,16 @@ namespace Engine.Physics.Joints
         #region Initialization
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FrictionJoint"/> class.
+        ///     Initializes a new instance of the <see cref="FrictionJoint"/> class.
         /// </summary>
         /// <remarks>
-        /// Use the factory methods in <see cref="JointFactory"/> to create joints.
+        ///     Use the factory methods in <see cref="JointFactory"/> to create joints.
         /// </remarks>
-        public FrictionJoint() : base(JointType.Friction)
-        {
-        }
+        public FrictionJoint() : base(JointType.Friction) {}
 
-        /// <summary>
-        /// Initializes this joint with the specified parameters.
-        /// </summary>
+        /// <summary>Initializes this joint with the specified parameters.</summary>
         internal void Initialize(WorldPoint anchorA, WorldPoint anchorB)
         {
-
-
             _linearImpulse = Vector2.Zero;
             _angularImpulse = 0;
         }
@@ -144,20 +125,18 @@ namespace Engine.Physics.Joints
         #region Logic
 
         // Point-to-point constraint
-        // Cdot = v2 - v1
+        // cDot = v2 - v1
         //      = v2 + cross(w2, r2) - v1 - cross(w1, r1)
         // J = [-I -r1_skew I r2_skew ]
         // Identity used:
         // w k % (rx i + ry j) = w * (-ry i + rx j)
 
         // Angle constraint
-        // Cdot = w2 - w1
+        // cDot = w2 - w1
         // J = [0 0 -1 0 0 1]
         // K = invI1 + invI2
 
-        /// <summary>
-        /// Initializes the velocity constraints.
-        /// </summary>
+        /// <summary>Initializes the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
         /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
@@ -227,13 +206,10 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// Solves the velocity constraints.
-        /// </summary>
+        /// <summary>Solves the velocity constraints.</summary>
         /// <param name="step">The time step for this update.</param>
-        /// <param name="positions">The positions of the related bodies.</param>
         /// <param name="velocities">The velocities of the related bodies.</param>
-        internal override void SolveVelocityConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        internal override void SolveVelocityConstraints(TimeStep step, Velocity[] velocities)
         {
             var vA = velocities[_tmp.IndexA].LinearVelocity;
             var wA = velocities[_tmp.IndexA].AngularVelocity;
@@ -249,8 +225,8 @@ namespace Engine.Physics.Joints
 
             // Solve angular friction
             {
-                var cdot = wB - wA;
-                var impulse = -_tmp.AngularMass * cdot;
+                var cDot = wB - wA;
+                var impulse = -_tmp.AngularMass * cDot;
 
                 var oldImpulse = _angularImpulse;
                 var maxImpulse = h * _maxTorque;
@@ -263,9 +239,9 @@ namespace Engine.Physics.Joints
 
             // Solve linear friction
             {
-                var cdot = vB + Vector2Util.Cross(wB, _tmp.RotB) - vA - Vector2Util.Cross(wA, _tmp.RotA);
+                var cDot = vB + Vector2Util.Cross(wB, _tmp.RotB) - vA - Vector2Util.Cross(wA, _tmp.RotA);
 
-                var impulse = -(_tmp.LinearMass * cdot);
+                var impulse = -(_tmp.LinearMass * cDot);
                 var oldImpulse = _linearImpulse;
                 _linearImpulse += impulse;
 
@@ -292,15 +268,12 @@ namespace Engine.Physics.Joints
             velocities[_tmp.IndexB].AngularVelocity = wB;
         }
 
-        /// <summary>
-        /// This returns true if the position errors are within tolerance, allowing an
-        /// early exit from the iteration loop.
-        /// </summary>
-        /// <param name="step">The time step for this update.</param>
+        /// <summary>This returns true if the position errors are within tolerance, allowing an early exit from the iteration loop.</summary>
         /// <param name="positions">The positions of the related bodies.</param>
-        /// <param name="velocities">The velocities of the related bodies.</param>
-        /// <returns><c>true</c> if the position errors are within tolerance.</returns>
-        internal override bool SolvePositionConstraints(TimeStep step, Position[] positions, Velocity[] velocities)
+        /// <returns>
+        ///     <c>true</c> if the position errors are within tolerance.
+        /// </returns>
+        internal override bool SolvePositionConstraints(Position[] positions)
         {
             return true;
         }
