@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
@@ -876,25 +876,25 @@ namespace Engine.Collections
         }
         
         [OnStringify]
-        public StringBuilder Dump(StringBuilder sb, int indent)
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            sb
-                .AppendIndent(indent).Append("CellCount = ").Append(_cells.Count)
-                .AppendIndent(indent).Append("Cells = {");
+            w.AppendIndent(indent).Write("CellCount = "); w.Write(_cells.Count);
+            w.AppendIndent(indent).Write("Cells = {");
             foreach (var entry in _cells)
             {
-                sb.AppendIndent(indent + 1).Append(entry.Key).Append(" = ").Dump(entry.Value, indent + 1);
+                w.AppendIndent(indent + 1).Write(entry.Key); w.Write(" = "); w.Dump(entry.Value, indent + 1);
             }
-            sb
-                .AppendIndent(indent).Append("}")
+            w.AppendIndent(indent).Write("}");
 
-                .AppendIndent(indent).Append("EntryCount = ").Append(_entryBounds.Count)
-                .AppendIndent(indent).Append("Entries = {");
+            w.AppendIndent(indent).Write("EntryCount = "); w.Write(_entryBounds.Count);
+            w.AppendIndent(indent).Write("Entries = {");
             foreach (var entry in _entryBounds)
             {
-                sb.AppendIndent(indent + 1).Append(entry.Key).Append(" = ").Dump(entry.Value, indent + 1);
+                w.AppendIndent(indent + 1).Write(entry.Key); w.Write(" = "); w.Dump(entry.Value, indent + 1);
             }
-            return sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
+
+            return w;
         }
 
         #endregion

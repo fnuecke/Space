@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
@@ -511,9 +511,9 @@ namespace Space.ComponentSystem.Components.Behaviors
         }
 
         [OnStringify]
-        public virtual StringBuilder Dump(StringBuilder sb, int indent)
+        public virtual StreamWriter Dump(StreamWriter w, int indent)
         {
-            return sb.AppendIndent(indent).Append("TicksToWait = ").Append(_ticksToWait);
+            return w;
         }
 
         #endregion
@@ -543,12 +543,16 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Debugging
 
+        [PacketizerIgnore]
         private Vector2 _lastEscape;
 
+        [PacketizerIgnore]
         private Vector2 _lastSeparation;
 
+        [PacketizerIgnore]
         private Vector2 _lastCohesion;
 
+        [PacketizerIgnore]
         private Vector2 _lastFormation;
 
 #if DEBUG

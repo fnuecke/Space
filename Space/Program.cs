@@ -233,6 +233,8 @@ namespace Space
             // Update the rest of the game.
             base.Update(gameTime);
 
+            
+
             // Get ingame stats, if a game is running.
             IManager manager = null;
             if (_server != null)

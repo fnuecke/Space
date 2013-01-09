@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
@@ -270,21 +271,21 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Dumps the specified sb.</summary>
-        /// <param name="sb">The sb.</param>
+        /// <param name="w">The sb.</param>
         /// <param name="indent">The indent.</param>
         /// <returns></returns>
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("Cooldowns = {");
+            w.AppendIndent(indent).Write("Cooldowns = {");
             foreach (var cooldown in _cooldowns)
             {
-                sb.AppendIndent(indent + 1).Append(cooldown.Key).Append(" = ").Append(cooldown.Value);
+                w.AppendIndent(indent + 1).Write(cooldown.Key); w.Write(" = "); w.Write(cooldown.Value);
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

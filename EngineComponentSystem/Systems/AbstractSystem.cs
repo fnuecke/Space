@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.Diagnostics;
 using Engine.Serialization;
@@ -119,9 +119,9 @@ namespace Engine.ComponentSystem.Systems
         }
 
         [OnStringify]
-        public virtual StringBuilder Dump(StringBuilder sb, int indent)
+        public virtual StreamWriter Dump(StreamWriter w, int indent)
         {
-            return sb;
+            return w;
         }
 
         #endregion

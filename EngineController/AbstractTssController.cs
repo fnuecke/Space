@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
-using System.Text;
 using Engine.ComponentSystem;
 using Engine.Math;
 using Engine.Serialization;
@@ -317,6 +317,39 @@ namespace Engine.Controller
 
         #endregion
 
+        #region Utility
+        
+        protected static void WriteGameState(long frame, IManager manager, string filename)
+        {
+            // Get some general system information, for reference.
+            var assembly = Assembly.GetEntryAssembly().GetName();
+#if DEBUG
+            const string build = "Debug";
+#else
+            const string build = "Release";
+#endif
+
+            using (var w = new StreamWriter(filename))
+            {
+                w.Write("--------------------------------------------------------------------------------\n");
+                w.Write("{0} {1} (Attached debugger: {2}) running under {3}\n",
+                        assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
+                w.Write("Build Version: {0}\n", assembly.Version);
+                w.Write("CLR Version: {0}\n", Environment.Version);
+                w.Write("CPU Count: {0}\n", Environment.ProcessorCount);
+                w.Write("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
+                w.Write("Controller Type: Server\n");
+                w.Write("--------------------------------------------------------------------------------\n");
+                w.Write("Gamestate at frame {0}\n", frame);
+                w.Write("--------------------------------------------------------------------------------\n");
+
+                // Dump actual game state.
+                w.Write("Manager = "); w.Dump(manager);
+            }
+        }
+
+        #endregion
+
         #region Simulation wrapper
 
         /// <summary>
@@ -344,6 +377,7 @@ namespace Engine.Controller
             /// <summary>
             /// The controller this managed wrapper belongs to.
             /// </summary>
+            [PacketizerIgnore]
             private readonly AbstractTssController<TSession> _controller;
 
             #endregion
@@ -368,7 +402,7 @@ namespace Engine.Controller
             /// </summary>
             public void Update()
             {
-                _controller.Tss.Update();
+                throw new NotSupportedException();
             }
 
             /// <summary>
@@ -383,8 +417,19 @@ namespace Engine.Controller
 
             #endregion
 
+            #region Serialization
+
+            [OnStringify]
+            public StreamWriter Dump(StreamWriter w, int indent)
+            {
+                w.Write("TrailingState = "); w.Dump(_controller.Tss.TrailingSimulation, indent);
+                return w;
+            }
+
+            #endregion
+
             #region Copying
-            
+
             /// <summary>
             /// Creates a deep copy of the object.
             /// </summary>
@@ -408,35 +453,5 @@ namespace Engine.Controller
         }
 
         #endregion
-
-        protected static string StringifyGameState(long frame, IManager manager)
-        {
-            // String builder we use to concatenate our strings.
-            var sb = new StringBuilder();
-
-            // Get some general system information, for reference.
-            var assembly = Assembly.GetEntryAssembly().GetName();
-#if DEBUG
-            const string build = "Debug";
-#else
-            const string build = "Release";
-#endif
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
-                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
-            sb.AppendFormat("Build Version: {0}\n", assembly.Version);
-            sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
-            sb.AppendFormat("CPU Count: {0}\n", Environment.ProcessorCount);
-            sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
-            sb.Append("Controller Type: Server\n");
-            sb.Append("--------------------------------------------------------------------------------\n");
-            sb.AppendFormat("Gamestate at frame {0}\n", frame);
-            sb.Append("--------------------------------------------------------------------------------\n");
-
-            // Dump actual game state.
-            sb.Dump(manager);
-
-            return sb.ToString();
-        }
     }
 }

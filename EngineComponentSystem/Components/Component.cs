@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Engine.Diagnostics;
 using Engine.Serialization;
 
@@ -147,13 +147,13 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Writes a string representation of the object to a string builder.
         /// </summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w"> </param>
         /// <param name="indent">The indentation level.</param>
         /// <returns>The string builder, for call chaining.</returns>
         [OnStringify]
-        public virtual StringBuilder Dump(StringBuilder sb, int indent)
+        public virtual StreamWriter Dump(StreamWriter w, int indent)
         {
-            return sb;
+            return w;
         }
 
         #endregion

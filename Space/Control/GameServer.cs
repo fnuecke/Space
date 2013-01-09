@@ -19,6 +19,11 @@ namespace Space.Control
         /// The controller in use by this game server.
         /// </summary>
         public ISimulationController<IServerSession> Controller { get; private set; }
+        
+        /// <summary>
+        /// Whether controller updating is paused or not.
+        /// </summary>
+        public bool Paused { get; set; }
 
         #endregion
 
@@ -72,8 +77,15 @@ namespace Space.Control
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            
-            Controller.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+
+            if (Paused)
+            {
+                Controller.Update(0.0f);
+            }
+            else
+            {
+                Controller.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+            }
         }
         
         #endregion

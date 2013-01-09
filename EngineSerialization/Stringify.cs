@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Engine.Serialization
@@ -35,51 +35,58 @@ namespace Engine.Serialization
         private const int IndentAmount = 2;
 
         /// <summary>Appends the dump.</summary>
-        /// <param name="sb">The sb.</param>
+        /// <param name="w">The writer.</param>
         /// <param name="value">The data.</param>
         /// <param name="indent">The initial indent.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public static StringBuilder Dump(this StringBuilder sb, object value, int indent = 0)
+        public static StreamWriter Dump(this StreamWriter w, object value, int indent = 0)
         {
             // If we have a value type just call its tostring.
             if (value is ValueType)
             {
-                return sb.Append(value);
+                w.Write(value);
             }
             else
             {
-                return sb.AppendValue(value, indent);
+                w.AppendValue(value, indent);
             }
+            return w;
         }
 
         /// <summary>Adds a new line and the specified indent depth to the string builder.</summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w">The writer.</param>
         /// <param name="indent">The indent depth.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public static StringBuilder AppendIndent(this StringBuilder sb, int indent)
+        public static StreamWriter AppendIndent(this StreamWriter w, int indent)
         {
-            return sb.AppendLine().Append(' ', indent * IndentAmount);
+            w.WriteLine();
+            for (var i = 0; i < indent * IndentAmount; ++i)
+            {
+                w.Write(' ');
+            }
+            return w;
         }
 
         /// <summary>Appends the specified object to the string builder.</summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w">The writer.</param>
         /// <param name="value">The value to append.</param>
         /// <param name="indent">The indent of the output.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        private static StringBuilder AppendValue(this StringBuilder sb, object value, int indent)
+        private static StreamWriter AppendValue(this StreamWriter w, object value, int indent)
         {
             // Most simple case is if we have null...
             if (value == null)
             {
-                return sb.Append("null");
+                w.Write("null");
             }
-
-            // We're still here, get a writing function for the object.
-            sb.Append('{');
-            GetAppender(value.GetType())(sb, value, indent + 1)
-                .AppendIndent(indent).Append('}');
-
-            return sb;
+            else
+            {
+                // We're still here, get a writing function for the object.
+                w.Write('{');
+                GetAppender(value.GetType())(w, value, indent + 1);
+                w.AppendIndent(indent).Write('}');
+            }
+            return w;
         }
 
         #region Internals
@@ -87,7 +94,7 @@ namespace Engine.Serialization
         /// <summary>
         /// Signature of an appending function.
         /// </summary>
-        private delegate StringBuilder Appender(StringBuilder sb, object data, int indent);
+        private delegate StreamWriter Appender(StreamWriter w, object data, int indent);
 
         /// <summary>
         /// Cached list of type packetizers, to avoid rebuilding the methods over and over.
@@ -128,28 +135,28 @@ namespace Engine.Serialization
             }
 
             // Invariant method shortcuts.
-            var appendValue = typeof(Stringify).GetMethod("AppendValue", BindingFlags.Static | BindingFlags.NonPublic);
-            var appendIndent = typeof(Stringify).GetMethod("AppendIndent");
-            var appendString = typeof(StringBuilder).GetMethod("Append", new[] {typeof(string)});
-            var appendObject = typeof(StringBuilder).GetMethod("Append", new[] {typeof(object)});
+            var writeValue = typeof(Stringify).GetMethod("AppendValue", BindingFlags.Static | BindingFlags.NonPublic);
+            var writeIndent = typeof(Stringify).GetMethod("AppendIndent");
+            var writeString = typeof(StreamWriter).GetMethod("Write", new[] {typeof(string)});
+            var writeObject = typeof(StreamWriter).GetMethod("Write", new[] {typeof(object)});
             
-            System.Diagnostics.Debug.Assert(appendValue != null);
-            System.Diagnostics.Debug.Assert(appendIndent != null);
-            System.Diagnostics.Debug.Assert(appendString != null);
-            System.Diagnostics.Debug.Assert(appendObject != null);
+            System.Diagnostics.Debug.Assert(writeValue != null);
+            System.Diagnostics.Debug.Assert(writeIndent != null);
+            System.Diagnostics.Debug.Assert(writeString != null);
+            System.Diagnostics.Debug.Assert(writeObject != null);
 
             // Generate dynamic methods for the specified type.
-            var appendMethod = new DynamicMethod(
-                "Append", typeof(StringBuilder), new[] { typeof(StringBuilder), typeof(object), typeof(int) }, declaringType, true);
+            var method = new DynamicMethod(
+                "Write", typeof(StreamWriter), new[] { typeof(StreamWriter), typeof(object), typeof(int) }, declaringType, true);
 
             // Get the code generators.
-            var appendGenerator = appendMethod.GetILGenerator();
+            var generator = method.GetILGenerator();
 
             // Load builder as onto the stack. This will always remain the lowest entry on
             // the stack of our appender. This is an optimization the compiler could not
             // even do, because the returned packet reference may theoretically differ. In
             // practice it never will/must, though.
-            appendGenerator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldarg_0);
 
             // Handle all instance fields.
             foreach (var f in GetAllFields(type))
@@ -160,32 +167,32 @@ namespace Engine.Serialization
                     continue;
                 }
                 
-                appendGenerator.Emit(OpCodes.Ldarg_2);
-                appendGenerator.EmitCall(OpCodes.Call, appendIndent, null);
-                appendGenerator.Emit(OpCodes.Ldstr, BackingFieldRegex.Replace(f.Name, "$1"));
-                appendGenerator.EmitCall(OpCodes.Call, appendString, null);
-                appendGenerator.Emit(OpCodes.Ldstr, " = ");
-                appendGenerator.EmitCall(OpCodes.Call, appendString, null);
+                generator.Emit(OpCodes.Ldarg_2);
+                generator.EmitCall(OpCodes.Call, writeIndent, null);
+                generator.Emit(OpCodes.Ldstr, BackingFieldRegex.Replace(f.Name, "$1"));
+                generator.EmitCall(OpCodes.Call, writeString, null);
+                generator.Emit(OpCodes.Ldarg_0);
+                generator.Emit(OpCodes.Ldstr, " = ");
+                generator.EmitCall(OpCodes.Call, writeString, null);
+                generator.Emit(OpCodes.Ldarg_0);
 
-                appendGenerator.Emit(OpCodes.Ldarg_1);
-                appendGenerator.Emit(OpCodes.Ldfld, f);
+                generator.Emit(OpCodes.Ldarg_1);
+                generator.Emit(OpCodes.Ldfld, f);
                 if (f.FieldType.IsValueType)
                 {
-                    var appendType = typeof(StringBuilder).GetMethod("Append", new[] {f.FieldType});
-                    if (appendType != null && appendType.GetParameters()[0].ParameterType == f.FieldType)
+                    var writeType = typeof(StreamWriter).GetMethod("Write", new[] {f.FieldType});
+                    System.Diagnostics.Debug.Assert(writeType != null);
+                    if (writeType.GetParameters()[0].ParameterType != f.FieldType)
                     {
-                        appendGenerator.EmitCall(OpCodes.Call, appendType, null);
+                        generator.Emit(OpCodes.Box, f.FieldType);
                     }
-                    else
-                    {
-                        appendGenerator.Emit(OpCodes.Box, f.FieldType);
-                        appendGenerator.EmitCall(OpCodes.Call, appendObject, null);
-                    }
+                    generator.EmitCall(OpCodes.Call, writeType, null);
+                    generator.Emit(OpCodes.Ldarg_0);
                 }
                 else
                 {
-                    appendGenerator.Emit(OpCodes.Ldarg_2);
-                    appendGenerator.EmitCall(OpCodes.Call, appendValue, null);
+                    generator.Emit(OpCodes.Ldarg_2);
+                    generator.EmitCall(OpCodes.Call, writeValue, null);
                 }
             }
             
@@ -197,26 +204,26 @@ namespace Engine.Serialization
                 .Where(m => m.IsDefined(typeof(OnStringifyAttribute), true)))
             {
                 if (callback.GetParameters().Length != 2 ||
-                    callback.GetParameters()[0].ParameterType != typeof(StringBuilder) ||
+                    callback.GetParameters()[0].ParameterType != typeof(StreamWriter) ||
                     callback.GetParameters()[1].ParameterType != typeof(int))
                 {
-                    throw new ArgumentException(string.Format("Stringify callback {0}.{1} has invalid signature, must be ((StringBuilder, int) => ?).", type.Name, callback.Name));
+                    throw new ArgumentException(string.Format("Stringify callback {0}.{1} has invalid signature, must be ((StreamWriter, int) => ?).", type.Name, callback.Name));
                 }
-                appendGenerator.Emit(OpCodes.Ldarg_1);
-                appendGenerator.Emit(OpCodes.Ldarg_0);
-                appendGenerator.Emit(OpCodes.Ldarg_2);
-                appendGenerator.EmitCall(OpCodes.Callvirt, callback, null);
+                generator.Emit(OpCodes.Ldarg_1);
+                generator.Emit(OpCodes.Ldarg_0);
+                generator.Emit(OpCodes.Ldarg_2);
+                generator.EmitCall(OpCodes.Callvirt, callback, null);
                 if (callback.ReturnType != typeof(void))
                 {
-                    appendGenerator.Emit(OpCodes.Pop);
+                    generator.Emit(OpCodes.Pop);
                 }
             }
             
             // Finish our dynamic functions by returning.
-            appendGenerator.Emit(OpCodes.Ret);
+            generator.Emit(OpCodes.Ret);
 
             // Create an instances of our dynamic methods (as delegates) and return them.
-            return (Appender)appendMethod.CreateDelegate(typeof(Appender));
+            return (Appender)method.CreateDelegate(typeof(Appender));
         }
         
         /// <summary>

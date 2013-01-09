@@ -43,6 +43,11 @@ namespace Space.Control
         /// </summary>
         public IClientController<FrameCommand> Controller { get; private set; }
 
+        /// <summary>
+        /// Whether controller updating is paused or not.
+        /// </summary>
+        public bool Paused { get; set; }
+
         #endregion
 
         #region Fields
@@ -270,7 +275,14 @@ namespace Space.Control
             base.Update(gameTime);
 
             // Update our local simulation.
-            Controller.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+            if (Paused)
+            {
+                Controller.Update(0.0f);
+            }
+            else
+            {
+                Controller.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+            }
 
             // Save periodically.
             if ((DateTime.UtcNow - _lastSave).TotalSeconds > SaveInterval)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Session;
@@ -64,7 +63,7 @@ namespace Engine.Controller
         protected AbstractTssServer(IServerSession session)
             : base(session, session.MaxPlayers > 1 ? new[] {
                 (uint)System.Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
-                (uint)System.Math.Ceiling(250 / TargetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
+                (uint)System.Math.Ceiling(300 / TargetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
             } : new uint[0]) //< If it's single player only we don't need trailing states.
         {
             _clientLoads = new float[Session.MaxPlayers];
@@ -343,8 +342,7 @@ namespace Engine.Controller
                         try
                         {
                             // Create actual game dump and write it to file.
-                            var serverDump = StringifyGameState(frame, _gameStates[frame]);
-                            File.WriteAllText(dumpId + "_server.txt", serverDump);
+                            WriteGameState(frame, _gameStates[frame], dumpId + "_server.txt");
                         }
                         catch (Exception ex)
                         {

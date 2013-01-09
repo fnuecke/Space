@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework.Input;
@@ -223,6 +225,98 @@ namespace Space
                 args => SetDebugRenderSystemEnabled<DebugEntityIdRenderSystem>(args[1]),
                 "Sets whether to render entitiy ids at entity position.",
                 "r_entityid 1|0 - set whether to render entity ids.");
+
+            _console.AddCommand("d_pause",
+                args =>
+                {
+                    bool paused;
+                    switch (args[1])
+                    {
+                        case "1":
+                        case "on":
+                        case "true":
+                        case "yes":
+                            paused = true;
+                            break;
+                        default:
+                            paused = false;
+                            break;
+                    }
+                    if (_client != null)
+                    {
+                        _client.Paused = paused;
+                    }
+                    if (_server != null)
+                    {
+                        _server.Paused = paused;
+                    }
+                },
+                "Sets whether to pause simulation updating. If enabled, sessions will still",
+                "be updated, the actual simulation however will not.",
+                "d_pause 1|0 - sets whether to pause the simulation or not.");
+
+            _console.AddCommand("d_step",
+                args =>
+                {
+                    var updates = args.Length > 0 ? int.Parse(args[1]) : 1;
+                    if (_client != null)
+                    {
+                        for (var i = 0; i < updates; i++)
+                        {
+                            _client.Controller.Update(1000f / Settings.TicksPerSecond);
+                        }
+                    }
+                    if (_server != null)
+                    {
+                        for (var i = 0; i < updates; i++)
+                        {
+                            _server.Controller.Update(1000f / Settings.TicksPerSecond);
+                        }
+                    }
+                },
+                "Performs a single update for the server and client if they exist.",
+                "step [frames] - applies the specified number of updates.");
+
+            _console.AddCommand("d_dump",
+                args =>
+                {
+                    const string filename = "dump_{0}_{1}.txt";
+                    var id = DateTime.UtcNow.Ticks.ToString("D");
+                    if (args.Length > 0)
+                    {
+                        id = args[1];
+                    }
+
+                    while (_client.Controller.Simulation.CurrentFrame < _server.Controller.Simulation.CurrentFrame)
+                    {
+                        _client.Controller.Update(1f / 60f);
+                    }
+                    while (_server.Controller.Simulation.CurrentFrame < _client.Controller.Simulation.CurrentFrame)
+                    {
+                        _server.Controller.Update(1f / 60f);
+                    }
+
+                    if (_client != null)
+                    {
+                        using (var w = new StreamWriter(string.Format(filename, id, "client")))
+                        {
+                            w.Write("Simulation = ");
+                            w.Dump(_client.Controller.Simulation);
+                            
+                        }
+                    }
+                    if (_server != null)
+                    {
+                        using (var w = new StreamWriter(string.Format(filename, id, "server")))
+                        {
+                            w.Write("Simulation = ");
+                            w.Dump(_server.Controller.Simulation);
+                        }
+                    }
+                },
+                "Writes a dump of the current game state to a file. If a name is omitted",
+                "one will be chosen at random.",
+                "d_dump [filename] - writes the game state dump to the specified file.");
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after

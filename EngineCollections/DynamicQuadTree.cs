@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Text;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -18,7 +18,6 @@ using TRectangle = Engine.FarMath.FarRectangle;
 #else
 using Engine.Math;
 using TPoint = Microsoft.Xna.Framework.Vector2;
-using TSingle = System.Single;
 using TRectangle = Engine.Math.RectangleF;
 #endif
 
@@ -734,122 +733,121 @@ namespace Engine.Collections
         }
 
         [OnStringify]
-        public StringBuilder Dump(StringBuilder sb, int indent)
+        public StreamWriter Dump(StreamWriter sb, int indent)
         {
             var entries = _values.Values.ToList();
 
-            sb
-                .AppendIndent(indent).Append("ValueCount = ").Append(_values.Count)
-                .AppendIndent(indent).Append("Values = {");
+            sb.AppendIndent(indent).Write("ValueCount = "); sb.Write(_values.Count);
+            sb.AppendIndent(indent).Write("Values = {");
             for (var i = 0; i < entries.Count; ++i)
             {
                 var entry = entries[i];
-                sb.AppendIndent(indent + 1).Append("#").Append(i).Append(" = {");
-                sb.AppendIndent(indent + 2).Append("Value = ").Append(entry.Value);
-                sb.AppendIndent(indent + 2).Append("Bounds = ").Append(entry.Bounds);
-                sb.AppendIndent(indent + 2).Append("Previous = ");
+                sb.AppendIndent(indent + 1).Write("#"); sb.Write(i); sb.Write(" = {");
+                sb.AppendIndent(indent + 2).Write("Value = "); sb.Write(entry.Value);
+                sb.AppendIndent(indent + 2).Write("Bounds = "); sb.Write(entry.Bounds);
+                sb.AppendIndent(indent + 2).Write("Previous = ");
                 {
                     var index = entries.IndexOf(entry.Previous);
                     if (index >= 0)
                     {
-                        sb.Append("#").Append(index);
+                        sb.Write("#"); sb.Write(index);
                     }
                     else
                     {
-                        sb.Append("null");
+                        sb.Write("null");
                     }
                 }
-                sb.AppendIndent(indent + 2).Append("Next = ");
+                sb.AppendIndent(indent + 2).Write("Next = ");
                 {
                     var index = entries.IndexOf(entry.Next);
                     if (index >= 0)
                     {
-                        sb.Append("#").Append(index);
+                        sb.Write("#"); sb.Write(index);
                     }
                     else
                     {
-                        sb.Append("null");
+                        sb.Write("null");
                     }
                 }
-                sb.AppendIndent(indent + 1).Append("}");
+                sb.AppendIndent(indent + 1).Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            sb.AppendIndent(indent).Write("}");
 
-            sb.AppendIndent(indent).Append("Nodes = {");
+            sb.AppendIndent(indent).Write("Nodes = {");
             DumpNode(sb, indent + 1, _root, entries);
-            sb.AppendIndent(indent).Append("}");
+            sb.AppendIndent(indent).Write("}");
 
             return sb;
         }
 
-        private static void DumpNode(StringBuilder sb, int indent, Node node, IList<Entry> entries)
+        private static void DumpNode(StreamWriter sb, int indent, Node node, IList<Entry> entries)
         {
-            sb.AppendIndent(indent).Append("EntryCount = ").Append(node.EntryCount);
-            sb.AppendIndent(indent).Append("FirstChildEntry = ");
+            sb.AppendIndent(indent).Write("EntryCount = "); sb.Write(node.EntryCount);
+            sb.AppendIndent(indent).Write("FirstChildEntry = ");
             {
                 var index = entries.IndexOf(node.FirstChildEntry);
                 if (index >= 0)
                 {
-                    sb.Append("#").Append(index);
+                    sb.Write("#"); sb.Write(index);
                 }
                 else
                 {
-                    sb.Append("null");
+                    sb.Write("null");
                 }
             }
-            sb.AppendIndent(indent).Append("LastChildEntry = ");
+            sb.AppendIndent(indent).Write("LastChildEntry = ");
             {
                 var index = entries.IndexOf(node.LastChildEntry);
                 if (index >= 0)
                 {
-                    sb.Append("#").Append(index);
+                    sb.Write("#"); sb.Write(index);
                 }
                 else
                 {
-                    sb.Append("null");
+                    sb.Write("null");
                 }
             }
-            sb.AppendIndent(indent).Append("FirstEntry = ");
+            sb.AppendIndent(indent).Write("FirstEntry = ");
             {
                 var index = entries.IndexOf(node.FirstEntry);
                 if (index >= 0)
                 {
-                    sb.Append("#").Append(index);
+                    sb.Write("#"); sb.Write(index);
                 }
                 else
                 {
-                    sb.Append("null");
+                    sb.Write("null");
                 }
             }
-            sb.AppendIndent(indent).Append("LastEntry = ");
+            sb.AppendIndent(indent).Write("LastEntry = ");
             {
                 var index = entries.IndexOf(node.LastEntry);
                 if (index >= 0)
                 {
-                    sb.Append("#").Append(index);
+                    sb.Write("#"); sb.Write(index);
                 }
                 else
                 {
-                    sb.Append("null");
+                    sb.Write("null");
                 }
             }
 
-            sb.AppendIndent(indent).Append("Children = {");
+            sb.AppendIndent(indent).Write("Children = {");
             for (var i = 0; i < 4; ++i)
             {
-                sb.AppendIndent(indent + 1).Append(i).Append(" = ");
+                sb.AppendIndent(indent + 1).Write(i); sb.Write(" = ");
                 if (node.Children[i] != null)
                 {
-                    sb.Append("{");
+                    sb.Write("{");
                     DumpNode(sb, indent + 2, node.Children[i], entries);
-                    sb.AppendIndent(indent + 1).Append("}");
+                    sb.AppendIndent(indent + 1).Write("}");
                 }
                 else
                 {
-                    sb.Append("null");
+                    sb.Write("null");
                 }
             }
-            sb.AppendIndent(indent).Append("}");
+            sb.AppendIndent(indent).Write("}");
         }
 
         #endregion

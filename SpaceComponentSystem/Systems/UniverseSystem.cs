@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
@@ -90,7 +91,7 @@ namespace Space.ComponentSystem.Systems
                 // Get random generator based on world seed and cell location.
                 var hasher = new Hasher();
                 hasher.Write(m.Id).Write(WorldSeed);
-                var random = new MersenneTwister((ulong)hasher.Value);
+                var random = new MersenneTwister(hasher.Value);
 
                 // Check if we have a changed cell info.
                 if (!_cellInfo.ContainsKey(m.Id))
@@ -101,8 +102,7 @@ namespace Space.ComponentSystem.Systems
                     // cell info.
                     hasher.Reset();
                     hasher.Write(m.Id).Write(WorldSeed);
-                    var independentRandom =
-                        new MersenneTwister((ulong)hasher.Value);
+                    var independentRandom = new MersenneTwister(hasher.Value);
 
                     // Figure out which faction should own this cell.
                     Factions faction;
@@ -260,19 +260,19 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("StoredCellCount = ").Append(_cellInfo.Count);
-            sb.AppendIndent(indent).Append("Cells = {");
+            w.AppendIndent(indent).Write("StoredCellCount = "); w.Write(_cellInfo.Count);
+            w.AppendIndent(indent).Write("Cells = {");
             foreach (var item in _cellInfo)
             {
-                sb.AppendIndent(indent + 1).Append(item.Key).Append(" = ").Dump(item.Value, indent + 1);
+                w.AppendIndent(indent + 1).Write(item.Key); w.Write(" = "); w.Dump(item.Value, indent + 1);
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

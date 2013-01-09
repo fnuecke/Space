@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
@@ -113,21 +114,21 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w"> </param>
         /// <param name="indent">The indentation level.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("Modifiers = {");
+            w.AppendIndent(indent).Write("Modifiers = {");
             foreach (var modifier in Modifiers)
             {
-                sb.AppendIndent(indent + 1).Dump(modifier, indent + 1);
+                w.AppendIndent(indent + 1).Dump(modifier, indent + 1);
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

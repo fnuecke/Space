@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
@@ -410,46 +410,46 @@ namespace Engine.Simulation
         }
 
         [OnStringify]
-        public StringBuilder Dump(StringBuilder sb, int indent)
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
             // Write the trailing simulation.
-            sb.AppendIndent(indent).Append("TrailingSimulation = ").Dump(_simulations[_simulations.Length - 1], indent);
+            w.AppendIndent(indent).Write("TrailingSimulation = "); w.Dump(_simulations[_simulations.Length - 1], indent);
 
             // Write pending object removals.
-            sb.AppendIndent(indent).Append("PendingRemovalFrameCount = ").Append(_removes.Count);
-            sb.AppendIndent(indent).Append("PendingRemovals = {");
+            w.AppendIndent(indent).Write("PendingRemovalFrameCount = "); w.Write(_removes.Count);
+            w.AppendIndent(indent).Write("PendingRemovals = {");
             foreach (var frame in _removes)
             {
-                sb.AppendIndent(indent + 1).Append("Frame ").Append(frame.Key).Append(" = {");
+                w.AppendIndent(indent + 1).Write("Frame "); w.Write(frame.Key); w.Write(" = {");
                 var first = true;
                 foreach (var entityUid in frame.Value)
                 {
                     if (!first)
                     {
-                        sb.Append(", ");
+                        w.Write(", ");
                     }
                     first = false;
-                    sb.Append(entityUid);
+                    w.Write(entityUid);
                 }
-                sb.Append("}");
+                w.Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
             // Write pending simulation commands.
-            sb.AppendIndent(indent).Append("CommandFrameCount = ").Append(_commands.Count);
-            sb.AppendIndent(indent).Append("Commands = {");
+            w.AppendIndent(indent).Write("CommandFrameCount = "); w.Write(_commands.Count);
+            w.AppendIndent(indent).Write("Commands = {");
             foreach (var frame in _commands)
             {
-                sb.AppendIndent(indent + 1).Append("Frame ").Append(frame.Key).Append(" = {");
+                w.AppendIndent(indent + 1).Write("Frame "); w.Write(frame.Key); w.Write(" = {");
                 foreach (var command in frame.Value)
                 {
-                    sb.AppendIndent(indent + 1).Dump(command, indent + 1);
+                    w.AppendIndent(indent + 1).Dump(command, indent + 1);
                 }
-                sb.AppendIndent(indent + 1).Append("}");
+                w.AppendIndent(indent + 1).Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         /// <summary>

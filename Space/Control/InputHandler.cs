@@ -193,13 +193,13 @@ namespace Space.Control
                 if (_rotationChanged >= _lastUpdate)
                 {
                     // Yes, push command.
-                    _game.Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, new Vector2(_targetRotation, 0)));
+                    BeginCommand(GameCommand.Rotate);
                 }
                 // Has the acceleration changed since the last update?
                 if (_accelerationChanged >= _lastUpdate)
                 {
                     // Yes, push command.
-                    _game.Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, _accelerationVector));
+                    BeginCommand(GameCommand.Accelerate);
                 }
                 _lastUpdate = DateTime.UtcNow;
             }
@@ -425,6 +425,18 @@ namespace Space.Control
                     AddAccelerationDirection(Directions.Right);
                     break;
 
+                case GameCommand.Rotate:
+                    // Rotation changed and we should send the new target rotation.
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate,
+                                                     new Vector2(_targetRotation, 0));
+                    break;
+                    
+                case GameCommand.Accelerate:
+                    // Acceleration vector changed and we should send the new one.
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate,
+                                                     _accelerationVector);
+                    break;
+
                 case GameCommand.Stabilize:
                     // Enable stabilizers if not toggling.
                     if (!Settings.Instance.StabilizeToggles && !_stabilizing)
@@ -516,7 +528,7 @@ namespace Space.Control
             }
 
             // If we did something, push it.
-            if (command != null && IsConnected)
+            if (command != null && IsConnected && !_game.Client.Paused && !_game.GameConsole.IsOpen)
             {
                 _game.Client.Controller.PushLocalCommand(command);
             }
@@ -591,7 +603,7 @@ namespace Space.Control
             }
 
             // If we did something, push it.
-            if (command != null && IsConnected)
+            if (command != null && IsConnected && !_game.Client.Paused && !_game.GameConsole.IsOpen)
             {
                 _game.Client.Controller.PushLocalCommand(command);
             }

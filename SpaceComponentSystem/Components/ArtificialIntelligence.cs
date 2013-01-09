@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
@@ -503,36 +504,36 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w"> </param>
         /// <param name="indent">The indentation level.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("CurrentBehaviors = {");
+            w.AppendIndent(indent).Write("CurrentBehaviors = {");
             {
                 var first = true;
                 foreach (var behavior in _currentBehaviors)
                 {
                     if (!first)
                     {
-                        sb.Append(", ");
+                        w.Write(", ");
                     }
                     first = false;
-                    sb.Append(behavior);
+                    w.Write(behavior);
                 }
             }
-            sb.Append("}");
+            w.Write("}");
 
-            sb.AppendIndent(indent).Append("Behaviors = {");
+            w.AppendIndent(indent).Write("Behaviors = {");
             foreach (var behavior in _behaviors)
             {
-                sb.AppendIndent(indent + 1).Dump(behavior, indent + 1);
+                w.AppendIndent(indent + 1).Write(behavior.Key); w.Write(" = "); w.Dump(behavior.Value, indent + 1);
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

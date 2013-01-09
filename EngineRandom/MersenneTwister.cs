@@ -37,7 +37,7 @@
 
 using System;
 using System.Globalization;
-using System.Text;
+using System.IO;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -350,16 +350,16 @@ namespace Engine.Random
         }
 
         [OnStringify]
-        public StringBuilder Dump(StringBuilder sb, int indent)
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
             var hasher = new Hasher();
             for (var i = 0; i < N; i++)
             {
                 hasher.Write(_mt[i]);
             }
-            return sb
-                .AppendIndent(indent)
-                .Append("_mt (hash) = ").Append(hasher.Value);
+            w.AppendIndent(indent).Write("_mt (hash) = "); w.Write(hasher.Value);
+
+            return w;
         }
 
         #endregion

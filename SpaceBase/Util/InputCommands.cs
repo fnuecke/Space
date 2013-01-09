@@ -31,6 +31,16 @@
         /// Accelerate right.
         /// </summary>
         Right,
+        
+        /// <summary>
+        /// Rotate to a specific angle.
+        /// </summary>
+        Rotate,
+
+        /// <summary>
+        /// Accelerate in a specific direction.
+        /// </summary>
+        Accelerate,
 
         /// <summary>
         /// Stabilize the ship's position.
@@ -163,7 +173,7 @@
 
         #region Debug / Testing
 
-        TestCommand
+        TestCommand,
 
         #endregion
     }

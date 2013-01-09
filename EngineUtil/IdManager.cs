@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using Engine.Serialization;
 
 namespace Engine.Util
@@ -147,20 +147,22 @@ namespace Engine.Util
         }
         
         [OnStringify]
-        public StringBuilder Dump(StringBuilder sb, int indent)
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            sb.AppendIndent(indent).Append("_reusableIds = {");
+            w.AppendIndent(indent).Write("_reusableIds = {");
             var first = true;
             foreach (var reusableId in _reusableIds)
             {
                 if (!first)
                 {
-                    sb.Append(", ");
+                    w.Write(", ");
                 }
-                sb.Append(reusableId);
+                w.Write(reusableId);
                 first = false;
             }
-            return sb.Append("}");
+            w.Write("}");
+
+            return w;
         }
 
         /// <summary>

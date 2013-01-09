@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -344,41 +345,41 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("LivingCells = {");
+            w.AppendIndent(indent).Write("LivingCells = {");
             {
                 var first = true;
                 foreach (var cell in _livingCells)
                 {
                     if (!first)
                     {
-                        sb.Append(", ");
+                        w.Write(", ");
                     }
                     first = false;
-                    sb.Append(cell);
+                    w.Write(cell);
                 }
             }
             string.Join(", ", _livingCells);
-            sb.Append("}");
-            sb.AppendIndent(indent).Append("PendingCells {");
+            w.Write("}");
+            w.AppendIndent(indent).Write("PendingCells {");
             {
                 var first = true;
                 foreach (var cell in _pendingCells)
                 {
                     if (!first)
                     {
-                        sb.Append(", ");
+                        w.Write(", ");
                     }
                     first = false;
-                    sb.Append(cell.Key).Append("@").Append(cell.Value);
+                    w.Write(cell.Key); w.Write("@"); w.Write(cell.Value);
                 }
             }
-            sb.Append("}");
+            w.Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

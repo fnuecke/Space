@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Engine.Collections;
 using Engine.ComponentSystem.Common.Components;
@@ -417,34 +418,34 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("Squads = {");
+            w.AppendIndent(indent).Write("Squads = {");
             foreach (var id in _squadIds)
             {
                 var data = _squads[id];
 
-                sb.AppendIndent(indent + 1).Append(id).Append(" = {");
-                sb.AppendIndent(indent + 2).Append("Formation = ").Append(data.Formation.GetType().Name);
-                sb.AppendIndent(indent + 2).Append("Spacing = ").Append(data.Spacing);
-                sb.AppendIndent(indent + 2).Append("MemberCount = ").Append(data.Members.Count);
-                sb.AppendIndent(indent + 2).Append("Members = {");
+                w.AppendIndent(indent + 1).Write(id);w.Write(" = {");
+                w.AppendIndent(indent + 2).Write("Formation = "); w.Write(data.Formation.GetType().Name);
+                w.AppendIndent(indent + 2).Write("Spacing = "); w.Write(data.Spacing);
+                w.AppendIndent(indent + 2).Write("MemberCount = "); w.Write(data.Members.Count);
+                w.AppendIndent(indent + 2).Write("Members = {");
                 for (var i = 0; i < data.Members.Count; i++)
                 {
                     if (i > 0)
                     {
-                        sb.Append(", ");
+                        w.Write(", ");
                     }
-                    sb.Append(data.Members[i]);
+                    w.Write(data.Members[i]);
                 }
-                sb.AppendIndent(indent + 2).Append("}");
-                sb.AppendIndent(indent + 1).Append("}");
+                w.AppendIndent(indent + 2).Write("}");
+                w.AppendIndent(indent + 1).Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

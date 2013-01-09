@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.IO;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
@@ -336,7 +336,15 @@ namespace Space.ComponentSystem.Components
 
         string[] IInformation.getDisplayText()
         {
-            return new[] {new StringBuilder().Dump(this).ToString()};
+            using (var s = new MemoryStream())
+            {
+                var w = new StreamWriter(s);
+                w.Dump(this);
+                w.Flush();
+                s.Position = 0;
+                var r = new StreamReader(s);
+                return new[] {r.ReadToEnd()};
+            }
         }
 
         Color IInformation.getDisplayColor()

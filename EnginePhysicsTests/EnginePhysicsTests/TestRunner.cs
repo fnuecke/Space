@@ -489,9 +489,10 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                             _mouseJoint = -1;
                         }
 
-                        var sb = new StringBuilder();
-                        sb.Dump(_manager);
-                        File.WriteAllText("before.txt", sb.ToString());
+                        using (var w = new StreamWriter("before.txt"))
+                        {
+                            w.Dump(_manager);
+                        }
 
                         _snapshot = new Packet();
                         _snapshot.Write(_manager);

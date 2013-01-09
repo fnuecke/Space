@@ -271,7 +271,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private void RebuildComponentList()
         {
-            Components.Clear();
+            _shields.Clear();
             foreach (var component in Manager.Components)
             {
                 if (component is Shield)

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.Physics.Math;
 using Engine.Serialization;
@@ -433,24 +433,24 @@ namespace Engine.Physics.Components
         }
 
         /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w"> </param>
         /// <param name="indent">The indentation level.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public override StringBuilder Dump(StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("Vertices = {");
+            w.AppendIndent(indent).Write("Vertices = {");
             for (var i = 0; i < Count; i++)
             {
-                sb.AppendIndent(indent + 1).Append("{");
-                sb.AppendIndent(indent + 2).Append("Position = ").Append(Vertices[i]);
-                sb.AppendIndent(indent + 2).Append("Normal = ").Append(Normals[i]);
-                sb.AppendIndent(indent + 1).Append("}");
+                w.AppendIndent(indent + 1).Write("{");
+                w.AppendIndent(indent + 2).Write("Position = "); w.Write(Vertices[i]);
+                w.AppendIndent(indent + 2).Write("Normal = "); w.Write(Normals[i]);
+                w.AppendIndent(indent + 1).Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

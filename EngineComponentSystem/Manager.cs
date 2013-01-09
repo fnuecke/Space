@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Text;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -733,32 +733,31 @@ namespace Engine.ComponentSystem
         }
         
         [OnStringify]
-        public StringBuilder Dump(StringBuilder sb, int indent)
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
             // Write the components.
-            sb
-                .AppendIndent(indent).Append("ComponentCount = ").Append(_componentIds.Count)
-                .AppendIndent(indent).Append("Components = {");
+            w.AppendIndent(indent).Write("ComponentCount = "); w.Write(_componentIds.Count);
+            w.AppendIndent(indent).Write("Components = {");
             foreach (var component in Components)
             {
-                sb.AppendIndent(indent + 1).Append(component.GetType()).Append(" = ").Dump(component, indent + 1);
+                w.AppendIndent(indent + 1).Write(component.GetType()); w.Write(" = "); w.Dump(component, indent + 1);
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
             // Write systems.
-            sb
-                .AppendIndent(indent).Append("SystemCount (excluding IDrawingSystems) = ").Append(_systems.Count(s => !(s is IDrawingSystem)))
-                .AppendIndent(indent).Append("Systems = {");
+            w.AppendIndent(indent).Write("SystemCount (excluding IDrawingSystems) = "); w.Write(_systems.Count(s => !(s is IDrawingSystem)));
+            w.AppendIndent(indent).Write("Systems = {");
             for (int i = 0, j = _systems.Count; i < j; ++i)
             {
                 if (_systems[i] is IDrawingSystem)
                 {
                     continue;
                 }
-                sb.AppendIndent(indent + 1).Append(_systems[i].GetType()).Append(" = ").Dump(_systems[i], indent + 1);
+                w.AppendIndent(indent + 1).Write(_systems[i].GetType()); w.Write(" = "); w.Dump(_systems[i], indent + 1);
             }
+            w.AppendIndent(indent).Write("}");
 
-            return sb.AppendIndent(indent).Append("}");
+            return w;
         }
 
         #endregion

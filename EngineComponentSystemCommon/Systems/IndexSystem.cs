@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using Engine.Collections;
 using Engine.FarCollections;
@@ -541,11 +542,11 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("Trees = {");
+            w.AppendIndent(indent).Write("Trees = {");
             for (var i = 0; i < _trees.Length; ++i)
             {
                 var tree = _trees[i];
@@ -553,24 +554,24 @@ namespace Engine.ComponentSystem.Common.Systems
                 {
                     continue;
                 }
-                sb.AppendIndent(indent + 1).Append(i).Append(" = ").Dump(tree, indent + 1);
+                w.AppendIndent(indent + 1).Write(i); w.Write(" = "); w.Dump(tree, indent + 1);
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            sb.AppendIndent(indent).Append("Changed = {");
+            w.AppendIndent(indent).Write("Changed = {");
             var first = true;
             foreach (var entity in _changed)
             {
                 if (!first)
                 {
-                    sb.Append(", ");
+                    w.Write(", ");
                 }
                 first = false;
-                sb.Append(entity);
+                w.Write(entity);
             }
-            sb.Append("}");
+            w.Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

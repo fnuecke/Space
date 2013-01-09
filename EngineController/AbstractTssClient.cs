@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Engine.Math;
 using Engine.Serialization;
 using Engine.Session;
@@ -82,7 +81,7 @@ namespace Engine.Controller
         protected AbstractTssClient(IClientSession session)
             : base(session, new[] {
                 (uint)System.Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
-                (uint)System.Math.Ceiling(500 / TargetElapsedMilliseconds) //< High, to avoid full resyncs.
+                (uint)System.Math.Ceiling(300 / TargetElapsedMilliseconds) //< High, to avoid full resyncs.
             })
         {
             Session.JoinResponse += HandleJoinResponse;
@@ -165,8 +164,7 @@ namespace Engine.Controller
             try
             {
                 // Create actual game dump and write it to file.
-                var clientDump = StringifyGameState(Tss.TrailingFrame, Tss.TrailingSimulation.Manager);
-                File.WriteAllText(dumpId + "_client.txt", clientDump);
+                WriteGameState(Tss.TrailingFrame, Tss.TrailingSimulation.Manager, dumpId + "_client.txt");
             }
             catch (Exception ex)
             {

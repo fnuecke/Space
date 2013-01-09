@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.IO;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Factories;
@@ -173,16 +174,16 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w"> </param>
         /// <param name="indent">The indentation level.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("Factory = ").Append(Factory.Name);
+            w.AppendIndent(indent).Write("Factory = "); w.Write(Factory.Name);
 
-            return sb;
+            return w;
         }
 
         #endregion

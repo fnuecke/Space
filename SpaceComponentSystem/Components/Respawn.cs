@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -192,27 +193,27 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="sb">The string builder.</param>
+        /// <param name="w"> </param>
         /// <param name="indent">The indentation level.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("ComponentsToDisable = {");
+            w.AppendIndent(indent).Write("ComponentsToDisable = {");
             var first = true;
             foreach (var component in ComponentsToDisable)
             {
                 if (!first)
                 {
-                    sb.Append(", ");
+                    w.Write(", ");
                 }
                 first = false;
-                sb.Append(component);
+                w.Write(component);
             }
-            sb.Append("}");
+            w.Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Engine.ComponentSystem.Common.Components;
 using Engine.FarMath;
 using Engine.Random;
@@ -256,13 +257,13 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
         }
 
-        public override System.Text.StringBuilder Dump(System.Text.StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("Start = ").Append(_start.HasValue ? _start.Value.ToString() : "null");
+            w.AppendIndent(indent).Write("Start = "); w.Write(_start.HasValue ? _start.Value.ToString() : "null");
 
-            return sb;
+            return w;
         }
 
         #endregion

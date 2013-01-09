@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -2267,70 +2267,70 @@ namespace Engine.Physics.Systems
             _island = null;
         }
 
-        public override StringBuilder Dump(StringBuilder sb, int indent)
+        public override StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(sb, indent);
+            base.Dump(w, indent);
 
-            sb.AppendIndent(indent).Append("ContactCapacity = ").Append(_contacts.Length);
-            sb.AppendIndent(indent).Append("Contacts = {");
+            w.AppendIndent(indent).Write("ContactCapacity = "); w.Write(_contacts.Length);
+            w.AppendIndent(indent).Write("Contacts = {");
             for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
             {
-                sb.AppendIndent(indent + 1).Append(contact).Append(" = {");
-                sb.AppendIndent(indent + 2).Append("Contact = ").Dump(_contacts[contact], indent + 2);
-                sb.AppendIndent(indent + 2).Append("EdgeA = ").Dump(_contactEdges[contact * 2], indent + 2);
-                sb.AppendIndent(indent + 2).Append("EdgeB = ").Dump(_contactEdges[contact * 2 + 1], indent + 2);
-                sb.AppendIndent(indent + 1).Append("}");
+                w.AppendIndent(indent + 1).Write(contact); w.Write(" = {");
+                w.AppendIndent(indent + 2).Write("Contact = "); w.Dump(_contacts[contact], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeA = "); w.Dump(_contactEdges[contact * 2], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeB = "); w.Dump(_contactEdges[contact * 2 + 1], indent + 2);
+                w.AppendIndent(indent + 1).Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
             
-            sb.AppendIndent(indent).Append("JointCapacity = ").Append(_joints.Length);
-            sb.AppendIndent(indent).Append("Joints = {");
+            w.AppendIndent(indent).Write("JointCapacity = "); w.Write(_joints.Length);
+            w.AppendIndent(indent).Write("Joints = {");
             for (var joint = _usedJoints; joint >= 0; joint = _joints[joint].Next)
             {
-                sb.AppendIndent(indent + 1).Append(joint).Append(" = {");
-                sb.AppendIndent(indent + 2).Append("Joint = ").Dump(_joints[joint], indent + 2);
-                sb.AppendIndent(indent + 2).Append("EdgeA = ").Dump(_jointEdges[joint * 2], indent + 2);
-                sb.AppendIndent(indent + 2).Append("EdgeB = ").Dump(_jointEdges[joint * 2 + 1], indent + 2);
-                sb.AppendIndent(indent + 1).Append("}");
+                w.AppendIndent(indent + 1).Write(joint); w.Write(" = {");
+                w.AppendIndent(indent + 2).Write("Joint = "); w.Dump(_joints[joint], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeA = "); w.Dump(_jointEdges[joint * 2], indent + 2);
+                w.AppendIndent(indent + 2).Write("EdgeB = "); w.Dump(_jointEdges[joint * 2 + 1], indent + 2);
+                w.AppendIndent(indent + 1).Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
             
-            sb.AppendIndent(indent).Append("JointsWithGearsCount = ").Append(_gearJoints.Count);
-            sb.AppendIndent(indent).Append("JointsWithGears = {");
+            w.AppendIndent(indent).Write("JointsWithGearsCount = "); w.Write(_gearJoints.Count);
+            w.AppendIndent(indent).Write("JointsWithGears = {");
             foreach (var pair in _gearJoints)
             {
-                sb.AppendIndent(indent + 1).Append("Joint ").Append(pair.Key).Append(" = {");
+                w.AppendIndent(indent + 1).Write("Joint "); w.Write(pair.Key); w.Write(" = {");
                 var first = true;
                 foreach (var gearJoint in pair.Value)
                 {
                     if (!first)
                     {
-                        sb.Append(", ");
+                        w.Write(", ");
                     }
                     first = false;
-                    sb.Append(gearJoint);
+                    w.Write(gearJoint);
                 }
-                sb.Append("}");
+                w.Write("}");
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
             
-            sb.AppendIndent(indent).Append("TouchedCount = ").Append(_touched.Count);
-            sb.AppendIndent(indent).Append("Touched = {");
+            w.AppendIndent(indent).Write("TouchedCount = "); w.Write(_touched.Count);
+            w.AppendIndent(indent).Write("Touched = {");
             {
                 var first = true;
                 foreach (var entry in _touched)
                 {
                     if (!first)
                     {
-                        sb.Append(", ");
+                        w.Write(", ");
                     }
                     first = false;
-                    sb.Append(entry);
+                    w.Write(entry);
                 }
             }
-            sb.Append("}");
+            w.Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion

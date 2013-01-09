@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
@@ -124,16 +124,16 @@ namespace Engine.Simulation
         }
 
         [OnStringify]
-        public StringBuilder Dump(StringBuilder sb, int indent)
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            sb.AppendIndent(indent).Append("Commands = {");
+            w.AppendIndent(indent).Write("Commands = {");
             foreach (var command in Commands)
             {
-                sb.AppendIndent(indent + 1).Dump(command, indent + 1);
+                w.AppendIndent(indent + 1).Dump(command, indent + 1);
             }
-            sb.AppendIndent(indent).Append("}");
+            w.AppendIndent(indent).Write("}");
 
-            return sb;
+            return w;
         }
 
         #endregion
