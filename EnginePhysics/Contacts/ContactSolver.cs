@@ -168,8 +168,10 @@ namespace Engine.Physics.Contacts
                 xfA.Rotation.Cos = (float) System.Math.Cos(aA);
                 xfB.Rotation.Sin = (float) System.Math.Sin(aB);
                 xfB.Rotation.Cos = (float) System.Math.Cos(aB);
-                xfA.Translation = cA - xfA.Rotation * localCenterA;
-                xfB.Translation = cB - xfB.Rotation * localCenterB;
+                xfA.Translation.X = cA.X - (xfA.Rotation.Cos * localCenterA.X - xfA.Rotation.Sin * localCenterA.Y);
+                xfA.Translation.Y = cA.Y - (xfA.Rotation.Sin * localCenterA.X + xfA.Rotation.Cos * localCenterA.Y);
+                xfB.Translation.X = cB.X - (xfB.Rotation.Cos * localCenterB.X - xfB.Rotation.Sin * localCenterB.Y);
+                xfB.Translation.Y = cB.Y - (xfB.Rotation.Sin * localCenterB.X + xfB.Rotation.Cos * localCenterB.Y);
 
                 FixedArray2<WorldPoint> points;
                 contact.Manifold.ComputeWorldManifold(
@@ -695,7 +697,9 @@ namespace Engine.Physics.Contacts
                     // Compute normal impulse
                     var impulse = k > 0.0f ? -c / k : 0.0f;
 
-                    var p = impulse * normal;
+                    Vector2 p;
+                    p.X = impulse * normal.X;
+                    p.Y = impulse * normal.Y;
 
                     cA.X -= mA * p.X;
                     cA.Y -= mA * p.Y;
@@ -716,6 +720,102 @@ namespace Engine.Physics.Contacts
             // We can't expect minSeparation >= -Settings.LinearSlop because we don't
             // push the separation above -Settings.LinearSlop.
             return minSeparation >= -3.0f * Settings.LinearSlop;
+        }
+        
+        public bool SolveTOIPositionConstraints(int toiIndexA, int toiIndexB)
+        {
+            var minSeparation = 0.0f;
+
+            for (var i = 0; i < _contacts.Count; ++i)
+            {
+                var pc = _positionConstraints[i];
+
+                var indexA = pc.IndexA;
+                var indexB = pc.IndexB;
+                var localCenterA = pc.LocalCenterA;
+                var localCenterB = pc.LocalCenterB;
+                var pointCount = pc.PointCount;
+
+                var mA = 0.0f;
+                var iA = 0.0f;
+                if (indexA == toiIndexA || indexA == toiIndexB)
+                {
+                    mA = pc.InverseMassA;
+                    iA = pc.InverseInertiaA;
+                }
+
+                var mB = 0.0f;
+                var iB = 0.0f;
+                if (indexB == toiIndexA || indexB == toiIndexB)
+                {
+                    mB = pc.InverseMassB;
+                    iB = pc.InverseInertiaB;
+                }
+
+                var cA = _positions[indexA].Point;
+                var aA = _positions[indexA].Angle;
+
+                var cB = _positions[indexB].Point;
+                var aB = _positions[indexB].Angle;
+
+                // Solve normal constraints
+                for (var j = 0; j < pointCount; ++j)
+                {
+                    WorldTransform xfA, xfB;
+                    xfA.Rotation.Sin = (float) System.Math.Sin(aA);
+                    xfA.Rotation.Cos = (float) System.Math.Cos(aA);
+                    xfB.Rotation.Sin = (float) System.Math.Sin(aB);
+                    xfB.Rotation.Cos = (float) System.Math.Cos(aB);
+                    xfA.Translation.X = cA.X - (xfA.Rotation.Cos * localCenterA.X - xfA.Rotation.Sin * localCenterA.Y);
+                    xfA.Translation.Y = cA.Y - (xfA.Rotation.Sin * localCenterA.X + xfA.Rotation.Cos * localCenterA.Y);
+                    xfB.Translation.X = cB.X - (xfB.Rotation.Cos * localCenterB.X - xfB.Rotation.Sin * localCenterB.Y);
+                    xfB.Translation.Y = cB.Y - (xfB.Rotation.Sin * localCenterB.X + xfB.Rotation.Cos * localCenterB.Y);
+
+                    Vector2 normal;
+                    WorldPoint point;
+                    float separation;
+                    InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
+
+// ReSharper disable RedundantCast Necessary for FarPhysics.
+                    var rA = (Vector2) (point - cA);
+                    var rB = (Vector2) (point - cB);
+// ReSharper restore RedundantCast
+
+                    // Track max constraint error.
+                    minSeparation = System.Math.Min(minSeparation, separation);
+
+                    // Prevent large corrections and allow slop.
+                    var c = MathHelper.Clamp(Settings.BaumgarteTOI * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
+
+                    // Compute the effective mass.
+                    var rnA = Vector2Util.Cross(ref rA, ref normal);
+                    var rnB = Vector2Util.Cross(ref rB, ref normal);
+                    var k = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
+
+                    // Compute normal impulse
+                    var impulse = k > 0.0f ? - c / k : 0.0f;
+
+                    Vector2 p;
+                    p.X = impulse * normal.X;
+                    p.Y = impulse * normal.Y;
+
+                    cA -= mA * p;
+                    aA -= iA * Vector2Util.Cross(ref rA, ref p);
+
+                    cB += mB * p;
+                    aB += iB * Vector2Util.Cross(ref rB, ref p);
+                }
+
+                _positions[indexA].Point = cA;
+                _positions[indexA].Angle = aA;
+
+                _positions[indexB].Point = cB;
+                _positions[indexB].Angle = aB;
+            }
+
+            // We can't expect minSeparation >= -Settings.LinearSlop because we don't
+            // push the separation above -Settings.LinearSlop.
+            return minSeparation >= -1.5f * Settings.LinearSlop;
         }
         
         private static void InitializePositionSolverManifold(
@@ -785,99 +885,6 @@ namespace Engine.Physics.Contacts
                 default:
                     throw new InvalidOperationException();
             }
-        }
-
-        public bool SolveTOIPositionConstraints(int toiIndexA, int toiIndexB)
-        {
-            var minSeparation = 0.0f;
-
-            for (var i = 0; i < _contacts.Count; ++i)
-            {
-                var pc = _positionConstraints[i];
-
-                var indexA = pc.IndexA;
-                var indexB = pc.IndexB;
-                var localCenterA = pc.LocalCenterA;
-                var localCenterB = pc.LocalCenterB;
-                var pointCount = pc.PointCount;
-
-                var mA = 0.0f;
-                var iA = 0.0f;
-                if (indexA == toiIndexA || indexA == toiIndexB)
-                {
-                    mA = pc.InverseMassA;
-                    iA = pc.InverseInertiaA;
-                }
-
-                var mB = 0.0f;
-                var iB = 0.0f;
-                if (indexB == toiIndexA || indexB == toiIndexB)
-                {
-                    mB = pc.InverseMassB;
-                    iB = pc.InverseInertiaB;
-                }
-
-                var cA = _positions[indexA].Point;
-                var aA = _positions[indexA].Angle;
-
-                var cB = _positions[indexB].Point;
-                var aB = _positions[indexB].Angle;
-
-                // Solve normal constraints
-                for (var j = 0; j < pointCount; ++j)
-                {
-                    WorldTransform xfA, xfB;
-                    xfA.Rotation.Sin = (float) System.Math.Sin(aA);
-                    xfA.Rotation.Cos = (float) System.Math.Cos(aA);
-                    xfB.Rotation.Sin = (float) System.Math.Sin(aB);
-                    xfB.Rotation.Cos = (float) System.Math.Cos(aB);
-                    xfA.Translation = cA - (xfA.Rotation * localCenterA);
-                    xfB.Translation = cB - (xfB.Rotation * localCenterB);
-
-                    Vector2 normal;
-                    WorldPoint point;
-                    float separation;
-                    InitializePositionSolverManifold(pc, xfA, xfB, j, out normal, out point, out separation);
-
-// ReSharper disable RedundantCast Necessary for FarPhysics.
-                    var rA = (Vector2) (point - cA);
-                    var rB = (Vector2) (point - cB);
-// ReSharper restore RedundantCast
-
-                    // Track max constraint error.
-                    minSeparation = System.Math.Min(minSeparation, separation);
-
-                    // Prevent large corrections and allow slop.
-                    var c = MathHelper.Clamp(
-                        Settings.BaumgarteTOI * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
-
-                    // Compute the effective mass.
-                    var rnA = Vector2Util.Cross(ref rA, ref normal);
-                    var rnB = Vector2Util.Cross(ref rB, ref normal);
-                    var k = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
-
-                    // Compute normal impulse
-                    var impulse = k > 0.0f ? - c / k : 0.0f;
-
-                    var p = impulse * normal;
-
-                    cA -= mA * p;
-                    aA -= iA * Vector2Util.Cross(ref rA, ref p);
-
-                    cB += mB * p;
-                    aB += iB * Vector2Util.Cross(ref rB, ref p);
-                }
-
-                _positions[indexA].Point = cA;
-                _positions[indexA].Angle = aA;
-
-                _positions[indexB].Point = cB;
-                _positions[indexB].Angle = aB;
-            }
-
-            // We can't expect minSeparation >= -Settings.LinearSlop because we don't
-            // push the separation above -Settings.LinearSlop.
-            return minSeparation >= -1.5f * Settings.LinearSlop;
         }
 
         private sealed class ContactVelocityConstraint
