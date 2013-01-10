@@ -329,8 +329,6 @@ namespace Engine.Physics.Contacts
                     Vector2 dv;
                     dv.X = vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y;
                     dv.Y = vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X;
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.X));
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.Y));
 
                     // Compute tangent force
                     var vt = Vector2Util.Dot(ref dv, ref tangent);
@@ -343,12 +341,16 @@ namespace Engine.Physics.Contacts
                     vcp.TangentImpulse = newImpulse;
 
                     // Apply contact impulse
-                    var p = lambda * tangent;
+                    Vector2 p;
+                    p.X = lambda * tangent.X;
+                    p.Y = lambda * tangent.Y;
 
-                    vA -= mA * p;
+                    vA.X -= mA * p.X;
+                    vA.Y -= mA * p.Y;
                     wA -= iA * (vcp.RelativeA.X * p.Y - vcp.RelativeA.Y * p.X);
 
-                    vB += mB * p;
+                    vB.X += mB * p.X;
+                    vB.Y += mB * p.Y;
                     wB += iB * (vcp.RelativeB.X * p.Y - vcp.RelativeB.Y * p.X);
                 }
 
@@ -363,8 +365,6 @@ namespace Engine.Physics.Contacts
                     Vector2 dv;
                     dv.X = vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y;
                     dv.Y = vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X;
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.X));
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.Y));
 
                     // Compute normal impulse
                     var vn = Vector2Util.Dot(ref dv, ref normal);
@@ -376,11 +376,16 @@ namespace Engine.Physics.Contacts
                     vcp.NormalImpulse = newImpulse;
 
                     // Apply contact impulse
-                    var p = lambda * normal;
-                    vA -= mA * p;
+                    Vector2 p;
+                    p.X = lambda * normal.X;
+                    p.Y = lambda * normal.Y;
+
+                    vA.X -= mA * p.X;
+                    vA.Y -= mA * p.Y;
                     wA -= iA * (vcp.RelativeA.X * p.Y - vcp.RelativeA.Y * p.X);
 
-                    vB += mB * p;
+                    vB.X += mB * p.X;
+                    vB.Y += mB * p.Y;
                     wB += iB * (vcp.RelativeB.X * p.Y - vcp.RelativeB.Y * p.X);
                 }
                 else
@@ -433,13 +438,9 @@ namespace Engine.Physics.Contacts
                     Vector2 dv1;
                     dv1.X = vB.X - vA.X - wB * cp1.RelativeB.Y + wA * cp1.RelativeA.Y;
                     dv1.Y = vB.Y - vA.Y + wB * cp1.RelativeB.X - wA * cp1.RelativeA.X;
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv1.X));
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv1.Y));
                     Vector2 dv2;
                     dv2.X = vB.X - vA.X - wB * cp2.RelativeB.Y + wA * cp2.RelativeA.Y;
                     dv2.Y = vB.Y - vA.Y + wB * cp2.RelativeB.X - wA * cp2.RelativeA.X;
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv2.X));
-                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv2.Y));
 
                     // Compute normal velocity
                     var vn1 = Vector2Util.Dot(ref dv1, ref normal);
@@ -468,15 +469,20 @@ namespace Engine.Physics.Contacts
                         if (x.X >= 0.0f && x.Y >= 0.0f)
                         {
                             // Get the incremental impulse
-                            var d = x - a;
+                            Vector2 d;
+                            d.X = x.X - a.X;
+                            d.Y = x.Y - a.Y;
 
                             // Apply incremental impulse
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
-                            vA -= mA * (p1 + p2);
+
+                            vA.X -= mA * (p1.X + p2.X);
+                            vA.Y -= mA * (p1.Y + p2.Y);
                             wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
-                            vB += mB * (p1 + p2);
+                            vB.X += mB * (p1.X + p2.X);
+                            vB.Y += mB * (p1.Y + p2.Y);
                             wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
@@ -498,15 +504,20 @@ namespace Engine.Physics.Contacts
                         if (x.X >= 0.0f && vn2 >= 0.0f)
                         {
                             // Get the incremental impulse
-                            var d = x - a;
+                            Vector2 d;
+                            d.X = x.X - a.X;
+                            d.Y = x.Y - a.Y;
 
                             // Apply incremental impulse
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
-                            vA -= mA * (p1 + p2);
+
+                            vA.X -= mA * (p1.X + p2.X);
+                            vA.Y -= mA * (p1.Y + p2.Y);
                             wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
-                            vB += mB * (p1 + p2);
+                            vB.X += mB * (p1.X + p2.X);
+                            vB.Y += mB * (p1.Y + p2.Y);
                             wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
@@ -528,15 +539,20 @@ namespace Engine.Physics.Contacts
                         if (x.Y >= 0.0f && vn1 >= 0.0f)
                         {
                             // Resubstitute for the incremental impulse
-                            var d = x - a;
+                            Vector2 d;
+                            d.X = x.X - a.X;
+                            d.Y = x.Y - a.Y;
 
                             // Apply incremental impulse
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
-                            vA -= mA * (p1 + p2);
+
+                            vA.X -= mA * (p1.X + p2.X);
+                            vA.Y -= mA * (p1.Y + p2.Y);
                             wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
-                            vB += mB * (p1 + p2);
+                            vB.X += mB * (p1.X + p2.X);
+                            vB.Y += mB * (p1.Y + p2.Y);
                             wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
@@ -558,15 +574,20 @@ namespace Engine.Physics.Contacts
                         if (vn1 >= 0.0f && vn2 >= 0.0f)
                         {
                             // Resubstitute for the incremental impulse
-                            var d = x - a;
+                            Vector2 d;
+                            d.X = x.X - a.X;
+                            d.Y = x.Y - a.Y;
 
                             // Apply incremental impulse
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
-                            vA -= mA * (p1 + p2);
+
+                            vA.X -= mA * (p1.X + p2.X);
+                            vA.Y -= mA * (p1.Y + p2.Y);
                             wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
-                            vB += mB * (p1 + p2);
+                            vB.X += mB * (p1.X + p2.X);
+                            vB.Y += mB * (p1.Y + p2.Y);
                             wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
