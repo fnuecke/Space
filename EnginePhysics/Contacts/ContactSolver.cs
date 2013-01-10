@@ -292,6 +292,12 @@ namespace Engine.Physics.Contacts
 
         public void SolveVelocityConstraints()
         {
+            // IMPORTANT: a lot of stuff has been inlined in this method, in particular
+            // Vector2Util.Cross calls, as well as simple vector operations. This function
+            // is pretty much the most expensive part of the solver and every cycle counts
+            // (literally -- without the inlines performance is about half as good, i.e.
+            // it takes up to twice as long!)
+
             for (var i = 0; i < _contacts.Count; ++i)
             {
                 var vc = _velocityConstraints[i];
@@ -310,9 +316,6 @@ namespace Engine.Physics.Contacts
                 var wB = _velocities[indexB].AngularVelocity;
 
                 var normal = vc.Normal;
-                Vector2 tangent;
-                tangent.X = normal.Y;
-                tangent.Y = -normal.X;
                 var friction = vc.Friction;
 
                 System.Diagnostics.Debug.Assert(pointCount == 1 || pointCount == 2);
@@ -323,16 +326,9 @@ namespace Engine.Physics.Contacts
                 {
                     var vcp = vc.Points[j];
 
-                    // Relative velocity at contact.
-                    // Performance critical inline:
-                    //var dv = vB - vA + Vector2Util.Cross(wB, ref vcp.RelativeB) - Vector2Util.Cross(wA, ref vcp.RelativeA);
-                    Vector2 dv;
-                    dv.X = vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y;
-                    dv.Y = vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X;
-
                     // Compute tangent force
-                    var vt = Vector2Util.Dot(ref dv, ref tangent);
-                    var lambda = vcp.TangentMass * (-vt);
+                    var lambda = -vcp.TangentMass * ((vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y) * normal.Y +
+                                                     (vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X) * -normal.X);
 
                     // Clamp the accumulated force
                     var maxFriction = friction * vcp.NormalImpulse;
@@ -342,8 +338,8 @@ namespace Engine.Physics.Contacts
 
                     // Apply contact impulse
                     Vector2 p;
-                    p.X = lambda * tangent.X;
-                    p.Y = lambda * tangent.Y;
+                    p.X = lambda * normal.Y;
+                    p.Y = lambda * -normal.X;
 
                     vA.X -= mA * p.X;
                     vA.Y -= mA * p.Y;
@@ -359,16 +355,10 @@ namespace Engine.Physics.Contacts
                 {
                     var vcp = vc.Points[0];
 
-                    // Relative velocity at contact
-                    // Performance critical inline:
-                    //var dv = vB + Vector2Util.Cross(wB, ref vcp.RelativeB) - vA - Vector2Util.Cross(wA, ref vcp.RelativeA);
-                    Vector2 dv;
-                    dv.X = vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y;
-                    dv.Y = vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X;
-
                     // Compute normal impulse
-                    var vn = Vector2Util.Dot(ref dv, ref normal);
-                    var lambda = -vcp.NormalMass * (vn - vcp.VelocityBias);
+                    var lambda = -vcp.NormalMass * ((vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y) * normal.X +
+                                                    (vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X) * normal.Y -
+                                                    vcp.VelocityBias);
 
                     // Clamp the accumulated impulse
                     var newImpulse = System.Math.Max(vcp.NormalImpulse + lambda, 0.0f);
@@ -429,176 +419,186 @@ namespace Engine.Physics.Contacts
                     Vector2 a;
                     a.X = cp1.NormalImpulse;
                     a.Y = cp2.NormalImpulse;
-                    System.Diagnostics.Debug.Assert(a.X >= 0.0f && a.Y >= 0.0f);
-
-                    // Relative velocity at contact
-                    // Performance critical inline:
-                    //var dv1 = vB - vA + Vector2Util.Cross(wB, ref cp1.RelativeB) - Vector2Util.Cross(wA, ref cp1.RelativeA);
-                    //var dv2 = vB - vA + Vector2Util.Cross(wB, ref cp2.RelativeB) - Vector2Util.Cross(wA, ref cp2.RelativeA);
-                    Vector2 dv1;
-                    dv1.X = vB.X - vA.X - wB * cp1.RelativeB.Y + wA * cp1.RelativeA.Y;
-                    dv1.Y = vB.Y - vA.Y + wB * cp1.RelativeB.X - wA * cp1.RelativeA.X;
-                    Vector2 dv2;
-                    dv2.X = vB.X - vA.X - wB * cp2.RelativeB.Y + wA * cp2.RelativeA.Y;
-                    dv2.Y = vB.Y - vA.Y + wB * cp2.RelativeB.X - wA * cp2.RelativeA.X;
+                    System.Diagnostics.Debug.Assert(cp1.NormalImpulse >= 0.0f && cp2.NormalImpulse >= 0.0f);
 
                     // Compute normal velocity
-                    var vn1 = Vector2Util.Dot(ref dv1, ref normal);
-                    var vn2 = Vector2Util.Dot(ref dv2, ref normal);
-
                     Vector2 b;
-                    b.X = vn1 - cp1.VelocityBias;
-                    b.Y = vn2 - cp2.VelocityBias;
+                    b.X = (vB.X - vA.X - wB * cp1.RelativeB.Y + wA * cp1.RelativeA.Y) * normal.X +
+                          (vB.Y - vA.Y + wB * cp1.RelativeB.X - wA * cp1.RelativeA.X) * normal.Y -
+                          cp1.VelocityBias;
+                    b.Y = (vB.X - vA.X - wB * cp2.RelativeB.Y + wA * cp2.RelativeA.Y) * normal.X +
+                          (vB.Y - vA.Y + wB * cp2.RelativeB.X - wA * cp2.RelativeA.X) * normal.Y -
+                          cp2.VelocityBias;
 
-                    // Compute b'
-                    b -= vc.K * a;
-
-                    for (;;)
+                    // Compute b' = b - vc.K * a;
+                    b.X -= vc.K.Column1.X * a.X + vc.K.Column2.X * a.Y;
+                    b.Y -= vc.K.Column1.Y * a.X + vc.K.Column2.Y * a.Y;
+                    
+                    // Case 1: vn = 0
+                    //
+                    // 0 = A * x + b'
+                    //
+                    // Solve for x:
+                    //
+                    // x = - inv(A) * b'
+                    Vector2 x;
+                    x.X = -(vc.NormalMass.Column1.X * b.X + vc.NormalMass.Column2.X * b.Y);
+                    x.Y = -(vc.NormalMass.Column1.Y * b.X + vc.NormalMass.Column2.Y * b.Y);
+                    if (x.X >= 0.0f && x.Y >= 0.0f)
                     {
-                        //
-                        // Case 1: vn = 0
-                        //
-                        // 0 = A * x + b'
-                        //
-                        // Solve for x:
-                        //
-                        // x = - inv(A) * b'
-                        //
-                        var x = -(vc.NormalMass * b);
+                        // Get the incremental impulse
+                        Vector2 d;
+                        d.X = x.X - a.X;
+                        d.Y = x.Y - a.Y;
 
-                        if (x.X >= 0.0f && x.Y >= 0.0f)
-                        {
-                            // Get the incremental impulse
-                            Vector2 d;
-                            d.X = x.X - a.X;
-                            d.Y = x.Y - a.Y;
+                        // Apply incremental impulse
+                        Vector2 p1;
+                        p1.X = d.X * normal.X;
+                        p1.Y = d.X * normal.Y;
 
-                            // Apply incremental impulse
-                            var p1 = d.X * normal;
-                            var p2 = d.Y * normal;
+                        Vector2 p2;
+                        p2.X = d.Y * normal.X;
+                        p2.Y = d.Y * normal.Y;
 
-                            vA.X -= mA * (p1.X + p2.X);
-                            vA.Y -= mA * (p1.Y + p2.Y);
-                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
+                        vA.X -= mA * (p1.X + p2.X);
+                        vA.Y -= mA * (p1.Y + p2.Y);
+                        wA -= iA *
+                              ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) +
+                               (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
-                            vB.X += mB * (p1.X + p2.X);
-                            vB.Y += mB * (p1.Y + p2.Y);
-                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
+                        vB.X += mB * (p1.X + p2.X);
+                        vB.Y += mB * (p1.Y + p2.Y);
+                        wB += iB *
+                              ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) +
+                               (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
-                            // Accumulate
-                            cp1.NormalImpulse = x.X;
-                            cp2.NormalImpulse = x.Y;
-                            break;
-                        }
-
+                        // Accumulate
+                        cp1.NormalImpulse = x.X;
+                        cp2.NormalImpulse = x.Y;
+                    }
+                    else
+                    {
                         //
                         // Case 2: vn1 = 0 and x2 = 0
                         //
                         //   0 = a11 * x1 + a12 * 0 + b1' 
                         // vn2 = a21 * x1 + a22 * 0 + b2'
                         //
-                        x.X = - cp1.NormalMass * b.X;
-                        x.Y = 0.0f;
-                        vn2 = vc.K.Column1.Y * x.X + b.Y;
-
-                        if (x.X >= 0.0f && vn2 >= 0.0f)
+                        x.X = -cp1.NormalMass * b.X;
+                        if (x.X >= 0.0f && vc.K.Column1.Y * x.X + b.Y >= 0.0f)
                         {
                             // Get the incremental impulse
                             Vector2 d;
                             d.X = x.X - a.X;
-                            d.Y = x.Y - a.Y;
+                            d.Y = -a.Y;
 
                             // Apply incremental impulse
-                            var p1 = d.X * normal;
-                            var p2 = d.Y * normal;
+                            Vector2 p1;
+                            p1.X = d.X * normal.X;
+                            p1.Y = d.X * normal.Y;
+
+                            Vector2 p2;
+                            p2.X = d.Y * normal.X;
+                            p2.Y = d.Y * normal.Y;
 
                             vA.X -= mA * (p1.X + p2.X);
                             vA.Y -= mA * (p1.Y + p2.Y);
-                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
+                            wA -= iA *
+                                  ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) +
+                                   (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
                             vB.X += mB * (p1.X + p2.X);
                             vB.Y += mB * (p1.Y + p2.Y);
-                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
+                            wB += iB *
+                                  ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) +
+                                   (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
                             cp1.NormalImpulse = x.X;
-                            cp2.NormalImpulse = x.Y;
-                            break;
+                            cp2.NormalImpulse = 0;
                         }
-
-                        //
-                        // Case 3: vn2 = 0 and x1 = 0
-                        //
-                        // vn1 = a11 * 0 + a12 * x2 + b1' 
-                        //   0 = a21 * 0 + a22 * x2 + b2'
-                        //
-                        x.X = 0.0f;
-                        x.Y = - cp2.NormalMass * b.Y;
-                        vn1 = vc.K.Column2.X * x.Y + b.X;
-
-                        if (x.Y >= 0.0f && vn1 >= 0.0f)
+                        else
                         {
-                            // Resubstitute for the incremental impulse
-                            Vector2 d;
-                            d.X = x.X - a.X;
-                            d.Y = x.Y - a.Y;
+                            //
+                            // Case 3: vn2 = 0 and x1 = 0
+                            //
+                            // vn1 = a11 * 0 + a12 * x2 + b1' 
+                            //   0 = a21 * 0 + a22 * x2 + b2'
+                            //
+                            x.Y = -cp2.NormalMass * b.Y;
+                            if (x.Y >= 0.0f && vc.K.Column2.X * x.Y + b.X >= 0.0f)
+                            {
+                                // Resubstitute for the incremental impulse
+                                Vector2 d;
+                                d.X = -a.X;
+                                d.Y = x.Y - a.Y;
 
-                            // Apply incremental impulse
-                            var p1 = d.X * normal;
-                            var p2 = d.Y * normal;
+                                // Apply incremental impulse
+                                Vector2 p1;
+                                p1.X = d.X * normal.X;
+                                p1.Y = d.X * normal.Y;
 
-                            vA.X -= mA * (p1.X + p2.X);
-                            vA.Y -= mA * (p1.Y + p2.Y);
-                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
+                                Vector2 p2;
+                                p2.X = d.Y * normal.X;
+                                p2.Y = d.Y * normal.Y;
 
-                            vB.X += mB * (p1.X + p2.X);
-                            vB.Y += mB * (p1.Y + p2.Y);
-                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
+                                vA.X -= mA * (p1.X + p2.X);
+                                vA.Y -= mA * (p1.Y + p2.Y);
+                                wA -= iA *
+                                      ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) +
+                                       (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
-                            // Accumulate
-                            cp1.NormalImpulse = x.X;
-                            cp2.NormalImpulse = x.Y;
-                            break;
+                                vB.X += mB * (p1.X + p2.X);
+                                vB.Y += mB * (p1.Y + p2.Y);
+                                wB += iB *
+                                      ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) +
+                                       (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
+
+                                // Accumulate
+                                cp1.NormalImpulse = 0;
+                                cp2.NormalImpulse = x.Y;
+                            }
+                            else
+                            {
+                                //
+                                // Case 4: x1 = 0 and x2 = 0
+                                // 
+                                // vn1 = b1
+                                // vn2 = b2;
+                                if (b.X >= 0.0f && b.Y >= 0.0f)
+                                {
+                                    // Resubstitute for the incremental impulse
+                                    Vector2 d;
+                                    d.X = -a.X;
+                                    d.Y = -a.Y;
+
+                                    // Apply incremental impulse
+                                    Vector2 p1;
+                                    p1.X = d.X * normal.X;
+                                    p1.Y = d.X * normal.Y;
+
+                                    Vector2 p2;
+                                    p2.X = d.Y * normal.X;
+                                    p2.Y = d.Y * normal.Y;
+
+                                    vA.X -= mA * (p1.X + p2.X);
+                                    vA.Y -= mA * (p1.Y + p2.Y);
+                                    wA -= iA *
+                                          ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) +
+                                           (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
+
+                                    vB.X += mB * (p1.X + p2.X);
+                                    vB.Y += mB * (p1.Y + p2.Y);
+                                    wB += iB *
+                                          ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) +
+                                           (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
+
+                                    // Accumulate
+                                    cp1.NormalImpulse = 0;
+                                    cp2.NormalImpulse = 0;
+                                } // else: No solution, give up. This is hit sometimes, but it doesn't seem to matter.
+                            }
                         }
-
-                        //
-                        // Case 4: x1 = 0 and x2 = 0
-                        // 
-                        // vn1 = b1
-                        // vn2 = b2;
-                        x.X = 0.0f;
-                        x.Y = 0.0f;
-                        vn1 = b.X;
-                        vn2 = b.Y;
-
-                        if (vn1 >= 0.0f && vn2 >= 0.0f)
-                        {
-                            // Resubstitute for the incremental impulse
-                            Vector2 d;
-                            d.X = x.X - a.X;
-                            d.Y = x.Y - a.Y;
-
-                            // Apply incremental impulse
-                            var p1 = d.X * normal;
-                            var p2 = d.Y * normal;
-
-                            vA.X -= mA * (p1.X + p2.X);
-                            vA.Y -= mA * (p1.Y + p2.Y);
-                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
-
-                            vB.X += mB * (p1.X + p2.X);
-                            vB.Y += mB * (p1.Y + p2.Y);
-                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
-
-                            // Accumulate
-                            cp1.NormalImpulse = x.X;
-                            cp2.NormalImpulse = x.Y;
-
-                            //break;
-                        }
-
-                        // No solution, give up. This is hit sometimes, but it doesn't seem to matter.
-                        break;
                     }
                 }
 
