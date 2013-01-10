@@ -818,6 +818,7 @@ namespace Engine.Physics.Contacts
             return minSeparation >= -1.5f * Settings.LinearSlop;
         }
         
+// ReSharper disable RedundantCast Necessary for FarPhysics.
         private static void InitializePositionSolverManifold(
             ContactPositionConstraint pc,
             WorldTransform xfA,
@@ -835,57 +836,56 @@ namespace Engine.Physics.Contacts
                 {
                     var pointA = xfA.ToGlobal(pc.LocalPoint);
                     var pointB = xfB.ToGlobal(pc.LocalPoints[0]);
-// ReSharper disable RedundantCast Necessary for FarPhysics.
+
                     normal.X = (float) (pointB.X - pointA.X);
                     normal.Y = (float) (pointB.Y - pointA.Y);
-// ReSharper restore RedundantCast
                     normal.Normalize();
+
 #if FARMATH
                     // Avoid multiplication of far values.
-// ReSharper disable RedundantCast Necessary for FarPhysics.
                     point.X = pointA.X + 0.5f * (float) (pointB.X - pointA.X);
                     point.Y = pointA.Y + 0.5f * (float) (pointB.Y - pointA.Y);
-// ReSharper restore RedundantCast
 #else
                     point.X = 0.5f * (pointA.X + pointB.X);
                     point.Y = 0.5f * (pointA.Y + pointB.Y);
 #endif
-// ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2Util.Dot((Vector2) (pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
-// ReSharper restore RedundantCast
-                }
-                    break;
 
+                    separation = Vector2Util.Dot((Vector2) (pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
+
+                    break;
+                }
                 case Manifold.ManifoldType.FaceA:
                 {
-                    normal = xfA.Rotation * pc.LocalNormal;
+                    normal.X = xfA.Rotation.Cos * pc.LocalNormal.X - xfA.Rotation.Sin * pc.LocalNormal.Y;
+                    normal.Y = xfA.Rotation.Sin * pc.LocalNormal.X + xfA.Rotation.Cos * pc.LocalNormal.Y;
+
                     var planePoint = xfA.ToGlobal(pc.LocalPoint);
-
                     point = xfB.ToGlobal(pc.LocalPoints[index]);
-// ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2Util.Dot((Vector2) (point - planePoint), normal) - pc.RadiusA - pc.RadiusB;
-// ReSharper restore RedundantCast
-                }
-                    break;
 
+                    separation = Vector2Util.Dot((Vector2) (point - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+
+                    break;
+                }
                 case Manifold.ManifoldType.FaceB:
                 {
-                    normal = xfB.Rotation * pc.LocalNormal;
-                    var planePoint = xfB.ToGlobal(pc.LocalPoint);
+                    normal.X = xfB.Rotation.Cos * pc.LocalNormal.X - xfB.Rotation.Sin * pc.LocalNormal.Y;
+                    normal.Y = xfB.Rotation.Sin * pc.LocalNormal.X + xfB.Rotation.Cos * pc.LocalNormal.Y;
 
+                    var planePoint = xfB.ToGlobal(pc.LocalPoint);
                     point = xfA.ToGlobal(pc.LocalPoints[index]);
-// ReSharper disable RedundantCast Necessary for FarPhysics.
+
                     separation = Vector2Util.Dot((Vector2) (point - planePoint), normal) - pc.RadiusA - pc.RadiusB;
-// ReSharper restore RedundantCast
 
                     // Ensure normal points from A to B
                     normal = -normal;
-                }
+
                     break;
+                }
                 default:
                     throw new InvalidOperationException();
             }
         }
+// ReSharper restore RedundantCast
 
         private sealed class ContactVelocityConstraint
         {
