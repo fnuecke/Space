@@ -305,14 +305,11 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <returns></returns>
         public FarRectangle GetBounds(int entity, ulong groups)
         {
-            foreach (var tree in TreesForGroups(groups))
-            {
-                if (tree.Contains(entity))
-                {
-                    return tree[entity];
-                }
-            }
-            return FarRectangle.Empty;
+            return
+                TreesForGroups(groups)
+                    .Where(tree => tree.Contains(entity))
+                    .Select(tree => tree[entity])
+                    .FirstOrDefault();
         }
 
         #endregion
@@ -328,7 +325,7 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
                 {
-                    _trees[index] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
+                    _trees[index] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
                 }
                 groups = groups >> 1;
                 ++index;
@@ -403,20 +400,17 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             base.Packetize(packet);
 
-            foreach (var tree in _trees) {
-                if (tree == null)
+            packet.Write(_trees.Count(t => t != null));
+            for (var i = 0; i < _trees.Length; ++i)
+            {
+                if (_trees[i] == null)
                 {
-                    packet.Write(0);
                     continue;
                 }
-
-                packet.Write(tree.Count);
-                foreach (var tuple in tree)
-                {
-                    packet.Write(tuple.Item1);
-                    packet.Write(tuple.Item2);
-                }
+                packet.Write(i);
+                packet.Write(_trees[i]);
             }
+
             packet.Write(_changed.Count);
             foreach (var entity in _changed)
             {
@@ -427,36 +421,23 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <remarks>
-        ///     Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        ///     to true.
-        /// </remarks>
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(IReadablePacket packet)
         {
             base.Depacketize(packet);
 
-            for (var i = 0; i < _trees.Length; ++i)
+            foreach (var tree in _trees.Where(tree => tree != null)) {
+                tree.Clear();
+            }
+            var treeCount = packet.ReadInt32();
+            for (var i = 0; i < treeCount; ++i)
             {
-                if (_trees[i] != null)
+                var treeIndex = packet.ReadInt32();
+                if (_trees[treeIndex] == null)
                 {
-                    _trees[i].Clear();
+                    _trees[treeIndex] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
                 }
-                var count = packet.ReadInt32();
-                if (count <= 0)
-                {
-                    continue;
-                }
-                if (_trees[i] == null)
-                {
-                    _trees[i] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
-                }
-                for (var j = 0; j < count; ++j)
-                {
-                    var bounds = packet.ReadFarRectangle();
-                    var entity = packet.ReadInt32();
-                    _trees[i].Add(bounds, entity);
-                }
+                packet.ReadPacketizableInto(_trees[treeIndex]);
             }
 
             _changed.Clear();
