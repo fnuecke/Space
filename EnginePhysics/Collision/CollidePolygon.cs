@@ -108,7 +108,7 @@ namespace Engine.Physics.Collision
                 var minDot = float.MaxValue;
                 for (var i = 0; i < count2; ++i)
                 {
-                    var dot = Vector2.Dot(normal12, normals2[i]);
+                    var dot = Vector2Util.Dot(ref normal12, ref normals2[i]);
                     if (dot < minDot)
                     {
                         minDot = dot;
@@ -172,15 +172,15 @@ namespace Engine.Physics.Collision
             var tangent1 = vertex12 - vertex11;
             tangent1.Normalize();
 
-            var normal1 = Vector2Util.Cross(tangent1, 1);
+            var normal1 = Vector2Util.Cross(ref tangent1, 1);
             var planePoint1 = 0.5f * (vertex11 + vertex12);
 
             // Face offset.
-            var frontOffset = Vector2.Dot(normal1, vertex11);
+            var frontOffset = Vector2Util.Dot(ref normal1, ref vertex11);
 
             // Side offsets, extended by polytope skin thickness.
-            var sideOffset1 = -Vector2.Dot(tangent1, vertex11) + totalRadius;
-            var sideOffset2 = Vector2.Dot(tangent1, vertex12) + totalRadius;
+            var sideOffset1 = -Vector2Util.Dot(ref tangent1, ref vertex11) + totalRadius;
+            var sideOffset2 = Vector2Util.Dot(ref tangent1, ref vertex12) + totalRadius;
 
             // Clip incident edge against extruded edge1 side edges.
             FixedArray2<ClipVertex> clipPoints1, clipPoints2;
@@ -208,8 +208,8 @@ namespace Engine.Physics.Collision
             var pointCount = 0;
             for (var i = 0; i < 2; ++i)
             {
-                //if (Vector2.Dot(normal1g, clipPoints2[i].Vertex) - frontOffset <= totalRadius)
-                if (Vector2.Dot(normal1, clipPoints2[i].Vertex) - frontOffset <= totalRadius)
+                //if (Vector2Util.Dot(normal1g, clipPoints2[i].Vertex) - frontOffset <= totalRadius)
+                if (Vector2Util.Dot(normal1, clipPoints2[i].Vertex) - frontOffset <= totalRadius)
                 {
                     var cp = manifold.Points[pointCount];
                     //cp.localPoint = transform2.ToLocal(clipPoints2[i].Vertex);
@@ -256,7 +256,7 @@ namespace Engine.Physics.Collision
             var maxDot = float.MinValue;
             for (var i = 0; i < count1; ++i)
             {
-                var dot = Vector2.Dot(normals1[i], dLocal1);
+                var dot = Vector2Util.Dot(ref normals1[i], ref dLocal1);
                 if (dot > maxDot)
                 {
                     maxDot = dot;
@@ -350,7 +350,7 @@ namespace Engine.Physics.Collision
 
             for (var i = 0; i < count2; ++i)
             {
-                var dot = Vector2.Dot(vertices2[i], normal1);
+                var dot = Vector2Util.Dot(ref vertices2[i], ref normal1);
                 if (dot < minDot)
                 {
                     minDot = dot;
@@ -361,7 +361,7 @@ namespace Engine.Physics.Collision
             var v1 = xf1.ToGlobal(vertices1[edge1]);
             var v2 = xf2.ToGlobal(vertices2[index]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-            var separation = Vector2.Dot((Vector2) (v2 - v1), normal1World);
+            var separation = Vector2Util.Dot((Vector2) (v2 - v1), normal1World);
 // ReSharper restore RedundantCast
             return separation;
         }

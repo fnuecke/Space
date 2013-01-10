@@ -67,7 +67,7 @@ namespace Engine.Physics.Joints
 // ReSharper restore RedundantCast
                 var axis = bA.GetWorldVector(_localXAxisA);
 
-                return Vector2.Dot(d, axis);
+                return Vector2Util.Dot(ref d, ref axis);
             }
         }
 
@@ -231,7 +231,7 @@ namespace Engine.Physics.Joints
             _localAnchorA = BodyA.GetLocalPoint(anchor);
             _localAnchorB = BodyB.GetLocalPoint(anchor);
             _localXAxisA = BodyA.GetLocalVector(axis);
-            _localYAxisA = Vector2Util.Cross(1.0f, _localXAxisA);
+            _localYAxisA = Vector2Util.Cross(1.0f, ref _localXAxisA);
 
             _frequency = frequency;
             _dampingRatio = dampingRatio;
@@ -335,7 +335,7 @@ namespace Engine.Physics.Joints
                 {
                     _tmp.SpringMass = 1.0f / invMass;
 
-                    var c = Vector2.Dot(d, _tmp.Ax);
+                    var c = Vector2Util.Dot(ref d, ref _tmp.Ax);
 
                     // Frequency
                     var omega = 2.0f * MathHelper.Pi * _frequency;
@@ -416,7 +416,7 @@ namespace Engine.Physics.Joints
 
             // Solve spring constraint
             {
-                var cdot = Vector2.Dot(_tmp.Ax, vB - vA) + _tmp.SBx * wB - _tmp.SAx * wA;
+                var cdot = Vector2Util.Dot(_tmp.Ax, vB - vA) + _tmp.SBx * wB - _tmp.SAx * wA;
                 var impulse = -_tmp.SpringMass * (cdot + _tmp.Bias + _tmp.Gamma * _springImpulse);
                 _springImpulse += impulse;
 
@@ -447,7 +447,7 @@ namespace Engine.Physics.Joints
 
             // Solve point to line constraint
             {
-                var cdot = Vector2.Dot(_tmp.Ay, vB - vA) + _tmp.SBy * wB - _tmp.SAy * wA;
+                var cdot = Vector2Util.Dot(_tmp.Ay, vB - vA) + _tmp.SBy * wB - _tmp.SAy * wA;
                 var impulse = -_tmp.Mass * cdot;
                 _impulse += impulse;
 
@@ -494,7 +494,7 @@ namespace Engine.Physics.Joints
             var sAy = Vector2Util.Cross(d + rA, ay);
             var sBy = Vector2Util.Cross(rB, ay);
 
-            var c = Vector2.Dot(d, ay);
+            var c = Vector2Util.Dot(ref d, ref ay);
 
             var k = _tmp.InverseMassA + _tmp.InverseMassB + _tmp.InverseInertiaA * _tmp.SAy * _tmp.SAy +
                     _tmp.InverseInertiaB * _tmp.SBy * _tmp.SBy;

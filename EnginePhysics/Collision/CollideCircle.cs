@@ -35,7 +35,7 @@ namespace Engine.Physics.Collision
             var d = (Vector2) (pB - pA);
 // ReSharper restore RedundantCast
 
-            var distanceSquared = Vector2.Dot(d, d);
+            var distanceSquared = Vector2Util.Dot(ref d, ref d);
             var radius = circleA.Radius + circleB.Radius;
             if (distanceSquared > radius * radius)
             {
@@ -80,7 +80,7 @@ namespace Engine.Physics.Collision
             var separation = float.MinValue;
             for (var i = 0; i < vertexCountA; ++i)
             {
-                var s = Vector2.Dot(normalsA[i], centerInA - verticesA[i]);
+                var s = Vector2Util.Dot(normalsA[i], centerInA - verticesA[i]);
 
                 if (s > totalRadius)
                 {
@@ -116,8 +116,8 @@ namespace Engine.Physics.Collision
             }
 
             // Compute barycentric coordinates
-            var u1 = Vector2.Dot(centerInA - vertexA1, vertexA2 - vertexA1);
-            var u2 = Vector2.Dot(centerInA - vertexA2, vertexA1 - vertexA2);
+            var u1 = Vector2Util.Dot(centerInA - vertexA1, vertexA2 - vertexA1);
+            var u2 = Vector2Util.Dot(centerInA - vertexA2, vertexA1 - vertexA2);
 
             if (u1 <= 0.0f)
             {
@@ -154,7 +154,7 @@ namespace Engine.Physics.Collision
             else
             {
                 var faceCenter = 0.5f * (vertexA1 + vertexA2);
-                if (Vector2.Dot(centerInA - faceCenter, normalsA[vertexIndexA1]) <= totalRadius)
+                if (Vector2Util.Dot(centerInA - faceCenter, normalsA[vertexIndexA1]) <= totalRadius)
                 {
                     manifold.Type = Manifold.ManifoldType.FaceA;
                     manifold.PointCount = 1;

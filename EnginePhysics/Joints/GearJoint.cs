@@ -182,7 +182,7 @@ namespace Engine.Physics.Joints
                 var pA = -xfC.Rotation *
                          ((xfA.Rotation * _localAnchorA) + (Vector2) (xfA.Translation - xfC.Translation));
 // ReSharper restore RedundantCast
-                coordinateA = Vector2.Dot(pA - pC, _localAxisC);
+                coordinateA = Vector2Util.Dot(pA - pC, _localAxisC);
             }
 
             _bodyIdD = jointB.BodyA.Id;
@@ -217,7 +217,7 @@ namespace Engine.Physics.Joints
                 var pB = -xfD.Rotation *
                          ((xfB.Rotation * _localAnchorB) + (Vector2) (xfB.Translation - xfD.Translation));
 // ReSharper restore RedundantCast
-                coordinateB = Vector2.Dot(pB - pD, _localAxisD);
+                coordinateB = Vector2Util.Dot(pB - pD, _localAxisD);
             }
 
             _ratio = ratio;
@@ -308,8 +308,8 @@ namespace Engine.Physics.Joints
                 var rC = qC * (_localAnchorC - _tmp.LcC);
                 var rA = qA * (_localAnchorA - _tmp.LcA);
                 _tmp.JvAC = u;
-                _tmp.JwC = Vector2Util.Cross(rC, u);
-                _tmp.JwA = Vector2Util.Cross(rA, u);
+                _tmp.JwC = Vector2Util.Cross(ref rC, ref u);
+                _tmp.JwA = Vector2Util.Cross(ref rA, ref u);
                 _tmp.Mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * _tmp.JwC * _tmp.JwC +
                              _tmp.InverseInertiaA * _tmp.JwA * _tmp.JwA;
             }
@@ -327,8 +327,8 @@ namespace Engine.Physics.Joints
                 var rD = qD * (_localAnchorD - _tmp.LcD);
                 var rB = qB * (_localAnchorB - _tmp.LcB);
                 _tmp.JvBD = _ratio * u;
-                _tmp.JwD = _ratio * Vector2Util.Cross(rD, u);
-                _tmp.JwB = _ratio * Vector2Util.Cross(rB, u);
+                _tmp.JwD = _ratio * Vector2Util.Cross(ref rD, ref u);
+                _tmp.JwB = _ratio * Vector2Util.Cross(ref rB, ref u);
                 _tmp.Mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) +
                              _tmp.InverseInertiaD * _tmp.JwD * _tmp.JwD + _tmp.InverseInertiaB * _tmp.JwB * _tmp.JwB;
             }
@@ -369,7 +369,7 @@ namespace Engine.Physics.Joints
             var vD = velocities[_tmp.IndexD].LinearVelocity;
             var wD = velocities[_tmp.IndexD].AngularVelocity;
 
-            var cDot = Vector2.Dot(_tmp.JvAC, vA - vC) + Vector2.Dot(_tmp.JvBD, vB - vD);
+            var cDot = Vector2Util.Dot(_tmp.JvAC, vA - vC) + Vector2Util.Dot(_tmp.JvBD, vB - vD);
             cDot += (_tmp.JwA * wA - _tmp.JwC * wC) + (_tmp.JwB * wB - _tmp.JwD * wD);
 
             var impulse = -_tmp.Mass * cDot;
@@ -438,8 +438,8 @@ namespace Engine.Physics.Joints
                 var rC = qC * (_localAnchorC - _tmp.LcC);
                 var rA = qA * (_localAnchorA - _tmp.LcA);
                 JvAC = u;
-                JwC = Vector2Util.Cross(rC, u);
-                JwA = Vector2Util.Cross(rA, u);
+                JwC = Vector2Util.Cross(ref rC, ref u);
+                JwA = Vector2Util.Cross(ref rA, ref u);
                 mass += _tmp.InverseMassC + _tmp.InverseMassA + _tmp.InverseInertiaC * JwC * JwC +
                         _tmp.InverseInertiaA * JwA * JwA;
 
@@ -447,7 +447,7 @@ namespace Engine.Physics.Joints
 // ReSharper disable RedundantCast Necessary for FarPhysics.
                 var pA = -qC * (rA + (Vector2) (cA - cC));
 // ReSharper restore RedundantCast
-                coordinateA = Vector2.Dot(pA - pC, _localAxisC);
+                coordinateA = Vector2Util.Dot(pA - pC, _localAxisC);
             }
 
             if (_typeB == JointType.Revolute)
@@ -465,8 +465,8 @@ namespace Engine.Physics.Joints
                 var rD = qD * (_localAnchorD - _tmp.LcD);
                 var rB = qB * (_localAnchorB - _tmp.LcB);
                 JvBD = _ratio * u;
-                JwD = _ratio * Vector2Util.Cross(rD, u);
-                JwB = _ratio * Vector2Util.Cross(rB, u);
+                JwD = _ratio * Vector2Util.Cross(ref rD, ref u);
+                JwB = _ratio * Vector2Util.Cross(ref rB, ref u);
                 mass += _ratio * _ratio * (_tmp.InverseMassD + _tmp.InverseMassB) + _tmp.InverseInertiaD * JwD * JwD +
                         _tmp.InverseInertiaB * JwB * JwB;
 
@@ -474,7 +474,7 @@ namespace Engine.Physics.Joints
 // ReSharper disable RedundantCast Necessary for FarPhysics.
                 var pB = -qD * (rB + (Vector2) (cB - cD));
 // ReSharper restore RedundantCast
-                coordinateB = Vector2.Dot(pB - pD, _localAxisD);
+                coordinateB = Vector2Util.Dot(pB - pD, _localAxisD);
             }
 
             var c = (coordinateA + _ratio * coordinateB) - _constant;

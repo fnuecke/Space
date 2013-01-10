@@ -263,7 +263,7 @@ namespace Engine.Physics.Components
                     return;
                 }
 
-                if (Vector2.Dot(value, value) > 0.0f)
+                if (Vector2Util.Dot(ref value, ref value) > 0.0f)
                 {
                     IsAwake = true;
                 }
@@ -317,7 +317,7 @@ namespace Engine.Physics.Components
         /// <value>The rotational inertia, usually in kg-m^2.</value>
         public float Inertia
         {
-            get { return _inertia + MassInternal * Vector2.Dot(Sweep.LocalCenter, Sweep.LocalCenter); }
+            get { return _inertia + MassInternal * Vector2Util.Dot(ref Sweep.LocalCenter, ref Sweep.LocalCenter); }
         }
 
         /// <summary>Gets the list of fixtures attached to this body.</summary>
@@ -872,7 +872,7 @@ namespace Engine.Physics.Components
             else
             {
                 // Center the inertia about the center of mass.
-                _inertia -= MassInternal * Vector2.Dot(localCenter, localCenter);
+                _inertia -= MassInternal * Vector2Util.Dot(ref localCenter, ref localCenter);
                 InverseInertia = 1 / _inertia;
             }
 

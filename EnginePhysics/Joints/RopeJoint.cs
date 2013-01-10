@@ -182,8 +182,8 @@ namespace Engine.Physics.Joints
             }
 
             // Compute effective mass.
-            var crA = Vector2Util.Cross(_tmp.RotA, _tmp.Axis);
-            var crB = Vector2Util.Cross(_tmp.RotB, _tmp.Axis);
+            var crA = Vector2Util.Cross(ref _tmp.RotA, ref _tmp.Axis);
+            var crB = Vector2Util.Cross(ref _tmp.RotB, ref _tmp.Axis);
             var invMass = _tmp.InverseMassA + _tmp.InverseInertiaA * crA * crA + _tmp.InverseMassB +
                           _tmp.InverseInertiaB * crB * crB;
 
@@ -200,9 +200,9 @@ namespace Engine.Physics.Joints
 
             var p = _impulse * _tmp.Axis;
             vA -= _tmp.InverseMassA * p;
-            wA -= _tmp.InverseInertiaA * Vector2Util.Cross(_tmp.RotA, p);
+            wA -= _tmp.InverseInertiaA * Vector2Util.Cross(ref _tmp.RotA, ref p);
             vB += _tmp.InverseMassB * p;
-            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, p);
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(ref _tmp.RotB, ref p);
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;
@@ -221,10 +221,10 @@ namespace Engine.Physics.Joints
             var wB = velocities[_tmp.IndexB].AngularVelocity;
 
             // Cdot = dot(u, v + cross(w, r))
-            var vpA = vA + Vector2Util.Cross(wA, _tmp.RotA);
-            var vpB = vB + Vector2Util.Cross(wB, _tmp.RotB);
+            var vpA = vA + Vector2Util.Cross(wA, ref _tmp.RotA);
+            var vpB = vB + Vector2Util.Cross(wB, ref _tmp.RotB);
             var c = _length - _maxLength;
-            var cdot = Vector2.Dot(_tmp.Axis, vpB - vpA);
+            var cdot = Vector2Util.Dot(_tmp.Axis, vpB - vpA);
 
             // Predictive constraint.
             if (c < 0.0f)
@@ -239,9 +239,9 @@ namespace Engine.Physics.Joints
 
             var p = impulse * _tmp.Axis;
             vA -= _tmp.InverseMassA * p;
-            wA -= _tmp.InverseInertiaA * Vector2Util.Cross(_tmp.RotA, p);
+            wA -= _tmp.InverseInertiaA * Vector2Util.Cross(ref _tmp.RotA, ref p);
             vB += _tmp.InverseMassB * p;
-            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, p);
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(ref _tmp.RotB, ref p);
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;
@@ -280,9 +280,9 @@ namespace Engine.Physics.Joints
             var p = impulse * u;
 
             cA -= _tmp.InverseMassA * p;
-            aA -= _tmp.InverseInertiaA * Vector2Util.Cross(rA, p);
+            aA -= _tmp.InverseInertiaA * Vector2Util.Cross(ref rA, ref p);
             cB += _tmp.InverseMassB * p;
-            aB += _tmp.InverseInertiaB * Vector2Util.Cross(rB, p);
+            aB += _tmp.InverseInertiaB * Vector2Util.Cross(ref rB, ref p);
 
             positions[_tmp.IndexA].Point = cA;
             positions[_tmp.IndexA].Angle = aA;

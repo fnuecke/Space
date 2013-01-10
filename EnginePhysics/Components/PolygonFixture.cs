@@ -130,7 +130,7 @@ namespace Engine.Physics.Components
 
                     var r = ps[ie] - ps[hull[m]];
                     var v = ps[j] - ps[hull[m]];
-                    var c = Vector2Util.Cross(r, v);
+                    var c = Vector2Util.Cross(ref r, ref v);
                     if (c < 0.0f)
                     {
                         ie = j;
@@ -169,7 +169,7 @@ namespace Engine.Physics.Components
                 var i2 = i + 1 < m ? i + 1 : 0;
                 var edge = Vertices[i2] - Vertices[i1];
                 System.Diagnostics.Debug.Assert(edge.LengthSquared() > Settings.Epsilon * Settings.Epsilon);
-                Normals[i] = Vector2Util.Cross(edge, 1.0f);
+                Normals[i] = Vector2Util.Cross(ref edge, 1.0f);
                 Normals[i].Normalize();
             }
 
@@ -206,7 +206,7 @@ namespace Engine.Physics.Components
         {
             for (var i = 0; i < Count; ++i)
             {
-                if (Vector2.Dot(Normals[i], localPoint - Vertices[i]) > 0.0f)
+                if (Vector2Util.Dot(Normals[i], localPoint - Vertices[i]) > 0.0f)
                 {
                     return false;
                 }
@@ -275,7 +275,7 @@ namespace Engine.Physics.Components
                              ? Vertices[i + 1] - s
                              : Vertices[0] - s;
 
-                var d = Vector2Util.Cross(e1, e2);
+                var d = Vector2Util.Cross(ref e1, ref e2);
 
                 var triangleArea = 0.5f * d;
                 area += triangleArea;
@@ -301,7 +301,7 @@ namespace Engine.Physics.Components
             inertia = Density * I;
 
             // Shift to center of mass then to original body origin.
-            inertia += mass * (Vector2.Dot(center, center) - Vector2.Dot(centroid, centroid));
+            inertia += mass * (Vector2Util.Dot(ref center, ref center) - Vector2Util.Dot(ref centroid, ref centroid));
         }
 
         /// <summary>Computes the global bounds of this fixture given the specified body transform.</summary>
@@ -358,7 +358,7 @@ namespace Engine.Physics.Components
                 var e1 = p2 - p1;
                 var e2 = p3 - p1;
 
-                var triangleArea = 0.5f * Vector2Util.Cross(e1, e2);
+                var triangleArea = 0.5f * Vector2Util.Cross(ref e1, ref e2);
                 area += triangleArea;
 
                 // Area weighted centroid

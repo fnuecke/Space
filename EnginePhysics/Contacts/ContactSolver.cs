@@ -189,17 +189,17 @@ namespace Engine.Physics.Contacts
                     vcp.RelativeB = (Vector2) (points[j] - cB);
 // ReSharper restore RedundantCast
 
-                    var rnA = Vector2Util.Cross(vcp.RelativeA, vc.Normal);
-                    var rnB = Vector2Util.Cross(vcp.RelativeB, vc.Normal);
+                    var rnA = Vector2Util.Cross(ref vcp.RelativeA, ref vc.Normal);
+                    var rnB = Vector2Util.Cross(ref vcp.RelativeB, ref vc.Normal);
 
                     var kNormal = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
 
                     vcp.NormalMass = kNormal > 0.0f ? 1.0f / kNormal : 0.0f;
 
-                    var tangent = Vector2Util.Cross(vc.Normal, 1.0f);
+                    var tangent = Vector2Util.Cross(ref vc.Normal, 1.0f);
 
-                    var rtA = Vector2Util.Cross(vcp.RelativeA, tangent);
-                    var rtB = Vector2Util.Cross(vcp.RelativeB, tangent);
+                    var rtA = Vector2Util.Cross(ref vcp.RelativeA, ref tangent);
+                    var rtB = Vector2Util.Cross(ref vcp.RelativeB, ref tangent);
 
                     var kTangent = mA + mB + iA * rtA * rtA + iB * rtB * rtB;
 
@@ -207,8 +207,7 @@ namespace Engine.Physics.Contacts
 
                     // Setup a velocity bias for restitution.
                     vcp.VelocityBias = 0.0f;
-                    var vRel = Vector2.Dot(
-                        vc.Normal, vB + Vector2Util.Cross(wB, vcp.RelativeB) - vA - Vector2Util.Cross(wA, vcp.RelativeA));
+                    var vRel = Vector2Util.Dot(vc.Normal, vB + Vector2Util.Cross(wB, ref vcp.RelativeB) - vA - Vector2Util.Cross(wA, ref vcp.RelativeA));
                     if (vRel < -Settings.VelocityThreshold)
                     {
                         vcp.VelocityBias = -vc.Restitution * vRel;
@@ -221,10 +220,10 @@ namespace Engine.Physics.Contacts
                     var vcp1 = vc.Points[0];
                     var vcp2 = vc.Points[1];
 
-                    var rn1A = Vector2Util.Cross(vcp1.RelativeA, vc.Normal);
-                    var rn1B = Vector2Util.Cross(vcp1.RelativeB, vc.Normal);
-                    var rn2A = Vector2Util.Cross(vcp2.RelativeA, vc.Normal);
-                    var rn2B = Vector2Util.Cross(vcp2.RelativeB, vc.Normal);
+                    var rn1A = Vector2Util.Cross(ref vcp1.RelativeA, ref vc.Normal);
+                    var rn1B = Vector2Util.Cross(ref vcp1.RelativeB, ref vc.Normal);
+                    var rn2A = Vector2Util.Cross(ref vcp2.RelativeA, ref vc.Normal);
+                    var rn2B = Vector2Util.Cross(ref vcp2.RelativeB, ref vc.Normal);
 
                     var k11 = mA + mB + iA * rn1A * rn1A + iB * rn1B * rn1B;
                     var k22 = mA + mB + iA * rn2A * rn2A + iB * rn2B * rn2B;
@@ -272,15 +271,15 @@ namespace Engine.Physics.Contacts
                 var wB = _velocities[indexB].AngularVelocity;
 
                 var normal = vc.Normal;
-                var tangent = Vector2Util.Cross(normal, 1.0f);
+                var tangent = Vector2Util.Cross(ref normal, 1.0f);
 
                 for (var j = 0; j < pointCount; ++j)
                 {
                     var vcp = vc.Points[j];
                     var p = vcp.NormalImpulse * normal + vcp.TangentImpulse * tangent;
-                    wA -= iA * Vector2Util.Cross(vcp.RelativeA, p);
+                    wA -= iA * Vector2Util.Cross(ref vcp.RelativeA, ref p);
                     vA -= mA * p;
-                    wB += iB * Vector2Util.Cross(vcp.RelativeB, p);
+                    wB += iB * Vector2Util.Cross(ref vcp.RelativeB, ref p);
                     vB += mB * p;
                 }
 
@@ -311,7 +310,9 @@ namespace Engine.Physics.Contacts
                 var wB = _velocities[indexB].AngularVelocity;
 
                 var normal = vc.Normal;
-                var tangent = Vector2Util.Cross(normal, 1.0f);
+                Vector2 tangent;
+                tangent.X = normal.Y;
+                tangent.Y = -normal.X;
                 var friction = vc.Friction;
 
                 System.Diagnostics.Debug.Assert(pointCount == 1 || pointCount == 2);
@@ -322,11 +323,17 @@ namespace Engine.Physics.Contacts
                 {
                     var vcp = vc.Points[j];
 
-                    // Relative velocity at contact
-                    var dv = vB + Vector2Util.Cross(wB, vcp.RelativeB) - vA - Vector2Util.Cross(wA, vcp.RelativeA);
+                    // Relative velocity at contact.
+                    // Performance critical inline:
+                    //var dv = vB - vA + Vector2Util.Cross(wB, ref vcp.RelativeB) - Vector2Util.Cross(wA, ref vcp.RelativeA);
+                    Vector2 dv;
+                    dv.X = vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y;
+                    dv.Y = vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X;
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.X));
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.Y));
 
                     // Compute tangent force
-                    var vt = Vector2.Dot(dv, tangent);
+                    var vt = Vector2Util.Dot(ref dv, ref tangent);
                     var lambda = vcp.TangentMass * (-vt);
 
                     // Clamp the accumulated force
@@ -339,10 +346,10 @@ namespace Engine.Physics.Contacts
                     var p = lambda * tangent;
 
                     vA -= mA * p;
-                    wA -= iA * Vector2Util.Cross(vcp.RelativeA, p);
+                    wA -= iA * (vcp.RelativeA.X * p.Y - vcp.RelativeA.Y * p.X);
 
                     vB += mB * p;
-                    wB += iB * Vector2Util.Cross(vcp.RelativeB, p);
+                    wB += iB * (vcp.RelativeB.X * p.Y - vcp.RelativeB.Y * p.X);
                 }
 
                 // Solve normal constraints
@@ -351,10 +358,16 @@ namespace Engine.Physics.Contacts
                     var vcp = vc.Points[0];
 
                     // Relative velocity at contact
-                    var dv = vB + Vector2Util.Cross(wB, vcp.RelativeB) - vA - Vector2Util.Cross(wA, vcp.RelativeA);
+                    // Performance critical inline:
+                    //var dv = vB + Vector2Util.Cross(wB, ref vcp.RelativeB) - vA - Vector2Util.Cross(wA, ref vcp.RelativeA);
+                    Vector2 dv;
+                    dv.X = vB.X - vA.X - wB * vcp.RelativeB.Y + wA * vcp.RelativeA.Y;
+                    dv.Y = vB.Y - vA.Y + wB * vcp.RelativeB.X - wA * vcp.RelativeA.X;
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.X));
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv.Y));
 
                     // Compute normal impulse
-                    var vn = Vector2.Dot(dv, normal);
+                    var vn = Vector2Util.Dot(ref dv, ref normal);
                     var lambda = -vcp.NormalMass * (vn - vcp.VelocityBias);
 
                     // Clamp the accumulated impulse
@@ -365,10 +378,10 @@ namespace Engine.Physics.Contacts
                     // Apply contact impulse
                     var p = lambda * normal;
                     vA -= mA * p;
-                    wA -= iA * Vector2Util.Cross(vcp.RelativeA, p);
+                    wA -= iA * (vcp.RelativeA.X * p.Y - vcp.RelativeA.Y * p.X);
 
                     vB += mB * p;
-                    wB += iB * Vector2Util.Cross(vcp.RelativeB, p);
+                    wB += iB * (vcp.RelativeB.X * p.Y - vcp.RelativeB.Y * p.X);
                 }
                 else
                 {
@@ -414,12 +427,23 @@ namespace Engine.Physics.Contacts
                     System.Diagnostics.Debug.Assert(a.X >= 0.0f && a.Y >= 0.0f);
 
                     // Relative velocity at contact
-                    var dv1 = vB + Vector2Util.Cross(wB, cp1.RelativeB) - vA - Vector2Util.Cross(wA, cp1.RelativeA);
-                    var dv2 = vB + Vector2Util.Cross(wB, cp2.RelativeB) - vA - Vector2Util.Cross(wA, cp2.RelativeA);
+                    // Performance critical inline:
+                    //var dv1 = vB - vA + Vector2Util.Cross(wB, ref cp1.RelativeB) - Vector2Util.Cross(wA, ref cp1.RelativeA);
+                    //var dv2 = vB - vA + Vector2Util.Cross(wB, ref cp2.RelativeB) - Vector2Util.Cross(wA, ref cp2.RelativeA);
+                    Vector2 dv1;
+                    dv1.X = vB.X - vA.X - wB * cp1.RelativeB.Y + wA * cp1.RelativeA.Y;
+                    dv1.Y = vB.Y - vA.Y + wB * cp1.RelativeB.X - wA * cp1.RelativeA.X;
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv1.X));
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv1.Y));
+                    Vector2 dv2;
+                    dv2.X = vB.X - vA.X - wB * cp2.RelativeB.Y + wA * cp2.RelativeA.Y;
+                    dv2.Y = vB.Y - vA.Y + wB * cp2.RelativeB.X - wA * cp2.RelativeA.X;
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv2.X));
+                    System.Diagnostics.Debug.Assert(!float.IsNaN(dv2.Y));
 
                     // Compute normal velocity
-                    var vn1 = Vector2.Dot(dv1, normal);
-                    var vn2 = Vector2.Dot(dv2, normal);
+                    var vn1 = Vector2Util.Dot(ref dv1, ref normal);
+                    var vn2 = Vector2Util.Dot(ref dv2, ref normal);
 
                     Vector2 b;
                     b.X = vn1 - cp1.VelocityBias;
@@ -450,10 +474,10 @@ namespace Engine.Physics.Contacts
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
                             vA -= mA * (p1 + p2);
-                            wA -= iA * (Vector2Util.Cross(cp1.RelativeA, p1) + Vector2Util.Cross(cp2.RelativeA, p2));
+                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
                             vB += mB * (p1 + p2);
-                            wB += iB * (Vector2Util.Cross(cp1.RelativeB, p1) + Vector2Util.Cross(cp2.RelativeB, p2));
+                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
                             cp1.NormalImpulse = x.X;
@@ -480,10 +504,10 @@ namespace Engine.Physics.Contacts
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
                             vA -= mA * (p1 + p2);
-                            wA -= iA * (Vector2Util.Cross(cp1.RelativeA, p1) + Vector2Util.Cross(cp2.RelativeA, p2));
+                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
                             vB += mB * (p1 + p2);
-                            wB += iB * (Vector2Util.Cross(cp1.RelativeB, p1) + Vector2Util.Cross(cp2.RelativeB, p2));
+                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
                             cp1.NormalImpulse = x.X;
@@ -510,10 +534,10 @@ namespace Engine.Physics.Contacts
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
                             vA -= mA * (p1 + p2);
-                            wA -= iA * (Vector2Util.Cross(cp1.RelativeA, p1) + Vector2Util.Cross(cp2.RelativeA, p2));
+                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
                             vB += mB * (p1 + p2);
-                            wB += iB * (Vector2Util.Cross(cp1.RelativeB, p1) + Vector2Util.Cross(cp2.RelativeB, p2));
+                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
                             cp1.NormalImpulse = x.X;
@@ -540,10 +564,10 @@ namespace Engine.Physics.Contacts
                             var p1 = d.X * normal;
                             var p2 = d.Y * normal;
                             vA -= mA * (p1 + p2);
-                            wA -= iA * (Vector2Util.Cross(cp1.RelativeA, p1) + Vector2Util.Cross(cp2.RelativeA, p2));
+                            wA -= iA * ((cp1.RelativeA.X * p1.Y - cp1.RelativeA.Y * p1.X) + (cp2.RelativeA.X * p2.Y - cp2.RelativeA.Y * p2.X));
 
                             vB += mB * (p1 + p2);
-                            wB += iB * (Vector2Util.Cross(cp1.RelativeB, p1) + Vector2Util.Cross(cp2.RelativeB, p2));
+                            wB += iB * ((cp1.RelativeB.X * p1.Y - cp1.RelativeB.Y * p1.X) + (cp2.RelativeB.X * p2.Y - cp2.RelativeB.Y * p2.X));
 
                             // Accumulate
                             cp1.NormalImpulse = x.X;
@@ -609,7 +633,7 @@ namespace Engine.Physics.Contacts
                     normal.Normalize();
                     point = 0.5f * (pointA + pointB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2.Dot((Vector2) (pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
+                    separation = Vector2Util.Dot((Vector2) (pointB - pointA), normal) - pc.RadiusA - pc.RadiusB;
 // ReSharper restore RedundantCast
                 }
                     break;
@@ -621,7 +645,7 @@ namespace Engine.Physics.Contacts
 
                     var clipPoint = xfB.ToGlobal(pc.LocalPoints[index]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2.Dot((Vector2) (clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+                    separation = Vector2Util.Dot((Vector2) (clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
 // ReSharper restore RedundantCast
                     point = clipPoint;
                 }
@@ -634,7 +658,7 @@ namespace Engine.Physics.Contacts
 
                     var clipPoint = xfA.ToGlobal(pc.LocalPoints[index]);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    separation = Vector2.Dot((Vector2) (clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
+                    separation = Vector2Util.Dot((Vector2) (clipPoint - planePoint), normal) - pc.RadiusA - pc.RadiusB;
 // ReSharper restore RedundantCast
                     point = clipPoint;
 
@@ -700,8 +724,8 @@ namespace Engine.Physics.Contacts
                         Settings.Baumgarte * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
 
                     // Compute the effective mass.
-                    var rnA = Vector2Util.Cross(rA, normal);
-                    var rnB = Vector2Util.Cross(rB, normal);
+                    var rnA = Vector2Util.Cross(ref rA, ref normal);
+                    var rnB = Vector2Util.Cross(ref rB, ref normal);
                     var k = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
 
                     // Compute normal impulse
@@ -710,10 +734,10 @@ namespace Engine.Physics.Contacts
                     var p = impulse * normal;
 
                     cA -= mA * p;
-                    aA -= iA * Vector2Util.Cross(rA, p);
+                    aA -= iA * Vector2Util.Cross(ref rA, ref p);
 
                     cB += mB * p;
-                    aB += iB * Vector2Util.Cross(rB, p);
+                    aB += iB * Vector2Util.Cross(ref rB, ref p);
                 }
 
                 _positions[indexA].Point = cA;
@@ -793,8 +817,8 @@ namespace Engine.Physics.Contacts
                         Settings.BaumgarteTOI * (separation + Settings.LinearSlop), -Settings.MaxLinearCorrection, 0.0f);
 
                     // Compute the effective mass.
-                    var rnA = Vector2Util.Cross(rA, normal);
-                    var rnB = Vector2Util.Cross(rB, normal);
+                    var rnA = Vector2Util.Cross(ref rA, ref normal);
+                    var rnB = Vector2Util.Cross(ref rB, ref normal);
                     var k = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
 
                     // Compute normal impulse
@@ -803,10 +827,10 @@ namespace Engine.Physics.Contacts
                     var p = impulse * normal;
 
                     cA -= mA * p;
-                    aA -= iA * Vector2Util.Cross(rA, p);
+                    aA -= iA * Vector2Util.Cross(ref rA, ref p);
 
                     cB += mB * p;
-                    aB += iB * Vector2Util.Cross(rB, p);
+                    aB += iB * Vector2Util.Cross(ref rB, ref p);
                 }
 
                 _positions[indexA].Point = cA;

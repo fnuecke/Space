@@ -44,8 +44,8 @@ namespace Engine.Physics.Collision
             var numOut = 0;
 
             // Calculate the distance of end points to the line
-            var distance0 = Vector2.Dot(normal, vIn.Item1.Vertex) - offset;
-            var distance1 = Vector2.Dot(normal, vIn.Item2.Vertex) - offset;
+            var distance0 = Vector2Util.Dot(ref normal, ref vIn.Item1.Vertex) - offset;
+            var distance1 = Vector2Util.Dot(ref normal, ref vIn.Item2.Vertex) - offset;
 
             // If the points are behind the plane
             if (distance0 <= 0.0f)

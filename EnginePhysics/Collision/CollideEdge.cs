@@ -39,8 +39,8 @@ namespace Engine.Physics.Collision
             var e = b - a;
 
             // Barycentric coordinates
-            var u = Vector2.Dot(e, b - q);
-            var v = Vector2.Dot(e, q - a);
+            var u = Vector2Util.Dot(e, b - q);
+            var v = Vector2Util.Dot(e, q - a);
 
             var radius = edgeA.Radius + circleB.Radius;
 
@@ -53,7 +53,7 @@ namespace Engine.Physics.Collision
             {
                 var p = a;
                 var d = q - p;
-                var dd = Vector2.Dot(d, d);
+                var dd = Vector2Util.Dot(ref d, ref d);
                 if (dd > radius * radius)
                 {
                     return false;
@@ -65,7 +65,7 @@ namespace Engine.Physics.Collision
                     var a1 = edgeA.Vertex0;
                     var b1 = a;
                     var e1 = b1 - a1;
-                    var u1 = Vector2.Dot(e1, b1 - q);
+                    var u1 = Vector2Util.Dot(e1, b1 - q);
 
                     // Is the circle in Region AB of the previous edge?
                     if (u1 > 0.0f)
@@ -93,7 +93,7 @@ namespace Engine.Physics.Collision
             {
                 var p = b;
                 var d = q - p;
-                var dd = Vector2.Dot(d, d);
+                var dd = Vector2Util.Dot(ref d, ref d);
                 if (dd > radius * radius)
                 {
                     return false;
@@ -105,7 +105,7 @@ namespace Engine.Physics.Collision
                     var a2 = b;
                     var b2 = edgeA.Vertex3;
                     var e2 = b2 - a2;
-                    var v2 = Vector2.Dot(e2, q - a2);
+                    var v2 = Vector2Util.Dot(e2, q - a2);
 
                     // Is the circle in Region AB of the next edge?
                     if (v2 > 0.0f)
@@ -129,12 +129,12 @@ namespace Engine.Physics.Collision
             }
 
             // Region AB
-            var den = Vector2.Dot(e, e);
+            var den = Vector2Util.Dot(ref e, ref e);
             System.Diagnostics.Debug.Assert(den > 0.0f);
             {
                 var p = (1.0f / den) * (u * a + v * b);
                 var d = q - p;
-                var dd = Vector2.Dot(d, d);
+                var dd = Vector2Util.Dot(ref d, ref d);
                 if (dd > radius * radius)
                 {
                     return false;
@@ -144,7 +144,7 @@ namespace Engine.Physics.Collision
             Vector2 n;
             n.X = -e.Y;
             n.Y = e.X;
-            if (Vector2.Dot(n, q - a) < 0.0f)
+            if (Vector2Util.Dot(n, q - a) < 0.0f)
             {
                 n = -n;
             }
@@ -212,7 +212,7 @@ namespace Engine.Physics.Collision
             edge1.Normalize();
             normal1.X = edge1.Y;
             normal1.Y = -edge1.X;
-            var offset1 = Vector2.Dot(normal1, centroidB - v1);
+            var offset1 = Vector2Util.Dot(normal1, centroidB - v1);
             var offset0 = 0.0f;
             var offset2 = 0.0f;
             var convex1 = false;
@@ -225,8 +225,8 @@ namespace Engine.Physics.Collision
                 edge0.Normalize();
                 normal0.X = edge0.Y;
                 normal0.Y = -edge0.X;
-                convex1 = Vector2Util.Cross(edge0, edge1) >= 0.0f;
-                offset0 = Vector2.Dot(normal0, centroidB - v0);
+                convex1 = Vector2Util.Cross(ref edge0, ref edge1) >= 0.0f;
+                offset0 = Vector2Util.Dot(normal0, centroidB - v0);
             }
 
             // Is there a following edge?
@@ -236,8 +236,8 @@ namespace Engine.Physics.Collision
                 edge2.Normalize();
                 normal2.X = edge2.Y;
                 normal2.Y = -edge2.X;
-                convex2 = Vector2Util.Cross(edge1, edge2) > 0.0f;
-                offset2 = Vector2.Dot(normal2, centroidB - v2);
+                convex2 = Vector2Util.Cross(ref edge1, ref edge2) > 0.0f;
+                offset2 = Vector2Util.Dot(normal2, centroidB - v2);
             }
 
             // Determine front or back collision. Determine collision normal limits.
@@ -414,7 +414,7 @@ namespace Engine.Physics.Collision
 
             for (var i = 0; i < tpc; ++i)
             {
-                var s = Vector2.Dot(normal, tpv[i] - v1);
+                var s = Vector2Util.Dot(normal, tpv[i] - v1);
                 if (s < edgeAxis.Separation)
                 {
                     edgeAxis.Separation = s;
@@ -445,8 +445,8 @@ namespace Engine.Physics.Collision
             {
                 var n = -tpn[i];
 
-                var s1 = Vector2.Dot(n, tpv[i] - v1);
-                var s2 = Vector2.Dot(n, tpv[i] - v2);
+                var s1 = Vector2Util.Dot(n, tpv[i] - v1);
+                var s2 = Vector2Util.Dot(n, tpv[i] - v2);
                 var s = System.Math.Min(s1, s2);
 
                 if (s > radius)
@@ -459,16 +459,16 @@ namespace Engine.Physics.Collision
                 }
 
                 // Adjacency
-                if (Vector2.Dot(n, perp) >= 0.0f)
+                if (Vector2Util.Dot(ref n, ref perp) >= 0.0f)
                 {
-                    if (Vector2.Dot(n - upperLimit, normal) < -Settings.AngularSlop)
+                    if (Vector2Util.Dot(n - upperLimit, normal) < -Settings.AngularSlop)
                     {
                         continue;
                     }
                 }
                 else
                 {
-                    if (Vector2.Dot(n - lowerLimit, normal) < -Settings.AngularSlop)
+                    if (Vector2Util.Dot(n - lowerLimit, normal) < -Settings.AngularSlop)
                     {
                         continue;
                     }
@@ -519,10 +519,10 @@ namespace Engine.Physics.Collision
 
                 // Search for the polygon normal that is most anti-parallel to the edge normal.
                 var bestIndex = 0;
-                var bestValue = Vector2.Dot(normal, tpn[0]);
+                var bestValue = Vector2Util.Dot(ref normal, ref tpn[0]);
                 for (var i = 1; i < tpc; ++i)
                 {
-                    var value = Vector2.Dot(normal, tpn[i]);
+                    var value = Vector2Util.Dot(ref normal, ref tpn[i]);
                     if (value < bestValue)
                     {
                         bestValue = value;
@@ -628,8 +628,8 @@ namespace Engine.Physics.Collision
             rfsideNormal1.X = rfnormal.Y;
             rfsideNormal1.Y = -rfnormal.X;
             var rfsideNormal2 = -rfsideNormal1;
-            var rfsideOffset1 = Vector2.Dot(rfsideNormal1, rfv1);
-            var rfsideOffset2 = Vector2.Dot(rfsideNormal2, rfv2);
+            var rfsideOffset1 = Vector2Util.Dot(ref rfsideNormal1, ref rfv1);
+            var rfsideOffset2 = Vector2Util.Dot(ref rfsideNormal2, ref rfv2);
 
             // Clip incident edge against extruded edge1 side edges.
             FixedArray2<ClipVertex> clipPoints1, clipPoints2;
@@ -675,7 +675,7 @@ namespace Engine.Physics.Collision
             var pointCount = 0;
             for (var i = 0; i < 2; ++i)
             {
-                if (Vector2.Dot(rfnormal, clipPoints2[i].Vertex - rfv1) <= radius)
+                if (Vector2Util.Dot(rfnormal, clipPoints2[i].Vertex - rfv1) <= radius)
                 {
                     var cp = manifold.Points[pointCount];
                     if (primaryAxis.Type == Axis.AxisType.EdgeA)

@@ -3,6 +3,7 @@ using System.Linq;
 using Engine.Physics.Components;
 using Engine.Physics.Contacts;
 using Engine.Physics.Joints;
+using Engine.Physics.Math;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Physics
@@ -323,7 +324,7 @@ namespace Engine.Physics
 
                 // Check for large velocities
                 var translation = h * v;
-                if (Vector2.Dot(translation, translation) > Settings.MaxTranslationSquared)
+                if (Vector2Util.Dot(ref translation, ref translation) > Settings.MaxTranslationSquared)
                 {
                     var ratio = Settings.MaxTranslation / translation.Length();
                     v *= ratio;
@@ -392,7 +393,7 @@ namespace Engine.Physics
                 {
                     if (!body.IsSleepAllowedInternal ||
                         body.AngularVelocityInternal * body.AngularVelocityInternal > angTolSqr ||
-                        Vector2.Dot(body.LinearVelocityInternal, body.LinearVelocityInternal) > linTolSqr)
+                        Vector2Util.Dot(ref body.LinearVelocityInternal, ref body.LinearVelocityInternal) > linTolSqr)
                     {
                         body.SleepTime = 0.0f;
                         minSleepTime = 0.0f;
@@ -476,7 +477,7 @@ namespace Engine.Physics
 
                 // Check for large velocities
                 var translation = h * v;
-                if (Vector2.Dot(translation, translation) > Settings.MaxTranslationSquared)
+                if (Vector2Util.Dot(ref translation, ref translation) > Settings.MaxTranslationSquared)
                 {
                     var ratio = Settings.MaxTranslation / translation.Length();
                     v *= ratio;

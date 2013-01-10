@@ -77,7 +77,7 @@ namespace Engine.Physics.Components
         public override bool TestPoint(Vector2 localPoint)
         {
             var d = Center - localPoint;
-            return Vector2.Dot(d, d) <= Radius * Radius;
+            return Vector2Util.Dot(ref d, ref d) <= Radius * Radius;
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Engine.Physics.Components
             center = Center;
 
             // Inertia about the local origin.
-            inertia = mass * (0.5f * Radius * Radius + Vector2.Dot(Center, Center));
+            inertia = mass * (0.5f * Radius * Radius + Vector2Util.Dot(ref Center, ref Center));
         }
 
         /// <summary>Computes the global bounds of this fixture given the specified body transform.</summary>

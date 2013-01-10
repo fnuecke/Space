@@ -120,8 +120,7 @@ namespace Engine.Physics.Collision
                     {
                         var clipPoint = xfB.ToGlobal(Points[i].LocalPoint);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        var cA = clipPoint +
-                                 (radiusA - Vector2.Dot((Vector2) (clipPoint - planePoint), normal)) * normal;
+                        var cA = clipPoint + (radiusA - Vector2Util.Dot((Vector2) (clipPoint - planePoint), normal)) * normal;
 // ReSharper restore RedundantCast
                         var cB = clipPoint - radiusB * normal;
                         points[i] = 0.5f * (cA + cB);
@@ -138,8 +137,7 @@ namespace Engine.Physics.Collision
                     {
                         var clipPoint = xfA.ToGlobal(Points[i].LocalPoint);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        var cB = clipPoint +
-                                 (radiusB - Vector2.Dot((Vector2) (clipPoint - planePoint), normal)) * normal;
+                        var cB = clipPoint + (radiusB - Vector2Util.Dot((Vector2) (clipPoint - planePoint), normal)) * normal;
 // ReSharper restore RedundantCast
                         var cA = clipPoint - radiusA * normal;
                         points[i] = 0.5f * (cA + cB);

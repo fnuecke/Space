@@ -242,9 +242,9 @@ namespace Engine.Physics.Joints
 
             var p = new Vector2(_linearImpulse.X, _linearImpulse.Y);
             vA -= mA * p;
-            wA -= iA * (Vector2Util.Cross(_tmp.RotA, p) + _angularImpulse);
+            wA -= iA * (Vector2Util.Cross(ref _tmp.RotA, ref p) + _angularImpulse);
             vB += mB * p;
-            wB += iB * (Vector2Util.Cross(_tmp.RotB, p) + _angularImpulse);
+            wB += iB * (Vector2Util.Cross(ref _tmp.RotB, ref p) + _angularImpulse);
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;
@@ -286,7 +286,7 @@ namespace Engine.Physics.Joints
 
             // Solve linear friction
             {
-                var cdot = vB + Vector2Util.Cross(wB, _tmp.RotB) - vA - Vector2Util.Cross(wA, _tmp.RotA) +
+                var cdot = vB + Vector2Util.Cross(wB, ref _tmp.RotB) - vA - Vector2Util.Cross(wA, ref _tmp.RotA) +
                            invH * _correctionFactor * _tmp.LinearError;
 
                 var impulse = -(_tmp.LinearMass * cdot);
@@ -304,10 +304,10 @@ namespace Engine.Physics.Joints
                 impulse = _linearImpulse - oldImpulse;
 
                 vA -= mA * impulse;
-                wA -= iA * Vector2Util.Cross(_tmp.RotA, impulse);
+                wA -= iA * Vector2Util.Cross(ref _tmp.RotA, ref impulse);
 
                 vB += mB * impulse;
-                wB += iB * Vector2Util.Cross(_tmp.RotB, impulse);
+                wB += iB * Vector2Util.Cross(ref _tmp.RotB, ref impulse);
             }
 
             velocities[_tmp.IndexA].LinearVelocity = vA;

@@ -222,7 +222,7 @@ namespace Engine.Physics.Joints
             wB *= 0.98f;
 
             vB += _tmp.InverseMassB * _impulse;
-            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, _impulse);
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(ref _tmp.RotB, ref _impulse);
 
             velocities[_tmp.IndexB].LinearVelocity = vB;
             velocities[_tmp.IndexB].AngularVelocity = wB;
@@ -237,7 +237,7 @@ namespace Engine.Physics.Joints
             var wB = velocities[_tmp.IndexB].AngularVelocity;
 
             // Cdot = v + cross(w, r)
-            var cdot = vB + Vector2Util.Cross(wB, _tmp.RotB);
+            var cdot = vB + Vector2Util.Cross(wB, ref _tmp.RotB);
             var impulse = _tmp.Mass * -(cdot + _tmp.C + _tmp.Gamma * _impulse);
 
             var oldImpulse = _impulse;
@@ -250,7 +250,7 @@ namespace Engine.Physics.Joints
             impulse = _impulse - oldImpulse;
 
             vB += _tmp.InverseMassB * impulse;
-            wB += _tmp.InverseInertiaB * Vector2Util.Cross(_tmp.RotB, impulse);
+            wB += _tmp.InverseInertiaB * Vector2Util.Cross(ref _tmp.RotB, ref impulse);
 
             velocities[_tmp.IndexB].LinearVelocity = vB;
             velocities[_tmp.IndexB].AngularVelocity = wB;

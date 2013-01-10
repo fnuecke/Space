@@ -233,7 +233,7 @@ namespace Engine.Physics.Collision
                     var pointA = xfA.ToGlobal(localPointA);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    var s = Vector2.Dot((Vector2) (pointA - pointB), normal);
+                    var s = Vector2Util.Dot((Vector2) (pointA - pointB), normal);
 // ReSharper restore RedundantCast
                     if (s < 0.0f)
                     {
@@ -258,7 +258,7 @@ namespace Engine.Physics.Collision
                     var pointB = xfB.ToGlobal(localPointB);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                    var s = Vector2.Dot((Vector2) (pointB - pointA), normal);
+                    var s = Vector2Util.Dot((Vector2) (pointB - pointA), normal);
 // ReSharper restore RedundantCast
                     if (s < 0.0f)
                     {
@@ -290,7 +290,7 @@ namespace Engine.Physics.Collision
                         var pointB = xfB.ToGlobal(localPointB);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        return Vector2.Dot((Vector2) (pointB - pointA), _axis);
+                        return Vector2Util.Dot((Vector2) (pointB - pointA), _axis);
 // ReSharper restore RedundantCast
                     }
 
@@ -308,7 +308,7 @@ namespace Engine.Physics.Collision
                         var pointB = xfB.ToGlobal(localPointB);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        return Vector2.Dot((Vector2) (pointB - pointA), normal);
+                        return Vector2Util.Dot((Vector2) (pointB - pointA), normal);
 // ReSharper restore RedundantCast
                     }
 
@@ -326,7 +326,7 @@ namespace Engine.Physics.Collision
                         var pointA = xfA.ToGlobal(localPointA);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        return Vector2.Dot((Vector2) (pointA - pointB), normal);
+                        return Vector2Util.Dot((Vector2) (pointA - pointB), normal);
 // ReSharper restore RedundantCast
                     }
 
@@ -351,7 +351,7 @@ namespace Engine.Physics.Collision
                         var pointA = xfA.ToGlobal(localPointA);
                         var pointB = xfB.ToGlobal(localPointB);
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        return Vector2.Dot((Vector2) (pointB - pointA), _axis);
+                        return Vector2Util.Dot((Vector2) (pointB - pointA), _axis);
 // ReSharper restore RedundantCast
                     }
 
@@ -364,7 +364,7 @@ namespace Engine.Physics.Collision
                         var pointB = xfB.ToGlobal(localPointB);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        return Vector2.Dot((Vector2) (pointB - pointA), normal);
+                        return Vector2Util.Dot((Vector2) (pointB - pointA), normal);
 // ReSharper restore RedundantCast
                     }
 
@@ -377,7 +377,7 @@ namespace Engine.Physics.Collision
                         var pointA = xfA.ToGlobal(localPointA);
 
 // ReSharper disable RedundantCast Necessary for FarPhysics.
-                        return Vector2.Dot((Vector2) (pointA - pointB), normal);
+                        return Vector2Util.Dot((Vector2) (pointA - pointB), normal);
 // ReSharper restore RedundantCast
                     }
 

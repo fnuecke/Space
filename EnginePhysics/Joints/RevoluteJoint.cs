@@ -384,9 +384,9 @@ namespace Engine.Physics.Joints
 
             var p = new Vector2(_impulse.X, _impulse.Y);
             vA -= mA * p;
-            wA -= iA * (Vector2Util.Cross(_tmp.RotA, p) + _motorImpulse + _impulse.Z);
+            wA -= iA * (Vector2Util.Cross(ref _tmp.RotA, ref p) + _motorImpulse + _impulse.Z);
             vB += mB * p;
-            wB += iB * (Vector2Util.Cross(_tmp.RotB, p) + _motorImpulse + _impulse.Z);
+            wB += iB * (Vector2Util.Cross(ref _tmp.RotB, ref p) + _motorImpulse + _impulse.Z);
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
             velocities[_tmp.IndexA].AngularVelocity = wA;
@@ -430,7 +430,7 @@ namespace Engine.Physics.Joints
             // Solve limit constraint.
             if (_enableLimit && _limitState != LimitState.Inactive && fixedRotation == false)
             {
-                var cdot1 = vB + Vector2Util.Cross(wB, _tmp.RotB) - vA - Vector2Util.Cross(wA, _tmp.RotA);
+                var cdot1 = vB + Vector2Util.Cross(wB, ref _tmp.RotB) - vA - Vector2Util.Cross(wA, ref _tmp.RotA);
                 var cdot2 = wB - wA;
                 var cdot = new Vector3(cdot1.X, cdot1.Y, cdot2);
 
@@ -482,25 +482,25 @@ namespace Engine.Physics.Joints
                 var p = new Vector2(impulse.X, impulse.Y);
 
                 vA -= mA * p;
-                wA -= iA * (Vector2Util.Cross(_tmp.RotA, p) + impulse.Z);
+                wA -= iA * (Vector2Util.Cross(ref _tmp.RotA, ref p) + impulse.Z);
 
                 vB += mB * p;
-                wB += iB * (Vector2Util.Cross(_tmp.RotB, p) + impulse.Z);
+                wB += iB * (Vector2Util.Cross(ref _tmp.RotB, ref p) + impulse.Z);
             }
             else
             {
                 // Solve point-to-point constraint
-                var cdot = vB + Vector2Util.Cross(wB, _tmp.RotB) - vA - Vector2Util.Cross(wA, _tmp.RotA);
+                var cdot = vB + Vector2Util.Cross(wB, ref _tmp.RotB) - vA - Vector2Util.Cross(wA, ref _tmp.RotA);
                 var impulse = _tmp.Mass.Solve22(-cdot);
 
                 _impulse.X += impulse.X;
                 _impulse.Y += impulse.Y;
 
                 vA -= mA * impulse;
-                wA -= iA * Vector2Util.Cross(_tmp.RotA, impulse);
+                wA -= iA * Vector2Util.Cross(ref _tmp.RotA, ref impulse);
 
                 vB += mB * impulse;
-                wB += iB * Vector2Util.Cross(_tmp.RotB, impulse);
+                wB += iB * Vector2Util.Cross(ref _tmp.RotB, ref impulse);
             }
 
             velocities[_tmp.IndexA].LinearVelocity = vA;
@@ -596,10 +596,10 @@ namespace Engine.Physics.Joints
                 var impulse = -k.Solve(c);
 
                 cA -= mA * impulse;
-                aA -= iA * Vector2Util.Cross(rA, impulse);
+                aA -= iA * Vector2Util.Cross(ref rA, ref impulse);
 
                 cB += mB * impulse;
-                aB += iB * Vector2Util.Cross(rB, impulse);
+                aB += iB * Vector2Util.Cross(ref rB, ref impulse);
             }
 
             positions[_tmp.IndexA].Point = cA;

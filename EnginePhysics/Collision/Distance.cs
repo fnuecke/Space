@@ -193,10 +193,10 @@ namespace Engine.Physics.Collision
             public int GetSupport(Vector2 d)
             {
                 var bestIndex = 0;
-                var bestValue = Vector2.Dot(Vertices[0], d);
+                var bestValue = Vector2Util.Dot(ref Vertices[0], ref d);
                 for (var i = 1; i < _count; ++i)
                 {
-                    var value = Vector2.Dot(Vertices[i], d);
+                    var value = Vector2Util.Dot(ref Vertices[i], ref d);
                     if (value > bestValue)
                     {
                         bestIndex = i;
@@ -324,10 +324,10 @@ namespace Engine.Physics.Collision
                         if (sign > 0.0f)
                         {
                             // Origin is left of e12.
-                            return Vector2Util.Cross(1.0f, e12);
+                            return Vector2Util.Cross(1.0f, ref e12);
                         }
                         // Origin is right of e12.
-                        return Vector2Util.Cross(e12, 1.0f);
+                        return Vector2Util.Cross(ref e12, 1.0f);
                     }
 
                     default:
@@ -407,7 +407,7 @@ namespace Engine.Physics.Collision
                 var e12 = w2 - w1;
 
                 // w1 region
-                var d12_2 = -Vector2.Dot(w1, e12);
+                var d12_2 = -Vector2Util.Dot(ref w1, ref e12);
                 if (d12_2 <= 0.0f)
                 {
                     // a2 <= 0, so we clamp it to 0
@@ -417,7 +417,7 @@ namespace Engine.Physics.Collision
                 }
 
                 // w2 region
-                var d12_1 = Vector2.Dot(w2, e12);
+                var d12_1 = Vector2Util.Dot(ref w2, ref e12);
                 if (d12_1 <= 0.0f)
                 {
                     // a1 <= 0, so we clamp it to 0
@@ -450,8 +450,8 @@ namespace Engine.Physics.Collision
                 // [w1.e12 w2.e12][a2] = [0]
                 // a3 = 0
                 var e12 = w2 - w1;
-                var w1e12 = Vector2.Dot(w1, e12);
-                var w2e12 = Vector2.Dot(w2, e12);
+                var w1e12 = Vector2Util.Dot(ref w1, ref e12);
+                var w2e12 = Vector2Util.Dot(ref w2, ref e12);
                 var d12_1 = w2e12;
                 var d12_2 = -w1e12;
 
@@ -460,8 +460,8 @@ namespace Engine.Physics.Collision
                 // [w1.e13 w3.e13][a3] = [0]
                 // a2 = 0
                 var e13 = w3 - w1;
-                var w1e13 = Vector2.Dot(w1, e13);
-                var w3e13 = Vector2.Dot(w3, e13);
+                var w1e13 = Vector2Util.Dot(ref w1, ref e13);
+                var w3e13 = Vector2Util.Dot(ref w3, ref e13);
                 var d13_1 = w3e13;
                 var d13_2 = -w1e13;
 
@@ -470,17 +470,17 @@ namespace Engine.Physics.Collision
                 // [w2.e23 w3.e23][a3] = [0]
                 // a1 = 0
                 var e23 = w3 - w2;
-                var w2e23 = Vector2.Dot(w2, e23);
-                var w3e23 = Vector2.Dot(w3, e23);
+                var w2e23 = Vector2Util.Dot(ref w2, ref e23);
+                var w3e23 = Vector2Util.Dot(ref w3, ref e23);
                 var d23_1 = w3e23;
                 var d23_2 = -w2e23;
 
                 // Triangle123
-                var n123 = Vector2Util.Cross(e12, e13);
+                var n123 = Vector2Util.Cross(ref e12, ref e13);
 
-                var d123_1 = n123 * Vector2Util.Cross(w2, w3);
-                var d123_2 = n123 * Vector2Util.Cross(w3, w1);
-                var d123_3 = n123 * Vector2Util.Cross(w1, w2);
+                var d123_1 = n123 * Vector2Util.Cross(ref w2, ref w3);
+                var d123_2 = n123 * Vector2Util.Cross(ref w3, ref w1);
+                var d123_3 = n123 * Vector2Util.Cross(ref w1, ref w2);
 
                 // w1 region
                 if (d12_2 <= 0.0f && d13_2 <= 0.0f)

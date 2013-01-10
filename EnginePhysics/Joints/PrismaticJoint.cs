@@ -70,7 +70,7 @@ namespace Engine.Physics.Joints
                 var d = (Vector2) (pB - pA);
 // ReSharper restore RedundantCast
                 var axis = BodyA.GetWorldVector(_localXAxisA);
-                return Vector2.Dot(d, axis);
+                return Vector2Util.Dot(ref d, ref axis);
             }
         }
 
@@ -96,8 +96,8 @@ namespace Engine.Physics.Joints
                 var wA = bA.AngularVelocityInternal;
                 var wB = bB.AngularVelocityInternal;
 
-                return Vector2.Dot(d, Vector2Util.Cross(wA, axis)) +
-                       Vector2.Dot(axis, vB + Vector2Util.Cross(wB, rB) - vA - Vector2Util.Cross(wA, rA));
+                return Vector2Util.Dot(d, Vector2Util.Cross(wA, ref axis)) +
+                       Vector2Util.Dot(axis, vB + Vector2Util.Cross(wB, ref rB) - vA - Vector2Util.Cross(wA, ref rA));
             }
         }
 
@@ -271,7 +271,7 @@ namespace Engine.Physics.Joints
             _localAnchorB = BodyB.GetLocalPoint(anchor);
             _localXAxisA = BodyA.GetLocalVector(axis);
             _localXAxisA.Normalize();
-            _localYAxisA = Vector2Util.Cross(1.0f, _localXAxisA);
+            _localYAxisA = Vector2Util.Cross(1.0f, ref _localXAxisA);
             _referenceAngle = BodyB.Angle - BodyA.Angle;
             _lowerTranslation = lowerTranslation;
             _upperTranslation = upperTranslation;
@@ -462,7 +462,7 @@ namespace Engine.Physics.Joints
             // Compute motor and limit terms.
             if (_enableLimit)
             {
-                var jointTranslation = Vector2.Dot(_tmp.Axis, d);
+                var jointTranslation = Vector2Util.Dot(ref _tmp.Axis, ref d);
                 if (System.Math.Abs(_upperTranslation - _lowerTranslation) < 2.0f * Settings.LinearSlop)
                 {
                     _limitState = LimitState.Equal;
@@ -532,7 +532,7 @@ namespace Engine.Physics.Joints
             // Solve linear motor constraint.
             if (_enableMotor && _limitState != LimitState.Equal)
             {
-                var cdot = Vector2.Dot(_tmp.Axis, vB - vA) + _tmp.A2 * wB - _tmp.A1 * wA;
+                var cdot = Vector2Util.Dot(_tmp.Axis, vB - vA) + _tmp.A2 * wB - _tmp.A1 * wA;
                 var impulse = _tmp.MotorMass * (_motorSpeed - cdot);
                 var oldImpulse = _motorImpulse;
                 var maxImpulse = step.DeltaT * _maxMotorForce;
@@ -551,13 +551,13 @@ namespace Engine.Physics.Joints
             }
 
             Vector2 cdot1;
-            cdot1.X = Vector2.Dot(_tmp.Perp, vB - vA) + _tmp.S2 * wB - _tmp.S1 * wA;
+            cdot1.X = Vector2Util.Dot(_tmp.Perp, vB - vA) + _tmp.S2 * wB - _tmp.S1 * wA;
             cdot1.Y = wB - wA;
 
             if (_enableLimit && _limitState != LimitState.Inactive)
             {
                 // Solve prismatic and limit constraint in block form.
-                var cdot2 = Vector2.Dot(_tmp.Axis, vB - vA) + _tmp.A2 * wB - _tmp.A1 * wA;
+                var cdot2 = Vector2Util.Dot(_tmp.Axis, vB - vA) + _tmp.A2 * wB - _tmp.A1 * wA;
                 var cdot = new Vector3(cdot1.X, cdot1.Y, cdot2);
 
                 var f1 = _impulse;
@@ -652,7 +652,7 @@ namespace Engine.Physics.Joints
 
             Vector3 impulse;
             Vector2 c1;
-            c1.X = Vector2.Dot(perp, d);
+            c1.X = Vector2Util.Dot(ref perp, ref d);
             c1.Y = aB - aA - _referenceAngle;
 
             var linearError = System.Math.Abs(c1.X);
@@ -662,7 +662,7 @@ namespace Engine.Physics.Joints
             var c2 = 0.0f;
             if (_enableLimit)
             {
-                var translation = Vector2.Dot(axis, d);
+                var translation = Vector2Util.Dot(ref axis, ref d);
                 if (System.Math.Abs(_upperTranslation - _lowerTranslation) < 2.0f * Settings.LinearSlop)
                 {
                     // Prevent large angular corrections

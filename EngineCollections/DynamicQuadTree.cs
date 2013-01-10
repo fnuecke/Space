@@ -172,6 +172,18 @@ namespace Engine.Collections
         /// <exception cref="T:System.ArgumentException">The item is already stored in the index.</exception>
         public void Add(TRectangle bounds, T item)
         {
+#if FARMATH
+            Debug.Assert(!FarValue.IsNaN(bounds.X));
+            Debug.Assert(!FarValue.IsNaN(bounds.Y));
+            Debug.Assert(!FarValue.IsNaN(bounds.Width));
+            Debug.Assert(!FarValue.IsNaN(bounds.Height));
+#else
+            Debug.Assert(!float.IsNaN(bounds.X));
+            Debug.Assert(!float.IsNaN(bounds.Y));
+            Debug.Assert(!float.IsNaN(bounds.Width));
+            Debug.Assert(!float.IsNaN(bounds.Height));
+#endif
+
             if (Contains(item))
             {
                 throw new ArgumentException("Item is already in the index.", "item");
@@ -209,6 +221,21 @@ namespace Engine.Collections
         /// </returns>
         public bool Update(TRectangle newBounds, Microsoft.Xna.Framework.Vector2 delta, T item)
         {
+#if FARMATH
+            Debug.Assert(!FarValue.IsNaN(newBounds.X));
+            Debug.Assert(!FarValue.IsNaN(newBounds.Y));
+            Debug.Assert(!FarValue.IsNaN(newBounds.Width));
+            Debug.Assert(!FarValue.IsNaN(newBounds.Height));
+            
+#else
+            Debug.Assert(!float.IsNaN(newBounds.X));
+            Debug.Assert(!float.IsNaN(newBounds.Y));
+            Debug.Assert(!float.IsNaN(newBounds.Width));
+            Debug.Assert(!float.IsNaN(newBounds.Height));
+#endif
+            Debug.Assert(!float.IsNaN(delta.X));
+            Debug.Assert(!float.IsNaN(delta.Y));
+
             // Check if we have that item.
             if (!Contains(item))
             {
