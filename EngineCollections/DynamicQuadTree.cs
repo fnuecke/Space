@@ -590,9 +590,8 @@ namespace Engine.Collections
             // id when storing references inside the tree.
             var entries = _values.Values.ToList();
 
-            packet.Write(_values.Count);
-
             // Write all entries. Write the links in a second step for deserialization.
+            packet.Write(entries.Count);
             foreach (var entry in entries)
             {
                 _packetizer(packet, entry.Value);
@@ -617,7 +616,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
-        public void PostDepacketize(IReadablePacket packet)
+        public void Depacketize(IReadablePacket packet)
         {
             if (_depacketizer == null)
             {
@@ -626,37 +625,38 @@ namespace Engine.Collections
 
             // Read plain list of entries. Store them in a list to allow restoring
             // links between entries in a second pass.
-            var count = packet.ReadInt32();
-            var entries = new List<Entry>(count);
+            var entryCount = packet.ReadInt32();
+            var entries = new List<Entry>(entryCount);
             _values.Clear();
-            for (var i = 0; i < count; ++i)
+            for (var i = 0; i < entryCount; ++i)
             {
                 var entry = new Entry {Value = _depacketizer(packet)};
                 packet.Read(out entry.Bounds);
-                _values[entry.Value] = entry;
                 entries.Add(entry);
+                _values[entry.Value] = entry;
             }
-            for (var i = 0; i < count; ++i)
+            for (var i = 0; i < entryCount; ++i)
             {
                 var next = packet.ReadInt32();
-                var previous = packet.ReadInt32();
                 if (next >= 0)
                 {
                     entries[i].Next = entries[next];
                 }
+                var previous = packet.ReadInt32();
                 if (previous >= 0)
                 {
                     entries[i].Previous = entries[previous];
                 }
             }
 
-            _root = new Node();
-            DepacketizeNode(packet, _root, entries);
+            DepacketizeNode(packet, out _root, entries);
         }
-
+        
+        /// <summary>Utility method for writing data from a single node.</summary>
         private static void PacketizeNode(IWritablePacket packet, Node node, IList<Entry> entries)
         {
             packet.Write(node.EntryCount);
+
             packet.Write(entries.IndexOf(node.FirstChildEntry));
             packet.Write(entries.IndexOf(node.LastChildEntry));
             packet.Write(entries.IndexOf(node.FirstEntry));
@@ -677,25 +677,26 @@ namespace Engine.Collections
         }
 
         /// <summary>Utility method for parsing data from a single node.</summary>
-        private static void DepacketizeNode(IReadablePacket packet, Node node, IList<Entry> entries)
+        private static void DepacketizeNode(IReadablePacket packet, out Node node, IList<Entry> entries)
         {
-            node.EntryCount = packet.ReadInt32();
+            node = new Node {EntryCount = packet.ReadInt32()};
+
             var firstChildEntry = packet.ReadInt32();
-            var lastChildEntry = packet.ReadInt32();
-            var firstEntry = packet.ReadInt32();
-            var lastEntry = packet.ReadInt32();
             if (firstChildEntry >= 0)
             {
                 node.FirstChildEntry = entries[firstChildEntry];
             }
+            var lastChildEntry = packet.ReadInt32();
             if (lastChildEntry >= 0)
             {
                 node.LastChildEntry = entries[lastChildEntry];
             }
+            var firstEntry = packet.ReadInt32();
             if (firstEntry >= 0)
             {
                 node.FirstEntry = entries[firstEntry];
             }
+            var lastEntry = packet.ReadInt32();
             if (lastEntry >= 0)
             {
                 node.LastEntry = entries[lastEntry];
@@ -705,7 +706,8 @@ namespace Engine.Collections
             {
                 if (packet.ReadBoolean())
                 {
-                    DepacketizeNode(packet, node.Children[i], entries);
+                    DepacketizeNode(packet, out node.Children[i], entries);
+                    node.Children[i].Parent = node;
                 }
             }
         }

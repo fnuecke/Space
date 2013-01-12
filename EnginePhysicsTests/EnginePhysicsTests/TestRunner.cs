@@ -31,6 +31,7 @@ namespace Engine.Physics.Tests
         /// <summary>The list of known tests between we can cycle.</summary>
         private static readonly AbstractTest[] Tests = new AbstractTest[]
         {
+            new Tumbler(),
             new Pyramid(),
             new VaryingRestitution(),
             new VaryingFriction(),
