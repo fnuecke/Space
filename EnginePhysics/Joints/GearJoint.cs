@@ -136,7 +136,7 @@ namespace Engine.Physics.Joints
         public GearJoint() : base(JointType.Gear) {}
 
         /// <summary>Initializes this joint with the specified parameters.</summary>
-        internal void Initialize(IManager manager, Joint jointA, Joint jointB, float ratio)
+        internal void Initialize(IManager manager, Joint jointA, Joint jointB, Body bodyA, Body bodyB, float ratio)
         {
             Manager = manager;
 
@@ -150,8 +150,10 @@ namespace Engine.Physics.Joints
 
             // TODO_ERIN there might be some problem with the joint edges in b2Joint.
 
-            _bodyIdC = jointA.BodyA.Id;
-            _bodyIdA = jointA.BodyB.Id;
+            _bodyIdA = bodyA.Id;
+            _bodyIdB = bodyB.Id;
+            _bodyIdC = jointA.BodyA == bodyA ? jointA.BodyB.Id : jointA.BodyA.Id;
+            _bodyIdD = jointB.BodyA == bodyB ? jointB.BodyB.Id : jointB.BodyA.Id;
 
             // Get geometry of joint1
             var xfA = BodyA.Transform;
@@ -162,8 +164,16 @@ namespace Engine.Physics.Joints
             if (_typeA == JointType.Revolute)
             {
                 var revolute = (RevoluteJoint) jointA;
-                _localAnchorC = revolute.LocalAnchorA;
-                _localAnchorA = revolute.LocalAnchorB;
+                if (bodyA == jointA.BodyA)
+                {
+                    _localAnchorA = revolute.LocalAnchorA;
+                    _localAnchorC = revolute.LocalAnchorB;
+                }
+                else
+                {
+                    _localAnchorA = revolute.LocalAnchorB;
+                    _localAnchorC = revolute.LocalAnchorA;
+                }
                 _referenceAngleA = revolute.ReferenceAngle;
                 _localAxisC = Vector2.Zero;
 
@@ -172,8 +182,16 @@ namespace Engine.Physics.Joints
             else
             {
                 var prismatic = (PrismaticJoint) jointA;
-                _localAnchorC = prismatic.LocalAnchorA;
-                _localAnchorA = prismatic.LocalAnchorB;
+                if (bodyA == jointA.BodyA)
+                {
+                    _localAnchorA = prismatic.LocalAnchorA;
+                    _localAnchorC = prismatic.LocalAnchorB;
+                }
+                else
+                {
+                    _localAnchorA = prismatic.LocalAnchorB;
+                    _localAnchorC = prismatic.LocalAnchorA;
+                }
                 _referenceAngleA = prismatic.ReferenceAngle;
                 _localAxisC = prismatic.LocalAxisA;
 
@@ -185,9 +203,6 @@ namespace Engine.Physics.Joints
                 coordinateA = Vector2Util.Dot(pA - pC, _localAxisC);
             }
 
-            _bodyIdD = jointB.BodyA.Id;
-            _bodyIdB = jointB.BodyB.Id;
-
             // Get geometry of joint2
             var xfB = BodyB.Transform;
             var aB = BodyB.Sweep.Angle;
@@ -197,8 +212,16 @@ namespace Engine.Physics.Joints
             if (_typeB == JointType.Revolute)
             {
                 var revolute = (RevoluteJoint) jointB;
-                _localAnchorD = revolute.LocalAnchorA;
-                _localAnchorB = revolute.LocalAnchorB;
+                if (bodyB == revolute.BodyA)
+                {
+                    _localAnchorB = revolute.LocalAnchorA;
+                    _localAnchorD = revolute.LocalAnchorB;
+                }
+                else
+                {
+                    _localAnchorB = revolute.LocalAnchorB;
+                    _localAnchorD = revolute.LocalAnchorA;
+                }
                 _referenceAngleB = revolute.ReferenceAngle;
                 _localAxisD = Vector2.Zero;
 
@@ -207,8 +230,16 @@ namespace Engine.Physics.Joints
             else
             {
                 var prismatic = (PrismaticJoint) jointB;
-                _localAnchorD = prismatic.LocalAnchorA;
-                _localAnchorB = prismatic.LocalAnchorB;
+                if (bodyB == prismatic.BodyA)
+                {
+                    _localAnchorB = prismatic.LocalAnchorA;
+                    _localAnchorD = prismatic.LocalAnchorB;
+                }
+                else
+                {
+                    _localAnchorB = prismatic.LocalAnchorB;
+                    _localAnchorD = prismatic.LocalAnchorA;
+                }
                 _referenceAngleB = prismatic.ReferenceAngle;
                 _localAxisD = prismatic.LocalAxisA;
 

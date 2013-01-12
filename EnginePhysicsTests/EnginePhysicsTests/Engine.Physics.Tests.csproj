@@ -98,6 +98,7 @@
     <Compile Include="Tests\ContinuousTest.cs" />
     <Compile Include="Tests\EdgeBenchmarkWithCircles.cs" />
     <Compile Include="Tests\EdgeBenchmark.cs" />
+    <Compile Include="Tests\Gears.cs" />
     <Compile Include="Tests\Pyramid.cs" />
     <Compile Include="Tests\SphereStack.cs" />
     <Compile Include="Tests\TheoJansen.cs" />

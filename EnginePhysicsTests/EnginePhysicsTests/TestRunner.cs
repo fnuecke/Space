@@ -43,7 +43,8 @@ namespace Engine.Physics.Tests
             new EdgeBenchmarkWithCircles(),
             new CharacterCollision(),
             new VerticalStack(),
-            new TheoJansen()
+            new TheoJansen(),
+            new Gears()
         };
 
         /// <summary>The updates per second to perform on the simulation.</summary>

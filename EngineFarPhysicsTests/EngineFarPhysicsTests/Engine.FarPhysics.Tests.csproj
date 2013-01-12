@@ -119,6 +119,9 @@
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\EdgeBenchmarkWithCircles.cs">
       <Link>Tests\EdgeBenchmarkWithCircles.cs</Link>
     </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\Gears.cs">
+      <Link>Tests\Gears.cs</Link>
+    </Compile>
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\Pyramid.cs">
       <Link>Tests\Pyramid.cs</Link>
     </Compile>

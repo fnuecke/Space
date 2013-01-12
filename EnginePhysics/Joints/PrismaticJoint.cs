@@ -756,7 +756,7 @@ namespace Engine.Physics.Joints
             positions[_tmp.IndexB].Point = cB;
             positions[_tmp.IndexB].Angle = aB;
 
-            return linearError <= Settings.LinearSlop && angularError <= Settings.AngularSlop;
+            return linearError <= (Settings.LinearSlop + Settings.Epsilon) && angularError <= (Settings.AngularSlop + Settings.Epsilon);
         }
 
         #endregion

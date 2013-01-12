@@ -120,6 +120,11 @@ namespace Engine.Physics
             {
                 throw new ArgumentNullException("bodyB");
             }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
+            }
+
             if (WorldPoint.DistanceSquared(anchorA, anchorB) < Settings.LinearSlop * Settings.LinearSlop)
             {
                 throw new ArgumentException("Points are too close together.");
@@ -172,6 +177,10 @@ namespace Engine.Physics
             {
                 throw new ArgumentNullException("bodyB");
             }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
+            }
 
             var joint = (RevoluteJoint) manager.GetSimulation()
                                                .CreateJoint(Joint.JointType.Revolute, bodyA, bodyB, collideConnected);
@@ -220,6 +229,10 @@ namespace Engine.Physics
             if (bodyB == null)
             {
                 throw new ArgumentNullException("bodyB");
+            }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
             }
 
             var joint = (PrismaticJoint) manager.GetSimulation()
@@ -278,6 +291,10 @@ namespace Engine.Physics
             {
                 throw new ArgumentNullException("bodyB");
             }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
+            }
 
             var joint = (PulleyJoint) manager.GetSimulation()
                                              .CreateJoint(Joint.JointType.Pulley, bodyA, bodyB, collideConnected);
@@ -298,8 +315,10 @@ namespace Engine.Physics
         ///     </para>
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="jointA">The joint A.</param>
-        /// <param name="jointB">The joint B.</param>
+        /// <param name="jointA">The first joint.</param>
+        /// <param name="jointB">The second joint.</param>
+        /// <param name="bodyA">The relevant body of the first joint.</param>
+        /// <param name="bodyB">The relevant body of the second joint.</param>
         /// <param name="ratio">The ratio.</param>
         /// <returns></returns>
         /// <remarks>
@@ -307,18 +326,42 @@ namespace Engine.Physics
         ///     destroyed. This also means that is destroyed if any involved body is destroyed, because joints are automatically
         ///     removed if one of the bodies they are attached to is destroyed.
         /// </remarks>
-        public static GearJoint AddGearJoint(this IManager manager, Joint jointA, Joint jointB, float ratio = 1)
+        public static GearJoint AddGearJoint(this IManager manager, Joint jointA, Joint jointB, Body bodyA, Body bodyB, float ratio = 1)
         {
             if (jointA == null)
             {
                 throw new ArgumentNullException("jointA");
             }
+            if (jointA.Type != Joint.JointType.Revolute && jointA.Type != Joint.JointType.Prismatic)
+            {
+                throw new ArgumentException("Gear joints must be attached to revolute or prismatic joints.", "jointA");
+            }
             if (jointB == null)
             {
                 throw new ArgumentNullException("jointB");
             }
+            if (jointB.Type != Joint.JointType.Revolute && jointB.Type != Joint.JointType.Prismatic)
+            {
+                throw new ArgumentException("Gear joints must be attached to revolute or prismatic joints.", "jointB");
+            }
+            if (jointA == jointB)
+            {
+                throw new ArgumentException("Gear joints must attach to two different joints.", "jointA");
+            }
+            if (bodyA == null)
+            {
+                throw new ArgumentNullException("bodyA");
+            }
+            if (bodyB == null)
+            {
+                throw new ArgumentNullException("bodyB");
+            }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must be attached to two different bodies.", "bodyA");
+            }
 
-            return manager.GetSimulation().CreateGearJoint(jointA, jointB, ratio);
+            return manager.GetSimulation().CreateGearJoint(jointA, jointB, bodyA, bodyB, ratio);
         }
 
         /// <summary>
@@ -394,6 +437,10 @@ namespace Engine.Physics
             {
                 throw new ArgumentNullException("bodyB");
             }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
+            }
 
             var joint = (WheelJoint) manager.GetSimulation()
                                             .CreateJoint(Joint.JointType.Wheel, bodyA, bodyB, collideConnected);
@@ -429,6 +476,10 @@ namespace Engine.Physics
             if (bodyB == null)
             {
                 throw new ArgumentNullException("bodyB");
+            }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
             }
 
             var joint = (WeldJoint) manager.GetSimulation()
@@ -473,6 +524,10 @@ namespace Engine.Physics
             {
                 throw new ArgumentNullException("bodyB");
             }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
+            }
             if (length < Settings.LinearSlop)
             {
                 throw new ArgumentException("Length is too short.", "length");
@@ -514,6 +569,10 @@ namespace Engine.Physics
             if (bodyB == null)
             {
                 throw new ArgumentNullException("bodyB");
+            }
+            if (bodyA == bodyB)
+            {
+                throw new ArgumentException("Joints must attach to two different bodies.", "bodyA");
             }
 
             var joint = (MotorJoint) manager.GetSimulation()

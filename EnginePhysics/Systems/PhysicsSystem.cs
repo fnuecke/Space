@@ -649,29 +649,19 @@ namespace Engine.Physics.Systems
             if (body != null)
             {
                 // Remove all joints attached to this body.
-                var edge = body.JointList;
-                while (edge >= 0)
+                while (body.JointList >= 0)
                 {
-                    var joint = _jointEdges[edge].Joint;
-                    edge = _jointEdges[edge].Next;
-                    DestroyJoint(joint);
-                    Debug.Assert(body.JointList == edge);
+                    DestroyJoint(_jointEdges[body.JointList].Joint);
                 }
-                Debug.Assert(body.JointList == -1);
 
                 // Remove all contacts in one go (fixture removal would take care
                 // of that, too, but this way it's faster because we don't need to
                 // search for the contacts involving the currently being removed
                 // fixture).
-                edge = body.ContactList;
-                while (edge >= 0)
+                while (body.ContactList >= 0)
                 {
-                    var contact = _contactEdges[edge].Contact;
-                    edge = _contactEdges[edge].Next;
-                    DestroyContact(contact);
-                    Debug.Assert(body.ContactList == edge);
+                    DestroyContact(_contactEdges[body.ContactList].Contact);
                 }
-                Debug.Assert(body.ContactList == -1);
 
                 // Remove all fixtures if a body is removed (to list because the
                 // enumeration otherwise changes while being enumerated). This
@@ -993,6 +983,50 @@ namespace Engine.Physics.Systems
             _freeJoints = start;
         }
 
+        /// <summary>Updates the joint lists of the involved bodies.</summary>
+        /// <param name="joint">The joint index.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="bodyB">The second body.</param>
+        private void UpdateBodyJointList(int joint, Body bodyA, Body bodyB)
+        {
+            // Set up edge from A to B.
+            if (bodyA != null)
+            {
+                var edgeA = joint * 2;
+                Debug.Assert(bodyA.JointList != edgeA);
+                _jointEdges[edgeA].Joint = joint;
+                _jointEdges[edgeA].Other = bodyB != null ? bodyB.Entity : 0;
+                _jointEdges[edgeA].Next = bodyA.JointList;
+                _jointEdges[edgeA].Previous = -1;
+
+                // Adjust local linked list.
+                if (bodyA.JointList >= 0)
+                {
+                    _jointEdges[bodyA.JointList].Previous = edgeA;
+                }
+                bodyA.JointList = edgeA;
+            }
+
+            // Set up edge from B to A.
+            if (bodyB != null)
+            {
+                var edgeB = joint * 2 + 1;
+                Debug.Assert(bodyB.JointList != edgeB);
+                _jointEdges[edgeB].Joint = joint;
+                _jointEdges[edgeB].Other = bodyA != null ? bodyA.Entity : 0;
+                _jointEdges[edgeB].Next = bodyB.JointList;
+                _jointEdges[edgeB].Previous = -1;
+
+                // Adjust local linked list.
+                if (bodyB.JointList >= 0)
+                {
+                    _jointEdges[bodyB.JointList].Previous = edgeB;
+                }
+                bodyB.JointList = edgeB;
+            }
+
+        }
+
         /// <summary>Updates the global joint lists by popping the next free one and appending it to the list of used joints.</summary>
         /// <param name="joint">The joint.</param>
         private void UpdateJointList(int joint)
@@ -1025,9 +1059,6 @@ namespace Engine.Physics.Systems
         internal Joint CreateJoint(
             Joint.JointType type, Body bodyA = null, Body bodyB = null, bool collideConnected = true)
         {
-            // We need at least one body to attach the joint to.
-            Debug.Assert(bodyA != null || bodyB != null);
-
             // Get a new joint id.
             var joint = AllocateJoint();
 
@@ -1088,41 +1119,8 @@ namespace Engine.Physics.Systems
             // Initialize with the basics.
             _joints[joint].Initialize(Manager, bodyA, bodyB, collideConnected);
 
-            // Set up edge from A to B.
-            if (bodyA != null)
-            {
-                var edgeA = joint * 2;
-                Debug.Assert(bodyA.JointList != edgeA);
-                _jointEdges[edgeA].Joint = joint;
-                _jointEdges[edgeA].Other = bodyB != null ? bodyB.Entity : 0;
-                _jointEdges[edgeA].Next = bodyA.JointList;
-                _jointEdges[edgeA].Previous = -1;
-
-                // Adjust local linked list.
-                if (bodyA.JointList >= 0)
-                {
-                    _jointEdges[bodyA.JointList].Previous = edgeA;
-                }
-                bodyA.JointList = edgeA;
-            }
-
-            // Set up edge from B to A.
-            if (bodyB != null)
-            {
-                var edgeB = joint * 2 + 1;
-                Debug.Assert(bodyB.JointList != edgeB);
-                _jointEdges[edgeB].Joint = joint;
-                _jointEdges[edgeB].Other = bodyA != null ? bodyA.Entity : 0;
-                _jointEdges[edgeB].Next = bodyB.JointList;
-                _jointEdges[edgeB].Previous = -1;
-
-                // Adjust local linked list.
-                if (bodyB.JointList >= 0)
-                {
-                    _jointEdges[bodyB.JointList].Previous = edgeB;
-                }
-                bodyB.JointList = edgeB;
-            }
+            // Update linked lists in bodies.
+            UpdateBodyJointList(joint, bodyA, bodyB);
 
             // If the joint prevents collision, then mark any contacts for filtering.
             if (!collideConnected && bodyA != null && bodyB != null)
@@ -1150,9 +1148,11 @@ namespace Engine.Physics.Systems
         /// <summary>Allocates a new gear joint and initializes it to the two specified joints.</summary>
         /// <param name="jointA">The first joint.</param>
         /// <param name="jointB">The second joint.</param>
+        /// <param name="bodyA">The relevant body of the first joint.</param>
+        /// <param name="bodyB">The relevant body of the second joint.</param>
         /// <param name="ratio">The gear ratio.</param>
         /// <returns>The new gear joint.</returns>
-        internal GearJoint CreateGearJoint(Joint jointA, Joint jointB, float ratio)
+        internal GearJoint CreateGearJoint(Joint jointA, Joint jointB, Body bodyA, Body bodyB, float ratio)
         {
             ValidateJoint(jointA);
             ValidateJoint(jointB);
@@ -1174,7 +1174,10 @@ namespace Engine.Physics.Systems
             }
 
             // Initialize with the basics.
-            gearJoint.Initialize(Manager, jointA, jointB, ratio);
+            gearJoint.Initialize(Manager, jointA, jointB, bodyA, bodyB, ratio);
+            
+            // Update linked lists in bodies.
+            UpdateBodyJointList(joint, gearJoint.BodyA, gearJoint.BodyB);
 
             // Keep track of our gears so the user doesn't have to remove them manually.
             if (!_gearJoints.ContainsKey(jointIdA))
@@ -1237,6 +1240,55 @@ namespace Engine.Physics.Systems
             // Decrement counter used for island allocation.
             --_jointCount;
 
+            // Get the actual components.
+            var bodyA = _joints[joint].BodyA;
+            var bodyB = _joints[joint].BodyB;
+
+            // Wake up the first body and update the local edge lists.
+            if (bodyA != null)
+            {
+                bodyA.IsAwake = true;
+                var edgeA = joint * 2;
+                var previous = _jointEdges[edgeA].Previous;
+                var next = _jointEdges[edgeA].Next;
+                if (previous >= 0)
+                {
+                    _jointEdges[previous].Next = next;
+                }
+                if (next >= 0)
+                {
+                    _jointEdges[next].Previous = previous;
+                }
+                // Adjust list pointer as necessary.
+                if (bodyA.JointList == edgeA)
+                {
+                    bodyA.JointList = next;
+                }
+            }
+
+            // Wake up the second body and update the local edge lists.
+            if (bodyB != null)
+            {
+                bodyB.IsAwake = true;
+
+                var edgeB = joint * 2 + 1;
+                var previous = _jointEdges[edgeB].Previous;
+                var next = _jointEdges[edgeB].Next;
+                if (previous >= 0)
+                {
+                    _jointEdges[previous].Next = next;
+                }
+                if (next >= 0)
+                {
+                    _jointEdges[next].Previous = previous;
+                }
+                // Adjust list pointer as necessary.
+                if (bodyB.JointList == edgeB)
+                {
+                    bodyB.JointList = next;
+                }
+            }
+            
             // Depending on whether this is a gear joint or not we proceed differently.
             // This is because gear joints don't have edges and no "own" bodies.
             if (_joints[joint] is GearJoint)
@@ -1249,55 +1301,6 @@ namespace Engine.Physics.Systems
             }
             else
             {
-                // Get the actual components.
-                var bodyA = _joints[joint].BodyA;
-                var bodyB = _joints[joint].BodyB;
-
-                // Wake up the first body and update the local edge lists.
-                if (bodyA != null)
-                {
-                    bodyA.IsAwake = true;
-                    var edgeA = joint * 2;
-                    var previous = _jointEdges[edgeA].Previous;
-                    var next = _jointEdges[edgeA].Next;
-                    if (previous >= 0)
-                    {
-                        _jointEdges[previous].Next = next;
-                    }
-                    if (next >= 0)
-                    {
-                        _jointEdges[next].Previous = previous;
-                    }
-                    // Adjust list pointer as necessary.
-                    if (bodyA.JointList == edgeA)
-                    {
-                        bodyA.JointList = next;
-                    }
-                }
-
-                // Wake up the second body and update the local edge lists.
-                if (bodyB != null)
-                {
-                    bodyB.IsAwake = true;
-
-                    var edgeB = joint * 2 + 1;
-                    var previous = _jointEdges[edgeB].Previous;
-                    var next = _jointEdges[edgeB].Next;
-                    if (previous >= 0)
-                    {
-                        _jointEdges[previous].Next = next;
-                    }
-                    if (next >= 0)
-                    {
-                        _jointEdges[next].Previous = previous;
-                    }
-                    // Adjust list pointer as necessary.
-                    if (bodyB.JointList == edgeB)
-                    {
-                        bodyB.JointList = next;
-                    }
-                }
-
                 // If the joint prevented collision then mark any contacts for refiltering.
                 if (!_joints[joint].CollideConnected && bodyA != null && bodyB != null)
                 {
