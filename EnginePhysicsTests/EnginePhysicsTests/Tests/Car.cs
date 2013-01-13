@@ -1,11 +1,11 @@
 ﻿using Engine.Physics.Components;
 using Engine.Physics.Joints;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
 #else
-using Microsoft.Xna.Framework.Input;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
 
