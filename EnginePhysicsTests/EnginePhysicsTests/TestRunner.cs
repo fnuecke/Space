@@ -38,14 +38,15 @@ namespace Engine.Physics.Tests
             new AddPair(),
             new CompoundShapes(),
             new ContinuousTest(),
-            new BulletTest(),
+            new Bullet(),
             new SphereStack(),
             new EdgeBenchmark(),
             new EdgeBenchmarkWithCircles(),
             new CharacterCollision(),
             new VerticalStack(),
             new TheoJansen(),
-            new Gears()
+            new Gears(),
+            new Car()
         };
 
         /// <summary>The updates per second to perform on the simulation.</summary>

@@ -357,8 +357,7 @@ namespace Engine.Physics
                 var jointsFinished = true;
                 foreach (var joint in _joints)
                 {
-                    jointsFinished = jointsFinished &&
-                                     joint.SolvePositionConstraints(_positions);
+                    jointsFinished = joint.SolvePositionConstraints(_positions) && jointsFinished;
                 }
                 if (contactsFinished && jointsFinished)
                 {

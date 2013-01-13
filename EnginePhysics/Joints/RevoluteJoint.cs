@@ -343,14 +343,14 @@ namespace Engine.Physics.Joints
                 _tmp.MotorMass = 1.0f / _tmp.MotorMass;
             }
 
-            if (_enableMotor == false || fixedRotation)
+            if (!_enableMotor || fixedRotation)
             {
                 _motorImpulse = 0.0f;
             }
 
-            if (_enableLimit && fixedRotation == false)
+            if (_enableLimit && !fixedRotation)
             {
-                float jointAngle = aB - aA - _referenceAngle;
+                var jointAngle = aB - aA - _referenceAngle;
                 if (System.Math.Abs(_upperAngle - _lowerAngle) < 2.0f * Settings.AngularSlop)
                 {
                     _limitState = LimitState.Equal;

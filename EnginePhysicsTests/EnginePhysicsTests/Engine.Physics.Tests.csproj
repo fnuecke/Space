@@ -91,7 +91,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="TestRunner.cs" />
     <Compile Include="Tests\AddPair.cs" />
-    <Compile Include="Tests\BulletTest.cs" />
+    <Compile Include="Tests\Bullet.cs" />
+    <Compile Include="Tests\Car.cs" />
     <Compile Include="Tests\CharacterCollision.cs" />
     <Compile Include="Tests\CompoundShapes.cs" />
     <Compile Include="Tests\Confined.cs" />

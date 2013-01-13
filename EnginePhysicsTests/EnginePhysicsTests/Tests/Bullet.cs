@@ -9,7 +9,7 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Physics.Tests.Tests
 {
-    internal sealed class BulletTest : AbstractTest
+    internal sealed class Bullet : AbstractTest
     {
         private int _block;
 

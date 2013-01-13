@@ -101,6 +101,9 @@
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\BulletTest.cs">
       <Link>Tests\BulletTest.cs</Link>
     </Compile>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\Car.cs">
+      <Link>Tests\Car.cs</Link>
+    </Compile>
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\CharacterCollision.cs">
       <Link>Tests\CharacterCollision.cs</Link>
     </Compile>

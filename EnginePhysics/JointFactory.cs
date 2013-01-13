@@ -145,9 +145,9 @@ namespace Engine.Physics
         ///     This overload attaches a body to a fixed point in the world.
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="bodyA">The first body.</param>
-        /// <param name="anchorA">The anchor on the first body, in world coordinates.</param>
-        /// <param name="anchorB">The anchor on the second body, in world coordinates.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="anchorWorld">The anchor in the world, in world coordinates.</param>
+        /// <param name="anchorBody">The anchor on the body, in world coordinates.</param>
         /// <param name="frequency">The mass-spring-damper frequency in Hertz. A value of 0 disables softness.</param>
         /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
         /// <param name="collideConnected">Whether the two bodies still collide.</param>
@@ -155,15 +155,15 @@ namespace Engine.Physics
         /// <remarks>Do not use a zero or short length.</remarks>
         public static DistanceJoint AddDistanceJoint(
             this IManager manager,
-            Body bodyA,
-            WorldPoint anchorA,
-            WorldPoint anchorB,
+            Body body,
+            WorldPoint anchorWorld,
+            WorldPoint anchorBody,
             float frequency = 0,
             float dampingRatio = 0,
             bool collideConnected = false)
         {
             return manager.AddDistanceJoint(
-                bodyA, manager.GetSimulation().FixPoint, anchorA, anchorB, frequency, dampingRatio, collideConnected);
+                body, manager.GetSimulation().FixPoint, anchorWorld, anchorBody, frequency, dampingRatio, collideConnected);
         }
 
         /// <summary>
@@ -227,7 +227,7 @@ namespace Engine.Physics
         ///     This overload attaches a body to a fixed point in the world.
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="bodyA">The first body.</param>
+        /// <param name="body">The body.</param>
         /// <param name="anchor">The anchor point in world coordinates.</param>
         /// <param name="lowerAngle">The lower angle.</param>
         /// <param name="upperAngle">The upper angle.</param>
@@ -239,7 +239,7 @@ namespace Engine.Physics
         /// <returns>The created joint.</returns>
         public static RevoluteJoint AddRevoluteJoint(
             this IManager manager,
-            Body bodyA,
+            Body body,
             WorldPoint anchor,
             float lowerAngle = 0,
             float upperAngle = 0,
@@ -250,8 +250,8 @@ namespace Engine.Physics
             bool collideConnected = false)
         {
             return manager.AddRevoluteJoint(
-                bodyA,
                 manager.GetSimulation().FixPoint,
+                body,
                 anchor,
                 lowerAngle,
                 upperAngle,
@@ -331,7 +331,7 @@ namespace Engine.Physics
         ///     This overload attaches a body to a fixed point in the world.
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="bodyA">The first body.</param>
+        /// <param name="body">The body.</param>
         /// <param name="anchor">The anchor in world coordinates.</param>
         /// <param name="axis">The axis as a world vector.</param>
         /// <param name="lowerTranslation">The lower translation limit.</param>
@@ -344,7 +344,7 @@ namespace Engine.Physics
         /// <returns>The created joint.</returns>
         public static PrismaticJoint AddPrismaticJoint(
             this IManager manager,
-            Body bodyA,
+            Body body,
             WorldPoint anchor,
             Vector2 axis,
             float lowerTranslation = 0,
@@ -356,8 +356,8 @@ namespace Engine.Physics
             bool collideConnected = false)
         {
             return manager.AddPrismaticJoint(
-                bodyA,
                 manager.GetSimulation().FixPoint,
+                body,
                 anchor,
                 axis,
                 lowerTranslation,
@@ -623,19 +623,19 @@ namespace Engine.Physics
         ///     This overload attaches a body to a fixed point in the world.
         /// </summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="bodyA">The first body.</param>
-        /// <param name="anchor">The anchor to weld the bodies at in world coordinates.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="anchor">The anchor to weld the body at in world coordinates.</param>
         /// <param name="frequency">The mass-spring-damper frequency in Hertz. Rotation only. Disable softness with a value of 0.</param>
         /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
         /// <returns>The created joint.</returns>
         public static WeldJoint AddWeldJoint(
             this IManager manager,
-            Body bodyA,
+            Body body,
             WorldPoint anchor,
             float frequency,
             float dampingRatio)
         {
-            return manager.AddWeldJoint(bodyA, manager.GetSimulation().FixPoint, anchor, frequency, dampingRatio);
+            return manager.AddWeldJoint(manager.GetSimulation().FixPoint, body, anchor, frequency, dampingRatio);
         }
 
         /// <summary>
