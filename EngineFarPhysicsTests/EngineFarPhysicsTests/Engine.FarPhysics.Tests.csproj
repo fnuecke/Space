@@ -98,8 +98,8 @@
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\AddPair.cs">
       <Link>Tests\AddPair.cs</Link>
     </Compile>
-    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\BulletTest.cs">
-      <Link>Tests\BulletTest.cs</Link>
+    <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\Bullet.cs">
+      <Link>Tests\Bullet.cs</Link>
     </Compile>
     <Compile Include="..\..\EnginePhysicsTests\EnginePhysicsTests\Tests\Car.cs">
       <Link>Tests\Car.cs</Link>
