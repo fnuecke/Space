@@ -354,11 +354,7 @@ namespace Engine.Physics
             for (var i = 0; i < Settings.PositionIterations; ++i)
             {
                 var contactsFinished = _solver.SolvePositionConstraints();
-                var jointsFinished = true;
-                foreach (var joint in _joints)
-                {
-                    jointsFinished = joint.SolvePositionConstraints(_positions) && jointsFinished;
-                }
+                var jointsFinished = _joints.Aggregate(true, (current, joint) => joint.SolvePositionConstraints(_positions) && current);
                 if (contactsFinished && jointsFinished)
                 {
                     // Exit early if the position errors are small.
