@@ -445,10 +445,12 @@ namespace Engine.Physics.Systems
             {
                 case Joint.JointType.Mouse:
                 case Joint.JointType.Distance:
+                    // For mouse and distance joints we just want the line between the two anchors.
                     _primitiveBatch.DrawLine(anchorA, anchorB, JointEdgeColor);
                     break;
                 case Joint.JointType.Pulley:
                 {
+                    // For pulleys we draw the two lines connecting the bodies to their world points.
                     var pulleyJoint = (PulleyJoint) joint;
                     var anchorA0 = toScreen(pulleyJoint.GroundAnchorA);
                     var anchorB0 = toScreen(pulleyJoint.GroundAnchorB);
@@ -461,7 +463,38 @@ namespace Engine.Physics.Systems
                     _primitiveBatch.DrawLine(anchorB0, anchorB, JointEdgeColor);
                     break;
                 }
+                case Joint.JointType.Prismatic:
+                {
+                    // Don't draw attachment of prismatic joints if they attach to the fix point.
+                    var physicsSystem = (PhysicsSystem) Manager.GetSystem(PhysicsSystem.TypeId);
+                    if (joint.BodyA != physicsSystem.FixPoint)
+                    {
+                        _primitiveBatch.DrawLine(toScreen(joint.BodyA.Position), anchorA, JointEdgeColor);
+                    }
+                    _primitiveBatch.DrawLine(anchorA, anchorB, JointEdgeColor);
+                    if (joint.BodyB != physicsSystem.FixPoint)
+                    {
+                        _primitiveBatch.DrawLine(anchorB, toScreen(joint.BodyB.Position), JointEdgeColor);
+                    }
+                    break;
+                }
+                case Joint.JointType.Revolute:
+                {
+                    // Don't draw attachment of revolute joints if they attach to the fix point.
+                    var physicsSystem = (PhysicsSystem) Manager.GetSystem(PhysicsSystem.TypeId);
+                    if (joint.BodyA != physicsSystem.FixPoint)
+                    {
+                        _primitiveBatch.DrawLine(toScreen(joint.BodyA.Position), anchorA, JointEdgeColor);
+                    }
+                    _primitiveBatch.DrawLine(anchorA, anchorB, JointEdgeColor);
+                    if (joint.BodyB != physicsSystem.FixPoint)
+                    {
+                        _primitiveBatch.DrawLine(anchorB, toScreen(joint.BodyB.Position), JointEdgeColor);
+                    }
+                    break;
+                }
                 default:
+                {
                     // Per default just draw three lines from body to joint anchor to
                     // joint anchor to body.
                     if (joint.BodyA != null)
@@ -474,6 +507,7 @@ namespace Engine.Physics.Systems
                         _primitiveBatch.DrawLine(anchorB, toScreen(joint.BodyB.Position), JointEdgeColor);
                     }
                     break;
+                }
             }
         }
 

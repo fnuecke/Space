@@ -150,6 +150,24 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
+        ///     Gets the a body without fixtures, that serves as fix point in the world. This can be useful for attaching
+        ///     joints to 'the world', as opposed to another body.
+        /// </summary>
+        public Body FixPoint
+        {
+            get
+            {
+                if (_fixPoint <= 0)
+                {
+                    var fixPoint = Manager.AddBody();
+                    _fixPoint = fixPoint.Id;
+                    return fixPoint;
+                }
+                return Manager.GetComponentById(_fixPoint) as Body;
+            }
+        }
+
+        /// <summary>
         ///     Profiling data for this simulation. This will be updated each time <see cref="Update"/>
         ///     is called and will hold the time in milliseconds that different parts of the simulation took to run.
         /// </summary>
@@ -277,6 +295,9 @@ namespace Engine.Physics.Systems
         [CopyIgnore, PacketizerIgnore]
         private Algorithms.DistanceProxy _proxyA = new Algorithms.DistanceProxy(),
                                          _proxyB = new Algorithms.DistanceProxy();
+
+        /// <summary>A fixed body at the origin with no rotation, as reference for world-attached joints.</summary>
+        private int _fixPoint;
 
         /// <summary>Profiling data.</summary>
         [CopyIgnore, PacketizerIgnore]
@@ -437,8 +458,7 @@ namespace Engine.Physics.Systems
                 value =>
                 {
                     // Get the fixture and its body.
-                    var fixture = Manager.GetComponentById(value) as Fixture;
-                    Debug.Assert(fixture != null);
+                    var fixture = (Fixture)Manager.GetComponentById(value);
                     var body = fixture.Body;
 
                     // Check if it's an actual hit.
@@ -667,6 +687,12 @@ namespace Engine.Physics.Systems
                 // enumeration otherwise changes while being enumerated). This
                 // will in turn delete all contacts with this body.
                 body.Fixtures.ToList().ForEach(Manager.RemoveComponent);
+
+                // If it's our fixed point, null it.
+                if (body.Id == _fixPoint)
+                {
+                    _fixPoint = 0;
+                }
 
                 // Remove from parent list. As with the added handler, we save
                 // our base class some work because it only cares for body
@@ -1481,11 +1507,8 @@ namespace Engine.Physics.Systems
                     var fixtureIdB = System.Math.Max(fixture, neighbor);
 
                     // Get the actual components.
-                    var fixtureA = Manager.GetComponentById(fixtureIdA) as Fixture;
-                    var fixtureB = Manager.GetComponentById(fixtureIdB) as Fixture;
-
-                    Debug.Assert(fixtureA != null);
-                    Debug.Assert(fixtureB != null);
+                    var fixtureA = (Fixture)Manager.GetComponentById(fixtureIdA);
+                    var fixtureB = (Fixture)Manager.GetComponentById(fixtureIdB);
 
                     // Get the actual collidable information for more filtering.
                     var bodyA = fixtureA.Body;
@@ -1720,9 +1743,7 @@ namespace Engine.Physics.Systems
                         if (_jointEdges[edge].Other > 0)
                         {
                             // Get the other body this contact is attached to.
-                            var other = Manager.GetComponent(_jointEdges[edge].Other, Body.TypeId) as Body;
-
-                            Debug.Assert(other != null);
+                            var other = (Body)Manager.GetComponent(_jointEdges[edge].Other, Body.TypeId);
 
                             // Don't simulate joints connected to inactive bodies.
                             if (!other.Enabled)
@@ -2017,9 +2038,8 @@ namespace Engine.Physics.Systems
                 }
 
                 // Get the other party involved in this contact.
-                var other = Manager.GetComponent(edge.Other, Body.TypeId) as Body;
+                var other = (Body)Manager.GetComponent(edge.Other, Body.TypeId);
 
-                Debug.Assert(other != null);
                 Debug.Assert(other.Enabled, "Contact to disabled body.");
 
                 // Only add static, kinematic, or bullet bodies.

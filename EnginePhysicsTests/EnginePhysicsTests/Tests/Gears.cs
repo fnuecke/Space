@@ -20,7 +20,7 @@ namespace Engine.Physics.Tests.Tests
 
         protected override void Create()
         {
-            var ground = Manager.AddEdge(new Vector2(50.0f, 0.0f), new Vector2(-50.0f, 0.0f));
+            Manager.AddEdge(new Vector2(50.0f, 0.0f), new Vector2(-50.0f, 0.0f));
 
             // Right construct.
             {
@@ -71,7 +71,7 @@ namespace Engine.Physics.Tests.Tests
                     density: 5);
 
                 // Fixed position rotation.
-                var joint1 = Manager.AddRevoluteJoint(smallCircle, ground, smallCircle.Position);
+                var joint1 = Manager.AddRevoluteJoint(smallCircle, smallCircle.Position);
                 _joint1 = joint1.Id;
 
                 // Large middle circle.
@@ -82,7 +82,7 @@ namespace Engine.Physics.Tests.Tests
                     density: 5);
                 
                 // Fixed position rotation.
-                var joint2 = Manager.AddRevoluteJoint(largeCircle, ground, largeCircle.Position);
+                var joint2 = Manager.AddRevoluteJoint(largeCircle, largeCircle.Position);
                 _joint2 = joint2.Id;
 
                 // Right rectangle.
@@ -96,7 +96,6 @@ namespace Engine.Physics.Tests.Tests
                 // Allow rectangle to only move up and down.
                 var joint3 = Manager.AddPrismaticJoint(
                     rectangle,
-                    ground,
                     rectangle.Position,
                     new Vector2(0.0f, 1.0f),
                     lowerTranslation: -5,

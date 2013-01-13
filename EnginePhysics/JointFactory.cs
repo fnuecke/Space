@@ -139,6 +139,34 @@ namespace Engine.Physics
         }
 
         /// <summary>
+        ///     Adds a distance joint. A distance joint constrains two points on two bodies to remain at a fixed distance from each
+        ///     other. You can view this as a massless, rigid rod.
+        ///     <para/>
+        ///     This overload attaches a body to a fixed point in the world.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="anchorA">The anchor on the first body, in world coordinates.</param>
+        /// <param name="anchorB">The anchor on the second body, in world coordinates.</param>
+        /// <param name="frequency">The mass-spring-damper frequency in Hertz. A value of 0 disables softness.</param>
+        /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
+        /// <param name="collideConnected">Whether the two bodies still collide.</param>
+        /// <returns>The created joint.</returns>
+        /// <remarks>Do not use a zero or short length.</remarks>
+        public static DistanceJoint AddDistanceJoint(
+            this IManager manager,
+            Body bodyA,
+            WorldPoint anchorA,
+            WorldPoint anchorB,
+            float frequency = 0,
+            float dampingRatio = 0,
+            bool collideConnected = false)
+        {
+            return manager.AddDistanceJoint(
+                bodyA, manager.GetSimulation().FixPoint, anchorA, anchorB, frequency, dampingRatio, collideConnected);
+        }
+
+        /// <summary>
         ///     Adds a revolute joint. A revolute joint constrains two bodies to share a common point while they are free to
         ///     rotate about the point. The relative rotation about the shared point is the joint angle. You can limit the relative
         ///     rotation with a joint limit that specifies a lower and upper angle. You can use a motor to drive the relative
@@ -188,6 +216,50 @@ namespace Engine.Physics
             joint.Initialize(anchor, lowerAngle, upperAngle, maxMotorTorque, motorSpeed, enableLimit, enableMotor);
 
             return joint;
+        }
+        
+        /// <summary>
+        ///     Adds a revolute joint. A revolute joint constrains two bodies to share a common point while they are free to
+        ///     rotate about the point. The relative rotation about the shared point is the joint angle. You can limit the relative
+        ///     rotation with a joint limit that specifies a lower and upper angle. You can use a motor to drive the relative
+        ///     rotation about the shared point. A maximum motor torque is provided so that infinite forces are not generated.
+        ///     <para/>
+        ///     This overload attaches a body to a fixed point in the world.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="anchor">The anchor point in world coordinates.</param>
+        /// <param name="lowerAngle">The lower angle.</param>
+        /// <param name="upperAngle">The upper angle.</param>
+        /// <param name="maxMotorTorque">The maximum motor torque.</param>
+        /// <param name="motorSpeed">The motor speed.</param>
+        /// <param name="enableLimit">Whether to enable the lower and upper angle limits.</param>
+        /// <param name="enableMotor">Whether to enable the motor.</param>
+        /// <param name="collideConnected">Whether the two bodies still collide.</param>
+        /// <returns>The created joint.</returns>
+        public static RevoluteJoint AddRevoluteJoint(
+            this IManager manager,
+            Body bodyA,
+            WorldPoint anchor,
+            float lowerAngle = 0,
+            float upperAngle = 0,
+            float maxMotorTorque = 0,
+            float motorSpeed = 0,
+            bool enableLimit = false,
+            bool enableMotor = false,
+            bool collideConnected = false)
+        {
+            return manager.AddRevoluteJoint(
+                bodyA,
+                manager.GetSimulation().FixPoint,
+                anchor,
+                lowerAngle,
+                upperAngle,
+                maxMotorTorque,
+                motorSpeed,
+                enableLimit,
+                enableMotor,
+                collideConnected);
         }
 
         /// <summary>
@@ -249,6 +321,52 @@ namespace Engine.Physics
                 enableMotor);
 
             return joint;
+        }
+        
+        /// <summary>
+        ///     Adds a prismatic joint. This joint provides one degree of freedom: translation along an axis fixed in bodyA.
+        ///     Relative rotation is prevented. You can use a joint limit to restrict the range of motion and a joint motor to
+        ///     drive the motion or to model joint friction.
+        ///     <para/>
+        ///     This overload attaches a body to a fixed point in the world.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="anchor">The anchor in world coordinates.</param>
+        /// <param name="axis">The axis as a world vector.</param>
+        /// <param name="lowerTranslation">The lower translation limit.</param>
+        /// <param name="upperTranslation">The upper translation limit.</param>
+        /// <param name="maxMotorForce">The maximum motor force.</param>
+        /// <param name="motorSpeed">The motor speed.</param>
+        /// <param name="enableLimit">Whether to enable the translation limits.</param>
+        /// <param name="enableMotor">Whether to enable the motor.</param>
+        /// <param name="collideConnected">Whether the two bodies still collide.</param>
+        /// <returns>The created joint.</returns>
+        public static PrismaticJoint AddPrismaticJoint(
+            this IManager manager,
+            Body bodyA,
+            WorldPoint anchor,
+            Vector2 axis,
+            float lowerTranslation = 0,
+            float upperTranslation = 0,
+            float maxMotorForce = 0,
+            float motorSpeed = 0,
+            bool enableLimit = false,
+            bool enableMotor = false,
+            bool collideConnected = false)
+        {
+            return manager.AddPrismaticJoint(
+                bodyA,
+                manager.GetSimulation().FixPoint,
+                anchor,
+                axis,
+                lowerTranslation,
+                upperTranslation,
+                maxMotorForce,
+                motorSpeed,
+                enableLimit,
+                enableMotor,
+                collideConnected);
         }
 
         /// <summary>
@@ -352,9 +470,17 @@ namespace Engine.Physics
             {
                 throw new ArgumentNullException("bodyA");
             }
+            if (bodyA != jointA.BodyA && bodyA != jointA.BodyB)
+            {
+                throw new ArgumentException("First joint must be attached to first body.", "bodyA");
+            }
             if (bodyB == null)
             {
                 throw new ArgumentNullException("bodyB");
+            }
+            if (bodyB != jointB.BodyA && bodyB != jointB.BodyB)
+            {
+                throw new ArgumentException("Second joint must be attached to second body.", "bodyB");
             }
             if (bodyA == bodyB)
             {
@@ -488,6 +614,28 @@ namespace Engine.Physics
             joint.Initialize(anchor, frequency, dampingRatio);
 
             return joint;
+        }
+        
+        /// <summary>
+        ///     Adds a weld joint. A weld joint essentially glues two bodies together. A weld joint may distort somewhat
+        ///     because the island constraint solver is approximate.
+        ///     <para/>
+        ///     This overload attaches a body to a fixed point in the world.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="bodyA">The first body.</param>
+        /// <param name="anchor">The anchor to weld the bodies at in world coordinates.</param>
+        /// <param name="frequency">The mass-spring-damper frequency in Hertz. Rotation only. Disable softness with a value of 0.</param>
+        /// <param name="dampingRatio">The damping ratio. 0 = no damping, 1 = critical damping.</param>
+        /// <returns>The created joint.</returns>
+        public static WeldJoint AddWeldJoint(
+            this IManager manager,
+            Body bodyA,
+            WorldPoint anchor,
+            float frequency,
+            float dampingRatio)
+        {
+            return manager.AddWeldJoint(bodyA, manager.GetSimulation().FixPoint, anchor, frequency, dampingRatio);
         }
 
         /// <summary>
