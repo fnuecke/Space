@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -28,21 +29,20 @@ namespace Space.ComponentSystem.Systems
             var avatars = (AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId);
             var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> awake = new HashSet<int>();
-            foreach (var avatar in avatars.Avatars)
+            foreach (var transform in avatars.Avatars.Select(avatar => (Transform) Manager.GetComponent(avatar, Transform.TypeId)))
             {
-                var transform = (Transform) Manager.GetComponent(avatar, Transform.TypeId);
                 index.Find(transform.Translation, SleepDistance, ref awake, ArtificialIntelligence.AIIndexGroupMask);
             }
             foreach (var component in Components)
             {
                 SetAwake(component.Entity, false);
             }
-            foreach (var entity in awake)
+            foreach (IIndexable component in awake.Select(Manager.GetComponentById))
             {
                 // Wake up other squad members as well. This avoids squads
                 // getting separated due to only a couple of the members
                 // waking up.
-                var squad = (Squad) Manager.GetComponent(entity, Squad.TypeId);
+                var squad = (Squad) Manager.GetComponent(component.Entity, Squad.TypeId);
                 if (squad != null)
                 {
                     foreach (var member in squad.Members)
@@ -53,7 +53,7 @@ namespace Space.ComponentSystem.Systems
                 else
                 {
                     // Not in a squad, just wake up this entity.
-                    SetAwake(entity, true);
+                    SetAwake(component.Entity, true);
                 }
             }
         }

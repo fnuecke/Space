@@ -52,12 +52,15 @@ namespace Space.ComponentSystem.Systems
                 var transform = (Transform) Manager.GetComponent(entity, Transform.TypeId);
                 if (transform != null)
                 {
+                    var text = string.Format(
+                        "ID: {0} @ {1} / {2}", transform.Entity, transform.Translation, transform.Rotation);
+
                     FarPosition position;
                     interpolation.GetInterpolatedPosition(transform.Entity, out position);
                     position += cameraTransform.Translation;
                     _spriteBatch.DrawString(
                         _font,
-                        "ID: " + transform.Entity,
+                        text,
                         (Vector2) position,
                         Color.White,
                         0,

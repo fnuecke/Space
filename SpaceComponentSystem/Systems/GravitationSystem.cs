@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -62,10 +63,10 @@ namespace Space.ComponentSystem.Systems
             // in parallel, so we can't really keep one on a global level.
             ISet<int> neighbors = new HashSet<int>();
             index.Find(myTransform.Translation, MaxGravitationDistance, ref neighbors, IndexGroupMask);
-            foreach (var neighbor in neighbors)
+            foreach (IIndexable neighbor in neighbors.Select(Manager.GetComponentById))
             {
                 // If they have an enabled gravitation component...
-                var otherGravitation = ((Gravitation) Manager.GetComponent(neighbor, Gravitation.TypeId));
+                var otherGravitation = ((Gravitation) Manager.GetComponent(neighbor.Entity, Gravitation.TypeId));
 
                 // Validation.
                 Debug.Assert(
@@ -79,8 +80,8 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Get their velocity and position.
-                var otherVelocity = ((Velocity) Manager.GetComponent(neighbor, Velocity.TypeId));
-                var otherTransform = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId));
+                var otherVelocity = ((Velocity) Manager.GetComponent(neighbor.Entity, Velocity.TypeId));
+                var otherTransform = ((Transform) Manager.GetComponent(neighbor.Entity, Transform.TypeId));
 
                 // We need both.
                 Debug.Assert(otherVelocity != null);
@@ -100,12 +101,12 @@ namespace Space.ComponentSystem.Systems
                     // If it's a ship it might accelerate itself, but acceleration doesn't
                     // carry over frames, and it has to come after gravitation for stabilization,
                     // so we must check manually if the ship is accelerating.
-                    var otherShipInfo = (ShipInfo) Manager.GetComponent(neighbor, ShipInfo.TypeId);
+                    var otherShipInfo = (ShipInfo) Manager.GetComponent(neighbor.Entity, ShipInfo.TypeId);
                     if (otherShipInfo != null && !otherShipInfo.IsAccelerating &&
                         otherVelocity.Value.LengthSquared() < DockVelocity && distanceSquared < DockDistance)
                     {
                         // It's a ship that's not accelerating, and in range for docking.
-                        otherTransform.SetTranslation(myTransform.Translation);
+                        otherTransform.Translation = myTransform.Translation;
                         otherVelocity.Value = Vector2.Zero;
                     }
                     else if ((otherShipInfo == null || !otherShipInfo.IsAccelerating) && distanceSquared > 0.001f)
@@ -120,7 +121,7 @@ namespace Space.ComponentSystem.Systems
 
                         Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
 
-                        var acceleration = (Acceleration) Manager.GetComponent(neighbor, Acceleration.TypeId);
+                        var acceleration = (Acceleration) Manager.GetComponent(neighbor.Entity, Acceleration.TypeId);
                         acceleration.Value.X -= directedGravitation.X;
                         acceleration.Value.Y -= directedGravitation.Y;
                     }
@@ -134,7 +135,7 @@ namespace Space.ComponentSystem.Systems
 
                     Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
 
-                    var acceleration = (Acceleration) Manager.GetComponent(neighbor, Acceleration.TypeId);
+                    var acceleration = (Acceleration) Manager.GetComponent(neighbor.Entity, Acceleration.TypeId);
                     acceleration.Value.X -= directedGravitation.X;
                     acceleration.Value.Y -= directedGravitation.Y;
                 }

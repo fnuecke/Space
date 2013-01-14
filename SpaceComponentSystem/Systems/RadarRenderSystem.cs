@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
@@ -156,15 +157,15 @@ namespace Space.ComponentSystem.Systems
 
             // Begin drawing.
             _spriteBatch.Begin();
-            foreach (var neighbor in _reusableNeighborList)
+            foreach (IIndexable neighbor in _reusableNeighborList.Select(Manager.GetComponentById))
             {
                 // Get the components we need.
-                var neighborTransform = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId));
-                var neighborDetectable = ((Detectable) Manager.GetComponent(neighbor, Detectable.TypeId));
-                var faction = ((Faction) Manager.GetComponent(neighbor, Faction.TypeId));
+                var neighborTransform = Manager.GetComponent(neighbor.Entity, Transform.TypeId) as Transform;
+                var neighborDetectable = Manager.GetComponent(neighbor.Entity, Detectable.TypeId) as Detectable;
+                var faction = (Faction) Manager.GetComponent(neighbor.Entity, Faction.TypeId);
 
                 // Bail if we're missing something.
-                if (neighborTransform == null || neighborDetectable.Texture == null)
+                if (neighborTransform == null || neighborDetectable == null || neighborDetectable.Texture == null)
                 {
                     continue;
                 }

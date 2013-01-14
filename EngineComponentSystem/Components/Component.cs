@@ -16,7 +16,7 @@ namespace Engine.ComponentSystem.Components
     ///     </para>
     /// </summary>
     [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
-    public abstract class Component : IPacketizable
+    public abstract class Component : IComponent
     {
         #region Constants
 
@@ -61,10 +61,6 @@ namespace Engine.ComponentSystem.Components
 
         /// <summary>Gets the entity this component belongs to.</summary>
         public int Entity { get; internal set; }
-
-        #endregion
-
-        #region Fields
 
         /// <summary>
         ///     Whether the component is enabled or not. Disabled components will not be handled in the component's system's

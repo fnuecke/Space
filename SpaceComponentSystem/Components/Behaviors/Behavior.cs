@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
@@ -223,13 +224,13 @@ namespace Space.ComponentSystem.Components.Behaviors
                 CollisionSystem.IndexGroupMask);
             var closest = 0;
             var closestDistance = float.PositiveInfinity;
-            foreach (var neighbor in neighbors)
+            foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
             {
                 // Apply our filter, if we have one.
-                var filteredNeighbor = neighbor;
+                var filteredNeighbor = neighbor.Entity;
                 if (filter != null)
                 {
-                    filteredNeighbor = filter(neighbor);
+                    filteredNeighbor = filter(neighbor.Entity);
                 }
                 if (filteredNeighbor == 0)
                 {
@@ -278,18 +279,18 @@ namespace Space.ComponentSystem.Components.Behaviors
                 position, AI.Configuration.MaxEscapeCheckDistance, ref neighbors, DetectableSystem.IndexGroupMask);
             var escape = Vector2.Zero;
             var escapeNormalizer = 0;
-            foreach (var neighbor in neighbors)
+            foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
             {
                 // If it does damage we want to keep our distance.
-                var neighborFaction = ((Faction) AI.Manager.GetComponent(neighbor, Faction.TypeId));
+                var neighborFaction = ((Faction) AI.Manager.GetComponent(neighbor.Entity, Faction.TypeId));
                 var neighborCollisionDamage =
-                    ((CollisionDamage) AI.Manager.GetComponent(neighbor, CollisionDamage.TypeId));
+                    ((CollisionDamage) AI.Manager.GetComponent(neighbor.Entity, CollisionDamage.TypeId));
                 if (neighborCollisionDamage != null &&
                     (neighborFaction == null || (neighborFaction.Value & faction) == 0))
                 {
                     // This one does damage and is not our friend... try to avoid it.
-                    var neighborGravitation = ((Gravitation) AI.Manager.GetComponent(neighbor, Gravitation.TypeId));
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                    var neighborGravitation = ((Gravitation) AI.Manager.GetComponent(neighbor.Entity, Gravitation.TypeId));
+                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
                     var toNeighbor = (Vector2) (position - neighborPosition);
 
                     // Does it pull?
@@ -322,7 +323,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 else if (neighborFaction != null && (neighborFaction.Value & faction) == 0)
                 {
                     // It's a normal enemy. Try to avoid it. This is similar to separation.
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
                     var toNeighbor = (Vector2) (neighborPosition - position);
                     var toNeighborDistanceSquared = toNeighbor.LengthSquared();
                     // Avoid NaNs when at same place as neighbor and see if we're close
@@ -364,22 +365,22 @@ namespace Space.ComponentSystem.Components.Behaviors
             var separationNormalizer = 0;
             var cohesion = Vector2.Zero;
             var cohesionNormalizer = 0;
-            foreach (var neighbor in neighbors)
+            foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
             {
                 // Ignore non-ships.
-                if (AI.Manager.GetComponent(neighbor, ShipControl.TypeId) == null)
+                if (AI.Manager.GetComponent(neighbor.Entity, ShipControl.TypeId) == null)
                 {
                     continue;
                 }
 
                 // If squad leader, ignore followers.
-                if (squad != null && AI.Entity == squad.Leader && squad.Contains(neighbor))
+                if (squad != null && AI.Entity == squad.Leader && squad.Contains(neighbor.Entity))
                 {
                     continue;
                 }
 
                 // Get the position, direction and distance, needed for everything that follows.
-                var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
                 var toNeighbor = (Vector2) (neighborPosition - position);
                 var distance = (float) Math.Sqrt(toNeighbor.LengthSquared());
                 // Avoid NaNs when at same place as neighbor...
@@ -389,7 +390,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 }
 
                 // Check if it's a friend, because if it is, we want to flock!
-                var neighborFaction = (Faction) AI.Manager.GetComponent(neighbor, Faction.TypeId);
+                var neighborFaction = (Faction) AI.Manager.GetComponent(neighbor.Entity, Faction.TypeId);
                 if ((faction & neighborFaction.Value) != 0)
                 {
                     // OK, flock. See if separation kicks in.
@@ -408,7 +409,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                         // the separation barrier. Halving has the same reason as separation above.
                         cohesion += toNeighbor * (1 - AI.Configuration.FlockingSeparation / distance) * 0.5f;
 
-                        var neighborVelocity = (Velocity) AI.Manager.GetComponent(neighbor, Velocity.TypeId);
+                        var neighborVelocity = (Velocity) AI.Manager.GetComponent(neighbor.Entity, Velocity.TypeId);
                         cohesion += neighborVelocity.Value;
                         ++cohesionNormalizer;
                     }

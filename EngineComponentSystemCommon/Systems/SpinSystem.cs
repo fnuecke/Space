@@ -11,7 +11,10 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Spin component)
         {
-            ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).AddRotation(component.Value);
+            if (component.Value != 0.0f)
+            { 
+                ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Rotation += component.Value;
+            }
         }
     }
 }

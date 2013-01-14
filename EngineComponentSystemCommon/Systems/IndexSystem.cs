@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Engine.Collections;
 using Engine.FarCollections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
@@ -19,10 +18,9 @@ using Microsoft.Xna.Framework;
 namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
-    ///     This class represents a simple index structure for nearest neighbor queries. It uses a grid structure for
-    ///     indexing, and will return lists of entities in cells near a query point.
+    ///     This class represents a simple index structure for nearest neighbor queries.
     /// </summary>
-    public sealed class IndexSystem : AbstractComponentSystem<Index>, IUpdatingSystem, IMessagingSystem
+    public sealed class IndexSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -73,12 +71,6 @@ namespace Engine.ComponentSystem.Common.Systems
             get { return _trees.Where(index => index != null).Sum(index => index.Count); }
         }
 
-        /// <summary>Gets the list of entities for which the index entry changed.</summary>
-        public IEnumerable<int> ChangedEntities
-        {
-            get { return _changed; }
-        }
-
         #endregion
 
         #region Fields
@@ -89,14 +81,13 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>The minimum bounds size of a node along an axis, used to stop splitting at a defined accuracy.</summary>
         private readonly int _minNodeBounds;
 
-        /// <summary>The actual indexes we're using, mapping entity positions to the entities, allowing faster range queries.</summary>
+        /// <summary>The actual indexes we're using, mapping component positions to the components, allowing faster range queries.</summary>
         [CopyIgnore, PacketizerIgnore]
-        private FarCollections.SpatialHashedQuadTree<int>[] _trees =
-            new FarCollections.SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
+        private SpatialHashedQuadTree<int>[] _trees = new SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
 
-        /// <summary>List of entities for which the index entry changed in the last update.</summary>
+        /// <summary>List of components for which the index entry changed in the last update.</summary>
         [CopyIgnore, PacketizerIgnore]
-        private HashSet<int> _changed = new HashSet<int>();
+        private HashSet<int>[] _changed = new HashSet<int>[sizeof (ulong) * 8];
 
         #endregion
 
@@ -118,48 +109,45 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Logic
 
-        /// <summary>Adds entities that got an index component to all their indexes.</summary>
-        /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(Component component)
-        {
-            base.OnComponentAdded(component);
-
-            var index = component as Index;
-            if (index != null)
-            {
-                AddEntity(index.Entity, index.IndexGroupsMask);
-            }
-        }
-
-        /// <summary>Remove entities that had their index component removed from all indexes.</summary>
-        /// <param name="component">The component.</param>
-        public override void OnComponentRemoved(Component component)
-        {
-            base.OnComponentRemoved(component);
-
-            var index = component as Index;
-            if (index != null)
-            {
-                // Remove from any indexes the entity was part of.
-                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
-                {
-                    tree.Remove(index.Entity);
-                }
-
-                // Remove from changed list.
-                _changed.Remove(index.Entity);
-            }
-        }
-
         /// <summary>Updates the index based on translations that happened this frame.</summary>
         /// <param name="frame">The current simulation frame.</param>
         public void Update(long frame)
         {
             // Reset for next update cycle.
-            _changed.Clear();
+            foreach (var changed in _changed.Where(changed => changed != null))
+            {
+                changed.Clear();
+            }
 
             // Reset query count until next run.
             _queryCountSinceLastUpdate = 0;
+        }
+
+        /// <summary>Adds index components to all their indexes.</summary>
+        /// <param name="component">The component that was added.</param>
+        public override void OnComponentAdded(Component component)
+        {
+            base.OnComponentAdded(component);
+
+            var index = component as IIndexable;
+            if (index != null && index.Enabled)
+            {
+                AddToGroups(index, index.IndexGroupsMask);
+            }
+        }
+
+        /// <summary>Remove index components from all indexes.</summary>
+        /// <param name="component">The component.</param>
+        public override void OnComponentRemoved(Component component)
+        {
+            base.OnComponentRemoved(component);
+
+            var index = component as IIndexable;
+            if (index != null && index.Enabled)
+            {
+                // Remove from any indexes the component was part of.
+                RemoveFromGroups(index, index.IndexGroupsMask);
+            }
         }
 
         /// <summary>Handles position changes of indexed components.</summary>
@@ -167,149 +155,116 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="message">The message.</param>
         public void Receive<T>(T message) where T : struct
         {
+            // Handle group changes (moving components from one index group to another).
+            var groupsChanged = message as IndexGroupsChanged?;
+            if (groupsChanged != null)
             {
-                var cm = message as IndexGroupsChanged?;
-                if (cm != null)
-                {
-                    var m = cm.Value;
+                var m = groupsChanged.Value;
 
-                    // Do we have new groups?
-                    if (m.AddedIndexGroups != 0)
-                    {
-                        AddEntity(m.Entity, m.AddedIndexGroups);
-                    }
+                Debug.Assert(m.Component.Enabled);
 
-                    // Do we have deprecated groups?
-                    if (m.RemovedIndexGroups != 0)
-                    {
-                        // Remove from each old group.
-                        foreach (var tree in TreesForGroups(m.RemovedIndexGroups))
-                        {
-                            tree.Remove(m.Entity);
-                        }
-                    }
-                    return;
-                }
+                AddToGroups(m.Component, m.AddedIndexGroups);
+                RemoveFromGroups(m.Component, m.RemovedIndexGroups);
+
+                return;
             }
+
+            // Handle bound changes (size of actual bounds of simple index components).
+            var boundsChanged = message as IndexBoundsChanged?;
+            if (boundsChanged != null)
             {
-                var cm = message as IndexBoundsChanged?;
-                if (cm != null)
+                var m = boundsChanged.Value;
+
+                Debug.Assert(m.Component.Enabled);
+
+                var component = m.Component;
+                var bounds = m.Bounds;
+
+                // Update all indexes the component is part of.
+                foreach (var index in IndexesForGroups(component.IndexGroupsMask)
+                    .Where(index => _trees[index].Update(bounds, Vector2.Zero, component.Id)))
                 {
-                    var m = cm.Value;
-
-                    // Check if the entity is indexable.
-                    var index = ((Index) Manager.GetComponent(m.Entity, Index.TypeId));
-                    if (index == null)
-                    {
-                        return;
-                    }
-
-                    var bounds = m.Bounds;
-                    var transform = ((Transform) Manager.GetComponent(m.Entity, Transform.TypeId));
-                    if (transform != null)
-                    {
-                        bounds.X = (int) transform.Translation.X - bounds.Width / 2;
-                        bounds.Y = (int) transform.Translation.Y - bounds.Height / 2;
-                    }
-
-                    // Update all indexes the entity is part of.
-                    var changed = false;
-                    foreach (var tree in TreesForGroups(index.IndexGroupsMask))
-                    {
-                        if (tree.Update(bounds, Vector2.Zero, m.Entity))
-                        {
-                            changed = true;
-                        }
-                    }
-                    if (changed)
-                    {
-                        // Mark as changed.
-                        _changed.Add(m.Entity);
-                    }
-                    return;
+                    // Mark as changed.
+                    _changed[index].Add(component.Id);
                 }
+                return;
             }
+
+            // Handle position changes (moving components around in the world).
+            var translationChanged = message as TranslationChanged?;
+            if (translationChanged != null)
             {
-                var cm = message as TranslationChanged?;
-                if (cm != null)
+                var m = translationChanged.Value;
+
+                Debug.Assert(m.Component.Enabled);
+
+                var component = m.Component;
+                var bounds = component.ComputeWorldBounds();
+                var velocity = Manager.GetComponent(component.Entity, Velocity.TypeId) as Velocity;
+                var delta = velocity != null ? velocity.Value : Vector2.Zero;
+
+                // Update all indexes the component is part of.
+                foreach (var index in IndexesForGroups(component.IndexGroupsMask)
+                    .Where(index => _trees[index].Update(bounds, delta, component.Id)))
                 {
-                    var m = cm.Value;
-
-                    // Check if the entity is indexable.
-                    var index = ((Index) Manager.GetComponent(m.Entity, Index.TypeId));
-                    if (index == null)
-                    {
-                        return;
-                    }
-
-                    var bounds = index.Bounds;
-                    bounds.X = (int) m.CurrentPosition.X - bounds.Width / 2;
-                    bounds.Y = (int) m.CurrentPosition.Y - bounds.Height / 2;
-
-                    var velocity = ((Velocity) Manager.GetComponent(m.Entity, Velocity.TypeId));
-                    var delta = velocity != null ? velocity.Value : Vector2.Zero;
-
-                    var changed = false;
-                    foreach (var tree in TreesForGroups(index.IndexGroupsMask))
-                    {
-                        if (tree.Update(bounds, delta, m.Entity))
-                        {
-                            changed = true;
-                        }
-                    }
-                    if (changed)
-                    {
-                        // Mark as changed.
-                        _changed.Add(m.Entity);
-                    }
+                    // Mark as changed.
+                    _changed[index].Add(component.Id);
                 }
             }
         }
 
         #endregion
 
-        #region Entity lookup
+        #region Component lookup
 
-        /// <summary>Get all entities in the specified range of the query point.</summary>
+        /// <summary>Get all components in the specified range of the query point.</summary>
         /// <param name="center">The point to use as a query point.</param>
         /// <param name="radius">The distance up to which to get neighbors.</param>
         /// <param name="results">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
-        /// <returns>All entities in range.</returns>
+        /// <returns>All components in range.</returns>
         public void Find(FarPosition center, float radius, ref ISet<int> results, ulong groups)
         {
-            foreach (var tree in TreesForGroups(groups))
+            foreach (var tree in IndexesForGroups(groups).Select(index => _trees[index]))
             {
                 Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
                 tree.Find(center, radius, results);
             }
         }
 
-        /// <summary>Get all entities contained in the specified rectangle.</summary>
+        /// <summary>Get all components contained in the specified rectangle.</summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="results">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
-        /// <returns>All entities in range.</returns>
+        /// <returns>All components in range.</returns>
         public void Find(ref FarRectangle rectangle, ref ISet<int> results, ulong groups)
         {
-            foreach (var tree in TreesForGroups(groups))
+            foreach (var tree in IndexesForGroups(groups).Select(index => _trees[index]))
             {
                 Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
                 tree.Find(rectangle, results);
             }
         }
 
-        /// <summary>Gets the bounds for the specified entity in the first of the specified groups containing the entity.</summary>
-        /// <param name="entity">The entity.</param>
+        /// <summary>Gets the list of components for which the index entry changed.</summary>
+        public IEnumerable<int> GetChanged(ulong groups)
+        {
+            return IndexesForGroups(groups)
+                    .SelectMany(index => _changed[index])
+                    .Distinct();
+        }
+
+        /// <summary>Gets the bounds for the specified component in the first of the specified groups.</summary>
+        /// <param name="component">The component.</param>
         /// <param name="groups">The groups.</param>
         /// <returns></returns>
-        public FarRectangle GetBounds(int entity, ulong groups)
+        public FarRectangle GetBounds(int component, ulong groups)
         {
-            return
-                TreesForGroups(groups)
-                    .Where(tree => tree.Contains(entity))
-                    .Select(tree => tree[entity])
-                    .FirstOrDefault();
+            return IndexesForGroups(groups)
+                .Select(index => _trees[index])
+                .Where(tree => tree.Contains(component))
+                .Select(tree => tree[component])
+                .FirstOrDefault();
         }
 
         #endregion
@@ -320,69 +275,61 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="groups">The groups to create index structures for.</param>
         private void EnsureIndexesExist(ulong groups)
         {
-            var index = 0;
-            while (groups > 0)
+            foreach (var index in IndexesForGroups(groups).Where(index => _trees[index] == null))
             {
-                if ((groups & 1) == 1 && _trees[index] == null)
-                {
-                    _trees[index] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
-                }
-                groups = groups >> 1;
-                ++index;
+                _trees[index] = new SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
+                _changed[index] = new HashSet<int>();
             }
         }
 
         /// <summary>
-        ///     Utility method that returns a list of all trees flagged in the specified bit mask. Calling this a second time
-        ///     invalidates the reference to a list returned by the previous call.
+        ///     Utility method that returns a list of all indexes flagged in the specified bit mask.
         /// </summary>
         /// <param name="groups">The groups to get the indexes for.</param>
         /// <returns>A list of the specified indexes.</returns>
-        private IEnumerable<IIndex<int, FarRectangle, FarPosition>> TreesForGroups(ulong groups)
+        private static IEnumerable<int> IndexesForGroups(ulong groups)
         {
             byte index = 0;
             while (groups > 0)
             {
-                if ((groups & 1) == 1 && _trees[index] != null)
+                if ((groups & 1) == 1)
                 {
-                    yield return _trees[index];
+                    yield return index;
                 }
                 groups = groups >> 1;
                 ++index;
             }
         }
 
-        /// <summary>Adds the specified entity to all indexes specified in groups.</summary>
-        /// <param name="entity">The entity to add.</param>
+        /// <summary>Adds the specified component to all indexes specified in groups.</summary>
+        /// <param name="component">The component to add.</param>
         /// <param name="groups">The indexes to add to.</param>
-        private void AddEntity(int entity, ulong groups)
+        private void AddToGroups(IIndexable component, ulong groups)
         {
             // Make sure the indexes exists.
             EnsureIndexesExist(groups);
 
-            // Compute the bounds for the indexable as well as possible.
-            var bounds = new FarRectangle();
-            var collidable = ((Collidable) Manager.GetComponent(entity, Collidable.TypeId));
-            if (collidable != null)
-            {
-                bounds = collidable.ComputeBounds();
-            }
-            var transform = ((Transform) Manager.GetComponent(entity, Transform.TypeId));
-            if (transform != null)
-            {
-                bounds.X = (int) transform.Translation.X - bounds.Width / 2;
-                bounds.Y = (int) transform.Translation.Y - bounds.Height / 2;
-            }
-
-            // Add the entity to all its indexes.
-            foreach (var tree in TreesForGroups(groups))
+            // Add the component to all its indexes.
+            foreach (var index in IndexesForGroups(groups))
             {
                 // Add to each group.
-                tree.Add(bounds, entity);
+                _trees[index].Add(component.ComputeWorldBounds(), component.Id);
+                // Mark as changed.
+                _changed[index].Add(component.Id);
             }
+        }
 
-            // Mark as changed.
-            _changed.Add(entity);
+        /// <summary>Removes the specified component from the specified indexes.</summary>
+        /// <param name="component">The index to remove.</param>
+        /// <param name="groups">The groups to remove from.</param>
+        private void RemoveFromGroups(IComponent component, ulong groups)
+        {
+            // Remove from each group.
+            foreach (var index in IndexesForGroups(groups))
+            {
+                _trees[index].Remove(component.Id);
+                _changed[index].Remove(component.Id);
+            }
         }
 
         #endregion
@@ -391,30 +338,27 @@ namespace Engine.ComponentSystem.Common.Systems
 
         /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <remarks>
-        ///     Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        ///     to true.
-        /// </remarks>
         /// <returns>The packet after writing.</returns>
         public override IWritablePacket Packetize(IWritablePacket packet)
         {
             base.Packetize(packet);
 
-            packet.Write(_trees.Count(t => t != null));
-            for (var i = 0; i < _trees.Length; ++i)
+            packet.Write(IndexCount);
+            for (var index = 0; index < _trees.Length; ++index)
             {
-                if (_trees[i] == null)
+                if (_trees[index] == null)
                 {
                     continue;
                 }
-                packet.Write(i);
-                packet.Write(_trees[i]);
-            }
+                packet.Write(index);
 
-            packet.Write(_changed.Count);
-            foreach (var entity in _changed)
-            {
-                packet.Write(entity);
+                packet.Write(_trees[index]);
+
+                packet.Write(_changed[index].Count);
+                foreach (var component in _changed[index])
+                {
+                    packet.Write(component);
+                }
             }
 
             return packet;
@@ -426,25 +370,36 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             base.Depacketize(packet);
 
-            foreach (var tree in _trees.Where(tree => tree != null)) {
+            foreach (var tree in _trees.Where(tree => tree != null))
+            {
                 tree.Clear();
             }
-            var treeCount = packet.ReadInt32();
-            for (var i = 0; i < treeCount; ++i)
+            foreach (var changed in _changed.Where(changed => changed != null))
             {
-                var treeIndex = packet.ReadInt32();
-                if (_trees[treeIndex] == null)
-                {
-                    _trees[treeIndex] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
-                }
-                packet.ReadPacketizableInto(_trees[treeIndex]);
+                changed.Clear();
             }
 
-            _changed.Clear();
-            var changedCount = packet.ReadInt32();
-            for (var i = 0; i < changedCount; i++)
+            var indexCount = packet.ReadInt32();
+            for (var i = 0; i < indexCount; ++i)
             {
-                _changed.Add(packet.ReadInt32());
+                var index = packet.ReadInt32();
+
+                if (_trees[index] == null)
+                {
+                    _trees[index] = new SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
+                }
+                if (_changed[index] == null)
+                {
+                    _changed[index] = new HashSet<int>();
+                }
+
+                packet.ReadPacketizableInto(_trees[index]);
+
+                var changedCount = packet.ReadInt32();
+                for (var j = 0; j < changedCount; ++j)
+                {
+                    _changed[index].Add(packet.ReadInt32());
+                }
             }
         }
 
@@ -468,14 +423,14 @@ namespace Engine.ComponentSystem.Common.Systems
 
             w.AppendIndent(indent).Write("Changed = {");
             var first = true;
-            foreach (var entity in _changed)
+            foreach (var component in _changed)
             {
                 if (!first)
                 {
                     w.Write(", ");
                 }
                 first = false;
-                w.Write(entity);
+                w.Write(component);
             }
             w.Write("}");
 
@@ -495,8 +450,8 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             var copy = (IndexSystem) base.NewInstance();
 
-            copy._trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
-            copy._changed = new HashSet<int>();
+            copy._trees = new SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
+            copy._changed = new HashSet<int>[sizeof (ulong) * 8];
 
             return copy;
         }
@@ -516,29 +471,34 @@ namespace Engine.ComponentSystem.Common.Systems
 
             var copy = (IndexSystem) into;
 
-            foreach (var tree in copy._trees)
+            foreach (var tree in copy._trees.Where(tree => tree != null))
             {
-                if (tree != null)
-                {
-                    tree.Clear();
-                }
+                tree.Clear();
+            }
+            foreach (var changed in copy._changed.Where(changed => changed != null))
+            {
+                changed.Clear();
             }
 
-            for (var i = 0; i < _trees.Length; i++)
+            for (var index = 0; index < _trees.Length; ++index)
             {
-                if (_trees[i] == null)
+                if (_trees[index] == null)
                 {
                     continue;
                 }
-                if (copy._trees[i] == null)
-                {
-                    copy._trees[i] = _trees[i].NewInstance();
-                }
-                _trees[i].CopyInto(copy._trees[i]);
-            }
 
-            copy._changed.Clear();
-            copy._changed.UnionWith(_changed);
+                if (copy._trees[index] == null)
+                {
+                    copy._trees[index] = _trees[index].NewInstance();
+                }
+                if (copy._changed[index] == null)
+                {
+                    copy._changed[index] = new HashSet<int>();
+                }
+
+                _trees[index].CopyInto(copy._trees[index]);
+                copy._changed[index].UnionWith(_changed[index]);
+            }
         }
 
         #endregion
@@ -567,13 +527,11 @@ namespace Engine.ComponentSystem.Common.Systems
         [Conditional("DEBUG")]
         public void DrawIndex(ulong groups, AbstractShape shape, FarPosition translation)
         {
-            foreach (var tree in TreesForGroups(groups))
+            foreach (var tree in IndexesForGroups(groups)
+                .Select(index => _trees[index])
+                .Where(tree => tree != null))
             {
-                var index = tree as FarCollections.SpatialHashedQuadTree<int>;
-                if (index != null)
-                {
-                    index.Draw(shape, translation);
-                }
+                tree.Draw(shape, translation);
             }
         }
 

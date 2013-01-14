@@ -234,7 +234,22 @@ namespace Space.ComponentSystem.Factories
             }
 
             // Set initial position.
-            manager.AddComponent<Transform>(entity).Initialize(emitterTransform.Translation + rotatedOffset, rotation);
+            manager.AddComponent<Transform>(entity)
+                   .Initialize(
+                       new FarRectangle(
+                           -_collisionRadius,
+                           -_collisionRadius,
+                           _collisionRadius * 2,
+                           _collisionRadius * 2),
+                       emitterTransform.Translation + rotatedOffset,
+                       rotation,
+                       // Register with indexes that need to be able to find us.
+                       // Can collide.
+                       CollisionSystem.IndexGroupMask |
+                       // Must be detectable by the camera.
+                       CameraSystem.IndexGroupMask |
+                       // Rendering should be interpolated.
+                       InterpolationSystem.IndexGroupMask);
 
             // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)
@@ -303,14 +318,6 @@ namespace Space.ComponentSystem.Factories
                 }
             }
 
-            // Register with indexes that need to be able to find us.
-            manager.AddComponent<Index>(entity).Initialize(
-                CollisionSystem.IndexGroupMask | // Can collide.
-                CameraSystem.IndexGroupMask | // Must be detectable by the camera.
-                InterpolationSystem.IndexGroupMask,
-                // Rendering should be interpolated.
-                (int) (_collisionRadius + _collisionRadius));
-
             // See what we can bump into.
             var collisionGroup = faction.ToCollisionGroup();
 
@@ -368,10 +375,7 @@ namespace Space.ComponentSystem.Factories
                             ? _initialVelocity.Low
                             : MathHelper.Lerp(_initialVelocity.Low, _initialVelocity.High, (float) random.NextDouble()));
             }
-            else
-            {
-                return Vector2.Zero;
-            }
+            return Vector2.Zero;
         }
 
         /// <summary>Samples the acceleration force.</summary>
@@ -399,10 +403,7 @@ namespace Space.ComponentSystem.Factories
                             : MathHelper.Lerp(
                                 _accelerationForce.Low, _accelerationForce.High, (float) random.NextDouble()));
             }
-            else
-            {
-                return Vector2.Zero;
-            }
+            return Vector2.Zero;
         }
 
         #endregion

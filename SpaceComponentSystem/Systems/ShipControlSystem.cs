@@ -161,7 +161,7 @@ namespace Space.ComponentSystem.Systems
                 else
                 {
                     // Set, only one frame (this one) required.
-                    transform.SetRotation(component.TargetRotation);
+                    transform.Rotation = component.TargetRotation;
                     spin.Value = 0;
                 }
             }
@@ -176,7 +176,7 @@ namespace Space.ComponentSystem.Systems
                 if (remainingAngle < Math.Abs(spin.Value))
                 {
                     // Yes, set to that rotation and stop spinning.
-                    transform.SetRotation(component.TargetRotation);
+                    transform.Rotation = component.TargetRotation;
                     spin.Value = 0;
                 }
             }

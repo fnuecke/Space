@@ -294,7 +294,13 @@ namespace Space.ComponentSystem.Factories
                                       : rotationSpeed;
 
             // Give it a position.
-            manager.AddComponent<Transform>(entity);
+            manager.AddComponent<Transform>(entity).Initialize(
+            // Add to indexes for lookup.
+                indexGroupsMask:
+                    DetectableSystem.IndexGroupMask | // Can be detected.
+                    SoundSystem.IndexGroupMask | // Can make noise.
+                    CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
+                    CameraSystem.IndexGroupMask); // Must be detectable by the camera.
 
             // Make it rotate.
             manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / Settings.TicksPerSecond);
@@ -314,15 +320,6 @@ namespace Space.ComponentSystem.Factories
             // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");
 
-            // Add to indexes for lookup.
-            manager.AddComponent<Index>(entity).Initialize(
-                DetectableSystem.IndexGroupMask | // Can be detected.
-                SoundSystem.IndexGroupMask | // Can make noise.
-                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CameraSystem.IndexGroupMask,
-                // Must be detectable by the camera.
-                (int) (planetRadius + planetRadius));
-
             return entity;
         }
 
@@ -337,10 +334,7 @@ namespace Space.ComponentSystem.Factories
                            ? _radius.Low
                            : MathHelper.Lerp(_radius.Low, _radius.High, (float) random.NextDouble());
             }
-            else
-            {
-                return 0f;
-            }
+            return 0f;
         }
 
         /// <summary>Samples the rotation speed of this planet.</summary>
@@ -355,10 +349,7 @@ namespace Space.ComponentSystem.Factories
                         ? _rotationSpeed.Low
                         : MathHelper.Lerp(_rotationSpeed.Low, _rotationSpeed.High, (float) random.NextDouble()));
             }
-            else
-            {
-                return 0f;
-            }
+            return 0f;
         }
 
         /// <summary>Samples the mass of this planet.</summary>
@@ -372,10 +363,7 @@ namespace Space.ComponentSystem.Factories
                            ? _mass.Low
                            : MathHelper.Lerp(_mass.Low, _mass.High, (float) random.NextDouble());
             }
-            else
-            {
-                return 0f;
-            }
+            return 0f;
         }
 
         #endregion

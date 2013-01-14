@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -302,6 +303,9 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
             var view = ComputeVisibleBounds();
             ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
+            var entities = _drawablesInView.Select(id => Manager.GetComponentById(id).Entity).ToList();
+            _drawablesInView.Clear();
+            _drawablesInView.UnionWith(entities);
         }
 
         #endregion

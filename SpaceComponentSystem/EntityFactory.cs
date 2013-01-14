@@ -84,11 +84,10 @@ namespace Space.ComponentSystem
 
             // Add to the index from which entities will automatically removed
             // on cell death and mark it (for translation checks into empty space).
-            var index = ((Index) manager.GetComponent(entity, Index.TypeId));
-            index.SetIndexGroupsMask(
-                index.IndexGroupsMask |
+            var index = (IIndexable) manager.GetComponent(entity, Manager.GetComponentTypeId<IIndexable>());
+            index.IndexGroupsMask |=
                 CellSystem.CellDeathAutoRemoveIndexGroupMask |
-                ArtificialIntelligence.AIIndexGroupMask);
+                ArtificialIntelligence.AIIndexGroupMask;
             manager.AddComponent<CellDeath>(entity);
 
             var input = (ShipControl) manager.GetComponent(entity, ShipControl.TypeId);
@@ -114,11 +113,11 @@ namespace Space.ComponentSystem
 
             manager.AddComponent<Faction>(entity).Initialize(faction);
             manager.AddComponent<Transform>(entity)
-                   .Initialize(((Transform) manager.GetComponent(center, Transform.TypeId)).Translation);
+                   .Initialize(
+                       ((Transform) manager.GetComponent(center, Transform.TypeId)).Translation,
+                       indexGroupsMask: DetectableSystem.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
             manager.AddComponent<Spin>(entity).Initialize(((float) Math.PI) / period);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, orbitRadius, orbitRadius, 0, period, 0);
-            manager.AddComponent<Index>(entity)
-                   .Initialize(DetectableSystem.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Stolen/Ships/sensor_array_dish");
             manager.AddComponent<ShipSpawner>(entity);
             manager.AddComponent<TextureRenderer>(entity)

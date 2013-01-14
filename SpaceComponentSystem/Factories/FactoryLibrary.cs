@@ -130,8 +130,8 @@ namespace Space.ComponentSystem.Factories
             var transform = ((Transform) manager.GetComponent(item, Transform.TypeId));
             if (transform != null)
             {
-                transform.SetTranslation(position);
-                transform.ApplyTranslation();
+                transform.Translation = position;
+                transform.Update();
             }
             return item;
         }
@@ -224,19 +224,19 @@ namespace Space.ComponentSystem.Factories
         {
             var radius = 10f;
             var entity = manager.AddEntity();
-            manager.AddComponent<Transform>(entity).Initialize(cellCenter);
+            manager.AddComponent<Transform>(entity).Initialize(
+                new FarRectangle(-radius, -radius, radius * 2, radius * 2),
+                cellCenter,
+                0,
+                // Add to indexes for lookup.
+                DetectableSystem.IndexGroupMask | // Can be detected.
+                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
+                CameraSystem.IndexGroupMask); // Must be detectable by the camera.
+                
             // Make it detectable.
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
             // Make it glow.
             manager.AddComponent<TestObjectRenderer>(entity).Initialize(radius * 0.95f, Color.White);
-
-            // Add to indexes for lookup.
-            manager.AddComponent<Index>(entity).Initialize(
-                DetectableSystem.IndexGroupMask | // Can be detected.
-                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CameraSystem.IndexGroupMask,
-                // Must be detectable by the camera.
-                (int) (radius + radius));
         }
 
         /// <summary>Gets the item pool with the specified name.</summary>

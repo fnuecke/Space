@@ -1,12 +1,14 @@
-﻿namespace Engine.ComponentSystem.Common.Messages
+﻿using Engine.ComponentSystem.Common.Components;
+
+namespace Engine.ComponentSystem.Common.Messages
 {
     /// <summary>
-    ///     Sent by <c>Index</c> components when the index groups they define association to change.
+    ///     Sent by <see cref="Index"/> components when the index groups they define association to change.
     /// </summary>
     public struct IndexGroupsChanged
     {
-        /// <summary>The entity for which the index groups changed.</summary>
-        public int Entity;
+        /// <summary>The index component for which the index groups changed.</summary>
+        public IIndexable Component;
 
         /// <summary>The index grouped we no longer belong to.</summary>
         public ulong RemovedIndexGroups;

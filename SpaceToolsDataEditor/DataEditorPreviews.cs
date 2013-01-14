@@ -583,7 +583,7 @@ namespace Space.Tools.DataEditor
                     if (transform != null)
                     {
                         var offset = (FarPosition)(factory.RequiredSlotSize.Scale() * factory.ModelOffset);
-                        transform.SetTranslation(offset);
+                        transform.Translation = offset;
                     }
                 }
                 var item = (SpaceItem)manager.GetComponent(entity, Item.TypeId);

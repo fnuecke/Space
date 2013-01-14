@@ -71,7 +71,10 @@ namespace Engine.ComponentSystem
                 while (typeId != 0)
                 {
                     // Remove for this type.
-                    TypeCache[typeId].RemoveAt(TypeCache[typeId].BinarySearch(component, Component.Comparer));
+                    if (TypeCache[typeId] != null)
+                    {
+                        TypeCache[typeId].RemoveAt(TypeCache[typeId].BinarySearch(component, Component.Comparer));
+                    }
 
                     // Move on to parent type.
                     typeId = ComponentHierarchy[typeId];

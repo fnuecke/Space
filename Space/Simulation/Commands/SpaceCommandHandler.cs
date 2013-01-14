@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
@@ -353,14 +354,14 @@ from Space.Data import *
             lock (_reusableItemList)
             {
                 index.Find(transform.Translation, 100, ref _reusableItemList, Item.IndexGroupMask);
-                foreach (var item in _reusableItemList)
+                foreach (IIndexable item in _reusableItemList.Select(manager.GetComponentById))
                 {
                     // Pick the item up.
                     // TODO: check if the item belongs to the player.
-                    inventory.Add(item);
+                    inventory.Add(item.Entity);
 
                     // Disable rendering, if available.
-                    var renderer = (TextureRenderer) manager.GetComponent(item, TextureRenderer.TypeId);
+                    var renderer = (TextureRenderer) manager.GetComponent(item.Entity, TextureRenderer.TypeId);
                     if (renderer != null)
                     {
                         renderer.Enabled = false;
@@ -407,9 +408,9 @@ from Space.Data import *
                         // Position the item to be at the position of the
                         // player that dropped it.
                         var transform = (Transform) manager.GetComponent(item, Transform.TypeId);
-                        transform.SetTranslation(
-                            ((Transform) manager.GetComponent(avatar, Transform.TypeId)).Translation);
-                        transform.ApplyTranslation();
+                        transform.Translation =
+                            ((Transform) manager.GetComponent(avatar, Transform.TypeId)).Translation;
+                        transform.Update();
 
                         // Enable rendering, if available.
                         var renderer = (TextureRenderer) manager.GetComponent(item, TextureRenderer.TypeId);

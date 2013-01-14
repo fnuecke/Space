@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Physics.Collision;
@@ -42,6 +43,13 @@ namespace Engine.Physics.Systems
 
         /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+        
+        #region Constants
+
+        /// <summary>Start using indexes after the collision index.</summary>
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 

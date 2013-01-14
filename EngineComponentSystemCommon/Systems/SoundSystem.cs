@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -117,10 +118,10 @@ namespace Engine.ComponentSystem.Common.Systems
             // out of range. The ones in range will be removed from that list and
             // added to our reusable list.
             index.Find(listenerPosition, _maxAudibleDistance, ref _reusableNeighborList, IndexGroupMask);
-            foreach (var neighbor in _reusableNeighborList)
+            foreach (IIndexable neighbor in _reusableNeighborList.Select(Manager.GetComponentById))
             {
                 // Get the sound component of the neighbor.
-                var sound = (Sound) Manager.GetComponent(neighbor, Sound.TypeId);
+                var sound = (Sound) Manager.GetComponent(neighbor.Entity, Sound.TypeId);
 
                 // Skip this neighbor if its sound is not enabled.
                 if (!sound.Enabled)
@@ -129,23 +130,23 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Get sound position and velocity.
-                var emitterPosition = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                var emitterPosition = ((Transform) Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
 
                 // The velocity is optional, so we must check if it exists.
-                var neighborVelocity = (Velocity) Manager.GetComponent(neighbor, Velocity.TypeId);
+                var neighborVelocity = (Velocity) Manager.GetComponent(neighbor.Entity, Velocity.TypeId);
                 var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
 
                 // Check whether to update or start playing.
-                if (_playingSounds.ContainsKey(neighbor))
+                if (_playingSounds.ContainsKey(neighbor.Entity))
                 {
                     // We already know this one so just apply 3d effect.
-                    var cue = _playingSounds[neighbor];
+                    var cue = _playingSounds[neighbor.Entity];
 
                     // Make sure cue is not stopped (how ever that may have happened...)
                     if (!cue.IsStopped)
                     {
                         // Do not stop it.
-                        _playingSounds.Remove(neighbor);
+                        _playingSounds.Remove(neighbor.Entity);
 
                         // We make the emitter position relative to the listener, which is
                         // equivalent to having the listener at the actual origin at all
@@ -160,7 +161,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         cue.Apply3D(_listener, _emitter);
 
                         // Add it to the new list of playing sounds.
-                        _reusablePlayingSounds.Add(neighbor, cue);
+                        _reusablePlayingSounds.Add(neighbor.Entity, cue);
                     }
                     else
                     {
@@ -168,7 +169,7 @@ namespace Engine.ComponentSystem.Common.Systems
                         // if still in range.
                         cue.Dispose();
                         // Don't dispose it again.
-                        _playingSounds.Remove(neighbor);
+                        _playingSounds.Remove(neighbor.Entity);
                     }
                 }
                 else
@@ -177,7 +178,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     var cue = Play(sound.SoundName, ref emitterPosition, ref emitterVelocity);
                     if (cue != null)
                     {
-                        _reusablePlayingSounds.Add(neighbor, cue);
+                        _reusablePlayingSounds.Add(neighbor.Entity, cue);
                     }
                 }
             }

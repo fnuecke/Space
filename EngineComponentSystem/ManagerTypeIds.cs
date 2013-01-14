@@ -109,7 +109,7 @@ namespace Engine.ComponentSystem
         /// <summary>Gets the component type id for the specified component type. This will create a new ID if necessary.</summary>
         /// <typeparam name="T">The component type to look up the id for.</typeparam>
         /// <returns>The type id for that component.</returns>
-        public static int GetComponentTypeId<T>() where T : Component
+        public static int GetComponentTypeId<T>() where T : IComponent
         {
             return GetComponentTypeId(typeof (T));
         }
@@ -119,7 +119,7 @@ namespace Engine.ComponentSystem
         /// <returns>The type id for that component.</returns>
         public static int GetComponentTypeId(Type type)
         {
-            Debug.Assert(type.IsSubclassOf(typeof (Component)));
+            Debug.Assert(typeof (IComponent).IsAssignableFrom(type));
 
             int typeId;
             if (!ComponentTypes.TryGetValue(type, out typeId))
@@ -143,7 +143,7 @@ namespace Engine.ComponentSystem
                     }
 
                     // Check for children.
-                    if (otherType.IsSubclassOf(type))
+                    if (type.IsAssignableFrom(otherType))
                     {
                         // Got a potential child, see if we're better than the
                         // parent it had before.

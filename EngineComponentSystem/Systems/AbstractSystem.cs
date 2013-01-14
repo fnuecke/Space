@@ -71,10 +71,6 @@ namespace Engine.ComponentSystem.Systems
 
         /// <summary>Write the object's state to the given packet.</summary>
         /// <param name="packet">The packet to write the data to.</param>
-        /// <remarks>
-        ///     Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        ///     to true.
-        /// </remarks>
         /// <returns>The packet after writing.</returns>
         [OnPacketize]
         public virtual IWritablePacket Packetize(IWritablePacket packet)

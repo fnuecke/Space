@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -24,7 +25,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
             // Compute the current position and set it.
             var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
-            transform.SetTranslation(
+            transform.Translation = new FarPosition(
                 center.X + component.PrecomputedA + component.PrecomputedB * cosT - component.PrecomputedC * sinT,
                 center.Y + component.PrecomputedD + component.PrecomputedE * cosT + component.PrecomputedF * sinT);
         }

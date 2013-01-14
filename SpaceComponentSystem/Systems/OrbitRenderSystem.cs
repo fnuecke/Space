@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
@@ -164,14 +165,14 @@ namespace Space.ComponentSystem.Systems
 
             // Begin drawing.
             _spriteBatch.Begin();
-            foreach (var neighbor in _reusableNeighborList)
+            foreach (IIndexable neighbor in _reusableNeighborList.Select(Manager.GetComponentById))
             {
                 // Get the components we need.
-                var neighborTransform = ((Transform) Manager.GetComponent(neighbor, Transform.TypeId));
-                var neighborDetectable = ((Detectable) Manager.GetComponent(neighbor, Detectable.TypeId));
+                var neighborTransform = Manager.GetComponent(neighbor.Entity, Transform.TypeId) as Transform;
+                var neighborDetectable = Manager.GetComponent(neighbor.Entity, Detectable.TypeId) as Detectable;
 
                 // Bail if we're missing something.
-                if (neighborTransform == null || neighborDetectable.Texture == null)
+                if (neighborTransform == null || neighborDetectable == null || neighborDetectable.Texture == null)
                 {
                     continue;
                 }
@@ -191,7 +192,7 @@ namespace Space.ComponentSystem.Systems
 
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
-                var ellipse = ((EllipsePath) Manager.GetComponent(neighbor, EllipsePath.TypeId));
+                var ellipse = ((EllipsePath) Manager.GetComponent(neighbor.Entity, EllipsePath.TypeId));
                 if (ellipse != null)
                 {
                     // The entity we're orbiting around is at one of the two
@@ -252,8 +253,8 @@ namespace Space.ComponentSystem.Systems
                 // If the neighbor does collision damage and is an attractor,
                 // show the "dead zone" (i.e. the area beyond the point of no
                 // return).
-                var neighborGravitation = ((Gravitation) Manager.GetComponent(neighbor, Gravitation.TypeId));
-                var neighborCollisionDamage = ((CollisionDamage) Manager.GetComponent(neighbor, CollisionDamage.TypeId));
+                var neighborGravitation = Manager.GetComponent(neighbor.Entity, Gravitation.TypeId) as Gravitation;
+                var neighborCollisionDamage = Manager.GetComponent(neighbor.Entity, CollisionDamage.TypeId) as CollisionDamage;
                 if (neighborCollisionDamage == null || neighborGravitation == null ||
                     (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) == 0)
                 {

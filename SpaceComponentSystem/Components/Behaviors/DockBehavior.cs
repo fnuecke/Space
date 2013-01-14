@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.FarMath;
@@ -52,22 +53,22 @@ namespace Space.ComponentSystem.Components.Behaviors
 
             ISet<int> neighbors = new HashSet<int>();
             index.Find(position, ScanRange, ref neighbors, DetectableSystem.IndexGroupMask);
-            foreach (var neighbor in neighbors)
+            foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
             {
                 // See if it's a station.
                 // TODO...
 
                 // Friend or foe?
-                var neighborFaction = ((Faction) AI.Manager.GetComponent(neighbor, Faction.TypeId));
+                var neighborFaction = ((Faction) AI.Manager.GetComponent(neighbor.Entity, Faction.TypeId));
                 if (neighborFaction != null && (neighborFaction.Value & faction) != 0)
                 {
                     // Friend. Closer than any other?
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
+                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
                     var neighborDistanceSquared = FarPosition.DistanceSquared(position, neighborPosition);
                     if (neighborDistanceSquared < distanceSquared)
                     {
                         distanceSquared = neighborDistanceSquared;
-                        closestStation = neighbor;
+                        closestStation = neighbor.Entity;
                     }
                 }
             }

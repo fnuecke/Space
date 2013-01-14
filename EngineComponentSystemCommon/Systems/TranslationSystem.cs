@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="component">The component to update.</param>
         protected override void UpdateComponent(long frame, Transform component)
         {
-            component.ApplyTranslation();
+            component.Update();
         }
     }
 }

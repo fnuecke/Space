@@ -271,8 +271,8 @@ namespace Space.ComponentSystem.Factories
 
                 // Set initial position to center (to avoid generated instances shortly popping up
                 // at the origin).
-                ((Transform) manager.GetComponent(entity, Transform.TypeId))
-                    .SetTranslation(((Transform) manager.GetComponent(center, Transform.TypeId)).Translation);
+                ((Transform) manager.GetComponent(entity, Transform.TypeId)).Translation =
+                    ((Transform) manager.GetComponent(center, Transform.TypeId)).Translation;
 
                 // Recurse.
                 if (Moons != null)

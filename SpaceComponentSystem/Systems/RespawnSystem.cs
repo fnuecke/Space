@@ -27,9 +27,9 @@ namespace Space.ComponentSystem.Systems
             var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
             if (transform != null)
             {
-                transform.SetTranslation(ref component.Position);
-                transform.ApplyTranslation();
-                transform.SetRotation(0);
+                transform.Translation = component.Position;
+                transform.Update();
+                transform.Rotation = 0;
             }
 
             // Kill of remainder velocity.

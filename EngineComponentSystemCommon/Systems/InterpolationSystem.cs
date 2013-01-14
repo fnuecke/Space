@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -106,10 +107,10 @@ namespace Engine.ComponentSystem.Common.Systems
                 var delta = elapsedMilliseconds / (1000f / _simulationFps());
 
                 // Update position and rotation for each object in view.
-                foreach (var entity in _drawablesInView)
+                foreach (IIndexable indexable in _drawablesInView.Select(Manager.GetComponentById))
                 {
                     // Get the transform component, without it we can do nothing.
-                    var component = (Transform) Manager.GetComponent(entity, Transform.TypeId);
+                    var component = (Transform) Manager.GetComponent(indexable.Entity, Transform.TypeId);
 
                     // Skip invalid or disabled entities.
                     if (component == null || !component.Enabled)
@@ -206,7 +207,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
             // Remove from positions list if it was in the index we use to find
             // entities to interpolate.
-            if (component is Index && (((Index) component).IndexGroupsMask & IndexGroupMask) != 0)
+            if (component is IIndexable && (((IIndexable) component).IndexGroupsMask & IndexGroupMask) != 0)
             {
                 _positions.Remove(component.Entity);
             }

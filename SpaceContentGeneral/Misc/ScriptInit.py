@@ -1,8 +1,8 @@
 ﻿def goto(x, y):
     """Moves the player's ship to the specified coordinates."""
     component = manager.GetComponent(avatar, Transform.TypeId)
-    component.SetTranslation(x, y)
-    component.ApplyTranslation()
+    component.Translation = FarPosition(x, y)
+    component.Update()
 
 def setBaseStat(type, value):
     """Set the player's base value of the specified stat."""

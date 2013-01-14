@@ -36,16 +36,16 @@ namespace Engine.Tests.ComponentSystem.Common.Components
                    {
                        instance =>
                        {
-                           instance.AddTranslation(new FarPosition(12, 34));
-                           instance.ApplyTranslation();
+                           instance.Translation += new FarPosition(12, 34);
+                           instance.Update();
                        },
                        instance =>
                        {
-                           instance.SetTranslation(new FarPosition(-10, 34));
-                           instance.ApplyTranslation();
+                           instance.Translation = new FarPosition(-10, 34);
+                           instance.Update();
                        },
-                       instance => instance.AddRotation(5),
-                       instance => instance.SetRotation(-2)
+                       instance => instance.Rotation += 5,
+                       instance => instance.Rotation = -2
                    }.Concat(base.GetValueChangers());
         }
     }

@@ -128,7 +128,22 @@ namespace Space.ComponentSystem.Factories
                 secondaryTurbulenceRotation.Normalize();
             }
 
-            manager.AddComponent<Transform>(entity).Initialize(offset + cellCenter);
+            manager.AddComponent<Transform>(entity)
+                   .Initialize(
+                       new FarRectangle(-radius, -radius, radius * 2, radius * 2),
+                       offset + cellCenter,
+                       // Add to indexes for lookup.
+                       indexGroupsMask:
+                           // Can be bumped into.
+                           CollisionSystem.IndexGroupMask |
+                           // Can be detected.
+                           DetectableSystem.IndexGroupMask |
+                           // Can make noise.
+                           SoundSystem.IndexGroupMask |
+                           // Will be removed when out of bounds.
+                           CellSystem.CellDeathAutoRemoveIndexGroupMask |
+                           // Must be detectable by the camera.
+                           CameraSystem.IndexGroupMask);
 
             // Make it attract stuff if it has mass.
             if (mass > 0)
@@ -159,16 +174,6 @@ namespace Space.ComponentSystem.Factories
 
             // Make it go whoooosh.
             manager.AddComponent<Sound>(entity).Initialize("Sun");
-
-            // Add to indexes for lookup.
-            manager.AddComponent<Index>(entity).Initialize(
-                CollisionSystem.IndexGroupMask | // Can be bumped into.
-                DetectableSystem.IndexGroupMask | // Can be detected.
-                SoundSystem.IndexGroupMask | // Can make noise.
-                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CameraSystem.IndexGroupMask,
-                // Must be detectable by the camera.
-                (int) (radius + radius));
 
             return entity;
         }

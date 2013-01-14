@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -212,9 +213,9 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Height = CellSize;
                 ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(
                     ref cellBounds, ref _reusableEntityList, CellDeathAutoRemoveIndexGroupMask);
-                foreach (var neighbor in _reusableEntityList)
+                foreach (IIndexable neighbor in _reusableEntityList.Select(Manager.GetComponentById))
                 {
-                    Manager.RemoveEntity(neighbor);
+                    Manager.RemoveEntity(neighbor.Entity);
                 }
                 _reusableEntityList.Clear();
             }

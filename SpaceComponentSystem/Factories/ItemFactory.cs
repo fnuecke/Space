@@ -207,17 +207,17 @@ namespace Space.ComponentSystem.Factories
             var entity = manager.AddEntity();
 
             // Add position (when dropped) and renderer (when dropped or equipped).
-            manager.AddComponent<Transform>(entity);
+            manager.AddComponent<Transform>(entity).Initialize(
+                // Add to relevant indexes.
+                indexGroupsMask:
+                    // Can be picked up.
+                    Item.IndexGroupMask |
+                    // Must be detectable by the camera.
+                    CameraSystem.IndexGroupMask);
             var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _requiredSlotSize.Scale());
 
             // Do not render initially (only when dropped).
             renderer.Enabled = false;
-
-            // Add to relevant indexes.
-            manager.AddComponent<Index>(entity).Initialize(
-                Item.IndexGroupMask | // Can be picked up.
-                CameraSystem.IndexGroupMask // Must be detectable by the camera.
-                );
 
             // Add helper class for info retrieval.
             manager.AddComponent<ItemInfo>(entity);

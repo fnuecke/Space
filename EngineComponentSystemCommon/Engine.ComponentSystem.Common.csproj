@@ -72,10 +72,13 @@
     <Compile Include="Components\EllipsePath.cs" />
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
+    <Compile Include="Components\IDrawable.cs" />
+    <Compile Include="Components\IIndexable.cs" />
+    <Compile Include="Components\StaticTextureDrawable.cs" />
+    <Compile Include="Messages\RotationChanged.cs" />
     <Compile Include="Messages\UpdateCollision.cs" />
     <Compile Include="IInformation.cs" />
     <Compile Include="Systems\GraphicsDeviceSystem.cs" />
-    <Compile Include="Components\Index.cs" />
     <Compile Include="Components\Intersection.cs" />
     <Compile Include="Components\Owner.cs" />
     <Compile Include="Components\Parallax.cs" />

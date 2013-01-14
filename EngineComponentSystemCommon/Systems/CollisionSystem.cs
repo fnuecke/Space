@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
@@ -92,7 +93,7 @@ namespace Engine.ComponentSystem.Common.Systems
             _freeContacts = start;
         }
 
-        private void AllocateContact(int entityA, int entityB)
+        private void AllocateContact(int componentA, int componentB, int entityA, int entityB)
         {
             // The collidable info for the two entities, holding in particular
             // the head of the linked list of contacts involving the entities.
@@ -124,8 +125,8 @@ namespace Engine.ComponentSystem.Common.Systems
             _freeContacts = _contacts[_freeContacts].Previous;
 
             // Initialize with the basics.
-            _contacts[contact].EntityA = entityA;
-            _contacts[contact].EntityB = entityB;
+            _contacts[contact].ComponentA = componentA;
+            _contacts[contact].ComponentB = componentB;
             _contacts[contact].Intersecting = false;
 
             var edgeA = contact * 2;
@@ -168,8 +169,8 @@ namespace Engine.ComponentSystem.Common.Systems
             _usedContacts = contact;
 
             // For debug view.
-            SetCollisionState(entityA, Collidable.CollisionState.Contact);
-            SetCollisionState(entityB, Collidable.CollisionState.Contact);
+            SetCollisionState(componentA, Collidable.CollisionState.Contact);
+            SetCollisionState(componentB, Collidable.CollisionState.Contact);
         }
 
         private void FreeContact(int contact, Collidable collidableA, Collidable collidableB)
@@ -237,8 +238,8 @@ namespace Engine.ComponentSystem.Common.Systems
             _freeContacts = contact;
 
             // Debug view for collisions.
-            SetCollisionState(_contacts[contact].EntityA, Collidable.CollisionState.None);
-            SetCollisionState(_contacts[contact].EntityB, Collidable.CollisionState.None);
+            SetCollisionState(_contacts[contact].ComponentA, Collidable.CollisionState.None);
+            SetCollisionState(_contacts[contact].ComponentB, Collidable.CollisionState.None);
         }
 
         #endregion
@@ -249,6 +250,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
+            return;
             // Checks for new contacts for changed entities.
             FindContacts();
 
@@ -265,32 +267,45 @@ namespace Engine.ComponentSystem.Common.Systems
 
             // Check the list of entities that moved in the index.
             ISet<int> neighbors = new HashSet<int>();
-            foreach (var entity in index.ChangedEntities)
+            foreach (IIndexable component in index.GetChanged(IndexGroupMask).Select(id => Manager.GetComponentById(id)))
             {
                 // See if it's a collidable.
-                var collidable = (Collidable) Manager.GetComponent(entity, Collidable.TypeId);
+                var collidable = (Collidable) Manager.GetComponent(component.Entity, Collidable.TypeId);
                 if (collidable == null)
                 {
                     continue;
                 }
 
                 // Find contacts (possible collisions based on fattened bounds).
-                var bounds = index.GetBounds(entity, IndexGroupMask);
+                var bounds = index.GetBounds(component.Id, IndexGroupMask);
                 index.Find(ref bounds, ref neighbors, IndexGroupMask);
-                foreach (var neighbor in neighbors)
+                foreach (IIndexable neighbor in neighbors.Select(id => Manager.GetComponentById(id)))
                 {
                     // Skip self collision.
-                    if (neighbor == entity)
+                    if (neighbor == component)
                     {
                         continue;
                     }
 
                     // Get sorted ids of involved entities.
-                    var entityA = System.Math.Min(entity, neighbor);
-                    var entityB = System.Math.Max(entity, neighbor);
+                    int componentA, componentB, entityA, entityB;
+                    if (component.Id < neighbor.Id)
+                    {
+                        componentA = component.Id;
+                        componentB = neighbor.Id;
+                        entityA = component.Entity;
+                        entityB = neighbor.Entity;
+                    }
+                    else
+                    {
+                        componentA = neighbor.Id;
+                        componentB = component.Id;
+                        entityA = neighbor.Entity;
+                        entityB = component.Entity;
+                    }
 
                     // Check if the contact is already known.
-                    if (ContactExists(collidable.ContactList, entityA, entityB))
+                    if (ContactExists(collidable.ContactList, componentA, componentB))
                     {
                         continue;
                     }
@@ -317,7 +332,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     }
 
                     // Not known, create new contact.
-                    AllocateContact(entityA, entityB);
+                    //AllocateContact(componentA, componentB);
                 }
                 neighbors.Clear();
             }
@@ -328,10 +343,10 @@ namespace Engine.ComponentSystem.Common.Systems
         ///     are expected to be sorted (i.e. entityA &lt; entityB).
         /// </summary>
         /// <param name="contactList">The contact list.</param>
-        /// <param name="entityA">The entity A.</param>
-        /// <param name="entityB">The entity B.</param>
+        /// <param name="componentA">The entity A.</param>
+        /// <param name="componentB">The entity B.</param>
         /// <returns></returns>
-        private bool ContactExists(int contactList, int entityA, int entityB)
+        private bool ContactExists(int contactList, int componentA, int componentB)
         {
             for (var i = contactList; i >= 0; i = _edges[i].Next)
             {
@@ -340,7 +355,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
                 // Compare (sorted) ids of involved entities to check if the contact
                 // represents the one we're create now.
-                if (_contacts[contact].EntityA == entityA && _contacts[contact].EntityB == entityB)
+                if (_contacts[contact].ComponentA == componentA && _contacts[contact].ComponentB == componentB)
                 {
                     return true;
                 }
@@ -358,8 +373,8 @@ namespace Engine.ComponentSystem.Common.Systems
             // Check the list of contacts for actual collisions.
             for (var i = _usedContacts; i >= 0; i = _contacts[i].Next)
             {
-                var entityA = _contacts[i].EntityA;
-                var entityB = _contacts[i].EntityB;
+                var entityA = _contacts[i].ComponentA;
+                var entityB = _contacts[i].ComponentB;
 
                 var collidableA = (Collidable) Manager.GetComponent(entityA, Collidable.TypeId);
                 var collidableB = (Collidable) Manager.GetComponent(entityB, Collidable.TypeId);
@@ -479,20 +494,20 @@ namespace Engine.ComponentSystem.Common.Systems
                 // Remove all contacts involving the specified component.
                 for (var i = _usedContacts; i >= 0; i = _contacts[i].Next)
                 {
-                    if (_contacts[i].EntityA == component.Entity || _contacts[i].EntityB == component.Entity)
+                    if (_contacts[i].ComponentA == component.Entity || _contacts[i].ComponentB == component.Entity)
                     {
                         if (_contacts[i].Intersecting)
                         {
                             // Contact was active, so send a message that the intersection ended.
                             EndCollision message;
                             message.ContactId = i;
-                            message.EntityA = _contacts[i].EntityA;
-                            message.EntityB = _contacts[i].EntityB;
+                            message.EntityA = _contacts[i].ComponentA;
+                            message.EntityB = _contacts[i].ComponentB;
                             Manager.SendMessage(message);
                         }
 
-                        var collidableA = (Collidable) Manager.GetComponent(_contacts[i].EntityA, Collidable.TypeId);
-                        var collidableB = (Collidable) Manager.GetComponent(_contacts[i].EntityB, Collidable.TypeId);
+                        var collidableA = (Collidable) Manager.GetComponent(_contacts[i].ComponentA, Collidable.TypeId);
+                        var collidableB = (Collidable) Manager.GetComponent(_contacts[i].ComponentB, Collidable.TypeId);
 
                         FreeContact(i, collidableA, collidableB);
                     }
@@ -512,7 +527,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
             var m = cm.Value;
 
-            var collidable = ((Collidable) Manager.GetComponent(m.Entity, Collidable.TypeId));
+            var collidable = ((Collidable) Manager.GetComponent(m.Component.Entity, Collidable.TypeId));
             if (collidable != null)
             {
                 collidable.PreviousPosition = m.PreviousPosition;
@@ -520,16 +535,16 @@ namespace Engine.ComponentSystem.Common.Systems
         }
 
         /// <summary>Only make the effort to set this when in debug mode.</summary>
-        /// <param name="entity">The entity.</param>
+        /// <param name="component">The entity.</param>
         /// <param name="state">The state.</param>
         [Conditional("DEBUG")]
-        private void SetCollisionState(int entity, Collidable.CollisionState state)
+        private void SetCollisionState(int component, Collidable.CollisionState state)
         {
-            if (!Manager.HasEntity(entity))
+            if (!Manager.HasComponent(component))
             {
                 return;
             }
-            ((Collidable) Manager.GetComponent(entity, Collidable.TypeId)).State = state;
+            //((Collidable) Manager.GetComponent(component, Collidable.TypeId)).State = state;
         }
 
         #endregion
@@ -546,8 +561,8 @@ namespace Engine.ComponentSystem.Common.Systems
             packet.Write(_contacts.Length);
             for (var i = 0; i < _contacts.Length; i++)
             {
-                packet.Write(_contacts[i].EntityA);
-                packet.Write(_contacts[i].EntityB);
+                packet.Write(_contacts[i].ComponentA);
+                packet.Write(_contacts[i].ComponentB);
                 packet.Write(_contacts[i].Previous);
                 packet.Write(_contacts[i].Next);
                 packet.Write(_contacts[i].Intersecting);
@@ -573,8 +588,8 @@ namespace Engine.ComponentSystem.Common.Systems
             _contacts = new Contact[packet.ReadInt32()];
             for (var i = 0; i < _contacts.Length; i++)
             {
-                _contacts[i].EntityA = packet.ReadInt32();
-                _contacts[i].EntityB = packet.ReadInt32();
+                _contacts[i].ComponentA = packet.ReadInt32();
+                _contacts[i].ComponentB = packet.ReadInt32();
                 _contacts[i].Previous = packet.ReadInt32();
                 _contacts[i].Next = packet.ReadInt32();
                 _contacts[i].Intersecting = packet.ReadBoolean();
@@ -640,10 +655,10 @@ namespace Engine.ComponentSystem.Common.Systems
         private struct Contact
         {
             /// <summary>Entity id of the first collidables entity.</summary>
-            public int EntityA;
+            public int ComponentA;
 
             /// <summary>Entity id of the second collidables entity.</summary>
-            public int EntityB;
+            public int ComponentB;
 
             /// <summary>Index of previous entry in the global linked list.</summary>
             public int Previous;

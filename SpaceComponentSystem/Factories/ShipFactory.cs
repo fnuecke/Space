@@ -222,7 +222,30 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            manager.AddComponent<Transform>(entity).Initialize(position);
+            manager.AddComponent<Transform>(entity)
+                   .Initialize(
+                       new FarRectangle(
+                           -_collisionRadius,
+                           -_collisionRadius,
+                           _collisionRadius * 2,
+                           _collisionRadius * 2),
+                       position,
+                       // Index component, to register with indexes used for other
+                       // components.
+                       indexGroupsMask:
+                           // Can bump into other stuff.
+                           CollisionSystem.IndexGroupMask |
+                           // Can be detected.
+                           DetectableSystem.IndexGroupMask |
+                           // Can be attracted.
+                           GravitationSystem.IndexGroupMask |
+                           // Can make noise.
+                           SoundSystem.IndexGroupMask |
+                           // Must be detectable by the camera.
+                           CameraSystem.IndexGroupMask |
+                           // Rendering should be interpolated.
+                           InterpolationSystem.IndexGroupMask); 
+
             manager.AddComponent<Friction>(entity)
                    .Initialize(1f / Settings.TicksPerSecond, 1.5f / Settings.TicksPerSecond);
             manager.AddComponent<Acceleration>(entity);
@@ -268,18 +291,6 @@ namespace Space.ComponentSystem.Factories
 
             // The the sound component for the thruster sound.
             manager.AddComponent<Sound>(entity).Initialize("Thruster");
-
-            // Index component, to register with indexes used for other
-            // components.
-            manager.AddComponent<Index>(entity).Initialize(
-                CollisionSystem.IndexGroupMask | // Can bump into other stuff.
-                DetectableSystem.IndexGroupMask | // Can be detected.
-                GravitationSystem.IndexGroupMask | // Can be attracted.
-                SoundSystem.IndexGroupMask | // Can make noise.
-                CameraSystem.IndexGroupMask | // Must be detectable by the camera.
-                InterpolationSystem.IndexGroupMask,
-                // Rendering should be interpolated.
-                (int) (_collisionRadius + _collisionRadius));
 
             return entity;
         }

@@ -11,7 +11,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="component">The component to update.</param>
         protected override void UpdateComponent(long frame, Velocity component)
         {
-            ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).AddTranslation(ref component.Value);
+            ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Translation += component.Value;
         }
     }
 }

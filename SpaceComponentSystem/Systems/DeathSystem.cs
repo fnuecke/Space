@@ -99,7 +99,7 @@ namespace Space.ComponentSystem.Systems
                     var m = cm.Value;
 
                     // Only remove entities marked for removal.
-                    if (Manager.GetComponent(m.Entity, CellDeath.TypeId) == null)
+                    if (Manager.GetComponent(m.Component.Entity, CellDeath.TypeId) == null)
                     {
                         return;
                     }
@@ -114,7 +114,7 @@ namespace Space.ComponentSystem.Systems
                     if (!((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
                     {
                         // Dead space, kill it.
-                        Manager.RemoveEntity(m.Entity);
+                        Manager.RemoveEntity(m.Component.Entity);
                     }
                 }
             }

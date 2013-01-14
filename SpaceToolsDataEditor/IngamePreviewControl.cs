@@ -231,8 +231,8 @@ namespace Space.Tools.DataEditor
                     sunPos.X = mousePos.X - Width / 2f;
                     sunPos.Y = mousePos.Y - Height / 2f;
                     var t = (Transform)Manager.GetComponent(_sunId, Transform.TypeId);
-                    t.SetTranslation(sunPos);
-                    t.ApplyTranslation();
+                    t.Translation = sunPos;
+                    t.Update();
                 }
 
                 // Draw our mini simulation.
