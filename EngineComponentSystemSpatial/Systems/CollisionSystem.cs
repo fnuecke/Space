@@ -392,26 +392,26 @@ namespace Engine.ComponentSystem.Spatial.Systems
                         // began is a pain in the ass we simply guesstimate the original impact
                         // normal by weighing in the relative velocity of the to two parties.
                         // This is far from perfect, but should do a relatively good (and cheap) job.
-                        var velocityA = (ILinearVelocity) Manager.GetComponent(entityA, ComponentSystem.Manager.GetComponentTypeId<ILinearVelocity>());
-                        var velocityB = (ILinearVelocity) Manager.GetComponent(entityB, ComponentSystem.Manager.GetComponentTypeId<ILinearVelocity>());
+                        var velocityA = (IVelocity) Manager.GetComponent(entityA, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                        var velocityB = (IVelocity) Manager.GetComponent(entityB, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
                         Vector2 relativeVelocity;
                         if (velocityB != null)
                         {
                             if (velocityA != null)
                             {
                                 // Both parties are moving, compute A's relative velocity.
-                                relativeVelocity = velocityA.Value - velocityB.Value;
+                                relativeVelocity = velocityA.LinearVelocity - velocityB.LinearVelocity;
                             }
                             else
                             {
                                 // A isn't moving, so we can just take B's inverse velocity.
-                                relativeVelocity = -velocityB.Value;
+                                relativeVelocity = -velocityB.LinearVelocity;
                             }
                         }
                         else if (velocityA != null)
                         {
                             // B wasn't moving, so we can take A's speed as is.
-                            relativeVelocity = velocityA.Value;
+                            relativeVelocity = velocityA.LinearVelocity;
                         }
                         else
                         {
@@ -469,7 +469,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Update the previous position to the current one when adding a component.</summary>
         /// <param name="component">The added component.</param>
-        public override void OnComponentAdded(Component component)
+        public override void OnComponentAdded(IComponent component)
         {
             var collidable = component as Collidable;
             if (collidable != null)
@@ -487,7 +487,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Called by the manager when a component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             if (component is Collidable)
             {

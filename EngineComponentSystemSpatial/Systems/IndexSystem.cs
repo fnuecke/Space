@@ -146,7 +146,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Adds index components to all their indexes.</summary>
         /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(Component component)
+        public override void OnComponentAdded(IComponent component)
         {
             base.OnComponentAdded(component);
 
@@ -159,7 +159,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Remove index components from all indexes.</summary>
         /// <param name="component">The component.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             base.OnComponentRemoved(component);
 
@@ -222,8 +222,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
                 var component = m.Component;
                 var bounds = component.ComputeWorldBounds();
-                var velocity = (ILinearVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<ILinearVelocity>());
-                var delta = velocity != null ? velocity.Value : Vector2.Zero;
+                var velocity = (IVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                var delta = velocity != null ? velocity.LinearVelocity : Vector2.Zero;
 
                 // Update all indexes the component is part of.
                 foreach (var index in IndexesForGroups(component.IndexGroupsMask)

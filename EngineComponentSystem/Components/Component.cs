@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -18,13 +17,6 @@ namespace Engine.ComponentSystem.Components
     [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
     public abstract class Component : IComponent
     {
-        #region Constants
-
-        /// <summary>Reusable static instance of the comparer to be used for components.</summary>
-        public static readonly ComponentComparer Comparer = new ComponentComparer();
-
-        #endregion
-
         #region Type ID
 
         /// <summary>The type id unique to the entity/component system in the current program.</summary>
@@ -131,6 +123,19 @@ namespace Engine.ComponentSystem.Components
 
         #region Object
 
+        /// <summary>Compares the current object with another object of the same type.</summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>
+        ///     A 32-bit signed integer that indicates the relative order of the objects being compared. The return value has the
+        ///     following meanings: Value Meaning Less than zero This object is less than the <paramref name="other"/> parameter.
+        ///     Zero This object is equal to <paramref name="other"/>. Greater than zero This object is greater than
+        ///     <paramref name="other"/>.
+        /// </returns>
+        public int CompareTo(IComponent other)
+        {
+            return Id - other.Id;
+        }
+
         /// <summary>Serves as a hash function for a particular type.</summary>
         /// <returns>
         ///     A hash code for the current <see cref="T:System.Object"/>.
@@ -138,31 +143,6 @@ namespace Engine.ComponentSystem.Components
         public override int GetHashCode()
         {
             return Id.GetHashCode();
-        }
-
-        #endregion
-
-        #region Comparer
-
-        /// <summary>Comparer implementation for components, to allow sorted inserting in the component list.</summary>
-        public sealed class ComponentComparer : IComparer<Component>
-        {
-            /// <summary>
-            ///     Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the
-            ///     other.
-            /// </summary>
-            /// <returns>
-            ///     A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>, as shown in
-            ///     the following table.Value Meaning Less than zero<paramref name="x"/> is less than <paramref name="y"/>.Zero
-            ///     <paramref name="x"/> equals <paramref name="y"/>.Greater than zero<paramref name="x"/> is greater than
-            ///     <paramref name="y"/>.
-            /// </returns>
-            /// <param name="x">The first object to compare.</param>
-            /// <param name="y">The second object to compare.</param>
-            public int Compare(Component x, Component y)
-            {
-                return x.Id - y.Id;
-            }
         }
 
         #endregion

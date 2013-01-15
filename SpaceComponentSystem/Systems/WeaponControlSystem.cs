@@ -182,7 +182,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Called when a component is removed.</summary>
         /// <param name="component">The component.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             base.OnComponentRemoved(component);
 

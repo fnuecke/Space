@@ -1,9 +1,10 @@
-﻿using Engine.Serialization;
+﻿using System;
+using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Components
 {
     /// <summary>Used to allow other interfaces for components.</summary>
-    public interface IComponent : IPacketizable
+    public interface IComponent : IPacketizable, IComparable<IComponent>
     {
         /// <summary>The type id unique to the entity/component system in the current program.</summary>
         int GetTypeId();

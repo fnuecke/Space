@@ -96,7 +96,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                     var leaderVelocity = (Velocity) AI.Manager.GetComponent(squad.Leader, Velocity.TypeId);
                     if (leaderVelocity != null)
                     {
-                        target += leaderVelocity.Value;
+                        target += leaderVelocity.LinearVelocity;
                     }
                 }
                 else
@@ -106,7 +106,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                     var targetVelocity = (Velocity) AI.Manager.GetComponent(Target, Velocity.TypeId);
                     if (targetVelocity != null)
                     {
-                        target += targetVelocity.Value;
+                        target += targetVelocity.LinearVelocity;
                     }
                 }
             }

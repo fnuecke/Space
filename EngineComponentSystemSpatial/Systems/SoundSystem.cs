@@ -138,8 +138,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 var emitterPosition = ((Transform) Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
 
                 // The velocity is optional, so we must check if it exists.
-                var neighborVelocity = (ILinearVelocity) Manager.GetComponent(neighbor.Entity, ComponentSystem.Manager.GetComponentTypeId<ILinearVelocity>());
-                var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
+                var neighborVelocity = (IVelocity) Manager.GetComponent(neighbor.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                var emitterVelocity = neighborVelocity != null ? neighborVelocity.LinearVelocity : Vector2.Zero;
 
                 // Check whether to update or start playing.
                 if (_playingSounds.ContainsKey(neighbor.Entity))
@@ -280,10 +280,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
         {
             var position = ((Transform) Manager.GetComponent(entity, Transform.TypeId)).Translation;
             var velocity = Vector2.Zero;
-            var velocityComponent = (ILinearVelocity) Manager.GetComponent(entity, ComponentSystem.Manager.GetComponentTypeId<ILinearVelocity>());
+            var velocityComponent = (IVelocity) Manager.GetComponent(entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
             if (velocityComponent != null)
             {
-                velocity = velocityComponent.Value;
+                velocity = velocityComponent.LinearVelocity;
             }
             return Play(soundCue, ref position, ref velocity);
         }

@@ -14,7 +14,7 @@ namespace Engine.ComponentSystem.RPG.Systems
 
         /// <summary>Check for removed entities to remove them from inventories.</summary>
         /// <param name="component">The removed component.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             base.OnComponentRemoved(component);
 

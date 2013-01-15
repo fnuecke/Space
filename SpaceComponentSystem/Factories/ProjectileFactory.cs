@@ -212,7 +212,7 @@ namespace Space.ComponentSystem.Factories
             var emitterVelocity = (Velocity) manager.GetComponent(emitter, Velocity.TypeId);
 
             // Rotate the offset.
-            var rotation = emitterTransform.Rotation;
+            var rotation = emitterTransform.Angle;
             var cosRadians = (float) Math.Cos(rotation);
             var sinRadians = (float) Math.Sin(rotation);
 
@@ -255,7 +255,7 @@ namespace Space.ComponentSystem.Factories
             // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)
             {
-                velocity += emitterVelocity.Value;
+                velocity += emitterVelocity.LinearVelocity;
             }
 
             if (velocity != Vector2.Zero)

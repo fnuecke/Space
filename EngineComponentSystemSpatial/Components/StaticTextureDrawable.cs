@@ -140,10 +140,23 @@ namespace Engine.ComponentSystem.Spatial.Components
         #region Logic
 
         /// <summary>Draws the texture at the set position with the set properties.</summary>
-        /// <param name="content">The content manager that may be used to load assets.</param>
         /// <param name="batch">The sprite batch that may be used to render textures.</param>
         /// <param name="translation">The translation to apply when drawing.</param>
-        public void Draw(ContentManager content, SpriteBatch batch, WorldPoint translation)
+        public void Draw(SpriteBatch batch, WorldPoint translation)
+        {
+            batch.Draw(
+                _texture,
+                (Vector2) (Position + translation),
+                null,
+                Tint,
+                Rotation,
+                Vector2.Zero,
+                Scale,
+                SpriteEffects.None,
+                0);
+        }
+
+        public void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
         {
             // Try to load our texture if we don't have it yet.
             if (_texture == null)
@@ -155,18 +168,6 @@ namespace Engine.ComponentSystem.Spatial.Components
                 }
                 _texture = content.Load<Texture2D>(_textureName);
             }
-
-            // Then draw it.
-            batch.Draw(
-                _texture,
-                (Vector2) (Position + translation),
-                null,
-                Tint,
-                Rotation,
-                Vector2.Zero,
-                Scale,
-                SpriteEffects.None,
-                0);
         }
 
         #endregion

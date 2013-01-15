@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem
         #region Properties
 
         /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
-        IEnumerable<Component> Components { get; }
+        IEnumerable<IComponent> Components { get; }
 
         /// <summary>A list of all systems registered with this manager.</summary>
         IEnumerable<AbstractSystem> Systems { get; }

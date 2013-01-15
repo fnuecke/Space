@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>Base class for component systems, pre-implementing adding / removal of components.</summary>
     /// <typeparam name="TComponent">The type of component handled in this system.</typeparam>
     public abstract class AbstractComponentSystem<TComponent> : AbstractSystem
-        where TComponent : Component
+        where TComponent : IComponent
     {
         #region Fields
 
@@ -23,7 +23,7 @@ namespace Engine.ComponentSystem.Systems
 
         /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(Component component)
+        public override void OnComponentAdded(IComponent component)
         {
             base.OnComponentAdded(component);
 
@@ -36,7 +36,7 @@ namespace Engine.ComponentSystem.Systems
                 var typedComponent = (TComponent) component;
 
                 // Keep components in order, to stay deterministic.
-                var index = Components.BinarySearch(typedComponent, Component.Comparer);
+                var index = Components.BinarySearch(typedComponent);
                 Debug.Assert(index < 0);
                 Components.Insert(~index, typedComponent);
             }
@@ -44,7 +44,7 @@ namespace Engine.ComponentSystem.Systems
 
         /// <summary>Called by the manager when a new component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             base.OnComponentRemoved(component);
 
@@ -57,7 +57,7 @@ namespace Engine.ComponentSystem.Systems
                 var typedComponent = (TComponent) component;
 
                 // Take advantage of the fact that the list is sorted.
-                var index = Components.BinarySearch(typedComponent, Component.Comparer);
+                var index = Components.BinarySearch(typedComponent);
                 Debug.Assert(index >= 0);
                 Components.RemoveAt(index);
             }
@@ -91,7 +91,7 @@ namespace Engine.ComponentSystem.Systems
 
                     // Components are in order (we are iterating in order), so
                     // just add it at the end.
-                    Debug.Assert(Components.BinarySearch(typedComponent, Component.Comparer) < 0);
+                    Debug.Assert(Components.BinarySearch(typedComponent) < 0);
                     Components.Add(typedComponent);
                 }
             }

@@ -224,8 +224,8 @@ namespace Space.ComponentSystem.Systems
             // Rotate around origin of the formation (which should be the leader's position in
             // most cases).
             var finalPosition = leaderTransform.Translation;
-            var cosRadians = (float) Math.Cos(leaderTransform.Rotation);
-            var sinRadians = (float) Math.Sin(leaderTransform.Rotation);
+            var cosRadians = (float) Math.Cos(leaderTransform.Angle);
+            var sinRadians = (float) Math.Sin(leaderTransform.Angle);
             finalPosition.X += (-position.Y * cosRadians - position.X * sinRadians) * data.Spacing;
             finalPosition.Y += (-position.Y * sinRadians + position.X * cosRadians) * data.Spacing;
 
@@ -234,7 +234,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(Component component)
+        public override void OnComponentAdded(IComponent component)
         {
             base.OnComponentAdded(component);
 
@@ -247,7 +247,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Called when a component is removed.</summary>
         /// <param name="component">The component.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             base.OnComponentRemoved(component);
 

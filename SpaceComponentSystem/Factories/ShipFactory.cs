@@ -252,7 +252,6 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Acceleration>(entity);
             manager.AddComponent<Gravitation>(entity).Initialize();
             manager.AddComponent<Velocity>(entity);
-            manager.AddComponent<Spin>(entity);
             manager.AddComponent<ShipControl>(entity);
             manager.AddComponent<WeaponControl>(entity);
             manager.AddComponent<Energy>(entity);

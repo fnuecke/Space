@@ -104,14 +104,14 @@ namespace Engine.ComponentSystem.Spatial.Components
         }
 
         /// <summary>The angle of the current orientation.</summary>
-        public float Rotation
+        public float Angle
         {
-            get { return _rotation; }
+            get { return _angle; }
             set
             {
                 Debug.Assert(!float.IsNaN(value));
-                _nextRotation = value;
-                _rotationChanged = true;
+                _nextAngle = value;
+                _angleChanged = true;
             }
         }
 
@@ -135,13 +135,13 @@ namespace Engine.ComponentSystem.Spatial.Components
         private bool _translationChanged;
 
         /// <summary>The current rotation of the component.</summary>
-        private float _rotation;
+        private float _angle;
 
         /// <summary>The rotation to set to when performing the next update.</summary>
-        private float _nextRotation;
+        private float _nextAngle;
 
         /// <summary>Don't rely on float equality checks.</summary>
-        private bool _rotationChanged;
+        private bool _angleChanged;
 
         #endregion
 
@@ -162,9 +162,9 @@ namespace Engine.ComponentSystem.Spatial.Components
             _translation = otherTransform._translation;
             _nextTranslation = otherTransform._nextTranslation;
             _translationChanged = otherTransform._translationChanged;
-            _rotation = otherTransform._rotation;
-            _nextRotation = otherTransform._nextRotation;
-            _rotationChanged = otherTransform._rotationChanged;
+            _angle = otherTransform._angle;
+            _nextAngle = otherTransform._nextAngle;
+            _angleChanged = otherTransform._angleChanged;
 
             return this;
         }
@@ -181,7 +181,7 @@ namespace Engine.ComponentSystem.Spatial.Components
             IndexGroupsMask = indexGroupsMask;
 
             Translation = translation;
-            Rotation = rotation;
+            Angle = rotation;
 
             // Initialization must be called from a synchronous context (as
             // it must only be used when constructing the component). Thus
@@ -220,9 +220,9 @@ namespace Engine.ComponentSystem.Spatial.Components
             _translation = WorldPoint.Zero;
             _nextTranslation = WorldPoint.Zero;
             _translationChanged = false;
-            _rotation = 0;
-            _nextRotation = 0;
-            _rotationChanged = false;
+            _angle = 0;
+            _nextAngle = 0;
+            _angleChanged = false;
         }
 
         #endregion
@@ -258,15 +258,15 @@ namespace Engine.ComponentSystem.Spatial.Components
                 Manager.SendMessage(message);
             }
 
-            if (_rotationChanged)
+            if (_angleChanged)
             {
                 RotationChanged message;
                 message.Component = this;
-                message.PreviousRotation = _rotation;
-                message.CurrentRotation = _nextRotation;
+                message.PreviousRotation = _angle;
+                message.CurrentRotation = _nextAngle;
 
-                _rotation = MathHelper.WrapAngle(_nextRotation);
-                _rotationChanged = false;
+                _angle = MathHelper.WrapAngle(_nextAngle);
+                _angleChanged = false;
 
                 Manager.SendMessage(message);
             }

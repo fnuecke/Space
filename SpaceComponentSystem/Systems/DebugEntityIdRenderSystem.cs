@@ -54,7 +54,7 @@ namespace Space.ComponentSystem.Systems
                 if (transform != null)
                 {
                     var text = string.Format(
-                        "ID: {0} @ {1} / {2}", transform.Entity, transform.Translation, transform.Rotation);
+                        "ID: {0} @ {1} / {2}", transform.Entity, transform.Translation, transform.Angle);
 
                     FarPosition position;
                     interpolation.GetInterpolatedPosition(transform.Entity, out position);

@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         protected override void UpdateComponent(long frame, Acceleration component)
         {
             // Apply acceleration if velocity is available.
-            ((Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId)).Value += component.Value;
+            ((Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId)).LinearVelocity += component.Value;
 
             // Then reset it for the next update.
             component.Value.X = 0;

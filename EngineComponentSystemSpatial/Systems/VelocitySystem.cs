@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Spatial.Systems
 {
@@ -11,7 +12,15 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="component">The component to update.</param>
         protected override void UpdateComponent(long frame, Velocity component)
         {
-            ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Translation += component.Value;
+            var transform = (Transform) Manager.GetComponent(component.Entity, Transform.TypeId);
+            if (component.LinearVelocity != Vector2.Zero)
+            {
+                transform.Translation += component.LinearVelocity;
+            }
+            if (component.AngularVelocity != 0f)
+            { 
+                transform.Angle += component.AngularVelocity;
+            }
         }
     }
 }

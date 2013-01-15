@@ -29,14 +29,14 @@ namespace Space.ComponentSystem.Systems
             {
                 transform.Translation = component.Position;
                 transform.Update();
-                transform.Rotation = 0;
+                transform.Angle = 0;
             }
 
             // Kill of remainder velocity.
             var velocity = ((Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId));
             if (velocity != null)
             {
-                velocity.Value = Vector2.Zero;
+                velocity.LinearVelocity = Vector2.Zero;
             }
 
             // Fill up health / energy.
@@ -96,7 +96,7 @@ namespace Space.ComponentSystem.Systems
             var velocity = ((Velocity) Manager.GetComponent(entity, Velocity.TypeId));
             if (velocity != null)
             {
-                velocity.Value = Vector2.Zero;
+                velocity.LinearVelocity = Vector2.Zero;
             }
         }
 

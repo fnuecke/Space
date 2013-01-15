@@ -157,7 +157,7 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
-                return transform != null ? transform.Rotation : 0;
+                return transform != null ? transform.Angle : 0;
             }
         }
 
@@ -192,8 +192,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var velocity = (Velocity) Manager.GetComponent(Entity, Velocity.TypeId);
-                return velocity != null ? velocity.Value.Length() : 0;
+                var velocity = (IVelocity) Manager.GetComponent(Entity, Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                return velocity != null ? velocity.LinearVelocity.Length() : 0;
             }
         }
 
@@ -208,8 +208,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var spin = (Spin) Manager.GetComponent(Entity, Spin.TypeId);
-                return spin != null ? spin.Value : 0;
+                var velocity = (IVelocity) Manager.GetComponent(Entity, Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                return velocity != null ? velocity.AngularVelocity : 0f;
             }
         }
 

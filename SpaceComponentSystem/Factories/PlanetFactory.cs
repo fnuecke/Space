@@ -303,7 +303,9 @@ namespace Space.ComponentSystem.Factories
                     CameraSystem.IndexGroupMask); // Must be detectable by the camera.
 
             // Make it rotate.
-            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / Settings.TicksPerSecond);
+            manager.AddComponent<Velocity>(entity).Initialize(
+                Vector2.Zero,
+                MathHelper.ToRadians(rotationSpeed) / Settings.TicksPerSecond);
 
             // Make it attract stuff if it has mass.
             if (mass > 0)

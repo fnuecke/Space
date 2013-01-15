@@ -72,7 +72,6 @@ namespace Space.ComponentSystem.Systems
             Manager.GetComponent(entity, ArtificialIntelligence.TypeId).Enabled = awake;
             Manager.GetComponent(entity, Velocity.TypeId).Enabled = awake;
             Manager.GetComponent(entity, Acceleration.TypeId).Enabled = awake;
-            Manager.GetComponent(entity, Spin.TypeId).Enabled = awake;
             Manager.GetComponent(entity, ShipControl.TypeId).Enabled = awake;
             Manager.GetComponent(entity, WeaponControl.TypeId).Enabled = awake;
         }

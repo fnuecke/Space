@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
 
             // Get components we depend upon / modify.
             var transform = (Transform) Manager.GetComponent(component.Entity, Transform.TypeId);
-            var spin = (Spin) Manager.GetComponent(component.Entity, Spin.TypeId);
+            var velocity = (IVelocity) Manager.GetComponent(component.Entity, Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
             var attributes =
                 (Attributes<AttributeType>) Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
             var info = (ShipInfo) Manager.GetComponent(component.Entity, ShipInfo.TypeId);
@@ -50,8 +50,7 @@ namespace Space.ComponentSystem.Systems
                 if (component.Stabilizing)
                 {
                     // We want to stabilize.
-                    var velocity = (Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId);
-                    direction = -(velocity.Value + acceleration.Value);
+                    direction = -(velocity.LinearVelocity + acceleration.Value);
                     desiredAccelerationForce = direction.Length() * mass;
                 }
             }
@@ -78,7 +77,7 @@ namespace Space.ComponentSystem.Systems
                 var angle =
                     Math.Abs(
                         MathHelper.ToDegrees(
-                            Angle.MinAngle(transform.Rotation, (float) Math.Atan2(direction.Y, direction.X))));
+                            Angle.MinAngle(transform.Angle, (float) Math.Atan2(direction.Y, direction.X))));
                 maxAccelerationForce *= Math.Max(0, 200f - Math.Max(0, angle - 60f)) / 200f;
 
                 // Get the percentage of the overall thrusters' power we
@@ -122,7 +121,7 @@ namespace Space.ComponentSystem.Systems
                 effects.SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, true);
                 effects.SetGroupDirection(
                     ParticleEffects.EffectGroup.Thruster,
-                    (float) Math.Atan2(-direction.Y, -direction.X) - transform.Rotation,
+                    (float) Math.Atan2(-direction.Y, -direction.X) - transform.Angle,
                     Math.Max(0.3f, load));
 
                 // Enable thruster sound for this ship.
@@ -142,13 +141,13 @@ namespace Space.ComponentSystem.Systems
             var rotation = attributes.GetValue(AttributeType.RotationForce) / (mass * Settings.TicksPerSecond);
 
             // Update rotation / spin.
-            var currentDelta = Angle.MinAngle(transform.Rotation, component.TargetRotation);
+            var currentDelta = Angle.MinAngle(transform.Angle, component.TargetRotation);
             var requiredSpin = (currentDelta > 0 ? Directions.Right.ToScalar() : Directions.Left.ToScalar()) * rotation;
 
             // If the target rotation changed and we're either not spinning,
             // or spinning the wrong way.
             if (component.TargetRotationChanged &&
-                Math.Sign(spin.Value) != Math.Sign(requiredSpin))
+                Math.Sign(velocity.AngularVelocity) != Math.Sign(requiredSpin))
             {
                 // Is it worth starting to spin, or should we just jump to the position?
                 // If the distance we need to spin is lower than what we spin in one tick,
@@ -156,28 +155,28 @@ namespace Space.ComponentSystem.Systems
                 if (Math.Abs(currentDelta) > rotation)
                 {
                     // Spin, the angle takes multiple frames to rotate.
-                    spin.Value = requiredSpin;
+                    velocity.AngularVelocity = requiredSpin;
                 }
                 else
                 {
                     // Set, only one frame (this one) required.
-                    transform.Rotation = component.TargetRotation;
-                    spin.Value = 0;
+                    transform.Angle = component.TargetRotation;
+                    velocity.AngularVelocity = 0;
                 }
             }
 
             // Check if we're spinning.
-            if (Math.Abs(spin.Value) > 0.001f)
+            if (Math.Abs(velocity.AngularVelocity) > 0.001f)
             {
                 // Yes, check if we passed our target rotation. This is the
                 // case when the distance to the target in the last step was
                 // smaller than our rotational speed.
                 var remainingAngle = Math.Abs(Angle.MinAngle(component.PreviousRotation, component.TargetRotation));
-                if (remainingAngle < Math.Abs(spin.Value))
+                if (remainingAngle < Math.Abs(velocity.AngularVelocity))
                 {
                     // Yes, set to that rotation and stop spinning.
-                    transform.Rotation = component.TargetRotation;
-                    spin.Value = 0;
+                    transform.Angle = component.TargetRotation;
+                    velocity.AngularVelocity = 0;
                 }
             }
 
@@ -185,7 +184,7 @@ namespace Space.ComponentSystem.Systems
             weaponControl.Shooting = component.Shooting;
 
             // Remember rotation in this update for the next.
-            component.PreviousRotation = transform.Rotation;
+            component.PreviousRotation = transform.Angle;
 
             // We handled this change, if there was one.
             component.TargetRotationChanged = false;

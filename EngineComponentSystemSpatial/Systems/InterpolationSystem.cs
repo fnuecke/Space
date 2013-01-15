@@ -62,14 +62,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// </summary>
         private Dictionary<int, WorldPoint> _newPositions = new Dictionary<int, WorldPoint>();
 
-        /// <summary>Rotations of entities from the last render cycle. We use these to interpolate to the current ones.</summary>
-        private Dictionary<int, float> _rotations = new Dictionary<int, float>();
+        /// <summary>Angles of entities from the last render cycle. We use these to interpolate to the current ones.</summary>
+        private Dictionary<int, float> _angles = new Dictionary<int, float>();
 
         /// <summary>
-        ///     New list of rotations. We swap between the two after each update, to discard rotations for entities not
+        ///     New list of angles. We swap between the two after each update, to discard angles for entities not
         ///     rendered to the screen.
         /// </summary>
-        private Dictionary<int, float> _newRotations = new Dictionary<int, float>();
+        private Dictionary<int, float> _newAngles = new Dictionary<int, float>();
 
         #endregion
 
@@ -127,63 +127,62 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
                     // Get current target position and rotation based off the simulation state.
                     var targetPosition = component.Translation;
-                    var targetRotation = component.Rotation;
+                    var targetRotation = component.Angle;
 
                     // Interpolate the position.
-                    var velocity = (ILinearVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<ILinearVelocity>());
+                    var velocity = (IVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
                     var position = targetPosition;
                     if (_positions.ContainsKey(component.Entity))
                     {
                         // Predict future translation to interpolate towards that.
-                        if (velocity != null && velocity.Value != Vector2.Zero)
+                        if (velocity != null && velocity.LinearVelocity != Vector2.Zero)
                         {
                             // Clamp interpolated value to an interval around the actual target position.
                             position = WorldPoint.Clamp(
-                                _positions[component.Entity] + velocity.Value * delta,
-                                targetPosition - velocity.Value * 0.25f,
-                                targetPosition + velocity.Value * 0.75f);
+                                _positions[component.Entity] + velocity.LinearVelocity * delta,
+                                targetPosition - velocity.LinearVelocity * 0.25f,
+                                targetPosition + velocity.LinearVelocity * 0.75f);
                         }
                     }
                     else if (velocity != null)
                     {
                         // We had no position for this entity, pick an initial one.
-                        position -= velocity.Value * 0.25f;
+                        position -= velocity.LinearVelocity * 0.25f;
                     }
 
                     // Store the interpolated position in the list of positions to keep.
                     _newPositions[component.Entity] = position;
 
                     // Interpolate the rotation.
-                    var spin = (IAngularVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IAngularVelocity>());
                     var rotation = targetRotation;
-                    if (_rotations.ContainsKey(component.Entity))
+                    if (_angles.ContainsKey(component.Entity))
                     {
                         // Predict future rotation to interpolate towards that.
-                        if (spin != null && System.Math.Abs(spin.Value) > 0f)
+                        if (velocity != null && velocity.AngularVelocity != 0f)
                         {
                             // Always interpolate via the shorter way, to avoid jumps.
-                            targetRotation = _rotations[component.Entity] +
-                                             Angle.MinAngle(_rotations[component.Entity], targetRotation);
+                            targetRotation = _angles[component.Entity] +
+                                             Angle.MinAngle(_angles[component.Entity], targetRotation);
                             // Clamp to a safe interval. This will make sure we don't
                             // stray from the correct value too far. Note that the
                             // FarPosition.Clamp above does check what we do here
                             // automatically, XNA's clamp doesn't (make sure the lower
                             // bound is smaller than the higher, that is).
-                            var from = targetRotation - spin.Value * 0.25f;
-                            var to = targetRotation + spin.Value * 0.75f;
+                            var from = targetRotation - velocity.AngularVelocity * 0.25f;
+                            var to = targetRotation + velocity.AngularVelocity * 0.75f;
                             var low = System.Math.Min(from, to);
                             var high = System.Math.Max(from, to);
-                            rotation = MathHelper.Clamp(_rotations[component.Entity] + spin.Value * delta, low, high);
+                            rotation = MathHelper.Clamp(_angles[component.Entity] + velocity.AngularVelocity * delta, low, high);
                         }
                     }
-                    else if (spin != null)
+                    else if (velocity != null)
                     {
                         // We had no rotation for this entity, pick an initial one.
-                        rotation -= spin.Value * 0.25f;
+                        rotation -= velocity.AngularVelocity * 0.25f;
                     }
 
                     // Store the interpolated rotation in the list of rotations to keep.
-                    _newRotations[component.Entity] = rotation;
+                    _newAngles[component.Entity] = rotation;
                 }
 
                 // Clear for next iteration.
@@ -197,10 +196,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
             _newPositions = oldPositions;
 
             // Swap rotation lists.
-            var oldRotations = _rotations;
+            var oldRotations = _angles;
             oldRotations.Clear();
-            _rotations = _newRotations;
-            _newRotations = oldRotations;
+            _angles = _newAngles;
+            _newAngles = oldRotations;
         }
 
         /// <summary>Returns the current bounds of the viewport, i.e. the rectangle of the world to actually render.</summary>
@@ -208,7 +207,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Called by the manager when a new component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             base.OnComponentRemoved(component);
 
@@ -252,14 +251,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
         public void GetInterpolatedRotation(int entity, out float rotation)
         {
             // Try to get the interpolated rotation.
-            if (_rotations.TryGetValue(entity, out rotation))
+            if (_angles.TryGetValue(entity, out rotation))
             {
                 return;
             }
 
             // We don't have one, use the fixed one instead.
             var transform = (Transform) Manager.GetComponent(entity, Transform.TypeId);
-            rotation = transform != null ? transform.Rotation : 0f;
+            rotation = transform != null ? transform.Angle : 0f;
         }
 
         #endregion

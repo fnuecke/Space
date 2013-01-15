@@ -410,7 +410,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                         cohesion += toNeighbor * (1 - AI.Configuration.FlockingSeparation / distance) * 0.5f;
 
                         var neighborVelocity = (Velocity) AI.Manager.GetComponent(neighbor.Entity, Velocity.TypeId);
-                        cohesion += neighborVelocity.Value;
+                        cohesion += neighborVelocity.LinearVelocity;
                         ++cohesionNormalizer;
                     }
                 }
@@ -435,7 +435,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                     var leaderVelocity = (Velocity) AI.Manager.GetComponent(squad.Leader, Velocity.TypeId);
                     if (leaderVelocity != null)
                     {
-                        formation += leaderVelocity.Value;
+                        formation += leaderVelocity.LinearVelocity;
                     }
                 }
             }

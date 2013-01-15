@@ -683,7 +683,7 @@ namespace Engine.Simulation
             #region Properties
 
             /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
-            IEnumerable<Component> IManager.Components
+            IEnumerable<IComponent> IManager.Components
             {
                 get { throw new NotSupportedException(); }
             }

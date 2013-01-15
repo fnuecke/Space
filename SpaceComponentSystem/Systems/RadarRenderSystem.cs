@@ -275,7 +275,7 @@ namespace Space.ComponentSystem.Systems
                     iconPosition,
                     null,
                     Color.White * ld,
-                    neighborDetectable.RotateIcon ? neighborTransform.Rotation : 0,
+                    neighborDetectable.RotateIcon ? neighborTransform.Angle : 0,
                     origin,
                     ld,
                     SpriteEffects.None,

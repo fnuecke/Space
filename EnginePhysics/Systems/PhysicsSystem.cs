@@ -570,7 +570,7 @@ namespace Engine.Physics.Systems
 
         /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(Component component)
+        public override void OnComponentAdded(IComponent component)
         {
             var fixture = component as Fixture;
             var body = component as Body;
@@ -612,7 +612,7 @@ namespace Engine.Physics.Systems
 
         /// <summary>Called by the manager when a component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             var fixture = component as Fixture;
             var body = component as Body;

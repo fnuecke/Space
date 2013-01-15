@@ -69,10 +69,8 @@
     <Compile Include="Components\IDrawable.cs" />
     <Compile Include="Components\IIndexable.cs" />
     <Compile Include="Components\Intersection.cs" />
-    <Compile Include="Components\IAngularVelocity.cs" />
-    <Compile Include="Components\ILinearVelocity.cs" />
+    <Compile Include="Components\IVelocity.cs" />
     <Compile Include="Components\Sound.cs" />
-    <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\StaticTextureDrawable.cs" />
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Components\Velocity.cs" />
@@ -92,7 +90,6 @@
     <Compile Include="Systems\IndexSystem.cs" />
     <Compile Include="Systems\InterpolationSystem.cs" />
     <Compile Include="Systems\SoundSystem.cs" />
-    <Compile Include="Systems\SpinSystem.cs" />
     <Compile Include="Systems\TextureRenderSystem.cs" />
     <Compile Include="Systems\TranslationSystem.cs" />
     <Compile Include="Systems\VelocitySystem.cs" />

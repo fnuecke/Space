@@ -80,26 +80,20 @@
     <Compile Include="..\EngineComponentSystemSpatial\Components\Friction.cs">
       <Link>Components\Friction.cs</Link>
     </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\IAngularVelocity.cs">
-      <Link>Components\IAngularVelocity.cs</Link>
-    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\IDrawable.cs">
       <Link>Components\IDrawable.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\IIndexable.cs">
       <Link>Components\IIndexable.cs</Link>
     </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\ILinearVelocity.cs">
-      <Link>Components\ILinearVelocity.cs</Link>
-    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\Intersection.cs">
       <Link>Components\Intersection.cs</Link>
     </Compile>
+    <Compile Include="..\EngineComponentSystemSpatial\Components\IVelocity.cs">
+      <Link>Components\IVelocity.cs</Link>
+    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\Sound.cs">
       <Link>Components\Sound.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\Spin.cs">
-      <Link>Components\Spin.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\StaticTextureDrawable.cs">
       <Link>Components\StaticTextureDrawable.cs</Link>
@@ -154,9 +148,6 @@
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\SoundSystem.cs">
       <Link>Systems\SoundSystem.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Systems\SpinSystem.cs">
-      <Link>Systems\SpinSystem.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\TextureRenderSystem.cs">
       <Link>Systems\TextureRenderSystem.cs</Link>

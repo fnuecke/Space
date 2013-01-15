@@ -3,6 +3,7 @@ using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -21,7 +22,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     camera positioning.
     /// </summary>
     public abstract class TextureRenderSystem
-        : AbstractComponentSystem<TextureRenderer>, IDrawingSystem, IMessagingSystem
+        : AbstractComponentSystem<IDrawable>, IDrawingSystem, IMessagingSystem
     {
         #region Type ID
 
@@ -98,10 +99,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
             foreach (var component in Components)
             {
-                if (!string.IsNullOrWhiteSpace(component.TextureName))
-                {
-                    component.Texture = content.Load<Texture2D>(component.TextureName);
-                }
+                component.LoadContent(content, graphics);
             }
         }
 

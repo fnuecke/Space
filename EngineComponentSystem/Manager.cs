@@ -33,7 +33,7 @@ namespace Engine.ComponentSystem
         #region Properties
 
         /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
-        public IEnumerable<Component> Components
+        public IEnumerable<IComponent> Components
         {
             get { return _componentIds.Select(id => _components[id]); }
         }
@@ -484,7 +484,7 @@ namespace Engine.ComponentSystem
                 ReleaseEntity(_entities[entity]);
             }
             _entities.Clear();
-            foreach (var component in Components)
+            foreach (var component in _componentIds.Select(id => _components[id]))
             {
                 ReleaseComponent(component);
             }
@@ -702,7 +702,7 @@ namespace Engine.ComponentSystem
 
             // Copy components and entities.
             copy._components.Clear();
-            foreach (var component in Components)
+            foreach (var component in _componentIds.Select(id => _components[id]))
             {
                 // The create the component and set it up.
                 var componentCopy = AllocateComponent(component.GetType()).Initialize(component);

@@ -32,7 +32,7 @@ namespace Engine.Tests.ComponentSystem.Common.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.Value += new Vector2(0, 1)
+                       instance => instance.LinearVelocity += new Vector2(0, 1)
                    }.Concat(base.GetValueChangers());
         }
     }

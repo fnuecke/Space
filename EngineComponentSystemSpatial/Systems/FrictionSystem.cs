@@ -22,19 +22,19 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var velocity = ((Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId));
 
             // Save previous velocity for stop check (due to MinVelocity).
-            var previousVelocity = velocity.Value.LengthSquared();
+            var previousVelocity = velocity.LinearVelocity.LengthSquared();
 
             // Apply friction.
-            velocity.Value *= (1.0f - component.Value);
+            velocity.LinearVelocity *= (1.0f - component.Value);
 
             // If we're below a certain minimum speed, just stop, otherwise
             // it'd be hard to. We only stop if we were faster than the minimum,
             // before application of friction. Otherwise we might have problems
             // getting moving at all, if the acceleration is too low.
             if (previousVelocity >= component.StopVelocity &&
-                velocity.Value.LengthSquared() < component.StopVelocity)
+                velocity.LinearVelocity.LengthSquared() < component.StopVelocity)
             {
-                velocity.Value = Vector2.Zero;
+                velocity.LinearVelocity = Vector2.Zero;
             }
         }
     }

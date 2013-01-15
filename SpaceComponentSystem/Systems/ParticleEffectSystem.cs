@@ -273,7 +273,7 @@ namespace Space.ComponentSystem.Systems
             var impulse = Vector2.Zero;
             if (velocity != null)
             {
-                impulse = velocity.Value;
+                impulse = velocity.LinearVelocity;
 
                 // Scale the impulse to "per second" speed.
                 impulse *= _simulationFps();

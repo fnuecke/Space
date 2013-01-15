@@ -103,11 +103,11 @@ namespace Space.ComponentSystem.Systems
                     // so we must check manually if the ship is accelerating.
                     var otherShipInfo = (ShipInfo) Manager.GetComponent(neighbor.Entity, ShipInfo.TypeId);
                     if (otherShipInfo != null && !otherShipInfo.IsAccelerating &&
-                        otherVelocity.Value.LengthSquared() < DockVelocity && distanceSquared < DockDistance)
+                        otherVelocity.LinearVelocity.LengthSquared() < DockVelocity && distanceSquared < DockDistance)
                     {
                         // It's a ship that's not accelerating, and in range for docking.
                         otherTransform.Translation = myTransform.Translation;
-                        otherVelocity.Value = Vector2.Zero;
+                        otherVelocity.LinearVelocity = Vector2.Zero;
                     }
                     else if ((otherShipInfo == null || !otherShipInfo.IsAccelerating) && distanceSquared > 0.001f)
                         // epsilon to avoid delta.Normalize() generating NaNs

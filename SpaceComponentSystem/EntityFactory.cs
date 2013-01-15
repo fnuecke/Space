@@ -117,7 +117,7 @@ namespace Space.ComponentSystem
                    .Initialize(
                        ((Transform) manager.GetComponent(center, Transform.TypeId)).Translation,
                        indexGroupsMask: DetectableSystem.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
-            manager.AddComponent<Spin>(entity).Initialize(((float) Math.PI) / period);
+            manager.AddComponent<Velocity>(entity).Initialize(Vector2.Zero, MathHelper.Pi / period);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, orbitRadius, orbitRadius, 0, period, 0);
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Stolen/Ships/sensor_array_dish");
             manager.AddComponent<ShipSpawner>(entity);

@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Systems
         {
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             return avatar > 0
-                       ? ((Velocity) Manager.GetComponent(avatar, Velocity.TypeId)).Value
+                       ? ((Velocity) Manager.GetComponent(avatar, Velocity.TypeId)).LinearVelocity
                        : Vector2.Zero;
         }
 

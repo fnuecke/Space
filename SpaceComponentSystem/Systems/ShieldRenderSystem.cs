@@ -193,7 +193,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(Component component)
+        public override void OnComponentAdded(IComponent component)
         {
             base.OnComponentAdded(component);
 
@@ -204,7 +204,7 @@ namespace Space.ComponentSystem.Systems
                 var typedComponent = shield;
 
                 // Keep components in order, to stay deterministic.
-                var index = _shields.BinarySearch(typedComponent, Component.Comparer);
+                var index = _shields.BinarySearch(typedComponent);
                 Debug.Assert(index < 0);
                 _shields.Insert(~index, typedComponent);
             }
@@ -212,7 +212,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Called by the manager when a new component was removed.</summary>
         /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(Component component)
+        public override void OnComponentRemoved(IComponent component)
         {
             base.OnComponentRemoved(component);
 
@@ -223,7 +223,7 @@ namespace Space.ComponentSystem.Systems
                 var typedComponent = shield;
 
                 // Take advantage of the fact that the list is sorted.
-                var index = _shields.BinarySearch(typedComponent, Component.Comparer);
+                var index = _shields.BinarySearch(typedComponent);
                 Debug.Assert(index >= 0);
                 _shields.RemoveAt(index);
             }
@@ -258,7 +258,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Components are in order (we are iterating in order), so
                     // just add it at the end.
-                    Debug.Assert(_shields.BinarySearch(typedComponent, Component.Comparer) < 0);
+                    Debug.Assert(_shields.BinarySearch(typedComponent) < 0);
                     _shields.Add(typedComponent);
                 }
             }

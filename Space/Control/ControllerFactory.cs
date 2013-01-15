@@ -143,7 +143,6 @@ namespace Space.Control
                     // Velocity must come after acceleration, so that all other forces
                     // already have been applied (gravitation).
                     new VelocitySystem(),
-                    new SpinSystem(),
                     new EllipsePathSystem(),
                     
                     // Update position after everything that might want to update it

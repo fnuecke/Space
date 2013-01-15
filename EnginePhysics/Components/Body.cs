@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.Physics.Joints;
 using Engine.Physics.Math;
 using Engine.Physics.Systems;
@@ -21,7 +21,7 @@ namespace Engine.Physics.Components
     ///     A body represents a physical object, tracking some of its global properties such as mass, velocity and world
     ///     transform.
     /// </summary>
-    public sealed class Body : Component
+    public sealed class Body : Component, IVelocity
     {
         #region Type ID
 

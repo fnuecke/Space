@@ -52,7 +52,7 @@ namespace Engine.ComponentSystem
                     // Keep components in type caches sorted, to keep looping
                     // over them deterministic (otherwise recently deserialized
                     // instances may behave differently).
-                    TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(component, Component.Comparer), component);
+                    TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(component), component);
 
                     // Move on to parent type.
                     typeId = ComponentHierarchy[typeId];
@@ -73,7 +73,7 @@ namespace Engine.ComponentSystem
                     // Remove for this type.
                     if (TypeCache[typeId] != null)
                     {
-                        TypeCache[typeId].RemoveAt(TypeCache[typeId].BinarySearch(component, Component.Comparer));
+                        TypeCache[typeId].RemoveAt(TypeCache[typeId].BinarySearch(component));
                     }
 
                     // Move on to parent type.
@@ -138,7 +138,7 @@ namespace Engine.ComponentSystem
                             {
                                 // Found this type as a parent, add the component.
                                 TypeCache[typeId].Insert(
-                                    ~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
+                                    ~TypeCache[typeId].BinarySearch(Components[i]), Components[i]);
 
                                 // No need to go further up the hierarchy.
                                 break;

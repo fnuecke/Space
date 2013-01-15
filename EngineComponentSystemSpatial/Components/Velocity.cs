@@ -3,13 +3,8 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Spatial.Components
 {
-    /// <summary>
-    ///     Represents the velocity of an object.
-    ///     <para>
-    ///         Requires: <c>Transform</c>.
-    ///     </para>
-    /// </summary>
-    public sealed class Velocity : Component, ILinearVelocity
+    /// <summary>Represents the velocity of a simple entity.</summary>
+    public sealed class Velocity : Component, IVelocity
     {
         #region Type ID
 
@@ -26,8 +21,11 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Fields
 
-        /// <summary>The directed speed of the object.</summary>
-        public Vector2 Value { get; set; }
+        /// <summary>Gets or sets the linear velocity.</summary>
+        public Vector2 LinearVelocity { get; set; }
+
+        /// <summary>Gets or sets the angular velocity.</summary>
+        public float AngularVelocity { get; set; }
 
         #endregion
 
@@ -39,16 +37,21 @@ namespace Engine.ComponentSystem.Spatial.Components
         {
             base.Initialize(other);
 
-            Value = ((Velocity) other).Value;
+            var otherVelocity = (Velocity) other;
+            LinearVelocity = otherVelocity.LinearVelocity;
+            AngularVelocity = otherVelocity.AngularVelocity;
 
             return this;
         }
 
         /// <summary>Initialize with the specified velocity.</summary>
-        /// <param name="velocity">The velocity.</param>
-        public Velocity Initialize(Vector2 velocity)
+        /// <param name="linearVelocity">The linear velocity.</param>
+        /// <param name="angularVelocity">The angular velocity.</param>
+        /// <returns></returns>
+        public Velocity Initialize(Vector2 linearVelocity, float angularVelocity = 0f)
         {
-            Value = velocity;
+            LinearVelocity = linearVelocity;
+            AngularVelocity = angularVelocity;
 
             return this;
         }
@@ -58,7 +61,8 @@ namespace Engine.ComponentSystem.Spatial.Components
         {
             base.Reset();
 
-            Value = Vector2.Zero;
+            LinearVelocity = Vector2.Zero;
+            AngularVelocity = 0f;
         }
 
         #endregion

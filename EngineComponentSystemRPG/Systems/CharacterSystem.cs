@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 
@@ -13,7 +14,7 @@ namespace Engine.ComponentSystem.RPG.Systems
 
         /// <summary>Called by the manager when a new component was added.</summary>
         /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(ComponentSystem.Components.Component component)
+        public override void OnComponentAdded(IComponent component)
         {
             // Check if the component is of the right type.
             if (component is Attributes<TAttribute>)

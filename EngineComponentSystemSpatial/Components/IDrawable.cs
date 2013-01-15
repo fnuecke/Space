@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using Engine.ComponentSystem.Components;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 #if FARMATH
@@ -14,15 +15,19 @@ namespace Engine.ComponentSystem.Spatial.Components
     ///     drawing system each frame. If drawables also have an <see cref="IIndexable"/> component, the drawing system can cull
     ///     cull invisible entities automatically.
     /// </summary>
-    public interface IDrawable
+    public interface IDrawable : IComponent
     {
         /// <summary>
         ///     Draws the entity of the component. The implementation will generally depend on the type of entity (via the type of
         ///     <see cref="IDrawable"/> implementation).
         /// </summary>
-        /// <param name="content">The content manager that may be used to load assets.</param>
         /// <param name="batch">The sprite batch that may be used to render textures.</param>
         /// <param name="translation">The translation to apply when drawing.</param>
-        void Draw(ContentManager content, SpriteBatch batch, WorldPoint translation);
+        void Draw(SpriteBatch batch, WorldPoint translation);
+
+        /// <summary>Called when the component should (re)load any assets.</summary>
+        /// <param name="content">The content manager to use.</param>
+        /// <param name="graphics">The graphics device to render to.</param>
+        void LoadContent(ContentManager content, IGraphicsDeviceService graphics);
     }
 }
