@@ -1,5 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Messages;
 using Engine.Physics.Math;
 using Engine.Physics.Systems;
 using Engine.Serialization;
@@ -20,7 +22,7 @@ namespace Engine.Physics.Components
     ///     where each fixture has an implementation of its own shape (e.g. circle, polygon...) Fixtures only track their
     ///     position relative to the body they belong to.
     /// </summary>
-    public abstract class Fixture : Component
+    public abstract class Fixture : Component, IIndexable
     {
         #region Type ID
 
@@ -53,6 +55,43 @@ namespace Engine.Physics.Components
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Whether the component is enabled or not. Disabled components will not be handled in the component's system's
+        /// <c>Update()</c> method.
+        /// </summary>
+        public override bool Enabled
+        {
+            get { return Body.Enabled; }
+            set { /* silently ignore */ }
+        }
+
+        /// <summary>The index group mask determining which indexes the component will be tracked by.</summary>
+        public ulong IndexGroupsMask
+        {
+            get { return _indexGroupsMask; }
+            internal set
+            {
+                if (value == _indexGroupsMask)
+                {
+                    return;
+                }
+
+                var oldMask = _indexGroupsMask;
+                _indexGroupsMask = value;
+
+                if (Manager == null)
+                {
+                    return;
+                }
+
+                IndexGroupsChanged message;
+                message.Component = this;
+                message.AddedIndexGroups = value & ~oldMask;
+                message.RemovedIndexGroups = oldMask & ~value;
+                Manager.SendMessage(message);
+            }
+        }
 
         /// <summary>Gets the body this fixture is attached to.</summary>
         public Body Body
@@ -191,6 +230,9 @@ namespace Engine.Physics.Components
         /// <summary>The restitution (bounciness) of this fixture.</summary>
         private float _restitution;
 
+        /// <summary>The bit mask of our index group.</summary>
+        private ulong _indexGroupsMask = PhysicsSystem.IndexGroupMask;
+
         #endregion
 
         #region Initialization
@@ -218,6 +260,7 @@ namespace Engine.Physics.Components
             _density = otherFixture._density;
             _friction = otherFixture._friction;
             _restitution = otherFixture._restitution;
+            _indexGroupsMask = otherFixture._indexGroupsMask;
 
             return this;
         }
@@ -281,6 +324,13 @@ namespace Engine.Physics.Components
         /// <param name="center">The center of mass relative to the local origin.</param>
         /// <param name="inertia">The inertia about the local origin.</param>
         internal abstract void GetMassData(out float mass, out LocalPoint center, out float inertia);
+        
+        /// <summary>Computes the global bounds of this fixture based on the current body transform.</summary>
+        /// <returns>The global bounds of this fixture.</returns>
+        public WorldBounds ComputeWorldBounds()
+        {
+            return ComputeBounds(Body.Transform);
+        }
 
         /// <summary>Computes the global bounds of this fixture given the specified body transform.</summary>
         /// <param name="transform">The world transform of the body.</param>
@@ -301,13 +351,21 @@ namespace Engine.Physics.Components
 // ReSharper restore RedundantCast
 
             // Update the index.
-            Simulation.Synchronize(bounds, delta, Id);
+            IndexBoundsChanged message;
+            message.Component = this;
+            message.Bounds = bounds;
+            message.Delta = delta;
+            Manager.SendMessage(message);
         }
 
         /// <summary>Updates this fixtures position in the index structure used for the broad phase.</summary>
         internal void Synchronize()
         {
-            Simulation.Synchronize(ComputeBounds(Body.Transform), Vector2.Zero, Id);
+            IndexBoundsChanged message;
+            message.Component = this;
+            message.Bounds = ComputeBounds(Body.Transform);
+            message.Delta = Vector2.Zero;
+            Manager.SendMessage(message);
         }
 
         #endregion

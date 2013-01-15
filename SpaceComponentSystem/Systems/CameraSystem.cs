@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
@@ -47,7 +47,7 @@ namespace Space.ComponentSystem.Systems
         public bool Enabled { get; set; }
 
         /// <summary>The current camera position.</summary>
-        public FarPosition CameraPositon
+        public FarPosition CameraPosition
         {
             get { return _customCameraPosition ?? (_cameraPosition + _currentOffset); }
             set { _customCameraPosition = value; }
@@ -55,9 +55,16 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Gets the transformation to use for perspective projection.</summary>
         /// <returns>The transformation.</returns>
-        public FarTransform Transform
+        public Matrix Transform
         {
             get { return _transform; }
+        }
+
+        /// <summary>Gets the translation to use for perspective projection.</summary>
+        /// <returns>The translation.</returns>
+        public FarPosition Translation
+        {
+            get { return -CameraPosition; }
         }
 
         /// <summary>The Current camera zoom</summary>
@@ -108,7 +115,7 @@ namespace Space.ComponentSystem.Systems
         private float _currentZoom = 1.0f;
 
         /// <summary>The transformation to use for perspective projection.</summary>
-        private FarTransform _transform;
+        private Matrix _transform;
 
         #endregion
 
@@ -143,7 +150,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The visible bounds, in world coordinates.</returns>
         public FarRectangle ComputeVisibleBounds()
         {
-            var center = CameraPositon;
+            var center = CameraPosition;
             var zoom = Zoom;
             var width = (int) (_graphics.Viewport.Width / zoom);
             var height = (int) (_graphics.Viewport.Height / zoom);
@@ -293,16 +300,14 @@ namespace Space.ComponentSystem.Systems
         private void UpdateTransformation()
         {
             var viewport = _graphics.Viewport;
-            // Use far position for camera translation.
-            _transform.Translation = -CameraPositon;
             // Apply zoom and viewport offset via normal matrix.
-            _transform.Matrix = Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
-                                Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
+            _transform = Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
+                         Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
             // Update the list of visible entities. This method is called each
             // draw, so we can do this here.
             _drawablesInView.Clear();
             var view = ComputeVisibleBounds();
-            ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
+            ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(view, _drawablesInView, IndexGroupMask);
             var entities = _drawablesInView.Select(id => Manager.GetComponentById(id).Entity).ToList();
             _drawablesInView.Clear();
             _drawablesInView.UnionWith(entities);

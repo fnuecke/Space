@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
 using Microsoft.Xna.Framework;
@@ -126,7 +126,7 @@ namespace Space.ComponentSystem.Systems
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Get camera position.
-            var position = camera.CameraPositon;
+            var position = camera.CameraPosition;
 
             // Get zoom from camera.
             var zoom = camera.Zoom;
@@ -161,7 +161,7 @@ namespace Space.ComponentSystem.Systems
             radius /= zoom;
 
             // Loop through all our neighbors.
-            index.Find(position, radarRange, ref _reusableNeighborList, DetectableSystem.IndexGroupMask);
+            index.Find(position, radarRange, _reusableNeighborList, DetectableSystem.IndexGroupMask);
 
             // Begin drawing.
             _spriteBatch.Begin();

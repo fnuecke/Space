@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Space.ComponentSystem.Systems;
@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var distanceSquared = float.MaxValue;
 
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, ScanRange, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, ScanRange, neighbors, DetectableSystem.IndexGroupMask);
             foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
             {
                 // See if it's a station.

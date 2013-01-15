@@ -283,6 +283,10 @@
       <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
       <Name>Engine.ComponentSystem.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemFarSpatial\Engine.ComponentSystem.FarSpatial.csproj">
+      <Project>{7FBFD8AD-0676-494F-97C1-6315B4BEF8F9}</Project>
+      <Name>Engine.ComponentSystem.FarSpatial</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
       <Name>Engine.ComponentSystem.RPG</Name>

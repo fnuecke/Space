@@ -49,9 +49,6 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
@@ -64,77 +61,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\Acceleration.cs" />
     <Compile Include="Components\Avatar.cs" />
-    <Compile Include="Components\Collidable.cs" />
-    <Compile Include="Components\CollidableBox.cs" />
-    <Compile Include="Components\CollidableSphere.cs" />
-    <Compile Include="Components\EllipsePath.cs" />
     <Compile Include="Components\Expiration.cs" />
-    <Compile Include="Components\Friction.cs" />
-    <Compile Include="Components\IDrawable.cs" />
-    <Compile Include="Components\IIndexable.cs" />
-    <Compile Include="Components\StaticTextureDrawable.cs" />
-    <Compile Include="Messages\RotationChanged.cs" />
-    <Compile Include="Messages\UpdateCollision.cs" />
     <Compile Include="IInformation.cs" />
     <Compile Include="Systems\GraphicsDeviceSystem.cs" />
-    <Compile Include="Components\Intersection.cs" />
     <Compile Include="Components\Owner.cs" />
     <Compile Include="Components\Parallax.cs" />
-    <Compile Include="Components\Sound.cs" />
-    <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\TextureRenderer.cs" />
-    <Compile Include="Components\Transform.cs" />
-    <Compile Include="Components\Velocity.cs" />
-    <Compile Include="Messages\EndCollision.cs" />
     <Compile Include="Messages\GraphicsDeviceCreated.cs" />
     <Compile Include="Messages\GraphicsDeviceDisposing.cs" />
     <Compile Include="Messages\GraphicsDeviceReset.cs" />
-    <Compile Include="Messages\IndexBoundsChanged.cs" />
-    <Compile Include="Messages\BeginCollision.cs" />
-    <Compile Include="Messages\IndexGroupsChanged.cs" />
-    <Compile Include="Messages\TranslationChanged.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Systems\AccelerationSystem.cs" />
     <Compile Include="Systems\AvatarSystem.cs" />
-    <Compile Include="Systems\BackgroundRenderSystem.cs" />
-    <Compile Include="Systems\CollisionSystem.cs" />
-    <Compile Include="Systems\EllipsePathSystem.cs" />
     <Compile Include="Systems\ExpirationSystem.cs" />
-    <Compile Include="Systems\FrictionSystem.cs" />
-    <Compile Include="Systems\IndexSystem.cs" />
-    <Compile Include="Systems\InterpolationSystem.cs" />
-    <Compile Include="Systems\TextureRenderSystem.cs" />
-    <Compile Include="Systems\SoundSystem.cs" />
-    <Compile Include="Systems\SpinSystem.cs" />
-    <Compile Include="Systems\TranslationSystem.cs" />
-    <Compile Include="Systems\VelocitySystem.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineCollections\Engine.Collections.csproj">
-      <Project>{D73BAEF1-9B31-4548-A982-E19D68745757}</Project>
-      <Name>Engine.Collections</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineFarCollections\Engine.FarCollections.csproj">
-      <Project>{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}</Project>
-      <Name>Engine.FarCollections</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
-      <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>
-      <Name>Engine.FarMath</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
-      <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
-      <Name>Engine.Graphics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
-      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
-      <Name>Engine.Math</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
       <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
@@ -143,10 +87,6 @@
     <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
-      <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
-      <Name>Engine.XnaExtensions</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

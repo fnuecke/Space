@@ -54,7 +54,7 @@ namespace Space.ComponentSystem.Systems
             var transform = camera.Transform;
 
             // Iterate over all visible entities.
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, transform.Matrix);
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, transform);
             foreach (var entity in visibleEntities)
             {
                 foreach (SpaceItemSlot slot in Manager.GetComponents(entity, ItemSlot.TypeId))

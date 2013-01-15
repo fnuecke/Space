@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Microsoft.Xna.Framework;

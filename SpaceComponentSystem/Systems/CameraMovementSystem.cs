@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -41,7 +41,7 @@ namespace Space.ComponentSystem.Systems
                     var cam = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId));
                     if (_frame == 0)
                     {
-                        _lastPosition = cam.CameraPositon;
+                        _lastPosition = cam.CameraPosition;
                         _lastZoom = cam.Zoom;
                         FarPosition desPosition;
                         var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
@@ -66,7 +66,7 @@ namespace Space.ComponentSystem.Systems
                     }
                     else
                     {
-                        cam.CameraPositon += _step;
+                        cam.CameraPosition += _step;
                         cam.Zoom += _zoomStep;
                         _frame++;
                     }
@@ -77,7 +77,7 @@ namespace Space.ComponentSystem.Systems
                 var cam = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId));
                 if (_frame == 0)
                 {
-                    _lastPosition = cam.CameraPositon;
+                    _lastPosition = cam.CameraPosition;
                     _lastZoom = cam.Zoom;
                     var desPosition = _positions[0].Destination;
                     if (desPosition.Equals(FarPosition.Zero))
@@ -106,7 +106,7 @@ namespace Space.ComponentSystem.Systems
                 }
                 else
                 {
-                    cam.CameraPositon += _step;
+                    cam.CameraPosition += _step;
                     cam.Zoom += _zoomStep;
                     _frame++;
                 }

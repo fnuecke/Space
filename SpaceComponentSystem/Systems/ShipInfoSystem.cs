@@ -1,6 +1,6 @@
-﻿using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 using Space.Data;

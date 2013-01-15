@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;

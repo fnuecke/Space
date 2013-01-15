@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
@@ -107,6 +108,7 @@ namespace Space.ComponentSystem.Systems
         {
             // Get global transform.
             var transform = GetTransform();
+            var translation = GetTranslation();
 
             // Get delta to keep update speed constant regardless of framerate.
             var delta = elapsedMilliseconds / (1000 / (_simulationFps() / Settings.TicksPerSecond));
@@ -145,11 +147,10 @@ namespace Space.ComponentSystem.Systems
                     if (effect.Enabled && effect.Scale * effect.Intensity > 0.1f)
                     {
                         // Check if it's in bounds, i.e. whether we have to trigger it at all.
-                        FarPosition translation;
-                        FarPosition.Transform(ref position, ref transform, out translation);
+                        var localTranslation = Vector2.Transform((Vector2) (position + translation), transform);
                         var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
                         bounds.Inflate(256, 256);
-                        if (bounds.Contains((int) translation.X, (int) translation.Y))
+                        if (bounds.Contains((int) localTranslation.X, (int) localTranslation.Y))
                         {
                             // Get rotation of the object.
                             float rotation;
@@ -172,8 +173,9 @@ namespace Space.ComponentSystem.Systems
                     }
 
                     // Render at owning entity's position.
-                    var localTransform = transform;
-                    localTransform.Translation += position;
+                    FarTransform localTransform;
+                    localTransform.Matrix = transform;
+                    localTransform.Translation = translation + position;
                     _renderer.RenderEffect(effect.Effect, ref localTransform);
 
                     // Update after rendering.
@@ -182,21 +184,27 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Render and update all known unbound effects (not attached to an entity).
+            FarTransform globalTransform;
+            globalTransform.Matrix = transform;
+            globalTransform.Translation = translation;
             foreach (var effect in _effects.Values)
             {
-                _renderer.RenderEffect(effect, ref transform);
+                _renderer.RenderEffect(effect, ref globalTransform);
                 effect.Update(delta);
             }
         }
 
         /// <summary>
-        ///     Returns the <em>transformation</em> for rendered content.
+        ///     Returns the <em>transformation</em> for offsetting and scaling rendered content.
+        /// </summary>
+        /// <returns>The transformation.</returns>
+        protected abstract Matrix GetTransform();
+
+        /// <summary>
+        ///     Returns the <em>translation</em> for globally offsetting rendered content.
         /// </summary>
         /// <returns>The translation.</returns>
-        protected virtual FarTransform GetTransform()
-        {
-            return FarTransform.Identity;
-        }
+        protected abstract FarPosition GetTranslation();
 
         #endregion
 

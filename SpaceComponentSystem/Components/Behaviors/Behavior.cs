@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
@@ -220,7 +220,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             index.Find(
                 position,
                 sensorRange > 0 ? Math.Min(sensorRange, range) : range,
-                ref neighbors,
+                neighbors,
                 CollisionSystem.IndexGroupMask);
             var closest = 0;
             var closestDistance = float.PositiveInfinity;
@@ -276,7 +276,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> neighbors = new HashSet<int>();
             index.Find(
-                position, AI.Configuration.MaxEscapeCheckDistance, ref neighbors, DetectableSystem.IndexGroupMask);
+                position, AI.Configuration.MaxEscapeCheckDistance, neighbors, DetectableSystem.IndexGroupMask);
             var escape = Vector2.Zero;
             var escapeNormalizer = 0;
             foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
@@ -360,7 +360,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Check all neighbors in normal flocking range. If we're in a squad, skip
             // other squad members and take our squad position into account instead.
             neighbors.Clear();
-            index.Find(position, AI.Configuration.FlockingThreshold, ref neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, AI.Configuration.FlockingThreshold, neighbors, DetectableSystem.IndexGroupMask);
             var separation = Vector2.Zero;
             var separationNormalizer = 0;
             var cohesion = Vector2.Zero;

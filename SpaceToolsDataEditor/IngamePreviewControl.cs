@@ -2,9 +2,10 @@
 using System.Linq;
 using System.Windows.Forms;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
@@ -140,7 +141,7 @@ namespace Space.Tools.DataEditor
                     
             });
             // Fix position to avoid querying unavailable services.
-            ((CameraSystem)_manager.GetSystem(CameraSystem.TypeId)).CameraPositon = FarPosition.Zero;
+            ((CameraSystem)_manager.GetSystem(CameraSystem.TypeId)).CameraPosition = FarPosition.Zero;
 
             // Enable debug render systems.
             _collisionBounds = (DebugCollisionBoundsRenderSystem)_manager.GetSystem(DebugCollisionBoundsRenderSystem.TypeId);
@@ -307,7 +308,7 @@ namespace Space.Tools.DataEditor
                 var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
                 foreach (var component in Components)
                 {
-                    _ellipse.Transform = camera.Transform.Matrix;
+                    _ellipse.Transform = camera.Transform;
                     _ellipse.SetSize(component.MaxRadius * 2);
                     _ellipse.Draw();
                 }

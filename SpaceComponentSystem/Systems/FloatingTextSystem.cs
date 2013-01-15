@@ -105,17 +105,18 @@ namespace Space.ComponentSystem.Systems
         {
             var camera = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId));
             var cameraTransform = camera.Transform;
+            var cameraTranslation = camera.Translation;
 
             // Update all floating texts.
             _spriteBatch.Begin(
-                SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
+                SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform);
             for (var i = _texts.Count - 1; i >= 0; i--)
             {
                 var text = _texts[i];
                 text.Position.Y -= FloatDistance / text.TotalTimeToLive;
                 _spriteBatch.Draw(
                     text.Value,
-                    (Vector2) (text.Position + cameraTransform.Translation),
+                    (Vector2) (text.Position + cameraTranslation),
                     null,
                     text.Color,
                     0f,

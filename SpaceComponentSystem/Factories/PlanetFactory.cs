@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -113,7 +113,7 @@ namespace Space.ComponentSystem.Systems
             // actually allow the player to "extend" his radar by the maximum
             // distance of the camera to his ship. That'll be a negligible
             // amount, however, in relation to the total radar range.
-            var position = camera.CameraPositon;
+            var position = camera.CameraPosition;
 
             // Get zoom from camera.
             var zoom = camera.Zoom;
@@ -153,7 +153,7 @@ namespace Space.ComponentSystem.Systems
             var radius = (float) Math.Sqrt(a * a + b * b);
 
             // Loop through all our neighbors.
-            index.Find(position, radarRange, ref _reusableNeighborList, DetectableSystem.IndexGroupMask);
+            index.Find(position, radarRange, _reusableNeighborList, DetectableSystem.IndexGroupMask);
 
             // Begin drawing.
             _spriteBatch.Begin();

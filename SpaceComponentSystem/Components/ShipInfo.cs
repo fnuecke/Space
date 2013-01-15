@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;

@@ -1,6 +1,6 @@
-﻿using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Common.Systems;
+﻿using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
@@ -42,11 +42,12 @@ namespace Space.ComponentSystem.Systems
 
             // Get camera transform.
             var cameraTransform = camera.Transform;
+            var cameraTranslation = camera.Translation;
             var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
 
             // Iterate over all visible entities.
             _spriteBatch.Begin(
-                SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform.Matrix);
+                SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform);
             foreach (var entity in camera.VisibleEntities)
             {
                 var transform = (Transform) Manager.GetComponent(entity, Transform.TypeId);
@@ -57,7 +58,7 @@ namespace Space.ComponentSystem.Systems
 
                     FarPosition position;
                     interpolation.GetInterpolatedPosition(transform.Entity, out position);
-                    position += cameraTransform.Translation;
+                    position += cameraTranslation;
                     _spriteBatch.DrawString(
                         _font,
                         text,

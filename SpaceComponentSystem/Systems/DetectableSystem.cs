@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;

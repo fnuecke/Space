@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;

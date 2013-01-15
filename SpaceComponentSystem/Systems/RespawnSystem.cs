@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;

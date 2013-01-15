@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Messages;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;

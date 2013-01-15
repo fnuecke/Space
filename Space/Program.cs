@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Awesomium.ScreenManagement;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Graphics;
 using Engine.Math;
 using Engine.Serialization;

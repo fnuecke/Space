@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.Collections;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Physics.Collision;
 using Engine.Physics.Components;
@@ -142,7 +143,7 @@ namespace Engine.Physics.Systems
         /// <summary>Gets the number of (active) fixtures in this simulation.</summary>
         public int FixtureCount
         {
-            get { return _index.Count; }
+            get { return Index[IndexGroupMask].Count; }
         }
 
         /// <summary>Gets the number of currently active contacts in the simulation.</summary>
@@ -183,17 +184,23 @@ namespace Engine.Physics.Systems
         {
             get { return _profile; }
         }
-
+        
         /// <summary>Gets the depth of the index tree.</summary>
         public int IndexDepth
         {
-            get { return _index.Depth; }
+            get { return Index[IndexGroupMask].Depth; }
         }
 
         /// <summary>Gets the fixture bounding boxes for the debug renderer.</summary>
-        internal IEnumerable<WorldBounds> FixtureBounds
+        public IEnumerable<WorldBounds> FixtureBounds
         {
-            get { return _index.Select(entry => entry.Item1); }
+            get { return Index[IndexGroupMask].Select(entry => entry.Item1); }
+        }
+
+        /// <summary>The index system.</summary>
+        private IndexSystem Index
+        {
+            get { return Manager.GetSystem(IndexSystem.TypeId) as IndexSystem; }
         }
 
         #endregion
@@ -261,32 +268,6 @@ namespace Engine.Physics.Systems
         private Dictionary<int, HashSet<int>> _gearJoints = new Dictionary<int, HashSet<int>>();
 
         /// <summary>
-        ///     The index structure we use for our broad phase. We don't use the index system because we want to track the
-        ///     individual fixtures, not the complete body (and the index system only tracks complete entities).
-        /// </summary>
-#if FARMATH
-        private FarCollections.SpatialHashedQuadTree<int> _index =
-            new FarCollections.SpatialHashedQuadTree<int>(16, 1, Settings.AabbExtension, Settings.AabbMultiplier,
-                (packet, i) => packet.Write(i), packet => packet.ReadInt32());
-#else
-        private Collections.DynamicQuadTree<int> _index =
-            new Collections.DynamicQuadTree<int>(
-                16,
-                1,
-                Settings.AabbExtension,
-                Settings.AabbMultiplier,
-                (packet, i) => packet.Write(i),
-                packet => packet.ReadInt32());
-#endif
-
-        /// <summary>
-        ///     The list of fixtures that have changed since the last update, i.e. for which we need to scan for new/lost
-        ///     contacts.
-        /// </summary>
-        [CopyIgnore, PacketizerIgnore]
-        private ISet<int> _touched = new HashSet<int>();
-
-        /// <summary>
         ///     Tracks whether a new fixture was added since the last update. This will trigger a search for new contacts at
         ///     the beginning of the next update.
         /// </summary>
@@ -310,6 +291,10 @@ namespace Engine.Physics.Systems
         /// <summary>Profiling data.</summary>
         [CopyIgnore, PacketizerIgnore]
         private Profile _profile = new Profile();
+
+        /// <summary>Temporarily holds a reference to the actual index during updates, for better performance.</summary>
+        [CopyIgnore, PacketizerIgnore]
+        private IIndex<int, WorldBounds, WorldPoint> _index;
 
         #endregion
 
@@ -345,6 +330,11 @@ namespace Engine.Physics.Systems
             // Lock system to avoid adding/removal of bodies and fixtures and
             // modifying critical properties during an update (in message handlers).
             IsLocked = true;
+
+            // Get index reference once for better performance. This may change outside
+            // of the update (e.g. during deserialization or copying), so we need to
+            // fetch it again each time.
+            _index = Index[IndexGroupMask];
 
             // If new fixtures were added we want to look for contacts with that
             // fixtures before jumping into the actual update.
@@ -460,7 +450,7 @@ namespace Engine.Physics.Systems
         public Fixture GetFixtureAt(WorldPoint worldPoint)
         {
             Fixture result = null;
-            _index.Find(
+            Index[IndexGroupMask].Find(
                 worldPoint,
                 0,
                 value =>
@@ -528,34 +518,13 @@ namespace Engine.Physics.Systems
             _findContactsBeforeNextUpdate = true;
         }
 
-        /// <summary>Adds the fixtures of the specified body to the index used in the broadphase.</summary>
-        /// <param name="body">The body whose fixtures to add.</param>
-        internal void AddFixturesToIndex(Body body)
-        {
-            foreach (Fixture fixture in body.Fixtures)
-            {
-                _index.Add(fixture.ComputeBounds(body.Transform), fixture.Id);
-                _touched.Add(fixture.Id);
-            }
-        }
-
-        /// <summary>Removes the fixtures of the specified body from the index.</summary>
-        /// <param name="body">The body.</param>
-        internal void RemoveFixturesFromIndex(Body body)
-        {
-            foreach (Fixture fixture in body.Fixtures)
-            {
-                _index.Remove(fixture.Id);
-            }
-        }
-
         /// <summary>Marks the specified body as changed, forcing a search for new/lost contacts with this body in the next update.</summary>
         /// <param name="body">The body for which to mark the fixtures.</param>
         internal void TouchFixtures(Body body)
         {
             foreach (Fixture fixture in body.Fixtures)
             {
-                _touched.Add(fixture.Id);
+                Index.Touch(fixture.Id, IndexGroupMask);
             }
         }
 
@@ -570,8 +539,8 @@ namespace Engine.Physics.Systems
             while (body.ContactList >= 0)
             {
                 var contact = _contactEdges[body.ContactList].Contact;
-                _touched.Remove(_contacts[contact].FixtureIdA);
-                _touched.Remove(_contacts[contact].FixtureIdB);
+                Index.Untouch(_contacts[contact].FixtureIdA, IndexGroupMask);
+                Index.Untouch(_contacts[contact].FixtureIdB, IndexGroupMask);
                 DestroyContact(contact);
             }
 
@@ -592,23 +561,7 @@ namespace Engine.Physics.Systems
                 }
             }
             // Touch fixture to allow new contact generation.
-            _touched.Add(fixture.Id);
-        }
-
-        /// <summary>
-        ///     Updates the specified fixture's position in the index structure to the specified new bounds, within the
-        ///     context of the specified displacement.
-        /// </summary>
-        /// <param name="bounds">The new bounds of the fixture.</param>
-        /// <param name="delta">How much the fixture has moved.</param>
-        /// <param name="fixtureId">The id of the fixture.</param>
-        internal void Synchronize(WorldBounds bounds, Vector2 delta, int fixtureId)
-        {
-            if (_index.Update(bounds, delta, fixtureId))
-            {
-                // The index changed, mark the fixture for contact updates.
-                _touched.Add(fixtureId);
-            }
+            Index.Touch(fixture.Id, IndexGroupMask);
         }
 
         #endregion
@@ -648,12 +601,6 @@ namespace Engine.Physics.Systems
 
                 if (body.Enabled)
                 {
-                    // Add it to our index.
-                    _index.Add(fixture.ComputeBounds(body.Transform), fixture.Id);
-
-                    // Mark it for a first contact check.
-                    _touched.Add(component.Id);
-
                     // Make sure the body is awake.
                     body.IsAwake = true;
 
@@ -723,12 +670,6 @@ namespace Engine.Physics.Systems
                         DestroyContact(contact);
                     }
                 }
-
-                // Remove from index.
-                _index.Remove(fixture.Id);
-
-                // Remove it from the list of fixtures to update.
-                _touched.Remove(fixture.Id);
 
                 // Recompute the body's mass data.
                 if (fixture.Density > 0)
@@ -1498,7 +1439,7 @@ namespace Engine.Physics.Systems
         {
             // Check the list of entities that moved in the index.
             ISet<int> neighbors = new HashSet<int>();
-            foreach (var fixture in _touched)
+            foreach (var fixture in Index.GetChanged(IndexGroupMask))
             {
                 // Find contacts (possible collisions based on fattened bounds).
                 _index.Find(_index[fixture], neighbors);
@@ -1563,7 +1504,8 @@ namespace Engine.Physics.Systems
                 }
                 neighbors.Clear();
             }
-            _touched.Clear();
+
+            Index.ClearTouched(IndexGroupMask);
         }
 
         /// <summary>
@@ -2156,12 +2098,6 @@ namespace Engine.Physics.Systems
                 }
             }
 
-            packet.Write(_touched.Count);
-            foreach (var entry in _touched)
-            {
-                packet.Write(entry);
-            }
-
             return packet;
         }
 
@@ -2237,13 +2173,6 @@ namespace Engine.Physics.Systems
                 _gearJoints.Add(joint, gears);
             }
 
-            _touched.Clear();
-            var touchedCount = packet.ReadInt32();
-            for (var i = 0; i < touchedCount; ++i)
-            {
-                _touched.Add(packet.ReadInt32());
-            }
-
             _island = null;
         }
 
@@ -2307,23 +2236,6 @@ namespace Engine.Physics.Systems
             }
             w.AppendIndent(indent).Write("}");
 
-            w.AppendIndent(indent).Write("TouchedCount = ");
-            w.Write(_touched.Count);
-            w.AppendIndent(indent).Write("Touched = {");
-            {
-                var first = true;
-                foreach (var entry in _touched)
-                {
-                    if (!first)
-                    {
-                        w.Write(", ");
-                    }
-                    first = false;
-                    w.Write(entry);
-                }
-            }
-            w.Write("}");
-
             return w;
         }
 
@@ -2346,9 +2258,6 @@ namespace Engine.Physics.Systems
             copy._jointEdges = new JointEdge[0];
 
             copy._gearJoints = new Dictionary<int, HashSet<int>>();
-
-            copy._index = _index.NewInstance();
-            copy._touched = new HashSet<int>();
 
             copy._island = null;
             copy._proxyA = new Algorithms.DistanceProxy();
@@ -2394,9 +2303,6 @@ namespace Engine.Physics.Systems
                 gears.UnionWith(gearJoints.Value);
                 copy._gearJoints.Add(gearJoints.Key, gears);
             }
-
-            copy._touched.Clear();
-            copy._touched.UnionWith(_touched);
         }
 
         #endregion

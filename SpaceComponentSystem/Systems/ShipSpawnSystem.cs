@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;

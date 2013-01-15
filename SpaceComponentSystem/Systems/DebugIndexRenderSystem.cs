@@ -1,5 +1,5 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -63,8 +63,8 @@ namespace Space.ComponentSystem.Systems
             {
                 var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
                 var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
-                _indexRectangle.SetTransform(camera.Transform.Matrix);
-                index.DrawIndex(IndexGroupMask, _indexRectangle, camera.Transform.Translation);
+                _indexRectangle.SetTransform(camera.Transform);
+                index.DrawIndex(IndexGroupMask, _indexRectangle, camera.Translation);
             }
         }
 

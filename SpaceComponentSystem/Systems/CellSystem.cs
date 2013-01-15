@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -212,7 +213,7 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
                 ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(
-                    ref cellBounds, ref _reusableEntityList, CellDeathAutoRemoveIndexGroupMask);
+                    cellBounds, _reusableEntityList, CellDeathAutoRemoveIndexGroupMask);
                 foreach (IIndexable neighbor in _reusableEntityList.Select(Manager.GetComponentById))
                 {
                     Manager.RemoveEntity(neighbor.Entity);

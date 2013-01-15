@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Tests.ComponentSystem.Common.Components

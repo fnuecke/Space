@@ -29,16 +29,13 @@ namespace Engine.Collections
 {
     /// <summary>
     ///     A <see href="http://en.wikipedia.org/wiki/Quadtree">QuadTree</see> that can dynamically grow as needed.
-    ///     <para>
-    ///         A special restriction is that all nodes will be sized at some power of two, where every level that power
-    ///         increases:
-    ///         <c>node size := minBucketSize &lt;&lt; level</c>.
-    ///     </para>
-    ///     <para>
-    ///         All nodes can quickly iterate over all entries stored in all of their child nodes. The actual entries are
-    ///         stored in a linked list, which is sorted in a way that allows unambiguous mapping of a section of that linked
-    ///         list to a subtree.
-    ///     </para>
+    ///     <para/>
+    ///     The tree bounds will always be a multiple of the minimal node bounds, as the bound size is doubled whenever
+    ///     the tree has to grow to contain it's entries.
+    ///     <para/>
+    ///     All nodes can quickly iterate over all entries stored in all of their child nodes. The actual entries are
+    ///     stored in a linked list, which is sorted in a way that allows unambiguous mapping of a section of that linked
+    ///     list to a subtree.
     /// </summary>
     /// <typeparam name="T">The type of the values stored in the index.</typeparam>
     /// <remarks>
@@ -46,10 +43,8 @@ namespace Engine.Collections
     ///     invalidated when the subtree the node is root of changes. This allows for faster iteration when repeatedly querying
     ///     the same area of the tree (as it'll just be an iteration over an array, instead of a walk through the linked list,
     ///     dereferencing the pointer to the next entry for each entry).
-    ///     <para>
-    ///         The minimum node size can be specified as an arbitrary value larger than zero, but as node bounds will always
-    ///         be a power of two, the actual stop level will be the closest smaller power of two (including the value).
-    ///     </para>
+    ///     <para/>
+    ///     The minimum node size can be specified as an arbitrary value larger than zero.
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
     public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable, ICopyable<DynamicQuadTree<T>>

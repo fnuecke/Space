@@ -3,6 +3,7 @@ using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Serialization;
@@ -347,9 +348,18 @@ namespace Space.ComponentSystem.Systems
         ///     Returns the <em>transformation</em> for offsetting and scaling rendered content.
         /// </summary>
         /// <returns>The transformation.</returns>
-        protected override FarTransform GetTransform()
+        protected override Matrix GetTransform()
         {
             return ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).Transform;
+        }
+
+        /// <summary>
+        ///     Returns the <em>translation</em> for globally offsetting rendered content.
+        /// </summary>
+        /// <returns>The translation.</returns>
+        protected override FarPosition GetTranslation()
+        {
+            return ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).Translation;
         }
 
         #endregion

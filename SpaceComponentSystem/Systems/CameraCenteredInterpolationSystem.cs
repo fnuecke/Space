@@ -1,5 +1,5 @@
 ﻿using System;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 
 namespace Space.ComponentSystem.Systems

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Random;
 using Engine.Serialization;

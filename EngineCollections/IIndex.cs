@@ -39,6 +39,9 @@ namespace Engine.Collections
         /// <summary>The number of values stored in this index.</summary>
         int Count { get; }
 
+        /// <summary>Returns the maximum depth of this index.</summary>
+        int Depth { get; }
+
         #endregion
 
         #region Accessors

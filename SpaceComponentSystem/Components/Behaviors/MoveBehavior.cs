@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Random;
 

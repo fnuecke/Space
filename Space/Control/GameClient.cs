@@ -149,7 +149,7 @@ namespace Space.Control
             var system = GetSystem<CameraSystem>();
             if (system != null)
             {
-                return system.CameraPositon;
+                return system.CameraPosition;
             }
             return FarPosition.Zero;
         }

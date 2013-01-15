@@ -1,5 +1,4 @@
-﻿using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 
 namespace Engine.ComponentSystem.RPG.Components
 {
@@ -16,13 +15,6 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             return TypeId;
         }
-
-        #endregion
-
-        #region Constants
-
-        /// <summary>Index group that tracks items</summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 

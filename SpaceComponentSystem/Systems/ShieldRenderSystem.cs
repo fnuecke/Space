@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
@@ -82,7 +83,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            var camera = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).Transform;
+            var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
             var interpolation = (CameraCenteredInterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
 
             foreach (var effect in Components)
@@ -179,7 +180,7 @@ namespace Space.ComponentSystem.Systems
                 // Set transform, including rotation of owner and slot.
                 float rotation;
                 interpolation.GetInterpolatedRotation(effect.Entity, out rotation);
-                _shader.Transform = Matrix.CreateRotationZ(-rotation) * camera.Matrix;
+                _shader.Transform = Matrix.CreateRotationZ(-rotation) * camera.Transform;
 
                 // Draw it.
                 _shader.Draw();

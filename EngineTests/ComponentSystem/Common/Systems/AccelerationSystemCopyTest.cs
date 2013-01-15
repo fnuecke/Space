@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 
 namespace Engine.Tests.ComponentSystem.Common.Systems

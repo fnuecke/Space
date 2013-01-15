@@ -1,5 +1,5 @@
-﻿using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Messages;
+﻿using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
@@ -57,6 +57,7 @@ namespace Space.ComponentSystem.Systems
 
             // Set/get loop invariants.
             var transform = camera.Transform;
+            var translation = camera.Translation;
             _sun.Time = frame / Settings.TicksPerSecond;
 
             // Render everything in sight.
@@ -67,7 +68,7 @@ namespace Space.ComponentSystem.Systems
                 // Skip invalid or disabled entities.
                 if (component != null && component.Enabled)
                 {
-                    RenderSun(component, ref transform);
+                    RenderSun(component, transform, translation);
                 }
             }
         }
@@ -75,14 +76,15 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Renders the specified sun.</summary>
         /// <param name="component">The component.</param>
         /// <param name="transform">The transform.</param>
-        private void RenderSun(SunRenderer component, ref FarTransform transform)
+        /// <param name="translation">The translation.</param>
+        private void RenderSun(SunRenderer component, Matrix transform, FarPosition translation)
         {
             // Get absolute position of sun.
             var position = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
 
             // Apply transformation.
-            _sun.Center = (Vector2) (position + transform.Translation);
-            _sun.SetTransform(transform.Matrix);
+            _sun.Center = (Vector2) (position + translation);
+            _sun.SetTransform(transform);
             _sun.Color = component.Tint;
 
             // Set remaining parameters for draw.

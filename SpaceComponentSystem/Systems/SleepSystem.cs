@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 
@@ -31,7 +32,7 @@ namespace Space.ComponentSystem.Systems
             ISet<int> awake = new HashSet<int>();
             foreach (var transform in avatars.Avatars.Select(avatar => (Transform) Manager.GetComponent(avatar, Transform.TypeId)))
             {
-                index.Find(transform.Translation, SleepDistance, ref awake, ArtificialIntelligence.AIIndexGroupMask);
+                index.Find(transform.Translation, SleepDistance, awake, ArtificialIntelligence.AIIndexGroupMask);
             }
             foreach (var component in Components)
             {

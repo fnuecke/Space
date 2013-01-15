@@ -1,6 +1,6 @@
-﻿using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Messages;
+﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Microsoft.Xna.Framework;
@@ -68,8 +68,8 @@ namespace Space.ComponentSystem.Systems
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Set/get loop invariants.
-            var translation = camera.Transform.Translation;
-            _planet.Transform = camera.Transform.Matrix;
+            var translation = camera.Translation;
+            _planet.Transform = camera.Transform;
             _planet.Time = frame / Settings.TicksPerSecond;
 
             // Draw everything in view.

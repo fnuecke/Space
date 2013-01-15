@@ -81,6 +81,10 @@
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
       <Name>Engine.ComponentSystem.RPG</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemSpatial\Engine.ComponentSystem.Spatial.csproj">
+      <Project>{60867ABB-E673-42A8-9944-8AA4D5488C03}</Project>
+      <Name>Engine.ComponentSystem.Spatial</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>

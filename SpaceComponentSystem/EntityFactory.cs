@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -84,8 +85,8 @@ namespace Space.ComponentSystem
 
             // Add to the index from which entities will automatically removed
             // on cell death and mark it (for translation checks into empty space).
-            var index = (IIndexable) manager.GetComponent(entity, Manager.GetComponentTypeId<IIndexable>());
-            index.IndexGroupsMask |=
+            var transform = (Transform) manager.GetComponent(entity, Transform.TypeId);
+            transform.IndexGroupsMask |=
                 CellSystem.CellDeathAutoRemoveIndexGroupMask |
                 ArtificialIntelligence.AIIndexGroupMask;
             manager.AddComponent<CellDeath>(entity);

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.Physics.Joints;
 using Engine.Physics.Math;
@@ -84,14 +85,20 @@ namespace Engine.Physics.Components
                     if (value)
                     {
                         // Add our fixtures back to the index.
-                        Simulation.AddFixturesToIndex(this);
+                        foreach (Fixture fixture in Fixtures)
+                        {
+                            fixture.IndexGroupsMask = PhysicsSystem.IndexGroupMask;
+                        }
 
                         // Contacts are created in the next update.
                     }
                     else
                     {
                         // Remove all our fixtures from the index.
-                        Simulation.RemoveFixturesFromIndex(this);
+                        foreach (Fixture fixture in Fixtures)
+                        {
+                            fixture.IndexGroupsMask = 0;
+                        }
 
                         // Free any contacts we're involved in.
                         Simulation.RemoveContacts(this);

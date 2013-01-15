@@ -5,6 +5,7 @@ using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -211,7 +212,7 @@ namespace Space.ComponentSystem.Factories
                 // Add to relevant indexes.
                 indexGroupsMask:
                     // Can be picked up.
-                    Item.IndexGroupMask |
+                    PickupSystem.IndexGroupMask |
                     // Must be detectable by the camera.
                     CameraSystem.IndexGroupMask);
             var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _requiredSlotSize.Scale());

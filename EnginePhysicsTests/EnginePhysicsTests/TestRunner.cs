@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Math;
 using Engine.Physics.Joints;
 using Engine.Physics.Systems;
@@ -149,10 +150,10 @@ namespace Engine.Physics.Tests
             _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
             _font = new ResourceContentManager(Services, GameResource.ResourceManager).Load<SpriteFont>("ConsoleFont");
 
-            _manager.AddSystem(_physics = new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
+            _manager.AddSystem(new IndexSystem(16, 1));
             _manager.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
-            _manager.AddSystem(
-                _renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
+            _manager.AddSystem(_physics = new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
+            _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
             _renderer.RenderFixtures = true;
             _renderer.RenderJoints = true;
@@ -323,10 +324,10 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                     _profile.SolveTOI.Max,
                     Stopwatch.IsHighResolution,
                     _physics.BodyCount,
-                    _physics.FixtureCount,
+                    "N/A" /* _physics.FixtureCount */,
                     _physics.ContactCount,
                     _physics.JointCount,
-                    _physics.IndexDepth);
+                    "N/A" /* _physics.IndexDepth */);
             }
 
             // Newline before any text current test may want to display.

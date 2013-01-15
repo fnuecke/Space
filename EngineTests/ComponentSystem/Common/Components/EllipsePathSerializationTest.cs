@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Spatial.Components;
 
 namespace Engine.Tests.ComponentSystem.Common.Components
 {

@@ -1,8 +1,9 @@
 ﻿using System;
 using Engine.Collections;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Messages;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Graphics;
@@ -115,10 +116,10 @@ namespace Space.ComponentSystem.Systems
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Set/get loop invariants.
-            var translation = camera.Transform.Translation;
+            var translation = camera.Translation;
             var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
-            _boxShape.Transform = camera.Transform.Matrix;
-            _sphereShape.Transform = camera.Transform.Matrix;
+            _boxShape.Transform = camera.Transform;
+            _sphereShape.Transform = camera.Transform;
 
             // Iterate over all visible collidables.
             foreach (var entity in camera.VisibleEntities)

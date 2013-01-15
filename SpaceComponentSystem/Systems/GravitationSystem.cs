@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -62,7 +62,7 @@ namespace Space.ComponentSystem.Systems
             // Then check all our neighbors. Use new list each time because we're running
             // in parallel, so we can't really keep one on a global level.
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(myTransform.Translation, MaxGravitationDistance, ref neighbors, IndexGroupMask);
+            index.Find(myTransform.Translation, MaxGravitationDistance, neighbors, IndexGroupMask);
             foreach (IIndexable neighbor in neighbors.Select(Manager.GetComponentById))
             {
                 // If they have an enabled gravitation component...
