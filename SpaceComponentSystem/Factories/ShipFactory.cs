@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.ComponentSystem.Spatial.Components;
@@ -256,7 +255,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<WeaponControl>(entity);
             manager.AddComponent<Energy>(entity);
             manager.AddComponent<Health>(entity).Initialize(120);
-            manager.AddComponent<TextureRenderer>(entity)
+            manager.AddComponent<ShipDrawable>(entity)
                    .Initialize(_texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
             manager.AddComponent<ParticleEffects>(entity);
 

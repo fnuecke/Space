@@ -96,7 +96,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Limit to one system size (radius: cell size / 2).
-                var distance = FarPosition.Distance(transform.Translation, killedPos.Translation);
+                var distance = FarPosition.Distance(transform.Position, killedPos.Position);
                 if (distance > range)
                 {
                     // Too far away, this one gets nothing.

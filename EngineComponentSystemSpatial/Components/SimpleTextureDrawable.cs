@@ -1,19 +1,15 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Components;
+using Engine.Math;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-#if FARMATH
-using WorldPoint = Engine.FarMath.FarPosition;
-#else
-using WorldPoint = Microsoft.Xna.Framework.Vector2;
-#endif
-
 namespace Engine.ComponentSystem.Spatial.Components
 {
     /// <summary>This component will render a texture at a fixed position, with a fixed rotation.</summary>
-    public class StaticTextureDrawable : Component, IDrawable
+    public class SimpleTextureDrawable : Component, IDrawable
     {
         #region Type ID
 
@@ -30,14 +26,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Properties
 
-        /// <summary>Gets or sets the position to draw the texture at.</summary>
-        /// <value>The position.</value>
-        public WorldPoint Position { get; set; }
-
-        /// <summary>Gets or sets the rotation to draw the texture with.</summary>
-        /// <value>The rotation.</value>
-        public float Rotation { get; set; }
-
         /// <summary>Gets or sets the scale to draw the texture with.</summary>
         /// <value>The scale.</value>
         public float Scale { get; set; }
@@ -53,8 +41,31 @@ namespace Engine.ComponentSystem.Spatial.Components
             get { return _textureName; }
             set
             {
-                _texture = null;
                 _textureName = value;
+                if (!string.IsNullOrWhiteSpace(_textureName))
+                {
+                    LoadContent(((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content, null);
+                }
+            }
+        }
+
+        /// <summary>Gets the actual texture.</summary>
+        public Texture2D Texture
+        {
+            get { return _texture; }
+        }
+
+        /// <summary>The area this drawable needs to render itself.</summary>
+        public RectangleF Bounds
+        {
+            get
+            {
+                var bounds = (RectangleF) _texture.Bounds;
+                bounds.Offset(-_texture.Width / 2f, -_texture.Height / 2f);
+                bounds.Inflate(
+                    -bounds.Width / 2f * (1f - Scale),
+                    -bounds.Height / 2f * (1f - Scale));
+                return bounds;
             }
         }
 
@@ -80,9 +91,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         {
             base.Initialize(other);
 
-            var otherDrawable = (StaticTextureDrawable) other;
-            Position = otherDrawable.Position;
-            Rotation = otherDrawable.Rotation;
+            var otherDrawable = (SimpleTextureDrawable) other;
             Scale = otherDrawable.Scale;
             Tint = otherDrawable.Tint;
             _textureName = otherDrawable._textureName;
@@ -93,17 +102,12 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         /// <summary>Initializes the component.</summary>
         /// <param name="textureName">Name of the texture.</param>
-        /// <param name="position">The position.</param>
-        /// <param name="rotation">The rotation.</param>
         /// <param name="scale">The scale.</param>
         /// <param name="tint">The tint.</param>
         /// <returns></returns>
-        public StaticTextureDrawable Initialize(
-            string textureName, WorldPoint position, float rotation, float scale, Color tint)
+        public SimpleTextureDrawable Initialize(string textureName, Color tint, float scale = 1f)
         {
             TextureName = textureName;
-            Position = position;
-            Rotation = rotation;
             Scale = scale;
             Tint = tint;
 
@@ -112,14 +116,11 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         /// <summary>Initializes the component.</summary>
         /// <param name="textureName">Name of the texture.</param>
-        /// <param name="position">The position.</param>
-        /// <param name="rotation">The rotation.</param>
         /// <param name="scale">The scale.</param>
         /// <returns></returns>
-        public StaticTextureDrawable Initialize(
-            string textureName, WorldPoint position, float rotation = 0, float scale = 1)
+        public SimpleTextureDrawable Initialize(string textureName, float scale = 1f)
         {
-            return Initialize(textureName, position, rotation, scale, Color.White);
+            return Initialize(textureName, Color.White, scale);
         }
 
         /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
@@ -127,9 +128,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         {
             base.Reset();
 
-            Position = WorldPoint.Zero;
-            Rotation = 0;
-            Scale = 1;
+            Scale = 1f;
             Tint = Color.White;
             _textureName = null;
             _texture = null;
@@ -139,34 +138,41 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Logic
 
-        /// <summary>Draws the texture at the set position with the set properties.</summary>
+        /// <summary>Draws the texture with the specified parameters.</summary>
         /// <param name="batch">The sprite batch that may be used to render textures.</param>
-        /// <param name="translation">The translation to apply when drawing.</param>
-        public void Draw(SpriteBatch batch, WorldPoint translation)
+        /// <param name="position">The position at which to draw. This already includes camera and object position.</param>
+        /// <param name="angle">The angle at which to draw. This includes the object angle.</param>
+        /// <param name="scale">The scale.</param>
+        /// <param name="effects">The effects.</param>
+        /// <param name="layerDepth">The base layer depth to use, used for tie breaking.</param>
+        public void Draw(SpriteBatch batch, Vector2 position, float angle, float scale, SpriteEffects effects, float layerDepth)
         {
+            Vector2 origin;
+            origin.X = _texture.Width / 2f;
+            origin.Y = _texture.Height / 2f;
+
             batch.Draw(
                 _texture,
-                (Vector2) (Position + translation),
+                position,
                 null,
                 Tint,
-                Rotation,
-                Vector2.Zero,
-                Scale,
-                SpriteEffects.None,
-                0);
+                angle,
+                origin,
+                scale * Scale,
+                effects,
+                layerDepth);
         }
 
         public void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
         {
             // Try to load our texture if we don't have it yet.
-            if (_texture == null)
+            if (!string.IsNullOrWhiteSpace(_textureName))
             {
-                if (string.IsNullOrWhiteSpace(_textureName))
-                {
-                    // Cannot render if we have no texture.
-                    return;
-                }
                 _texture = content.Load<Texture2D>(_textureName);
+            }
+            else
+            {
+                _texture = null;
             }
         }
 

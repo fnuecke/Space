@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
+using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Microsoft.Xna.Framework;
@@ -274,18 +275,15 @@ namespace Space.ComponentSystem.Factories
 
         /// <summary>Samples the attributes to apply to the item.</summary>
         /// <param name="manager">The manager.</param>
-        /// <param name="center">The entity to revolve around.</param>
-        /// <param name="angle">The base angle for orbit ellipses.</param>
-        /// <param name="radius">The base orbiting radius this planet will have.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public int Sample(IManager manager, int center, float angle, float radius, IUniformRandom random)
+        public int Sample(IManager manager, IUniformRandom random)
         {
             var entity = manager.AddEntity();
 
             // Sample all values in advance, to allow reshuffling component creation
             // order in case we need to, without influencing the 'random' results.
-            var planetRadius = SampleRadius(random);
+            var radius = SampleRadius(random);
             var rotationSpeed = SampleRotationSpeed(random);
             var mass = SampleMass(random);
 
@@ -295,12 +293,14 @@ namespace Space.ComponentSystem.Factories
 
             // Give it a position.
             manager.AddComponent<Transform>(entity).Initialize(
-            // Add to indexes for lookup.
-                indexGroupsMask:
-                    DetectableSystem.IndexGroupMask | // Can be detected.
-                    SoundSystem.IndexGroupMask | // Can make noise.
-                    CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                    CameraSystem.IndexGroupMask); // Must be detectable by the camera.
+                new FarRectangle(-radius, -radius, radius * 2, radius * 2),
+                FarPosition.Zero,
+                0f,
+                // Add to indexes for lookup.
+                DetectableSystem.IndexGroupMask | // Can be detected.
+                SoundSystem.IndexGroupMask | // Can make noise.
+                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
+                CameraSystem.IndexGroupMask); // Must be detectable by the camera.
 
             // Make it rotate.
             manager.AddComponent<Velocity>(entity).Initialize(
@@ -317,7 +317,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
 
             // Make it visible.
-            manager.AddComponent<PlanetRenderer>(entity).Initialize(this, planetRadius, surfaceRotation);
+            manager.AddComponent<PlanetRenderer>(entity).Initialize(this, radius, surfaceRotation);
 
             // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");

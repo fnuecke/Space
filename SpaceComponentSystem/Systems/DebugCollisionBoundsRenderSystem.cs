@@ -93,8 +93,8 @@ namespace Space.ComponentSystem.Systems
                 {
                     _contacts[cm.Value.ContactId] = new ContactInfo
                     {
-                        PositionA = ((Transform) Manager.GetComponent(cm.Value.EntityA, Transform.TypeId)).Translation,
-                        PositionB = ((Transform) Manager.GetComponent(cm.Value.EntityB, Transform.TypeId)).Translation,
+                        PositionA = ((Transform) Manager.GetComponent(cm.Value.EntityA, Transform.TypeId)).Position,
+                        PositionB = ((Transform) Manager.GetComponent(cm.Value.EntityB, Transform.TypeId)).Position,
                         Normal = cm.Value.Normal
                     };
                 }
@@ -170,7 +170,8 @@ namespace Space.ComponentSystem.Systems
 
                 // Get interpolated position.
                 FarPosition position;
-                interpolation.GetInterpolatedPosition(entity, out position);
+                float angle;
+                interpolation.GetInterpolatedTransform(entity, out position, out angle);
 
                 // Get the bounds, translate them and get a "normal" rectangle.
                 var bounds = component.ComputeBounds();

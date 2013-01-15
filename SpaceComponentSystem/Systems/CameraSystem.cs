@@ -228,7 +228,8 @@ namespace Space.ComponentSystem.Systems
             // or mouse position, relative to the ship.
             var targetOffset = GetInputInducedOffset();
             var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
-            interpolation.GetInterpolatedPosition(avatar, out _cameraPosition);
+            float dummy;
+            interpolation.GetInterpolatedTransform(avatar, out _cameraPosition, out dummy);
 
             // The interpolate to our new offset, slowly to make the
             // effect less brain-melting.

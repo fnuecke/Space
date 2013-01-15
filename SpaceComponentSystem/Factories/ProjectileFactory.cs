@@ -242,7 +242,7 @@ namespace Space.ComponentSystem.Factories
                            -_collisionRadius,
                            _collisionRadius * 2,
                            _collisionRadius * 2),
-                       emitterTransform.Translation + rotatedOffset,
+                       emitterTransform.Position + rotatedOffset,
                        rotation,
                        // Register with indexes that need to be able to find us.
                        // Can collide.
@@ -336,7 +336,7 @@ namespace Space.ComponentSystem.Factories
             // Make us visible!
             if (!string.IsNullOrWhiteSpace(_model))
             {
-                manager.AddComponent<TextureRenderer>(entity).Initialize(_model);
+                manager.AddComponent<SimpleTextureDrawable>(entity).Initialize(_model);
             }
 
             // And add some particle effects, if so desired.

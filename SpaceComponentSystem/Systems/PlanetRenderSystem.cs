@@ -103,7 +103,7 @@ namespace Space.ComponentSystem.Systems
 
             // The position and orientation we're rendering at and in.
             var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
-            var position = transform.Translation;
+            var position = transform.Position;
             var rotation = transform.Angle;
 
             // Get position relative to our sun, to rotate atmosphere and shadow.
@@ -114,7 +114,7 @@ namespace Space.ComponentSystem.Systems
                 var sunTransform = ((Transform) Manager.GetComponent(sun, Transform.TypeId));
                 if (sunTransform != null)
                 {
-                    toSun = (Vector2) (sunTransform.Translation - position);
+                    toSun = (Vector2) (sunTransform.Position - position);
                     var matrix = Matrix.CreateRotationZ(-rotation);
                     Vector2.Transform(ref toSun, ref matrix, out toSun);
                     toSun.Normalize();

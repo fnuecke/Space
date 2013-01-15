@@ -62,7 +62,7 @@ namespace Space.ComponentSystem.Systems
             // Then check all our neighbors. Use new list each time because we're running
             // in parallel, so we can't really keep one on a global level.
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(myTransform.Translation, MaxGravitationDistance, neighbors, IndexGroupMask);
+            index.Find(myTransform.Position, MaxGravitationDistance, neighbors, IndexGroupMask);
             foreach (IIndexable neighbor in neighbors.Select(Manager.GetComponentById))
             {
                 // If they have an enabled gravitation component...
@@ -88,7 +88,7 @@ namespace Space.ComponentSystem.Systems
                 Debug.Assert(otherTransform != null);
 
                 // Get the delta vector between the two positions.
-                var delta = (Vector2) (otherTransform.Translation - myTransform.Translation);
+                var delta = (Vector2) (otherTransform.Position - myTransform.Position);
 
                 // Compute the angle between us and the other entity.
                 var distanceSquared = delta.LengthSquared();
@@ -106,7 +106,7 @@ namespace Space.ComponentSystem.Systems
                         otherVelocity.LinearVelocity.LengthSquared() < DockVelocity && distanceSquared < DockDistance)
                     {
                         // It's a ship that's not accelerating, and in range for docking.
-                        otherTransform.Translation = myTransform.Translation;
+                        otherTransform.Position = myTransform.Position;
                         otherVelocity.LinearVelocity = Vector2.Zero;
                     }
                     else if ((otherShipInfo == null || !otherShipInfo.IsAccelerating) && distanceSquared > 0.001f)

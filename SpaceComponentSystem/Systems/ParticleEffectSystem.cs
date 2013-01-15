@@ -130,7 +130,8 @@ namespace Space.ComponentSystem.Systems
                 {
                     // Get info for triggering and rendering.
                     FarPosition position;
-                    interpolation.GetInterpolatedPosition(component.Entity, out position);
+                    float angle;
+                    interpolation.GetInterpolatedTransform(component.Entity, out position, out angle);
 
                     // Load / initialize particle effects if they aren't yet.
                     if (effect.Effect == null)
@@ -152,23 +153,19 @@ namespace Space.ComponentSystem.Systems
                         bounds.Inflate(256, 256);
                         if (bounds.Contains((int) localTranslation.X, (int) localTranslation.Y))
                         {
-                            // Get rotation of the object.
-                            float rotation;
-                            interpolation.GetInterpolatedRotation(component.Entity, out rotation);
-
                             // Move the offset according to rotation.
-                            var cosRadians = (float) Math.Cos(rotation);
-                            var sinRadians = (float) Math.Sin(rotation);
+                            var cosRadians = (float) Math.Cos(angle);
+                            var sinRadians = (float) Math.Sin(angle);
 
                             FarPosition offset;
                             offset.X = effect.Offset.X * cosRadians - effect.Offset.Y * sinRadians;
                             offset.Y = effect.Offset.X * sinRadians + effect.Offset.Y * cosRadians;
 
                             // Adjust emitting rotation.
-                            rotation += effect.Direction;
+                            angle += effect.Direction;
 
                             // Trigger.
-                            effect.Effect.Trigger(offset, rotation, effect.Scale * effect.Intensity);
+                            effect.Effect.Trigger(offset, angle, effect.Scale * effect.Intensity);
                         }
                     }
 
@@ -261,9 +258,8 @@ namespace Space.ComponentSystem.Systems
 
             // Get interpolated position and rotation.
             FarPosition position;
-            interpolation.GetInterpolatedPosition(entity, out position);
-            float rotation;
-            interpolation.GetInterpolatedRotation(entity, out rotation);
+            float angle;
+            interpolation.GetInterpolatedTransform(entity, out position, out angle);
 
             // Apply the generator offset.
             position += offset;
@@ -279,7 +275,7 @@ namespace Space.ComponentSystem.Systems
                 impulse *= _simulationFps();
             }
 
-            Play(effect, ref position, ref impulse, rotation, scale);
+            Play(effect, ref position, ref impulse, angle, scale);
         }
 
         /// <summary>Plays an effect with the specified name as if it were emitted by the specified entity.</summary>

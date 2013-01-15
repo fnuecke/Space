@@ -58,9 +58,9 @@ namespace Space.ComponentSystem.Systems
                 var ai = (ArtificialIntelligence) Manager.GetComponent(entity, ArtificialIntelligence.TypeId);
                 if (ai != null)
                 {
-                    var transform = (Transform) Manager.GetComponent(entity, Transform.TypeId);
                     FarPosition position;
-                    interpolation.GetInterpolatedPosition(transform.Entity, out position);
+                    float angle;
+                    interpolation.GetInterpolatedTransform(entity, out position, out angle);
                     position += cameraTranslation;
 
                     // Render vegetative influences.

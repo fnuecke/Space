@@ -263,7 +263,7 @@ namespace Space.ComponentSystem.Factories
                 var circumference = MathHelper.Pi * (3 * (a + b) - (float) Math.Sqrt((3 * a + b) * (a + 3 * b)));
                 var period = circumference / travelSpeed * Settings.TicksPerSecond;
 
-                var entity = FactoryLibrary.SamplePlanet(manager, Name, center, dominantAngle, radius, random);
+                var entity = FactoryLibrary.SamplePlanet(manager, Name, random);
 
                 // Make it move around its center.
                 manager.AddComponent<EllipsePath>(entity)
@@ -271,8 +271,8 @@ namespace Space.ComponentSystem.Factories
 
                 // Set initial position to center (to avoid generated instances shortly popping up
                 // at the origin).
-                ((Transform) manager.GetComponent(entity, Transform.TypeId)).Translation =
-                    ((Transform) manager.GetComponent(center, Transform.TypeId)).Translation;
+                ((Transform) manager.GetComponent(entity, Transform.TypeId)).Position =
+                    ((Transform) manager.GetComponent(center, Transform.TypeId)).Position;
 
                 // Recurse.
                 if (Moons != null)

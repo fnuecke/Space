@@ -159,8 +159,8 @@ namespace Space.ComponentSystem.Systems
             foreach (var avatar in avatarSystem.Avatars)
             {
                 var transform = ((Transform) Manager.GetComponent(avatar, Transform.TypeId));
-                var x = ((int) transform.Translation.X) >> CellSizeShiftAmount;
-                var y = ((int) transform.Translation.Y) >> CellSizeShiftAmount;
+                var x = ((int) transform.Position.X) >> CellSizeShiftAmount;
+                var y = ((int) transform.Position.Y) >> CellSizeShiftAmount;
                 AddCellAndNeighbors(x, y, _reusableNewCellIds);
             }
 

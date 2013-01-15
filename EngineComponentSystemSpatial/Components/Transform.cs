@@ -13,8 +13,8 @@ using WorldBounds = Engine.Math.RectangleF;
 
 namespace Engine.ComponentSystem.Spatial.Components
 {
-    /// <summary>Represents transformation of a 2d object (position/translation + rotation).</summary>
-    public sealed class Transform : Component, IIndexable
+    /// <summary>Represents transformation of a 2d object (position/translation + angle/orientation).</summary>
+    public sealed class Transform : Component, ITransform, IIndexable
     {
         #region Type ID
 
@@ -88,18 +88,13 @@ namespace Engine.ComponentSystem.Spatial.Components
         }
 
         /// <summary>Current position of the object.</summary>
-        /// <remarks>
-        ///     This is not ideal performance wise, as we cannot pass this value per reference directly, but it's worth it
-        ///     regarding the security it brings regarding that it cannot be set directly, as we must make sure the
-        ///     <c>TranslationChanged</c> message is sent whenever this value changes.
-        /// </remarks>
-        public WorldPoint Translation
+        public WorldPoint Position
         {
-            get { return _translation; }
+            get { return _position; }
             set
             {
-                _nextTranslation = value;
-                _translationChanged = true;
+                _nextPosition = value;
+                _positionChanged = true;
             }
         }
 
@@ -126,13 +121,13 @@ namespace Engine.ComponentSystem.Spatial.Components
         private WorldBounds _bounds;
 
         /// <summary>The current translation of the component.</summary>
-        private WorldPoint _translation;
+        private WorldPoint _position;
 
         /// <summary>The translation to move to when performing the next update.</summary>
-        private WorldPoint _nextTranslation;
+        private WorldPoint _nextPosition;
 
         /// <summary>Don't rely on float equality checks.</summary>
-        private bool _translationChanged;
+        private bool _positionChanged;
 
         /// <summary>The current rotation of the component.</summary>
         private float _angle;
@@ -159,9 +154,9 @@ namespace Engine.ComponentSystem.Spatial.Components
             var otherTransform = (Transform) other;
             _indexGroupsMask = otherTransform._indexGroupsMask;
             _bounds = otherTransform._bounds;
-            _translation = otherTransform._translation;
-            _nextTranslation = otherTransform._nextTranslation;
-            _translationChanged = otherTransform._translationChanged;
+            _position = otherTransform._position;
+            _nextPosition = otherTransform._nextPosition;
+            _positionChanged = otherTransform._positionChanged;
             _angle = otherTransform._angle;
             _nextAngle = otherTransform._nextAngle;
             _angleChanged = otherTransform._angleChanged;
@@ -180,7 +175,7 @@ namespace Engine.ComponentSystem.Spatial.Components
             Bounds = bounds;
             IndexGroupsMask = indexGroupsMask;
 
-            Translation = translation;
+            Position = translation;
             Angle = rotation;
 
             // Initialization must be called from a synchronous context (as
@@ -217,9 +212,9 @@ namespace Engine.ComponentSystem.Spatial.Components
 
             _indexGroupsMask = 0;
             _bounds = WorldBounds.Empty;
-            _translation = WorldPoint.Zero;
-            _nextTranslation = WorldPoint.Zero;
-            _translationChanged = false;
+            _position = WorldPoint.Zero;
+            _nextPosition = WorldPoint.Zero;
+            _positionChanged = false;
             _angle = 0;
             _nextAngle = 0;
             _angleChanged = false;
@@ -234,7 +229,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         public WorldBounds ComputeWorldBounds()
         {
             var worldBounds = _bounds;
-            worldBounds.Offset(_translation);
+            worldBounds.Offset(_position);
             return worldBounds;
         }
 
@@ -245,15 +240,15 @@ namespace Engine.ComponentSystem.Spatial.Components
         /// <remarks>This must be called from a synchronous context (i.e. not from a parallel system).</remarks>
         public void Update()
         {
-            if (_translationChanged)
+            if (_positionChanged)
             {
                 TranslationChanged message;
                 message.Component = this;
-                message.PreviousPosition = _translation;
-                message.CurrentPosition = _nextTranslation;
+                message.PreviousPosition = _position;
+                message.CurrentPosition = _nextPosition;
 
-                _translation = _nextTranslation;
-                _translationChanged = false;
+                _position = _nextPosition;
+                _positionChanged = false;
 
                 Manager.SendMessage(message);
             }

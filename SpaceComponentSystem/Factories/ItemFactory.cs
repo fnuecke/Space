@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.ComponentSystem.Spatial.Components;
@@ -215,7 +214,7 @@ namespace Space.ComponentSystem.Factories
                     PickupSystem.IndexGroupMask |
                     // Must be detectable by the camera.
                     CameraSystem.IndexGroupMask);
-            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(_model, _requiredSlotSize.Scale());
+            var renderer = manager.AddComponent<SimpleTextureDrawable>(entity).Initialize(_model, _requiredSlotSize.Scale());
 
             // Do not render initially (only when dropped).
             renderer.Enabled = false;

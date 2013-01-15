@@ -2,7 +2,6 @@
 using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
@@ -28,6 +27,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
+
+        /// <summary>Interface type id, get once for better performance.</summary>
+        private static readonly int DrawableTypeId = ComponentSystem.Manager.GetComponentTypeId<IDrawable>();
 
         #endregion
 
@@ -134,78 +136,40 @@ namespace Engine.ComponentSystem.Spatial.Systems
             // We increment the base depth for each component we render, as a tie breaker,
             // i.e. to avoid z-fighting.
             var layerDepth = 0f;
-            foreach (var entity in GetVisibleEntities())
+            foreach (IDrawable drawable in GetVisibleEntities()
+                // Get all drawable components of the entity.
+                .SelectMany(entity => Manager.GetComponents(entity, DrawableTypeId))
+                // Skip disabled components.
+                .Where(drawable => drawable.Enabled))
             {
-                var component = ((TextureRenderer) Manager.GetComponent(entity, TextureRenderer.TypeId));
+                // Get interpolated position.
+                WorldPoint position;
+                float angle;
+                interpolation.GetInterpolatedTransform(drawable.Entity, out position, out angle);
 
-                // Skip invalid or disabled entities.
-                if (component != null && component.Enabled)
+                // Get parallax layer.
+                var parallax = (Parallax) Manager.GetComponent(drawable.Entity, Parallax.TypeId);
+                var parallaxLayer = 1.0f;
+                if (parallax != null)
                 {
-                    BeginDrawComponent(component, cameraTranslation, interpolation, layerDepth);
-                    layerDepth += 0.00001f;
+                    parallaxLayer = parallax.Layer;
                 }
+
+                // Draw.
+                drawable.Draw(
+                    SpriteBatch,
+                    ((Vector2) (position + cameraTranslation)) * parallaxLayer,
+                    angle,
+                    1,
+                    SpriteEffects.None, 
+                    layerDepth);
+
+                // Tie breaker.
+                layerDepth += 0.00001f;
             }
 
             // Done rendering.
             SpriteBatch.End();
-        }
-
-        /// <summary>Prepares for drawing the component. Computes screen space coordinates and then calls DrawComponent.</summary>
-        /// <param name="component">The component to draw.</param>
-        /// <param name="translation">The camera translation.</param>
-        /// <param name="interpolation">The interpolation system to get position and rotation from.</param>
-        /// <param name="layerDepth">The base layer depth to render at.</param>
-        private void BeginDrawComponent(
-            TextureRenderer component, WorldPoint translation, InterpolationSystem interpolation, float layerDepth)
-        {
-            // Load the texture if it isn't already.
-            if (component.Texture == null && !string.IsNullOrWhiteSpace(component.TextureName))
-            {
-                var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                component.Texture = graphicsSystem.Content.Load<Texture2D>(component.TextureName);
-            }
-
-            // Get interpolated position.
-            WorldPoint position;
-            interpolation.GetInterpolatedPosition(component.Entity, out position);
-            float rotation;
-            interpolation.GetInterpolatedRotation(component.Entity, out rotation);
-
-            // Get parallax layer.
-            var parallax = (Parallax) Manager.GetComponent(component.Entity, Parallax.TypeId);
-            var layer = 1.0f;
-            if (parallax != null)
-            {
-                layer = parallax.Layer;
-            }
-
-            // Draw.
-            DrawComponent(component, ((Vector2) (position + translation)) * layer, rotation, layerDepth);
-        }
-
-        /// <summary>Draws the component.</summary>
-        /// <param name="component">The component.</param>
-        /// <param name="position">The position.</param>
-        /// <param name="rotation">The rotation.</param>
-        /// <param name="layerDepth">The base layer depth to render at.</param>
-        protected virtual void DrawComponent(
-            TextureRenderer component, Vector2 position, float rotation, float layerDepth)
-        {
-            // Get the rectangle at which we'll draw.
-            Vector2 origin;
-            origin.X = component.Texture.Width / 2f;
-            origin.Y = component.Texture.Height / 2f;
-
-            SpriteBatch.Draw(
-                component.Texture,
-                position,
-                null,
-                component.Tint,
-                rotation,
-                origin,
-                component.Scale,
-                SpriteEffects.None,
-                layerDepth);
         }
 
         /// <summary>Gets the list of currently visible entities.</summary>

@@ -130,7 +130,7 @@ namespace Space.ComponentSystem.Factories
             var transform = ((Transform) manager.GetComponent(item, Transform.TypeId));
             if (transform != null)
             {
-                transform.Translation = position;
+                transform.Position = position;
                 transform.Update();
             }
             return item;
@@ -157,13 +157,9 @@ namespace Space.ComponentSystem.Factories
         /// <summary>Samples a new sun with the specified name.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the ship to sample.</param>
-        /// <param name="center">The entity the planet should orbit around.</param>
-        /// <param name="angle">The base angle for orbit ellipses.</param>
-        /// <param name="radius">The base orbiting radius this planet will have.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled sun.</returns>
-        public static int SamplePlanet(
-            IManager manager, string name, int center, float angle, float radius, IUniformRandom random)
+        public static int SamplePlanet(IManager manager, string name, IUniformRandom random)
         {
             if (string.IsNullOrWhiteSpace(name) || !Factories.ContainsKey(name))
             {
@@ -172,7 +168,7 @@ namespace Space.ComponentSystem.Factories
             var factory = Factories[name] as PlanetFactory;
             if (factory != null)
             {
-                return factory.Sample(manager, center, angle, radius, random);
+                return factory.Sample(manager, random);
             }
             return 0;
         }

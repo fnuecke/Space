@@ -92,7 +92,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 {
                     // We're in a squad and protecting a member. Leave everything to the
                     // autopilot (vegetative nervous system) but keep going.
-                    target = ((Transform) (AI.Manager.GetComponent(AI.Entity, Transform.TypeId))).Translation;
+                    target = ((Transform) (AI.Manager.GetComponent(AI.Entity, Transform.TypeId))).Position;
                     var leaderVelocity = (Velocity) AI.Manager.GetComponent(squad.Leader, Velocity.TypeId);
                     if (leaderVelocity != null)
                     {
@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 else
                 {
                     // Not in a squad or targeting something that's not in the squad...
-                    target = ((Transform) (AI.Manager.GetComponent(Target, Transform.TypeId))).Translation;
+                    target = ((Transform) (AI.Manager.GetComponent(Target, Transform.TypeId))).Position;
                     var targetVelocity = (Velocity) AI.Manager.GetComponent(Target, Velocity.TypeId);
                     if (targetVelocity != null)
                     {
@@ -112,7 +112,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
             else
             {
-                target = ((Transform) (AI.Manager.GetComponent(AI.Entity, Transform.TypeId))).Translation;
+                target = ((Transform) (AI.Manager.GetComponent(AI.Entity, Transform.TypeId))).Position;
             }
             return target;
         }

@@ -35,6 +35,16 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Index group mask for the index we use to track positions of renderables.</summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        
+        /// <summary>
+        /// Get the interface's type id once, for performance.
+        /// </summary>
+        private static readonly int TransformTypeId = ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+        
+        /// <summary>
+        /// Get the interface's type id once, for performance.
+        /// </summary>
+        private static readonly int VelocityTypeId = ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
 
         #endregion
 
@@ -79,7 +89,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         ///     Reused for iterating components when updating, to avoid modifications to the list of components breaking the
         ///     update.
         /// </summary>
-        private ISet<int> _drawablesInView = new HashSet<int>();
+        private readonly ISet<int> _drawablesInView = new HashSet<int>();
 
         #endregion
 
@@ -117,72 +127,69 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 foreach (IIndexable indexable in _drawablesInView.Select(Manager.GetComponentById))
                 {
                     // Get the transform component, without it we can do nothing.
-                    var component = (Transform) Manager.GetComponent(indexable.Entity, Transform.TypeId);
+                    var transform = (ITransform) Manager.GetComponent(indexable.Entity, TransformTypeId);
 
                     // Skip invalid or disabled entities.
-                    if (component == null || !component.Enabled)
+                    if (transform == null || !transform.Enabled)
                     {
                         continue;
                     }
 
                     // Get current target position and rotation based off the simulation state.
-                    var targetPosition = component.Translation;
-                    var targetRotation = component.Angle;
+                    var targetPosition = transform.Position;
+                    var targetAngle = transform.Angle;
 
-                    // Interpolate the position.
-                    var velocity = (IVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                    // See if we have a velocity we can use to predict movement.
+                    var velocity = (IVelocity) Manager.GetComponent(transform.Entity, VelocityTypeId);
+                    if (velocity == null)
+                    {
+                        // Nope, just set the new values.
+                        _newPositions[indexable.Entity] = targetPosition;
+                        _newAngles[indexable.Entity] = targetAngle;
+                        continue;
+                    }
+
+                    // Interpolate the position and angle.
                     var position = targetPosition;
-                    if (_positions.ContainsKey(component.Entity))
+                    var angle = targetAngle;
+                    if (_positions.ContainsKey(transform.Entity))
                     {
                         // Predict future translation to interpolate towards that.
-                        if (velocity != null && velocity.LinearVelocity != Vector2.Zero)
+                        if (velocity.LinearVelocity != Vector2.Zero)
                         {
                             // Clamp interpolated value to an interval around the actual target position.
                             position = WorldPoint.Clamp(
-                                _positions[component.Entity] + velocity.LinearVelocity * delta,
+                                _positions[transform.Entity] + velocity.LinearVelocity * delta,
                                 targetPosition - velocity.LinearVelocity * 0.25f,
                                 targetPosition + velocity.LinearVelocity * 0.75f);
-                        }
-                    }
-                    else if (velocity != null)
-                    {
-                        // We had no position for this entity, pick an initial one.
-                        position -= velocity.LinearVelocity * 0.25f;
-                    }
-
-                    // Store the interpolated position in the list of positions to keep.
-                    _newPositions[component.Entity] = position;
-
-                    // Interpolate the rotation.
-                    var rotation = targetRotation;
-                    if (_angles.ContainsKey(component.Entity))
-                    {
-                        // Predict future rotation to interpolate towards that.
-                        if (velocity != null && velocity.AngularVelocity != 0f)
+                        } // else: set instantly.
+                        if (velocity.AngularVelocity != 0f)
                         {
                             // Always interpolate via the shorter way, to avoid jumps.
-                            targetRotation = _angles[component.Entity] +
-                                             Angle.MinAngle(_angles[component.Entity], targetRotation);
+                            targetAngle = _angles[transform.Entity] +
+                                             Angle.MinAngle(_angles[transform.Entity], targetAngle);
                             // Clamp to a safe interval. This will make sure we don't
                             // stray from the correct value too far. Note that the
                             // FarPosition.Clamp above does check what we do here
                             // automatically, XNA's clamp doesn't (make sure the lower
                             // bound is smaller than the higher, that is).
-                            var from = targetRotation - velocity.AngularVelocity * 0.25f;
-                            var to = targetRotation + velocity.AngularVelocity * 0.75f;
+                            var from = targetAngle - velocity.AngularVelocity * 0.25f;
+                            var to = targetAngle + velocity.AngularVelocity * 0.75f;
                             var low = System.Math.Min(from, to);
                             var high = System.Math.Max(from, to);
-                            rotation = MathHelper.Clamp(_angles[component.Entity] + velocity.AngularVelocity * delta, low, high);
-                        }
+                            angle = MathHelper.Clamp(_angles[transform.Entity] + velocity.AngularVelocity * delta, low, high);
+                        } // else: set instantly.
                     }
-                    else if (velocity != null)
+                    else
                     {
-                        // We had no rotation for this entity, pick an initial one.
-                        rotation -= velocity.AngularVelocity * 0.25f;
+                        // We had no position for this entity, pick an initial one.
+                        position -= velocity.LinearVelocity * 0.25f;
+                        angle -= velocity.AngularVelocity * 0.25f;
                     }
 
-                    // Store the interpolated rotation in the list of rotations to keep.
-                    _newAngles[component.Entity] = rotation;
+                    // Store the interpolated position in the list of positions to keep.
+                    _newPositions[transform.Entity] = position;
+                    _newAngles[transform.Entity] = angle;
                 }
 
                 // Clear for next iteration.
@@ -196,10 +203,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
             _newPositions = oldPositions;
 
             // Swap rotation lists.
-            var oldRotations = _angles;
-            oldRotations.Clear();
+            var oldAngles = _angles;
+            oldAngles.Clear();
             _angles = _newAngles;
-            _newAngles = oldRotations;
+            _newAngles = oldAngles;
         }
 
         /// <summary>Returns the current bounds of the viewport, i.e. the rectangle of the world to actually render.</summary>
@@ -229,36 +236,28 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="position">The interpolated position.</param>
-        public void GetInterpolatedPosition(int entity, out WorldPoint position)
+        /// <param name="angle">The interpolated angle.</param>
+        public void GetInterpolatedTransform(int entity, out WorldPoint position, out float angle)
         {
             // Try to get the interpolated position.
-            if (_positions.TryGetValue(entity, out position))
+            if (_positions.TryGetValue(entity, out position) &&
+                _angles.TryGetValue(entity, out angle))
             {
                 return;
             }
 
             // We don't have one, use the fixed one instead.
-            var transform = (Transform) Manager.GetComponent(entity, Transform.TypeId);
-            position = transform != null ? transform.Translation : WorldPoint.Zero;
-        }
-
-        /// <summary>
-        ///     Gets the interpolated position of an entity, if possible. Otherwise it will use the current rotation from the
-        ///     simulation, and if that fails will set it to zero;
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="rotation">The interpolated rotation.</param>
-        public void GetInterpolatedRotation(int entity, out float rotation)
-        {
-            // Try to get the interpolated rotation.
-            if (_angles.TryGetValue(entity, out rotation))
+            var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
+            if (transform == null)
             {
-                return;
+                position = WorldPoint.Zero;
+                angle = 0f;
             }
-
-            // We don't have one, use the fixed one instead.
-            var transform = (Transform) Manager.GetComponent(entity, Transform.TypeId);
-            rotation = transform != null ? transform.Angle : 0f;
+            else
+            {
+                position = transform.Position;
+                angle = transform.Angle;
+            }
         }
 
         #endregion

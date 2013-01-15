@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -16,6 +15,13 @@ namespace Space.ComponentSystem.Systems
     /// <summary>Manages item drops by reacting to death events.</summary>
     public sealed class DropSystem : AbstractSystem, IMessagingSystem, IUpdatingSystem
     {
+        #region Constants
+        
+        /// <summary>Store interface type id for performance.</summary>
+        private static readonly int DrawableTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IDrawable>();
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -99,11 +105,10 @@ namespace Space.ComponentSystem.Systems
                     // Random roll succeeded, drop the item.
                     var entity = FactoryLibrary.SampleItem(Manager, item.ItemName, position, random);
 
-                    // Make the item visible.
-                    var renderer = ((TextureRenderer) Manager.GetComponent(entity, TextureRenderer.TypeId));
-                    if (renderer != null)
+                    // Make the item visible (per default items are hidden).
+                    foreach (IDrawable drawable in Manager.GetComponents(entity, DrawableTypeId))
                     {
-                        renderer.Enabled = true;
+                        drawable.Enabled = true;
                     }
 
                     // Did a drop, check if we're done.
@@ -132,7 +137,7 @@ namespace Space.ComponentSystem.Systems
             var drops = ((Drops) Manager.GetComponent(entity, Drops.TypeId));
             if (drops != null)
             {
-                var translation = ((Transform) Manager.GetComponent(entity, Transform.TypeId)).Translation;
+                var translation = ((Transform) Manager.GetComponent(entity, Transform.TypeId)).Position;
                 Drop(drops.ItemPool, ref translation);
             }
         }

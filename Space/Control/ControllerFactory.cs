@@ -8,6 +8,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation.Commands;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Space.ComponentSystem.Systems;
 using Space.Data;
@@ -21,16 +22,17 @@ namespace Space.Control
     internal static class ControllerFactory
     {
         /// <summary>Creates a new game server.</summary>
+        /// <param name="game">The game.</param>
         /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
         /// <returns>A new server.</returns>
-        public static ISimulationController<IServerSession> CreateServer(bool purelyLocal = false)
+        public static ISimulationController<IServerSession> CreateServer(Program game, bool purelyLocal = false)
         {
             // Create actual controller.
             var controller = new SimpleServerController<Profile>(
                 7777, purelyLocal ? 1 : 8, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
-            AddSpaceServerSystems(controller.Simulation.Manager);
+            AddSpaceServerSystems(controller.Simulation.Manager, game);
 
             // Done.
             return controller;
@@ -45,7 +47,7 @@ namespace Space.Control
             var controller = new SimpleClientController<Profile>(SpaceCommandHandler.HandleCommand);
 
             // Needed by some systems. Add all systems we need in our game as a client.
-            AddSpaceServerSystems(controller.Simulation.Manager);
+            AddSpaceServerSystems(controller.Simulation.Manager, game);
             AddSpaceClientSystems(controller.Simulation.Manager, game, controller.Session, controller);
 
             // Done.
@@ -81,7 +83,8 @@ namespace Space.Control
 
         /// <summary>Adds systems used by the server and the client.</summary>
         /// <param name="manager">The manager.</param>
-        private static void AddSpaceServerSystems(IManager manager)
+        /// <param name="game">The game.</param>
+        private static void AddSpaceServerSystems(IManager manager, Program game)
         {
             manager.AddSystems(
                 new AbstractSystem[]
@@ -91,6 +94,11 @@ namespace Space.Control
                     // terrible, terrible damage!
 
                     // ---- Informational and passive things ----- //
+                    
+                    // This system provides content manager and graphics device to other systems.
+                    // We need this in the server also, because we generate the collision bounds
+                    // for objects from their textures dynamically.
+                    new GraphicsDeviceSystem(game.Content, game.GraphicsDeviceManager) {Enabled = true},
 
                     // The index system will update its indexes when the translation
                     // of an object changes, and remembers which movements triggered
@@ -103,6 +111,7 @@ namespace Space.Control
                     // receiving messages, if at all).
                     new AvatarSystem(),
                     new ShipInfoSystem(),
+                    new ShipShapeSystem(),
 
                     // These may be manipulated/triggered via player commands.
                     new CharacterSystem<AttributeType>(),
@@ -238,7 +247,7 @@ namespace Space.Control
         /// <param name="session">The session.</param>
         /// <param name="controller">The controller.</param>
         private static void AddSpaceClientSystems<TSession>(
-            IManager manager, Program game, IClientSession session, ISimulationController<TSession> controller)
+            IManager manager, Game game, IClientSession session, ISimulationController<TSession> controller)
             where TSession : ISession
         {
             var audioEngine = (AudioEngine) game.Services.GetService(typeof (AudioEngine));
@@ -249,9 +258,6 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    // This system provides content manager and graphics device to other systems.
-                    new GraphicsDeviceSystem(game.Content, game.GraphicsDeviceManager) {Enabled = true},
-
                     // Load textures for detectables before trying to render radar.
                     new DetectableSystem {Enabled = true},
 

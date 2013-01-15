@@ -89,14 +89,20 @@
     <Compile Include="..\EngineComponentSystemSpatial\Components\Intersection.cs">
       <Link>Components\Intersection.cs</Link>
     </Compile>
+    <Compile Include="..\EngineComponentSystemSpatial\Components\ITransform.cs">
+      <Link>Components\ITransform.cs</Link>
+    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\IVelocity.cs">
       <Link>Components\IVelocity.cs</Link>
     </Compile>
+    <Compile Include="..\EngineComponentSystemSpatial\Components\Parallax.cs">
+      <Link>Components\Parallax.cs</Link>
+    </Compile>
+    <Compile Include="..\EngineComponentSystemSpatial\Components\SimpleTextureDrawable.cs">
+      <Link>Components\SimpleTextureDrawable.cs</Link>
+    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\Sound.cs">
       <Link>Components\Sound.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\StaticTextureDrawable.cs">
-      <Link>Components\StaticTextureDrawable.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\Transform.cs">
       <Link>Components\Transform.cs</Link>

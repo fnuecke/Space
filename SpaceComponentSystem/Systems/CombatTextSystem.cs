@@ -46,7 +46,7 @@ namespace Space.ComponentSystem.Systems
                 var cm = message as DamageApplied?;
                 if (cm != null)
                 {
-                    var position = ((Transform) Manager.GetComponent(cm.Value.Entity, Transform.TypeId)).Translation;
+                    var position = ((Transform) Manager.GetComponent(cm.Value.Entity, Transform.TypeId)).Position;
                     var value = (int) Math.Round(cm.Value.Amount);
                     var scale = cm.Value.IsCriticalHit ? 1f : 0.5f;
                     var isLocalPlayerFaction = (_localPlayerFaction &
@@ -90,7 +90,7 @@ namespace Space.ComponentSystem.Systems
                 var cm = message as DamageBlocked?;
                 if (cm != null)
                 {
-                    var position = ((Transform) Manager.GetComponent(cm.Value.Entity, Transform.TypeId)).Translation;
+                    var position = ((Transform) Manager.GetComponent(cm.Value.Entity, Transform.TypeId)).Position;
                     ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
                         .Display("Blocked", position, Color.LightBlue, 0.5f);
                 }

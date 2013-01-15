@@ -32,7 +32,7 @@ namespace Space.ComponentSystem.Systems
             ISet<int> awake = new HashSet<int>();
             foreach (var transform in avatars.Avatars.Select(avatar => (Transform) Manager.GetComponent(avatar, Transform.TypeId)))
             {
-                index.Find(transform.Translation, SleepDistance, awake, ArtificialIntelligence.AIIndexGroupMask);
+                index.Find(transform.Position, SleepDistance, awake, ArtificialIntelligence.AIIndexGroupMask);
             }
             foreach (var component in Components)
             {

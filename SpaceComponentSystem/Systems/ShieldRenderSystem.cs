@@ -163,7 +163,8 @@ namespace Space.ComponentSystem.Systems
 
                 // Position the shader. Only rotation differs for equipped shields.
                 FarPosition position;
-                interpolation.GetInterpolatedPosition(effect.Entity, out position);
+                float angle;
+                interpolation.GetInterpolatedTransform(effect.Entity, out position, out angle);
                 _shader.Center = (Vector2) (position + camera.Translation);
 
                 // Set size.
@@ -178,9 +179,7 @@ namespace Space.ComponentSystem.Systems
                 _shader.StructureRotation = MathHelper.ToRadians(frame / Settings.TicksPerSecond * 5);
 
                 // Set transform, including rotation of owner and slot.
-                float rotation;
-                interpolation.GetInterpolatedRotation(effect.Entity, out rotation);
-                _shader.Transform = Matrix.CreateRotationZ(-rotation) * camera.Transform;
+                _shader.Transform = Matrix.CreateRotationZ(-angle) * camera.Transform;
 
                 // Draw it.
                 _shader.Draw();

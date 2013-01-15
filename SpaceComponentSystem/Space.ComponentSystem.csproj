@@ -88,6 +88,7 @@
     <Compile Include="Components\Fuselage.cs" />
     <Compile Include="Components\ItemInfo.cs" />
     <Compile Include="Components\ShieldEnergyStatusEffect.cs" />
+    <Compile Include="Components\ShipDrawable.cs" />
     <Compile Include="Components\SpaceItemSlot.cs" />
     <Compile Include="Components\SpaceItem.cs" />
     <Compile Include="Components\AbstractRegeneratingValue.cs" />
@@ -172,6 +173,7 @@
     <Compile Include="Systems\ShieldSystem.cs" />
     <Compile Include="Systems\ShipControlSystem.cs" />
     <Compile Include="Systems\ShipInfoSystem.cs" />
+    <Compile Include="Systems\ShipShapeSystem.cs" />
     <Compile Include="Systems\ShipSpawnSystem.cs" />
     <Compile Include="Systems\SleepSystem.cs" />
     <Compile Include="Systems\SpaceUsablesSystem.cs" />

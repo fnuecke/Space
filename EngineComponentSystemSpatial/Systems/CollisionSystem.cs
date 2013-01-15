@@ -480,7 +480,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 var transform = ((Transform) Manager.GetComponent(collidable.Entity, Transform.TypeId));
                 if (transform != null)
                 {
-                    collidable.PreviousPosition = transform.Translation;
+                    collidable.PreviousPosition = transform.Position;
                 }
             }
         }

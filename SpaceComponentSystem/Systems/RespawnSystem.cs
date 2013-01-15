@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Systems
             var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
             if (transform != null)
             {
-                transform.Translation = component.Position;
+                transform.Position = component.Position;
                 transform.Update();
                 transform.Angle = 0;
             }

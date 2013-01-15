@@ -223,7 +223,7 @@ namespace Space.ComponentSystem.Systems
 
             // Rotate around origin of the formation (which should be the leader's position in
             // most cases).
-            var finalPosition = leaderTransform.Translation;
+            var finalPosition = leaderTransform.Position;
             var cosRadians = (float) Math.Cos(leaderTransform.Angle);
             var sinRadians = (float) Math.Sin(leaderTransform.Angle);
             finalPosition.X += (-position.Y * cosRadians - position.X * sinRadians) * data.Spacing;

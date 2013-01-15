@@ -131,12 +131,12 @@ namespace Engine.ComponentSystem
                 foreach (var otherType in ComponentTypes.Keys)
                 {
                     // Check for parents.
-                    if (type.IsSubclassOf(otherType))
+                    if (otherType.IsAssignableFrom(type))
                     {
                         // Got a potential parent, see if it's better than the one
                         // we already have.
                         if (closestParentType == null || // No other parent.
-                            otherType.IsSubclassOf(closestParentType)) // Better than previous parent.
+                            closestParentType.IsAssignableFrom(otherType)) // Better than previous parent.
                         {
                             closestParentType = otherType;
                         }
@@ -150,7 +150,7 @@ namespace Engine.ComponentSystem
                         var otherTypeId = GetComponentTypeId(otherType);
                         var otherParentTypeId = ComponentHierarchy[otherTypeId];
                         if (otherParentTypeId == 0 || // Had no parent.
-                            type.IsSubclassOf(GetComponentTypeForTypeId(otherParentTypeId)))
+                            GetComponentTypeForTypeId(otherParentTypeId).IsAssignableFrom(type))
                             // Better than previous parent.
                         {
                             ComponentHierarchy[otherTypeId] = typeId;

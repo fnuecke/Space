@@ -1,5 +1,12 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
+
+#if FARMATH
+using WorldPoint = Engine.FarMath.FarPosition;
+#else
+using WorldPoint = Microsoft.Xna.Framework.Vector2;
+#endif
 
 namespace Engine.ComponentSystem.Spatial.Components
 {
@@ -19,6 +26,15 @@ namespace Engine.ComponentSystem.Spatial.Components
         {
             return TypeId;
         }
+
+        #endregion
+        
+        #region Constants
+
+        /// <summary>
+        /// Get the interface's type id once, for performance.
+        /// </summary>
+        private static readonly int TransformTypeId = ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         #endregion
 
@@ -73,32 +89,32 @@ namespace Engine.ComponentSystem.Spatial.Components
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
         [PacketizerIgnore]
-        internal float PrecomputedA;
+        private float _precomputedA;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
         [PacketizerIgnore]
-        internal float PrecomputedB;
+        private float _precomputedB;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
         [PacketizerIgnore]
-        internal float PrecomputedC;
+        private float _precomputedC;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
         [PacketizerIgnore]
-        internal float PrecomputedD;
+        private float _precomputedD;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
         [PacketizerIgnore]
-        internal float PrecomputedE;
+        private float _precomputedE;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
         [PacketizerIgnore]
-        internal float PrecomputedF;
+        private float _precomputedF;
 
         /// <summary>Actual value of the angle.</summary>
         private float _angle;
@@ -160,6 +176,10 @@ namespace Engine.ComponentSystem.Spatial.Components
             Period = period;
             PeriodOffset = periodOffset;
 
+            // Move to somewhere on the path. This will still lead to a jump on the first
+            // update, but at least it's less likely someone sees it.
+            Update(0);
+
             return this;
         }
 
@@ -178,7 +198,23 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #endregion
 
-        #region Precomputation
+        #region Logic
+
+        public void Update(long frame)
+        {
+            // Get the center, the position of the entity we're rotating around.
+            var center = ((ITransform) Manager.GetComponent(CenterEntityId, TransformTypeId)).Position;
+
+            // Get the angle based on the time passed.
+            var t = PeriodOffset + MathHelper.Pi * frame / Period;
+            var sinT = (float) System.Math.Sin(t);
+            var cosT = (float) System.Math.Cos(t);
+
+            // Compute the current position and set it.
+            ((ITransform) Manager.GetComponent(Entity, TransformTypeId)).Position = new WorldPoint(
+                center.X + _precomputedA + _precomputedB * cosT - _precomputedC * sinT,
+                center.Y + _precomputedD + _precomputedE * cosT + _precomputedF * sinT);
+        }
 
         /// <summary>Fills in precomputable values.</summary>
         private void Precompute()
@@ -188,12 +224,12 @@ namespace Engine.ComponentSystem.Spatial.Components
             var cosPhi = (float) System.Math.Cos(_angle);
             var f = (float) System.Math.Sqrt(System.Math.Abs(_minorRadius * _minorRadius - _majorRadius * _majorRadius));
 
-            PrecomputedA = f * cosPhi;
-            PrecomputedB = MajorRadius * cosPhi;
-            PrecomputedC = MinorRadius * sinPhi;
-            PrecomputedD = f * sinPhi;
-            PrecomputedE = MajorRadius * sinPhi;
-            PrecomputedF = MinorRadius * cosPhi;
+            _precomputedA = f * cosPhi;
+            _precomputedB = MajorRadius * cosPhi;
+            _precomputedC = MinorRadius * sinPhi;
+            _precomputedD = f * sinPhi;
+            _precomputedE = MajorRadius * sinPhi;
+            _precomputedF = MinorRadius * cosPhi;
         }
 
         #endregion

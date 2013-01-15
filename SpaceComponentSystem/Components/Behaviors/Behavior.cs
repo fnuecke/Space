@@ -98,7 +98,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // And accordingly, which way to accelerate to get there.
             var direction =
                 (Vector2)
-                (targetPosition - ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation);
+                (targetPosition - ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Position);
 
             // Normalize if it's not zero.
             var norm = direction.LengthSquared();
@@ -143,7 +143,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         protected virtual FarPosition GetTargetPosition()
         {
             // Per default we just stand still.
-            return ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            return ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Position;
         }
 
         /// <summary>How fast do we want to fly, relative to our maximum speed?</summary>
@@ -212,7 +212,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         {
             // See if there are any enemies nearby, if so attack them.
             var faction = ((Faction) AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
-            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Position;
             var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
             var shipInfo = (ShipInfo) AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
             var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
@@ -243,7 +243,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 {
                     // It's an enemy. Check the distance.
                     var enemyPosition =
-                        ((Transform) AI.Manager.GetComponent(filteredNeighbor, Transform.TypeId)).Translation;
+                        ((Transform) AI.Manager.GetComponent(filteredNeighbor, Transform.TypeId)).Position;
                     var distance = FarPosition.Distance(enemyPosition, position);
                     if (distance < closestDistance)
                     {
@@ -290,7 +290,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 {
                     // This one does damage and is not our friend... try to avoid it.
                     var neighborGravitation = ((Gravitation) AI.Manager.GetComponent(neighbor.Entity, Gravitation.TypeId));
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
+                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Position;
                     var toNeighbor = (Vector2) (position - neighborPosition);
 
                     // Does it pull?
@@ -323,7 +323,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 else if (neighborFaction != null && (neighborFaction.Value & faction) == 0)
                 {
                     // It's a normal enemy. Try to avoid it. This is similar to separation.
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
+                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Position;
                     var toNeighbor = (Vector2) (neighborPosition - position);
                     var toNeighborDistanceSquared = toNeighbor.LengthSquared();
                     // Avoid NaNs when at same place as neighbor and see if we're close
@@ -380,7 +380,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 }
 
                 // Get the position, direction and distance, needed for everything that follows.
-                var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
+                var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Position;
                 var toNeighbor = (Vector2) (neighborPosition - position);
                 var distance = (float) Math.Sqrt(toNeighbor.LengthSquared());
                 // Avoid NaNs when at same place as neighbor...

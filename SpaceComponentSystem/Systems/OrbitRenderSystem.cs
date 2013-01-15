@@ -180,7 +180,7 @@ namespace Space.ComponentSystem.Systems
                 // We don't show the icons for anything that's inside our
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
-                var direction = (Vector2) (neighborTransform.Translation - position);
+                var direction = (Vector2) (neighborTransform.Position - position);
 
                 // We'll make stuff far away a little less opaque. First get
                 // the linear relative distance.
@@ -200,7 +200,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Get the current position of the entity we're orbiting.
                     var focusTransform =
-                        ((Transform) Manager.GetComponent(ellipse.CenterEntityId, Transform.TypeId)).Translation;
+                        ((Transform) Manager.GetComponent(ellipse.CenterEntityId, Transform.TypeId)).Position;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.

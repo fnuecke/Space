@@ -43,8 +43,8 @@ namespace Space.ComponentSystem.Systems
 
             // Check the sector we're in.
             var transform = ((Transform) Manager.GetComponent(avatar, Transform.TypeId));
-            var x = ((int) transform.Translation.X) >> CellSystem.CellSizeShiftAmount;
-            var y = ((int) transform.Translation.Y) >> CellSystem.CellSizeShiftAmount;
+            var x = ((int) transform.Position.X) >> CellSystem.CellSizeShiftAmount;
+            var y = ((int) transform.Position.Y) >> CellSystem.CellSizeShiftAmount;
 
             // Are we somewhere else?
             if (x != _lastX || y != _lastY)

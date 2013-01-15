@@ -173,7 +173,7 @@ namespace Space.ComponentSystem.Systems
                 // We don't show the icons for anything that's inside our
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
-                var direction = (Vector2) (neighborTransform.Translation - position);
+                var direction = (Vector2) (neighborTransform.Position - position);
                 var distance = direction.Length();
 
                 // Check if the object's inside. If so, skip it. Take camera

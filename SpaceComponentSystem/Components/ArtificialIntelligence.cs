@@ -517,7 +517,7 @@ namespace Space.ComponentSystem.Components
                         {
                             var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
                             var targetTransform = (Transform) Manager.GetComponent(target, Transform.TypeId);
-                            return (Vector2) (targetTransform.Translation - transform.Translation);
+                            return (Vector2) (targetTransform.Position - transform.Position);
                         }
                         break;
                     }
@@ -525,13 +525,13 @@ namespace Space.ComponentSystem.Components
                     {
                         var target = ((MoveBehavior) behavior).Target;
                         var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
-                        return (Vector2) (target - transform.Translation);
+                        return (Vector2) (target - transform.Position);
                     }
                     case BehaviorType.AttackMove:
                     {
                         var target = ((AttackMoveBehavior) behavior).Target;
                         var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
-                        return (Vector2) (target - transform.Translation);
+                        return (Vector2) (target - transform.Position);
                     }
                     case BehaviorType.Guard:
                     {
@@ -540,7 +540,7 @@ namespace Space.ComponentSystem.Components
                         {
                             var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
                             var targetTransform = (Transform) Manager.GetComponent(target, Transform.TypeId);
-                            return (Vector2) (targetTransform.Translation - transform.Translation);
+                            return (Vector2) (targetTransform.Position - transform.Position);
                         }
                         break;
                     }

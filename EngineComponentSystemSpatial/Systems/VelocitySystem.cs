@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var transform = (Transform) Manager.GetComponent(component.Entity, Transform.TypeId);
             if (component.LinearVelocity != Vector2.Zero)
             {
-                transform.Translation += component.LinearVelocity;
+                transform.Position += component.LinearVelocity;
             }
             if (component.AngularVelocity != 0f)
             { 

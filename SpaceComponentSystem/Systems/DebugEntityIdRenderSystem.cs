@@ -54,10 +54,11 @@ namespace Space.ComponentSystem.Systems
                 if (transform != null)
                 {
                     var text = string.Format(
-                        "ID: {0} @ {1} / {2}", transform.Entity, transform.Translation, transform.Angle);
+                        "ID: {0} @ {1} / {2}", transform.Entity, transform.Position, transform.Angle);
 
                     FarPosition position;
-                    interpolation.GetInterpolatedPosition(transform.Entity, out position);
+                    float angle;
+                    interpolation.GetInterpolatedTransform(transform.Entity, out position, out angle);
                     position += cameraTranslation;
                     _spriteBatch.DrawString(
                         _font,

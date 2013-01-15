@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Systems
             //camera.Transform.Translation;
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             return avatar > 0
-                       ? ((Transform) Manager.GetComponent(avatar, Transform.TypeId)).Translation
+                       ? ((Transform) Manager.GetComponent(avatar, Transform.TypeId)).Position
                        : FarPosition.Zero;
         }
 

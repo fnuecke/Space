@@ -66,8 +66,6 @@
     <Compile Include="IInformation.cs" />
     <Compile Include="Systems\GraphicsDeviceSystem.cs" />
     <Compile Include="Components\Owner.cs" />
-    <Compile Include="Components\Parallax.cs" />
-    <Compile Include="Components\TextureRenderer.cs" />
     <Compile Include="Messages\GraphicsDeviceCreated.cs" />
     <Compile Include="Messages\GraphicsDeviceDisposing.cs" />
     <Compile Include="Messages\GraphicsDeviceReset.cs" />

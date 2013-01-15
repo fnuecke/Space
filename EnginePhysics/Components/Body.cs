@@ -21,7 +21,7 @@ namespace Engine.Physics.Components
     ///     A body represents a physical object, tracking some of its global properties such as mass, velocity and world
     ///     transform.
     /// </summary>
-    public sealed class Body : Component, IVelocity
+    public sealed class Body : Component, ITransform, IVelocity
     {
         #region Type ID
 

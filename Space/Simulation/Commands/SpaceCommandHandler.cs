@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
@@ -334,6 +333,9 @@ from Space.Data import *
             // Swap the items.
             inventory.Swap(command.FirstIndex, command.SecondIndex);
         }
+        
+        /// <summary>Store interface type id for performance.</summary>
+        private static readonly int DrawableTypeId = Manager.GetComponentTypeId<IDrawable>();
 
         private static void PickUp(PickUpCommand command, IManager manager)
         {
@@ -355,7 +357,7 @@ from Space.Data import *
             // lock this shared list.
             lock (_reusableItemList)
             {
-                index.Find(transform.Translation, 100, _reusableItemList, PickupSystem.IndexGroupMask);
+                index.Find(transform.Position, 100, _reusableItemList, PickupSystem.IndexGroupMask);
                 foreach (IIndexable item in _reusableItemList.Select(manager.GetComponentById))
                 {
                     // Pick the item up.
@@ -363,10 +365,9 @@ from Space.Data import *
                     inventory.Add(item.Entity);
 
                     // Disable rendering, if available.
-                    var renderer = (TextureRenderer) manager.GetComponent(item.Entity, TextureRenderer.TypeId);
-                    if (renderer != null)
+                    foreach (IDrawable drawable in manager.GetComponents(item.Entity, DrawableTypeId))
                     {
-                        renderer.Enabled = false;
+                        drawable.Enabled = false;
                     }
                 }
                 _reusableItemList.Clear();
@@ -410,15 +411,14 @@ from Space.Data import *
                         // Position the item to be at the position of the
                         // player that dropped it.
                         var transform = (Transform) manager.GetComponent(item, Transform.TypeId);
-                        transform.Translation =
-                            ((Transform) manager.GetComponent(avatar, Transform.TypeId)).Translation;
+                        transform.Position =
+                            ((Transform) manager.GetComponent(avatar, Transform.TypeId)).Position;
                         transform.Update();
 
                         // Enable rendering, if available.
-                        var renderer = (TextureRenderer) manager.GetComponent(item, TextureRenderer.TypeId);
-                        if (renderer != null)
+                        foreach (IDrawable drawable in manager.GetComponents(item, DrawableTypeId))
                         {
-                            renderer.Enabled = true;
+                            drawable.Enabled = true;
                         }
                     }
                 }

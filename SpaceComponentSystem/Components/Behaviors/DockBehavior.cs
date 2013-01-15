@@ -44,7 +44,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         {
             // See if there are any stations nearby.
             var faction = ((Faction) AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
-            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Position;
             var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
 
             // The closest station we were able to find and how far it is away.
@@ -63,7 +63,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 if (neighborFaction != null && (neighborFaction.Value & faction) != 0)
                 {
                     // Friend. Closer than any other?
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
+                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Position;
                     var neighborDistanceSquared = FarPosition.DistanceSquared(position, neighborPosition);
                     if (neighborDistanceSquared < distanceSquared)
                     {
@@ -77,7 +77,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             if (closestStation > 0)
             {
                 var neighborPosition =
-                    ((Transform) AI.Manager.GetComponent(closestStation, Transform.TypeId)).Translation;
+                    ((Transform) AI.Manager.GetComponent(closestStation, Transform.TypeId)).Position;
                 // Close enough to dock?
                 if (FarPosition.DistanceSquared(position, neighborPosition) < DockingRange * DockingRange)
                 {

@@ -28,6 +28,16 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Index group to use for sound computations.</summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        
+        /// <summary>
+        /// Get the interface's type id once, for performance.
+        /// </summary>
+        private static readonly int TransformTypeId = ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+        
+        /// <summary>
+        /// Get the interface's type id once, for performance.
+        /// </summary>
+        private static readonly int VelocityTypeId = ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
 
         #endregion
 
@@ -135,10 +145,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 }
 
                 // Get sound position and velocity.
-                var emitterPosition = ((Transform) Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Translation;
+                var emitterPosition = ((ITransform) Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position;
 
                 // The velocity is optional, so we must check if it exists.
-                var neighborVelocity = (IVelocity) Manager.GetComponent(neighbor.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                var neighborVelocity = (IVelocity) Manager.GetComponent(neighbor.Entity, VelocityTypeId);
                 var emitterVelocity = neighborVelocity != null ? neighborVelocity.LinearVelocity : Vector2.Zero;
 
                 // Check whether to update or start playing.
@@ -278,9 +288,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="entity">The entity that emits the sound.</param>
         public Cue Play(string soundCue, int entity)
         {
-            var position = ((Transform) Manager.GetComponent(entity, Transform.TypeId)).Translation;
+            var position = ((ITransform) Manager.GetComponent(entity, TransformTypeId)).Position;
             var velocity = Vector2.Zero;
-            var velocityComponent = (IVelocity) Manager.GetComponent(entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+            var velocityComponent = (IVelocity) Manager.GetComponent(entity, VelocityTypeId);
             if (velocityComponent != null)
             {
                 velocity = velocityComponent.LinearVelocity;

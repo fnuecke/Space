@@ -87,7 +87,7 @@ namespace Space.ComponentSystem.Systems
         private void RenderObject(TestObjectRenderer component, Matrix transform, FarPosition translation)
         {
             // Get absolute position of sun.
-            var position = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
+            var position = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Position;
 
             // Apply transformation.
             _testObject.Center = (Vector2) (position + translation);

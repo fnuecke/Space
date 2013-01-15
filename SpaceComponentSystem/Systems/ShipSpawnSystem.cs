@@ -42,7 +42,7 @@ namespace Space.ComponentSystem.Systems
                 var index = -1;
                 foreach (var avatar in avatars.Avatars)
                 {
-                    var avatarPosition = ((Transform) Manager.GetComponent(avatar, Transform.TypeId)).Translation;
+                    var avatarPosition = ((Transform) Manager.GetComponent(avatar, Transform.TypeId)).Position;
                     var avatarCell = CellSystem.GetCellIdFromCoordinates(avatarPosition);
                     index = _cellSpawns.FindIndex(x => x.Item1 == avatarCell);
                     if (index >= 0)
@@ -88,7 +88,7 @@ namespace Space.ComponentSystem.Systems
             else
             {
                 var faction = ((Faction) Manager.GetComponent(component.Entity, Faction.TypeId));
-                var translation = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
+                var translation = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Position;
                 foreach (var target in component.Targets)
                 {
                     CreateAttackingShip(ref translation, target, faction.Value);

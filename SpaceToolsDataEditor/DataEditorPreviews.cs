@@ -279,7 +279,7 @@ namespace Space.Tools.DataEditor
             var manager = _ingamePreview.Manager;
             var sun = _ingamePreview.SunId;
 
-            var entity = factory.Sample(manager, sun, 0, 0, null);
+            var entity = factory.Sample(manager, null);
             if (entity > 0)
             {
                 // Give it an ellipse path. This will not move the entity, but it'll allow
@@ -558,6 +558,8 @@ namespace Space.Tools.DataEditor
             }
         }
 
+        private static readonly int DrawableTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IDrawable>();
+
         private void RenderItemPreview(ItemFactory factory)
         {
             if (!SetPreviews(PreviewType.Ingame, factory))
@@ -573,7 +575,7 @@ namespace Space.Tools.DataEditor
             var entity = factory.Sample(manager, null);
             if (entity > 0)
             {
-                var renderer = (TextureRenderer)manager.GetComponent(entity, TextureRenderer.TypeId);
+                var renderer = (IDrawable) manager.GetComponent(entity, DrawableTypeId);
                 if (renderer != null)
                 {
                     renderer.Enabled = true;
@@ -584,7 +586,7 @@ namespace Space.Tools.DataEditor
                     if (transform != null)
                     {
                         var offset = (FarPosition)(factory.RequiredSlotSize.Scale() * factory.ModelOffset);
-                        transform.Translation = offset;
+                        transform.Position = offset;
                     }
                 }
                 var item = (SpaceItem)manager.GetComponent(entity, Item.TypeId);

@@ -44,8 +44,9 @@ namespace Space.ComponentSystem.Systems
                         _lastPosition = cam.CameraPosition;
                         _lastZoom = cam.Zoom;
                         FarPosition desPosition;
+                        float angle;
                         var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
-                        interpolation.GetInterpolatedPosition(avatar, out desPosition);
+                        interpolation.GetInterpolatedTransform(avatar, out desPosition, out angle);
 
                         _step = (desPosition - _lastPosition) / _returnSpeed;
                         var desZoom = cam.CameraZoom;

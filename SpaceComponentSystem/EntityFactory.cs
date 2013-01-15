@@ -51,7 +51,7 @@ namespace Space.ComponentSystem
                     typeof (Acceleration),
                     typeof (Gravitation),
                     // Hide it.
-                    typeof (TextureRenderer),
+                    typeof (SimpleTextureDrawable),
                     typeof (ParticleEffects),
                     // And don't regenerate.
                     typeof (Health),
@@ -115,13 +115,13 @@ namespace Space.ComponentSystem
             manager.AddComponent<Faction>(entity).Initialize(faction);
             manager.AddComponent<Transform>(entity)
                    .Initialize(
-                       ((Transform) manager.GetComponent(center, Transform.TypeId)).Translation,
+                       ((Transform) manager.GetComponent(center, Transform.TypeId)).Position,
                        indexGroupsMask: DetectableSystem.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
             manager.AddComponent<Velocity>(entity).Initialize(Vector2.Zero, MathHelper.Pi / period);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, orbitRadius, orbitRadius, 0, period, 0);
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Stolen/Ships/sensor_array_dish");
             manager.AddComponent<ShipSpawner>(entity);
-            manager.AddComponent<TextureRenderer>(entity)
+            manager.AddComponent<SimpleTextureDrawable>(entity)
                    .Initialize(texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
 
             return entity;

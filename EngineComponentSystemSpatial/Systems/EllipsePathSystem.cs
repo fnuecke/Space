@@ -1,12 +1,5 @@
 ﻿using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
-
-#if FARMATH
-using WorldPoint = Engine.FarMath.FarPosition;
-#else
-using WorldPoint = Microsoft.Xna.Framework.Vector2;
-#endif
 
 namespace Engine.ComponentSystem.Spatial.Systems
 {
@@ -20,19 +13,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, EllipsePath component)
         {
-            // Get the center, the position of the entity we're rotating around.
-            var center = ((Transform) Manager.GetComponent(component.CenterEntityId, Transform.TypeId)).Translation;
-
-            // Get the angle based on the time passed.
-            var t = component.PeriodOffset + MathHelper.Pi * frame / component.Period;
-            var sinT = (float) System.Math.Sin(t);
-            var cosT = (float) System.Math.Cos(t);
-
-            // Compute the current position and set it.
-            var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
-            transform.Translation = new WorldPoint(
-                center.X + component.PrecomputedA + component.PrecomputedB * cosT - component.PrecomputedC * sinT,
-                center.Y + component.PrecomputedD + component.PrecomputedE * cosT + component.PrecomputedF * sinT);
+            component.Update(frame);
         }
 
         #endregion

@@ -96,7 +96,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         /// <returns>Whether the two collide or not.</returns>
         internal override bool Intersects(Collidable collidable, out Vector2 normal)
         {
-            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Translation;
+            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Position;
             if (ShouldSweep || collidable.ShouldSweep)
             {
                 // Use sweep collision tests.
@@ -109,7 +109,7 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         internal override bool Intersects(ref Vector2 extents, ref WorldPoint position, out Vector2 normal)
         {
-            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Translation;
+            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Position;
             if (Intersection.Test(ref extents, ref position, Radius, ref currentPosition))
             {
                 normal = (Vector2) (position - currentPosition);
@@ -123,7 +123,7 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         internal override bool Intersects(float radius, ref WorldPoint position, out Vector2 normal)
         {
-            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Translation;
+            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Position;
             if (Intersection.Test(Radius, ref currentPosition, radius, ref position))
             {
                 normal = (Vector2) (position - currentPosition);
@@ -138,7 +138,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         internal override bool Intersects(
             ref Vector2 extents, ref WorldPoint previousPosition, ref WorldPoint position, out Vector2 normal)
         {
-            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Translation;
+            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Position;
             float t;
             if (Intersection.Test(
                 Radius,
@@ -163,7 +163,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         internal override bool Intersects(
             float radius, ref WorldPoint previousPosition, ref WorldPoint position, out Vector2 normal)
         {
-            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Translation;
+            var currentPosition = ((Transform) Manager.GetComponent(Entity, Transform.TypeId)).Position;
             float t;
             if (Intersection.Test(
                 Radius,
