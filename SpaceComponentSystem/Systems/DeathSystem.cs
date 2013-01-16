@@ -99,22 +99,35 @@ namespace Space.ComponentSystem.Systems
                     var m = cm.Value;
 
                     // Only remove entities marked for removal.
-                    if (Manager.GetComponent(m.Component.Entity, CellDeath.TypeId) == null)
+                    var cellDeath = (CellDeath) Manager.GetComponent(m.Component.Entity, CellDeath.TypeId);
+                    if (cellDeath == null)
                     {
                         return;
                     }
 
                     // Check our new cell after the position change.
                     var position = m.CurrentPosition;
-                    var cellId = BitwiseMagic.Pack(
-                        (int) position.X >> CellSystem.CellSizeShiftAmount,
-                        (int) position.Y >> CellSystem.CellSizeShiftAmount);
-
-                    // If the cell changed, check if we're out of bounds.
-                    if (!((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
+                    if (cellDeath.IsForSubCell)
                     {
-                        // Dead space, kill it.
-                        Manager.RemoveEntity(m.Component.Entity);
+                        var cellId = CellSystem.GetSubCellIdFromCoordinates(position);
+
+                        // If the cell changed, check if we're out of bounds.
+                        if (!((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsSubCellActive(cellId))
+                        {
+                            // Dead space, kill it.
+                            Manager.RemoveEntity(m.Component.Entity);
+                        }
+                    }
+                    else
+                    {
+                        var cellId = CellSystem.GetCellIdFromCoordinates(position);
+
+                        // If the cell changed, check if we're out of bounds.
+                        if (!((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
+                        {
+                            // Dead space, kill it.
+                            Manager.RemoveEntity(m.Component.Entity);
+                        }
                     }
                 }
             }

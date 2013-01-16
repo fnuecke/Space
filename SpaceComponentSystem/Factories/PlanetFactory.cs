@@ -302,6 +302,9 @@ namespace Space.ComponentSystem.Factories
                 CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
                 CameraSystem.IndexGroupMask); // Must be detectable by the camera.
 
+            // Remove when large containing cell dies.
+            manager.AddComponent<CellDeath>(entity).Initialize(false);
+
             // Make it rotate.
             manager.AddComponent<Velocity>(entity).Initialize(
                 Vector2.Zero,

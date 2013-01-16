@@ -68,7 +68,7 @@ namespace Space.ComponentSystem.Systems
         public void Receive<T>(T message) where T : struct
         {
             var cm = message as CellStateChanged?;
-            if (cm == null)
+            if (cm == null || cm.Value.IsSubCell)
             {
                 return;
             }

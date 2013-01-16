@@ -140,6 +140,9 @@ namespace Space.ComponentSystem.Factories
                            CellSystem.CellDeathAutoRemoveIndexGroupMask |
                            // Must be detectable by the camera.
                            CameraSystem.IndexGroupMask;
+            
+            // Remove when large containing cell dies.
+            manager.AddComponent<CellDeath>(entity).Initialize(false);
 
             // Make it attract stuff if it has mass.
             if (mass > 0)

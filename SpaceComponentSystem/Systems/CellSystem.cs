@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
@@ -8,6 +9,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
 using Space.Util;
 
@@ -35,8 +37,14 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Dictates the size of cells, where the actual cell size is 2 to the power of this value.</summary>
         public const int CellSizeShiftAmount = 17;
 
-        /// <summary>The size of a single cell in world units (normally: pixels).</summary>
+        /// <summary>The size of a single cell in world units.</summary>
         public const int CellSize = 1 << CellSizeShiftAmount;
+        
+        /// <summary>Dictates the size of sub cells, where the actual cell size is 2 to the power of this value.</summary>
+        public const int SubCellSizeShiftAmount = 15;
+
+        /// <summary>The size of a single sub cell in world units.</summary>
+        public const int SubCellSize = 1 << SubCellSizeShiftAmount;
 
         /// <summary>Index used to track entities that should automatically be removed when a cell dies, and they are in that cell.</summary>
         public static readonly ulong CellDeathAutoRemoveIndexGroupMask = 1ul << IndexSystem.GetGroup();
@@ -58,6 +66,12 @@ namespace Space.ComponentSystem.Systems
             get { return _livingCells.GetEnumerator(); }
         }
 
+        /// <summary>A list of the IDs of all cells that are currently active.</summary>
+        public IEnumerator<ulong> ActiveSubCells
+        {
+            get { return _livingSubCells.GetEnumerator(); }
+        }
+
         #endregion
 
         #region Fields
@@ -69,6 +83,14 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Cells awaiting cleanup, with the time when they became invalid.</summary>
         [CopyIgnore, PacketizerIgnore]
         private Dictionary<ulong, long> _pendingCells = new Dictionary<ulong, long>();
+
+        /// <summary>List of cells that are currently marked as alive.</summary>
+        [CopyIgnore, PacketizerIgnore]
+        private HashSet<ulong> _livingSubCells = new HashSet<ulong>();
+
+        /// <summary>Cells awaiting cleanup, with the time when they became invalid.</summary>
+        [CopyIgnore, PacketizerIgnore]
+        private Dictionary<ulong, long> _pendingSubCells = new Dictionary<ulong, long>();
 
         #endregion
 
@@ -105,14 +127,13 @@ namespace Space.ComponentSystem.Systems
         {
             return _livingCells.Contains(cellId) || _pendingCells.ContainsKey(cellId);
         }
-
-        /// <summary>Gets the cell id for a given coordinate pair.</summary>
-        /// <param name="x">The x coordinate.</param>
-        /// <param name="y">The y coordinate.</param>
-        /// <returns>The id of the cell containing that coordinate pair.</returns>
-        public static ulong GetCellIdFromCoordinates(int x, int y)
+        
+        /// <summary>Tests if the specified cell is currently active.</summary>
+        /// <param name="cellId">The id of the cell to check/</param>
+        /// <returns>Whether the cell is active or not.</returns>
+        public bool IsSubCellActive(ulong cellId)
         {
-            return BitwiseMagic.Pack(x >> CellSizeShiftAmount, y >> CellSizeShiftAmount);
+            return _livingSubCells.Contains(cellId) || _pendingSubCells.ContainsKey(cellId);
         }
 
         /// <summary>Gets the cell id for a given position.</summary>
@@ -120,20 +141,47 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The id of the cell containing that position.</returns>
         public static ulong GetCellIdFromCoordinates(FarPosition position)
         {
-            return BitwiseMagic.Pack(
-                position.X.Segment * FarValue.SegmentSize / CellSize,
-                position.Y.Segment * FarValue.SegmentSize / CellSize);
+            const float segmentDivisor = 1f / (float) (1 << (CellSizeShiftAmount - FarValue.SegmentSizeShiftAmount));
+            const float offsetDivisor = 1f / (float)FarValue.SegmentSize / (float)CellSize;
+            System.Diagnostics.Debug.Assert(FarValue.SegmentSizeShiftAmount < CellSizeShiftAmount);
+            var x = position.X.Segment * segmentDivisor + position.X.Offset * offsetDivisor;
+            var y = position.Y.Segment * segmentDivisor + position.Y.Offset * offsetDivisor;
+            return BitwiseMagic.Pack((int) Math.Floor(x), (int) Math.Floor(y));
         }
 
         /// <summary>Gets the cell coordinates for the specified cell id.</summary>
         /// <param name="id">The id of the cell.</param>
-        /// <param name="x">The x coordinate of the cell.</param>
-        /// <param name="y">The y coordinate of the cell.</param>
-        public static void GetCellCoordinatesFromId(ulong id, out int x, out int y)
+        public static FarPosition GetCellCoordinatesFromId(ulong id)
         {
+            int x, y;
             BitwiseMagic.Unpack(id, out x, out y);
             x <<= CellSizeShiftAmount;
             y <<= CellSizeShiftAmount;
+            return new FarPosition(x, y);
+        }
+        
+        /// <summary>Gets the cell id for a given position.</summary>
+        /// <param name="position">The position.</param>
+        /// <returns>The id of the cell containing that position.</returns>
+        public static ulong GetSubCellIdFromCoordinates(FarPosition position)
+        {
+            const float divisor = 1f / (float) (1 << (SubCellSizeShiftAmount - FarValue.SegmentSizeShiftAmount));
+            const float offsetDivisor = 1f / (float)FarValue.SegmentSize / (float)SubCellSize;
+            System.Diagnostics.Debug.Assert(FarValue.SegmentSizeShiftAmount < SubCellSizeShiftAmount);
+            var x = position.X.Segment * divisor + position.X.Offset * offsetDivisor;
+            var y = position.Y.Segment * divisor + position.Y.Offset * offsetDivisor;
+            return BitwiseMagic.Pack((int) Math.Floor(x), (int) Math.Floor(y));
+        }
+
+        /// <summary>Gets the cell coordinates for the specified cell id.</summary>
+        /// <param name="id">The id of the cell.</param>
+        public static FarPosition GetSubCellCoordinatesFromId(ulong id)
+        {
+            int x, y;
+            BitwiseMagic.Unpack(id, out x, out y);
+            x <<= SubCellSizeShiftAmount;
+            y <<= SubCellSizeShiftAmount;
+            return new FarPosition(x, y);
         }
 
         #endregion
@@ -156,25 +204,39 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
+            UpdateCellState(frame, false, CellSize, _livingCells, _pendingCells);
+            UpdateCellState(frame, true, SubCellSize, _livingSubCells, _pendingSubCells);
+        }
+
+        private void UpdateCellState(long frame, bool isSubCell, int size, ISet<ulong> living, IDictionary<ulong, long> pending)
+        {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.
             var avatarSystem = (AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId);
             foreach (var avatar in avatarSystem.Avatars)
             {
-                var transform = ((ITransform) Manager.GetComponent(avatar, TransformTypeId));
-                var x = ((int) transform.Position.X) >> CellSizeShiftAmount;
-                var y = ((int) transform.Position.Y) >> CellSizeShiftAmount;
+                var transform = (ITransform) Manager.GetComponent(avatar, TransformTypeId);
+                int x, y;
+                if (isSubCell)
+                {
+                    BitwiseMagic.Unpack(GetSubCellIdFromCoordinates(transform.Position), out x, out y);
+                }
+                else
+                {
+                    BitwiseMagic.Unpack(GetCellIdFromCoordinates(transform.Position), out x, out y);
+                }
                 AddCellAndNeighbors(x, y, _reusableNewCellIds);
             }
 
             // Get the cells that became alive, notify systems and components.
             _reusableBornCellsIds.UnionWith(_reusableNewCellIds);
-            _reusableBornCellsIds.ExceptWith(_livingCells);
+            _reusableBornCellsIds.ExceptWith(living);
             CellStateChanged changedMessage;
+            changedMessage.IsSubCell = isSubCell;
             foreach (var cellId in _reusableBornCellsIds)
             {
                 // If its in there, remove it from the pending list.
-                if (!_pendingCells.Remove(cellId))
+                if (!pending.Remove(cellId))
                 {
                     // Notify if cell wasn't alive already.
                     changedMessage.Id = cellId;
@@ -186,17 +248,17 @@ namespace Space.ComponentSystem.Systems
             _reusableBornCellsIds.Clear();
 
             // Check pending list, kill off old cells, notify systems etc.
-            _reusablePendingList.AddRange(_pendingCells.Keys);
+            _reusablePendingList.AddRange(pending.Keys);
             foreach (var cellId in _reusablePendingList)
             {
                 // Are we still delaying?
-                if (frame - _pendingCells[cellId] <= CellDeathDelay)
+                if (frame - pending[cellId] <= CellDeathDelay)
                 {
                     continue;
                 }
 
                 // Timed out, kill it for good.
-                _pendingCells.Remove(cellId);
+                pending.Remove(cellId);
 
                 int x, y;
                 BitwiseMagic.Unpack(cellId, out x, out y);
@@ -211,32 +273,36 @@ namespace Space.ComponentSystem.Systems
                 // Kill any remaining entities in the area covered by the
                 // cell that just died.
                 FarRectangle cellBounds;
-                cellBounds.X = x * CellSize;
-                cellBounds.Y = y * CellSize;
-                cellBounds.Width = CellSize;
-                cellBounds.Height = CellSize;
+                cellBounds.X = x * size;
+                cellBounds.Y = y * size;
+                cellBounds.Width = size;
+                cellBounds.Height = size;
                 ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(
                     cellBounds, _reusableEntityList, CellDeathAutoRemoveIndexGroupMask);
                 foreach (IIndexable neighbor in _reusableEntityList.Select(Manager.GetComponentById))
                 {
-                    Manager.RemoveEntity(neighbor.Entity);
+                    var cellDeath = (CellDeath) Manager.GetComponent(neighbor.Entity, CellDeath.TypeId);
+                    if (cellDeath.IsForSubCell == isSubCell)
+                    {
+                        Manager.RemoveEntity(neighbor.Entity);
+                    }
                 }
                 _reusableEntityList.Clear();
             }
             _reusablePendingList.Clear();
 
             // Get the cells that died, put to pending list.
-            _reusableDeceasedCellsIds.UnionWith(_livingCells);
+            _reusableDeceasedCellsIds.UnionWith(living);
             _reusableDeceasedCellsIds.ExceptWith(_reusableNewCellIds);
             foreach (var cellId in _reusableDeceasedCellsIds)
             {
                 // Add it to the pending list.
-                _pendingCells.Add(cellId, frame);
+                pending.Add(cellId, frame);
             }
             _reusableDeceasedCellsIds.Clear();
 
-            _livingCells.Clear();
-            _livingCells.UnionWith(_reusableNewCellIds);
+            living.Clear();
+            living.UnionWith(_reusableNewCellIds);
 
             _reusableNewCellIds.Clear();
         }
@@ -285,6 +351,18 @@ namespace Space.ComponentSystem.Systems
                 packet.Write(pending.Key);
                 packet.Write(pending.Value);
             }
+            
+            packet.Write(_livingSubCells.Count);
+            foreach (var cellId in _livingSubCells)
+            {
+                packet.Write(cellId);
+            }
+            packet.Write(_pendingSubCells.Count);
+            foreach (var pending in _pendingSubCells)
+            {
+                packet.Write(pending.Key);
+                packet.Write(pending.Value);
+            }
 
             return packet;
         }
@@ -308,6 +386,21 @@ namespace Space.ComponentSystem.Systems
                 var cell = packet.ReadUInt64();
                 var frame = packet.ReadInt64();
                 _pendingCells.Add(cell, frame);
+            }
+            
+            _livingSubCells.Clear();
+            var livingSubCellCount = packet.ReadInt32();
+            for (var i = 0; i < livingSubCellCount; i++)
+            {
+                _livingSubCells.Add(packet.ReadUInt64());
+            }
+            _pendingSubCells.Clear();
+            var pendingSubCellCount = packet.ReadInt32();
+            for (var i = 0; i < pendingSubCellCount; i++)
+            {
+                var cell = packet.ReadUInt64();
+                var frame = packet.ReadInt64();
+                _pendingSubCells.Add(cell, frame);
             }
         }
 
@@ -365,6 +458,8 @@ namespace Space.ComponentSystem.Systems
 
             copy._livingCells = new HashSet<ulong>();
             copy._pendingCells = new Dictionary<ulong, long>();
+            copy._livingSubCells = new HashSet<ulong>();
+            copy._pendingSubCells = new Dictionary<ulong, long>();
             copy._reusableNewCellIds = new HashSet<ulong>();
             copy._reusableBornCellsIds = new HashSet<ulong>();
             copy._reusableDeceasedCellsIds = new HashSet<ulong>();
@@ -395,6 +490,14 @@ namespace Space.ComponentSystem.Systems
             foreach (var item in _pendingCells)
             {
                 copy._pendingCells.Add(item.Key, item.Value);
+            }
+
+            copy._livingSubCells.Clear();
+            copy._livingSubCells.UnionWith(_livingSubCells);
+            copy._pendingSubCells.Clear();
+            foreach (var item in _pendingSubCells)
+            {
+                copy._pendingSubCells.Add(item.Key, item.Value);
             }
         }
 

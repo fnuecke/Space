@@ -217,6 +217,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" Condition="" />
+  <PropertyGroup>
+    <PreBuildEvent>if exist "$(ProjectDir)bin\$(TargetFileName).locked" del "$(ProjectDir)bin\$(TargetFileName).locked"
+if exist "$(ProjectDir)bin\$(TargetFileName)" if not exist "$(ProjectDir)bin\$(TargetFileName).locked" move "$(ProjectDir)bin\$(TargetFileName)" "$(ProjectDir)bin\$(TargetFileName).locked"</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

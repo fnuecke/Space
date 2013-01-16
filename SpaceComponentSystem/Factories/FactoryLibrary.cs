@@ -229,6 +229,7 @@ namespace Space.ComponentSystem.Factories
                 CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
                 CameraSystem.IndexGroupMask); // Must be detectable by the camera.
                 
+            manager.AddComponent<CellDeath>(entity).Initialize(false);
             // Make it detectable.
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
             // Make it glow.

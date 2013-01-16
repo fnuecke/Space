@@ -17,13 +17,13 @@ namespace Engine.FarMath
         #region Constants
 
         /// <summary>Size of a single segment.</summary>
-        public const int SegmentSize = 1 << SegmentSizeShift;
+        public const int SegmentSize = 1 << SegmentSizeShiftAmount;
 
         /// <summary>Half the size of a single segment.</summary>
         public const int SegmentSizeHalf = SegmentSize >> 1;
 
         /// <summary>The bit shift to use for getting the actual segment size. Adjust as necessary for the context this is used in.</summary>
-        private const int SegmentSizeShift = 16;
+        public const int SegmentSizeShiftAmount = 14;
 
         /// <summary>Represents the origin, equivalent to a floating point zero.</summary>
         public static FarValue Zero
@@ -791,7 +791,7 @@ namespace Engine.FarMath
         public static explicit operator float(FarValue value)
         {
             System.Diagnostics.Debug.Assert(
-                value._segment >> SegmentSizeShift <= (1 << 16),
+                value._segment >> SegmentSizeShiftAmount <= (1 << 16),
                 "Significant loss of precision when casting large FarValue to float.");
             return value._segment * SegmentSize + value._offset;
         }
@@ -805,7 +805,7 @@ namespace Engine.FarMath
         public static explicit operator double(FarValue value)
         {
             System.Diagnostics.Debug.Assert(
-                value._segment >> SegmentSizeShift <= (1 << 16),
+                value._segment >> SegmentSizeShiftAmount <= (1 << 16),
                 "Significant loss of precision when casting large FarValue to double.");
             // Cast offset to double for best possible precision.
             return value._segment * SegmentSize + (double) value._offset;

@@ -97,7 +97,7 @@ namespace Space.ComponentSystem
             indexable.IndexGroupsMask |=
                 CellSystem.CellDeathAutoRemoveIndexGroupMask |
                 ArtificialIntelligence.AIIndexGroupMask;
-            manager.AddComponent<CellDeath>(entity);
+            manager.AddComponent<CellDeath>(entity).Initialize(true);
 
             return entity;
         }
@@ -120,6 +120,7 @@ namespace Space.ComponentSystem
                    .Initialize(
                        ((Transform) manager.GetComponent(center, Transform.TypeId)).Position,
                        indexGroupsMask: DetectableSystem.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
+            manager.AddComponent<CellDeath>(entity).Initialize(false);
             manager.AddComponent<Velocity>(entity).Initialize(Vector2.Zero, MathHelper.Pi / period);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, orbitRadius, orbitRadius, 0, period, 0);
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Stolen/Ships/sensor_array_dish");

@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -56,8 +57,18 @@ namespace Space.ComponentSystem.Systems
                 var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
                 if (transform != null)
                 {
+                    int cx, cy, scx, scy;
+                    BitwiseMagic.Unpack(CellSystem.GetCellIdFromCoordinates(transform.Position), out cx, out cy);
+                    BitwiseMagic.Unpack(CellSystem.GetSubCellIdFromCoordinates(transform.Position), out scx, out scy);
                     var text = string.Format(
-                        "ID: {0} @ {1} / {2}", transform.Entity, transform.Position, transform.Angle);
+                        "ID: {0} @ {1} / {2}\nCell: {3}:{4}, SubCell: {5}:{6}",
+                        transform.Entity,
+                        transform.Position,
+                        transform.Angle,
+                        cx,
+                        cy,
+                        scx,
+                        scy);
 
                     FarPosition position;
                     float angle;

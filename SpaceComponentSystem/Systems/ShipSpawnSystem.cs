@@ -64,15 +64,17 @@ namespace Space.ComponentSystem.Systems
                 var spawn = _cellSpawns[index];
                 _cellSpawns.RemoveAt(index);
 
-                // If the cell is still active (if it died we drop this entry) do the spawn.
-                if (((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsCellActive(spawn.Item1))
+                // Should be removed in message handling if cell dies.
+                System.Diagnostics.Debug.Assert(
+                    ((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsSubCellActive(spawn.Item1));
+
+                // Spawn some ships.
+                ProcessSpawn(spawn.Item1);
+
+                // If there's stuff left to do push it back again.
+                if (spawn.Item2 > 1)
                 {
-                    ProcessSpawn(spawn.Item1);
-                    // If there's stuff left to do push it back again.
-                    if (spawn.Item2 > 1)
-                    {
-                        _cellSpawns.Add(Tuple.Create(spawn.Item1, spawn.Item2 - 1));
-                    }
+                    _cellSpawns.Add(Tuple.Create(spawn.Item1, spawn.Item2 - 1));
                 }
             }
 
@@ -105,18 +107,19 @@ namespace Space.ComponentSystem.Systems
         private void ProcessSpawn(ulong id)
         {
             // Get the cell position.
-            int x, y;
-            CellSystem.GetCellCoordinatesFromId(id, out x, out y);
+            var position = CellSystem.GetSubCellCoordinatesFromId(id);
 
-            // Get the cell info to know what faction we're spawning for.
-            var cellInfo = ((UniverseSystem) Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(id);
+            // Get the cell info to know what faction we're spawning for. Use the large cell id for that,
+            // because we only store info for that.
+            var cellInfo = ((UniverseSystem) Manager.GetSystem(UniverseSystem.TypeId))
+                .GetCellInfo(CellSystem.GetCellIdFromCoordinates(position));
 
             // The area covered by the cell.
             FarRectangle cellArea;
-            cellArea.X = x;
-            cellArea.Y = y;
-            cellArea.Width = CellSystem.CellSize;
-            cellArea.Height = CellSystem.CellSize;
+            cellArea.X = position.X;
+            cellArea.Y = position.Y;
+            cellArea.Width = CellSystem.SubCellSize;
+            cellArea.Height = CellSystem.SubCellSize;
 
             // Get center point for spawn group.
             FarPosition spawnPoint;
@@ -252,7 +255,7 @@ namespace Space.ComponentSystem.Systems
         public void Receive<T>(T message) where T : struct
         {
             var cm = message as CellStateChanged?;
-            if (cm == null)
+            if (cm == null || !cm.Value.IsSubCell)
             {
                 return;
             }
@@ -261,10 +264,11 @@ namespace Space.ComponentSystem.Systems
             if (!m.IsActive)
             {
                 _cellSpawns.RemoveAll(x => x.Item1 == m.Id);
-                return;
             }
-
-            _cellSpawns.Add(Tuple.Create(m.Id, 20));
+            else
+            {
+                _cellSpawns.Add(Tuple.Create(m.Id, 5));
+            }
         }
 
         #endregion

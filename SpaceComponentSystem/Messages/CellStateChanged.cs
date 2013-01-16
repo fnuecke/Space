@@ -15,6 +15,9 @@
         /// </summary>
         public ulong Id;
 
+        /// <summary>Whether this message is for a sub cell or not.</summary>
+        public bool IsSubCell;
+
         /// <summary>
         ///     The new state of the cell (active: <c>true</c>, inactive: <c>false</c>).
         /// </summary>

@@ -17,5 +17,38 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        #region Properties
+
+        public bool IsForSubCell { get; private set; }
+
+        #endregion
+
+        #region Initialization
+
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            IsForSubCell = ((CellDeath) other).IsForSubCell;
+
+            return this;
+        }
+
+        public CellDeath Initialize(bool isForSubCell)
+        {
+            IsForSubCell = isForSubCell;
+
+            return this;
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+
+            IsForSubCell = false;
+        }
+
+        #endregion
     }
 }
