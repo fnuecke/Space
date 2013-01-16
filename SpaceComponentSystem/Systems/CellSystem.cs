@@ -144,9 +144,9 @@ namespace Space.ComponentSystem.Systems
             const float segmentDivisor = 1f / (float) (1 << (CellSizeShiftAmount - FarValue.SegmentSizeShiftAmount));
             const float offsetDivisor = 1f / (float)FarValue.SegmentSize / (float)CellSize;
             System.Diagnostics.Debug.Assert(FarValue.SegmentSizeShiftAmount < CellSizeShiftAmount);
-            var x = position.X.Segment * segmentDivisor + position.X.Offset * offsetDivisor;
-            var y = position.Y.Segment * segmentDivisor + position.Y.Offset * offsetDivisor;
-            return BitwiseMagic.Pack((int) Math.Floor(x), (int) Math.Floor(y));
+            return BitwiseMagic.Pack(
+                (int) Math.Floor(position.X.Segment * segmentDivisor + position.X.Offset * offsetDivisor),
+                (int) Math.Floor(position.Y.Segment * segmentDivisor + position.Y.Offset * offsetDivisor));
         }
 
         /// <summary>Gets the cell coordinates for the specified cell id.</summary>
@@ -155,9 +155,7 @@ namespace Space.ComponentSystem.Systems
         {
             int x, y;
             BitwiseMagic.Unpack(id, out x, out y);
-            x <<= CellSizeShiftAmount;
-            y <<= CellSizeShiftAmount;
-            return new FarPosition(x, y);
+            return new FarPosition(x << CellSizeShiftAmount, y << CellSizeShiftAmount);
         }
         
         /// <summary>Gets the cell id for a given position.</summary>
@@ -165,12 +163,12 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The id of the cell containing that position.</returns>
         public static ulong GetSubCellIdFromCoordinates(FarPosition position)
         {
-            const float divisor = 1f / (float) (1 << (SubCellSizeShiftAmount - FarValue.SegmentSizeShiftAmount));
+            const float segmentDivisor = 1f / (float) (1 << (SubCellSizeShiftAmount - FarValue.SegmentSizeShiftAmount));
             const float offsetDivisor = 1f / (float)FarValue.SegmentSize / (float)SubCellSize;
             System.Diagnostics.Debug.Assert(FarValue.SegmentSizeShiftAmount < SubCellSizeShiftAmount);
-            var x = position.X.Segment * divisor + position.X.Offset * offsetDivisor;
-            var y = position.Y.Segment * divisor + position.Y.Offset * offsetDivisor;
-            return BitwiseMagic.Pack((int) Math.Floor(x), (int) Math.Floor(y));
+            return BitwiseMagic.Pack(
+                (int) Math.Floor(position.X.Segment * segmentDivisor + position.X.Offset * offsetDivisor),
+                (int) Math.Floor(position.Y.Segment * segmentDivisor + position.Y.Offset * offsetDivisor));
         }
 
         /// <summary>Gets the cell coordinates for the specified cell id.</summary>
@@ -179,9 +177,7 @@ namespace Space.ComponentSystem.Systems
         {
             int x, y;
             BitwiseMagic.Unpack(id, out x, out y);
-            x <<= SubCellSizeShiftAmount;
-            y <<= SubCellSizeShiftAmount;
-            return new FarPosition(x, y);
+            return new FarPosition(x << SubCellSizeShiftAmount, y << SubCellSizeShiftAmount);
         }
 
         #endregion
