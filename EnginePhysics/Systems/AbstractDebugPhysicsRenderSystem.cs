@@ -7,6 +7,8 @@ using Engine.Graphics;
 using Engine.Physics.Components;
 using Engine.Physics.Contacts;
 using Engine.Physics.Joints;
+using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -149,11 +151,11 @@ namespace Engine.Physics.Systems
             var view = ComputeViewTransform();
 #if FARMATH
             var unprojected = _graphicsDevice.Viewport.Unproject(new Vector3(point, 0), projection, view.Matrix, Matrix.Identity);
-            return PhysicsSystem.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y)) - view.Translation;
+            return XnaUnitConversion.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y)) - view.Translation;
 #else
             var unprojected = _graphicsDevice.Viewport.Unproject(
                 new Vector3(point, 0), projection, view, Matrix.Identity);
-            return PhysicsSystem.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y));
+            return XnaUnitConversion.ToSimulationUnits(new Vector2(unprojected.X, unprojected.Y));
 #endif
         }
 
@@ -166,10 +168,10 @@ namespace Engine.Physics.Systems
             var projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, 0, viewport.Height, 0, 1);
             var view = ComputeViewTransform();
 #if FARMATH
-            var projected = _graphicsDevice.Viewport.Project(new Vector3(PhysicsSystem.ToScreenUnits((Vector2)(point + view.Translation)), 0), projection, view.Matrix, Matrix.Identity);
+            var projected = _graphicsDevice.Viewport.Project(new Vector3(XnaUnitConversion.ToScreenUnits((Vector2)(point + view.Translation)), 0), projection, view.Matrix, Matrix.Identity);
 #else
             var projected = _graphicsDevice.Viewport.Project(
-                new Vector3(PhysicsSystem.ToScreenUnits(point), 0), projection, view, Matrix.Identity);
+                new Vector3(XnaUnitConversion.ToScreenUnits(point), 0), projection, view, Matrix.Identity);
 #endif
             return new Vector2(projected.X, projected.Y);
         }
@@ -236,9 +238,9 @@ namespace Engine.Physics.Systems
                     var center = aabb.Center;
 #endif
                     _primitiveBatch.DrawRectangle(
-                        PhysicsSystem.ToScreenUnits(center),
-                        PhysicsSystem.ToScreenUnits(aabb.Width),
-                        PhysicsSystem.ToScreenUnits(aabb.Height),
+                        XnaUnitConversion.ToScreenUnits(center),
+                        UnitConversion.ToScreenUnits(aabb.Width),
+                        UnitConversion.ToScreenUnits(aabb.Height),
                         FixtureBoundsColor);
                 }
                 _primitiveBatch.End();
@@ -254,19 +256,19 @@ namespace Engine.Physics.Systems
 #if FARMATH
                     var bodyTanslation = (Vector2)(body.Transform.Translation + view.Translation);
                     var model = Matrix.CreateRotationZ(body.Sweep.Angle) *
-                                Matrix.CreateTranslation(PhysicsSystem.ToScreenUnits(bodyTanslation.X),
-                                                         PhysicsSystem.ToScreenUnits(bodyTanslation.Y), 0);
+                                Matrix.CreateTranslation(UnitConversion.ToScreenUnits(bodyTanslation.X),
+                                                         UnitConversion.ToScreenUnits(bodyTanslation.Y), 0);
                     _primitiveBatch.Begin(model * view.Matrix);
-                    DrawBody(body, PhysicsSystem.ToScreenUnits);
+                    DrawBody(body, XnaUnitConversion.ToScreenUnits);
 #else
                     var model = Matrix.CreateRotationZ(body.Sweep.Angle) *
                                 Matrix.CreateTranslation(
-                                    PhysicsSystem.ToScreenUnits(body.Transform.Translation.X),
-                                    PhysicsSystem.ToScreenUnits(body.Transform.Translation.Y),
+                                    UnitConversion.ToScreenUnits(body.Transform.Translation.X),
+                                    UnitConversion.ToScreenUnits(body.Transform.Translation.Y),
                                     0);
                     _primitiveBatch.Begin(model * view);
 
-                    DrawBody(body, PhysicsSystem.ToScreenUnits);
+                    DrawBody(body, XnaUnitConversion.ToScreenUnits);
 #endif
 
                     _primitiveBatch.End();
@@ -284,9 +286,9 @@ namespace Engine.Physics.Systems
                 foreach (var contact in GetVisibleContacts())
                 {
 #if FARMATH
-                    DrawContact(contact, v => PhysicsSystem.ToScreenUnits((Vector2)(v + view.Translation)));
+                    DrawContact(contact, v => XnaUnitConversion.ToScreenUnits((Vector2)(v + view.Translation)));
 #else
-                    DrawContact(contact, PhysicsSystem.ToScreenUnits);
+                    DrawContact(contact, XnaUnitConversion.ToScreenUnits);
 #endif
                 }
                 _primitiveBatch.End();
@@ -304,9 +306,9 @@ namespace Engine.Physics.Systems
                 foreach (var joint in GetVisibleJoints())
                 {
 #if FARMATH
-                    DrawJoint(joint, v => PhysicsSystem.ToScreenUnits((Vector2)(v + view.Translation)));
+                    DrawJoint(joint, v => XnaUnitConversion.ToScreenUnits((Vector2)(v + view.Translation)));
 #else
-                    DrawJoint(joint, PhysicsSystem.ToScreenUnits);
+                    DrawJoint(joint, XnaUnitConversion.ToScreenUnits);
 #endif
                 }
 
@@ -353,7 +355,7 @@ namespace Engine.Physics.Systems
                             System.Diagnostics.Debug.Assert(circle != null);
                             _primitiveBatch.DrawSolidCircle(
                                 toScreen(circle.Center),
-                                PhysicsSystem.ToScreenUnits(circle.Radius),
+                                UnitConversion.ToScreenUnits(circle.Radius),
                                 color);
                         }
                             break;
@@ -390,8 +392,8 @@ namespace Engine.Physics.Systems
                 var p1 = toScreen(body.Sweep.LocalCenter);
                 // We want to use the normal (untransformed in FarValue case) method
                 // for mapping to screen space when computing our axis length.
-                _primitiveBatch.DrawLine(p1, p1 + PhysicsSystem.ToScreenUnits(Vector2.UnitX * AxisScale), Color.Red);
-                _primitiveBatch.DrawLine(p1, p1 + PhysicsSystem.ToScreenUnits(Vector2.UnitY * AxisScale), Color.Blue);
+                _primitiveBatch.DrawLine(p1, p1 + XnaUnitConversion.ToScreenUnits(Vector2.UnitX * AxisScale), Color.Red);
+                _primitiveBatch.DrawLine(p1, p1 + XnaUnitConversion.ToScreenUnits(Vector2.UnitY * AxisScale), Color.Blue);
             }
         }
 
@@ -408,7 +410,7 @@ namespace Engine.Physics.Systems
                 if (RenderContactPoints)
                 {
                     _primitiveBatch.DrawFilledRectangle(
-                        point, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), ContactColor);
+                        point, UnitConversion.ToScreenUnits(0.1f), UnitConversion.ToScreenUnits(0.1f), ContactColor);
                 }
 
                 if (RenderContactNormals)
@@ -416,7 +418,7 @@ namespace Engine.Physics.Systems
                     // We want to use the normal (untransformed in FarValue case) method
                     // for mapping to screen space when computing our axis length.
                     _primitiveBatch.DrawLine(
-                        point, point + PhysicsSystem.ToScreenUnits(normal * NormalScale), ContactNormalColor);
+                        point, point + XnaUnitConversion.ToScreenUnits(normal * NormalScale), ContactNormalColor);
                 }
 
                 if (RenderContactPointNormalImpulse)
@@ -425,7 +427,7 @@ namespace Engine.Physics.Systems
                     // for mapping to screen space when computing our axis length.
                     _primitiveBatch.DrawLine(
                         point,
-                        point + PhysicsSystem.ToScreenUnits(normal * contact.GetNormalImpulse(i) * ImpulseScale),
+                        point + XnaUnitConversion.ToScreenUnits(normal * contact.GetNormalImpulse(i) * ImpulseScale),
                         ContactNormalImpulseColor);
                 }
             }
@@ -437,9 +439,9 @@ namespace Engine.Physics.Systems
             var anchorB = toScreen(joint.AnchorB);
 
             _primitiveBatch.DrawFilledRectangle(
-                anchorA, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                anchorA, UnitConversion.ToScreenUnits(0.1f), UnitConversion.ToScreenUnits(0.1f), JointAnchorColor);
             _primitiveBatch.DrawFilledRectangle(
-                anchorB, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                anchorB, UnitConversion.ToScreenUnits(0.1f), UnitConversion.ToScreenUnits(0.1f), JointAnchorColor);
 
             switch (joint.Type)
             {
@@ -455,9 +457,9 @@ namespace Engine.Physics.Systems
                     var anchorA0 = toScreen(pulleyJoint.GroundAnchorA);
                     var anchorB0 = toScreen(pulleyJoint.GroundAnchorB);
                     _primitiveBatch.DrawFilledRectangle(
-                        anchorA0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                        anchorA0, UnitConversion.ToScreenUnits(0.1f), UnitConversion.ToScreenUnits(0.1f), JointAnchorColor);
                     _primitiveBatch.DrawFilledRectangle(
-                        anchorB0, PhysicsSystem.ToScreenUnits(0.1f), PhysicsSystem.ToScreenUnits(0.1f), JointAnchorColor);
+                        anchorB0, UnitConversion.ToScreenUnits(0.1f), UnitConversion.ToScreenUnits(0.1f), JointAnchorColor);
 
                     _primitiveBatch.DrawLine(anchorA0, anchorA, JointEdgeColor);
                     _primitiveBatch.DrawLine(anchorB0, anchorB, JointEdgeColor);

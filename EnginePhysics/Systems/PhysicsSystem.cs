@@ -398,50 +398,6 @@ namespace Engine.Physics.Systems
         }
 
         /// <summary>
-        ///     Converts a point in simulation space to screen space. This is used to avoid using a one to one scale for
-        ///     pixels to meters, which generally not recommended by Box2D.
-        /// </summary>
-        /// <param name="point">The point in simulation space.</param>
-        /// <returns>The point in screen space.</returns>
-        public static float ToScreenUnits(float point)
-        {
-            return point * 100f;
-        }
-
-        /// <summary>
-        ///     Converts a point in simulation space to screen space. This is used to avoid using a one to one scale for
-        ///     pixels to meters, which generally not recommended by Box2D.
-        /// </summary>
-        /// <param name="point">The point in simulation space.</param>
-        /// <returns>The point in screen space.</returns>
-        public static Vector2 ToScreenUnits(Vector2 point)
-        {
-            return point * 100f;
-        }
-
-        /// <summary>
-        ///     Converts a point in screen space to simulation space. This is used to avoid using a one to one scale for
-        ///     pixels to meters, which generally not recommended by Box2D.
-        /// </summary>
-        /// <param name="point">The point in screen space.</param>
-        /// <returns>The point in simulation space.</returns>
-        public static float ToSimulationUnits(float point)
-        {
-            return point * (1f / 100f);
-        }
-
-        /// <summary>
-        ///     Converts a point in screen space to simulation space. This is used to avoid using a one to one scale for
-        ///     pixels to meters, which generally not recommended by Box2D.
-        /// </summary>
-        /// <param name="point">The point in screen space.</param>
-        /// <returns>The point in simulation space.</returns>
-        public static Vector2 ToSimulationUnits(Vector2 point)
-        {
-            return point * (1f / 100f);
-        }
-
-        /// <summary>
         ///     Gets the fixture at the specified world point. If there are multiple fixtures (due to overlap e.g. from
         ///     non-colliding groups) the first best fixture is returned.
         /// </summary>
