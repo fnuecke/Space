@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using Engine.Diagnostics;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -15,7 +16,7 @@ namespace Engine.ComponentSystem.Components
     ///     </para>
     /// </summary>
     [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
-    public abstract class Component : IComponent
+    public abstract class Component : IComponent, ICopyable<Component>
     {
         #region Type ID
 
@@ -74,7 +75,7 @@ namespace Engine.ComponentSystem.Components
                 throw new ArgumentException("Invalid type.", "other");
             }
 
-            Enabled = other.Enabled;
+            other.CopyInto(this);
 
             return this;
         }
@@ -86,6 +87,25 @@ namespace Engine.ComponentSystem.Components
             Id = 0;
             Entity = 0;
             Enabled = false;
+        }
+
+        #endregion
+
+        #region Copyable
+        
+        /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
+        /// <returns>The copy.</returns>
+        public virtual Component NewInstance()
+        {
+            return (Component) MemberwiseClone();
+        }
+        
+        /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public virtual void CopyInto(Component into)
+        {
+            Copyable.CopyInto(this, into);
         }
 
         #endregion

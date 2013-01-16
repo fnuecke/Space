@@ -1,6 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 
-namespace Engine.ComponentSystem.Common.Components
+namespace Engine.ComponentSystem.Spatial.Components
 {
     /// <summary>This component defines in which layer to render an entity in a parallax render system.</summary>
     public sealed class Parallax : Component
@@ -31,17 +31,6 @@ namespace Engine.ComponentSystem.Common.Components
         #endregion
 
         #region Initialization
-
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Layer = ((Parallax) other).Layer;
-
-            return this;
-        }
 
         /// <summary>Initialize with the specified layer.</summary>
         /// <param name="layer">The layer.</param>

@@ -1,5 +1,4 @@
-﻿using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Microsoft.Xna.Framework;
 using Space.Data;
 
@@ -22,20 +21,6 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Initialization
-
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherSlot = (SpaceItemSlot) other;
-            Size = otherSlot.Size;
-            Offset = otherSlot.Offset;
-            Rotation = otherSlot.Rotation;
-
-            return this;
-        }
 
         /// <summary>Initializes the component to one primary equipment slot that allows the specified type id.</summary>
         /// <param name="typeId">The type id.</param>

@@ -26,18 +26,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherSound = (Sound) other;
-            SoundName = otherSound.SoundName;
-
-            return this;
-        }
-
         /// <summary>Initialize the Sound with the given sound name</summary>
         /// <param name="soundName">The name of the sound to be played</param>
         /// <returns></returns>

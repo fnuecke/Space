@@ -1,5 +1,4 @@
-﻿using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Microsoft.Xna.Framework;
 using Space.Data;
 
@@ -25,21 +24,6 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Initialization
-
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherItem = (SpaceItem) other;
-            Quality = otherItem.Quality;
-            RequiredSlotSize = otherItem.RequiredSlotSize;
-            ModelOffset = otherItem.ModelOffset;
-            DrawBelowParent = otherItem.DrawBelowParent;
-
-            return this;
-        }
 
         /// <summary>Creates a new item with the specified parameters.</summary>
         /// <param name="name">The logical base name of the item.</param>

@@ -69,9 +69,12 @@
     <Compile Include="GradientRectangle.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="Grid.cs" />
+    <Compile Include="PolygonTools\EarclipDecomposer.cs" />
+    <Compile Include="PolygonTools\Simplification.cs" />
     <Compile Include="PrimitiveBatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rectangle.cs" />
+    <Compile Include="PolygonTools\TextureConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineMath\Engine.Math.csproj">

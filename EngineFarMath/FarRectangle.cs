@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Engine.Math;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Engine.FarMath
@@ -112,11 +111,6 @@ namespace Engine.FarMath
         #endregion
 
         #region Constructor
-
-        static FarRectangle()
-        {
-            Packetizable.AddValueTypeOverloads(typeof (PacketExtensions));
-        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="FarRectangle"/> struct.

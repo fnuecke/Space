@@ -29,17 +29,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            ((Attribute<TAttribute>) other).Value.CopyInto(Value);
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified modifier.</summary>
         /// <param name="value">The value.</param>
         public Attribute<TAttribute> Initialize(AttributeModifier<TAttribute> value)

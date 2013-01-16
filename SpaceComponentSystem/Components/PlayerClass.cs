@@ -28,17 +28,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Value = ((PlayerClass) other).Value;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified player class.</summary>
         /// <param name="playerClass">The player class.</param>
         public PlayerClass Initialize(PlayerClassType playerClass)

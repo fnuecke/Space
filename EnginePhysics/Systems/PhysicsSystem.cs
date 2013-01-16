@@ -11,6 +11,7 @@ using Engine.Physics.Collision;
 using Engine.Physics.Components;
 using Engine.Physics.Contacts;
 using Engine.Physics.Joints;
+using Engine.Physics.Math;
 using Engine.Physics.Messages;
 using Engine.Serialization;
 using Engine.Util;
@@ -299,6 +300,13 @@ namespace Engine.Physics.Systems
         #endregion
 
         #region Constructor
+
+        static PhysicsSystem()
+        {
+            Packetizable.AddValueTypeOverloads(typeof (PacketManifoldExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (PacketSweepExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (PacketTransformExtensions));
+        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="PhysicsSystem"/> class.

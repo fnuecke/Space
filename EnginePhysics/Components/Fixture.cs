@@ -246,25 +246,6 @@ namespace Engine.Physics.Components
             Type = type;
         }
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherFixture = (Fixture) other;
-            Radius = otherFixture.Radius;
-            CollisionGroupsInternal = otherFixture.CollisionGroupsInternal;
-            IsSensorInternal = otherFixture.IsSensorInternal;
-            _density = otherFixture._density;
-            _friction = otherFixture._friction;
-            _restitution = otherFixture._restitution;
-            _indexGroupsMask = otherFixture._indexGroupsMask;
-
-            return this;
-        }
-
         /// <summary>
         ///     Initialize the component with the specified values. Note that this does not automatically change the mass of the
         ///     body. You have to call

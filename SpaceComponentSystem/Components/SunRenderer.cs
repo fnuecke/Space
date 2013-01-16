@@ -40,22 +40,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherSun = (SunRenderer) other;
-            Radius = otherSun.Radius;
-            Tint = otherSun.Tint;
-            SurfaceRotation = otherSun.SurfaceRotation;
-            PrimaryTurbulenceRotation = otherSun.PrimaryTurbulenceRotation;
-            SecondaryTurbulenceRotation = otherSun.SecondaryTurbulenceRotation;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified radius.</summary>
         /// <param name="radius">The radius of the sun.</param>
         /// <param name="surfaceRotation">Surface rotation of the sun.</param>

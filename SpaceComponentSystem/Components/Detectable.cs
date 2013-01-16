@@ -54,20 +54,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherDetectable = (Detectable) other;
-            Texture = otherDetectable.Texture;
-            RotateIcon = otherDetectable.RotateIcon;
-            _textureName = otherDetectable._textureName;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified texture name.</summary>
         /// <param name="textureName">Name of the texture.</param>
         /// <param name="rotateIcon">Whether to rotate the icon based on the object's rotation.</param>

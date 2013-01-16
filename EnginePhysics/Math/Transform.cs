@@ -134,11 +134,6 @@ namespace Engine.Physics.Math
     /// </summary>
     internal struct WorldTransform
     {
-        static WorldTransform()
-        {
-            Packetizable.AddValueTypeOverloads(typeof (PacketTransformExtensions));
-        }
-
         /// <summary>Gets the identity transform.</summary>
         public static WorldTransform Identity
         {

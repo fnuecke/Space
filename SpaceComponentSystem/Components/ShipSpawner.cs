@@ -2,6 +2,7 @@
 using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Space.ComponentSystem.Components
 {
@@ -24,7 +25,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>A list of stations this spawner may send ships to.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         public readonly HashSet<int> Targets = new HashSet<int>();
 
         /// <summary>The interval in which new entities are being spawned, in ticks.</summary>
@@ -46,8 +47,6 @@ namespace Space.ComponentSystem.Components
 
             var otherSpawner = (ShipSpawner) other;
             Targets.UnionWith(otherSpawner.Targets);
-            SpawnInterval = otherSpawner.SpawnInterval;
-            Cooldown = otherSpawner.Cooldown;
 
             return this;
         }

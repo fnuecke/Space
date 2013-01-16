@@ -425,40 +425,6 @@ namespace Engine.Physics.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherBody = (Body) other;
-
-            TypeInternal = otherBody.TypeInternal;
-            IsSleepAllowedInternal = otherBody.IsSleepAllowedInternal;
-            IsAwakeInternal = otherBody.IsAwakeInternal;
-            _isRotationFixed = otherBody._isRotationFixed;
-            IsBulletInternal = otherBody.IsBulletInternal;
-            IslandIndex = otherBody.IslandIndex;
-            Transform = otherBody.Transform;
-            Sweep = otherBody.Sweep;
-            LinearVelocityInternal = otherBody.LinearVelocityInternal;
-            AngularVelocityInternal = otherBody.AngularVelocityInternal;
-            Force = otherBody.Force;
-            Torque = otherBody.Torque;
-            JointList = otherBody.JointList;
-            ContactList = otherBody.ContactList;
-            MassInternal = otherBody.MassInternal;
-            InverseMass = otherBody.InverseMass;
-            _inertia = otherBody._inertia;
-            InverseInertia = otherBody.InverseInertia;
-            LinearDampingInternal = otherBody.LinearDampingInternal;
-            AngularDampingInternal = otherBody.AngularDampingInternal;
-            SleepTime = otherBody.SleepTime;
-
-            return this;
-        }
-
         /// <summary>
         ///     Initializes the body with the specified type. This will not trigger mass recomputation, you will have to call
         ///     <see cref="ResetMassData"/>

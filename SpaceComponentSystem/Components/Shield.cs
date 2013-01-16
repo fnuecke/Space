@@ -35,21 +35,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Engine.ComponentSystem.Components.Component Initialize(
-            Engine.ComponentSystem.Components.Component other)
-        {
-            base.Initialize(other);
-
-            var otherShield = (Shield) other;
-            Factory = otherShield.Factory;
-            Structure = otherShield.Structure;
-
-            return this;
-        }
-
         /// <summary>Initializes the shield with the specified factory.</summary>
         /// <param name="factory">The factory.</param>
         /// <returns></returns>

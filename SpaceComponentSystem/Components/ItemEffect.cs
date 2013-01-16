@@ -39,23 +39,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherEffect = (ItemEffect) other;
-            Group = otherEffect.Group;
-            Name = otherEffect.Name;
-            Scale = otherEffect.Scale;
-            Offset = otherEffect.Offset;
-            Direction = otherEffect.Direction;
-
-            return this;
-        }
-
         /// <summary>Initializes the component using the specified effect.</summary>
         /// <param name="group">The group.</param>
         /// <param name="effect">The effect.</param>

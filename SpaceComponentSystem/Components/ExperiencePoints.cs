@@ -27,17 +27,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Value = ((ExperiencePoints) other).Value;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified experience point value.</summary>
         /// <param name="value">The value.</param>
         public ExperiencePoints Initialize(int value)

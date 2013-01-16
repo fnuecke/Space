@@ -4,6 +4,7 @@ using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.Physics.Math;
 using Engine.Serialization;
+using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 
@@ -26,11 +27,11 @@ namespace Engine.Physics.Components
         #region Fields
 
         /// <summary>The vertices that make up this polygon.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         internal readonly LocalPoint[] Vertices = new LocalPoint[Settings.MaxPolygonVertices];
 
         /// <summary>The surface normals of the edges of this polygon.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         internal readonly Vector2[] Normals = new Vector2[Settings.MaxPolygonVertices];
 
         /// <summary>The number of vertices in this fixture.</summary>
@@ -64,8 +65,6 @@ namespace Engine.Physics.Components
                 Vertices[i] = otherPolygon.Vertices[i];
                 Normals[i] = otherPolygon.Normals[i];
             }
-            Count = otherPolygon.Count;
-            Centroid = otherPolygon.Centroid;
 
             return this;
         }

@@ -41,17 +41,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Size = ((CollidableBox) other).Size;
-
-            return this;
-        }
-
         /// <summary>Initialize the component with the specified size and collision groups.</summary>
         /// <param name="size">The size.</param>
         /// <param name="groups">The collision groups.</param>

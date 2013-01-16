@@ -79,20 +79,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherCollidable = (Collidable) other;
-            CollisionGroups = otherCollidable.CollisionGroups;
-            ShouldSweep = otherCollidable.ShouldSweep;
-            PreviousPosition = otherCollidable.PreviousPosition;
-
-            return this;
-        }
-
         /// <summary>Initialize the component with specified collision groups.</summary>
         /// <param name="groups">The groups.</param>
         /// <param name="sweep">

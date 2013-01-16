@@ -34,17 +34,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            RemoveOnCollision = ((CollisionDamage) other).RemoveOnCollision;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified parameters.</summary>
         /// <param name="removeOnCollision">whether to self-destruct on collision.</param>
         /// <returns></returns>

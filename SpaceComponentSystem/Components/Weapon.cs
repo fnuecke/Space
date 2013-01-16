@@ -2,6 +2,7 @@
 using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 using Space.ComponentSystem.Factories;
 using Space.Data;
 
@@ -32,7 +33,7 @@ namespace Space.ComponentSystem.Components
         ///     Attributes that are local to this weapon and only used for computing this weapon's damage, cooldown, energy
         ///     consumption etc.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         public readonly Dictionary<AttributeType, float> Attributes = new Dictionary<AttributeType, float>();
 
         /// <summary>The projectiles this weapon fires.</summary>
@@ -50,12 +51,10 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherWeapon = (Weapon) other;
-            Sound = otherWeapon.Sound;
             foreach (var attribute in otherWeapon.Attributes)
             {
                 Attributes.Add(attribute.Key, attribute.Value);
             }
-            Projectiles = otherWeapon.Projectiles;
 
             return this;
         }

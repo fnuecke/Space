@@ -198,14 +198,14 @@ namespace Space.ComponentSystem.Components
         private AIConfiguration _config = new AIConfiguration();
 
         /// <summary>The currently running behaviors, ordered as they were issued.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly Stack<BehaviorType> _currentBehaviors = new Stack<BehaviorType>();
 
         /// <summary>
         ///     List of all possible behaviors. This keeps us from having to re-allocate them over and over again. The only
         ///     down-side is, that we cannot stack multiple behaviors of the same type, but that's probably not needed anyway.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly Dictionary<BehaviorType, Behavior> _behaviors = new Dictionary<BehaviorType, Behavior>();
 
         #endregion
@@ -229,8 +229,6 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherAI = (ArtificialIntelligence) other;
-            otherAI._random.CopyInto(_random);
-            otherAI._config.CopyInto(_config);
             _currentBehaviors.Clear();
             var behaviorTypes = otherAI._currentBehaviors.ToArray();
             // Stacks iterators work backwards (first is the last pushed element),

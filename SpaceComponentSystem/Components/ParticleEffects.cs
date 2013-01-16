@@ -49,7 +49,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>A lists of active effects with the effect name and the position to display the effect at.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         internal readonly List<PositionedEffect> Effects = new List<PositionedEffect>();
 
         #endregion

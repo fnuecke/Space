@@ -27,17 +27,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            ItemPool = ((Drops) other).ItemPool;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified item pool.</summary>
         /// <param name="itemPool">The item pool.</param>
         public Drops Initialize(string itemPool)

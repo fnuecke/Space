@@ -35,24 +35,6 @@ namespace Engine.Physics.Components
             Radius = Settings.PolygonRadius;
         }
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherEdge = (EdgeFixture) other;
-            Vertex0 = otherEdge.Vertex0;
-            Vertex1 = otherEdge.Vertex1;
-            Vertex2 = otherEdge.Vertex2;
-            Vertex3 = otherEdge.Vertex3;
-            HasVertex0 = otherEdge.HasVertex0;
-            HasVertex3 = otherEdge.HasVertex3;
-
-            return this;
-        }
-
         /// <summary>Initializes the edge with specified end vertices. This will not use ghost vertices.</summary>
         /// <param name="v1">The first vertex.</param>
         /// <param name="v2">The the second vertex.</param>

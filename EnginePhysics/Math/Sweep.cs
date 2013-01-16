@@ -20,11 +20,6 @@ namespace Engine.Physics.Math
     /// </summary>
     internal struct Sweep
     {
-        static Sweep()
-        {
-            Packetizable.AddValueTypeOverloads(typeof (PacketSweepExtensions));
-        }
-
         #region Fields
 
         /// <summary>Local center of mass position.</summary>

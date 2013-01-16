@@ -29,19 +29,6 @@ namespace Engine.Physics.Components
         /// </summary>
         public CircleFixture() : base(FixtureType.Circle) {}
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherCircle = (CircleFixture) other;
-            Center = otherCircle.Center;
-
-            return this;
-        }
-
         /// <summary>
         ///     Initializes the component with the specified offset relative to the body's local origin and the specified
         ///     radius.

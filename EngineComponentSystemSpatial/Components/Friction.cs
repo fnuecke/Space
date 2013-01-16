@@ -38,19 +38,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherFriction = (Friction) other;
-            Value = otherFriction.Value;
-            StopVelocity = otherFriction.StopVelocity;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified friction and stop velocity.</summary>
         /// <param name="value">The friction.</param>
         /// <param name="stopVelocity">The stop velocity.</param>

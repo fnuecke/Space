@@ -63,27 +63,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Engine.ComponentSystem.Components.Component Initialize(
-            Engine.ComponentSystem.Components.Component other)
-        {
-            base.Initialize(other);
-
-            var otherDamage = (DamagingStatusEffect) other;
-            Type = otherDamage.Type;
-            MinValue = otherDamage.MinValue;
-            MaxValue = otherDamage.MaxValue;
-            ChanceToCrit = otherDamage.ChanceToCrit;
-            CriticalDamageMultiplier = otherDamage.CriticalDamageMultiplier;
-            Interval = otherDamage.Interval;
-            Owner = otherDamage.Owner;
-            Delay = otherDamage.Delay;
-
-            return this;
-        }
-
         /// <summary>Initializes the specified damage once.</summary>
         /// <param name="tickMinDamage">The minimal damage to apply per tick (not game frame, see next param).</param>
         /// <param name="tickMaxDamage">The maximum damage to apply per tick.</param>

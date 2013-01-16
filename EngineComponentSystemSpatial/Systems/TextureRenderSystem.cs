@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;

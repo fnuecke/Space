@@ -247,7 +247,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <returns>All components in range.</returns>
         public void Find(WorldPoint center, float radius, ISet<int> results, ulong groups)
         {
-            foreach (var tree in IndexesForGroups(groups).Select(index => _trees[index]))
+            foreach (var tree in IndexesForGroups(groups)
+                .Select(index => _trees[index])
+                .Where(tree => tree != null))
             {
                 Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
                 tree.Find(center, radius, results);
@@ -261,7 +263,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <returns>All components in range.</returns>
         public void Find(WorldBounds rectangle, ISet<int> results, ulong groups)
         {
-            foreach (var tree in IndexesForGroups(groups).Select(index => _trees[index]))
+            foreach (var tree in IndexesForGroups(groups)
+                .Select(index => _trees[index])
+                .Where(tree => tree != null))
             {
                 Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
                 tree.Find(rectangle, results);

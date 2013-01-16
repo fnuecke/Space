@@ -132,25 +132,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherExperience = (Experience) other;
-            _level = otherExperience.Level;
-            _maxLevel = otherExperience._maxLevel;
-            _value = otherExperience.Value;
-            _currentLevelValue = otherExperience._currentLevelValue;
-            _nextLevelValue = otherExperience._nextLevelValue;
-            _multiplier = otherExperience._multiplier;
-            _exponent = otherExperience._exponent;
-
-            return this;
-        }
-
         /// <summary>Initializes the component using the specified parameters.</summary>
         /// <param name="maxLevel">The max level.</param>
         /// <param name="multiplier">The multiplier.</param>

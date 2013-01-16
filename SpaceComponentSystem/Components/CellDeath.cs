@@ -26,15 +26,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            IsForSubCell = ((CellDeath) other).IsForSubCell;
-
-            return this;
-        }
-
         public CellDeath Initialize(bool isForSubCell)
         {
             IsForSubCell = isForSubCell;

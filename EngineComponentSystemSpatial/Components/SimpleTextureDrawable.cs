@@ -42,17 +42,21 @@ namespace Engine.ComponentSystem.Spatial.Components
             set
             {
                 _textureName = value;
-                if (!string.IsNullOrWhiteSpace(_textureName))
-                {
-                    LoadContent(((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content, null);
-                }
+                _texture = null;
             }
         }
 
         /// <summary>Gets the actual texture.</summary>
         public Texture2D Texture
         {
-            get { return _texture; }
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(_textureName))
+                {
+                    LoadContent(((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content, null);
+                }
+                return _texture;
+            }
         }
 
         /// <summary>The area this drawable needs to render itself.</summary>
@@ -83,22 +87,6 @@ namespace Engine.ComponentSystem.Spatial.Components
         #endregion
 
         #region Initialization
-
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherDrawable = (SimpleTextureDrawable) other;
-            Scale = otherDrawable.Scale;
-            Tint = otherDrawable.Tint;
-            _textureName = otherDrawable._textureName;
-            _texture = otherDrawable._texture;
-
-            return this;
-        }
 
         /// <summary>Initializes the component.</summary>
         /// <param name="textureName">Name of the texture.</param>
@@ -148,11 +136,11 @@ namespace Engine.ComponentSystem.Spatial.Components
         public void Draw(SpriteBatch batch, Vector2 position, float angle, float scale, SpriteEffects effects, float layerDepth)
         {
             Vector2 origin;
-            origin.X = _texture.Width / 2f;
-            origin.Y = _texture.Height / 2f;
+            origin.X = Texture.Width / 2f;
+            origin.Y = Texture.Height / 2f;
 
             batch.Draw(
-                _texture,
+                Texture,
                 position,
                 null,
                 Tint,

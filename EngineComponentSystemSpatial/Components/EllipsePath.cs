@@ -129,23 +129,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherEllipsePath = (EllipsePath) other;
-            Angle = otherEllipsePath._angle;
-            MajorRadius = otherEllipsePath._majorRadius;
-            MinorRadius = otherEllipsePath._minorRadius;
-            CenterEntityId = otherEllipsePath.CenterEntityId;
-            Period = otherEllipsePath.Period;
-            PeriodOffset = otherEllipsePath.PeriodOffset;
-
-            return this;
-        }
-
         /// <summary>Initialize the component with the specified values.</summary>
         /// <param name="centerEntityId">The center entity's id.</param>
         /// <param name="majorRadius">The major radius.</param>

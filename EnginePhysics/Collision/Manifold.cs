@@ -29,11 +29,6 @@ namespace Engine.Physics.Collision
     /// </summary>
     internal struct Manifold
     {
-        static Manifold()
-        {
-            Packetizable.AddValueTypeOverloads(typeof (PacketManifoldExtensions));
-        }
-
         /// <summary>Possibly types of manifolds, i.e. what kind of overlap it represents (between what kind of shapes).</summary>
         public enum ManifoldType : byte
         {

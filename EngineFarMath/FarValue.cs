@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.Serialization;
 
 namespace Engine.FarMath
 {
@@ -93,11 +92,6 @@ namespace Engine.FarMath
         #endregion
 
         #region Constructor
-
-        static FarValue()
-        {
-            Packetizable.AddValueTypeOverloads(typeof (PacketExtensions));
-        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="FarValue"/> struct.

@@ -30,19 +30,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherStackable = (Stackable) other;
-            Count = otherStackable.Count;
-            MaxCount = otherStackable.MaxCount;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified parameters.</summary>
         /// <param name="maxCount">The maximum number of items that can be merged into a single stack.</param>
         public Stackable Initialize(int maxCount)

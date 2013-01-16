@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.Math;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -71,23 +72,12 @@ namespace Space.ComponentSystem.Components
 
         private string _fallbackTextureName;
 
+        [PacketizerIgnore]
         private Texture2D _fallbackTexture;
 
         #endregion
 
         #region Initialization
-
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherDrawable = (ShipDrawable) other;
-            _tint = otherDrawable._tint;
-            _fallbackTextureName = otherDrawable._fallbackTextureName;
-            _fallbackTexture = otherDrawable._fallbackTexture;
-
-            return this;
-        }
 
         public void Initialize(string texture, Color tint)
         {

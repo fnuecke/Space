@@ -31,19 +31,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherVelocity = (Velocity) other;
-            LinearVelocity = otherVelocity.LinearVelocity;
-            AngularVelocity = otherVelocity.AngularVelocity;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified velocity.</summary>
         /// <param name="linearVelocity">The linear velocity.</param>
         /// <param name="angularVelocity">The angular velocity.</param>

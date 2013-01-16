@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Math
@@ -102,11 +101,6 @@ namespace Engine.Math
         #endregion
 
         #region Constructor
-
-        static RectangleF()
-        {
-            Packetizable.AddValueTypeOverloads(typeof (PacketExtensions));
-        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="RectangleF"/> struct.

@@ -27,17 +27,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Remaining = ((StatusEffect) other).Remaining;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified duration.</summary>
         /// <param name="duration">The duration.</param>
         public StatusEffect Initialize(int duration)

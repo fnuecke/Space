@@ -49,19 +49,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherGravitation = (Gravitation) other;
-            GravitationType = otherGravitation.GravitationType;
-            Mass = otherGravitation.Mass;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified parameters.</summary>
         /// <param name="type">The type.</param>
         /// <param name="mass">The mass.</param>

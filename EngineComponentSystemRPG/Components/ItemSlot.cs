@@ -168,20 +168,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherSlot = (ItemSlot) other;
-            SlotTypeId = otherSlot.SlotTypeId;
-            _item = otherSlot._item;
-            _parent = otherSlot._parent;
-
-            return this;
-        }
-
         /// <summary>Initializes the component to one primary equipment slot that allows the specified type id.</summary>
         /// <param name="typeId">The type id.</param>
         /// <returns></returns>

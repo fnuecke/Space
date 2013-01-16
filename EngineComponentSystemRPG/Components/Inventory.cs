@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.RPG.Components
 {
@@ -109,7 +110,7 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>A list of items currently in this inventory.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly List<int> _items = new List<int>();
 
         /// <summary>Whether we have a fixed length list.</summary>
@@ -125,9 +126,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Initialize(other);
 
-            var otherInventory = (Inventory) other;
-            _items.AddRange(otherInventory._items);
-            _isFixed = otherInventory._isFixed;
+            _items.AddRange(((Inventory) other)._items);
 
             return this;
         }

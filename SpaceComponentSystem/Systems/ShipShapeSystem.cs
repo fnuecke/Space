@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Graphics.PolygonTools;
 using Engine.Math;
 using Engine.Serialization;
 using Engine.XnaExtensions;
@@ -43,7 +44,12 @@ namespace Space.ComponentSystem.Systems
         ///     We cache rendered ship models, indexed by the equipment hash, to avoid having to re-render them each frame,
         ///     which is slow due to the frequent texture switching for each item.
         /// </summary>
-        private readonly Dictionary<uint, CacheEntry> _modelCache = new Dictionary<uint, CacheEntry>();
+        /// <remarks>
+        ///     Note that this is a shared collection, because we want to create as few textures as possible. This is also not
+        ///     so bad performance wise, as we only access it in draw operations and when creating new physics fixtures, which must
+        ///     also happen in a synchronous context.
+        /// </remarks>
+        private static readonly Dictionary<uint, CacheEntry> ModelCache = new Dictionary<uint, CacheEntry>();
 
         /// <summary>The struct used to store single model cache entries.</summary>
         private sealed class CacheEntry
@@ -54,17 +60,30 @@ namespace Space.ComponentSystem.Systems
             /// <summary>Offset to render the cached texture at.</summary>
             public Vector2 Offset;
 
+            /// <summary>
+            ///     The polygon hulls that represents the texture's outline (for collision testing). This is the list of hulls for
+            ///     each individual texture making up the final texture, for better granularity.
+            /// </summary>
+            public List<List<Vector2>> PolygonHulls;
+
             /// <summary>The number of frames the model wasn't used (to clean up unused models).</summary>
             public int Age;
         }
         
-        /// <summary>The sprite batch used to render textures.</summary>
-        private SpriteBatch _spriteBatch;
+        /// <summary>The sprite batch used to render textures. Also static, to provide it to trailing sims.</summary>
+        private static SpriteBatch _spriteBatch;
 
         #endregion
 
         #region Accessors
 
+        /// <summary>Gets a texture for an entity, based on its equipment tree.</summary>
+        /// <remarks>
+        ///     This method is <em>not</em> thread safe.
+        /// </remarks>
+        /// <param name="entity">The entity to get the model for.</param>
+        /// <param name="texture">The model texture.</param>
+        /// <param name="offset">The local offset at which to render the texture.</param>
         public void GetTexture(int entity, out Texture2D texture, out Vector2 offset)
         {
             var entry = GetCacheEntry(entity);
@@ -72,10 +91,18 @@ namespace Space.ComponentSystem.Systems
             offset = entry.Offset;
         }
 
-        public Vector2[] GetShape(int entity)
+        /// <summary>
+        ///     Gets the polygon hulls for an entity, based on its equipment tree. This will return a list of multiple
+        ///     polygons, one for each rendered item, for better granularity.
+        /// </summary>
+        /// <remarks>
+        ///     This method is <em>not</em> thread safe.
+        /// </remarks>
+        /// <param name="entity">The entity to get the hull for.</param>
+        /// <returns>The polygon hulls for the model.</returns>
+        public List<List<Vector2>> GetShapes(int entity)
         {
-            // TODO
-            return null;
+            return GetCacheEntry(entity).PolygonHulls;
         }
 
         private CacheEntry GetCacheEntry(int entity)
@@ -84,41 +111,60 @@ namespace Space.ComponentSystem.Systems
             var hash = HashEquipment(equipment);
             
             // Create cache texture if necessary.
-            if (!_modelCache.ContainsKey(hash))
+            if (!ModelCache.ContainsKey(hash))
             {
-                // No cache entry yet, create it. Determine the needed size of the texture.
-                var size = ComputeModelSize(equipment, Vector2.Zero);
-                // Then create it and push it as our current render target.
-                var target = new RenderTarget2D(
-                    _spriteBatch.GraphicsDevice,
-                    (int) System.Math.Ceiling(size.Width),
-                    (int) System.Math.Ceiling(size.Height));
-
-                var previousRenderTargets = _spriteBatch.GraphicsDevice.GetRenderTargets();
-                _spriteBatch.GraphicsDevice.SetRenderTarget(target);
-                _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
-                _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-
-                // Render the actual equipment into our texture.
-                RenderEquipment(equipment, new Vector2(-size.X, -size.Y));
-
-                // Restore the old render state.
-                _spriteBatch.End();
-                _spriteBatch.GraphicsDevice.SetRenderTargets(previousRenderTargets);
-
-                // Create a new cache entry for this equipment combination.
-                _modelCache[hash] = new CacheEntry
+                // Simulations may run multi-threaded, so we need to lock out static table here.
+                lock (ModelCache)
                 {
-                    Texture = target,
-                    Offset = new Vector2(-size.X, -size.Y)
-                };
+                    // Maybe we got our entry while waiting for our lock?
+                    if (!ModelCache.ContainsKey(hash))
+                    {
+                        // No cache entry yet, create it. Determine the needed size of the texture.
+                        var size = ComputeModelSize(equipment, Vector2.Zero);
+                        // Then create it and push it as our current render target.
+                        var target = new RenderTarget2D(
+                            _spriteBatch.GraphicsDevice,
+                            (int) System.Math.Ceiling(size.Width),
+                            (int) System.Math.Ceiling(size.Height));
+
+                        var previousRenderTargets = _spriteBatch.GraphicsDevice.GetRenderTargets();
+                        _spriteBatch.GraphicsDevice.SetRenderTarget(target);
+                        _spriteBatch.GraphicsDevice.Clear(Color.Transparent);
+                        _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+
+                        // Render the actual equipment into our texture.
+                        RenderEquipment(equipment, new Vector2(-size.X, -size.Y));
+
+                        // Restore the old render state.
+                        _spriteBatch.End();
+                        _spriteBatch.GraphicsDevice.SetRenderTargets(previousRenderTargets);
+
+                        // Build polygon hull.
+                        var data = new uint[target.Width * target.Height];
+                        target.GetData(data);
+                        var hull = TextureConverter.DetectVertices(data, target.Width, target.Height, 2f)[0];
+                        for (var i = 0; i < hull.Count; ++i)
+                        {
+                            // Center at origin.
+                            hull[i] -= new Vector2(target.Width / 2f, target.Height / 2f);
+                        }
+
+                        // Create a new cache entry for this equipment combination.
+                        ModelCache[hash] = new CacheEntry
+                        {
+                            Texture = target,
+                            Offset = new Vector2(-size.X, -size.Y),
+                            PolygonHulls = EarClipDecomposer.ConvexPartition(hull)
+                        };
+                    }
+                }
             }
 
             // Update last access time.
-            _modelCache[hash].Age = 0;
+            ModelCache[hash].Age = 0;
 
             // Then return the entry!
-            return _modelCache[hash];
+            return ModelCache[hash];
         }
 
         #endregion
@@ -129,19 +175,19 @@ namespace Space.ComponentSystem.Systems
         {
             // Increase age of entries.
             // TODO probably possible to merge this into the 'Where' below.
-            foreach (var entry in _modelCache.Values)
+            foreach (var entry in ModelCache.Values)
             {
                 ++entry.Age;
             }
 
             // Prune old, unused cache entries.
-            var deprecated = _modelCache
+            var deprecated = ModelCache
                 .Where(c => c.Value.Age > CacheEntryTimeToLive)
                 .Select(c => c.Key).ToList();
             foreach (var entry in deprecated)
             {
-                _modelCache[entry].Texture.Dispose();
-                _modelCache.Remove(entry);
+                ModelCache[entry].Texture.Dispose();
+                ModelCache.Remove(entry);
             }
         }
 
@@ -183,11 +229,11 @@ namespace Space.ComponentSystem.Systems
                 _spriteBatch = null;
             }
 
-            foreach (var entry in _modelCache)
+            foreach (var entry in ModelCache)
             {
                 entry.Value.Texture.Dispose();
             }
-            _modelCache.Clear();
+            ModelCache.Clear();
         }
 
         /// <summary>

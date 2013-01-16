@@ -166,6 +166,8 @@ namespace Space
             Content = new LocalizedContentManager(Services) {RootDirectory = "data"};
 
             // Register packet overloads for XNA value types.
+            Packetizable.AddValueTypeOverloads(typeof (Engine.Math.PacketExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (Engine.FarMath.PacketExtensions));
             Packetizable.AddValueTypeOverloads(typeof (Engine.XnaExtensions.PacketExtensions));
         }
 

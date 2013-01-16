@@ -27,17 +27,6 @@ namespace Engine.ComponentSystem.Common.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Value = ((Owner) other).Value;
-
-            return this;
-        }
-
         /// <summary>Initialize the component with the specified player number.</summary>
         /// <param name="ownerId">The owning entity's id.</param>
         public Owner Initialize(int ownerId)

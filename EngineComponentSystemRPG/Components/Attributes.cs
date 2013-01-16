@@ -5,6 +5,7 @@ using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.RPG.Components
 {
@@ -48,14 +49,14 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>Base values for attributes.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
         ///     Modified values, based on equipment and status effects. This stores the absolute value as well as the
         ///     multiplier for the value.
         /// </summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
         #endregion
@@ -63,12 +64,12 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Single allocation
 
         /// <summary>Reusable list for modifier computation.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList =
             new List<AttributeModifier<TAttribute>>();
 
         /// <summary>Reusable list for modifier computation.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList =
             new List<AttributeModifier<TAttribute>>();
 
@@ -82,12 +83,12 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Initialize(other);
 
-            var attributes = (Attributes<TAttribute>) other;
-            foreach (var attribute in attributes._baseAttributes)
+            var otherAttributes = (Attributes<TAttribute>) other;
+            foreach (var attribute in otherAttributes._baseAttributes)
             {
                 _baseAttributes.Add(attribute.Key, attribute.Value);
             }
-            foreach (var attribute in attributes._modifiedAttributes)
+            foreach (var attribute in otherAttributes._modifiedAttributes)
             {
                 _modifiedAttributes.Add(attribute.Key, new[] {attribute.Value[0], attribute.Value[1]});
             }

@@ -142,28 +142,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            // We do not want to trigger an update here, as it's the copy-
-            // constructor, which must only be used when copying the whole
-            // environment the component belongs to.
-            var otherTransform = (Transform) other;
-            _indexGroupsMask = otherTransform._indexGroupsMask;
-            _bounds = otherTransform._bounds;
-            _position = otherTransform._position;
-            _nextPosition = otherTransform._nextPosition;
-            _positionChanged = otherTransform._positionChanged;
-            _angle = otherTransform._angle;
-            _nextAngle = otherTransform._nextAngle;
-            _angleChanged = otherTransform._angleChanged;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified values.</summary>
         /// <param name="bounds">The bounds of the component.</param>
         /// <param name="translation">The initial translation.</param>

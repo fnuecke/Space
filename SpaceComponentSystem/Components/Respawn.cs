@@ -4,6 +4,7 @@ using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.FarMath;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Space.ComponentSystem.Components
 {
@@ -39,7 +40,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>A list of components which should be disabled while dead.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         public readonly List<int> ComponentsToDisable = new List<int>();
 
         /// <summary>The number of ticks to wait before respawning the entity.</summary>
@@ -67,16 +68,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            var otherRespawn = (Respawn) other;
-            Delay = otherRespawn.Delay;
-            Position = otherRespawn.Position;
-            foreach (var type in otherRespawn.ComponentsToDisable)
-            {
-                ComponentsToDisable.Add(type);
-            }
-            RelativeHealth = otherRespawn.RelativeHealth;
-            RelativeEnergy = otherRespawn.RelativeEnergy;
-            TimeToRespawn = otherRespawn.TimeToRespawn;
+            ComponentsToDisable.AddRange(((Respawn) other).ComponentsToDisable);
 
             return this;
         }

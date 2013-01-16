@@ -61,25 +61,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherPlanet = (PlanetRenderer) other;
-            Factory = otherPlanet.Factory;
-            Radius = otherPlanet.Radius;
-            SurfaceRotation = otherPlanet.SurfaceRotation;
-            Albedo = otherPlanet.Albedo;
-            Normals = otherPlanet.Normals;
-            Specular = otherPlanet.Specular;
-            Lights = otherPlanet.Lights;
-            Clouds = otherPlanet.Clouds;
-
-            return this;
-        }
-
         /// <summary>Initialize with the specified parameters.</summary>
         /// <param name="factory">The factory.</param>
         /// <param name="planetRadius">The planet radius.</param>

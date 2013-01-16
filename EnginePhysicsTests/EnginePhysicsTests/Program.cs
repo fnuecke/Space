@@ -1,5 +1,4 @@
 using Engine.Serialization;
-using Engine.XnaExtensions;
 
 namespace Engine.Physics.Tests
 {
@@ -11,7 +10,11 @@ namespace Engine.Physics.Tests
         /// </summary>
         private static void Main(string[] args)
         {
-            Packetizable.AddValueTypeOverloads(typeof(PacketExtensions));
+            Packetizable.AddValueTypeOverloads(typeof (Engine.Math.PacketExtensions));
+#if FARMATH
+            Packetizable.AddValueTypeOverloads(typeof (Engine.FarMath.PacketExtensions));
+#endif
+            Packetizable.AddValueTypeOverloads(typeof (XnaExtensions.PacketExtensions));
 
             using (var game = new TestRunner())
             {

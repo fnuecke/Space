@@ -30,17 +30,6 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Value = ((Target) other).Value;
-
-            return this;
-        }
-
         /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {

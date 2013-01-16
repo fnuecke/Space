@@ -2,6 +2,7 @@
 using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.RPG.Components
 {
@@ -25,7 +26,7 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>The actual attribute modifiers which are applied.</summary>
-        [PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore]
         public readonly List<AttributeModifier<TAttribute>> Modifiers = new List<AttributeModifier<TAttribute>>();
 
         #endregion

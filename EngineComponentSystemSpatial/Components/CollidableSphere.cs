@@ -41,17 +41,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Initialization
 
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            Radius = ((CollidableSphere) other).Radius;
-
-            return this;
-        }
-
         /// <summary>Initialize the component with the specified radius and collision groups.</summary>
         /// <param name="radius">The radius.</param>
         /// <param name="groups">The collision groups.</param>
