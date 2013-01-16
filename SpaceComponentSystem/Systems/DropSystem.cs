@@ -120,6 +120,9 @@ namespace Space.ComponentSystem.Systems
                 }
             }
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Drop items when entities die.</summary>
         /// <typeparam name="T"></typeparam>
@@ -137,7 +140,7 @@ namespace Space.ComponentSystem.Systems
             var drops = ((Drops) Manager.GetComponent(entity, Drops.TypeId));
             if (drops != null)
             {
-                var translation = ((Transform) Manager.GetComponent(entity, Transform.TypeId)).Position;
+                var translation = ((ITransform) Manager.GetComponent(entity, TransformTypeId)).Position;
                 Drop(drops.ItemPool, ref translation);
             }
         }

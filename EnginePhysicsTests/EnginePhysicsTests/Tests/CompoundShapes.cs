@@ -24,7 +24,7 @@ namespace Engine.Physics.Tests.Tests
                                                    new WorldPoint((float)Random.NextDouble(-0.1f, 0.1f) + 5.0f,
                                                                   1.05f + 2.5f * i),
                                                worldAngle: (float)Random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
-                                               density: 2);
+                                               density: 2).Body;
                 Manager.AttachCircle(circle,
                                      radius: 0.5f,
                                      localPosition: new Vector2(0.5f, 0.5f));
@@ -37,7 +37,7 @@ namespace Engine.Physics.Tests.Tests
                                                type: Body.BodyType.Dynamic,
                                                worldPosition: position,
                                                worldAngle: (float)Random.NextDouble(-MathHelper.Pi, MathHelper.Pi),
-                                               density: 2);
+                                               density: 2).Body;
                 Manager.AttachRectangle(box,
                                         width: 0.5f, height: 1f,
                                         localPosition: new Vector2(0.0f, -0.5f),
@@ -73,7 +73,7 @@ namespace Engine.Physics.Tests.Tests
                     var shape = Manager.AddPolygon(triangle1,
                                                    type: Body.BodyType.Dynamic,
                                                    worldPosition: new WorldPoint(x, 2.05f + 2.5f * i),
-                                                   density: 2);
+                                                   density: 2).Body;
                     Manager.AttachPolygon(shape, triangle2,
                                           density: 2);
                 }
@@ -83,7 +83,7 @@ namespace Engine.Physics.Tests.Tests
                 var entity = Manager.AddRectangle(width: 3, height: 0.3f,
                                                   type: Body.BodyType.Dynamic,
                                                   worldPosition: new WorldPoint(0, 2),
-                                                  density: 4);
+                                                  density: 4).Body;
                 Manager.AttachRectangle(entity,
                                         width: 0.3f, height: 5.4f,
                                         localPosition: new Vector2(-1.45f, 2.35f),

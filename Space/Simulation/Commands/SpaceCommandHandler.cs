@@ -337,6 +337,9 @@ from Space.Data import *
         /// <summary>Store interface type id for performance.</summary>
         private static readonly int DrawableTypeId = Manager.GetComponentTypeId<IDrawable>();
 
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+
         private static void PickUp(PickUpCommand command, IManager manager)
         {
             // Get the avatar of the related player.
@@ -351,7 +354,7 @@ from Space.Data import *
             // Get the inventory of the player and the index system.
             var inventory = ((Inventory) manager.GetComponent(avatar, Inventory.TypeId));
             var index = (IndexSystem) manager.GetSystem(IndexSystem.TypeId);
-            var transform = ((Transform) manager.GetComponent(avatar, Transform.TypeId));
+            var transform = ((ITransform) manager.GetComponent(avatar, TransformTypeId));
 
             // We may be called from a multi threaded environment (TSS), so
             // lock this shared list.
@@ -373,7 +376,7 @@ from Space.Data import *
                 _reusableItemList.Clear();
             }
         }
-
+        
         private static void DropItem(DropCommand command, IManager manager)
         {
             // Get the avatar of the related player.
@@ -410,10 +413,9 @@ from Space.Data import *
 
                         // Position the item to be at the position of the
                         // player that dropped it.
-                        var transform = (Transform) manager.GetComponent(item, Transform.TypeId);
+                        var transform = (ITransform) manager.GetComponent(item, TransformTypeId);
                         transform.Position =
-                            ((Transform) manager.GetComponent(avatar, Transform.TypeId)).Position;
-                        transform.Update();
+                            ((ITransform) manager.GetComponent(avatar, TransformTypeId)).Position;
 
                         // Enable rendering, if available.
                         foreach (IDrawable drawable in manager.GetComponents(item, DrawableTypeId))

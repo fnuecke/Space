@@ -13,6 +13,9 @@ namespace Space.ComponentSystem.Systems
     /// <summary>This system is responsible for distributing experience from unit kills to involved parties.</summary>
     public sealed class ExperienceSystem : AbstractSystem, IMessagingSystem
     {
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+
         /// <summary>Receives the specified message.</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="message">The message.</param>
@@ -66,7 +69,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get position of the killed entity.
-            var killedPos = (Transform) Manager.GetComponent(died.KilledEntity, Transform.TypeId);
+            var killedPos = (ITransform) Manager.GetComponent(died.KilledEntity, TransformTypeId);
             Debug.Assert(killedPos != null);
 
             // 50% of XP for others, if object died via environment or was
@@ -88,7 +91,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // See how far away the player is.
-                var transform = (Transform) Manager.GetComponent(avatar, Transform.TypeId);
+                var transform = (ITransform) Manager.GetComponent(avatar, TransformTypeId);
                 if (transform == null)
                 {
                     // Skip him if we cannot determine his position.

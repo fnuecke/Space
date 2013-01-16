@@ -2,9 +2,9 @@
 using Engine.Physics.Joints;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
+
 #else
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
@@ -27,7 +27,7 @@ namespace Engine.Physics.Tests.Tests
                 new Vector2(-20.0f, 0.0f),
                 new Vector2(20.0f, 0.0f),
                 friction: Friction,
-                collisionGroups: 1);
+                collisionGroups: 1).Body;
             {
                 var hs = new[] {0.25f, 1.0f, 4.0f, 0.0f, 0.0f, -1.0f, -2.0f, -2.0f, -1.25f, 0.0f};
 
@@ -37,8 +37,12 @@ namespace Engine.Physics.Tests.Tests
                 for (var i = 0; i < 10; ++i)
                 {
                     var y2 = hs[i];
-                    Manager.AttachEdge(ground, new Vector2(x, y1), new Vector2(x + dx, y2), friction: Friction,
-                collisionGroups: 1);
+                    Manager.AttachEdge(
+                        ground,
+                        new Vector2(x, y1),
+                        new Vector2(x + dx, y2),
+                        friction: Friction,
+                        collisionGroups: 1);
                     y1 = y2;
                     x += dx;
                 }
@@ -46,30 +50,54 @@ namespace Engine.Physics.Tests.Tests
                 for (var i = 0; i < 10; ++i)
                 {
                     var y2 = hs[i];
-                    Manager.AttachEdge(ground, new Vector2(x, y1), new Vector2(x + dx, y2), friction: Friction,
-                collisionGroups: 1);
+                    Manager.AttachEdge(
+                        ground,
+                        new Vector2(x, y1),
+                        new Vector2(x + dx, y2),
+                        friction: Friction,
+                        collisionGroups: 1);
                     y1 = y2;
                     x += dx;
                 }
 
-                Manager.AttachEdge(ground, new Vector2(x, 0.0f), new Vector2(x + 40.0f, 0.0f), friction: Friction,
-                collisionGroups: 1);
+                Manager.AttachEdge(
+                    ground,
+                    new Vector2(x, 0.0f),
+                    new Vector2(x + 40.0f, 0.0f),
+                    friction: Friction,
+                    collisionGroups: 1);
 
                 x += 80.0f;
-                Manager.AttachEdge(ground, new Vector2(x, 0.0f), new Vector2(x + 40.0f, 0.0f), friction: Friction,
-                collisionGroups: 1);
+                Manager.AttachEdge(
+                    ground,
+                    new Vector2(x, 0.0f),
+                    new Vector2(x + 40.0f, 0.0f),
+                    friction: Friction,
+                    collisionGroups: 1);
 
                 x += 40.0f;
-                Manager.AttachEdge(ground, new Vector2(x, 0.0f), new Vector2(x + 10.0f, 5.0f), friction: Friction,
-                collisionGroups: 1);
+                Manager.AttachEdge(
+                    ground,
+                    new Vector2(x, 0.0f),
+                    new Vector2(x + 10.0f, 5.0f),
+                    friction: Friction,
+                    collisionGroups: 1);
 
                 x += 20.0f;
-                Manager.AttachEdge(ground, new Vector2(x, 0.0f), new Vector2(x + 40.0f, 0.0f), friction: Friction,
-                collisionGroups: 1);
+                Manager.AttachEdge(
+                    ground,
+                    new Vector2(x, 0.0f),
+                    new Vector2(x + 40.0f, 0.0f),
+                    friction: Friction,
+                    collisionGroups: 1);
 
                 x += 40.0f;
-                Manager.AttachEdge(ground, new Vector2(x, 0.0f), new Vector2(x, 20.0f), friction: Friction,
-                collisionGroups: 1);
+                Manager.AttachEdge(
+                    ground,
+                    new Vector2(x, 0.0f),
+                    new Vector2(x, 20.0f),
+                    friction: Friction,
+                    collisionGroups: 1);
             }
 
             // Teeter
@@ -80,7 +108,7 @@ namespace Engine.Physics.Tests.Tests
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(140, 1),
                     density: 1,
-                    collisionGroups: 1);
+                    collisionGroups: 1).Body;
 
                 Manager.AddRevoluteJoint(
                     body,
@@ -106,7 +134,7 @@ namespace Engine.Physics.Tests.Tests
                         worldPosition: new WorldPoint(161 + 2 * i, -0.125f),
                         density: 1,
                         friction: Friction,
-                        collisionGroups: 1);
+                        collisionGroups: 1).Body;
 
                     Manager.AddRevoluteJoint(previousBody, body, new WorldPoint(160 + 2 * i, -0.125f));
 
@@ -169,21 +197,21 @@ namespace Engine.Physics.Tests.Tests
                     vertices,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(0, 1),
-                    density: 1);
+                    density: 1).Body;
 
                 var wheel1 = Manager.AddCircle(
                     0.4f,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(-1, 0.35f),
                     density: 1,
-                    friction: 0.9f);
+                    friction: 0.9f).Body;
 
                 var wheel2 = Manager.AddCircle(
                     0.4f,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(1, 0.4f),
                     density: 1,
-                    friction: 0.9f);
+                    friction: 0.9f).Body;
 
                 var spring1 = Manager.AddWheelJoint(
                     car,

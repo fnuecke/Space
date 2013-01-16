@@ -40,22 +40,18 @@ namespace Engine.ComponentSystem
                 Components.Add(component);
 
                 // Add to all relevant caches.
-                var typeId = component.GetTypeId();
-                while (typeId != 0)
+                foreach (var typeId in ComponentHierarchy[component.GetTypeId()])
                 {
                     // Register for type, create list if necessary.
                     if (TypeCache[typeId] == null)
                     {
                         TypeCache[typeId] = new List<Component>();
                     }
-
+                    
                     // Keep components in type caches sorted, to keep looping
                     // over them deterministic (otherwise recently deserialized
                     // instances may behave differently).
                     TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(component), component);
-
-                    // Move on to parent type.
-                    typeId = ComponentHierarchy[typeId];
                 }
             }
 
@@ -67,17 +63,12 @@ namespace Engine.ComponentSystem
                 Components.Remove(component);
 
                 // Remove from all relevant caches.
-                var typeId = component.GetTypeId();
-                while (typeId != 0)
+                foreach (var typeId in ComponentHierarchy[component.GetTypeId()])
                 {
-                    // Remove for this type.
                     if (TypeCache[typeId] != null)
                     {
                         TypeCache[typeId].RemoveAt(TypeCache[typeId].BinarySearch(component));
                     }
-
-                    // Move on to parent type.
-                    typeId = ComponentHierarchy[typeId];
                 }
             }
 
@@ -127,25 +118,12 @@ namespace Engine.ComponentSystem
                     TypeCache[typeId] = new List<Component>();
 
                     // Iterate over all known components.
-                    for (int i = 0, j = Components.Count; i < j; i++)
+                    for (int i = 0, count = Components.Count; i < count; ++i)
                     {
-                        // And check their parents, to see if this type appears
-                        // in the hierarchy.
-                        var componentTypeId = Components[i].GetTypeId();
-                        while (componentTypeId != 0)
+                        // Check for direct match or if it's a subclass.
+                        if (ComponentHierarchy[Components[i].GetTypeId()].Contains(typeId))
                         {
-                            if (componentTypeId == typeId)
-                            {
-                                // Found this type as a parent, add the component.
-                                TypeCache[typeId].Insert(
-                                    ~TypeCache[typeId].BinarySearch(Components[i]), Components[i]);
-
-                                // No need to go further up the hierarchy.
-                                break;
-                            }
-
-                            // Continue further up the hierarchy.
-                            componentTypeId = ComponentHierarchy[componentTypeId];
+                            TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(Components[i]), Components[i]);
                         }
                     }
                 }

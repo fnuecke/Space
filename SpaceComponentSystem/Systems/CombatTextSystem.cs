@@ -36,6 +36,9 @@ namespace Space.ComponentSystem.Systems
                                       ? ((Faction) Manager.GetComponent(avatar, Faction.TypeId)).Value
                                       : Factions.None;
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Handle a message of the specified type.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
@@ -46,7 +49,7 @@ namespace Space.ComponentSystem.Systems
                 var cm = message as DamageApplied?;
                 if (cm != null)
                 {
-                    var position = ((Transform) Manager.GetComponent(cm.Value.Entity, Transform.TypeId)).Position;
+                    var position = ((ITransform) Manager.GetComponent(cm.Value.Entity, TransformTypeId)).Position;
                     var value = (int) Math.Round(cm.Value.Amount);
                     var scale = cm.Value.IsCriticalHit ? 1f : 0.5f;
                     var isLocalPlayerFaction = (_localPlayerFaction &
@@ -90,7 +93,7 @@ namespace Space.ComponentSystem.Systems
                 var cm = message as DamageBlocked?;
                 if (cm != null)
                 {
-                    var position = ((Transform) Manager.GetComponent(cm.Value.Entity, Transform.TypeId)).Position;
+                    var position = ((ITransform) Manager.GetComponent(cm.Value.Entity, TransformTypeId)).Position;
                     ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
                         .Display("Blocked", position, Color.LightBlue, 0.5f);
                 }

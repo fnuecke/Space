@@ -167,6 +167,9 @@ namespace Space.ComponentSystem.Components
 
         /// <summary>Index group containing all entities with an AI component.</summary>
         public static readonly ulong AIIndexGroupMask = 1ul << IndexSystem.GetGroup();
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         #endregion
 
@@ -515,8 +518,8 @@ namespace Space.ComponentSystem.Components
                         var target = ((AttackBehavior) behavior).Target;
                         if (Manager.HasEntity(target))
                         {
-                            var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
-                            var targetTransform = (Transform) Manager.GetComponent(target, Transform.TypeId);
+                            var transform = (ITransform) Manager.GetComponent(Entity, TransformTypeId);
+                            var targetTransform = (ITransform) Manager.GetComponent(target, TransformTypeId);
                             return (Vector2) (targetTransform.Position - transform.Position);
                         }
                         break;
@@ -524,13 +527,13 @@ namespace Space.ComponentSystem.Components
                     case BehaviorType.Move:
                     {
                         var target = ((MoveBehavior) behavior).Target;
-                        var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
+                        var transform = (ITransform) Manager.GetComponent(Entity, TransformTypeId);
                         return (Vector2) (target - transform.Position);
                     }
                     case BehaviorType.AttackMove:
                     {
                         var target = ((AttackMoveBehavior) behavior).Target;
-                        var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
+                        var transform = (ITransform) Manager.GetComponent(Entity, TransformTypeId);
                         return (Vector2) (target - transform.Position);
                     }
                     case BehaviorType.Guard:
@@ -538,8 +541,8 @@ namespace Space.ComponentSystem.Components
                         var target = ((GuardBehavior) behavior).Target;
                         if (Manager.HasEntity(target))
                         {
-                            var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
-                            var targetTransform = (Transform) Manager.GetComponent(target, Transform.TypeId);
+                            var transform = (ITransform) Manager.GetComponent(Entity, TransformTypeId);
+                            var targetTransform = (ITransform) Manager.GetComponent(target, TransformTypeId);
                             return (Vector2) (targetTransform.Position - transform.Position);
                         }
                         break;

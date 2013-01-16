@@ -269,11 +269,6 @@ namespace Space.ComponentSystem.Factories
                 manager.AddComponent<EllipsePath>(entity)
                        .Initialize(center, a, b, dominantAngle + angleOffset, period, MathHelper.TwoPi * periodOffset);
 
-                // Set initial position to center (to avoid generated instances shortly popping up
-                // at the origin).
-                ((Transform) manager.GetComponent(entity, Transform.TypeId)).Position =
-                    ((Transform) manager.GetComponent(center, Transform.TypeId)).Position;
-
                 // Recurse.
                 if (Moons != null)
                 {

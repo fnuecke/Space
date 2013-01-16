@@ -28,6 +28,9 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Checks the sector the local player is currently in and adjusts background, ambience, etc. accordingly.</summary>
         /// <param name="frame">The frame in which the update is applied.</param>
@@ -42,7 +45,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Check the sector we're in.
-            var transform = ((Transform) Manager.GetComponent(avatar, Transform.TypeId));
+            var transform = ((ITransform) Manager.GetComponent(avatar, TransformTypeId));
             var x = ((int) transform.Position.X) >> CellSystem.CellSizeShiftAmount;
             var y = ((int) transform.Position.Y) >> CellSystem.CellSizeShiftAmount;
 

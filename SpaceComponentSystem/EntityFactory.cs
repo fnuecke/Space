@@ -65,6 +65,9 @@ namespace Space.ComponentSystem
             return entity;
         }
 
+        /// <summary>Store for performance.</summary>
+        private static readonly int IndexableTypeId = Manager.GetComponentTypeId<IIndexable>();
+
         /// <summary>Creates a new, AI controlled ship.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="blueprint">The blueprint.</param>
@@ -83,18 +86,18 @@ namespace Space.ComponentSystem
         {
             var entity = FactoryLibrary.SampleShip(manager, blueprint, faction, position, random);
 
-            // Add to the index from which entities will automatically removed
-            // on cell death and mark it (for translation checks into empty space).
-            var transform = (Transform) manager.GetComponent(entity, Transform.TypeId);
-            transform.IndexGroupsMask |=
-                CellSystem.CellDeathAutoRemoveIndexGroupMask |
-                ArtificialIntelligence.AIIndexGroupMask;
-            manager.AddComponent<CellDeath>(entity);
-
             var input = (ShipControl) manager.GetComponent(entity, ShipControl.TypeId);
             input.Stabilizing = true;
             manager.AddComponent<ArtificialIntelligence>(entity).
                     Initialize(random != null ? random.NextUInt32() : 0, configuration).Enabled = false;
+
+            // Add to the index from which entities will automatically removed
+            // on cell death and mark it (for translation checks into empty space).
+            var indexable = (IIndexable) manager.GetComponent(entity, IndexableTypeId);
+            indexable.IndexGroupsMask |=
+                CellSystem.CellDeathAutoRemoveIndexGroupMask |
+                ArtificialIntelligence.AIIndexGroupMask;
+            manager.AddComponent<CellDeath>(entity);
 
             return entity;
         }

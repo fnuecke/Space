@@ -33,6 +33,12 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Squared distance to the center an object should be before it's docked.</summary>
         private const float DockDistance = 4;
 
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int VelocityTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
+
         #endregion
 
         #region Logic
@@ -52,7 +58,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get our position.
-            var myTransform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
+            var myTransform = ((ITransform) Manager.GetComponent(component.Entity, TransformTypeId));
             Debug.Assert(myTransform != null);
 
             // And the index.
@@ -80,8 +86,8 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Get their velocity and position.
-                var otherVelocity = ((Velocity) Manager.GetComponent(neighbor.Entity, Velocity.TypeId));
-                var otherTransform = ((Transform) Manager.GetComponent(neighbor.Entity, Transform.TypeId));
+                var otherVelocity = ((IVelocity) Manager.GetComponent(neighbor.Entity, VelocityTypeId));
+                var otherTransform = ((ITransform) Manager.GetComponent(neighbor.Entity, TransformTypeId));
 
                 // We need both.
                 Debug.Assert(otherVelocity != null);

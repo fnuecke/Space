@@ -139,6 +139,9 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>
         ///     Checks all players' positions to determine which cells are active and which are not. Sends messages if a
@@ -158,7 +161,7 @@ namespace Space.ComponentSystem.Systems
             var avatarSystem = (AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId);
             foreach (var avatar in avatarSystem.Avatars)
             {
-                var transform = ((Transform) Manager.GetComponent(avatar, Transform.TypeId));
+                var transform = ((ITransform) Manager.GetComponent(avatar, TransformTypeId));
                 var x = ((int) transform.Position.X) >> CellSizeShiftAmount;
                 var y = ((int) transform.Position.Y) >> CellSizeShiftAmount;
                 AddCellAndNeighbors(x, y, _reusableNewCellIds);

@@ -50,6 +50,9 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Vertical offset of the distance number display relative to the center of the radar icons.</summary>
         private const int DistanceOffset = 5;
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         #endregion
 
@@ -160,7 +163,7 @@ namespace Space.ComponentSystem.Systems
             foreach (IIndexable neighbor in _reusableNeighborList.Select(Manager.GetComponentById))
             {
                 // Get the components we need.
-                var neighborTransform = Manager.GetComponent(neighbor.Entity, Transform.TypeId) as Transform;
+                var neighborTransform = Manager.GetComponent(neighbor.Entity, TransformTypeId) as ITransform;
                 var neighborDetectable = Manager.GetComponent(neighbor.Entity, Detectable.TypeId) as Detectable;
                 var faction = (Faction) Manager.GetComponent(neighbor.Entity, Faction.TypeId);
 

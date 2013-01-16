@@ -54,7 +54,7 @@ namespace Engine.Physics.Tests.Tests
                                                    type: Body.BodyType.Dynamic,
                                                    worldPosition: new WorldPoint(-31, 5),
                                                    isBullet: true,
-                                                   density: 20, restitution: 0.05f);
+                                                   density: 20, restitution: 0.05f).Body;
 
                     bullet.LinearVelocity = new Vector2(400, 0);
                     _bullet = bullet.Entity;

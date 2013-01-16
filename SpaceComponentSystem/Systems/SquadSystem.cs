@@ -198,6 +198,9 @@ namespace Space.ComponentSystem.Systems
             // Put the entity into its own identity squad.
             MakeIdentitySquad((Squad) Manager.GetComponent(entity, Squad.TypeId));
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Gets the position of the specified member in the squad formation (i.e. where it should be at this time).</summary>
         /// <param name="squad">The squad.</param>
@@ -212,7 +215,7 @@ namespace Space.ComponentSystem.Systems
 
             var data = _squads[squad];
 
-            var leaderTransform = (Transform) Manager.GetComponent(data.Members[0], Transform.TypeId);
+            var leaderTransform = (ITransform) Manager.GetComponent(data.Members[0], TransformTypeId);
 
             // Get our own index in the formation.
             var index = data.Members.IndexOf(entity);

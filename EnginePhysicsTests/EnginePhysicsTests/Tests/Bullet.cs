@@ -18,7 +18,7 @@ namespace Engine.Physics.Tests.Tests
         protected override void Create()
         {
             {
-                var ground = Manager.AddEdge(new Vector2(-10.0f, 0.0f), new Vector2(10.0f, 0.0f));
+                var ground = Manager.AddEdge(new Vector2(-10.0f, 0.0f), new Vector2(10.0f, 0.0f)).Body;
                 Manager.AttachRectangle(ground, width: 0.4f, height: 2f,
                                         localPosition: new Vector2(0.5f, 1.0f));
             }
@@ -37,7 +37,7 @@ namespace Engine.Physics.Tests.Tests
                                                   type: Body.BodyType.Dynamic,
                                                   worldPosition: new WorldPoint(x, 10f),
                                                   isBullet: true,
-                                                  density: 100);
+                                                  density: 100).Body;
                 bullet.LinearVelocity = new Vector2(0.0f, -50.0f);
                 _bullet = bullet.Entity;
             }

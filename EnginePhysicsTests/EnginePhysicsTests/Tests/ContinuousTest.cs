@@ -16,7 +16,7 @@ namespace Engine.Physics.Tests.Tests
         protected override void Create()
         {
             {
-                var entity = Manager.AddEdge(new Vector2(-10.0f, 0.0f), new Vector2(10.0f, 0.0f));
+                var entity = Manager.AddEdge(new Vector2(-10.0f, 0.0f), new Vector2(10.0f, 0.0f)).Body;
                 Manager.AttachRectangle(entity, width: 0.4f, height: 2f,
                                         localPosition: new Vector2(0.5f, 1.0f));
             }
@@ -25,7 +25,7 @@ namespace Engine.Physics.Tests.Tests
                 var body = Manager.AddRectangle(width: 4, height: 0.2f,
                                                 type: Body.BodyType.Dynamic,
                                                 worldPosition: new WorldPoint(0, 20),
-                                                density: 1);
+                                                density: 1).Body;
 
                 //m_angularVelocity = 46.661274f;
                 body.LinearVelocity = new Vector2(0.0f, -100.0f);

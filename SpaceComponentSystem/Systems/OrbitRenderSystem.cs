@@ -29,6 +29,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Color to paint the dead zone around gravitational attractors in.</summary>
         private static readonly Color DeadZoneColor = Color.FromNonPremultiplied(255, 0, 0, 64);
 
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+
         #endregion
 
         #region Properties
@@ -168,7 +171,7 @@ namespace Space.ComponentSystem.Systems
             foreach (IIndexable neighbor in _reusableNeighborList.Select(Manager.GetComponentById))
             {
                 // Get the components we need.
-                var neighborTransform = Manager.GetComponent(neighbor.Entity, Transform.TypeId) as Transform;
+                var neighborTransform = Manager.GetComponent(neighbor.Entity, TransformTypeId) as ITransform;
                 var neighborDetectable = Manager.GetComponent(neighbor.Entity, Detectable.TypeId) as Detectable;
 
                 // Bail if we're missing something.
@@ -200,7 +203,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Get the current position of the entity we're orbiting.
                     var focusTransform =
-                        ((Transform) Manager.GetComponent(ellipse.CenterEntityId, Transform.TypeId)).Position;
+                        ((ITransform) Manager.GetComponent(ellipse.CenterEntityId, TransformTypeId)).Position;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.

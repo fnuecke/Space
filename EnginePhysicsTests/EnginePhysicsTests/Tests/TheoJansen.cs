@@ -43,14 +43,14 @@ namespace Engine.Physics.Tests.Tests
             var chassis = Manager.AddRectangle(width: 5, height: 2,
                                                type: Body.BodyType.Dynamic,
                                                worldPosition: pivot + offset,
-                                               density: 1, collisionGroups: 1);
+                                               density: 1, collisionGroups: 1).Body;
 
             // Wheel
             var wheel = Manager.AddCircle(radius: 1.6f,
                                           type: Body.BodyType.Dynamic,
                                           worldPosition: pivot + offset,
                                           density: 1,
-                                          collisionGroups: 1);
+                                          collisionGroups: 1).Body;
 
             // Motor
             _motorJoint = Manager.AddRevoluteJoint(wheel, chassis, pivot + offset,
@@ -106,10 +106,10 @@ namespace Engine.Physics.Tests.Tests
 
             var body1 = Manager.AddPolygon(vertices1, type: Body.BodyType.Dynamic,
                                            worldPosition: offset,
-                                           density: 1, collisionGroups: 1);
+                                           density: 1, collisionGroups: 1).Body;
             var body2 = Manager.AddPolygon(vertices2, type: Body.BodyType.Dynamic,
                                            worldPosition: p4 + offset,
-                                           density: 1, collisionGroups: 1);
+                                           density: 1, collisionGroups: 1).Body;
 
             body1.AngularDamping = 10.0f;
             body2.AngularDamping = 10.0f;

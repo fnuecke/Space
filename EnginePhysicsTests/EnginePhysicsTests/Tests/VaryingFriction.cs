@@ -13,7 +13,7 @@ namespace Engine.Physics.Tests.Tests
     {
         protected override void Create()
         {
-            var ground = Manager.AddEdge(new Vector2(-40.0f, 0.0f), new Vector2(40.0f, 0.0f));
+            var ground = Manager.AddEdge(new Vector2(-40.0f, 0.0f), new Vector2(40.0f, 0.0f)).Body;
 
             Manager.AttachRectangle(ground,
                                     width: 26.0f, height: 0.5f,

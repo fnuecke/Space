@@ -84,6 +84,9 @@ namespace Space.ComponentSystem.Systems
                 }
             }
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Renders a single planet.</summary>
         /// <param name="component">The component.</param>
@@ -102,7 +105,7 @@ namespace Space.ComponentSystem.Systems
             LoadPlanetTextures(factory, component, graphicsSystem.Content);
 
             // The position and orientation we're rendering at and in.
-            var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
+            var transform = ((ITransform) Manager.GetComponent(component.Entity, TransformTypeId));
             var position = transform.Position;
             var rotation = transform.Angle;
 
@@ -111,7 +114,7 @@ namespace Space.ComponentSystem.Systems
             var sun = GetSun(component.Entity);
             if (sun > 0)
             {
-                var sunTransform = ((Transform) Manager.GetComponent(sun, Transform.TypeId));
+                var sunTransform = ((ITransform) Manager.GetComponent(sun, TransformTypeId));
                 if (sunTransform != null)
                 {
                     toSun = (Vector2) (sunTransform.Position - position);

@@ -87,7 +87,7 @@ namespace Engine.Physics.Components
                         // Add our fixtures back to the index.
                         foreach (Fixture fixture in Fixtures)
                         {
-                            fixture.IndexGroupsMask = PhysicsSystem.IndexGroupMask;
+                            fixture.IndexGroupsMask |= PhysicsSystem.IndexGroupMask;
                         }
 
                         // Contacts are created in the next update.
@@ -97,7 +97,7 @@ namespace Engine.Physics.Components
                         // Remove all our fixtures from the index.
                         foreach (Fixture fixture in Fixtures)
                         {
-                            fixture.IndexGroupsMask = 0;
+                            fixture.IndexGroupsMask &= ~PhysicsSystem.IndexGroupMask;
                         }
 
                         // Free any contacts we're involved in.

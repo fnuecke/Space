@@ -31,6 +31,9 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         public override void Update(long frame)
         {
@@ -42,7 +45,7 @@ namespace Space.ComponentSystem.Systems
                 var index = -1;
                 foreach (var avatar in avatars.Avatars)
                 {
-                    var avatarPosition = ((Transform) Manager.GetComponent(avatar, Transform.TypeId)).Position;
+                    var avatarPosition = ((ITransform) Manager.GetComponent(avatar, TransformTypeId)).Position;
                     var avatarCell = CellSystem.GetCellIdFromCoordinates(avatarPosition);
                     index = _cellSpawns.FindIndex(x => x.Item1 == avatarCell);
                     if (index >= 0)
@@ -88,7 +91,7 @@ namespace Space.ComponentSystem.Systems
             else
             {
                 var faction = ((Faction) Manager.GetComponent(component.Entity, Faction.TypeId));
-                var translation = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Position;
+                var translation = ((ITransform) Manager.GetComponent(component.Entity, TransformTypeId)).Position;
                 foreach (var target in component.Targets)
                 {
                     CreateAttackingShip(ref translation, target, faction.Value);

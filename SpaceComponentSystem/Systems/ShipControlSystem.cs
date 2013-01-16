@@ -18,6 +18,12 @@ namespace Space.ComponentSystem.Systems
     public sealed class ShipControlSystem : AbstractParallelComponentSystem<ShipControl>
     {
         #region Logic
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int VelocityTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
 
         /// <summary>Updates the component.</summary>
         /// <param name="frame">The current simulation frame.</param>
@@ -27,8 +33,8 @@ namespace Space.ComponentSystem.Systems
             //TODO: Add flag to component to check if we actually need to recompute anything?
 
             // Get components we depend upon / modify.
-            var transform = (Transform) Manager.GetComponent(component.Entity, Transform.TypeId);
-            var velocity = (IVelocity) Manager.GetComponent(component.Entity, Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+            var transform = (ITransform) Manager.GetComponent(component.Entity, TransformTypeId);
+            var velocity = (IVelocity) Manager.GetComponent(component.Entity, VelocityTypeId);
             var attributes =
                 (Attributes<AttributeType>) Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
             var info = (ShipInfo) Manager.GetComponent(component.Entity, ShipInfo.TypeId);

@@ -22,6 +22,16 @@ namespace Space.ComponentSystem.Components.Behaviors
     /// </summary>
     internal abstract class Behavior : IPacketizable, ICopyable<Behavior>
     {
+        #region Constants
+        
+        /// <summary>Store for performance.</summary>
+        protected static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+
+        /// <summary>Store for performance.</summary>
+        protected static readonly int VelocityTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
+
+        #endregion
+
         #region Fields
 
         /// <summary>The AI component this behavior belongs to.</summary>
@@ -98,7 +108,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // And accordingly, which way to accelerate to get there.
             var direction =
                 (Vector2)
-                (targetPosition - ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Position);
+                (targetPosition - ((ITransform) AI.Manager.GetComponent(AI.Entity, TransformTypeId)).Position);
 
             // Normalize if it's not zero.
             var norm = direction.LengthSquared();
@@ -143,7 +153,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         protected virtual FarPosition GetTargetPosition()
         {
             // Per default we just stand still.
-            return ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Position;
+            return ((ITransform) AI.Manager.GetComponent(AI.Entity, TransformTypeId)).Position;
         }
 
         /// <summary>How fast do we want to fly, relative to our maximum speed?</summary>
@@ -212,7 +222,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         {
             // See if there are any enemies nearby, if so attack them.
             var faction = ((Faction) AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
-            var position = ((Transform) AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Position;
+            var position = ((ITransform) AI.Manager.GetComponent(AI.Entity, TransformTypeId)).Position;
             var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
             var shipInfo = (ShipInfo) AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
             var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
@@ -243,7 +253,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 {
                     // It's an enemy. Check the distance.
                     var enemyPosition =
-                        ((Transform) AI.Manager.GetComponent(filteredNeighbor, Transform.TypeId)).Position;
+                        ((ITransform) AI.Manager.GetComponent(filteredNeighbor, TransformTypeId)).Position;
                     var distance = FarPosition.Distance(enemyPosition, position);
                     if (distance < closestDistance)
                     {
@@ -290,7 +300,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 {
                     // This one does damage and is not our friend... try to avoid it.
                     var neighborGravitation = ((Gravitation) AI.Manager.GetComponent(neighbor.Entity, Gravitation.TypeId));
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Position;
+                    var neighborPosition = ((ITransform) AI.Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position;
                     var toNeighbor = (Vector2) (position - neighborPosition);
 
                     // Does it pull?
@@ -323,7 +333,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 else if (neighborFaction != null && (neighborFaction.Value & faction) == 0)
                 {
                     // It's a normal enemy. Try to avoid it. This is similar to separation.
-                    var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Position;
+                    var neighborPosition = ((ITransform) AI.Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position;
                     var toNeighbor = (Vector2) (neighborPosition - position);
                     var toNeighborDistanceSquared = toNeighbor.LengthSquared();
                     // Avoid NaNs when at same place as neighbor and see if we're close
@@ -380,7 +390,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 }
 
                 // Get the position, direction and distance, needed for everything that follows.
-                var neighborPosition = ((Transform) AI.Manager.GetComponent(neighbor.Entity, Transform.TypeId)).Position;
+                var neighborPosition = ((ITransform) AI.Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position;
                 var toNeighbor = (Vector2) (neighborPosition - position);
                 var distance = (float) Math.Sqrt(toNeighbor.LengthSquared());
                 // Avoid NaNs when at same place as neighbor...
@@ -409,7 +419,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                         // the separation barrier. Halving has the same reason as separation above.
                         cohesion += toNeighbor * (1 - AI.Configuration.FlockingSeparation / distance) * 0.5f;
 
-                        var neighborVelocity = (Velocity) AI.Manager.GetComponent(neighbor.Entity, Velocity.TypeId);
+                        var neighborVelocity = (IVelocity) AI.Manager.GetComponent(neighbor.Entity, VelocityTypeId);
                         cohesion += neighborVelocity.LinearVelocity;
                         ++cohesionNormalizer;
                     }
@@ -432,7 +442,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 formation = (Vector2) (squad.ComputeFormationOffset() - position);
                 if (AI.Entity != squad.Leader)
                 {
-                    var leaderVelocity = (Velocity) AI.Manager.GetComponent(squad.Leader, Velocity.TypeId);
+                    var leaderVelocity = (IVelocity) AI.Manager.GetComponent(squad.Leader, VelocityTypeId);
                     if (leaderVelocity != null)
                     {
                         formation += leaderVelocity.LinearVelocity;

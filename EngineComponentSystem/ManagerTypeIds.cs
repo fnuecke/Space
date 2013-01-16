@@ -34,9 +34,12 @@ namespace Engine.ComponentSystem
         [PacketizerIgnore]
         private static readonly Dictionary<Type, int> ComponentTypes = new Dictionary<Type, int>();
 
-        /// <summary>Keeps track of type hierarchy among components, i.e. stores for each component its most direct, known parent.</summary>
+        /// <summary>
+        ///     Keeps track of type hierarchy among components, i.e. stores for each component its direct and indirect
+        ///     parents. We also use sets to support multiple inheritance (in particular for interfaces).
+        /// </summary>
         [PacketizerIgnore]
-        private static readonly SparseArray<int> ComponentHierarchy = new SparseArray<int>();
+        private static readonly SparseArray<HashSet<int>> ComponentHierarchy = new SparseArray<HashSet<int>>();
 
         #endregion
 
@@ -126,6 +129,9 @@ namespace Engine.ComponentSystem
             {
                 typeId = ComponentTypeIds.GetId();
 
+                // Create hierarchy, add self for more uniform tests.
+                ComponentHierarchy[typeId] = new HashSet<int> {typeId};
+
                 // New entry, update hierarchy.
                 Type closestParentType = null;
                 foreach (var otherType in ComponentTypes.Keys)
@@ -133,35 +139,16 @@ namespace Engine.ComponentSystem
                     // Check for parents.
                     if (otherType.IsAssignableFrom(type))
                     {
-                        // Got a potential parent, see if it's better than the one
-                        // we already have.
-                        if (closestParentType == null || // No other parent.
-                            closestParentType.IsAssignableFrom(otherType)) // Better than previous parent.
-                        {
-                            closestParentType = otherType;
-                        }
+                        // Got a parent.
+                        ComponentHierarchy[typeId].Add(GetComponentTypeId(otherType));
                     }
 
                     // Check for children.
                     if (type.IsAssignableFrom(otherType))
                     {
-                        // Got a potential child, see if we're better than the
-                        // parent it had before.
-                        var otherTypeId = GetComponentTypeId(otherType);
-                        var otherParentTypeId = ComponentHierarchy[otherTypeId];
-                        if (otherParentTypeId == 0 || // Had no parent.
-                            GetComponentTypeForTypeId(otherParentTypeId).IsAssignableFrom(type))
-                            // Better than previous parent.
-                        {
-                            ComponentHierarchy[otherTypeId] = typeId;
-                        }
+                        // Got a child.
+                        ComponentHierarchy[GetComponentTypeId(otherType)].Add(typeId);
                     }
-                }
-
-                // If we found ourselves a parent, set it now.
-                if (closestParentType != null)
-                {
-                    ComponentHierarchy[typeId] = GetComponentTypeId(closestParentType);
                 }
 
                 // Add to look-up table.

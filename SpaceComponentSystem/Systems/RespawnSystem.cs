@@ -11,6 +11,12 @@ namespace Space.ComponentSystem.Systems
     public sealed class RespawnSystem : AbstractParallelComponentSystem<Respawn>, IMessagingSystem
     {
         #region Logic
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int VelocityTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
 
         /// <summary>Checks for entities to respawn.</summary>
         /// <param name="frame">The current simulation frame.</param>
@@ -24,16 +30,15 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Try to position.
-            var transform = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId));
+            var transform = (ITransform) Manager.GetComponent(component.Entity, TransformTypeId);
             if (transform != null)
             {
                 transform.Position = component.Position;
-                transform.Update();
                 transform.Angle = 0;
             }
 
-            // Kill of remainder velocity.
-            var velocity = ((Velocity) Manager.GetComponent(component.Entity, Velocity.TypeId));
+            // Kill off remainder velocity.
+            var velocity = (IVelocity) Manager.GetComponent(component.Entity, VelocityTypeId);
             if (velocity != null)
             {
                 velocity.LinearVelocity = Vector2.Zero;

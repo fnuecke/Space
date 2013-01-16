@@ -79,6 +79,9 @@ namespace Space.ComponentSystem.Systems
                 }
             }
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Renders the specified sun.</summary>
         /// <param name="component">The component.</param>
@@ -87,7 +90,7 @@ namespace Space.ComponentSystem.Systems
         private void RenderObject(TestObjectRenderer component, Matrix transform, FarPosition translation)
         {
             // Get absolute position of sun.
-            var position = ((Transform) Manager.GetComponent(component.Entity, Transform.TypeId)).Position;
+            var position = ((ITransform) Manager.GetComponent(component.Entity, TransformTypeId)).Position;
 
             // Apply transformation.
             _testObject.Center = (Vector2) (position + translation);

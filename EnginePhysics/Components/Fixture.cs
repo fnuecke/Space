@@ -70,7 +70,7 @@ namespace Engine.Physics.Components
         public ulong IndexGroupsMask
         {
             get { return _indexGroupsMask; }
-            internal set
+            set
             {
                 if (value == _indexGroupsMask)
                 {

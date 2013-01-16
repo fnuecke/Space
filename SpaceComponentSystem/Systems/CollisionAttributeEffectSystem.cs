@@ -108,6 +108,9 @@ namespace Space.ComponentSystem.Systems
             //var effect = Manager.AddComponent<DamagingStatusEffect>(damagee).Initialize(DamagingStatusEffect.InfiniteDamageDuration, damage.Damage, damage.Cooldown, damage.Type, damager);
             //_collisions.Add(BitwiseMagic.Pack(damagee, damager), effect.Id);
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Checks if the damagee can and will block damage coming in from the specified direction.</summary>
         /// <param name="damagee">The damagee to check for.</param>
@@ -139,7 +142,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Check if shields are oriented properly to intercept the damage.
-            var rotation = (((Transform) Manager.GetComponent(damagee, Transform.TypeId)).Angle + MathHelper.TwoPi) %
+            var rotation = (((ITransform) Manager.GetComponent(damagee, TransformTypeId)).Angle + MathHelper.TwoPi) %
                            MathHelper.TwoPi;
             var normalAngle = ((float) Math.Atan2(normal.Y, normal.X) + MathHelper.TwoPi) % MathHelper.TwoPi;
             var coverage = attributes.GetValue(AttributeType.ShieldCoverage) * MathHelper.Pi;

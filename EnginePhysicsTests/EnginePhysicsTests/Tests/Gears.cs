@@ -31,7 +31,7 @@ namespace Engine.Physics.Tests.Tests
                 var center = Manager.AddCircle(
                     radius1,
                     worldPosition: new WorldPoint(10, 9),
-                    density: 5);
+                    density: 5).Body;
 
                 // Attached rectangle.
                 var rectangle = Manager.AddRectangle(
@@ -39,14 +39,14 @@ namespace Engine.Physics.Tests.Tests
                     10,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(10, 8),
-                    density: 5);
+                    density: 5).Body;
 
                 // Larger, circling circle.
                 var wheel = Manager.AddCircle(
                     radius2,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(10, 6),
-                    density: 5);
+                    density: 5).Body;
 
                 // Rectangle rotates attached to center circle.
                 var joint1 = Manager.AddRevoluteJoint(rectangle, center, center.Position);
@@ -68,7 +68,7 @@ namespace Engine.Physics.Tests.Tests
                     radius1,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(-3, 12),
-                    density: 5);
+                    density: 5).Body;
 
                 // Fixed position rotation.
                 var joint1 = Manager.AddRevoluteJoint(smallCircle, smallCircle.Position);
@@ -79,7 +79,7 @@ namespace Engine.Physics.Tests.Tests
                     radius2,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(0, 12),
-                    density: 5);
+                    density: 5).Body;
                 
                 // Fixed position rotation.
                 var joint2 = Manager.AddRevoluteJoint(largeCircle, largeCircle.Position);
@@ -91,7 +91,7 @@ namespace Engine.Physics.Tests.Tests
                     10,
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(2.5f, 12),
-                    density: 5);
+                    density: 5).Body;
 
                 // Allow rectangle to only move up and down.
                 var joint3 = Manager.AddPrismaticJoint(

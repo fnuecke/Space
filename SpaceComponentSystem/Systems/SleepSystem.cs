@@ -17,6 +17,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>The distance at which ships are put to sleep.</summary>
         private const float SleepDistance = CellSystem.CellSize / 4;
 
+        /// <summary>Store type id for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+
         /// <summary>Updates the system.</summary>
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
@@ -30,9 +33,9 @@ namespace Space.ComponentSystem.Systems
             var avatars = (AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId);
             var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> awake = new HashSet<int>();
-            foreach (var transform in avatars.Avatars.Select(avatar => (Transform) Manager.GetComponent(avatar, Transform.TypeId)))
+            foreach (ITransform transform in avatars.Avatars.Select(avatar => Manager.GetComponent(avatar, TransformTypeId)))
             {
-                index.Find(transform.Position, SleepDistance, awake, ArtificialIntelligence.AIIndexGroupMask);
+                index[ArtificialIntelligence.AIIndexGroupMask].Find(transform.Position, SleepDistance, awake);
             }
             foreach (var component in Components)
             {

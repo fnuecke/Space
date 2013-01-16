@@ -32,6 +32,9 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
@@ -50,7 +53,7 @@ namespace Space.ComponentSystem.Systems
                 SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, cameraTransform);
             foreach (var entity in camera.VisibleEntities)
             {
-                var transform = (Transform) Manager.GetComponent(entity, Transform.TypeId);
+                var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
                 if (transform != null)
                 {
                     var text = string.Format(

@@ -18,6 +18,63 @@ namespace Engine.Physics
 
         /// <summary>Creates the a new body with the specified properties.</summary>
         /// <param name="manager">The manager to create the body in.</param>
+        /// <param name="entity">The entity to attach the body to.</param>
+        /// <param name="worldPosition">The initial world position of the body.</param>
+        /// <param name="worldAngle">The initial world angle of the body.</param>
+        /// <param name="type">The type of the body.</param>
+        /// <param name="fixedRotation">
+        ///     if set to <c>true</c> the rotation of the body is fixed to its initial value.
+        /// </param>
+        /// <param name="isBullet">
+        ///     if set to <c>true</c> enables continuous collision with other dynamic bodies.
+        /// </param>
+        /// <param name="allowSleep">
+        ///     if set to <c>true</c> allows the object to sleep when it is not moving (for improved performance).
+        /// </param>
+        /// <returns>The created body.</returns>
+        public static Body AddBody(
+            this IManager manager,
+            int entity,
+            WorldPoint worldPosition,
+            float worldAngle = 0,
+            Body.BodyType type = Body.BodyType.Static,
+            bool fixedRotation = false,
+            bool isBullet = false,
+            bool allowSleep = true)
+        {
+            return manager.AddComponent<Body>(entity)
+                .Initialize(worldPosition, worldAngle, type, fixedRotation, isBullet, allowSleep);
+        }
+
+        /// <summary>Creates the a new body with the specified properties.</summary>
+        /// <param name="manager">The manager to create the body in.</param>
+        /// <param name="entity">The entity to attach the body to.</param>
+        /// <param name="angle">The initial world angle of the body.</param>
+        /// <param name="type">The type of the body.</param>
+        /// <param name="fixedRotation">
+        ///     if set to <c>true</c> the rotation of the body is fixed to its initial value.
+        /// </param>
+        /// <param name="isBullet">
+        ///     if set to <c>true</c> enables continuous collision with other dynamic bodies.
+        /// </param>
+        /// <param name="allowSleep">
+        ///     if set to <c>true</c> allows the object to sleep when it is not moving (for improved performance).
+        /// </param>
+        /// <returns>The created body.</returns>
+        public static Body AddBody(
+            this IManager manager,
+            int entity,
+            float angle = 0,
+            Body.BodyType type = Body.BodyType.Static,
+            bool fixedRotation = false,
+            bool isBullet = false,
+            bool allowSleep = true)
+        {
+            return manager.AddBody(entity, WorldPoint.Zero, angle, type, fixedRotation, isBullet, allowSleep);
+        }
+
+        /// <summary>Creates the a new body with the specified properties.</summary>
+        /// <param name="manager">The manager to create the body in.</param>
         /// <param name="worldPosition">The initial world position of the body.</param>
         /// <param name="worldAngle">The initial world angle of the body.</param>
         /// <param name="type">The type of the body.</param>
@@ -40,8 +97,7 @@ namespace Engine.Physics
             bool isBullet = false,
             bool allowSleep = true)
         {
-            return manager.AddComponent<Body>(manager.AddEntity())
-                          .Initialize(worldPosition, worldAngle, type, fixedRotation, isBullet, allowSleep);
+            return manager.AddBody(manager.AddEntity(), worldPosition, worldAngle, type, fixedRotation, isBullet, allowSleep);
         }
 
         /// <summary>Creates the a new body with the specified properties.</summary>
@@ -98,7 +154,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddCircle(
+        public static CircleFixture AddCircle(
             this IManager manager,
             LocalPoint localPosition,
             float radius,
@@ -115,9 +171,8 @@ namespace Engine.Physics
             uint collisionGroups = 0)
         {
             var body = manager.AddBody(worldPosition, worldAngle, type, fixedRotation, isBullet, allowSleep);
-            manager.AttachCircle(body, localPosition, radius, density, friction, restitution, isSensor, collisionGroups);
-
-            return body;
+            return manager.AttachCircle(
+                body, localPosition, radius, density, friction, restitution, isSensor, collisionGroups);
         }
 
         /// <summary>Creates a circle with the specified parameters.</summary>
@@ -144,7 +199,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddCircle(
+        public static CircleFixture AddCircle(
             this IManager manager,
             float radius,
             WorldPoint worldPosition,
@@ -199,7 +254,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddCircle(
+        public static CircleFixture AddCircle(
             this IManager manager,
             LocalPoint localPosition,
             float radius,
@@ -253,7 +308,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddCircle(
+        public static CircleFixture AddCircle(
             this IManager manager,
             float radius,
             float worldAngle = 0,
@@ -301,7 +356,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddEdge(
+        public static EdgeFixture AddEdge(
             this IManager manager,
             LocalPoint localStart,
             LocalPoint localEnd,
@@ -313,9 +368,7 @@ namespace Engine.Physics
             uint collisionGroups = 0)
         {
             var body = manager.AddBody(worldPosition, worldAngle);
-            manager.AttachEdge(body, localStart, localEnd, friction, restitution, isSensor, collisionGroups);
-
-            return body;
+            return manager.AttachEdge(body, localStart, localEnd, friction, restitution, isSensor, collisionGroups);
         }
 
         /// <summary>Creates an edge with the specified parameters.</summary>
@@ -331,7 +384,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddEdge(
+        public static EdgeFixture AddEdge(
             this IManager manager,
             LocalPoint localStart,
             LocalPoint localEnd,
@@ -368,7 +421,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddEdge(
+        public static EdgeFixture AddEdge(
             this IManager manager,
             LocalPoint ghostStart,
             LocalPoint localStart,
@@ -382,7 +435,7 @@ namespace Engine.Physics
             uint collisionGroups = 0)
         {
             var body = manager.AddBody(worldPosition, worldAngle);
-            manager.AttachEdge(
+            return manager.AttachEdge(
                 body,
                 ghostStart,
                 localStart,
@@ -392,8 +445,6 @@ namespace Engine.Physics
                 restitution,
                 isSensor,
                 collisionGroups);
-
-            return body;
         }
 
         /// <summary>Creates an edge with the specified parameters.</summary>
@@ -411,7 +462,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddEdge(
+        public static EdgeFixture AddEdge(
             this IManager manager,
             LocalPoint ghostStart,
             LocalPoint localStart,
@@ -600,7 +651,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddPolygon(
+        public static PolygonFixture AddPolygon(
             this IManager manager,
             IList<LocalPoint> vertices,
             WorldPoint worldPosition,
@@ -616,9 +667,7 @@ namespace Engine.Physics
             uint collisionGroups = 0)
         {
             var body = manager.AddBody(worldPosition, worldAngle, type, fixedRotation, isBullet, allowSleep);
-            manager.AttachPolygon(body, vertices, density, friction, restitution, isSensor, collisionGroups);
-
-            return body;
+            return manager.AttachPolygon(body, vertices, density, friction, restitution, isSensor, collisionGroups);
         }
 
         /// <summary>Creates a rectangle with the specified parameters.</summary>
@@ -648,7 +697,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddRectangle(
+        public static PolygonFixture AddRectangle(
             this IManager manager,
             float width,
             float height,
@@ -667,7 +716,7 @@ namespace Engine.Physics
             uint collisionGroups = 0)
         {
             var body = manager.AddBody(worldPosition, worldAngle, type, fixedRotation, isBullet, allowSleep);
-            manager.AttachRectangle(
+            return manager.AttachRectangle(
                 body,
                 width,
                 height,
@@ -678,8 +727,6 @@ namespace Engine.Physics
                 restitution,
                 isSensor,
                 collisionGroups);
-
-            return body;
         }
 
         /// <summary>Creates a rectangle with the specified parameters.</summary>
@@ -707,7 +754,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddRectangle(
+        public static PolygonFixture AddRectangle(
             this IManager manager,
             float width,
             float height,
@@ -724,9 +771,8 @@ namespace Engine.Physics
             uint collisionGroups = 0)
         {
             var body = manager.AddBody(worldPosition, worldAngle, type, fixedRotation, isBullet, allowSleep);
-            manager.AttachRectangle(body, width, height, density, friction, restitution, isSensor, collisionGroups);
-
-            return body;
+            return manager.AttachRectangle(
+                body, width, height, density, friction, restitution, isSensor, collisionGroups);
         }
 
         /// <summary>Creates a rectangle with the specified parameters.</summary>
@@ -755,7 +801,7 @@ namespace Engine.Physics
         /// </param>
         /// <param name="collisionGroups">The collision groups of the fixture.</param>
         /// <returns>The created body.</returns>
-        public static Body AddRectangle(
+        public static PolygonFixture AddRectangle(
             this IManager manager,
             float width,
             float height,
@@ -773,7 +819,7 @@ namespace Engine.Physics
             uint collisionGroups = 0)
         {
             var body = manager.AddBody(WorldPoint.Zero, worldAngle, type, fixedRotation, isBullet, allowSleep);
-            manager.AttachRectangle(
+            return manager.AttachRectangle(
                 body,
                 width,
                 height,
@@ -784,8 +830,6 @@ namespace Engine.Physics
                 restitution,
                 isSensor,
                 collisionGroups);
-
-            return body;
         }
 
         #endregion

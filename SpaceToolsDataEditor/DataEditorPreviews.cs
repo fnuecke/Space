@@ -559,6 +559,9 @@ namespace Space.Tools.DataEditor
         }
 
         private static readonly int DrawableTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IDrawable>();
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         private void RenderItemPreview(ItemFactory factory)
         {
@@ -582,7 +585,7 @@ namespace Space.Tools.DataEditor
                 }
                 if (factory.ModelOffset != Vector2.Zero)
                 {
-                    var transform = (Transform)manager.GetComponent(entity, Transform.TypeId);
+                    var transform = (ITransform)manager.GetComponent(entity, TransformTypeId);
                     if (transform != null)
                     {
                         var offset = (FarPosition)(factory.RequiredSlotSize.Scale() * factory.ModelOffset);

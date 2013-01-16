@@ -42,7 +42,7 @@ namespace Engine.Physics.Tests.Tests
                                                type: Body.BodyType.Dynamic,
                                                worldPosition: new WorldPoint(-40, 5),
                                                isBullet: true,
-                                               density: 1);
+                                               density: 1).Body;
                 box.LinearVelocity = new Vector2(150, 0);
             }
         }

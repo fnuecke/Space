@@ -6,6 +6,7 @@ using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
+using Engine.Physics.Systems;
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
@@ -157,6 +158,9 @@ namespace Space.Control
                     // Update position after everything that might want to update it
                     // has run. This will apply those changes.
                     new TranslationSystem(),
+
+                    // Update physics.
+                    new PhysicsSystem(1000f / Settings.TicksPerSecond), 
                     
                     // ----- Stuff that creates new things ----- //
 

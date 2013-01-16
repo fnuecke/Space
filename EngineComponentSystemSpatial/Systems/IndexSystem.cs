@@ -272,8 +272,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
         public IEnumerable<int> GetChanged(ulong groups)
         {
             return IndexesForGroups(groups)
-                    .SelectMany(index => _changed[index])
-                    .Distinct();
+                .SelectMany(index => _changed[index] ?? Enumerable.Empty<int>())
+                .Distinct();
         }
 
         /// <summary>Gets the bounds for the specified component in the first of the specified groups.</summary>
@@ -315,9 +315,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="groups">The index group mask.</param>
         public void ClearTouched(ulong groups)
         {
-            foreach (var index in IndexesForGroups(groups))
+            foreach (var changed in IndexesForGroups(groups)
+                .Select(index => _changed[index])
+                .Where(changed => changed != null))
             {
-                _changed[index].Clear();
+                changed.Clear();
             }
         }
 

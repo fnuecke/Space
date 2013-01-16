@@ -173,6 +173,9 @@ namespace Space.Tools.DataEditor
             // Create a target for rendering the main sun texture.
             _target = new RenderTarget2D(GraphicsDeviceManager.GraphicsDevice, width, height, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         protected override void Draw()
         {
@@ -230,9 +233,8 @@ namespace Space.Tools.DataEditor
                     FarPosition sunPos;
                     sunPos.X = mousePos.X - Width / 2f;
                     sunPos.Y = mousePos.Y - Height / 2f;
-                    var t = (Transform)Manager.GetComponent(_sunId, Transform.TypeId);
+                    var t = (ITransform)Manager.GetComponent(_sunId, TransformTypeId);
                     t.Position = sunPos;
-                    t.Update();
                 }
 
                 // Draw our mini simulation.

@@ -22,6 +22,9 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Returns the position of the local player's avatar.</summary>
         protected override FarPosition GetListenerPosition()
@@ -30,16 +33,19 @@ namespace Space.ComponentSystem.Systems
             //camera.Transform.Translation;
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             return avatar > 0
-                       ? ((Transform) Manager.GetComponent(avatar, Transform.TypeId)).Position
+                       ? ((ITransform) Manager.GetComponent(avatar, TransformTypeId)).Position
                        : FarPosition.Zero;
         }
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int VelocityTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
 
         /// <summary>Returns the velocity of the local player's avatar.</summary>
         protected override Vector2 GetListenerVelocity()
         {
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             return avatar > 0
-                       ? ((Velocity) Manager.GetComponent(avatar, Velocity.TypeId)).LinearVelocity
+                       ? ((IVelocity) Manager.GetComponent(avatar, VelocityTypeId)).LinearVelocity
                        : Vector2.Zero;
         }
 

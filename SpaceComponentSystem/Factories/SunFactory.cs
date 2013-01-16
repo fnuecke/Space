@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Math;
+using Engine.Physics;
 using Engine.Random;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -128,14 +129,9 @@ namespace Space.ComponentSystem.Factories
                 secondaryTurbulenceRotation.Normalize();
             }
 
-            manager.AddComponent<Transform>(entity)
-                   .Initialize(
-                       new FarRectangle(-radius, -radius, radius * 2, radius * 2),
-                       offset + cellCenter,
-                       // Add to indexes for lookup.
-                       indexGroupsMask:
-                           // Can be bumped into.
-                           CollisionSystem.IndexGroupMask |
+            var body = manager.AddBody(entity, offset + cellCenter);
+            manager.AttachCircle(body, radius, isSensor: true)
+                .IndexGroupsMask |= 
                            // Can be detected.
                            DetectableSystem.IndexGroupMask |
                            // Can make noise.
@@ -143,7 +139,7 @@ namespace Space.ComponentSystem.Factories
                            // Will be removed when out of bounds.
                            CellSystem.CellDeathAutoRemoveIndexGroupMask |
                            // Must be detectable by the camera.
-                           CameraSystem.IndexGroupMask);
+                           CameraSystem.IndexGroupMask;
 
             // Make it attract stuff if it has mass.
             if (mass > 0)

@@ -185,6 +185,12 @@ namespace Space.ComponentSystem.Factories
         #endregion
 
         #region Sampling
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Manager.GetComponentTypeId<ITransform>();
+
+        /// <summary>Store for performance.</summary>
+        private static readonly int VelocityTypeId = Manager.GetComponentTypeId<IVelocity>();
 
         /// <summary>Samples a new projectile.</summary>
         /// <param name="manager">The manager.</param>
@@ -208,8 +214,8 @@ namespace Space.ComponentSystem.Factories
 
             // Get position and velocity of the emitter, to set initial position
             // and additional velocity.
-            var emitterTransform = (Transform) manager.GetComponent(emitter, Transform.TypeId);
-            var emitterVelocity = (Velocity) manager.GetComponent(emitter, Velocity.TypeId);
+            var emitterTransform = (ITransform) manager.GetComponent(emitter, TransformTypeId);
+            var emitterVelocity = (IVelocity) manager.GetComponent(emitter, VelocityTypeId);
 
             // Rotate the offset.
             var rotation = emitterTransform.Angle;

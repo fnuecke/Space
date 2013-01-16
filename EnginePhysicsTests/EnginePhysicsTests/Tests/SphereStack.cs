@@ -21,7 +21,7 @@ namespace Engine.Physics.Tests.Tests
                 var sphere = Manager.AddCircle(radius: 1,
                                                type: Body.BodyType.Dynamic,
                                                worldPosition: new WorldPoint(0, 4.0f + 3.0f * i),
-                                               density: 1);
+                                               density: 1).Body;
                 sphere.LinearVelocity = new Vector2(0.0f, -50.0f);
             }
         }

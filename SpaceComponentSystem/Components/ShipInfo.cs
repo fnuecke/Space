@@ -29,6 +29,16 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Constants
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+        
+        /// <summary>Store for performance.</summary>
+        private static readonly int VelocityTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
+
+        #endregion
+
         #region Initialization
 
         /// <summary>Initialize the component by using another instance of its type.</summary>
@@ -146,7 +156,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
+                var transform = (ITransform) Manager.GetComponent(Entity, TransformTypeId);
                 return transform != null ? transform.Position : FarPosition.Zero;
             }
         }
@@ -156,7 +166,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var transform = (Transform) Manager.GetComponent(Entity, Transform.TypeId);
+                var transform = (ITransform) Manager.GetComponent(Entity, TransformTypeId);
                 return transform != null ? transform.Angle : 0;
             }
         }
@@ -192,7 +202,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var velocity = (IVelocity) Manager.GetComponent(Entity, Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                var velocity = (IVelocity) Manager.GetComponent(Entity, VelocityTypeId);
                 return velocity != null ? velocity.LinearVelocity.Length() : 0;
             }
         }
@@ -208,7 +218,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var velocity = (IVelocity) Manager.GetComponent(Entity, Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+                var velocity = (IVelocity) Manager.GetComponent(Entity, VelocityTypeId);
                 return velocity != null ? velocity.AngularVelocity : 0f;
             }
         }

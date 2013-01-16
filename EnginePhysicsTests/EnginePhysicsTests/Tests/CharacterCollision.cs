@@ -22,7 +22,7 @@ namespace Engine.Physics.Tests.Tests
             // This shows the problematic case where a box shape can hit
             // an internal vertex.
             {
-                var ground = Manager.AddEdge(new Vector2(-8.0f, 1.0f), new Vector2(-6.0f, 1.0f));
+                var ground = Manager.AddEdge(new Vector2(-8.0f, 1.0f), new Vector2(-6.0f, 1.0f)).Body;
                 Manager.AttachEdge(ground, new Vector2(-6.0f, 1.0f), new Vector2(-4.0f, 1.0f));
                 Manager.AttachEdge(ground, new Vector2(-4.0f, 1.0f), new Vector2(-2.0f, 1.0f));
             }
@@ -43,7 +43,7 @@ namespace Engine.Physics.Tests.Tests
             // have non-smooth collision. There is no solution
             // to this problem.
             {
-                var ground = Manager.AddRectangle(width: 2, height: 2, localPosition: new Vector2(4.0f, 3.0f));
+                var ground = Manager.AddRectangle(width: 2, height: 2, localPosition: new Vector2(4.0f, 3.0f)).Body;
                 Manager.AttachRectangle(ground, width: 2, height: 2, localPosition: new Vector2(6.0f, 3.0f));
                 Manager.AttachRectangle(ground, width: 2, height: 2, localPosition: new Vector2(8.0f, 3.0f));
             }
