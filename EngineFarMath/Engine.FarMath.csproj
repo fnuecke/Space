@@ -64,6 +64,7 @@
     <Compile Include="FarTransform.cs" />
     <Compile Include="FarValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitConversion.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
@@ -73,6 +74,10 @@
     <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
       <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
       <Name>Engine.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
+      <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
+      <Name>Engine.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

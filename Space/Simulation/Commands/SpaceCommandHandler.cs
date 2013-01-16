@@ -39,6 +39,8 @@ from Engine.ComponentSystem.Common.Components import *
 from Engine.ComponentSystem.Common.Systems import *
 from Engine.ComponentSystem.RPG.Components import *
 from Engine.ComponentSystem.RPG.Systems import *
+from Engine.ComponentSystem.Spatial.Components import *
+from Engine.ComponentSystem.Spatial.Systems import *
 from Engine.FarMath import *
 from Space.ComponentSystem import *
 from Space.ComponentSystem.Components import *
