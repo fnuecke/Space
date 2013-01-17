@@ -99,13 +99,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarCollections", "En
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Content.Effects", "SpaceContentEffects\Space.Content.Effects.contentproj", "{292C5408-F986-41BF-AAC3-35B61EF43C27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Physics", "EnginePhysics\Engine.Physics.csproj", "{69F7346B-8904-4AEA-BA38-0F5D5BAEDD3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.Physics", "EngineComponentSystemPhysics\Engine.ComponentSystem.Physics.csproj", "{69F7346B-8904-4AEA-BA38-0F5D5BAEDD3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Physics.Tests", "EnginePhysicsTests\EnginePhysicsTests\Engine.Physics.Tests.csproj", "{5AAEB62A-1CA3-45E7-8E71-12DEC5F9B65B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.Physics.Tests", "EngineComponentSystemPhysicsTests\Engine.ComponentSystem.Physics.Tests.csproj", "{5AAEB62A-1CA3-45E7-8E71-12DEC5F9B65B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarPhysics", "EngineFarPhysics\Engine.FarPhysics.csproj", "{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.FarPhysics", "EngineComponentSystemFarPhysics\Engine.ComponentSystem.FarPhysics.csproj", "{4A093F6D-A49A-4F6B-BF8C-10C52871A0B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.FarPhysics.Tests", "EngineFarPhysicsTests\EngineFarPhysicsTests\Engine.FarPhysics.Tests.csproj", "{6EC688B2-76A7-4C91-A07C-53BA8E45C341}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.FarPhysics.Tests", "EngineComponentSystemFarPhysicsTests\Engine.ComponentSystem.FarPhysics.Tests.csproj", "{6EC688B2-76A7-4C91-A07C-53BA8E45C341}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.Spatial", "EngineComponentSystemSpatial\Engine.ComponentSystem.Spatial.csproj", "{60867ABB-E673-42A8-9944-8AA4D5488C03}"
 EndProject

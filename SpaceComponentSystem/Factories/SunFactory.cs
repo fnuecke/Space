@@ -5,7 +5,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Math;
-using Engine.Physics;
+using Engine.ComponentSystem.Physics;
 using Engine.Random;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;

@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{69F7346B-8904-4AEA-BA38-0F5D5BAEDD3A}</ProjectGuid>
+    <ProjectTypeGuids>{6D335F3A-9D43-41b4-9D22-F6F17C4BE596};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Engine.ComponentSystem.Physics</RootNamespace>
+    <AssemblyName>Engine.ComponentSystem.Physics</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
+    <XnaPlatform>Windows</XnaPlatform>
+    <XnaProfile>Reach</XnaProfile>
+    <XnaCrossPlatformGroupID>84263680-a703-4d41-ab1d-8e1f71f9842e</XnaCrossPlatformGroupID>
+    <XnaOutputType>Library</XnaOutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\x86\Debug</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WINDOWS PROFILE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <PlatformTarget>x86</PlatformTarget>
+    <XnaCompressContent>false</XnaCompressContent>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x86\Release</OutputPath>
+    <DefineConstants>TRACE;WINDOWS PROFILE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <PlatformTarget>x86</PlatformTarget>
+    <XnaCompressContent>true</XnaCompressContent>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="mscorlib">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Collision\Distance.cs" />
+    <Compile Include="Components\Body.cs" />
+    <Compile Include="Components\CircleFixture.cs" />
+    <Compile Include="Components\EdgeFixture.cs" />
+    <Compile Include="BodyFactory.cs" />
+    <Compile Include="Components\Fixture.cs" />
+    <Compile Include="FixtureFactory.cs" />
+    <Compile Include="JointFactory.cs" />
+    <Compile Include="Joints\DistanceJoint.cs" />
+    <Compile Include="Joints\FrictionJoint.cs" />
+    <Compile Include="Joints\GearJoint.cs" />
+    <Compile Include="Joints\Joint.cs" />
+    <Compile Include="Components\PolygonFixture.cs" />
+    <Compile Include="Collision\TimeOfImpact.cs" />
+    <Compile Include="Collision\Manifold.cs" />
+    <Compile Include="Joints\MotorJoint.cs" />
+    <Compile Include="Joints\MouseJoint.cs" />
+    <Compile Include="Joints\PrismaticJoint.cs" />
+    <Compile Include="Joints\PulleyJoint.cs" />
+    <Compile Include="Joints\RevoluteJoint.cs" />
+    <Compile Include="Joints\RopeJoint.cs" />
+    <Compile Include="Joints\WeldJoint.cs" />
+    <Compile Include="Joints\WheelJoint.cs" />
+    <Compile Include="Math\Transform.cs" />
+    <Compile Include="Math\Vector.cs" />
+    <Compile Include="Messages\BeginContact.cs" />
+    <Compile Include="Messages\EndContact.cs" />
+    <Compile Include="Messages\PreSolve.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Collision\CollideCircle.cs" />
+    <Compile Include="Collision\CollideEdge.cs" />
+    <Compile Include="Collision\CollidePolygon.cs" />
+    <Compile Include="Collision\CollideUtil.cs" />
+    <Compile Include="Contacts\ContactSolver.cs" />
+    <Compile Include="Contacts\Contact.cs" />
+    <Compile Include="Island.cs" />
+    <Compile Include="Systems\AbstractDebugPhysicsRenderSystem.cs" />
+    <Compile Include="Systems\PhysicsSystem.cs" />
+    <Compile Include="Math\Sweep.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="TimeStep.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\EngineCollections\Engine.Collections.csproj">
+      <Project>{D73BAEF1-9B31-4548-A982-E19D68745757}</Project>
+      <Name>Engine.Collections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
+      <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
+      <Name>Engine.ComponentSystem.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemSpatial\Engine.ComponentSystem.Spatial.csproj">
+      <Project>{60867ABB-E673-42A8-9944-8AA4D5488C03}</Project>
+      <Name>Engine.ComponentSystem.Spatial</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
+      <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
+      <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineGraphics\Engine.Graphics.csproj">
+      <Project>{127107EB-BE90-41C5-BB86-E01138135F56}</Project>
+      <Name>Engine.Graphics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
+      <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
+      <Name>Engine.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSerialization\Engine.Serialization.csproj">
+      <Project>{74CF9DE0-C8A6-4BDB-8262-8B80ADB6FAD3}</Project>
+      <Name>Engine.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
+      <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
+      <Name>Engine.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
+      <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
+      <Name>Engine.XnaExtensions</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
+  <!--
+      To modify your build process, add your task inside one of the targets below and uncomment it. 
+      Other similar extension points exist, see Microsoft.Common.targets.
+      <Target Name="BeforeBuild">
+      </Target>
+      <Target Name="AfterBuild">
+      </Target>
+    -->
+</Project>

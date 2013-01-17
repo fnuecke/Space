@@ -6,7 +6,7 @@ using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
-using Engine.Physics.Systems;
+using Engine.ComponentSystem.Physics.Systems;
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
