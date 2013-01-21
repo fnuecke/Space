@@ -62,9 +62,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\Acceleration.cs">
-      <Link>Components\Acceleration.cs</Link>
-    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\EllipsePath.cs">
       <Link>Components\EllipsePath.cs</Link>
     </Compile>
@@ -112,9 +109,6 @@
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Messages\TranslationChanged.cs">
       <Link>Messages\TranslationChanged.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Systems\AccelerationSystem.cs">
-      <Link>Systems\AccelerationSystem.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\BackgroundRenderSystem.cs">
       <Link>Systems\BackgroundRenderSystem.cs</Link>

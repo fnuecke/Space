@@ -1,4 +1,6 @@
-﻿namespace Engine.Util
+﻿using Engine.Math;
+
+namespace Engine.Util
 {
     /// <summary>
     /// Supplies conversion of screen (display) coordinates to and from simulation
@@ -42,6 +44,17 @@
         public static float ToSimulationUnits(float point)
         {
             return point * SimulationOverScreenRatio;
+        }
+        
+        /// <summary>Converts a rectangle in screen space to simulation space.</summary>
+        /// <param name="rectangle">The rectangle.</param>
+        /// <returns></returns>
+        public static RectangleF ToSimulationUnits(RectangleF rectangle)
+        {
+            rectangle.Inflate(
+                -rectangle.Width / 2f * (1f - SimulationOverScreenRatio),
+                -rectangle.Height / 2f * (1f - SimulationOverScreenRatio));
+            return rectangle;
         }
     }
 }

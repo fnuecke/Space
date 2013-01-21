@@ -60,7 +60,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\Acceleration.cs" />
     <Compile Include="Components\EllipsePath.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\IDrawable.cs" />
@@ -78,7 +77,6 @@
     <Compile Include="Messages\RotationChanged.cs" />
     <Compile Include="Messages\TranslationChanged.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Systems\AccelerationSystem.cs" />
     <Compile Include="Systems\BackgroundRenderSystem.cs" />
     <Compile Include="Systems\EllipsePathSystem.cs" />
     <Compile Include="Systems\FrictionSystem.cs" />

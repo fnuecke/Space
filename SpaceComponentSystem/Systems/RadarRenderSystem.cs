@@ -5,8 +5,8 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Math;
 using Engine.Util;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -127,7 +127,7 @@ namespace Space.ComponentSystem.Systems
             var radarRange = UnitConversion.ToSimulationUnits(info.RadarRange);
 
             // Get bounds in which to display the icon.
-            var screenBounds = _spriteBatch.GraphicsDevice.Viewport.Bounds;
+            var screenBounds = (RectangleF) _spriteBatch.GraphicsDevice.Viewport.Bounds;
 
             // Get the screen's center, used for diverse computations, and as
             // a center for relative computations (because the player's always
@@ -144,10 +144,11 @@ namespace Space.ComponentSystem.Systems
             // Get the inner bounds in which to display the icon, i.e. minus
             // half the size of the icon, so deflate by that.
             var innerBounds = screenBounds;
-            innerBounds.Inflate(-(int) backgroundOrigin.X, -(int) backgroundOrigin.Y);
+            innerBounds.Inflate(-backgroundOrigin.X, -backgroundOrigin.Y);
 
             // Convert to simulation units for checking.
-            screenBounds = XnaUnitConversion.ToSimulationUnits(screenBounds);
+            screenBounds = UnitConversion.ToSimulationUnits(screenBounds);
+            screenBounds.Offset(-center.X, -center.Y);
 
             // Now this is the tricky part: we take the minimal bounding sphere
             // (or rather, circle) that fits our screen space. For each
@@ -186,7 +187,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Check if the object's inside. If so, skip it. Take camera
                 // zoom into account here.
-                if (screenBounds.Contains((int) (direction.X * zoom + center.X), (int) (direction.Y * zoom + center.Y)))
+                if (screenBounds.Contains(direction.X * zoom, direction.Y * zoom))
                 {
                     continue;
                 }
@@ -245,7 +246,7 @@ namespace Space.ComponentSystem.Systems
                 // distance to the screen edge, if so desired.
                 if (Settings.Instance.RadarDistanceFromBorder)
                 {
-                    distance -= UnitConversion.ToSimulationUnits(iconPosition.Length());
+                    distance -= UnitConversion.ToSimulationUnits(iconPosition.Length()) / zoom;
                 }
 
                 // Adjust to the center.
@@ -371,7 +372,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The icon's position.</param>
         /// <param name="bounds">The bounds.</param>
         /// <returns>The direction of the border contact of the icon.</returns>
-        private static RadarDirection GetRadarDirection(ref Vector2 position, ref Rectangle bounds)
+        private static RadarDirection GetRadarDirection(ref Vector2 position, ref RectangleF bounds)
         {
             if (Math.Abs(position.X - bounds.Left) < 0.001f)
             {
