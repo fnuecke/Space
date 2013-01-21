@@ -26,6 +26,17 @@
         {
             return point * Util.UnitConversion.SimulationOverScreenRatio;
         }
+        
+        /// <summary>Converts a rectangle in simulation space to screen space.</summary>
+        /// <param name="rectangle">The rectangle.</param>
+        /// <returns></returns>
+        public static FarRectangle ToScreenUnits(FarRectangle rectangle)
+        {
+            rectangle.Inflate(
+                rectangle.Width / 2f * (Util.UnitConversion.ScreenOverSimulationRatio - 1f),
+                rectangle.Height / 2f * (Util.UnitConversion.ScreenOverSimulationRatio - 1f));
+            return rectangle;
+        }
 
         /// <summary>Converts a rectangle in screen space to simulation space.</summary>
         /// <param name="rectangle">The rectangle.</param>

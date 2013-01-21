@@ -5,6 +5,7 @@ using System.Text;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Util;
@@ -113,10 +114,10 @@ namespace Space.ComponentSystem.Systems
             for (var i = _texts.Count - 1; i >= 0; i--)
             {
                 var text = _texts[i];
-                text.Position.Y -= FloatDistance / text.TotalTimeToLive;
+                text.Position.Y -= UnitConversion.ToSimulationUnits(FloatDistance / text.TotalTimeToLive);
                 _spriteBatch.Draw(
                     text.Value,
-                    (Vector2) (text.Position + cameraTranslation),
+                    (Vector2) FarUnitConversion.ToScreenUnits(text.Position + cameraTranslation),
                     null,
                     text.Color,
                     0f,
@@ -225,8 +226,8 @@ namespace Space.ComponentSystem.Systems
             lock (this)
             {
                 var texture = RenderToTexture(value, scale);
-                position.X -= texture.Width / 2;
-                position.Y -= texture.Height / 2;
+                position.X -= UnitConversion.ToSimulationUnits(texture.Width / 2f);
+                position.Y -= UnitConversion.ToSimulationUnits(texture.Height / 2f);
                 _texts.Add(
                     new FloatingText
                     {
@@ -274,8 +275,8 @@ namespace Space.ComponentSystem.Systems
             lock (this)
             {
                 var texture = RenderToTexture(value, scale);
-                position.X -= texture.Width / 2;
-                position.Y -= texture.Height / 2;
+                position.X -= UnitConversion.ToSimulationUnits(texture.Width / 2f);
+                position.Y -= UnitConversion.ToSimulationUnits(texture.Height / 2f);
                 _texts.Add(
                     new FloatingText
                     {

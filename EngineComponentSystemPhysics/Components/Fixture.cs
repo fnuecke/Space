@@ -335,6 +335,7 @@ namespace Engine.ComponentSystem.Physics.Components
 // ReSharper restore RedundantCast
 
             // Update the index.
+            System.Diagnostics.Debug.Assert(Enabled);
             IndexBoundsChanged message;
             message.Component = this;
             message.Bounds = bounds;
@@ -345,11 +346,14 @@ namespace Engine.ComponentSystem.Physics.Components
         /// <summary>Updates this fixtures position in the index structure used for the broad phase.</summary>
         internal void Synchronize()
         {
-            IndexBoundsChanged message;
-            message.Component = this;
-            message.Bounds = ComputeBounds(Body.Transform);
-            message.Delta = Vector2.Zero;
-            Manager.SendMessage(message);
+            if (Enabled)
+            {
+                IndexBoundsChanged message;
+                message.Component = this;
+                message.Bounds = ComputeBounds(Body.Transform);
+                message.Delta = Vector2.Zero;
+                Manager.SendMessage(message);
+            }
         }
 
         #endregion

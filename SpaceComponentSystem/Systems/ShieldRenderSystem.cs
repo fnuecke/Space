@@ -28,6 +28,13 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Constants
+        
+        /// <summary>Prefetch for performance.</summary>
+        private static readonly int IndexableTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IIndexable>();
+
+        #endregion
+
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
@@ -165,11 +172,11 @@ namespace Space.ComponentSystem.Systems
                 FarPosition position;
                 float angle;
                 interpolation.GetInterpolatedTransform(effect.Entity, out position, out angle);
-                _shader.Center = (Vector2) (position + camera.Translation);
+                _shader.Center = (Vector2) FarUnitConversion.ToScreenUnits(position + camera.Translation);
 
                 // Set size.
-                var collidable = (Collidable) Manager.GetComponent(effect.Entity, Collidable.TypeId);
-                var bounds = collidable.ComputeBounds();
+                var collidable = (IIndexable) Manager.GetComponent(effect.Entity, IndexableTypeId);
+                var bounds = FarUnitConversion.ToScreenUnits(collidable.ComputeWorldBounds());
                 _shader.SetSize(bounds.Width, bounds.Height);
 
                 // Set coverage of the shield.

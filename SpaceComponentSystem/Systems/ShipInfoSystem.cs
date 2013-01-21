@@ -1,8 +1,10 @@
-﻿using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.Physics.Components;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Factories;
 using Space.Data;
 using Space.Util;
 
@@ -44,11 +46,7 @@ namespace Space.ComponentSystem.Systems
             shipInfo.MaxSpeed = float.PositiveInfinity;
 
             // Maximum speed.
-            var friction = ((Friction) Manager.GetComponent(entity, Friction.TypeId));
-            if (friction != null)
-            {
-                shipInfo.MaxSpeed = shipInfo.MaxAcceleration / friction.Value;
-            }
+            shipInfo.MaxSpeed = shipInfo.MaxAcceleration / (ShipFactory.LinearDamping * shipInfo.Mass);
 
             // Figure out the overall range of our radar system.
             shipInfo.RadarRange = attributes.GetValue(AttributeType.SensorRange);

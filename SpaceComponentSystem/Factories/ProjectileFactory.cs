@@ -263,9 +263,9 @@ namespace Space.ComponentSystem.Factories
                 UnitConversion.ToSimulationUnits(_collisionRadius),
                 0.1f,
                 restitution: 0.1f,
-                isSensor: true,
+                //isSensor: true,
                 collisionGroups: collisionGroup)
-                   .IndexGroupsMask = CameraSystem.IndexGroupMask | InterpolationSystem.IndexGroupMask;
+                   .IndexGroupsMask |= CameraSystem.IndexGroupMask | InterpolationSystem.IndexGroupMask;
 
             // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)

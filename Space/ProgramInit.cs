@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using Engine.ComponentSystem.Physics.Systems;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -264,7 +265,7 @@ namespace Space
                             case "collision":
                             case "collidable":
                             case "collidables":
-                                groupMask = CollisionSystem.IndexGroupMask;
+                                groupMask = PhysicsSystem.IndexGroupMask;
                                 break;
                             case "d":
                             case "detector":

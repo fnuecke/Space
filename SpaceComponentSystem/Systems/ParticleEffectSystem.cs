@@ -183,7 +183,7 @@ namespace Space.ComponentSystem.Systems
             // Render and update all known unbound effects (not attached to an entity).
             FarTransform globalTransform;
             globalTransform.Matrix = transform;
-            globalTransform.Translation = translation;
+            globalTransform.Translation = FarUnitConversion.ToScreenUnits(translation);
             foreach (var effect in _effects.Values)
             {
                 _renderer.RenderEffect(effect, ref globalTransform);
@@ -213,30 +213,20 @@ namespace Space.ComponentSystem.Systems
         /// <param name="impulse">The initial (additional) impulse of the particle.</param>
         /// <param name="rotation">The rotation.</param>
         /// <param name="scale">The scale.</param>
-        public void Play(
-            ParticleEffect effect,
-            ref FarPosition position,
-            ref Vector2 impulse,
-            float rotation = 0.0f,
-            float scale = 1.0f)
+        public void Play(string effect, FarPosition position, Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
         {
-            // Get position of the effect relative to view port.
-            var transform = GetTransform();
-            FarPosition translation;
-            FarPosition.Transform(ref position, ref transform, out translation);
-
             // Check if it's in bounds, i.e. whether we have to render it at all.
-            var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
-            bounds.Inflate((int) (256 * scale), (int) (256 * scale));
-            if (!bounds.Contains((int) translation.X, (int) translation.Y))
+            var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
+            if (!camera.ComputeVisibleBounds().Contains(position))
             {
                 return;
             }
 
             // Let there be graphics!
+            position = FarUnitConversion.ToScreenUnits(position);
             lock (this)
             {
-                effect.Trigger(ref position, ref impulse, rotation, scale);
+                GetEffect(effect).Trigger(ref position, ref impulse, rotation, scale);
             }
         }
 
@@ -251,7 +241,7 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>
         ///     The entity must have a <c>Transform</c> component.
         /// </remarks>
-        public void Play(ParticleEffect effect, int entity, ref Vector2 offset, float scale = 1.0f)
+        public void Play(string effect, int entity, Vector2 offset, float scale = 1.0f)
         {
             // Get the interpolation system to get an interpolated position for the effect generator.
             var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
@@ -275,9 +265,9 @@ namespace Space.ComponentSystem.Systems
                 impulse *= _simulationSpeed() * Settings.TicksPerSecond;
             }
 
-            Play(effect, ref position, ref impulse, angle, scale);
+            Play(effect, position, impulse, rotation: angle, scale: scale);
         }
-
+        
         /// <summary>Plays an effect with the specified name as if it were emitted by the specified entity.</summary>
         /// <param name="effect">The name of the effect to play.</param>
         /// <param name="entity">The entity that emits the effect.</param>
@@ -288,7 +278,7 @@ namespace Space.ComponentSystem.Systems
         public void Play(string effect, int entity, float scale = 1.0f)
         {
             var offset = Vector2.Zero;
-            Play(GetEffect(effect), entity, ref offset, scale);
+            Play(effect, entity, offset, scale: scale);
         }
 
         #endregion

@@ -339,7 +339,6 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    new DebugCollisionBoundsRenderSystem(),
                     new DebugEntityIdRenderSystem(),
                     new DebugAIRenderSystem(),
                     new DebugIndexRenderSystem()

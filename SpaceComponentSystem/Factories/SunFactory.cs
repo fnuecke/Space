@@ -131,7 +131,7 @@ namespace Space.ComponentSystem.Factories
             }
 
             var body = manager.AddBody(entity, offset + cellCenter);
-            manager.AttachCircle(body, UnitConversion.ToSimulationUnits(radius), isSensor: true)
+            manager.AttachCircle(body, UnitConversion.ToSimulationUnits(radius))
                 .IndexGroupsMask |= 
                            // Can be detected.
                            DetectableSystem.IndexGroupMask |
@@ -150,9 +150,6 @@ namespace Space.ComponentSystem.Factories
             {
                 manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor);
             }
-
-            // Make it collidable.
-            manager.AddComponent<CollidableSphere>(entity).Initialize(radius, Factions.Nature.ToCollisionGroup());
 
             // Damage stuff that touches a sun.
             manager.AddComponent<CollisionDamage>(entity).Initialize(false);

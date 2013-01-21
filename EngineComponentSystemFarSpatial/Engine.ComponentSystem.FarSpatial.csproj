@@ -65,15 +65,6 @@
     <Compile Include="..\EngineComponentSystemSpatial\Components\Acceleration.cs">
       <Link>Components\Acceleration.cs</Link>
     </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\Collidable.cs">
-      <Link>Components\Collidable.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\CollidableBox.cs">
-      <Link>Components\CollidableBox.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\CollidableSphere.cs">
-      <Link>Components\CollidableSphere.cs</Link>
-    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\EllipsePath.cs">
       <Link>Components\EllipsePath.cs</Link>
     </Compile>
@@ -110,12 +101,6 @@
     <Compile Include="..\EngineComponentSystemSpatial\Components\Velocity.cs">
       <Link>Components\Velocity.cs</Link>
     </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Messages\BeginCollision.cs">
-      <Link>Messages\BeginCollision.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Messages\EndCollision.cs">
-      <Link>Messages\EndCollision.cs</Link>
-    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Messages\IndexBoundsChanged.cs">
       <Link>Messages\IndexBoundsChanged.cs</Link>
     </Compile>
@@ -128,17 +113,11 @@
     <Compile Include="..\EngineComponentSystemSpatial\Messages\TranslationChanged.cs">
       <Link>Messages\TranslationChanged.cs</Link>
     </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Messages\UpdateCollision.cs">
-      <Link>Messages\UpdateCollision.cs</Link>
-    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\AccelerationSystem.cs">
       <Link>Systems\AccelerationSystem.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\BackgroundRenderSystem.cs">
       <Link>Systems\BackgroundRenderSystem.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Systems\CollisionSystem.cs">
-      <Link>Systems\CollisionSystem.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\EllipsePathSystem.cs">
       <Link>Systems\EllipsePathSystem.cs</Link>

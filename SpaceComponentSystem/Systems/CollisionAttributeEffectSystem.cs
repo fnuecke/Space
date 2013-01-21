@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Physics.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
-using Engine.ComponentSystem.Spatial.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
 using Engine.Util;
@@ -36,30 +37,33 @@ namespace Space.ComponentSystem.Systems
         public void Receive<T>(T message) where T : struct
         {
             {
-                var cm = message as BeginCollision?;
+                var cm = message as BeginContact?;
                 if (cm != null)
                 {
                     // We only get one message for a collision pair, so we apply damage
                     // to both parties.
-                    var m = cm.Value;
-                    BeginCollision(m.EntityA, m.EntityB, m.Normal);
-                    BeginCollision(m.EntityB, m.EntityA, -m.Normal);
+                    var contact = cm.Value.Contact;
+                    Vector2 normal;
+                    IList<FarPosition> points;
+                    contact.ComputeWorldManifold(out normal, out points);
+                    BeginContact(contact.FixtureA.Entity, contact.FixtureB.Entity, normal, points);
+                    BeginContact(contact.FixtureB.Entity, contact.FixtureA.Entity, -normal, points);
                     return;
                 }
             }
             {
-                var cm = message as EndCollision?;
+                var cm = message as EndContact?;
                 if (cm != null)
                 {
                     // Stop damage that is being applied because of this collision.
-                    var m = cm.Value;
-                    EndCollision(m.EntityA, m.EntityB);
-                    EndCollision(m.EntityB, m.EntityA);
+                    var contact = cm.Value.Contact;
+                    EndContact(contact.FixtureA.Entity, contact.FixtureB.Entity);
+                    EndContact(contact.FixtureB.Entity, contact.FixtureA.Entity);
                 }
             }
         }
 
-        private void BeginCollision(int damagee, int damager, Vector2 normal)
+        private void BeginContact(int damagee, int damager, Vector2 normal, IList<FarPosition> points)
         {
             // Do we do any damage at all?
             var damage = (CollisionDamage) Manager.GetComponent(damager, CollisionDamage.TypeId);
@@ -74,6 +78,10 @@ namespace Space.ComponentSystem.Systems
             {
                 // Yep, mark it for removal.
                 ((DeathSystem) Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
+
+                // For testing show some text and make a particle explosion.
+                //((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId)).Display("Boom!", points[0]);
+                ((ParticleEffectSystem) Manager.GetSystem(ParticleEffectSystem.TypeId)).Play("Effects/BasicExplosion", points[0], Vector2.Zero);
             }
 
             // Apply damage to second entity if it has health, otherwise stop.
@@ -168,7 +176,7 @@ namespace Space.ComponentSystem.Systems
             return true;
         }
 
-        private void EndCollision(int damagee, int damager)
+        private void EndContact(int damagee, int damager)
         {
             int effectId;
             if (_collisions.TryGetValue(BitwiseMagic.Pack(damagee, damager), out effectId))

@@ -33,7 +33,7 @@ namespace Space.ComponentSystem.Systems
         private static readonly float DockVelocity = UnitConversion.ToSimulationUnits(16f);
 
         /// <summary>Squared distance to the center an object should be before it's docked.</summary>
-        private static readonly float DockDistance = UnitConversion.ToSimulationUnits(4f);
+        private static readonly float DockDistance = UnitConversion.ToSimulationUnits(2f);
 
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();

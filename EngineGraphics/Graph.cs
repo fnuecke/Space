@@ -264,7 +264,7 @@ namespace Engine.Graphics
             }
             DrawBackground();
 
-            bool update = _renderTimer.ElapsedMilliseconds > 100;
+            var update = _renderTimer.ElapsedMilliseconds > 100;
 
             if (update)
             {
@@ -509,7 +509,7 @@ namespace Engine.Graphics
                     _average += value;
                     ++count;
 
-                    _now = value;
+                    _now = data;
                 }
             }
 

@@ -158,20 +158,28 @@ namespace Engine.ComponentSystem.Spatial.Systems
                     var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
                     var velocity = (IVelocity) Manager.GetComponent(entity, VelocityTypeId);
                     
-                    if (transform == null || !transform.Enabled)
-                    {
-                        continue;
-                    }
-                    if (velocity == null || !velocity.Enabled)
+                    if (transform == null || velocity == null)
                     {
                         continue;
                     }
 
                     var entry = _entries[entity];
                     entry.Position = transform.Position;
-                    entry.LinearVelocity = velocity.LinearVelocity;
                     entry.Angle = MathHelper.WrapAngle(transform.Angle);
-                    entry.AngularVelocity = velocity.AngularVelocity * 0.6f;
+                    if (velocity.Enabled)
+                    {
+                        entry.LinearVelocity = velocity.LinearVelocity;
+                        // We don't fully extrapolate our frames, because this tends to cause jitter
+                        // when interpolating low velocities. This leads to slightly less smooth rotation
+                        // on higher velocities, but it would seem the brain is a little more forgiving
+                        // towards rotational stutter as opposed to linear one (at least my brain is).
+                        entry.AngularVelocity = velocity.AngularVelocity * 0.6f;
+                    }
+                    else
+                    {
+                        entry.LinearVelocity = Vector2.Zero;
+                        entry.AngularVelocity = 0f;
+                    }
                 }
             }
 

@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Systems
         private const int OrbitThickness = 6;
 
         /// <summary>Diffuse area of the dead zone (no immediate cutoff but fade to red).</summary>
-        private static readonly float DeadZoneDiffuseWidth = UnitConversion.ToSimulationUnits(100);
+        private static readonly float DeadZoneDiffuseWidth = UnitConversion.ToSimulationUnits(50);
 
         /// <summary>Color to paint orbits in.</summary>
         private static readonly Color OrbitColor = Color.Turquoise * 0.5f;
@@ -59,7 +59,7 @@ namespace Space.ComponentSystem.Systems
         #region Single-Allocation
 
         /// <summary>Reused for iterating components.</summary>
-        private ISet<int> _reusableNeighborList = new HashSet<int>();
+        private readonly ISet<int> _reusableNeighborList = new HashSet<int>();
 
         #endregion
 
@@ -271,18 +271,33 @@ namespace Space.ComponentSystem.Systems
                 var dangerPoint = (float) Math.Sqrt(masses / (maxAcceleration * 0.5f)) + DeadZoneDiffuseWidth;
                 _filledEllipse.Center = XnaUnitConversion.ToScreenUnits(direction) + center;
                 _filledEllipse.Gradient = UnitConversion.ToScreenUnits(DeadZoneDiffuseWidth);
+                _ellipse.Center = _filledEllipse.Center;
+                _ellipse.Rotation = 0;
                 var distToCenter = direction.Length();
                 // Check if we're potentially seeing the marker.
                 if (radius >= distToCenter - dangerPoint)
                 {
-                    _filledEllipse.Radius = UnitConversion.ToScreenUnits(dangerPoint);
+                    var dangerRadius = UnitConversion.ToScreenUnits(dangerPoint);
+                    _filledEllipse.Radius = dangerRadius;
                     _filledEllipse.Draw();
+                    
+                    // Make the lines pulsate a bit.
+                    var phase = (0.6f + (float) (Math.Sin(MathHelper.ToRadians(frame * 6)) + 1) * 0.125f);
+
+                    _ellipse.Radius = dangerRadius - UnitConversion.ToScreenUnits(DeadZoneDiffuseWidth) * 0.5f;
+                    _ellipse.Color = Color.Red * phase * 0.7f;
+                    _ellipse.Draw();
 
                     var pointOfNoReturn = (float) Math.Sqrt(masses / maxAcceleration) + DeadZoneDiffuseWidth;
                     if (radius >= distToCenter - pointOfNoReturn)
                     {
-                        _filledEllipse.Radius = UnitConversion.ToScreenUnits(pointOfNoReturn);
+                        var deadRadius = UnitConversion.ToScreenUnits(pointOfNoReturn);
+                        _filledEllipse.Radius = deadRadius;
                         _filledEllipse.Draw();
+
+                        _ellipse.Radius = deadRadius - UnitConversion.ToScreenUnits(DeadZoneDiffuseWidth) * 0.5f;
+                        _ellipse.Color = Color.Red * phase;
+                        _ellipse.Draw();
                     }
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
@@ -26,11 +27,17 @@ namespace Space.ComponentSystem.Systems
             // Module removed or added, recompute mass.
             var entity = cm.Value.Entity;
             var attributes = (Attributes<AttributeType>) Manager.GetComponent(entity, Attributes<AttributeType>.TypeId);
-            var gravitation = (Gravitation) Manager.GetComponent(entity, Gravitation.TypeId);
+            var mass = Math.Max(1, attributes.GetValue(AttributeType.Mass));
+            var gravitation = Manager.GetComponent(entity, Gravitation.TypeId) as Gravitation;
             if (gravitation != null)
             {
                 // Get the mass of the object and return it.
-                gravitation.Mass = Math.Max(1, attributes.GetValue(AttributeType.Mass));
+                gravitation.Mass = mass;
+            }
+            var body = Manager.GetComponent(entity, Body.TypeId) as Body;
+            if (body != null)
+            {
+                body.SetMassData(mass, body.LocalCenter, body.Inertia);
             }
         }
 

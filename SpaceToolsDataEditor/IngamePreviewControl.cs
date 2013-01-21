@@ -47,8 +47,6 @@ namespace Space.Tools.DataEditor
 
         private readonly Manager _manager = new Manager();
 
-        private DebugCollisionBoundsRenderSystem _collisionBounds;
-
         private DebugSlotRenderSystem _slots;
 
         private Grid _grid;
@@ -127,7 +125,6 @@ namespace Space.Tools.DataEditor
                     new CameraSystem(GraphicsDeviceManager.GraphicsDevice, null) {Enabled = true},
 
                     new PlanetMaxBoundsRenderer(_content, GraphicsDeviceManager) {Enabled = true},
-                    new DebugCollisionBoundsRenderSystem {Enabled = true},
 
                     new PlanetRenderSystem {Enabled = true},
                     new SunRenderSystem {Enabled = true},
@@ -143,7 +140,6 @@ namespace Space.Tools.DataEditor
             ((CameraSystem)_manager.GetSystem(CameraSystem.TypeId)).CameraPosition = FarPosition.Zero;
 
             // Enable debug render systems.
-            _collisionBounds = (DebugCollisionBoundsRenderSystem)_manager.GetSystem(DebugCollisionBoundsRenderSystem.TypeId);
             _slots = (DebugSlotRenderSystem)_manager.GetSystem(DebugSlotRenderSystem.TypeId);
             _maxBounds = (PlanetMaxBoundsRenderer)Manager.GetSystem(PlanetMaxBoundsRenderer.TypeId);
             _shields = (ShieldRenderSystem)Manager.GetSystem(ShieldRenderSystem.TypeId);
@@ -199,10 +195,6 @@ namespace Space.Tools.DataEditor
                     {
                         ((ParticleEffects)component).SetGroupEnabled(ParticleEffects.EffectGroup.Thruster, ((ToolStripMenuItem)_contextMenu.Items["thrusterfx"]).Checked);
                     }
-                }
-                if (_collisionBounds != null)
-                {
-                    _collisionBounds.Enabled = ((ToolStripMenuItem)_contextMenu.Items["collbounds"]).Checked;
                 }
                 if (_slots != null)
                 {

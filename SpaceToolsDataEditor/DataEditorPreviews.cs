@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
-using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
@@ -596,7 +595,7 @@ namespace Space.Tools.DataEditor
 
                 // Add a dummy owner for the item, to apply offset.
                 var dummy = manager.AddEntity();
-                manager.AddComponent<Transform>(dummy);
+                manager.AddComponent<Transform>(dummy).Initialize(new FarRectangle(-0.5f, -0.5f, 0.5f, 0.5f), FarPosition.Zero);
                 manager.AddComponent<ParticleEffects>(dummy);
                 var parentSlot = manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero, 0);
                 parentSlot.Item = entity;
@@ -604,7 +603,6 @@ namespace Space.Tools.DataEditor
                 if (factory is ShieldFactory)
                 {
                     // Add shield preview.
-                    manager.AddComponent<CollidableSphere>(dummy).Initialize(100, 0);
                     manager.AddComponent<ShieldEnergyStatusEffect>(dummy);
                 }
             }

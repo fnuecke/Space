@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
@@ -46,12 +47,11 @@ namespace Space.ComponentSystem
                     typeof (ShipControl),
                     typeof (WeaponControl),
                     // Disable collisions.
-                    typeof (CollidableSphere),
+                    typeof (Body),
                     // And movement.
-                    typeof (Acceleration),
                     typeof (Gravitation),
                     // Hide it.
-                    typeof (SimpleTextureDrawable),
+                    typeof (ShipDrawable),
                     typeof (ParticleEffects),
                     // And don't regenerate.
                     typeof (Health),

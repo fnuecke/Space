@@ -28,6 +28,13 @@ namespace Space.ComponentSystem.Factories
 
         #endregion
 
+        #region Constants
+
+        /// <summary>The linear damping applied to ships over a second.</summary>
+        public const float LinearDamping = 0.05f * Space.Util.Settings.TicksPerSecond;
+
+        #endregion
+
         #region General
 
         /// <summary>The name of the ship class, which serves as a unique type identifier.</summary>
@@ -229,7 +236,7 @@ namespace Space.ComponentSystem.Factories
                 UnitConversion.ToSimulationUnits(_collisionRadius),
                 density: 100,
                 collisionGroups: faction.ToCollisionGroup())
-                   .IndexGroupsMask =
+                   .IndexGroupsMask |=
                         // Can be detected.
                         DetectableSystem.IndexGroupMask |
                         // Can be attracted.
@@ -242,7 +249,7 @@ namespace Space.ComponentSystem.Factories
                         InterpolationSystem.IndexGroupMask;
 
             // Although 'unrealistic' in space, make ships stop automatically if not accelerating.
-            body.LinearDamping = 0.1f;
+            body.LinearDamping = LinearDamping;
 
             manager.AddComponent<Gravitation>(entity).Initialize();
             manager.AddComponent<ShipControl>(entity);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Engine.ComponentSystem.Physics.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
@@ -231,7 +232,7 @@ namespace Space.ComponentSystem.Components.Behaviors
                 position,
                 UnitConversion.ToSimulationUnits(sensorRange > 0 ? Math.Min(sensorRange, range) : range),
                 neighbors,
-                CollisionSystem.IndexGroupMask);
+                PhysicsSystem.IndexGroupMask);
             var closest = 0;
             var closestDistance = float.PositiveInfinity;
             foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
