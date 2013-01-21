@@ -6,6 +6,8 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
+using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -21,7 +23,7 @@ namespace Space.ComponentSystem.Systems
         private const int OrbitThickness = 6;
 
         /// <summary>Diffuse area of the dead zone (no immediate cutoff but fade to red).</summary>
-        private const int DeadZoneDiffuseWidth = 100;
+        private static readonly float DeadZoneDiffuseWidth = UnitConversion.ToSimulationUnits(100);
 
         /// <summary>Color to paint orbits in.</summary>
         private static readonly Color OrbitColor = Color.Turquoise * 0.5f;
@@ -139,7 +141,7 @@ namespace Space.ComponentSystem.Systems
             _ellipse.Scale = zoom;
 
             // Figure out the overall range of our radar system.
-            var radarRange = info.RadarRange;
+            var radarRange = UnitConversion.ToSimulationUnits(info.RadarRange);
 
             // Our mass.
             var mass = info.Mass;
@@ -158,7 +160,7 @@ namespace Space.ComponentSystem.Systems
             var radarRangeSquared = radarRange * radarRange;
 
             // Get the radius of the minimal bounding sphere of our viewport.
-            var radius = (float) Math.Sqrt(center.X * center.X + center.Y * center.Y);
+            var radius = UnitConversion.ToSimulationUnits((float) Math.Sqrt(center.X * center.X + center.Y * center.Y));
 
             // Increase radius accordingly, to include stuff possibly further away.
             radius /= zoom;
@@ -202,14 +204,11 @@ namespace Space.ComponentSystem.Systems
                     // foci of the ellipse. We want the center, though.
 
                     // Get the current position of the entity we're orbiting.
-                    var focusTransform =
-                        ((ITransform) Manager.GetComponent(ellipse.CenterEntityId, TransformTypeId)).Position;
+                    var focusTransform = ((ITransform) Manager.GetComponent(ellipse.CenterEntityId, TransformTypeId)).Position;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.
-                    var ellipseFocusDistance =
-                        (float)
-                        Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
+                    var ellipseFocusDistance = (float) Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
                     Vector2 ellipseCenter;
                     ellipseCenter.X = ellipseFocusDistance;
                     ellipseCenter.Y = 0;
@@ -228,7 +227,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Near clipping, i.e. don't render if we're inside the
                     // ellipse, but not seeing its border.
-                    float nearClipDistance = Math.Max(0, ellipse.MinorRadius - radius);
+                    var nearClipDistance = Math.Max(0, ellipse.MinorRadius - radius);
                     nearClipDistance *= nearClipDistance;
 
                     // Check if we're cutting (potentially seeing) the orbit
@@ -237,9 +236,9 @@ namespace Space.ComponentSystem.Systems
                         nearClipDistance <= distanceToCenterSquared)
                     {
                         // Yes, set the properties for our ellipse renderer.
-                        _ellipse.Center = toCenter + center;
-                        _ellipse.MajorRadius = ellipse.MajorRadius;
-                        _ellipse.MinorRadius = ellipse.MinorRadius;
+                        _ellipse.Center = XnaUnitConversion.ToScreenUnits(toCenter) + center;
+                        _ellipse.MajorRadius = UnitConversion.ToScreenUnits(ellipse.MajorRadius);
+                        _ellipse.MinorRadius = UnitConversion.ToScreenUnits(ellipse.MinorRadius);
                         _ellipse.Rotation = ellipse.Angle;
 
                         // Diameter the opacity based on our distance to the
@@ -268,24 +267,21 @@ namespace Space.ComponentSystem.Systems
                 // gravitation is stronger than our maximum thruster
                 // output.
                 var maxAcceleration = info.MaxAcceleration;
-                var neighborMass = neighborGravitation.Mass;
-                var dangerPoint =
-                    (float) Math.Sqrt(mass * neighborMass / (maxAcceleration * 0.4f * Settings.TicksPerSecond)) +
-                    DeadZoneDiffuseWidth;
-                _filledEllipse.Center = direction + center;
-                var distToCenter = Vector2.Distance(_filledEllipse.Center, center);
+                var masses = mass * neighborGravitation.Mass / Settings.TicksPerSecond;
+                var dangerPoint = (float) Math.Sqrt(masses / (maxAcceleration * 0.5f)) + DeadZoneDiffuseWidth;
+                _filledEllipse.Center = XnaUnitConversion.ToScreenUnits(direction) + center;
+                _filledEllipse.Gradient = UnitConversion.ToScreenUnits(DeadZoneDiffuseWidth);
+                var distToCenter = direction.Length();
                 // Check if we're potentially seeing the marker.
                 if (radius >= distToCenter - dangerPoint)
                 {
-                    _filledEllipse.Radius = dangerPoint;
+                    _filledEllipse.Radius = UnitConversion.ToScreenUnits(dangerPoint);
                     _filledEllipse.Draw();
 
-                    var pointOfNoReturn =
-                        (float) Math.Sqrt(mass * neighborMass / (maxAcceleration * Settings.TicksPerSecond)) +
-                        DeadZoneDiffuseWidth;
+                    var pointOfNoReturn = (float) Math.Sqrt(masses / maxAcceleration) + DeadZoneDiffuseWidth;
                     if (radius >= distToCenter - pointOfNoReturn)
                     {
-                        _filledEllipse.Radius = pointOfNoReturn;
+                        _filledEllipse.Radius = UnitConversion.ToScreenUnits(pointOfNoReturn);
                         _filledEllipse.Draw();
                     }
                 }

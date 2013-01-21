@@ -7,12 +7,12 @@
       <CollisionRadius>50</CollisionRadius>
       <ExperiencePoints>0</ExperiencePoints>
       <Attributes>
-        <Item>10 Mass</Item>
+        <Item>100 Mass</Item>
         <Item>100 Health</Item>
         <Item>2.5 HealthRegeneration</Item>
         <Item>50 Energy</Item>
         <Item>0.5 EnergyRegeneration</Item>
-        <Item>100 AccelerationForce</Item>
+        <Item>10 AccelerationForce</Item>
         <Item>20 RotationForce</Item>
       </Attributes>
       <Items>
@@ -50,12 +50,12 @@
       <ItemPool>Starter</ItemPool>
       <ExperiencePoints>10</ExperiencePoints>
       <Attributes>
-        <Item>10 Mass</Item>
+        <Item>100 Mass</Item>
         <Item>20 to 40 Health</Item>
         <Item>1 to 1.5 HealthRegeneration</Item>
         <Item>50 to 75 Energy</Item>
         <Item>0.5 to 1 EnergyRegeneration</Item>
-        <Item>95 to 115 AccelerationForce</Item>
+        <Item>8 to 12 AccelerationForce</Item>
         <Item>15 to 20 RotationForce</Item>
       </Attributes>
       <Items>

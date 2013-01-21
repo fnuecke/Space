@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -61,7 +60,7 @@ namespace Space.ComponentSystem.Systems
                     FarPosition position;
                     float angle;
                     interpolation.GetInterpolatedTransform(entity, out position, out angle);
-                    position += cameraTranslation;
+                    position = FarUnitConversion.ToScreenUnits(position + cameraTranslation);
 
                     // Render vegetative influences.
                     DrawArrow((Vector2) position, ai.GetLastEscape(), Color.Red);

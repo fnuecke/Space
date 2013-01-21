@@ -27,7 +27,7 @@
           <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>15</CollisionRadius>
           <CanBeShot>false</CanBeShot>
-          <InitialVelocity>80</InitialVelocity>
+          <InitialVelocity>8</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
           <Friction>0</Friction>
           <TimeToLive>5</TimeToLive>
@@ -61,7 +61,7 @@
           <EffectOffset>0 0</EffectOffset>
           <CollisionRadius>8</CollisionRadius>
           <CanBeShot>false</CanBeShot>
-          <InitialVelocity>125</InitialVelocity>
+          <InitialVelocity>12.5</InitialVelocity>
           <InitialDirection>-15 to 15</InitialDirection>
           <Friction>0</Friction>
           <TimeToLive>5</TimeToLive>

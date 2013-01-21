@@ -6,7 +6,7 @@
       <Radius>512 to 1024</Radius>
       <Tint>FFC8C864</Tint>
       <OffsetRadius>256 to 512</OffsetRadius>
-      <Mass>2800000 to 3000000</Mass>
+      <Mass>28000 to 30000</Mass>
     </Item>
   </Asset>
 </XnaContent>

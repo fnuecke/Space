@@ -149,8 +149,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Game.ico" />
-    <Content Include="GameThumbnail.png" />
+    <Content Include="..\EngineComponentSystemPhysicsTests\Game.ico" />
+    <Content Include="..\EngineComponentSystemPhysicsTests\GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

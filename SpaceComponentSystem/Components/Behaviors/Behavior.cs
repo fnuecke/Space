@@ -229,7 +229,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             ISet<int> neighbors = new HashSet<int>();
             index.Find(
                 position,
-                sensorRange > 0 ? Math.Min(sensorRange, range) : range,
+                UnitConversion.ToSimulationUnits(sensorRange > 0 ? Math.Min(sensorRange, range) : range),
                 neighbors,
                 CollisionSystem.IndexGroupMask);
             var closest = 0;

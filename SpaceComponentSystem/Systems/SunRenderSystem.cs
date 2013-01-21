@@ -86,7 +86,7 @@ namespace Space.ComponentSystem.Systems
             var position = ((ITransform) Manager.GetComponent(component.Entity, TransformTypeId)).Position;
 
             // Apply transformation.
-            _sun.Center = (Vector2) (position + translation);
+            _sun.Center = (Vector2) FarUnitConversion.ToScreenUnits(position + translation);
             _sun.SetTransform(transform);
             _sun.Color = component.Tint;
 

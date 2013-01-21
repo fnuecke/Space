@@ -9,6 +9,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Simulation.Commands;
+using Engine.Util;
 using IronPython.Hosting;
 using Microsoft.Scripting.Hosting;
 using Microsoft.Xna.Framework.Content;
@@ -362,7 +363,7 @@ from Space.Data import *
             // lock this shared list.
             lock (_reusableItemList)
             {
-                index.Find(transform.Position, 100, _reusableItemList, PickupSystem.IndexGroupMask);
+                index.Find(transform.Position, UnitConversion.ToSimulationUnits(100), _reusableItemList, PickupSystem.IndexGroupMask);
                 foreach (IIndexable item in _reusableItemList.Select(manager.GetComponentById))
                 {
                     // Pick the item up.

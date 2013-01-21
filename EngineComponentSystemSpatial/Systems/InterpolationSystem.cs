@@ -4,7 +4,6 @@ using System.Linq;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -61,25 +60,16 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Fields
 
         /// <summary>Gets the current speed of the simulation.</summary>
-        private readonly Func<float> _simulationFps;
+        private readonly Func<float> _simulationSpeed;
 
-        /// <summary>Positions of entities from the last render cycle. We use these to interpolate to the current ones.</summary>
-        private Dictionary<int, WorldPoint> _positions = new Dictionary<int, WorldPoint>();
+        /// <summary>List of all currently tracked entities.</summary>
+        private Dictionary<int, InterpolationEntry> _entries = new Dictionary<int, InterpolationEntry>();
 
-        /// <summary>
-        ///     New list of positions. We swap between the two after each update, to discard positions for entities not
-        ///     rendered to the screen.
-        /// </summary>
-        private Dictionary<int, WorldPoint> _newPositions = new Dictionary<int, WorldPoint>();
+        /// <summary>The frame the current interpolation is based on.</summary>
+        private long _currentFrame;
 
-        /// <summary>Angles of entities from the last render cycle. We use these to interpolate to the current ones.</summary>
-        private Dictionary<int, float> _angles = new Dictionary<int, float>();
-
-        /// <summary>
-        ///     New list of angles. We swap between the two after each update, to discard angles for entities not
-        ///     rendered to the screen.
-        /// </summary>
-        private Dictionary<int, float> _newAngles = new Dictionary<int, float>();
+        /// <summary>The total time spent in the current frame.</summary>
+        private float _totalRelativeFrameTime;
 
         #endregion
 
@@ -98,10 +88,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>
         ///     Initializes a new instance of the <see cref="InterpolationSystem"/> class.
         /// </summary>
-        /// <param name="simulationFps">A function getting the current simulation frame rate.</param>
-        protected InterpolationSystem(Func<float> simulationFps)
+        /// <param name="simulationSpeed">A function getting the current simulation speed.</param>
+        protected InterpolationSystem(Func<float> simulationSpeed)
         {
-            _simulationFps = simulationFps;
+            _simulationSpeed = simulationSpeed;
         }
 
         #endregion
@@ -120,93 +110,79 @@ namespace Engine.ComponentSystem.Spatial.Systems
             // Skip there rest if nothing is visible.
             if (_drawablesInView.Count > 0)
             {
-                // Determine current update speed.
-                var delta = elapsedMilliseconds / (1000f / _simulationFps());
-
-                // Update position and rotation for each object in view.
+                // Find new entity positions and rotations.
                 foreach (IIndexable indexable in _drawablesInView.Select(Manager.GetComponentById))
                 {
-                    // Get the transform component, without it we can do nothing.
-                    var transform = (ITransform) Manager.GetComponent(indexable.Entity, TransformTypeId);
+                    // If we already know this one, skip it. We will handle actual interpolation below.
+                    if (_entries.ContainsKey(indexable.Entity))
+                    {
+                        continue;
+                    }
 
-                    // Skip invalid or disabled entities.
+                    var transform = (ITransform) Manager.GetComponent(indexable.Entity, TransformTypeId);
+                    var velocity = (IVelocity) Manager.GetComponent(indexable.Entity, VelocityTypeId);
+
                     if (transform == null || !transform.Enabled)
                     {
                         continue;
                     }
-
-                    // Get current target position and rotation based off the simulation state.
-                    var targetPosition = transform.Position;
-                    var targetAngle = transform.Angle;
-
-                    // See if we have a velocity we can use to predict movement.
-                    var velocity = (IVelocity) Manager.GetComponent(transform.Entity, VelocityTypeId);
-                    if (velocity == null)
+                    if (velocity == null || !velocity.Enabled)
                     {
-                        // Nope, just set the new values.
-                        _newPositions[indexable.Entity] = targetPosition;
-                        _newAngles[indexable.Entity] = targetAngle;
                         continue;
                     }
 
-                    // Interpolate the position and angle.
-                    var position = targetPosition;
-                    var angle = targetAngle;
-                    if (_positions.ContainsKey(transform.Entity))
-                    {
-                        // Predict future translation to interpolate towards that.
-                        if (velocity.LinearVelocity != Vector2.Zero)
+                    _entries.Add(
+                        indexable.Entity,
+                        new InterpolationEntry
                         {
-                            // Clamp interpolated value to an interval around the actual target position.
-                            position = WorldPoint.Clamp(
-                                _positions[transform.Entity] + velocity.LinearVelocity * delta,
-                                targetPosition - velocity.LinearVelocity * 0.25f,
-                                targetPosition + velocity.LinearVelocity * 0.75f);
-                        } // else: set instantly.
-                        if (velocity.AngularVelocity != 0f)
-                        {
-                            // Always interpolate via the shorter way, to avoid jumps.
-                            targetAngle = _angles[transform.Entity] +
-                                             Angle.MinAngle(_angles[transform.Entity], targetAngle);
-                            // Clamp to a safe interval. This will make sure we don't
-                            // stray from the correct value too far. Note that the
-                            // FarPosition.Clamp above does check what we do here
-                            // automatically, XNA's clamp doesn't (make sure the lower
-                            // bound is smaller than the higher, that is).
-                            var from = targetAngle - velocity.AngularVelocity * 0.25f;
-                            var to = targetAngle + velocity.AngularVelocity * 0.75f;
-                            var low = System.Math.Min(from, to);
-                            var high = System.Math.Max(from, to);
-                            angle = MathHelper.Clamp(_angles[transform.Entity] + velocity.AngularVelocity * delta, low, high);
-                        } // else: set instantly.
-                    }
-                    else
-                    {
-                        // We had no position for this entity, pick an initial one.
-                        position -= velocity.LinearVelocity * 0.25f;
-                        angle -= velocity.AngularVelocity * 0.25f;
-                    }
-
-                    // Store the interpolated position in the list of positions to keep.
-                    _newPositions[transform.Entity] = position;
-                    _newAngles[transform.Entity] = angle;
+                            Position = transform.Position,
+                            LinearVelocity = velocity.LinearVelocity,
+                            Angle = transform.Angle,
+                            AngularVelocity = velocity.AngularVelocity
+                        });
                 }
 
                 // Clear for next iteration.
                 _drawablesInView.Clear();
             }
 
-            // Swap position lists.
-            var oldPositions = _positions;
-            oldPositions.Clear();
-            _positions = _newPositions;
-            _newPositions = oldPositions;
+            // Synchronize interpolation to real data when we enter a new frame.
+            if (frame != _currentFrame)
+            {
+                // Remember current frame and reset relative time spent.
+                _currentFrame = frame;
+                _totalRelativeFrameTime = 0f;
 
-            // Swap rotation lists.
-            var oldAngles = _angles;
-            oldAngles.Clear();
-            _angles = _newAngles;
-            _newAngles = oldAngles;
+                foreach (var entity in _entries.Keys)
+                {
+                    var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
+                    var velocity = (IVelocity) Manager.GetComponent(entity, VelocityTypeId);
+                    
+                    if (transform == null || !transform.Enabled)
+                    {
+                        continue;
+                    }
+                    if (velocity == null || !velocity.Enabled)
+                    {
+                        continue;
+                    }
+
+                    var entry = _entries[entity];
+                    entry.Position = transform.Position;
+                    entry.LinearVelocity = velocity.LinearVelocity;
+                    entry.Angle = MathHelper.WrapAngle(transform.Angle);
+                    entry.AngularVelocity = velocity.AngularVelocity * 0.6f;
+                }
+            }
+
+            // Update interpolated values.
+            _totalRelativeFrameTime += (elapsedMilliseconds / 1000f) * _simulationSpeed();
+            System.Diagnostics.Debug.Assert(_totalRelativeFrameTime <= 1f);
+            foreach (var entry in _entries.Values)
+            {
+                entry.InterpolatedPosition = entry.Position + _totalRelativeFrameTime * entry.LinearVelocity;
+                entry.InterpolatedAngle = entry.Angle + _totalRelativeFrameTime * entry.AngularVelocity;
+            }
         }
 
         /// <summary>Returns the current bounds of the viewport, i.e. the rectangle of the world to actually render.</summary>
@@ -222,7 +198,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             // entities to interpolate.
             if (component is IIndexable && (((IIndexable) component).IndexGroupsMask & IndexGroupMask) != 0)
             {
-                _positions.Remove(component.Entity);
+                _entries.Remove(component.Entity);
             }
         }
 
@@ -240,9 +216,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
         public void GetInterpolatedTransform(int entity, out WorldPoint position, out float angle)
         {
             // Try to get the interpolated position.
-            if (_positions.TryGetValue(entity, out position) &&
-                _angles.TryGetValue(entity, out angle))
+            InterpolationEntry entry;
+            if (Enabled && _entries.TryGetValue(entity, out entry))
             {
+                position = entry.InterpolatedPosition;
+                angle = entry.InterpolatedAngle;
                 return;
             }
 
@@ -258,6 +236,25 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 position = transform.Position;
                 angle = transform.Angle;
             }
+        }
+
+        #endregion
+
+        #region Types
+
+        private sealed class InterpolationEntry
+        {
+            public WorldPoint Position;
+
+            public WorldPoint InterpolatedPosition;
+
+            public Vector2 LinearVelocity;
+
+            public float Angle;
+
+            public float InterpolatedAngle;
+
+            public float AngularVelocity;
         }
 
         #endregion

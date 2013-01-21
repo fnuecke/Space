@@ -26,6 +26,13 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Constants
+
+        /// <summary>The default spacing for formations.</summary>
+        private static readonly float DefaultFormationSpacing = UnitConversion.ToSimulationUnits(200f);
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -276,7 +283,7 @@ namespace Space.ComponentSystem.Systems
             }
             _squads[identitySquad].Members.Clear();
             _squads[identitySquad].Formation = Formations.None;
-            _squads[identitySquad].Spacing = 200;
+            _squads[identitySquad].Spacing = DefaultFormationSpacing;
             _squads[identitySquad].Cache = new FormationCache(Formations.None);
 
             // Add member to squad and let it know it's in it.

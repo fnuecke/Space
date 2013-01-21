@@ -85,11 +85,14 @@ namespace Engine.ComponentSystem.Physics.Components
                     return;
                 }
 
-                IndexGroupsChanged message;
-                message.Component = this;
-                message.AddedIndexGroups = value & ~oldMask;
-                message.RemovedIndexGroups = oldMask & ~value;
-                Manager.SendMessage(message);
+                if (Enabled)
+                {
+                    IndexGroupsChanged message;
+                    message.Component = this;
+                    message.AddedIndexGroups = value & ~oldMask;
+                    message.RemovedIndexGroups = oldMask & ~value;
+                    Manager.SendMessage(message);
+                }
             }
         }
 

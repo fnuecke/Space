@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Util;
@@ -25,19 +27,22 @@ namespace Space.ComponentSystem.Systems
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         /// <summary>The maximum distance at which an attractor may look for attractees.</summary>
-        private const float MaxGravitationDistance = 30000f;
+        private static readonly float MaxGravitationDistance = UnitConversion.ToSimulationUnits(30000f);
 
         /// <summary>The squared velocity below which an object should be before it's docked.</summary>
-        private const float DockVelocity = 16f;
+        private static readonly float DockVelocity = UnitConversion.ToSimulationUnits(16f);
 
         /// <summary>Squared distance to the center an object should be before it's docked.</summary>
-        private const float DockDistance = 4;
+        private static readonly float DockDistance = UnitConversion.ToSimulationUnits(4f);
 
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
         
         /// <summary>Store for performance.</summary>
         private static readonly int VelocityTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
+        
+        /// <summary>We allow overriding gravity at radius 512 pixels.</summary>
+        private static readonly float NearDistanceSquared = UnitConversion.ToSimulationUnits(512) * UnitConversion.ToSimulationUnits(512);
 
         #endregion
 
@@ -101,8 +106,7 @@ namespace Space.ComponentSystem.Systems
 
                 // If we're near the core only pull if  the other
                 // object isn't currently accelerating.
-                const int nearDistanceSquared = 512 * 512; // We allow overriding gravity at radius 512.
-                if (distanceSquared < nearDistanceSquared)
+                if (distanceSquared < NearDistanceSquared)
                 {
                     // If it's a ship it might accelerate itself, but acceleration doesn't
                     // carry over frames, and it has to come after gravitation for stabilization,
@@ -122,14 +126,13 @@ namespace Space.ComponentSystem.Systems
                         // close. This is to avoid objects jittering around an attractor
                         // at high speeds.
                         delta.Normalize();
-                        var gravitation = component.Mass * otherGravitation.Mass / nearDistanceSquared;
+                        var gravitation = component.Mass * otherGravitation.Mass / NearDistanceSquared;
                         var directedGravitation = delta * gravitation / Settings.TicksPerSecond;
 
                         Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
 
-                        var acceleration = (Acceleration) Manager.GetComponent(neighbor.Entity, Acceleration.TypeId);
-                        acceleration.Value.X -= directedGravitation.X;
-                        acceleration.Value.Y -= directedGravitation.Y;
+                        var body = (Body) Manager.GetComponent(neighbor.Entity, Body.TypeId);
+                        body.ApplyForceToCenter(-directedGravitation);
                     }
                 }
                 else if (distanceSquared > 0.001f) // epsilon to avoid delta.Normalize() generating NaNs
@@ -140,10 +143,9 @@ namespace Space.ComponentSystem.Systems
                     var directedGravitation = delta * gravitation / Settings.TicksPerSecond;
 
                     Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
-
-                    var acceleration = (Acceleration) Manager.GetComponent(neighbor.Entity, Acceleration.TypeId);
-                    acceleration.Value.X -= directedGravitation.X;
-                    acceleration.Value.Y -= directedGravitation.Y;
+                    
+                    var body = (Body) Manager.GetComponent(neighbor.Entity, Body.TypeId);
+                    body.ApplyForceToCenter(-directedGravitation);
                 }
             }
         }

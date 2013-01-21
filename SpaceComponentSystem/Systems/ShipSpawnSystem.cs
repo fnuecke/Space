@@ -147,7 +147,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     new ArtificialIntelligence.AIConfiguration
                     {
-                        AggroRange = 600
+                        AggroRange = UnitConversion.ToSimulationUnits(600)
                     }
                 };
                 formation = SquadSystem.Formations.Block;
@@ -166,7 +166,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     new ArtificialIntelligence.AIConfiguration
                     {
-                        AggroRange = 800
+                        AggroRange = UnitConversion.ToSimulationUnits(800)
                     }
                 };
                 formation = SquadSystem.Formations.Vee;
@@ -184,8 +184,8 @@ namespace Space.ComponentSystem.Systems
 
                 // Get a position nearby the spawn (avoids spawning all ships in one point).
                 var spawnPosition = spawnPoint;
-                spawnPoint.X += _random.NextInt32(-100, 100);
-                spawnPoint.Y += _random.NextInt32(-100, 100);
+                spawnPoint.X += UnitConversion.ToSimulationUnits(_random.NextInt32(-100, 100));
+                spawnPoint.Y += UnitConversion.ToSimulationUnits(_random.NextInt32(-100, 100));
 
                 // Create the ship and get the AI component.
                 var ship = EntityFactory.CreateAIShip(

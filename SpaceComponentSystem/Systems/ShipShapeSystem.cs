@@ -147,6 +147,8 @@ namespace Space.ComponentSystem.Systems
                         {
                             // Center at origin.
                             hull[i] -= new Vector2(target.Width / 2f, target.Height / 2f);
+                            // Scale to simulation units.
+                            hull[i] = XnaUnitConversion.ToSimulationUnits(hull[i]);
                         }
 
                         // Create a new cache entry for this equipment combination.

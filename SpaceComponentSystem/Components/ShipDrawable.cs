@@ -113,8 +113,15 @@ namespace Space.ComponentSystem.Components
             Texture2D texture;
             Vector2 offset;
             shapeSystem.GetTexture(Entity, out texture, out offset);
+
+            // Bail if we have nothing to draw.
+            if (texture == null && _fallbackTexture == null)
+            {
+                return;
+            }
+
             batch.Draw(
-                texture,
+                texture ?? _fallbackTexture,
                 position,
                 null,
                 _tint,

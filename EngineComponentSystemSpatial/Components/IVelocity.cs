@@ -11,5 +11,11 @@ namespace Engine.ComponentSystem.Spatial.Components
         
         /// <summary>Gets the current angular velocity of the entity.</summary>
         float AngularVelocity { get; set; }
+        
+        /// <summary>Gets the accumulated force currently being applied to the body, which will be applied in the next update.</summary>
+        Vector2 Force { get; }
+
+        /// <summary>Applies a force onto the component's center of mass.</summary>
+        void ApplyForceToCenter(Vector2 force);
     }
 }

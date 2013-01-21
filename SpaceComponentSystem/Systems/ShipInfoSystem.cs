@@ -40,8 +40,7 @@ namespace Space.ComponentSystem.Systems
             shipInfo.Mass = attributes.GetValue(AttributeType.Mass);
 
             // Recompute cached values.
-            shipInfo.MaxAcceleration = attributes.GetValue(AttributeType.AccelerationForce) /
-                                       (shipInfo.Mass * Settings.TicksPerSecond);
+            shipInfo.MaxAcceleration = attributes.GetValue(AttributeType.AccelerationForce);
             shipInfo.MaxSpeed = float.PositiveInfinity;
 
             // Maximum speed.

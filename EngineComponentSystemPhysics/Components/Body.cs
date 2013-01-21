@@ -80,10 +80,11 @@ namespace Engine.ComponentSystem.Physics.Components
                         return;
                     }
 
-                    base.Enabled = value;
-
                     if (value)
                     {
+                        // Enable first, to make sure fixtures fire their messages.
+                        base.Enabled = true;
+
                         // Add our fixtures back to the index.
                         foreach (Fixture fixture in Fixtures)
                         {
@@ -102,6 +103,9 @@ namespace Engine.ComponentSystem.Physics.Components
 
                         // Free any contacts we're involved in.
                         Simulation.RemoveContacts(this);
+
+                        // Disable last, to make sure fixtures fire their messages.
+                        base.Enabled = false;
                     }
                 }
                 else
@@ -143,7 +147,7 @@ namespace Engine.ComponentSystem.Physics.Components
 
                 IsAwake = true;
 
-                Force = Vector2.Zero;
+                ForceInternal = Vector2.Zero;
                 Torque = 0.0f;
 
                 // Delete the attached contacts and mark so that contacts are created
@@ -187,7 +191,7 @@ namespace Engine.ComponentSystem.Physics.Components
                     IsAwakeInternal = false;
                     LinearVelocityInternal = Vector2.Zero;
                     AngularVelocityInternal = 0.0f;
-                    Force = Vector2.Zero;
+                    ForceInternal = Vector2.Zero;
                     Torque = 0.0f;
                 }
             }
@@ -300,6 +304,12 @@ namespace Engine.ComponentSystem.Physics.Components
             }
         }
 
+        /// <summary>Gets the accumulated force currently being applied to the body, which will be applied in the next update.</summary>
+        public Vector2 Force
+        {
+            get { return ForceInternal; }
+        }
+
         /// <summary>Get or sets the linear damping of the body.</summary>
         public float LinearDamping
         {
@@ -383,7 +393,7 @@ namespace Engine.ComponentSystem.Physics.Components
         ///     The force to apply to this body in the next update. This is reset after each update and only serves as an
         ///     accumulator.
         /// </summary>
-        internal Vector2 Force;
+        internal Vector2 ForceInternal;
 
         /// <summary>
         ///     The torque to apply to this body in the next update. This is reset after each update and only serves as an
@@ -482,7 +492,7 @@ namespace Engine.ComponentSystem.Physics.Components
             Sweep = new Sweep();
             LinearVelocityInternal = Vector2.Zero;
             AngularVelocityInternal = 0;
-            Force = Vector2.Zero;
+            ForceInternal = Vector2.Zero;
             Torque = 0;
             JointList = -1;
             ContactList = -1;
@@ -576,7 +586,7 @@ namespace Engine.ComponentSystem.Physics.Components
             // Only apply when awake.
             if (IsAwake)
             {
-                Force += force;
+                ForceInternal += force;
 // ReSharper disable RedundantCast Necessary for FarPhysics.
                 Torque += Vector2Util.Cross((Vector2) (point - Sweep.CenterOfMass), force);
 // ReSharper restore RedundantCast
@@ -588,7 +598,7 @@ namespace Engine.ComponentSystem.Physics.Components
         /// <param name="wake">
         ///     if set to <c>true</c> also wake up the body.
         /// </param>
-        public void ApplyForceToCenter(Vector2 force, bool wake = true)
+        public void ApplyForceToCenter(Vector2 force, bool wake)
         {
             // Skip for non-dynamic bodies.
             if (TypeInternal != BodyType.Dynamic)
@@ -605,8 +615,15 @@ namespace Engine.ComponentSystem.Physics.Components
             // Only apply when awake.
             if (IsAwake)
             {
-                Force += force;
+                ForceInternal += force;
             }
+        }
+
+        /// <summary>Apply a force to the center of mass. This wakes up the body.</summary>
+        /// <param name="force">The world force vector, usually in Newtons (N).</param>
+        public void ApplyForceToCenter(Vector2 force)
+        {
+            ApplyForceToCenter(force, true);
         }
 
         /// <summary>
@@ -901,7 +918,7 @@ namespace Engine.ComponentSystem.Physics.Components
         /// <summary>Clears the forces currently active on this body.</summary>
         internal void ClearForces()
         {
-            Force = Vector2.Zero;
+            ForceInternal = Vector2.Zero;
             Torque = 0;
         }
 

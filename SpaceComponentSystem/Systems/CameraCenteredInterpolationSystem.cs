@@ -15,9 +15,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Initializes a new instance of the <see cref="CameraCenteredTextureRenderSystem"/> class.
         /// </summary>
-        /// <param name="simulationFps">A function getting the current simulation frame rate.</param>
-        public CameraCenteredInterpolationSystem(Func<float> simulationFps)
-            : base(simulationFps) {}
+        /// <param name="simulationSpeed">A function getting the current simulation frame rate.</param>
+        public CameraCenteredInterpolationSystem(Func<float> simulationSpeed)
+            : base(simulationSpeed) {}
 
         #endregion
 

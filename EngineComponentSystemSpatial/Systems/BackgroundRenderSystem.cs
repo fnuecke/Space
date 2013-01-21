@@ -8,8 +8,10 @@ using Microsoft.Xna.Framework.Graphics;
 
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
+using WorldUnitConversion = Engine.FarMath.FarUnitConversion;
 #else
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
+using WorldUnitConversion = Engine.XnaExtensions.XnaUnitConversion;
 #endif
 
 namespace Engine.ComponentSystem.Spatial.Systems
@@ -172,7 +174,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 for (var j = 0; j < background.Textures.Length; j++)
                 {
                     // Scale the translation with the texture's level.
-                    var offset = translation * background.Levels[j];
+                    var offset = WorldUnitConversion.ToScreenUnits(translation * background.Levels[j]);
 
                     // Modulo it with the texture sizes for repetition, but keeping the
                     // values in a range where float precision is good.

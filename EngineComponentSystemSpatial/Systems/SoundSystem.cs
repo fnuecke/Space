@@ -3,13 +3,17 @@ using System.Diagnostics;
 using System.Linq;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
+using WorldUnitConversion = Engine.FarMath.FarUnitConversion;
 #else
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
+using WorldUnitConversion = Engine.XnaExtensions.XnaUnitConversion;
 #endif
 
 namespace Engine.ComponentSystem.Spatial.Systems
@@ -18,7 +22,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     public abstract class SoundSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
-
+        
         /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
 
@@ -76,7 +80,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         ///     Reused for iterating components. As its only used by the drawing instance we don't need to clone it, so it can
         ///     be readonly.
         /// </summary>
-        private ISet<int> _reusableNeighborList = new HashSet<int>();
+        private readonly ISet<int> _reusableNeighborList = new HashSet<int>();
 
         /// <summary>Used to swap between this dict and the one assigned to _playingSounds to avoid reallocating each update.</summary>
         private Dictionary<int, Cue> _reusablePlayingSounds = new Dictionary<int, Cue>();
@@ -93,7 +97,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         protected SoundSystem(SoundBank soundBank, float maxAudibleDistance)
         {
             _soundBank = soundBank;
-            _maxAudibleDistance = maxAudibleDistance;
+            _maxAudibleDistance = UnitConversion.ToSimulationUnits(maxAudibleDistance);
             _maxAudibleDistanceSquared = maxAudibleDistance * maxAudibleDistance;
         }
 
@@ -124,8 +128,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
             Debug.Assert(index != null);
 
             // Update listener information.
-            var listenerPosition = GetListenerPosition();
-            var listenerVelocity = GetListenerVelocity();
+            var listenerPosition = WorldUnitConversion.ToScreenUnits(GetListenerPosition());
+            var listenerVelocity = XnaUnitConversion.ToScreenUnits(GetListenerVelocity());
             _listener.Velocity = ToV3(ref listenerVelocity);
 
             // Iterate all sounds in range of the listener. All sounds remaining
@@ -145,11 +149,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 }
 
                 // Get sound position and velocity.
-                var emitterPosition = ((ITransform) Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position;
+                var emitterPosition = WorldUnitConversion.ToScreenUnits(((ITransform) Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position);
 
                 // The velocity is optional, so we must check if it exists.
                 var neighborVelocity = (IVelocity) Manager.GetComponent(neighbor.Entity, VelocityTypeId);
-                var emitterVelocity = neighborVelocity != null ? neighborVelocity.LinearVelocity : Vector2.Zero;
+                var emitterVelocity = XnaUnitConversion.ToScreenUnits(neighborVelocity != null ? neighborVelocity.LinearVelocity : Vector2.Zero);
 
                 // Check whether to update or start playing.
                 if (_playingSounds.ContainsKey(neighbor.Entity))

@@ -73,7 +73,7 @@ namespace Space.ComponentSystem.Systems
                     FarPosition position;
                     float angle;
                     interpolation.GetInterpolatedTransform(transform.Entity, out position, out angle);
-                    position += cameraTranslation;
+                    position = FarUnitConversion.ToScreenUnits(position + cameraTranslation);
                     _spriteBatch.DrawString(
                         _font,
                         text,

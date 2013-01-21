@@ -35,13 +35,13 @@ namespace Space.ComponentSystem.Systems
         #region Constants
 
         /// <summary>Dictates the size of cells, where the actual cell size is 2 to the power of this value.</summary>
-        public const int CellSizeShiftAmount = 17;
+        public const int CellSizeShiftAmount = 11;
 
         /// <summary>The size of a single cell in world units.</summary>
         public const int CellSize = 1 << CellSizeShiftAmount;
         
         /// <summary>Dictates the size of sub cells, where the actual cell size is 2 to the power of this value.</summary>
-        public const int SubCellSizeShiftAmount = 15;
+        public const int SubCellSizeShiftAmount = 8;
 
         /// <summary>The size of a single sub cell in world units.</summary>
         public const int SubCellSize = 1 << SubCellSizeShiftAmount;
@@ -141,9 +141,10 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The id of the cell containing that position.</returns>
         public static ulong GetCellIdFromCoordinates(FarPosition position)
         {
-            const float segmentDivisor = 1f / (float) (1 << (CellSizeShiftAmount - FarValue.SegmentSizeShiftAmount));
+            const float segmentDivisor = (FarValue.SegmentSizeShiftAmount < CellSizeShiftAmount)
+                ? 1f / (float) (1 << (CellSizeShiftAmount - FarValue.SegmentSizeShiftAmount))
+                : (float) (1 << (FarValue.SegmentSizeShiftAmount - CellSizeShiftAmount));
             const float offsetDivisor = 1f / (float)FarValue.SegmentSize / (float)CellSize;
-            System.Diagnostics.Debug.Assert(FarValue.SegmentSizeShiftAmount < CellSizeShiftAmount);
             return BitwiseMagic.Pack(
                 (int) Math.Floor(position.X.Segment * segmentDivisor + position.X.Offset * offsetDivisor),
                 (int) Math.Floor(position.Y.Segment * segmentDivisor + position.Y.Offset * offsetDivisor));
@@ -163,9 +164,10 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The id of the cell containing that position.</returns>
         public static ulong GetSubCellIdFromCoordinates(FarPosition position)
         {
-            const float segmentDivisor = 1f / (float) (1 << (SubCellSizeShiftAmount - FarValue.SegmentSizeShiftAmount));
+            const float segmentDivisor = (FarValue.SegmentSizeShiftAmount < SubCellSizeShiftAmount)
+                ? 1f / (float) (1 << (SubCellSizeShiftAmount - FarValue.SegmentSizeShiftAmount))
+                : (float) (1 << (FarValue.SegmentSizeShiftAmount - SubCellSizeShiftAmount));
             const float offsetDivisor = 1f / (float)FarValue.SegmentSize / (float)SubCellSize;
-            System.Diagnostics.Debug.Assert(FarValue.SegmentSizeShiftAmount < SubCellSizeShiftAmount);
             return BitwiseMagic.Pack(
                 (int) Math.Floor(position.X.Segment * segmentDivisor + position.X.Offset * offsetDivisor),
                 (int) Math.Floor(position.Y.Segment * segmentDivisor + position.Y.Offset * offsetDivisor));

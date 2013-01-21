@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Systems
         private SpriteBatchRenderer _renderer;
 
         /// <summary>Gets the current speed of the simulation.</summary>
-        private readonly Func<float> _simulationFps;
+        private readonly Func<float> _simulationSpeed;
 
         /// <summary>Cached known particle effects.</summary>
         private readonly Dictionary<string, ParticleEffect> _effects = new Dictionary<string, ParticleEffect>();
@@ -50,10 +50,10 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Initializes a new instance of the <see cref="ParticleEffectSystem"/> class.
         /// </summary>
-        /// <param name="simulationFps">A function getting the current simulation framerate.</param>
-        protected ParticleEffectSystem(Func<float> simulationFps)
+        /// <param name="simulationSpeed">A function getting the current simulation framerate.</param>
+        protected ParticleEffectSystem(Func<float> simulationSpeed)
         {
-            _simulationFps = simulationFps;
+            _simulationSpeed = simulationSpeed;
         }
 
         #endregion
@@ -111,7 +111,7 @@ namespace Space.ComponentSystem.Systems
             var translation = GetTranslation();
 
             // Get delta to keep update speed constant regardless of framerate.
-            var delta = elapsedMilliseconds / (1000 / (_simulationFps() / Settings.TicksPerSecond));
+            var delta = (elapsedMilliseconds / 1000f) * _simulationSpeed();
 
             // Get the interpolation system to get an interpolated position for the effect generator.
             var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
@@ -172,7 +172,7 @@ namespace Space.ComponentSystem.Systems
                     // Render at owning entity's position.
                     FarTransform localTransform;
                     localTransform.Matrix = transform;
-                    localTransform.Translation = translation + position;
+                    localTransform.Translation = FarUnitConversion.ToScreenUnits(translation + position);
                     _renderer.RenderEffect(effect.Effect, ref localTransform);
 
                     // Update after rendering.
@@ -272,7 +272,7 @@ namespace Space.ComponentSystem.Systems
                 impulse = velocity.LinearVelocity;
 
                 // Scale the impulse to "per second" speed.
-                impulse *= _simulationFps();
+                impulse *= _simulationSpeed() * Settings.TicksPerSecond;
             }
 
             Play(effect, ref position, ref impulse, angle, scale);

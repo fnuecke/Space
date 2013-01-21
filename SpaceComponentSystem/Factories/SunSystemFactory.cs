@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Factories.SunSystemFactoryTypes;
@@ -249,10 +250,10 @@ namespace Space.ComponentSystem.Factories
                     return;
                 }
 
-                var radius = SampleOrbitRadius(random);
+                var radius = UnitConversion.ToSimulationUnits(SampleOrbitRadius(random));
                 var eccentricity = SampleEccentricity(random);
                 var angleOffset = SampleAngleOffset(random);
-                var travelSpeed = SampleTravelSpeed(random);
+                var travelSpeed = UnitConversion.ToSimulationUnits(SampleTravelSpeed(random));
                 var periodOffset = random == null ? 0f : (float) random.NextDouble();
 
                 // Compute minor and major radius.

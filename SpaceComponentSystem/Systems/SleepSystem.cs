@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
@@ -73,8 +74,7 @@ namespace Space.ComponentSystem.Systems
         private void SetAwake(int entity, bool awake)
         {
             Manager.GetComponent(entity, ArtificialIntelligence.TypeId).Enabled = awake;
-            Manager.GetComponent(entity, Velocity.TypeId).Enabled = awake;
-            Manager.GetComponent(entity, Acceleration.TypeId).Enabled = awake;
+            Manager.GetComponent(entity, Body.TypeId).Enabled = awake;
             Manager.GetComponent(entity, ShipControl.TypeId).Enabled = awake;
             Manager.GetComponent(entity, WeaponControl.TypeId).Enabled = awake;
         }

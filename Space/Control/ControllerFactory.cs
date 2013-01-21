@@ -137,7 +137,7 @@ namespace Space.Control
 
                     // Friction has to be updated before acceleration is, to allow
                     // maximum speed to be reached at the end of one cycle.
-                    new FrictionSystem(),
+                    //new FrictionSystem(),
 
                     // Apply gravitation before ship control, to allow it to
                     // compensate for the gravitation.
@@ -148,11 +148,11 @@ namespace Space.Control
 
                     // Acceleration must come after ship control and gravitation, because
                     // those use the system as the accumulator.
-                    new AccelerationSystem(),
+                    //new AccelerationSystem(),
 
                     // Velocity must come after acceleration, so that all other forces
                     // already have been applied (gravitation).
-                    new VelocitySystem(),
+                    //new VelocitySystem(),
                     new EllipsePathSystem(),
                     
                     // Update position after everything that might want to update it
@@ -160,7 +160,7 @@ namespace Space.Control
                     new TranslationSystem(),
 
                     // Update physics.
-                    new PhysicsSystem(1000f / Settings.TicksPerSecond), 
+                    new PhysicsSystem(1f / Settings.TicksPerSecond), 
                     
                     // ----- Stuff that creates new things ----- //
 
@@ -179,7 +179,7 @@ namespace Space.Control
                     // it a chance to generate cell information.
                     new UniverseSystem(),
                     // This one spawns ships in and stuff in a now populated new cell.
-                    new ShipSpawnSystem(),
+//                    new ShipSpawnSystem(),
                     
                     // Run weapon control after velocity, to spawn projectiles at the
                     // correct position.
@@ -194,7 +194,7 @@ namespace Space.Control
                     // ----- Stuff that removes things ----- //
 
                     // Check for collisions after positions have been updated.
-                    new CollisionSystem(),
+//                    new CollisionSystem(),
                     // Collision damage is mainly reactive to collisions, but let's keep
                     // it here for context. Note that it also has it's own update, in
                     // which it updates damager cooldowns.
@@ -236,9 +236,9 @@ namespace Space.Control
                     // ----- Special stuff ----- //
 
                     // Toggle AI based on player proximity.
-                    new SleepSystem(),
+//                    new SleepSystem(),
                     // AI should react after everything else had its turn. 
-                    new AISystem()
+//                    new AISystem()
 
                     // ----- For reference: rendering ----- //
                 });
@@ -257,7 +257,7 @@ namespace Space.Control
             var audioEngine = (AudioEngine) game.Services.GetService(typeof (AudioEngine));
             var audioRange = audioEngine.GetGlobalVariable("MaxAudibleDistance");
             var soundBank = (SoundBank) game.Services.GetService(typeof (SoundBank));
-            var simulationFps = new Func<float>(() => controller.ActualSpeed * Settings.TicksPerSecond);
+            var simulationSpeed = new Func<float>(() => controller.ActualSpeed);
 
             manager.AddSystems(
                 new AbstractSystem[]
@@ -276,7 +276,7 @@ namespace Space.Control
                     // on the avatar position). It's not so bad if we use the viewport of the
                     // previous frame, but it's noticeable if the avatar is no longer at the
                     // center, so we do it this way around.
-                    new CameraCenteredInterpolationSystem(simulationFps) {Enabled = true},
+                    new CameraCenteredInterpolationSystem(simulationSpeed) {Enabled = true},
 
                     // Update camera first, as it determines what to render.
                     new CameraSystem(game.GraphicsDevice, game.Services) {Enabled = true},
@@ -301,7 +301,7 @@ namespace Space.Control
                     new SunRenderSystem {Enabled = true},
                     new CameraCenteredTextureRenderSystem {Enabled = true},
                     new ShieldRenderSystem {Enabled = true},
-                    new CameraCenteredParticleEffectSystem(simulationFps) {Enabled = true},
+                    new CameraCenteredParticleEffectSystem(simulationSpeed) {Enabled = true},
                     new InformationDisplaySystem {Enabled = true},
 
                     // Perform post processing on the rendered scene.

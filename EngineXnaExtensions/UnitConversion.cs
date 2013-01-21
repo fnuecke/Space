@@ -30,5 +30,16 @@ namespace Engine.XnaExtensions
         {
             return point * Util.UnitConversion.SimulationOverScreenRatio;
         }
+        
+        /// <summary>Converts a rectangle in screen space to simulation space.</summary>
+        /// <param name="rectangle">The rectangle.</param>
+        /// <returns></returns>
+        public static Rectangle ToSimulationUnits(Rectangle rectangle)
+        {
+            rectangle.Inflate(
+                (int)(-rectangle.Width / 2f * (1f - Util.UnitConversion.SimulationOverScreenRatio)),
+                (int)(-rectangle.Height / 2f * (1f - Util.UnitConversion.SimulationOverScreenRatio)));
+            return rectangle;
+        }
     }
 }

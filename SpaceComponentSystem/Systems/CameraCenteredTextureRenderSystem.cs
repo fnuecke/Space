@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Systems
@@ -23,7 +24,8 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The transformation.</returns>
         protected override Matrix GetTransform()
         {
-            return ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).Transform;
+            return Matrix.CreateScale(UnitConversion.ToScreenUnits(1f)) *
+                   ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).Transform;
         }
 
         /// <summary>

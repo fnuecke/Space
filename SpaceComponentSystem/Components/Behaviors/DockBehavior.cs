@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Random;
+using Engine.Util;
 using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.Behaviors
@@ -17,10 +18,10 @@ namespace Space.ComponentSystem.Components.Behaviors
         ///     How far we want to look for a station. This can be a fairly high number, because we don't do this very often.
         ///     Hopefully :D
         /// </summary>
-        private const float ScanRange = 30000;
+        private static readonly float ScanRange = UnitConversion.ToSimulationUnits(30000);
 
         /// <summary>How close we want to be to the station to allow docking.</summary>
-        private const float DockingRange = 100;
+        private static readonly float DockingRange = UnitConversion.ToSimulationUnits(100);
 
         #endregion
 

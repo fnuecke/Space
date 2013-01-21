@@ -4,6 +4,8 @@ using System.Linq;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
@@ -74,7 +76,7 @@ namespace Space.ComponentSystem.Systems
             set { _customZoom = value; }
         }
 
-        /// <summary>The zoom set in the camera must not neccesarily represent the current actually used zoom</summary>
+        /// <summary>The zoom set in the camera must not necessarily represent the current actually used zoom</summary>
         public float CameraZoom
         {
             get { return _currentZoom; }
@@ -97,7 +99,7 @@ namespace Space.ComponentSystem.Systems
         private readonly IServiceProvider _services;
 
         /// <summary>Previous offset to the ship, use to slowly interpolate, giving a more organic feel.</summary>
-        private FarPosition _currentOffset;
+        private Vector2 _currentOffset;
 
         /// <summary>The current camera position.</summary>
         private FarPosition _cameraPosition;
@@ -125,7 +127,7 @@ namespace Space.ComponentSystem.Systems
         ///     Reused for iterating components when updating, to avoid modifications to the list of components breaking the
         ///     update.
         /// </summary>
-        private ISet<int> _drawablesInView = new HashSet<int>();
+        private readonly ISet<int> _drawablesInView = new HashSet<int>();
 
         #endregion
 
@@ -152,17 +154,19 @@ namespace Space.ComponentSystem.Systems
         {
             var center = CameraPosition;
             var zoom = Zoom;
-            var width = (int) (_graphics.Viewport.Width / zoom);
-            var height = (int) (_graphics.Viewport.Height / zoom);
-            // Return scaled viewport bounds, translated to camera position
-            // with a margin as safety against rounding errors and interpolation.
-            return new FarRectangle
+            var width = UnitConversion.ToSimulationUnits(_graphics.Viewport.Width / zoom);
+            var height = UnitConversion.ToSimulationUnits(_graphics.Viewport.Height / zoom);
+            // Get scaled viewport bounds, translated to camera position.
+            var result = new FarRectangle
             {
-                X = (center.X - (width >> 1)) - 100,
-                Y = (center.Y - (height >> 1)) - 100,
-                Width = width + 200,
-                Height = height + 200
+                X = (center.X - (width  * 0.5f)),
+                Y = (center.Y - (height * 0.5f)),
+                Width = width,
+                Height = height
             };
+            // Add a margin as safety for larger objects and moving stuff (e.g. for interpolation).
+            result.Inflate(UnitConversion.ToSimulationUnits(100), UnitConversion.ToSimulationUnits(100));
+            return result;
         }
 
         /// <summary>Set the current and target zoom to the specified value. This instantly sets the current zoom.</summary>
@@ -227,13 +231,13 @@ namespace Space.ComponentSystem.Systems
             // Non-fixed camera, update our offset based on the game pad
             // or mouse position, relative to the ship.
             var targetOffset = GetInputInducedOffset();
-            var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
-            float dummy;
-            interpolation.GetInterpolatedTransform(avatar, out _cameraPosition, out dummy);
+            float angle;
+            ((InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId))
+                .GetInterpolatedTransform(avatar, out _cameraPosition, out angle);
 
             // The interpolate to our new offset, slowly to make the
             // effect less brain-melting.
-            _currentOffset = FarPosition.SmoothStep(_currentOffset, (FarPosition) targetOffset, 0.15f);
+            _currentOffset = Vector2.SmoothStep(_currentOffset, targetOffset, 0.15f);
 
             // Interpolate new zoom moving slowly in or out.
             _currentZoom = MathHelper.SmoothStep(_currentZoom, _targetZoom, 0.15f);
@@ -252,8 +256,7 @@ namespace Space.ComponentSystem.Systems
 
             // Get viewport, for mouse position scaling and offset scaling.
             var viewport = _graphics.Viewport;
-            var offsetScale =
-                (float) (Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
+            var offsetScale = new Vector2(viewport.Width, viewport.Height).Length() / 6f;
 
             var inputManager = (InputManager) _services.GetService(typeof (InputManager));
             var mouse = inputManager.GetMouse();
@@ -290,11 +293,14 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
+            // Normalize the vector. This way we get some 'dead area' when controlling with the mouse
+            // in the corners of the screen (where the offset length won't change), but we get the same
+            // effect as we'd get it with the game pad, keeping it fair in how far players can look.
             if (offset.LengthSquared() > 1)
             {
                 offset.Normalize();
             }
-            return offset * offsetScale;
+            return XnaUnitConversion.ToSimulationUnits(offset * offsetScale);
         }
 
         /// <summary>Updates the Transformation of the Camera including position and scale</summary>
@@ -308,7 +314,10 @@ namespace Space.ComponentSystem.Systems
             // draw, so we can do this here.
             _drawablesInView.Clear();
             var view = ComputeVisibleBounds();
+            // Re-use drawables list to first get the visible components...
             ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(view, _drawablesInView, IndexGroupMask);
+            // ... and then extract their entities. As a list copy, otherwise the next
+            // clear would destroy the iterator.
             var entities = _drawablesInView.Select(id => Manager.GetComponentById(id).Entity).ToList();
             _drawablesInView.Clear();
             _drawablesInView.UnionWith(entities);

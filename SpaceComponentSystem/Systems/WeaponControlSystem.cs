@@ -9,6 +9,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Random;
 using Engine.Serialization;
 using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
@@ -97,8 +98,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get components.
-            var attributes =
-                (Attributes<AttributeType>) Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
+            var attributes = (Attributes<AttributeType>) Manager.GetComponent(component.Entity, Attributes<AttributeType>.TypeId);
             var equipment = (ItemSlot) Manager.GetComponent(component.Entity, ItemSlot.TypeId);
             var energy = (Energy) Manager.GetComponent(component.Entity, Energy.TypeId);
             var faction = (Faction) Manager.GetComponent(component.Entity, Faction.TypeId);
@@ -164,7 +164,7 @@ namespace Space.ComponentSystem.Systems
                         {
                             Factory = projectile,
                             Entity = component.Entity,
-                            Offset = offset,
+                            Offset = XnaUnitConversion.ToSimulationUnits(offset),
                             Rotation = rotation,
                             Weapon = weapon,
                             Faction = faction.Value

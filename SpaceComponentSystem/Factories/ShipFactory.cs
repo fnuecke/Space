@@ -1,18 +1,20 @@
 ﻿using System;
 using System.ComponentModel;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.Physics;
+using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Random;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Data;
-using Space.Util;
 
 namespace Space.ComponentSystem.Factories
 {
@@ -175,7 +177,7 @@ namespace Space.ComponentSystem.Factories
         /// <param name="random">The random.</param>
         /// <param name="parent">The parent.</param>
         /// <param name="itemInfo">The item info.</param>
-        private void SampleItems(
+        private static void SampleItems(
             IManager manager, FarPosition position, IUniformRandom random, int parent, ItemInfo itemInfo)
         {
             // Create the actual item.
@@ -188,9 +190,8 @@ namespace Space.ComponentSystem.Factories
             var item = (Item) manager.GetComponent(itemId, Item.TypeId);
 
             // Then equip it in the parent.
-            foreach (var component in manager.GetComponents(parent, ItemSlot.TypeId))
+            foreach (ItemSlot slot in manager.GetComponents(parent, ItemSlot.TypeId))
             {
-                var slot = (ItemSlot) component;
                 if (slot.Item == 0 && slot.Validate(item))
                 {
                     // Found a suitable empty slot, equip here.
@@ -222,35 +223,28 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            manager.AddComponent<Transform>(entity)
-                   .Initialize(
-                       new FarRectangle(
-                           -_collisionRadius,
-                           -_collisionRadius,
-                           _collisionRadius * 2,
-                           _collisionRadius * 2),
-                       position,
-                       // Index component, to register with indexes used for other
-                       // components.
-                       indexGroupsMask:
-                           // Can bump into other stuff.
-                           CollisionSystem.IndexGroupMask |
-                           // Can be detected.
-                           DetectableSystem.IndexGroupMask |
-                           // Can be attracted.
-                           GravitationSystem.IndexGroupMask |
-                           // Can make noise.
-                           SoundSystem.IndexGroupMask |
-                           // Must be detectable by the camera.
-                           CameraSystem.IndexGroupMask |
-                           // Rendering should be interpolated.
-                           InterpolationSystem.IndexGroupMask); 
+            var body = manager.AddBody(entity, type: Body.BodyType.Dynamic, worldPosition: position);
+            manager.AttachCircle(
+                body,
+                UnitConversion.ToSimulationUnits(_collisionRadius),
+                density: 100,
+                collisionGroups: faction.ToCollisionGroup())
+                   .IndexGroupsMask =
+                        // Can be detected.
+                        DetectableSystem.IndexGroupMask |
+                        // Can be attracted.
+                        GravitationSystem.IndexGroupMask |
+                        // Can make noise.
+                        SoundSystem.IndexGroupMask |
+                        // Must be detectable by the camera.
+                        CameraSystem.IndexGroupMask |
+                        // Rendering should be interpolated.
+                        InterpolationSystem.IndexGroupMask;
 
-            manager.AddComponent<Friction>(entity)
-                   .Initialize(1f / Settings.TicksPerSecond, 1.5f / Settings.TicksPerSecond);
-            manager.AddComponent<Acceleration>(entity);
+            // Although 'unrealistic' in space, make ships stop automatically if not accelerating.
+            body.LinearDamping = 0.1f;
+
             manager.AddComponent<Gravitation>(entity).Initialize();
-            manager.AddComponent<Velocity>(entity);
             manager.AddComponent<ShipControl>(entity);
             manager.AddComponent<WeaponControl>(entity);
             manager.AddComponent<Energy>(entity);
@@ -258,10 +252,6 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<ShipDrawable>(entity)
                    .Initialize(_texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
             manager.AddComponent<ParticleEffects>(entity);
-
-            // Collision component, to allow colliding with other entities.
-            manager.AddComponent<CollidableSphere>(entity)
-                   .Initialize(_collisionRadius, faction.ToCollisionGroup());
 
             // Faction component, which allows checking which group the ship
             // belongs to.

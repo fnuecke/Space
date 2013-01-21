@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Physics;
+using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
@@ -9,6 +11,7 @@ using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
@@ -218,45 +221,51 @@ namespace Space.ComponentSystem.Factories
             var emitterVelocity = (IVelocity) manager.GetComponent(emitter, VelocityTypeId);
 
             // Rotate the offset.
-            var rotation = emitterTransform.Angle;
-            var cosRadians = (float) Math.Cos(rotation);
-            var sinRadians = (float) Math.Sin(rotation);
+            var emitterAngle = emitterTransform.Angle;
+            var cosRadians = (float) Math.Cos(emitterAngle);
+            var sinRadians = (float) Math.Sin(emitterAngle);
 
             FarPosition rotatedOffset;
             rotatedOffset.X = -offset.X * cosRadians - offset.Y * sinRadians;
             rotatedOffset.Y = -offset.X * sinRadians + offset.Y * cosRadians;
 
             // Set initial velocity.
-            var velocity = SampleInitialDirectedVelocity(rotation + angle, random);
-            var accelerationForce = SampleAccelerationForce(rotation + angle, random);
+            var velocity = SampleInitialDirectedVelocity(emitterAngle + angle, random);
+            var accelerationForce = SampleAccelerationForce(emitterAngle + angle, random);
 
             // Adjust rotation for projectile based on its own acceleration or speed.
+            var emitAngle = emitterAngle;
             if (accelerationForce != Vector2.Zero)
             {
-                rotation = (float) Math.Atan2(accelerationForce.Y, accelerationForce.X);
+                emitAngle = (float) Math.Atan2(accelerationForce.Y, accelerationForce.X);
             }
             else if (velocity != Vector2.Zero)
             {
-                rotation = (float) Math.Atan2(velocity.Y, velocity.X);
+                emitAngle = (float) Math.Atan2(velocity.Y, velocity.X);
             }
 
-            // Set initial position.
-            manager.AddComponent<Transform>(entity)
-                   .Initialize(
-                       new FarRectangle(
-                           -_collisionRadius,
-                           -_collisionRadius,
-                           _collisionRadius * 2,
-                           _collisionRadius * 2),
-                       emitterTransform.Position + rotatedOffset,
-                       rotation,
-                       // Register with indexes that need to be able to find us.
-                       // Can collide.
-                       CollisionSystem.IndexGroupMask |
-                       // Must be detectable by the camera.
-                       CameraSystem.IndexGroupMask |
-                       // Rendering should be interpolated.
-                       InterpolationSystem.IndexGroupMask);
+            // See what we can bump into.
+            var collisionGroup = faction.ToCollisionGroup();
+
+            // Normally projectiles won't test against each other, but some may be
+            // shot down, such as missiles. If that's the case, don't add us to the
+            // common projectile group.
+            if (!_canBeShot)
+            {
+                collisionGroup |= Factions.Projectiles.ToCollisionGroup();
+            }
+
+            // Create physical body.
+            var body = manager.AddBody(
+                entity, emitterTransform.Position + rotatedOffset, emitAngle, Body.BodyType.Dynamic, isBullet: true);
+            manager.AttachCircle(
+                body,
+                UnitConversion.ToSimulationUnits(_collisionRadius),
+                0.1f,
+                restitution: 0.1f,
+                isSensor: true,
+                collisionGroups: collisionGroup)
+                   .IndexGroupsMask = CameraSystem.IndexGroupMask | InterpolationSystem.IndexGroupMask;
 
             // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)
@@ -264,22 +273,21 @@ namespace Space.ComponentSystem.Factories
                 velocity += emitterVelocity.LinearVelocity;
             }
 
-            if (velocity != Vector2.Zero)
-            {
-                manager.AddComponent<Velocity>(entity).Initialize(velocity);
-            }
+            // Then set the initial velocity of our bullet.
+            body.LinearVelocity = velocity;
 
             // Sample an acceleration for this projectile. If there is any, create the
             // component for it, otherwise disregard.
             if (accelerationForce != Vector2.Zero)
             {
-                manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
+                // TODO add motor joint? else teach acceleration system to use ApplyForce
+//                manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
             }
 
             // Apply friction to this projectile if so desired.
             if (_friction > 0)
             {
-                manager.AddComponent<Friction>(entity).Initialize(_friction);
+                body.LinearDamping = 1f - _friction;
             }
 
             // If this projectile should vanish after some time, make it expire.
@@ -315,7 +323,9 @@ namespace Space.ComponentSystem.Factories
                     value = emitterAttributes.GetValue(attributeType, value);
                 }
                 // If we have something, copy it to the projectile.
+// ReSharper disable CompareOfFloatsByEqualityOperator
                 if (value != 0f)
+// ReSharper restore CompareOfFloatsByEqualityOperator
                 {
                     if (projectileAttributes == null)
                     {
@@ -324,20 +334,6 @@ namespace Space.ComponentSystem.Factories
                     projectileAttributes.SetBaseValue(attributeType, value);
                 }
             }
-
-            // See what we can bump into.
-            var collisionGroup = faction.ToCollisionGroup();
-
-            // Normally projectiles won't test against each other, but some may be
-            // shot down, such as missiles. If that's the case, don't add us to the
-            // common projectile group.
-            if (!_canBeShot)
-            {
-                collisionGroup |= Factions.Projectiles.ToCollisionGroup();
-            }
-
-            // Give the collision some info on how to handle us.
-            manager.AddComponent<CollidableSphere>(entity).Initialize(_collisionRadius, collisionGroup, true);
 
             // Make us visible!
             if (!string.IsNullOrWhiteSpace(_model))

@@ -177,8 +177,7 @@ namespace Space.ComponentSystem.Components
                 var parent = slot.Parent;
                 if (parent != null)
                 {
-                    var parentItem =
-                        (SpaceItem) Manager.GetComponent(parent.Item, Engine.ComponentSystem.RPG.Components.Item.TypeId);
+                    var parentItem = (SpaceItem) Manager.GetComponent(parent.Item, Engine.ComponentSystem.RPG.Components.Item.TypeId);
                     slotOffset *= parentItem.RequiredSlotSize.Scale();
                 }
                 // Accumulate the slot rotations.

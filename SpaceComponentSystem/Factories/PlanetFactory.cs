@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Math;
 using Engine.Random;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Design;
@@ -283,7 +284,7 @@ namespace Space.ComponentSystem.Factories
 
             // Sample all values in advance, to allow reshuffling component creation
             // order in case we need to, without influencing the 'random' results.
-            var radius = SampleRadius(random);
+            var radius = UnitConversion.ToSimulationUnits(SampleRadius(random));
             var rotationSpeed = SampleRotationSpeed(random);
             var mass = SampleMass(random);
 
@@ -320,7 +321,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
 
             // Make it visible.
-            manager.AddComponent<PlanetRenderer>(entity).Initialize(this, radius, surfaceRotation);
+            manager.AddComponent<PlanetRenderer>(entity).Initialize(this, UnitConversion.ToScreenUnits(radius), surfaceRotation);
 
             // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");

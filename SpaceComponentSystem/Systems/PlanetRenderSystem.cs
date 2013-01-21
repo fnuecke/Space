@@ -125,7 +125,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Apply transformation.
-            _planet.Center = (Vector2) (position + translation);
+            _planet.Center = (Vector2) FarUnitConversion.ToScreenUnits(position + translation);
 
             // Set remaining parameters for draw.
             _planet.Rotation = rotation;

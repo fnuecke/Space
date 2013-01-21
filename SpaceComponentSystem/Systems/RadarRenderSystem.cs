@@ -5,6 +5,8 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -85,7 +87,7 @@ namespace Space.ComponentSystem.Systems
         ///     Reused for iterating components. This should be a sorted set, to avoid random order of elements, leading to
         ///     random flipping of render order. (looks pretty much like z-fighting then)
         /// </summary>
-        private ISet<int> _reusableNeighborList = new SortedSet<int>();
+        private readonly ISet<int> _reusableNeighborList = new SortedSet<int>();
 
         #endregion
 
@@ -122,7 +124,7 @@ namespace Space.ComponentSystem.Systems
             var zoom = camera.Zoom;
 
             // Figure out the overall range of our radar system.
-            var radarRange = info.RadarRange;
+            var radarRange = UnitConversion.ToSimulationUnits(info.RadarRange);
 
             // Get bounds in which to display the icon.
             var screenBounds = _spriteBatch.GraphicsDevice.Viewport.Bounds;
@@ -143,6 +145,9 @@ namespace Space.ComponentSystem.Systems
             // half the size of the icon, so deflate by that.
             var innerBounds = screenBounds;
             innerBounds.Inflate(-(int) backgroundOrigin.X, -(int) backgroundOrigin.Y);
+
+            // Convert to simulation units for checking.
+            screenBounds = XnaUnitConversion.ToSimulationUnits(screenBounds);
 
             // Now this is the tricky part: we take the minimal bounding sphere
             // (or rather, circle) that fits our screen space. For each
@@ -240,7 +245,7 @@ namespace Space.ComponentSystem.Systems
                 // distance to the screen edge, if so desired.
                 if (Settings.Instance.RadarDistanceFromBorder)
                 {
-                    distance -= iconPosition.Length();
+                    distance -= UnitConversion.ToSimulationUnits(iconPosition.Length());
                 }
 
                 // Adjust to the center.

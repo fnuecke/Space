@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
@@ -40,13 +39,7 @@ namespace Space.ComponentSystem.Components
         internal Vector2 DirectedAcceleration;
 
         /// <summary>The current target rotation (used to check if the public one changed since the last update).</summary>
-        internal float TargetRotation;
-
-        /// <summary>Flag whether the rotation changed since the last update.</summary>
-        internal bool TargetRotationChanged;
-
-        /// <summary>The rotation we had in the previous update.</summary>
-        internal float PreviousRotation;
+        internal float TargetAngle;
 
         #endregion
 
@@ -61,9 +54,7 @@ namespace Space.ComponentSystem.Components
             Shooting = false;
             ShieldsActive = false;
             DirectedAcceleration = Vector2.Zero;
-            TargetRotation = 0;
-            TargetRotationChanged = false;
-            PreviousRotation = 0;
+            TargetAngle = 0;
         }
 
         #endregion
@@ -80,7 +71,7 @@ namespace Space.ComponentSystem.Components
             if (DirectedAcceleration != Vector2.Zero)
             {
                 // Make sure we have a unit vector of our direction.
-                if (DirectedAcceleration.LengthSquared() > 1)
+                if (DirectedAcceleration.LengthSquared() > 1f)
                 {
                     DirectedAcceleration.Normalize();
                 }
@@ -91,11 +82,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="rotation">The rotation to rotate to.</param>
         public void SetTargetRotation(float rotation)
         {
-            if (Math.Abs(TargetRotation - rotation) > 0.001f)
-            {
-                TargetRotation = rotation;
-                TargetRotationChanged = true;
-            }
+            TargetAngle = rotation;
         }
 
         #endregion

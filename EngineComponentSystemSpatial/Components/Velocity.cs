@@ -27,6 +27,26 @@ namespace Engine.ComponentSystem.Spatial.Components
         /// <summary>Gets or sets the angular velocity.</summary>
         public float AngularVelocity { get; set; }
 
+        /// <summary>Gets the accumulated force currently being applied to the body, which will be applied in the next update.</summary>
+        public Vector2 Force
+        {
+            get
+            {
+                var acceleration = (Acceleration) Manager.GetComponent(Entity, Acceleration.TypeId);
+                return acceleration == null ? Vector2.Zero : acceleration.Value;
+            }
+        }
+
+        /// <summary>Applies a force onto the component's center of mass.</summary>
+        public void ApplyForceToCenter(Vector2 force)
+        {
+            var acceleration = (Acceleration) Manager.GetComponent(Entity, Acceleration.TypeId);
+            if (acceleration != null)
+            {
+                acceleration.Value += force;
+            }
+        }
+
         #endregion
 
         #region Initialization

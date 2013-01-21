@@ -12,9 +12,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Initializes a new instance of the <see cref="CameraCenteredParticleEffectSystem"/> class.
         /// </summary>
-        /// <param name="simulationFps">A function getting the current simulation framerate.</param>
-        public CameraCenteredParticleEffectSystem(Func<float> simulationFps)
-            : base(simulationFps) {}
+        /// <param name="simulationSpeed">A function getting the current simulation framerate.</param>
+        public CameraCenteredParticleEffectSystem(Func<float> simulationSpeed)
+            : base(simulationSpeed) {}
 
         #endregion
 

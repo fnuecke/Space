@@ -7,6 +7,7 @@ using Engine.FarMath;
 using Engine.Math;
 using Engine.ComponentSystem.Physics;
 using Engine.Random;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Design;
@@ -130,7 +131,7 @@ namespace Space.ComponentSystem.Factories
             }
 
             var body = manager.AddBody(entity, offset + cellCenter);
-            manager.AttachCircle(body, radius, isSensor: true)
+            manager.AttachCircle(body, UnitConversion.ToSimulationUnits(radius), isSensor: true)
                 .IndexGroupsMask |= 
                            // Can be detected.
                            DetectableSystem.IndexGroupMask |

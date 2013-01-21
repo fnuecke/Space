@@ -3,6 +3,7 @@ using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -159,7 +160,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                     SpriteBatch,
                     ((Vector2) (position + cameraTranslation)) * parallaxLayer,
                     angle,
-                    1,
+                    UnitConversion.ToSimulationUnits(1f),
                     SpriteEffects.None, 
                     layerDepth);
 

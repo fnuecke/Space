@@ -93,7 +93,7 @@ namespace Space.ComponentSystem.Systems
             var position = ((ITransform) Manager.GetComponent(component.Entity, TransformTypeId)).Position;
 
             // Apply transformation.
-            _testObject.Center = (Vector2) (position + translation);
+            _testObject.Center = (Vector2) FarUnitConversion.ToScreenUnits(position + translation);
             _testObject.SetTransform(transform);
             _testObject.Color = component.Tint;
 

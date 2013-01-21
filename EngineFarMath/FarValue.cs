@@ -22,7 +22,7 @@ namespace Engine.FarMath
         public const int SegmentSizeHalf = SegmentSize >> 1;
 
         /// <summary>The bit shift to use for getting the actual segment size. Adjust as necessary for the context this is used in.</summary>
-        public const int SegmentSizeShiftAmount = 14;
+        public const int SegmentSizeShiftAmount = 10;
 
         /// <summary>Represents the origin, equivalent to a floating point zero.</summary>
         public static FarValue Zero

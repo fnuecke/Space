@@ -385,9 +385,7 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         private bool IsInBounds(FarPosition position)
         {
-            var bounds = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).ComputeVisibleBounds();
-            bounds.Inflate(100, 100);
-            return bounds.Contains(position);
+            return ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId)).ComputeVisibleBounds().Contains(position);
         }
 
         #endregion

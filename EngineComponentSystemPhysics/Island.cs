@@ -264,7 +264,7 @@ namespace Engine.ComponentSystem.Physics
                 if (b.TypeInternal == Body.BodyType.Dynamic)
                 {
                     // Integrate velocities.
-                    v += h * (gravity + b.InverseMass * b.Force);
+                    v += h * (gravity + b.InverseMass * b.ForceInternal);
                     w += h * b.InverseInertia * b.Torque;
 
                     // Apply damping.

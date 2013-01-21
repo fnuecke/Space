@@ -15,7 +15,7 @@
       <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>250 to 550</Radius>
-      <Mass>300000 to 400000</Mass>
+      <Mass>3000 to 4000</Mass>
       <RotationSpeed>2</RotationSpeed>
     </Item>
     <Item>
@@ -103,7 +103,7 @@
       <AtmosphereInnerAlpha>1</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>250 to 300</Radius>
-      <Mass>250000 to 300000</Mass>
+      <Mass>2500 to 3000</Mass>
       <RotationSpeed>1 to 2</RotationSpeed>
     </Item>
     <Item>
@@ -120,7 +120,7 @@
       <AtmosphereInnerAlpha>2</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>200 to 250</Radius>
-      <Mass>200000 to 220000</Mass>
+      <Mass>2000 to 2200</Mass>
       <RotationSpeed>3</RotationSpeed>
     </Item>
     <Item>
@@ -137,7 +137,7 @@
       <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>180 to 220</Radius>
-      <Mass>190000 to 230000</Mass>
+      <Mass>1900 to 2300</Mass>
       <RotationSpeed>4 to 6</RotationSpeed>
     </Item>
     <Item>
@@ -154,7 +154,7 @@
       <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>240 to 300</Radius>
-      <Mass>250000 to 300000</Mass>
+      <Mass>2500 to 3000</Mass>
       <RotationSpeed>4 to 5</RotationSpeed>
     </Item>
     <Item>
@@ -171,7 +171,7 @@
       <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>100 to 150</Radius>
-      <Mass>17000 to 20000</Mass>
+      <Mass>170 to 200</Mass>
       <RotationSpeed>2 to 3</RotationSpeed>
     </Item>
     <Item>
@@ -188,7 +188,7 @@
       <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>150 to 200</Radius>
-      <Mass>170000 to 200000</Mass>
+      <Mass>1700 to 2000</Mass>
       <RotationSpeed>3 to 4</RotationSpeed>
     </Item>
     <Item>
@@ -205,7 +205,7 @@
       <AtmosphereInnerAlpha>0.55</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>0.15</AtmosphereOuterAlpha>
       <Radius>500 to 600</Radius>
-      <Mass>500000 to 600000</Mass>
+      <Mass>5000 to 6000</Mass>
       <RotationSpeed>3 to 4</RotationSpeed>
     </Item>
     <Item>
@@ -222,7 +222,7 @@
       <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>200 to 300</Radius>
-      <Mass>250000 to 300000</Mass>
+      <Mass>2500 to 3000</Mass>
       <RotationSpeed>3 to 4</RotationSpeed>
     </Item>
     <Item>
@@ -239,7 +239,7 @@
       <AtmosphereInnerAlpha>0.85</AtmosphereInnerAlpha>
       <AtmosphereOuterAlpha>1</AtmosphereOuterAlpha>
       <Radius>250 to 300</Radius>
-      <Mass>250000 to 300000</Mass>
+      <Mass>2500 to 3000</Mass>
       <RotationSpeed>4 to 5</RotationSpeed>
     </Item>
   </Asset>

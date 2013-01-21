@@ -73,19 +73,19 @@ namespace Space.ComponentSystem.Components
             #region Fields
 
             /// <summary>The distance up to which the AI will scan for enemies to attack.</summary>
-            public float AggroRange = 1000;
+            public float AggroRange = UnitConversion.ToSimulationUnits(1000);
 
             /// <summary>
             ///     The radius in which we look for dangerous objects that we may want to avoid (damaging entities, possibly with
             ///     gravity and normal enemies).
             /// </summary>
-            public float MaxEscapeCheckDistance = 8000;
+            public float MaxEscapeCheckDistance = UnitConversion.ToSimulationUnits(8000);
 
             /// <summary>
             ///     How far away we want to stay from objects that hurt us, but don't attract us (i.e. have no gravitational
             ///     pull). For those with gravity the distance is computed dynamically, based on the point of no return.
             /// </summary>
-            public float MinDistanceToDamagers = 1000;
+            public float MinDistanceToDamagers = UnitConversion.ToSimulationUnits(1000);
 
             /// <summary>
             ///     For damagers that have a gravitational pull, this is the multiple of the distance that represents the point of
@@ -98,22 +98,22 @@ namespace Space.ComponentSystem.Components
             ///     How far away from enemy units AI ships will try to stay (this avoids them flying *into* their attack targets).
             ///     TODO per unit dynamically based on attack range
             /// </summary>
-            public float EnemySeparation = 500;
+            public float EnemySeparation = UnitConversion.ToSimulationUnits(500);
 
             /// <summary>
             ///     The distance to another ship we need to be under for flocking to kick in (in particular for
             ///     cohesion/alignment).
             /// </summary>
-            public float FlockingThreshold = 400;
+            public float FlockingThreshold = UnitConversion.ToSimulationUnits(400);
 
             /// <summary>The desired distance to keep to other flock members.</summary>
-            public float FlockingSeparation = 200;
+            public float FlockingSeparation = UnitConversion.ToSimulationUnits(200);
 
             /// <summary>
             ///     The distance (scale) at which our vegetative input is considered urgent, i.e. is normalized to 1. Everything
             ///     below will be scaled to the interval of [0, 1).
             /// </summary>
-            public float VegetativeUrgencyDistance = 500;
+            public float VegetativeUrgencyDistance = UnitConversion.ToSimulationUnits(500);
 
             /// <summary>
             ///     How important our vegetative direction comes into play. One means it's 50:50 with other behavior input, 0
@@ -125,7 +125,7 @@ namespace Space.ComponentSystem.Components
             ///     How much earlier to start firing our weapons, before the target enters our range of fire. This way we have a
             ///     chance some shots will hit the target because it's flying into them.
             /// </summary>
-            public float WeaponRangeEpsilon = 100;
+            public float WeaponRangeEpsilon = UnitConversion.ToSimulationUnits(100);
 
             /// <summary>
             ///     The angle ahead of the AI ship in which an enemy ship must be for the AI to start shooting (this avoids
@@ -137,7 +137,7 @@ namespace Space.ComponentSystem.Components
             ///     Distance we have to have to where we were when we started chasing our target before we give up and fall back
             ///     to our previous behavior.
             /// </summary>
-            public float ChaseDistance = 2000;
+            public float ChaseDistance = UnitConversion.ToSimulationUnits(2000);
 
             #endregion
 
