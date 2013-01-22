@@ -15,7 +15,7 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class OrbitRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class OrbitRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Constants
 
@@ -64,50 +64,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-                    if (_ellipse == null)
-                    {
-                        _ellipse = new Ellipse(cm.Value.Content, cm.Value.Graphics)
-                        {
-                            Thickness = OrbitThickness,
-                            BlendState = BlendState.Additive
-                        };
-                        _ellipse.LoadContent();
-                    }
-                    if (_filledEllipse == null)
-                    {
-                        _filledEllipse = new FilledEllipse(cm.Value.Content, cm.Value.Graphics)
-                        {
-                            Gradient = DeadZoneDiffuseWidth,
-                            Color = DeadZoneColor,
-                            BlendState = BlendState.Additive
-                        };
-                        _filledEllipse.LoadContent();
-                    }
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                }
-            }
-        }
 
         /// <summary>Render our local radar system, with whatever detectables are close enough.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
@@ -306,6 +262,47 @@ namespace Space.ComponentSystem.Systems
 
             // Clear the list for the next run.
             _reusableNeighborList.Clear();
+        }
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+            if (_ellipse == null)
+            {
+                _ellipse = new Ellipse(message.Content, message.Graphics)
+                {
+                    Thickness = OrbitThickness,
+                    BlendState = BlendState.Additive
+                };
+                _ellipse.LoadContent();
+            }
+            if (_filledEllipse == null)
+            {
+                _filledEllipse = new FilledEllipse(message.Content, message.Graphics)
+                {
+                    Gradient = DeadZoneDiffuseWidth,
+                    Color = DeadZoneColor,
+                    BlendState = BlendState.Additive
+                };
+                _filledEllipse.LoadContent();
+            }
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
+            {
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
+            }
         }
 
         #endregion

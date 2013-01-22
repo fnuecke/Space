@@ -8,7 +8,7 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system tracks entities that respawn (players, normally).</summary>
-    public sealed class RespawnSystem : AbstractParallelComponentSystem<Respawn>, IMessagingSystem
+    public sealed class RespawnSystem : AbstractParallelComponentSystem<Respawn>
     {
         #region Logic
         
@@ -63,18 +63,16 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Checks if an entity died, and marks it for respawn if possible.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as EntityDied?;
-            if (cm == null)
-            {
-                return;
-            }
+            base.OnAddedToManager();
 
-            var entity = cm.Value.KilledEntity;
+            Manager.AddMessageListener<EntityDied>(OnEntityDied);
+        }
+
+        private void OnEntityDied(EntityDied message)
+        {
+            var entity = message.KilledEntity;
 
             // See if the entity respawns.
             var respawn = ((Respawn) Manager.GetComponent(entity, Respawn.TypeId));

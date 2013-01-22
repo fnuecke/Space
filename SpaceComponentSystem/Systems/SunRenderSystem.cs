@@ -10,7 +10,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders suns.</summary>
-    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>, IDrawingSystem, IMessagingSystem
+    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>, IDrawingSystem
     {
         #region Fields
 
@@ -27,24 +27,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    if (_sun == null)
-                    {
-                        _sun = new Sun(cm.Value.Content, cm.Value.Graphics);
-                        _sun.LoadContent();
-                    }
-                }
-            }
-        }
 
         /// <summary>
         ///     Loops over all components and calls <c>DrawComponent()</c>.
@@ -98,6 +80,22 @@ namespace Space.ComponentSystem.Systems
 
             // And draw it.
             _sun.Draw();
+        }
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            if (_sun == null)
+            {
+                _sun = new Sun(message.Content, message.Graphics);
+                _sun.LoadContent();
+            }
         }
 
         #endregion

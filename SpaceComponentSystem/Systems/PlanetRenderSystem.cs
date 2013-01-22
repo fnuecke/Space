@@ -13,7 +13,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders planets.</summary>
-    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>, IDrawingSystem, IMessagingSystem
+    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>, IDrawingSystem
     {
         #region Properties
 
@@ -30,34 +30,7 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    if (_planet == null)
-                    {
-                        _planet = new Planet(cm.Value.Content, cm.Value.Graphics);
-                        _planet.LoadContent();
-                    }
-                    foreach (var component in Components)
-                    {
-                        var factory = component.Factory;
-                        if (factory == null)
-                        {
-                            continue;
-                        }
-                        LoadPlanetTextures(factory, component, cm.Value.Content);
-                    }
-                }
-            }
-        }
-
+        
         /// <summary>
         ///     Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
@@ -151,6 +124,45 @@ namespace Space.ComponentSystem.Systems
             _planet.Draw();
         }
 
+        /// <summary>Utility method to find the sun we're rotating around.</summary>
+        /// <returns></returns>
+        private int GetSun(int entity)
+        {
+            var sun = 0;
+            var ellipse = ((EllipsePath) Manager.GetComponent(entity, EllipsePath.TypeId));
+            while (ellipse != null)
+            {
+                sun = ellipse.CenterEntityId;
+                ellipse = ((EllipsePath) Manager.GetComponent(sun, EllipsePath.TypeId));
+            }
+            return sun;
+        }
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            if (_planet == null)
+            {
+                _planet = new Planet(message.Content, message.Graphics);
+                _planet.LoadContent();
+            }
+            foreach (var component in Components)
+            {
+                var factory = component.Factory;
+                if (factory == null)
+                {
+                    continue;
+                }
+                LoadPlanetTextures(factory, component, message.Content);
+            }
+        }
+
         private static void LoadPlanetTextures(
             Factories.PlanetFactory factory, PlanetRenderer component, ContentManager content)
         {
@@ -174,20 +186,6 @@ namespace Space.ComponentSystem.Systems
             {
                 component.Clouds = content.Load<Texture2D>(factory.Clouds);
             }
-        }
-
-        /// <summary>Utility method to find the sun we're rotating around.</summary>
-        /// <returns></returns>
-        private int GetSun(int entity)
-        {
-            var sun = 0;
-            var ellipse = ((EllipsePath) Manager.GetComponent(entity, EllipsePath.TypeId));
-            while (ellipse != null)
-            {
-                sun = ellipse.CenterEntityId;
-                ellipse = ((EllipsePath) Manager.GetComponent(sun, EllipsePath.TypeId));
-            }
-            return sun;
         }
 
         #endregion

@@ -9,7 +9,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system interprets messages and triggers combat floating text accordingly.</summary>
-    public sealed class CombatTextSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class CombatTextSystem : AbstractSystem, IDrawingSystem
     {
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
@@ -40,64 +40,61 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            {
-                var cm = message as DamageApplied?;
-                if (cm != null)
-                {
-                    var position = ((ITransform) Manager.GetComponent(cm.Value.Entity, TransformTypeId)).Position;
-                    var value = (int) Math.Round(cm.Value.Amount);
-                    var scale = cm.Value.IsCriticalHit ? 1f : 0.5f;
-                    var isLocalPlayerFaction = (_localPlayerFaction &
-                                                ((Faction) Manager.GetComponent(cm.Value.Entity, Faction.TypeId)).Value) !=
-                                               Factions.None;
-                    if (value > 0)
-                    {
-                        // Normal damage.
+            base.OnAddedToManager();
 
-                        var color = isLocalPlayerFaction
-                                        ? Color.Red
-                                        : (cm.Value.IsCriticalHit ? Color.Yellow : Color.White);
-                        ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
-                            .Display(value, position, color, scale);
-                    }
-                    else
-                    {
-                        value = (int) Math.Round(cm.Value.ShieldedAmount);
-                        if (value > 0)
-                        {
-                            // Shield damage.
-                            var color = isLocalPlayerFaction
-                                            ? Color.Red
-                                            : (cm.Value.IsCriticalHit ? Color.Yellow : Color.LightBlue);
-                            ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
-                                .Display(value, position, color, scale);
-                        }
-                        else
-                        {
-                            // No damage.
-                            var color = isLocalPlayerFaction
-                                            ? Color.LightBlue
-                                            : (cm.Value.IsCriticalHit ? Color.Yellow : Color.Purple);
-                            ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
-                                .Display("Absorbed", position, color, scale);
-                        }
-                    }
-                }
-            }
+            Manager.AddMessageListener<DamageApplied>(OnDamageApplied);
+            Manager.AddMessageListener<DamageBlocked>(OnDamageBlocked);
+        }
+
+        private void OnDamageApplied(DamageApplied message)
+        {
+            var position = ((ITransform) Manager.GetComponent(message.Entity, TransformTypeId)).Position;
+            var value = (int) Math.Round(message.Amount);
+            var scale = message.IsCriticalHit ? 1f : 0.5f;
+            var isLocalPlayerFaction = (_localPlayerFaction &
+                                        ((Faction) Manager.GetComponent(message.Entity, Faction.TypeId)).Value) !=
+                                        Factions.None;
+            if (value > 0)
             {
-                var cm = message as DamageBlocked?;
-                if (cm != null)
+                // Normal damage.
+
+                var color = isLocalPlayerFaction
+                                ? Color.Red
+                                : (message.IsCriticalHit ? Color.Yellow : Color.White);
+                ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
+                    .Display(value, position, color, scale);
+            }
+            else
+            {
+                value = (int) Math.Round(message.ShieldedAmount);
+                if (value > 0)
                 {
-                    var position = ((ITransform) Manager.GetComponent(cm.Value.Entity, TransformTypeId)).Position;
+                    // Shield damage.
+                    var color = isLocalPlayerFaction
+                                    ? Color.Red
+                                    : (message.IsCriticalHit ? Color.Yellow : Color.LightBlue);
                     ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
-                        .Display("Blocked", position, Color.LightBlue, 0.5f);
+                        .Display(value, position, color, scale);
+                }
+                else
+                {
+                    // No damage.
+                    var color = isLocalPlayerFaction
+                                    ? Color.LightBlue
+                                    : (message.IsCriticalHit ? Color.Yellow : Color.Purple);
+                    ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
+                        .Display("Absorbed", position, color, scale);
                 }
             }
+        }
+
+        private void OnDamageBlocked(DamageBlocked message)
+        {
+            var position = ((ITransform) Manager.GetComponent(message.Entity, TransformTypeId)).Position;
+            ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
+                .Display("Blocked", position, Color.LightBlue, 0.5f);
         }
 
         #endregion

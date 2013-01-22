@@ -5,7 +5,7 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Handles AI logic updates.</summary>
-    public sealed class AISystem : AbstractUpdatingComponentSystem<ArtificialIntelligence>, IMessagingSystem
+    public sealed class AISystem : AbstractUpdatingComponentSystem<ArtificialIntelligence>
     {
         #region Logic
 
@@ -22,44 +22,47 @@ namespace Space.ComponentSystem.Systems
         public override void OnEntityRemoved(int entity)
         {
             base.OnEntityRemoved(entity);
-
+            
+            // If an entity was removed from the system we want to make sure
+            // that no AI is targeting it anymore. Otherwise the id may be
+            // re-used before the AI is updated, leading to bad references.
             foreach (var ai in Components)
             {
                 ai.OnEntityInvalidated(entity);
             }
         }
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            // If an entity was removed from the system we want to make sure
-            // that no AI is targeting it anymore. Otherwise the id may be
-            // re-used before the AI is updated, leading to bad references.
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<EntityDied>(OnEntityDied);
+            Manager.AddMessageListener<DamageReceived>(OnDamageReceived);
+        }
+
+        /// <summary>Stop shooting if it's dead.</summary>
+        private void OnEntityDied(EntityDied message)
+        {
+            foreach (var ai in Components)
             {
-                var cm = message as EntityDied?;
-                if (cm != null)
-                {
-                    foreach (var ai in Components)
-                    {
-                        ai.OnEntityInvalidated(cm.Value.KilledEntity);
-                    }
-                }
+                ai.OnEntityInvalidated(message.KilledEntity);
             }
-            // When an AI receives damage and isn't already attacking something
-            // we want to make sure it tries to defend itself.
+        }
+
+        /// <summary>
+        /// When an AI receives damage and isn't already attacking something
+        /// we want to make sure it tries to defend itself.
+        /// </summary>
+        /// <param name="message"></param>
+        private void OnDamageReceived(DamageReceived message)
+        {
+            var ai = (ArtificialIntelligence) Manager.GetComponent(message.Damagee, ArtificialIntelligence.TypeId);
+            if (ai != null && ai.CurrentBehavior != ArtificialIntelligence.BehaviorType.Attack &&
+                // Make sure it makes sense to fire back. For example, it doesn't make sense
+                // to start shooting a radiating body / nebula.
+                Manager.GetComponent(message.Owner, Health.TypeId) != null)
             {
-                var cm = message as DamageReceived?;
-                if (cm != null && cm.Value.Owner != 0)
-                {
-                    var ai =
-                        (ArtificialIntelligence) Manager.GetComponent(cm.Value.Damagee, ArtificialIntelligence.TypeId);
-                    if (ai != null && ai.CurrentBehavior != ArtificialIntelligence.BehaviorType.Attack)
-                    {
-                        ai.Attack(cm.Value.Owner);
-                    }
-                }
+                ai.Attack(message.Owner);
             }
         }
 

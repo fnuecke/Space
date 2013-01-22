@@ -22,7 +22,7 @@ namespace Space.ComponentSystem.Systems
     ///     Second, it is used to generate polygon representations of the ships, using their rendered texture. These shapes are
     ///     used in the physics system.
     /// </summary>
-    public sealed class ShipShapeSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
+    public sealed class ShipShapeSystem : AbstractSystem, IUpdatingSystem
     {
         #region Type ID
 
@@ -192,38 +192,34 @@ namespace Space.ComponentSystem.Systems
                 ModelCache.Remove(entry);
             }
         }
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        
+        public override void OnAddedToManager()
         {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    UnloadContent();
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceReset?;
-                if (cm != null)
-                {
-                    UnloadContent();
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-                }
-            }
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+            Manager.AddMessageListener<GraphicsDeviceReset>(OnGraphicsDeviceReset);
+        }
+
+        private static void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+        }
+
+        private static void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            UnloadContent();
+        }
+
+        private static void OnGraphicsDeviceReset(GraphicsDeviceReset message)
+        {
+            UnloadContent();
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
         }
 
         /// <summary>Called when the graphics device is being disposed, and any assets manually allocated should be disposed.</summary>
-        private void UnloadContent()
+        private static void UnloadContent()
         {
             if (_spriteBatch != null)
             {

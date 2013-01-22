@@ -65,6 +65,12 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         public virtual void OnCopied() {}
 
+        /// <summary>
+        ///     Called by the manager when the system was added to it. This allows for the system to register its message
+        ///     listener and do other one-time initialization.
+        /// </summary>
+        public virtual void OnAddedToManager() {}
+
         #endregion
 
         #region Serialization / Hashing

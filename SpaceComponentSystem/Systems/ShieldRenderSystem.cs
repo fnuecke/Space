@@ -19,7 +19,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system renders active shields, detecting them via their energy consumption debuff.</summary>
     public sealed class ShieldRenderSystem
-        : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem, IMessagingSystem
+        : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem
     {
         #region Type ID
 
@@ -59,31 +59,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    if (_shader == null)
-                    {
-                        _shader = new Graphics.Shield(cm.Value.Content, cm.Value.Graphics);
-                        _shader.LoadContent();
-                    }
-                    foreach (var component in _shields)
-                    {
-                        if (!string.IsNullOrWhiteSpace(component.Factory.Structure))
-                        {
-                            component.Structure = cm.Value.Content.Load<Texture2D>(component.Factory.Structure);
-                        }
-                    }
-                }
-            }
-        }
 
         /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
@@ -190,6 +165,29 @@ namespace Space.ComponentSystem.Systems
 
                 // Draw it.
                 _shader.Draw();
+            }
+        }
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            if (_shader == null)
+            {
+                _shader = new Graphics.Shield(message.Content, message.Graphics);
+                _shader.LoadContent();
+            }
+            foreach (var component in _shields)
+            {
+                if (!string.IsNullOrWhiteSpace(component.Factory.Structure))
+                {
+                    component.Structure = message.Content.Load<Texture2D>(component.Factory.Structure);
+                }
             }
         }
 

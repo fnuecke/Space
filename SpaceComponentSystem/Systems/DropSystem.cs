@@ -13,7 +13,7 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Manages item drops by reacting to death events.</summary>
-    public sealed class DropSystem : AbstractSystem, IMessagingSystem, IUpdatingSystem
+    public sealed class DropSystem : AbstractSystem, IUpdatingSystem
     {
         #region Constants
         
@@ -124,18 +124,16 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
-        /// <summary>Drop items when entities die.</summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as EntityDied?;
-            if (cm == null)
-            {
-                return;
-            }
+            base.OnAddedToManager();
 
-            var entity = cm.Value.KilledEntity;
+            Manager.AddMessageListener<EntityDied>(OnEntityDied);
+        }
+
+        private void OnEntityDied(EntityDied message)
+        {
+            var entity = message.KilledEntity;
 
             var drops = ((Drops) Manager.GetComponent(entity, Drops.TypeId));
             if (drops != null)

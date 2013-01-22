@@ -28,7 +28,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     /// <summary>
     ///     This class represents a simple index structure for nearest neighbor queries.
     /// </summary>
-    public sealed class IndexSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
+    public sealed class IndexSystem : AbstractSystem, IUpdatingSystem
     {
         #region Type ID
 
@@ -171,61 +171,52 @@ namespace Engine.ComponentSystem.Spatial.Systems
             }
         }
 
-        /// <summary>Handles position changes of indexed components.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            // Handle group changes (moving components from one index group to another).
-            var groupsChanged = message as IndexGroupsChanged?;
-            if (groupsChanged != null)
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<IndexGroupsChanged>(OnIndexGroupsChanged);
+            Manager.AddMessageListener<IndexBoundsChanged>(OnIndexBoundsChanged);
+            Manager.AddMessageListener<TranslationChanged>(OnTranslationChanged);
+        }
+
+        /// <summary>Handle group changes (moving components from one index group to another).</summary>
+        private void OnIndexGroupsChanged(IndexGroupsChanged message)
+        {
+            AddToGroups(message.Component, message.AddedIndexGroups);
+            RemoveFromGroups(message.Component, message.RemovedIndexGroups);
+        }
+
+        /// <summary>Handle bound changes (size of actual bounds of simple index components).</summary>
+        private void OnIndexBoundsChanged(IndexBoundsChanged message)
+        {
+            var bounds = message.Bounds;
+            var delta = message.Delta;
+            var component = message.Component;
+
+            // Update all indexes the component is part of.
+            foreach (var index in IndexesForGroups(component.IndexGroupsMask)
+                .Where(index => _trees[index].Update(bounds, delta, component.Id)))
             {
-                var m = groupsChanged.Value;
-
-                AddToGroups(m.Component, m.AddedIndexGroups);
-                RemoveFromGroups(m.Component, m.RemovedIndexGroups);
-
-                return;
+                // Mark as changed.
+                _changed[index].Add(component.Id);
             }
+        }
 
-            // Handle bound changes (size of actual bounds of simple index components).
-            var boundsChanged = message as IndexBoundsChanged?;
-            if (boundsChanged != null)
+        /// <summary>Handle position changes (moving components around in the world).</summary>
+        private void OnTranslationChanged(TranslationChanged message)
+        {
+            var component = message.Component;
+            var bounds = component.ComputeWorldBounds();
+            var velocity = (IVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
+            var delta = velocity != null ? velocity.LinearVelocity : Vector2.Zero;
+
+            // Update all indexes the component is part of.
+            foreach (var index in IndexesForGroups(component.IndexGroupsMask)
+                .Where(index => _trees[index].Update(bounds, delta, component.Id)))
             {
-                var m = boundsChanged.Value;
-
-                var bounds = m.Bounds;
-                var delta = m.Delta;
-                var component = m.Component;
-
-                // Update all indexes the component is part of.
-                foreach (var index in IndexesForGroups(component.IndexGroupsMask)
-                    .Where(index => _trees[index].Update(bounds, delta, component.Id)))
-                {
-                    // Mark as changed.
-                    _changed[index].Add(component.Id);
-                }
-                return;
-            }
-
-            // Handle position changes (moving components around in the world).
-            var translationChanged = message as TranslationChanged?;
-            if (translationChanged != null)
-            {
-                var m = translationChanged.Value;
-
-                var component = m.Component;
-                var bounds = component.ComputeWorldBounds();
-                var velocity = (IVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
-                var delta = velocity != null ? velocity.LinearVelocity : Vector2.Zero;
-
-                // Update all indexes the component is part of.
-                foreach (var index in IndexesForGroups(component.IndexGroupsMask)
-                    .Where(index => _trees[index].Update(bounds, delta, component.Id)))
-                {
-                    // Mark as changed.
-                    _changed[index].Add(component.Id);
-                }
+                // Mark as changed.
+                _changed[index].Add(component.Id);
             }
         }
 

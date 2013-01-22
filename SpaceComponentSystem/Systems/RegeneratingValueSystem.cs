@@ -6,7 +6,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>Triggers refilling regenerating values.</summary>
     public sealed class RegeneratingValueSystem
-        : AbstractParallelComponentSystem<AbstractRegeneratingValue>, IMessagingSystem
+        : AbstractParallelComponentSystem<AbstractRegeneratingValue>
     {
         #region Logic
 
@@ -25,18 +25,16 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Receives the specified message.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as CharacterStatsInvalidated?;
-            if (cm == null)
-            {
-                return;
-            }
+            base.OnAddedToManager();
 
-            foreach (var component in Manager.GetComponents(cm.Value.Entity, AbstractRegeneratingValue.TypeId))
+            Manager.AddMessageListener<CharacterStatsInvalidated>(OnCharacterStatsInvalidated);
+        }
+
+        private void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
+        {
+            foreach (var component in Manager.GetComponents(message.Entity, AbstractRegeneratingValue.TypeId))
             {
                 ((AbstractRegeneratingValue) component).RecomputeValues();
             }

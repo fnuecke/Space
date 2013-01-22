@@ -68,10 +68,6 @@ namespace Engine.ComponentSystem
         [PacketizerIgnore]
         private readonly List<IUpdatingSystem> _updatingSystems = new List<IUpdatingSystem>();
 
-        /// <summary>List of all messaging systems registered with this manager.</summary>
-        [PacketizerIgnore]
-        private readonly List<IMessagingSystem> _messagingSystems = new List<IMessagingSystem>();
-
         /// <summary>List of all drawing systems registered with this manager.</summary>
         [PacketizerIgnore]
         private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
@@ -87,6 +83,10 @@ namespace Engine.ComponentSystem
         /// <summary>Lookup table for quick access to components by their id.</summary>
         [PacketizerIgnore]
         private readonly SparseArray<Component> _components = new SparseArray<Component>();
+
+        /// <summary>Table of registered message callbacks, by type.</summary>
+        [PacketizerIgnore]
+        private readonly Dictionary<Type, IList<object>> _messageCallbacks = new Dictionary<Type, IList<object>>();
 
         #endregion
 
@@ -143,7 +143,7 @@ namespace Engine.ComponentSystem
             // Don't allow adding the same system twice.
             if (_systemsByTypeId[systemTypeId] != null)
             {
-                throw new ArgumentException("Must not add the same system twice.");
+                throw new ArgumentException("You can not add more than one system of a single type.");
             }
 
             // Register the system.
@@ -162,12 +162,6 @@ namespace Engine.ComponentSystem
             {
                 _updatingSystems.Add(updatingSystem);
             }
-            // Add to messaging list, for iteration for message distribution.
-            var messagingSystem = system as IMessagingSystem;
-            if (messagingSystem != null)
-            {
-                _messagingSystems.Add(messagingSystem);
-            }
             // Add to drawing list, for draw iteration.
             var drawingSystem = system as IDrawingSystem;
             if (drawingSystem != null)
@@ -177,6 +171,9 @@ namespace Engine.ComponentSystem
 
             // Set the manager so that the system knows it belongs to us.
             system.Manager = this;
+
+            // Tell the system it was added.
+            system.OnAddedToManager();
 
             return this;
         }
@@ -420,14 +417,37 @@ namespace Engine.ComponentSystem
 
         #region Messaging
 
+        /// <summary>Registers a new message listener with the system.</summary>
+        /// <typeparam name="T">The type of the message the callback handles.</typeparam>
+        /// <param name="callback">
+        ///     The function to call when a message of type <typeparamref name="T"/> is sent.
+        /// </param>
+        public void AddMessageListener<T>(MessageCallback<T> callback) where T : struct
+        {
+            IList<object> callbacks;
+            if (!_messageCallbacks.TryGetValue(typeof (T), out callbacks))
+            {
+                callbacks = new List<object> {callback};
+                _messageCallbacks.Add(typeof (T), callbacks);
+            }
+            else
+            {
+                callbacks.Add(callback);
+            }
+        }
+
         /// <summary>Inform all interested systems of a message.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(T message) where T : struct
         {
-            for (int i = 0, j = _messagingSystems.Count; i < j; ++i)
+            IList<object> callbacks;
+            if (_messageCallbacks.TryGetValue(typeof (T), out callbacks))
             {
-                _messagingSystems[i].Receive(message);
+                foreach (MessageCallback<T> callback in callbacks)
+                {
+                    callback(message);
+                }
             }
         }
 

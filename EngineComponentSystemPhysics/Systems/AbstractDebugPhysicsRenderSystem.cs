@@ -22,7 +22,7 @@ using WorldTransform = Microsoft.Xna.Framework.Matrix;
 
 namespace Engine.ComponentSystem.Physics.Systems
 {
-    public abstract class AbstractDebugPhysicsRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public abstract class AbstractDebugPhysicsRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Constants
 
@@ -517,30 +517,27 @@ namespace Engine.ComponentSystem.Physics.Systems
 
         #region Logic
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _graphicsDevice = message.Graphics.GraphicsDevice;
+            _primitiveBatch = new PrimitiveBatch(_graphicsDevice);
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            _graphicsDevice = null;
+            if (_primitiveBatch != null)
             {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _graphicsDevice = cm.Value.Graphics.GraphicsDevice;
-                    _primitiveBatch = new PrimitiveBatch(_graphicsDevice);
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    _graphicsDevice = null;
-                    if (_primitiveBatch != null)
-                    {
-                        _primitiveBatch.Dispose();
-                        _primitiveBatch = null;
-                    }
-                }
+                _primitiveBatch.Dispose();
+                _primitiveBatch = null;
             }
         }
 

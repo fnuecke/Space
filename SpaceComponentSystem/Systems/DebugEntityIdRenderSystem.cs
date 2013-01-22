@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders entity ids at their position, if they have a position.</summary>
-    public sealed class DebugEntityIdRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class DebugEntityIdRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Properties
 
@@ -89,29 +89,26 @@ namespace Space.ComponentSystem.Systems
             _spriteBatch.End();
         }
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+            _font = message.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
             {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-                    _font = cm.Value.Content.Load<SpriteFont>("Fonts/ConsoleFont");
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                }
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
             }
         }
 

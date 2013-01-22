@@ -14,7 +14,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Manages spawning dynamic objects for cells, such as random ships.</summary>
-    public sealed class ShipSpawnSystem : AbstractUpdatingComponentSystem<ShipSpawner>, IMessagingSystem
+    public sealed class ShipSpawnSystem : AbstractUpdatingComponentSystem<ShipSpawner>
     {
         #region Fields
 
@@ -249,25 +249,27 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Checks for cells being activated and spawns some initial ships in them, to have some base population.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as CellStateChanged?;
-            if (cm == null || !cm.Value.IsSubCell)
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<CellStateChanged>(OnCellStateChanged);
+        }
+
+        private void OnCellStateChanged(CellStateChanged message)
+        {
+            if (!message.IsSubCell)
             {
                 return;
             }
 
-            var m = cm.Value;
-            if (!m.IsActive)
+            if (!message.IsActive)
             {
-                _cellSpawns.RemoveAll(x => x.Item1 == m.Id);
+                _cellSpawns.RemoveAll(x => x.Item1 == message.Id);
             }
             else
             {
-                _cellSpawns.Add(Tuple.Create(m.Id, 5));
+                _cellSpawns.Add(Tuple.Create(message.Id, 5));
             }
         }
 

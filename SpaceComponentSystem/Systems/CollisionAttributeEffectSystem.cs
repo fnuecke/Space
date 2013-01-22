@@ -16,7 +16,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Handles applying effects defined through attributes when two entities collide.</summary>
-    public sealed class CollisionAttributeEffectSystem : AbstractComponentSystem<DamagingStatusEffect>, IMessagingSystem
+    public sealed class CollisionAttributeEffectSystem : AbstractComponentSystem<DamagingStatusEffect>
     {
         #region Fields
 
@@ -31,40 +31,35 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>Handle collision messages by applying damage, if possible.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<BeginContact>(OnBeginContact);
+            Manager.AddMessageListener<EndContact>(OnEndContact);
+        }
+
+        private void OnBeginContact(BeginContact message)
+        {
+            // We only get one message for a collision pair, so we apply damage to both parties.
+            var contact = message.Contact;
+            Vector2 normal;
+            IList<FarPosition> points;
+            contact.ComputeWorldManifold(out normal, out points);
+            var disableContact = BeginContact(contact.FixtureA.Entity, contact.FixtureB.Entity, normal);
+            disableContact = BeginContact(contact.FixtureB.Entity, contact.FixtureA.Entity, -normal) || disableContact;
+            if (disableContact)
             {
-                var cm = message as BeginContact?;
-                if (cm != null)
-                {
-                    // We only get one message for a collision pair, so we apply damage
-                    // to both parties.
-                    var contact = cm.Value.Contact;
-                    Vector2 normal;
-                    IList<FarPosition> points;
-                    contact.ComputeWorldManifold(out normal, out points);
-                    var disableContact = BeginContact(contact.FixtureA.Entity, contact.FixtureB.Entity, normal);
-                    disableContact = BeginContact(contact.FixtureB.Entity, contact.FixtureA.Entity, -normal) || disableContact;
-                    if (disableContact)
-                    {
-                        contact.Disable();
-                    }
-                    return;
-                }
+                contact.Disable();
             }
-            {
-                var cm = message as EndContact?;
-                if (cm != null)
-                {
-                    // Stop damage that is being applied because of this collision.
-                    var contact = cm.Value.Contact;
-                    EndContact(contact.FixtureA.Entity, contact.FixtureB.Entity);
-                    EndContact(contact.FixtureB.Entity, contact.FixtureA.Entity);
-                }
-            }
+        }
+
+        private void OnEndContact(EndContact message)
+        {
+            // Stop damage that is being applied because of this collision.
+            var contact = message.Contact;
+            EndContact(contact.FixtureA.Entity, contact.FixtureB.Entity);
+            EndContact(contact.FixtureB.Entity, contact.FixtureA.Entity);
         }
 
         private bool BeginContact(int damagee, int damager, Vector2 normal)

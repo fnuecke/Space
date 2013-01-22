@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Systems
     ///     processed in the <see cref="PostProcessingPostRenderSystem"/>. This system should run before any other render
     ///     systems.
     /// </summary>
-    public sealed class PostProcessingPreRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class PostProcessingPreRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -43,41 +43,7 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    var pp = cm.Value.Graphics.GraphicsDevice.PresentationParameters;
-                    _scene = new RenderTarget2D(
-                        cm.Value.Graphics.GraphicsDevice,
-                        pp.BackBufferWidth,
-                        pp.BackBufferHeight,
-                        false,
-                        pp.BackBufferFormat,
-                        DepthFormat.None,
-                        pp.MultiSampleCount,
-                        RenderTargetUsage.PreserveContents);
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_scene != null)
-                    {
-                        _scene.Dispose();
-                        _scene = null;
-                    }
-                }
-            }
-        }
-
+        
         /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
@@ -87,6 +53,37 @@ namespace Space.ComponentSystem.Systems
             // off-screen texture, first.
             _scene.GraphicsDevice.SetRenderTarget(_scene);
             _scene.GraphicsDevice.Clear(Color.DarkSlateGray);
+        }
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            var pp = message.Graphics.GraphicsDevice.PresentationParameters;
+            _scene = new RenderTarget2D(
+                message.Graphics.GraphicsDevice,
+                pp.BackBufferWidth,
+                pp.BackBufferHeight,
+                false,
+                pp.BackBufferFormat,
+                DepthFormat.None,
+                pp.MultiSampleCount,
+                RenderTargetUsage.PreserveContents);
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_scene != null)
+            {
+                _scene.Dispose();
+                _scene = null;
+            }
         }
 
         #endregion

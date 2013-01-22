@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Spatial.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -10,7 +9,7 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Handles the death of entities due to leaving the valid area or being killed an not respawning.</summary>
-    public sealed class DeathSystem : AbstractSystem, IUpdatingSystem, IMessagingSystem
+    public sealed class DeathSystem : AbstractSystem, IUpdatingSystem
     {
         #region Type ID
 
@@ -54,81 +53,39 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Checks if an entity died, and handles death accordingly.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<EntityDied>(OnEntityDied);
+        }
+
+        private void OnEntityDied(EntityDied message)
+        {
+            var entity = message.KilledEntity;
+
+            // Play explosion effect at point of death.
+            var particleSystem =
+                (CameraCenteredParticleEffectSystem) Manager.GetSystem(ParticleEffectSystem.TypeId);
+            if (particleSystem != null)
             {
-                var cm = message as EntityDied?;
-                if (cm != null)
-                {
-                    var entity = cm.Value.KilledEntity;
-
-                    // Play explosion effect at point of death.
-                    var particleSystem =
-                        (CameraCenteredParticleEffectSystem) Manager.GetSystem(ParticleEffectSystem.TypeId);
-                    if (particleSystem != null)
-                    {
-                        particleSystem.Play("Effects/BasicExplosion", entity);
-                    }
-                    var soundSystem = (CameraCenteredSoundSystem) Manager.GetSystem(SoundSystem.TypeId);
-                    if (soundSystem != null)
-                    {
-                        soundSystem.Play("Explosion", entity);
-                    }
-
-                    // See if the entity respawns.
-                    var respawn = ((Respawn) Manager.GetComponent(entity, Respawn.TypeId));
-                    if (respawn == null)
-                    {
-                        // Entity does not respawn, remove it. This can be triggered from
-                        // a parallel system (e.g. collisions), so we remember to remove it.
-                        lock (_entitiesToRemove)
-                        {
-                            _entitiesToRemove.Add(entity);
-                        }
-                    }
-                    return;
-                }
+                particleSystem.Play("Effects/BasicExplosion", entity);
             }
+            var soundSystem = (CameraCenteredSoundSystem) Manager.GetSystem(SoundSystem.TypeId);
+            if (soundSystem != null)
             {
-                var cm = message as TranslationChanged?;
-                if (cm != null)
+                soundSystem.Play("Explosion", entity);
+            }
+
+            // See if the entity respawns.
+            var respawn = ((Respawn) Manager.GetComponent(entity, Respawn.TypeId));
+            if (respawn == null)
+            {
+                // Entity does not respawn, remove it. This can be triggered from
+                // a parallel system (e.g. collisions), so we remember to remove it.
+                lock (_entitiesToRemove)
                 {
-                    var m = cm.Value;
-
-                    // Only remove entities marked for removal.
-                    var cellDeath = (CellDeath) Manager.GetComponent(m.Component.Entity, CellDeath.TypeId);
-                    if (cellDeath == null)
-                    {
-                        return;
-                    }
-
-                    // Check our new cell after the position change.
-                    var position = m.CurrentPosition;
-                    if (cellDeath.IsForSubCell)
-                    {
-                        var cellId = CellSystem.GetSubCellIdFromCoordinates(position);
-
-                        // If the cell changed, check if we're out of bounds.
-                        if (!((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsSubCellActive(cellId))
-                        {
-                            // Dead space, kill it.
-                            Manager.RemoveEntity(m.Component.Entity);
-                        }
-                    }
-                    else
-                    {
-                        var cellId = CellSystem.GetCellIdFromCoordinates(position);
-
-                        // If the cell changed, check if we're out of bounds.
-                        if (!((CellSystem) Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
-                        {
-                            // Dead space, kill it.
-                            Manager.RemoveEntity(m.Component.Entity);
-                        }
-                    }
+                    _entitiesToRemove.Add(entity);
                 }
             }
         }

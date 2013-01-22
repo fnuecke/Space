@@ -7,7 +7,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Base class for systems implementing damage status effect application or other 'on hit' effects.</summary>
-    public abstract class AbstractDamageApplyingSystem : AbstractSystem, IMessagingSystem
+    public abstract class AbstractDamageApplyingSystem : AbstractSystem
     {
         #region Fields
 
@@ -18,19 +18,16 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as DamageReceived?;
-            if (cm == null)
-            {
-                return;
-            }
+            base.OnAddedToManager();
 
-            var m = cm.Value;
-            ApplyDamage(m.Owner, m.Attributes, m.Damagee);
+            Manager.AddMessageListener<DamageReceived>(OnDamageReceived);
+        }
+
+        private void OnDamageReceived(DamageReceived message)
+        {
+            ApplyDamage(message.Owner, message.Attributes, message.Damagee);
         }
 
         /// <summary>Applies the damage for this system.</summary>

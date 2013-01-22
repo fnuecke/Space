@@ -8,7 +8,7 @@ using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
-    public class CameraMovementSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public class CameraMovementSystem : AbstractSystem, IDrawingSystem
     {
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
@@ -114,16 +114,16 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Receives the specified message.</summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as MoveCamera?;
-            if (cm != null)
-            {
-                Move(cm.Value);
-            }
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<MoveCamera>(OnMoveCamera);
+        }
+
+        private void OnMoveCamera(MoveCamera message)
+        {
+            Move(message);
         }
 
         public void Move(MoveCamera move)

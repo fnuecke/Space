@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     ///     <see cref="PostProcessingPreRenderSystem"/>
     ///     to apply post processing effects. This system should run after all other render systems.
     /// </summary>
-    public sealed class PostProcessingPostRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class PostProcessingPostRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -92,70 +92,7 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    var device = cm.Value.Graphics.GraphicsDevice;
-
-                    _spriteBatch = new SpriteBatch(device);
-
-                    _bloomExtractEffect = cm.Value.Content.Load<Effect>("Shaders/BloomExtract");
-                    _bloomCombineEffect = cm.Value.Content.Load<Effect>("Shaders/BloomCombine");
-                    _gaussianBlurEffect = cm.Value.Content.Load<Effect>("Shaders/GaussianBlur");
-
-                    // Create two rendertargets for the bloom processing. These are half the
-                    // size of the backbuffer, in order to minimize fillrate costs. Reducing
-                    // the resolution in this way doesn't hurt quality, because we are going
-                    // to be blurring the bloom images anyway.
-                    var pp = device.PresentationParameters;
-                    var width = pp.BackBufferWidth / 2;
-                    var height = pp.BackBufferHeight / 2;
-                    _renderTarget1 = new RenderTarget2D(
-                        device,
-                        width,
-                        height,
-                        false,
-                        pp.BackBufferFormat,
-                        DepthFormat.None);
-                    _renderTarget2 = new RenderTarget2D(
-                        device,
-                        width,
-                        height,
-                        false,
-                        pp.BackBufferFormat,
-                        DepthFormat.None);
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                    if (_renderTarget1 != null)
-                    {
-                        _renderTarget1.Dispose();
-                        _renderTarget1 = null;
-                    }
-                    if (_renderTarget2 != null)
-                    {
-                        _renderTarget2.Dispose();
-                        _renderTarget2 = null;
-                    }
-                }
-            }
-        }
-
+        
         /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
@@ -304,6 +241,66 @@ namespace Space.ComponentSystem.Systems
         {
             return (float) ((1.0 / Math.Sqrt(2 * Math.PI * theta)) *
                             Math.Exp(-(n * n) / (2 * theta * theta)));
+        }
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            var device = message.Graphics.GraphicsDevice;
+
+            _spriteBatch = new SpriteBatch(device);
+
+            _bloomExtractEffect = message.Content.Load<Effect>("Shaders/BloomExtract");
+            _bloomCombineEffect = message.Content.Load<Effect>("Shaders/BloomCombine");
+            _gaussianBlurEffect = message.Content.Load<Effect>("Shaders/GaussianBlur");
+
+            // Create two rendertargets for the bloom processing. These are half the
+            // size of the backbuffer, in order to minimize fillrate costs. Reducing
+            // the resolution in this way doesn't hurt quality, because we are going
+            // to be blurring the bloom images anyway.
+            var pp = device.PresentationParameters;
+            var width = pp.BackBufferWidth / 2;
+            var height = pp.BackBufferHeight / 2;
+            _renderTarget1 = new RenderTarget2D(
+                device,
+                width,
+                height,
+                false,
+                pp.BackBufferFormat,
+                DepthFormat.None);
+            _renderTarget2 = new RenderTarget2D(
+                device,
+                width,
+                height,
+                false,
+                pp.BackBufferFormat,
+                DepthFormat.None);
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
+            {
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
+            }
+            if (_renderTarget1 != null)
+            {
+                _renderTarget1.Dispose();
+                _renderTarget1 = null;
+            }
+            if (_renderTarget2 != null)
+            {
+                _renderTarget2.Dispose();
+                _renderTarget2 = null;
+            }
         }
 
         #endregion

@@ -886,6 +886,14 @@ namespace Engine.Simulation
 
             #region Messaging
 
+            /// <summary>Adds the message listener.</summary>
+            /// <typeparam name="T"></typeparam>
+            /// <param name="callback">The callback.</param>
+            public void AddMessageListener<T>(MessageCallback<T> callback) where T : struct
+            {
+                throw new NotSupportedException();
+            }
+
             /// <summary>Inform all interested systems of a message.</summary>
             /// <typeparam name="T">The type of the message.</typeparam>
             /// <param name="message">The sent message.</param>

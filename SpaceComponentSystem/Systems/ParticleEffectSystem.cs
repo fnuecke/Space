@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>Controls the particle components in a game, passing them some information about how to render themselves.</summary>
     public abstract class ParticleEffectSystem
-        : AbstractComponentSystem<ParticleEffects>, IDrawingSystem, IMessagingSystem
+        : AbstractComponentSystem<ParticleEffects>, IDrawingSystem
     {
         #region Type ID
 
@@ -59,48 +59,7 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    if (_renderer == null)
-                    {
-                        _renderer = new SpriteBatchRenderer {GraphicsDeviceService = cm.Value.Graphics};
-                    }
-                    _renderer.LoadContent(cm.Value.Content);
-                    foreach (var component in Components)
-                    {
-                        foreach (var effect in component.Effects)
-                        {
-                            if (effect.Effect == null)
-                            {
-                                var graphicsSystem =
-                                    ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                                effect.Effect = graphicsSystem.Content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
-                                effect.Effect.LoadContent(cm.Value.Content);
-                                effect.Effect.Initialise();
-                            }
-                            else
-                            {
-                                effect.Effect.LoadContent(cm.Value.Content);
-                            }
-                        }
-                    }
-                    foreach (var effect in _effects)
-                    {
-                        effect.Value.LoadContent(cm.Value.Content);
-                    }
-                }
-            }
-            // TODO do we have to dispose and recreate the renderer?
-        }
-
+        
         /// <summary>Flags our system as the presenting instance and renders all effects.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
@@ -202,6 +161,45 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <returns>The translation.</returns>
         protected abstract FarPosition GetTranslation();
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            // TODO do we have to dispose and recreate the renderer?
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            if (_renderer == null)
+            {
+                _renderer = new SpriteBatchRenderer {GraphicsDeviceService = message.Graphics};
+            }
+            _renderer.LoadContent(message.Content);
+            foreach (var component in Components)
+            {
+                foreach (var effect in component.Effects)
+                {
+                    if (effect.Effect == null)
+                    {
+                        var graphicsSystem =
+                            ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
+                        effect.Effect = graphicsSystem.Content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
+                        effect.Effect.LoadContent(message.Content);
+                        effect.Effect.Initialise();
+                    }
+                    else
+                    {
+                        effect.Effect.LoadContent(message.Content);
+                    }
+                }
+            }
+            foreach (var effect in _effects)
+            {
+                effect.Value.LoadContent(message.Content);
+            }
+        }
 
         #endregion
 

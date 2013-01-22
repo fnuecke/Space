@@ -8,7 +8,7 @@ using Space.ComponentSystem.Components;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Loads icons for detectable components.</summary>
-    public sealed class DetectableSystem : AbstractComponentSystem<Detectable>, IDrawingSystem, IMessagingSystem
+    public sealed class DetectableSystem : AbstractComponentSystem<Detectable>, IDrawingSystem
     {
         #region Constants
 
@@ -29,23 +29,6 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    foreach (var component in Components)
-                    {
-                        component.Texture = cm.Value.Content.Load<Texture2D>(component.TextureName);
-                    }
-                }
-            }
-        }
-
         /// <summary>Loads textures for detectables.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
@@ -59,6 +42,21 @@ namespace Space.ComponentSystem.Systems
                     var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
                     component.Texture = graphicsSystem.Content.Load<Texture2D>(component.TextureName);
                 }
+            }
+        }
+        
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            foreach (var component in Components)
+            {
+                component.Texture = message.Content.Load<Texture2D>(component.TextureName);
             }
         }
 

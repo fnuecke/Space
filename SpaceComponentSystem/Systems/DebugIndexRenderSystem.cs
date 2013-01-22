@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system can be used to render an index from the index system.</summary>
-    public sealed class DebugIndexRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class DebugIndexRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Properties
 
@@ -31,29 +31,6 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    if (_indexRectangle == null)
-                    {
-                        _indexRectangle = new Engine.Graphics.Rectangle(cm.Value.Content, cm.Value.Graphics)
-                        {
-                            Color = Color.LightGreen * 0.75f,
-                            Thickness = 2f,
-                            BlendState = BlendState.Additive
-                        };
-                        _indexRectangle.LoadContent();
-                    }
-                }
-            }
-        }
-
         /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
@@ -65,6 +42,27 @@ namespace Space.ComponentSystem.Systems
                 var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
                 _indexRectangle.SetTransform(camera.Transform);
                 index.DrawIndex(IndexGroupMask, _indexRectangle, camera.Translation);
+            }
+        }
+        
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            if (_indexRectangle == null)
+            {
+                _indexRectangle = new Engine.Graphics.Rectangle(message.Content, message.Graphics)
+                {
+                    Color = Color.LightGreen * 0.75f,
+                    Thickness = 2f,
+                    BlendState = BlendState.Additive
+                };
+                _indexRectangle.LoadContent();
             }
         }
 

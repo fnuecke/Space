@@ -13,7 +13,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system can render floating texts, which can be useful for drawing damage numbers and the like.</summary>
-    public sealed class FloatingTextSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class FloatingTextSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -72,32 +72,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-                    _font = cm.Value.Content.Load<SpriteFont>("Fonts/bauhaus");
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                }
-            }
-        }
 
         /// <summary>Draws the system.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
@@ -203,6 +177,29 @@ namespace Space.ComponentSystem.Systems
             _spriteBatch.End();
             _spriteBatch.GraphicsDevice.SetRenderTargets(previousRenderTargets);
             return texture;
+        }
+        
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+            _font = message.Content.Load<SpriteFont>("Fonts/bauhaus");
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
+            {
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
+            }
         }
 
         #endregion

@@ -21,7 +21,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     camera positioning.
     /// </summary>
     public abstract class TextureRenderSystem
-        : AbstractComponentSystem<IDrawable>, IDrawingSystem, IMessagingSystem
+        : AbstractComponentSystem<IDrawable>, IDrawingSystem
     {
         #region Type ID
 
@@ -63,57 +63,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    LoadContent(cm.Value.Content, cm.Value.Graphics);
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    UnloadContent();
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceReset?;
-                if (cm != null)
-                {
-                    UnloadContent();
-                    LoadContent(cm.Value.Content, cm.Value.Graphics);
-                }
-            }
-        }
-
-        /// <summary>Called when the graphics device has been (re)created, and assets should be loaded.</summary>
-        /// <param name="content">The content manager.</param>
-        /// <param name="graphics">The graphics device service.</param>
-        protected virtual void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
-        {
-            SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
-            foreach (var component in Components)
-            {
-                component.LoadContent(content, graphics);
-            }
-        }
-
-        /// <summary>Called when the graphics device is being disposed, and any assets manually allocated should be disposed.</summary>
-        protected virtual void UnloadContent()
-        {
-            if (SpriteBatch != null)
-            {
-                SpriteBatch.Dispose();
-                SpriteBatch = null;
-            }
-        }
 
         /// <summary>
         ///     Loops over all components and calls <c>DrawComponent()</c>.
@@ -190,6 +139,53 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// </summary>
         /// <returns>The translation.</returns>
         protected abstract WorldPoint GetTranslation();
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+            Manager.AddMessageListener<GraphicsDeviceReset>(OnGraphicsDeviceReset);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            LoadContent(message.Content, message.Graphics);
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            UnloadContent();
+        }
+
+        private void OnGraphicsDeviceReset(GraphicsDeviceReset message)
+        {
+            UnloadContent();
+            LoadContent(message.Content, message.Graphics);
+        }
+
+        /// <summary>Called when the graphics device has been (re)created, and assets should be loaded.</summary>
+        /// <param name="content">The content manager.</param>
+        /// <param name="graphics">The graphics device service.</param>
+        protected virtual void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
+        {
+            SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
+            foreach (var component in Components)
+            {
+                component.LoadContent(content, graphics);
+            }
+        }
+
+        /// <summary>Called when the graphics device is being disposed, and any assets manually allocated should be disposed.</summary>
+        protected virtual void UnloadContent()
+        {
+            if (SpriteBatch != null)
+            {
+                SpriteBatch.Dispose();
+                SpriteBatch = null;
+            }
+        }
 
         #endregion
     }

@@ -16,7 +16,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system handles rendering whatever the local player's radar picks up.</summary>
-    public sealed class RadarRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class RadarRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Types
 
@@ -323,48 +323,6 @@ namespace Space.ComponentSystem.Systems
             _reusableNeighborList.Clear();
         }
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-
-                    _radarDirection[(int) RadarDirection.Top] = cm.Value.Content.Load<Texture2D>("Textures/Radar/top");
-                    _radarDirection[(int) RadarDirection.Left] = cm.Value.Content.Load<Texture2D>("Textures/Radar/left");
-                    _radarDirection[(int) RadarDirection.Right] =
-                        cm.Value.Content.Load<Texture2D>("Textures/Radar/right");
-                    _radarDirection[(int) RadarDirection.Bottom] =
-                        cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom");
-                    _radarDirection[(int) RadarDirection.TopLeft] =
-                        cm.Value.Content.Load<Texture2D>("Textures/Radar/top_left");
-                    _radarDirection[(int) RadarDirection.TopRight] =
-                        cm.Value.Content.Load<Texture2D>("Textures/Radar/top_right");
-                    _radarDirection[(int) RadarDirection.BottomLeft] =
-                        cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_left");
-                    _radarDirection[(int) RadarDirection.BottomRight] =
-                        cm.Value.Content.Load<Texture2D>("Textures/Radar/bottom_right");
-                    _radarDistance = cm.Value.Content.Load<Texture2D>("Textures/Radar/distance");
-                    _distanceFont = cm.Value.Content.Load<SpriteFont>("Fonts/visitor");
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                }
-            }
-        }
-
         /// <summary>
         ///     Gets the actual direction background to display. This checks which borders the icon touches and returns the
         ///     according direction.
@@ -448,6 +406,39 @@ namespace Space.ComponentSystem.Systems
             return distance > 100
                        ? string.Format("{0:f0}{1}", distance, unitName)
                        : string.Format("{0:f1}{1}", distance, unitName);
+        }
+        
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+
+            _radarDirection[(int) RadarDirection.Top] = message.Content.Load<Texture2D>("Textures/Radar/top");
+            _radarDirection[(int) RadarDirection.Left] = message.Content.Load<Texture2D>("Textures/Radar/left");
+            _radarDirection[(int) RadarDirection.Right] = message.Content.Load<Texture2D>("Textures/Radar/right");
+            _radarDirection[(int) RadarDirection.Bottom] = message.Content.Load<Texture2D>("Textures/Radar/bottom");
+            _radarDirection[(int) RadarDirection.TopLeft] = message.Content.Load<Texture2D>("Textures/Radar/top_left");
+            _radarDirection[(int) RadarDirection.TopRight] = message.Content.Load<Texture2D>("Textures/Radar/top_right");
+            _radarDirection[(int) RadarDirection.BottomLeft] = message.Content.Load<Texture2D>("Textures/Radar/bottom_left");
+            _radarDirection[(int) RadarDirection.BottomRight] = message.Content.Load<Texture2D>("Textures/Radar/bottom_right");
+            _radarDistance = message.Content.Load<Texture2D>("Textures/Radar/distance");
+            _distanceFont = message.Content.Load<SpriteFont>("Fonts/visitor");
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
+            {
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
+            }
         }
 
         #endregion

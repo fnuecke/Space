@@ -19,7 +19,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Handles firing of equipped weapons.</summary>
-    public sealed class WeaponControlSystem : AbstractParallelComponentSystem<WeaponControl>, IMessagingSystem
+    public sealed class WeaponControlSystem : AbstractParallelComponentSystem<WeaponControl>
     {
         #region Fields
 
@@ -193,35 +193,29 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Handles item equipment to track cooldowns.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<ItemEquipped>(OnItemEquipped);
+            Manager.AddMessageListener<ItemUnequipped>(OnItemUnequipped);
+        }
+
+        private void OnItemEquipped(ItemEquipped message)
+        {
+            if (Manager.GetComponent(message.Item, Weapon.TypeId) != null)
             {
-                var cm = message as ItemEquipped?;
-                if (cm != null)
-                {
-                    var m = cm.Value;
-                    if (Manager.GetComponent(m.Item, Weapon.TypeId) != null)
-                    {
-                        // Weapon was equipped, track a cooldown for it.
-                        _cooldowns.Add(m.Item, 0);
-                    }
-                    return;
-                }
+                // Weapon was equipped, track a cooldown for it.
+                _cooldowns.Add(message.Item, 0);
             }
+        }
+
+        private void OnItemUnequipped(ItemUnequipped message)
+        {
+            if (Manager.GetComponent(message.Item, Weapon.TypeId) != null)
             {
-                var cm = message as ItemUnequipped?;
-                if (cm != null)
-                {
-                    var m = cm.Value;
-                    if (Manager.GetComponent(m.Item, Weapon.TypeId) != null)
-                    {
-                        // Weapon was unequipped, stop tracking.
-                        _cooldowns.Remove(m.Item);
-                    }
-                }
+                // Weapon was unequipped, stop tracking.
+                _cooldowns.Remove(message.Item);
             }
         }
 

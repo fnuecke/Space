@@ -9,7 +9,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class DebugSlotRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public sealed class DebugSlotRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -97,41 +97,36 @@ namespace Space.ComponentSystem.Systems
             }
             _spriteBatch.End();
         }
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        
+        public override void OnAddedToManager()
         {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
+            base.OnAddedToManager();
 
-                    _textures.Add(
-                        Fuselage.TypeId, cm.Value.Content.Load<Texture2D>("Textures/Items/mountpoint_fuselage"));
-                    _textures.Add(Reactor.TypeId, cm.Value.Content.Load<Texture2D>("Textures/Items/mountpoint_reactor"));
-                    _textures.Add(Sensor.TypeId, cm.Value.Content.Load<Texture2D>("Textures/Items/mountpoint_sensor"));
-                    _textures.Add(Shield.TypeId, cm.Value.Content.Load<Texture2D>("Textures/Items/mountpoint_shield"));
-                    _textures.Add(
-                        Thruster.TypeId, cm.Value.Content.Load<Texture2D>("Textures/Items/mountpoint_thruster"));
-                    _textures.Add(Weapon.TypeId, cm.Value.Content.Load<Texture2D>("Textures/Items/mountpoint_weapon"));
-                    _textures.Add(Wing.TypeId, cm.Value.Content.Load<Texture2D>("Textures/Items/mountpoint_wing"));
-                }
-            }
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+
+            _textures.Add(Fuselage.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_fuselage"));
+            _textures.Add(Reactor.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_reactor"));
+            _textures.Add(Sensor.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_sensor"));
+            _textures.Add(Shield.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_shield"));
+            _textures.Add(Thruster.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_thruster"));
+            _textures.Add(Weapon.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_weapon"));
+            _textures.Add(Wing.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_wing"));
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
             {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                    _textures.Clear();
-                }
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
             }
+            _textures.Clear();
         }
 
         #endregion

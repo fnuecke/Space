@@ -11,25 +11,22 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system is responsible for distributing experience from unit kills to involved parties.</summary>
-    public sealed class ExperienceSystem : AbstractSystem, IMessagingSystem
+    public sealed class ExperienceSystem : AbstractSystem
     {
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
-        /// <summary>Receives the specified message.</summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var castMessage = message as EntityDied?;
-            if (castMessage == null)
-            {
-                return;
-            }
+            base.OnAddedToManager();
 
+            Manager.AddMessageListener<EntityDied>(OnEntityDied);
+        }
+
+        private void OnEntityDied(EntityDied message)
+        {
             // See if the entity that died gives XP.
-            var died = castMessage.Value;
-            var xp = (ExperiencePoints) Manager.GetComponent(died.KilledEntity, ExperiencePoints.TypeId);
+            var xp = (ExperiencePoints) Manager.GetComponent(message.KilledEntity, ExperiencePoints.TypeId);
             if (xp == null)
             {
                 return;
@@ -41,7 +38,7 @@ namespace Space.ComponentSystem.Systems
             var actualXp = (int) (xp.Value * (1f + (avatars.Count - 1) * 0.05f));
 
             // Figure out whom to attribute the main share of the experience to.
-            var killer = died.KillingEntity;
+            var killer = message.KillingEntity;
             Experience experience = null;
             while (killer > 0)
             {
@@ -69,8 +66,8 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get position of the killed entity.
-            var killedPos = (ITransform) Manager.GetComponent(died.KilledEntity, TransformTypeId);
-            Debug.Assert(killedPos != null);
+            var killedPosition = (ITransform) Manager.GetComponent(message.KilledEntity, TransformTypeId);
+            Debug.Assert(killedPosition != null);
 
             // 50% of XP for others, if object died via environment or was
             // killed by some NPC, 90% if killed by other player.
@@ -99,7 +96,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Limit to one system size (radius: cell size / 2).
-                var distance = FarPosition.Distance(transform.Position, killedPos.Position);
+                var distance = FarPosition.Distance(transform.Position, killedPosition.Position);
                 if (distance > range)
                 {
                     // Too far away, this one gets nothing.

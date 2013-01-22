@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -303,6 +304,47 @@ namespace Space.ComponentSystem.Systems
             living.UnionWith(_reusableNewCellIds);
 
             _reusableNewCellIds.Clear();
+        }
+
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+            
+            Manager.AddMessageListener<TranslationChanged>(OnTranslationChanged);
+        }
+
+        private void OnTranslationChanged(TranslationChanged message)
+        {
+            // Only remove entities marked for removal.
+            var cellDeath = (CellDeath) Manager.GetComponent(message.Component.Entity, CellDeath.TypeId);
+            if (cellDeath == null)
+            {
+                return;
+            }
+
+            // Check our new cell after the position change.
+            if (cellDeath.IsForSubCell)
+            {
+                var cellId = CellSystem.GetSubCellIdFromCoordinates(message.CurrentPosition);
+
+                // If the cell changed, check if we're out of bounds.
+                if (!IsSubCellActive(cellId))
+                {
+                    // Dead space, kill it.
+                    Manager.RemoveEntity(message.Component.Entity);
+                }
+            }
+            else
+            {
+                var cellId = CellSystem.GetCellIdFromCoordinates(message.CurrentPosition);
+
+                // If the cell changed, check if we're out of bounds.
+                if (!IsCellActive(cellId))
+                {
+                    // Dead space, kill it.
+                    Manager.RemoveEntity(message.Component.Entity);
+                }
+            }
         }
 
         #endregion

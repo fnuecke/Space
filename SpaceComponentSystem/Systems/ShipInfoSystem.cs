@@ -1,31 +1,27 @@
-﻿using Engine.ComponentSystem.Physics.Components;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
-using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.Data;
-using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Keeps the ship information facade up-to-date.</summary>
-    public sealed class ShipInfoSystem : AbstractSystem, IMessagingSystem
+    public sealed class ShipInfoSystem : AbstractSystem
     {
         #region Logic
 
-        /// <summary>Handles a message. Updates speed and acceleration when modules change.</summary>
-        /// <param name="message">The message to handle.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as CharacterStatsInvalidated?;
-            if (cm == null)
-            {
-                return;
-            }
+            base.OnAddedToManager();
 
-            var entity = cm.Value.Entity;
+            Manager.AddMessageListener<CharacterStatsInvalidated>(OnCharacterStatsInvalidated);
+        }
+
+        private void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
+        {
+            var entity = message.Entity;
             var shipInfo = ((ShipInfo) Manager.GetComponent(entity, ShipInfo.TypeId));
             if (shipInfo == null)
             {

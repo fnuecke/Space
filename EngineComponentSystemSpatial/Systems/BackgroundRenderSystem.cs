@@ -20,7 +20,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     This system is responsible for rendering textures in a wrapping mode to the full viewport. It supports fading
     ///     between different sets of textures.
     /// </summary>
-    public abstract class BackgroundRenderSystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public abstract class BackgroundRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -50,38 +50,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
-        {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-                    foreach (var background in _backgrounds)
-                    {
-                        for (var i = 0; i < background.TextureNames.Length; i++)
-                        {
-                            background.Textures[i] = cm.Value.Content.Load<Texture2D>(background.TextureNames[i]);
-                        }
-                    }
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                }
-            }
-        }
 
         /// <summary>Draws the current background.</summary>
         /// <param name="frame">The frame that should be rendered.</param>
@@ -214,6 +182,39 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// </summary>
         /// <returns>The translation.</returns>
         protected abstract WorldPoint GetTranslation();
+
+        /// <summary>
+        ///     Called by the manager when the system was added to it. This allows for the system to register its message
+        ///     listener and do other one-time initialization.
+        /// </summary>
+        public override void OnAddedToManager()
+        {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+            foreach (var background in _backgrounds)
+            {
+                for (var i = 0; i < background.TextureNames.Length; i++)
+                {
+                    background.Textures[i] = message.Content.Load<Texture2D>(background.TextureNames[i]);
+                }
+            }
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
+            {
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
+            }
+        }
 
         #endregion
 

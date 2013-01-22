@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     ///     This System is used to easily display text. A System that wants to be displayed must Implement the
     ///     IInformation interface.
     /// </summary>
-    public class InformationDisplaySystem : AbstractSystem, IDrawingSystem, IMessagingSystem
+    public class InformationDisplaySystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -63,34 +63,30 @@ namespace Space.ComponentSystem.Systems
             }
             //Throw exception?
         }
-
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        
+        public override void OnAddedToManager()
         {
-            {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    LoadContent(cm.Value.Content, cm.Value.Graphics);
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    UnloadContent();
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceReset?;
-                if (cm != null)
-                {
-                    UnloadContent();
-                    LoadContent(cm.Value.Content, cm.Value.Graphics);
-                }
-            }
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+            Manager.AddMessageListener<GraphicsDeviceReset>(OnGraphicsDeviceReset);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            LoadContent(message.Content, message.Graphics);
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            UnloadContent();
+        }
+
+        private void OnGraphicsDeviceReset(GraphicsDeviceReset message)
+        {
+            UnloadContent();
+            LoadContent(message.Content, message.Graphics);
         }
 
         /// <summary>Called when the graphics device has been (re)created, and assets should be loaded.</summary>

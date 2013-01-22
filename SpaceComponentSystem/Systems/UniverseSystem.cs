@@ -21,7 +21,7 @@ namespace Space.ComponentSystem.Systems
     ///         procedurally whenever a cell gets re-activated.
     ///     </para>
     /// </summary>
-    public sealed class UniverseSystem : AbstractSystem, IMessagingSystem
+    public sealed class UniverseSystem : AbstractSystem
     {
         #region Type ID
 
@@ -62,35 +62,36 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>Receives the specified message.</summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
-            var cm = message as CellStateChanged?;
-            if (cm == null || cm.Value.IsSubCell)
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<CellStateChanged>(OnCellStateChanged);
+        }
+
+        private void OnCellStateChanged(CellStateChanged message)
+        {
+            if (message.IsSubCell)
             {
                 return;
             }
 
-            var m = cm.Value;
-
-            if (m.IsActive)
+            if (message.IsActive)
             {
                 // Get random generator based on world seed and cell location.
                 var hasher = new Hasher();
-                hasher.Write(m.Id).Write(WorldSeed);
+                hasher.Write(message.Id).Write(WorldSeed);
                 var random = new MersenneTwister(hasher.Value);
 
                 // Check if we have a changed cell info.
-                if (!_cellInfo.ContainsKey(m.Id))
+                if (!_cellInfo.ContainsKey(message.Id))
                 {
                     // No, generate the default one. Get an independent
                     // randomizer to avoid different results in other
                     // sampling operations from when we have an existing
                     // cell info.
                     hasher.Reset();
-                    hasher.Write(m.Id).Write(WorldSeed);
+                    hasher.Write(message.Id).Write(WorldSeed);
                     var independentRandom = new MersenneTwister(hasher.Value);
 
                     // Figure out which faction should own this cell.
@@ -113,17 +114,17 @@ namespace Space.ComponentSystem.Systems
                     var techLevel = independentRandom.NextInt32(3);
 
                     // Create the cell and push it.
-                    _cellInfo.Add(m.Id, new CellInfo(faction, techLevel));
+                    _cellInfo.Add(message.Id, new CellInfo(faction, techLevel));
                 }
 
                 // Get center of our cell.
                 const int cellSize = CellSystem.CellSize;
                 var center = new FarPosition(
-                    cellSize * m.X + (cellSize >> 1),
-                    cellSize * m.Y + (cellSize >> 1));
+                    cellSize * message.X + (cellSize >> 1),
+                    cellSize * message.Y + (cellSize >> 1));
 
                 // Check if it's the start system or not.
-                if (m.X == 0 && m.Y == 0)
+                if (message.X == 0 && message.Y == 0)
                 {
                     // It is, use a predefined number of planets and moons,
                     // and make sure it's a solar system.
@@ -139,10 +140,10 @@ namespace Space.ComponentSystem.Systems
                 // them as possible targets for all station sin this cell,
                 // and let them know about our existence, as well.
                 var cellSystem = (CellSystem) Manager.GetSystem(CellSystem.TypeId);
-                var stations = _cellInfo[m.Id].Stations;
-                for (var ny = m.Y - 1; ny <= m.Y + 1; ny++)
+                var stations = _cellInfo[message.Id].Stations;
+                for (var ny = message.Y - 1; ny <= message.Y + 1; ny++)
                 {
-                    for (var nx = m.X - 1; nx <= m.X + 1; nx++)
+                    for (var nx = message.X - 1; nx <= message.X + 1; nx++)
                     {
                         // Don't fly to cells that are diagonal to
                         // ourselves, which we do by checking if the
@@ -162,14 +163,14 @@ namespace Space.ComponentSystem.Systems
                         // the sum of diagonal pairs of cells is always
                         // even, and the one of straight neighbors is
                         // always odd.
-                        if (((m.X + m.Y + ny + nx) & 1) == 0)
+                        if (((message.X + message.Y + ny + nx) & 1) == 0)
                         {
                             // Get the id, only mark the station if we have
                             // info on it and it's an enemy cell.
                             var id = BitwiseMagic.Pack(nx, ny);
                             if (cellSystem.IsCellActive(id) &&
                                 _cellInfo.ContainsKey(id) &&
-                                (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[m.Id].Faction)))
+                                (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[message.Id].Faction)))
                             {
                                 // Tell the other stations.
                                 foreach (var stationId in _cellInfo[id].Stations)
@@ -198,13 +199,13 @@ namespace Space.ComponentSystem.Systems
             {
                 // Remove cell info only if it does not deviate from the
                 // procedural values.
-                if (!_cellInfo[m.Id].Dirty)
+                if (!_cellInfo[message.Id].Dirty)
                 {
-                    _cellInfo.Remove(m.Id);
+                    _cellInfo.Remove(message.Id);
                 }
                 else
                 {
-                    _cellInfo[m.Id].Stations.Clear();
+                    _cellInfo[message.Id].Stations.Clear();
                 }
             }
         }

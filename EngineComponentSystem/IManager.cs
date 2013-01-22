@@ -6,6 +6,11 @@ using Engine.Util;
 
 namespace Engine.ComponentSystem
 {
+    /// <summary>Signature for functions handling messages.</summary>
+    /// <typeparam name="T">The message type.</typeparam>
+    /// <param name="message">The message to handle.</param>
+    public delegate void MessageCallback<in T>(T message) where T : struct;
+
     /// <summary>Interface for component system managers.</summary>
     public interface IManager : IPacketizable, ICopyable<IManager>
     {
@@ -119,6 +124,13 @@ namespace Engine.ComponentSystem
         #endregion
 
         #region Messaging
+
+        /// <summary>Registers a new message listener with the system.</summary>
+        /// <typeparam name="T">The type of the message the callback handles.</typeparam>
+        /// <param name="callback">
+        ///     The function to call when a message of type <typeparamref name="T"/> is sent.
+        /// </param>
+        void AddMessageListener<T>(MessageCallback<T> callback) where T : struct;
 
         /// <summary>Inform all interested systems of a message.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>

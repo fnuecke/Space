@@ -68,7 +68,6 @@
     <Compile Include="Systems\AbstractUpdatingComponentSystem.cs" />
     <Compile Include="ManagerTypeIds.cs" />
     <Compile Include="Systems\IDrawingSystem.cs" />
-    <Compile Include="Systems\IMessagingSystem.cs" />
     <Compile Include="Systems\IUpdatingSystem.cs" />
   </ItemGroup>
   <ItemGroup>

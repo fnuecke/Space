@@ -11,7 +11,7 @@ using Space.ComponentSystem.Components;
 namespace Space.ComponentSystem.Systems
 {
     public sealed class DebugAIRenderSystem
-        : AbstractComponentSystem<ArtificialIntelligence>, IDrawingSystem, IMessagingSystem
+        : AbstractComponentSystem<ArtificialIntelligence>, IDrawingSystem
     {
         #region Properties
 
@@ -76,6 +76,7 @@ namespace Space.ComponentSystem.Systems
                     DrawArrow((Vector2) position, ai.GetBehaviorTargetDirection(), Color.Green);
 
                     // Render current state.
+                    position = FarUnitConversion.ToScreenUnits(position);
                     position.Y += 20; // don't intersect with entity id if visible
                     _spriteBatch.DrawString(
                         _font,
@@ -113,30 +114,27 @@ namespace Space.ComponentSystem.Systems
                 0);
         }
 
-        /// <summary>Handle a message of the specified type.</summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        public void Receive<T>(T message) where T : struct
+        public override void OnAddedToManager()
         {
+            base.OnAddedToManager();
+
+            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
+            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
+        }
+
+        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        {
+            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+            _font = message.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+            _arrow = message.Content.Load<Texture2D>("Textures/arrow");
+        }
+
+        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        {
+            if (_spriteBatch != null)
             {
-                var cm = message as GraphicsDeviceCreated?;
-                if (cm != null)
-                {
-                    _spriteBatch = new SpriteBatch(cm.Value.Graphics.GraphicsDevice);
-                    _font = cm.Value.Content.Load<SpriteFont>("Fonts/ConsoleFont");
-                    _arrow = cm.Value.Content.Load<Texture2D>("Textures/arrow");
-                }
-            }
-            {
-                var cm = message as GraphicsDeviceDisposing?;
-                if (cm != null)
-                {
-                    if (_spriteBatch != null)
-                    {
-                        _spriteBatch.Dispose();
-                        _spriteBatch = null;
-                    }
-                }
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
             }
         }
 
