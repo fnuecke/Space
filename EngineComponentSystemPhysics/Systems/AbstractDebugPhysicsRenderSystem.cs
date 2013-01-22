@@ -120,9 +120,10 @@ namespace Engine.ComponentSystem.Physics.Systems
         protected abstract WorldTransform GetTransform();
 
         /// <summary>Gets the visible bodies.</summary>
-        protected virtual IEnumerable<Body> GetVisibleBodies()
+        protected virtual IEnumerable<Tuple<Body, WorldPoint, float>> GetVisibleBodies()
         {
-            return ((PhysicsSystem) Manager.GetSystem(PhysicsSystem.TypeId)).Bodies;
+            return ((PhysicsSystem) Manager.GetSystem(PhysicsSystem.TypeId)).Bodies
+                .Select(body => Tuple.Create(body, body.Position, body.Angle));
         }
 
         /// <summary>Gets the visible contacts.</summary>
@@ -249,22 +250,24 @@ namespace Engine.ComponentSystem.Physics.Systems
             // Render fixtures.
             if (RenderFixtures || RenderCenterOfMass)
             {
-                foreach (var body in GetVisibleBodies())
+                foreach (var bodyInfo in GetVisibleBodies())
                 {
                     // Get model transform based on body transform.
-
+                    var body = bodyInfo.Item1;
+                    var bodyPosition = bodyInfo.Item2;
+                    var bodyAngle = bodyInfo.Item3;
 #if FARMATH
-                    var bodyTanslation = (Vector2)(body.Transform.Translation + view.Translation);
-                    var model = Matrix.CreateRotationZ(body.Sweep.Angle) *
-                                Matrix.CreateTranslation(UnitConversion.ToScreenUnits(bodyTanslation.X),
-                                                         UnitConversion.ToScreenUnits(bodyTanslation.Y), 0);
+                    var bodyTranslation = (Vector2)(bodyPosition + view.Translation);
+                    var model = Matrix.CreateRotationZ(bodyAngle) *
+                                Matrix.CreateTranslation(UnitConversion.ToScreenUnits(bodyTranslation.X),
+                                                         UnitConversion.ToScreenUnits(bodyTranslation.Y), 0);
                     _primitiveBatch.Begin(model * view.Matrix);
                     DrawBody(body, XnaUnitConversion.ToScreenUnits);
 #else
                     var model = Matrix.CreateRotationZ(body.Sweep.Angle) *
                                 Matrix.CreateTranslation(
-                                    UnitConversion.ToScreenUnits(body.Transform.Translation.X),
-                                    UnitConversion.ToScreenUnits(body.Transform.Translation.Y),
+                                    UnitConversion.ToScreenUnits(bodyPosition.X),
+                                    UnitConversion.ToScreenUnits(bodyPosition.Y),
                                     0);
                     _primitiveBatch.Begin(model * view);
 

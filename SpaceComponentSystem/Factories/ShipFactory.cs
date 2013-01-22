@@ -230,7 +230,7 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            var body = manager.AddBody(entity, type: Body.BodyType.Dynamic, worldPosition: position);
+            var body = manager.AddBody(entity, type: Body.BodyType.Dynamic, worldPosition: position, allowSleep: false);
             manager.AttachCircle(
                 body,
                 UnitConversion.ToSimulationUnits(_collisionRadius),

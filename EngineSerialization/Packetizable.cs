@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace Engine.Serialization
 {
@@ -24,21 +25,21 @@ namespace Engine.Serialization
     ///     Use this attribute to mark a method that should be called after packetizing an object, for example to allow
     ///     specialized packetizing.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method), MeansImplicitUse]
     public sealed class OnPacketizeAttribute : Attribute {}
 
     /// <summary>
     ///     Use this attribute to mark a method that should be called before depacketizing an object, for example to allow
     ///     cleanup.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method), MeansImplicitUse]
     public sealed class OnPreDepacketizeAttribute : Attribute {}
 
     /// <summary>
     ///     Use this attribute to mark a method that should be called after depacketizing an object, for example to allow
     ///     specialized depacketizing.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method), MeansImplicitUse]
     public sealed class OnPostDepacketizeAttribute : Attribute {}
 
     /// <summary>
@@ -63,7 +64,8 @@ namespace Engine.Serialization
         ///     This allows the automatic packetizer logic to handle third party value types.
         /// </summary>
         /// <param name="type">The type.</param>
-        public static void AddValueTypeOverloads(Type type)
+        [PublicAPI]
+        public static void AddValueTypeOverloads([NotNull] Type type)
         {
             Packetizers.Add(type);
         }
@@ -79,7 +81,8 @@ namespace Engine.Serialization
         /// <param name="packet">The packet to write to.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>The packet, for call chaining.</returns>
-        public static IWritablePacket Write<T>(this IWritablePacket packet, T data) where T : class, IPacketizable
+        [NotNull, UsedImplicitly, PublicAPI]
+        public static IWritablePacket Write<T>([NotNull] this IWritablePacket packet, T data) where T : class, IPacketizable
         {
             if (data != null)
             {
@@ -112,7 +115,8 @@ namespace Engine.Serialization
         /// <param name="packet">The packet to write to.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public static IWritablePacket WriteWithTypeInfo<T>(this IWritablePacket packet, T data)
+        [NotNull, PublicAPI]
+        public static IWritablePacket WriteWithTypeInfo<T>([NotNull] this IWritablePacket packet, T data)
             where T : class, IPacketizable
         {
             if (data != null)
@@ -156,7 +160,8 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public static IReadablePacket Read<T>(this IReadablePacket packet, out T data)
+        [NotNull, UsedImplicitly, PublicAPI]
+        public static IReadablePacket Read<T>([NotNull] this IReadablePacket packet, [CanBeNull] out T data)
             where T : class, IPacketizable, new()
         {
             data = packet.ReadPacketizable<T>();
@@ -175,7 +180,8 @@ namespace Engine.Serialization
         /// <typeparam name="T">The type of the packetizable to read.</typeparam>
         /// <param name="packet">The packet.</param>
         /// <returns>The read data.</returns>
-        public static T ReadPacketizable<T>(this IReadablePacket packet) where T : class, IPacketizable, new()
+        [CanBeNull, UsedImplicitly, PublicAPI]
+        public static T ReadPacketizable<T>([NotNull] this IReadablePacket packet) where T : class, IPacketizable, new()
         {
             // See if we have anything at all, or if the written value was null.
             if (packet.ReadBoolean())
@@ -205,7 +211,8 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
-        public static T ReadPacketizableWithTypeInfo<T>(this IReadablePacket packet) where T : class, IPacketizable
+        [CanBeNull, PublicAPI]
+        public static T ReadPacketizableWithTypeInfo<T>([NotNull] this IReadablePacket packet) where T : class, IPacketizable
         {
             // Get the type.
             var type = packet.ReadType();
@@ -235,7 +242,8 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         /// <param name="result">The object to write read data to.</param>
-        public static IReadablePacket ReadPacketizableInto(this IReadablePacket packet, IPacketizable result)
+        [NotNull, PublicAPI]
+        public static IReadablePacket ReadPacketizableInto([NotNull] this IReadablePacket packet, [NotNull] IPacketizable result)
         {
             // We need something to write to.
             if (result == null)

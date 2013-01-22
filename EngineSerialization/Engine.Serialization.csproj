@@ -67,6 +67,12 @@
     <Compile Include="Stringify.cs" />
     <Compile Include="WritablePacketExtensions.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JetBrainsAnnotations\JetBrains.Annotations.csproj">
+      <Project>{173331FF-F188-464C-9D6F-C46B75B623B3}</Project>
+      <Name>JetBrains.Annotations</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

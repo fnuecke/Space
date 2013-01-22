@@ -257,7 +257,7 @@ namespace Space.ComponentSystem.Factories
 
             // Create physical body.
             var body = manager.AddBody(
-                entity, emitterTransform.Position + rotatedOffset, emitAngle, Body.BodyType.Dynamic, isBullet: true);
+                entity, emitterTransform.Position + rotatedOffset, emitAngle, Body.BodyType.Dynamic, isBullet: true, allowSleep: false);
             manager.AttachCircle(
                 body,
                 UnitConversion.ToSimulationUnits(_collisionRadius),

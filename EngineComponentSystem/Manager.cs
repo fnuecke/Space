@@ -422,7 +422,7 @@ namespace Engine.ComponentSystem
         /// <param name="callback">
         ///     The function to call when a message of type <typeparamref name="T"/> is sent.
         /// </param>
-        public void AddMessageListener<T>(MessageCallback<T> callback) where T : struct
+        public void AddMessageListener<T>(MessageCallback<T> callback)
         {
             IList<object> callbacks;
             if (!_messageCallbacks.TryGetValue(typeof (T), out callbacks))
@@ -439,7 +439,7 @@ namespace Engine.ComponentSystem
         /// <summary>Inform all interested systems of a message.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>
-        public void SendMessage<T>(T message) where T : struct
+        public void SendMessage<T>(T message)
         {
             IList<object> callbacks;
             if (_messageCallbacks.TryGetValue(typeof (T), out callbacks))

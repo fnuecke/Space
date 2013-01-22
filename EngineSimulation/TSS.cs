@@ -889,7 +889,7 @@ namespace Engine.Simulation
             /// <summary>Adds the message listener.</summary>
             /// <typeparam name="T"></typeparam>
             /// <param name="callback">The callback.</param>
-            public void AddMessageListener<T>(MessageCallback<T> callback) where T : struct
+            public void AddMessageListener<T>(MessageCallback<T> callback)
             {
                 throw new NotSupportedException();
             }

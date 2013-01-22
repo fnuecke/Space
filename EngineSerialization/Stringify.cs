@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 
 namespace Engine.Serialization
 {
@@ -14,7 +15,7 @@ namespace Engine.Serialization
     ///     specialized writing. This should emit a string representation of what the method marked with the
     ///     <see cref="OnPacketizeAttribute"/> writes.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method), MeansImplicitUse]
     public sealed class OnStringifyAttribute : Attribute {}
 
     /// <summary>
@@ -32,7 +33,8 @@ namespace Engine.Serialization
         /// <param name="value">The data.</param>
         /// <param name="indent">The initial indent.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public static StreamWriter Dump(this StreamWriter w, object value, int indent = 0)
+        [NotNull, PublicAPI]
+        public static StreamWriter Dump([NotNull] this StreamWriter w, [CanBeNull] object value, int indent = 0)
         {
             // If we have a value type just call its ToString.
             if (value is ValueType)
@@ -50,7 +52,8 @@ namespace Engine.Serialization
         /// <param name="w">The writer.</param>
         /// <param name="indent">The indent depth.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        public static StreamWriter AppendIndent(this StreamWriter w, int indent)
+        [NotNull, UsedImplicitly, PublicAPI]
+        public static StreamWriter AppendIndent([NotNull] this StreamWriter w, int indent)
         {
             w.WriteLine();
             for (var i = 0; i < indent * IndentAmount; ++i)
@@ -65,7 +68,8 @@ namespace Engine.Serialization
         /// <param name="value">The value to append.</param>
         /// <param name="indent">The indent of the output.</param>
         /// <returns>The string builder, for call chaining.</returns>
-        private static StreamWriter AppendValue(this StreamWriter w, object value, int indent)
+        [NotNull, UsedImplicitly]
+        private static StreamWriter AppendValue([NotNull] this StreamWriter w, [CanBeNull] object value, int indent)
         {
             // Most simple case is if we have null...
             if (value == null)
@@ -124,12 +128,10 @@ namespace Engine.Serialization
             var writeValue = typeof (Stringify).GetMethod("AppendValue", BindingFlags.Static | BindingFlags.NonPublic);
             var writeIndent = typeof (Stringify).GetMethod("AppendIndent");
             var writeString = typeof (StreamWriter).GetMethod("Write", new[] {typeof (string)});
-            var writeObject = typeof (StreamWriter).GetMethod("Write", new[] {typeof (object)});
 
             System.Diagnostics.Debug.Assert(writeValue != null);
             System.Diagnostics.Debug.Assert(writeIndent != null);
             System.Diagnostics.Debug.Assert(writeString != null);
-            System.Diagnostics.Debug.Assert(writeObject != null);
 
             // Generate dynamic methods for the specified type.
             var method = new DynamicMethod(

@@ -471,10 +471,6 @@ namespace Engine.Graphics
                 return;
             }
 
-            // TODO adjust matrix to make sure this isn't necessary.
-            // Invert vertex order.
-            Array.Reverse(_triangleVertices, 0, _triangleVertexCount);
-
             // Submit the draw call to the graphics card.
             SetRenderState();
             _device.DrawUserPrimitives(PrimitiveType.TriangleList, _triangleVertices, 0, _triangleVertexCount / 3);

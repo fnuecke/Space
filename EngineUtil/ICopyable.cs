@@ -1,4 +1,6 @@
-﻿namespace Engine.Util
+﻿using JetBrains.Annotations;
+
+namespace Engine.Util
 {
     /// <summary>Interface for objects supporting deep copies.</summary>
     /// <typeparam name="T">The type of the object.</typeparam>
@@ -6,11 +8,12 @@
     {
         /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
+        [NotNull]
         T NewInstance();
 
         /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        void CopyInto(T into);
+        void CopyInto([NotNull] T into);
     }
 }

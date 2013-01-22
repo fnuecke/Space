@@ -29,7 +29,7 @@ namespace Space.Util
         ///     This determines how fast the actual game logic is updated. It is measured in ticks per second, i.e. how many
         ///     update cycles to drive per second.
         /// </summary>
-        public const float TicksPerSecond = 20f;
+        public const float TicksPerSecond = 25f;
 
         #endregion
 

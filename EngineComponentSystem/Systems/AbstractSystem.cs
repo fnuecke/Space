@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Components;
 using Engine.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -35,7 +36,7 @@ namespace Engine.ComponentSystem.Systems
         #region Properties
 
         /// <summary>The component system manager this system is part of.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizerIgnore, PublicAPI]
         public IManager Manager { get; set; }
 
         #endregion
@@ -137,10 +138,10 @@ namespace Engine.ComponentSystem.Systems
             }
 
             // Don't allow identity copying.
-            // TODO might relax this to simply returning, but this normally indicates unwanted behavior.
+            Debug.Assert(into != this, "Cannot copy into self, is this intentional?");
             if (into == this)
             {
-                throw new ArgumentException("Cannot copy into self.", "into");
+                return;
             }
 
             // Manager must be re-set to new owner before copying.

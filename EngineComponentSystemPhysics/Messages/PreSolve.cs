@@ -2,6 +2,7 @@
 using Engine.Collections;
 using Engine.ComponentSystem.Physics.Collision;
 using Engine.ComponentSystem.Physics.Contacts;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -24,7 +25,8 @@ namespace Engine.ComponentSystem.Physics.Messages
         /// <summary>Computes the world manifold data for this contact. This is relatively expensive, so use with care.</summary>
         /// <param name="normal">The world contact normal.</param>
         /// <param name="points">The contact points.</param>
-        public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
+        [PublicAPI]
+        public void ComputeOldWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
         {
             if (OldManifold.PointCount < 1)
             {

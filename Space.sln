@@ -111,6 +111,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.Spat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.FarSpatial", "EngineComponentSystemFarSpatial\Engine.ComponentSystem.FarSpatial.csproj", "{7FBFD8AD-0676-494F-97C1-6315B4BEF8F9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JetBrains.Annotations", "JetBrainsAnnotations\JetBrains.Annotations.csproj", "{173331FF-F188-464C-9D6F-C46B75B623B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (TSS Threading)|Any CPU = Debug (TSS Threading)|Any CPU
@@ -1263,6 +1265,26 @@ Global
 		{7FBFD8AD-0676-494F-97C1-6315B4BEF8F9}.Release|Mixed Platforms.Build.0 = Release|x86
 		{7FBFD8AD-0676-494F-97C1-6315B4BEF8F9}.Release|x86.ActiveCfg = Release|x86
 		{7FBFD8AD-0676-494F-97C1-6315B4BEF8F9}.Release|x86.Build.0 = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug (TSS Threading)|Mixed Platforms.ActiveCfg = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug (TSS Threading)|Mixed Platforms.Build.0 = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug|x86.ActiveCfg = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Debug|x86.Build.0 = Debug|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release (TSS Threading)|Mixed Platforms.ActiveCfg = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release (TSS Threading)|Mixed Platforms.Build.0 = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release (TSS Threading)|x86.Build.0 = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release|Any CPU.ActiveCfg = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release|Mixed Platforms.Build.0 = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release|x86.ActiveCfg = Release|x86
+		{173331FF-F188-464C-9D6F-C46B75B623B3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

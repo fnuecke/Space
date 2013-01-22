@@ -159,7 +159,8 @@ namespace Space
                 PreferredBackBufferWidth = Settings.Instance.ScreenResolution.X,
                 PreferredBackBufferHeight = Settings.Instance.ScreenResolution.Y,
                 IsFullScreen = Settings.Instance.Fullscreen,
-                SynchronizeWithVerticalRetrace = true
+                SynchronizeWithVerticalRetrace = true,
+                PreferMultiSampling = true
             };
 
             // Create our own, localized content manager.

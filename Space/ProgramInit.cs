@@ -183,7 +183,7 @@ namespace Space
                 },
                 "Writes a dump of the current game state to a file. If a name is omitted",
                 "one will be chosen at random.",
-                "d_dump [filename] - writes the game state dump to the specified file.");
+                "d_dump <filename> - writes the game state dump to the specified file.");
 
             _console.AddCommand(
                 "d_pause",
@@ -230,7 +230,7 @@ namespace Space
                     }
                 },
                 "Performs a single update for the server and client if they exist.",
-                "step [frames] - applies the specified number of updates.");
+                "step <frames> - applies the specified number of updates.");
 
             _console.AddCommand(
                 "r_ai",
@@ -318,6 +318,40 @@ namespace Space
                 "Enables or disables position and angle interpolation for rendering.",
                 "r_interpolate 1|0 - set whether to interpolate positions and angles.");
             
+            _console.AddCommand(
+                "r_physics",
+                args =>
+                {
+                    var physics = _client.GetSystem<DebugPhysicsRenderSystem>();
+                    var enable = ParseBool(args[2]);
+                    foreach (var c in args[1])
+                    {
+                        switch (c)
+                        {
+                            case 'f':
+                                physics.RenderFixtures = enable;
+                                break;
+                            case 'c':
+                                physics.RenderContactPoints = enable;
+                                break;
+                            case 'm':
+                                physics.RenderCenterOfMass = enable;
+                                break;
+                            case 'n':
+                                physics.RenderContactNormals = enable;
+                                break;
+                            case 'i':
+                                physics.RenderContactPointNormalImpulse = enable;
+                                break;
+                            case 'j':
+                                physics.RenderJoints = enable;
+                                break;
+                        }
+                    }
+                },
+                "Sets for which parts of the physics simulation to render debug representations for.",
+                "r_physics [fcmni]+ 1|0");
+
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
             // the game has crashed.
