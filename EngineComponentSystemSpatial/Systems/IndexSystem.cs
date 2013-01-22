@@ -151,7 +151,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             base.OnComponentAdded(component);
 
             var index = component as IIndexable;
-            if (index != null && index.Enabled)
+            if (index != null)
             {
                 AddToGroups(index, index.IndexGroupsMask);
             }
@@ -164,7 +164,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             base.OnComponentRemoved(component);
 
             var index = component as IIndexable;
-            if (index != null && index.Enabled)
+            if (index != null)
             {
                 // Remove from any indexes the component was part of.
                 RemoveFromGroups(index, index.IndexGroupsMask);
@@ -182,8 +182,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
             {
                 var m = groupsChanged.Value;
 
-                Debug.Assert(m.Component.Enabled);
-
                 AddToGroups(m.Component, m.AddedIndexGroups);
                 RemoveFromGroups(m.Component, m.RemovedIndexGroups);
 
@@ -195,8 +193,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
             if (boundsChanged != null)
             {
                 var m = boundsChanged.Value;
-
-                Debug.Assert(m.Component.Enabled);
 
                 var bounds = m.Bounds;
                 var delta = m.Delta;
@@ -217,8 +213,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
             if (translationChanged != null)
             {
                 var m = translationChanged.Value;
-
-                Debug.Assert(m.Component.Enabled);
 
                 var component = m.Component;
                 var bounds = component.ComputeWorldBounds();

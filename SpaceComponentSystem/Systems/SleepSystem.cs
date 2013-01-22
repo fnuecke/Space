@@ -31,12 +31,18 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
+            var index = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[ArtificialIntelligence.AIIndexGroupMask];
+            if (index == null)
+            {
+                // No AI ships were created yet, so we have nothing to do.
+                return;
+            }
+            
             var avatars = (AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId);
-            var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> awake = new HashSet<int>();
             foreach (ITransform transform in avatars.Avatars.Select(avatar => Manager.GetComponent(avatar, TransformTypeId)))
             {
-                index[ArtificialIntelligence.AIIndexGroupMask].Find(transform.Position, SleepDistance, awake);
+                index.Find(transform.Position, SleepDistance, awake);
             }
             foreach (var component in Components)
             {

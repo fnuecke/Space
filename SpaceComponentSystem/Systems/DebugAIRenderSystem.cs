@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -60,7 +61,7 @@ namespace Space.ComponentSystem.Systems
                     FarPosition position;
                     float angle;
                     interpolation.GetInterpolatedTransform(entity, out position, out angle);
-                    position = FarUnitConversion.ToScreenUnits(position + cameraTranslation);
+                    position = position + cameraTranslation;
 
                     // Render vegetative influences.
                     DrawArrow((Vector2) position, ai.GetLastEscape(), Color.Red);
@@ -93,6 +94,8 @@ namespace Space.ComponentSystem.Systems
 
         private void DrawArrow(Vector2 start, Vector2 toEnd, Color color)
         {
+            start = XnaUnitConversion.ToScreenUnits(start);
+            toEnd = XnaUnitConversion.ToScreenUnits(toEnd);
             // Don't draw tiny arrows...
             if (toEnd.LengthSquared() < 1f)
             {

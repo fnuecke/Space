@@ -179,7 +179,7 @@ namespace Space.Control
                     // it a chance to generate cell information.
                     new UniverseSystem(),
                     // This one spawns ships in and stuff in a now populated new cell.
-//                    new ShipSpawnSystem(),
+                    new ShipSpawnSystem(),
                     
                     // Run weapon control after velocity, to spawn projectiles at the
                     // correct position.
@@ -193,8 +193,6 @@ namespace Space.Control
 
                     // ----- Stuff that removes things ----- //
 
-                    // Check for collisions after positions have been updated.
-//                    new CollisionSystem(),
                     // Collision damage is mainly reactive to collisions, but let's keep
                     // it here for context. Note that it also has it's own update, in
                     // which it updates damager cooldowns.
@@ -236,9 +234,9 @@ namespace Space.Control
                     // ----- Special stuff ----- //
 
                     // Toggle AI based on player proximity.
-//                    new SleepSystem(),
+                    new SleepSystem(),
                     // AI should react after everything else had its turn. 
-//                    new AISystem()
+                    new AISystem()
 
                     // ----- For reference: rendering ----- //
                 });

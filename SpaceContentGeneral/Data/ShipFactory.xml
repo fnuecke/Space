@@ -12,8 +12,8 @@
         <Item>2.5 HealthRegeneration</Item>
         <Item>50 Energy</Item>
         <Item>0.5 EnergyRegeneration</Item>
-        <Item>10 AccelerationForce</Item>
-        <Item>20 RotationForce</Item>
+        <Item>80 AccelerationForce</Item>
+        <Item>5 RotationForce</Item>
       </Attributes>
       <Items>
         <Name>StarterFuselage</Name>
@@ -55,8 +55,8 @@
         <Item>1 to 1.5 HealthRegeneration</Item>
         <Item>50 to 75 Energy</Item>
         <Item>0.5 to 1 EnergyRegeneration</Item>
-        <Item>8 to 12 AccelerationForce</Item>
-        <Item>15 to 20 RotationForce</Item>
+        <Item>65 to 80 AccelerationForce</Item>
+        <Item>1.5 to 2 RotationForce</Item>
       </Attributes>
       <Items>
         <Name>L1_AI_Fuselage</Name>

@@ -1,6 +1,8 @@
-﻿using Engine.ComponentSystem.Spatial.Components;
+﻿using System;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Random;
+using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.Behaviors
 {
@@ -63,6 +65,13 @@ namespace Space.ComponentSystem.Components.Behaviors
         protected override FarPosition GetTargetPosition()
         {
             return Target;
+        }
+        
+        protected override float GetTargetRotation(Vector2 direction)
+        {
+            var position = ((ITransform) AI.Manager.GetComponent(AI.Entity, TransformTypeId)).Position;
+            var toTarget = (Vector2) (Target - position);
+            return (float) Math.Atan2(toTarget.Y, toTarget.X);
         }
 
         #endregion

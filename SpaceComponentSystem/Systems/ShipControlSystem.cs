@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Systems
         private static readonly float AccelerationAngleInterval = MathHelper.ToRadians(180f) - MaxAccelerationAngle;
 
         /// <summary>This is the minimum angle based acceleration power, to avoid getting no thrust at all when flying backwards.</summary>
-        private const float MinAcceleration = 0.5f;
+        private const float MinAcceleration = 0.75f;
 
         /// <summary>If the angular velocity or angle delta of body to target angle are lower than this we ignore it.</summary>
         private static readonly float AngularSleepTolerance = MathHelper.ToRadians(1f);
@@ -231,8 +231,7 @@ namespace Space.ComponentSystem.Systems
                     else
                     {
                         // We can't stop, but we can adjust our acceleration.
-                        System.Diagnostics.Debug.Assert(Math.Sign(-acceleration) == Math.Sign(accelerationToStopOnTarget));
-                        acceleration = -acceleration;
+                        acceleration = Math.Abs(acceleration) * Math.Sign(accelerationToStopOnTarget);
                     }
                 }
 

@@ -80,11 +80,10 @@ namespace Engine.ComponentSystem.Physics.Components
                         return;
                     }
 
+                    base.Enabled = value;
+
                     if (value)
                     {
-                        // Enable first, to make sure fixtures fire their messages.
-                        base.Enabled = true;
-
                         // Add our fixtures back to the index.
                         foreach (Fixture fixture in Fixtures)
                         {
@@ -103,9 +102,6 @@ namespace Engine.ComponentSystem.Physics.Components
 
                         // Free any contacts we're involved in.
                         Simulation.RemoveContacts(this);
-
-                        // Disable last, to make sure fixtures fire their messages.
-                        base.Enabled = false;
                     }
                 }
                 else

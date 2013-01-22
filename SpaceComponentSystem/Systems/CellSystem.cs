@@ -114,7 +114,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Reused for querying entities contained in a dying cell.</summary>
         [CopyIgnore, PacketizerIgnore]
-        private ISet<int> _reusableEntityList = new HashSet<int>();
+        private ISet<int> _reusableComponentList = new HashSet<int>();
 
         #endregion
 
@@ -246,6 +246,7 @@ namespace Space.ComponentSystem.Systems
             _reusableBornCellsIds.Clear();
 
             // Check pending list, kill off old cells, notify systems etc.
+            var cellDeathIndex = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[CellDeathAutoRemoveIndexGroupMask];
             _reusablePendingList.AddRange(pending.Keys);
             foreach (var cellId in _reusablePendingList)
             {
@@ -275,9 +276,8 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Y = y * size;
                 cellBounds.Width = size;
                 cellBounds.Height = size;
-                ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(
-                    cellBounds, _reusableEntityList, CellDeathAutoRemoveIndexGroupMask);
-                foreach (IIndexable neighbor in _reusableEntityList.Select(Manager.GetComponentById))
+                cellDeathIndex.Find(cellBounds, _reusableComponentList);
+                foreach (IIndexable neighbor in _reusableComponentList.Select(Manager.GetComponentById))
                 {
                     var cellDeath = (CellDeath) Manager.GetComponent(neighbor.Entity, CellDeath.TypeId);
                     if (cellDeath.IsForSubCell == isSubCell)
@@ -285,7 +285,7 @@ namespace Space.ComponentSystem.Systems
                         Manager.RemoveEntity(neighbor.Entity);
                     }
                 }
-                _reusableEntityList.Clear();
+                _reusableComponentList.Clear();
             }
             _reusablePendingList.Clear();
 
@@ -462,7 +462,7 @@ namespace Space.ComponentSystem.Systems
             copy._reusableBornCellsIds = new HashSet<ulong>();
             copy._reusableDeceasedCellsIds = new HashSet<ulong>();
             copy._reusablePendingList = new List<ulong>();
-            copy._reusableEntityList = new HashSet<int>();
+            copy._reusableComponentList = new HashSet<int>();
 
             return copy;
         }

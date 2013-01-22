@@ -128,8 +128,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
             Debug.Assert(index != null);
 
             // Update listener information.
-            var listenerPosition = WorldUnitConversion.ToScreenUnits(GetListenerPosition());
-            var listenerVelocity = XnaUnitConversion.ToScreenUnits(GetListenerVelocity());
+            var listenerPosition = GetListenerPosition();
+            var listenerVelocity = GetListenerVelocity() * 4;
             _listener.Velocity = ToV3(ref listenerVelocity);
 
             // Iterate all sounds in range of the listener. All sounds remaining
@@ -149,11 +149,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 }
 
                 // Get sound position and velocity.
-                var emitterPosition = WorldUnitConversion.ToScreenUnits(((ITransform) Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position);
+                var emitterPosition = ((ITransform) Manager.GetComponent(neighbor.Entity, TransformTypeId)).Position;
 
                 // The velocity is optional, so we must check if it exists.
                 var neighborVelocity = (IVelocity) Manager.GetComponent(neighbor.Entity, VelocityTypeId);
-                var emitterVelocity = XnaUnitConversion.ToScreenUnits(neighborVelocity != null ? neighborVelocity.LinearVelocity : Vector2.Zero);
+                var emitterVelocity = neighborVelocity != null ? neighborVelocity.LinearVelocity * 4 : Vector2.Zero;
 
                 // Check whether to update or start playing.
                 if (_playingSounds.ContainsKey(neighbor.Entity))
@@ -170,7 +170,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                         // We make the emitter position relative to the listener, which is
                         // equivalent to having the listener at the actual origin at all
                         // times, so we don't have to to update its position.
-                        var relativeEmitterPosition = (Vector2) (emitterPosition - listenerPosition);
+                        var relativeEmitterPosition = (Vector2) WorldUnitConversion.ToScreenUnits(emitterPosition - listenerPosition);
 
                         // Get position and velocity of emitter.
                         _emitter.Position = ToV3(ref relativeEmitterPosition);

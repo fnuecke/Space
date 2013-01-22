@@ -46,8 +46,12 @@ namespace Space.ComponentSystem.Systems
                     Vector2 normal;
                     IList<FarPosition> points;
                     contact.ComputeWorldManifold(out normal, out points);
-                    BeginContact(contact.FixtureA.Entity, contact.FixtureB.Entity, normal, points);
-                    BeginContact(contact.FixtureB.Entity, contact.FixtureA.Entity, -normal, points);
+                    var disableContact = BeginContact(contact.FixtureA.Entity, contact.FixtureB.Entity, normal);
+                    disableContact = BeginContact(contact.FixtureB.Entity, contact.FixtureA.Entity, -normal) || disableContact;
+                    if (disableContact)
+                    {
+                        contact.Disable();
+                    }
                     return;
                 }
             }
@@ -63,14 +67,19 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private void BeginContact(int damagee, int damager, Vector2 normal, IList<FarPosition> points)
+        private bool BeginContact(int damagee, int damager, Vector2 normal)
         {
+            // Our return value is used to tell whether to disable the contact or not. We want
+            // to disable contacts involving bodies that are removed on collision, to avoid
+            // knock-back from those.
+            var disableContact = false;
+
             // Do we do any damage at all?
             var damage = (CollisionDamage) Manager.GetComponent(damager, CollisionDamage.TypeId);
             if (damage == null)
             {
                 // Damager does not apply any damage, forget about it.
-                return;
+                return disableContact;
             }
 
             // Should the damager be removed when colliding (self-destructs)?
@@ -78,10 +87,7 @@ namespace Space.ComponentSystem.Systems
             {
                 // Yep, mark it for removal.
                 ((DeathSystem) Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
-
-                // For testing show some text and make a particle explosion.
-                //((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId)).Display("Boom!", points[0]);
-                ((ParticleEffectSystem) Manager.GetSystem(ParticleEffectSystem.TypeId)).Play("Effects/BasicExplosion", points[0], Vector2.Zero);
+                disableContact = true;
             }
 
             // Apply damage to second entity if it has health, otherwise stop.
@@ -89,7 +95,7 @@ namespace Space.ComponentSystem.Systems
             // be invulnerable/environmental (suns for example).
             if (Manager.GetComponent(damagee, Health.TypeId) == null)
             {
-                return;
+                return disableContact;
             }
 
             // See if the damagee blocks.
@@ -103,8 +109,7 @@ namespace Space.ComponentSystem.Systems
                 message.Owner = ((OwnerSystem) Manager.GetSystem(OwnerSystem.TypeId)).GetRootOwner(damager);
 
                 // Apply damages, debuffs, ... get the damager attributes for actual values.
-                message.Attributes =
-                    (Attributes<AttributeType>) Manager.GetComponent(damager, Attributes<AttributeType>.TypeId);
+                message.Attributes = (Attributes<AttributeType>) Manager.GetComponent(damager, Attributes<AttributeType>.TypeId);
 
                 // Pass on the entity that's being damaged.
                 message.Damagee = damagee;
@@ -115,6 +120,8 @@ namespace Space.ComponentSystem.Systems
 
             //var effect = Manager.AddComponent<DamagingStatusEffect>(damagee).Initialize(DamagingStatusEffect.InfiniteDamageDuration, damage.Damage, damage.Cooldown, damage.Type, damager);
             //_collisions.Add(BitwiseMagic.Pack(damagee, damager), effect.Id);
+
+            return disableContact;
         }
         
         /// <summary>Store for performance.</summary>

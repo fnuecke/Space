@@ -21,7 +21,7 @@
       <Slots />
       <GuaranteedAttributes>
         <Item>90 AccelerationForce</Item>
-        <Item>30 RotationForce</Item>
+        <Item>10 RotationForce</Item>
         <Item>2.5 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
       <AdditionalAttributes />

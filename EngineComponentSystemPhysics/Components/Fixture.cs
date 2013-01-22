@@ -56,16 +56,6 @@ namespace Engine.ComponentSystem.Physics.Components
 
         #region Properties
 
-        /// <summary>
-        /// Whether the component is enabled or not. Disabled components will not be handled in the component's system's
-        /// <c>Update()</c> method.
-        /// </summary>
-        public override bool Enabled
-        {
-            get { return Body.Enabled; }
-            set { /* silently ignore */ }
-        }
-
         /// <summary>The index group mask determining which indexes the component will be tracked by.</summary>
         public ulong IndexGroupsMask
         {
@@ -85,14 +75,11 @@ namespace Engine.ComponentSystem.Physics.Components
                     return;
                 }
 
-                if (Enabled)
-                {
-                    IndexGroupsChanged message;
-                    message.Component = this;
-                    message.AddedIndexGroups = value & ~oldMask;
-                    message.RemovedIndexGroups = oldMask & ~value;
-                    Manager.SendMessage(message);
-                }
+                IndexGroupsChanged message;
+                message.Component = this;
+                message.AddedIndexGroups = value & ~oldMask;
+                message.RemovedIndexGroups = oldMask & ~value;
+                Manager.SendMessage(message);
             }
         }
 
@@ -335,7 +322,6 @@ namespace Engine.ComponentSystem.Physics.Components
 // ReSharper restore RedundantCast
 
             // Update the index.
-            System.Diagnostics.Debug.Assert(Enabled);
             IndexBoundsChanged message;
             message.Component = this;
             message.Bounds = bounds;
@@ -346,14 +332,11 @@ namespace Engine.ComponentSystem.Physics.Components
         /// <summary>Updates this fixtures position in the index structure used for the broad phase.</summary>
         internal void Synchronize()
         {
-            if (Enabled)
-            {
-                IndexBoundsChanged message;
-                message.Component = this;
-                message.Bounds = ComputeBounds(Body.Transform);
-                message.Delta = Vector2.Zero;
-                Manager.SendMessage(message);
-            }
+            IndexBoundsChanged message;
+            message.Component = this;
+            message.Bounds = ComputeBounds(Body.Transform);
+            message.Delta = Vector2.Zero;
+            Manager.SendMessage(message);
         }
 
         #endregion

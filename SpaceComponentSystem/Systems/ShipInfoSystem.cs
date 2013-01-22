@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Systems
             shipInfo.RadarRange = attributes.GetValue(AttributeType.SensorRange);
 
             // TODO: compute actual range
-            shipInfo.WeaponRange = 1000;
+            shipInfo.WeaponRange = 10;
         }
 
         #endregion

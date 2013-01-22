@@ -107,9 +107,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var targetPosition = GetTargetPosition();
 
             // And accordingly, which way to accelerate to get there.
-            var direction =
-                (Vector2)
-                (targetPosition - ((ITransform) AI.Manager.GetComponent(AI.Entity, TransformTypeId)).Position);
+            var direction = (Vector2) (targetPosition - ((ITransform) AI.Manager.GetComponent(AI.Entity, TransformTypeId)).Position);
 
             // Normalize if it's not zero.
             var norm = direction.LengthSquared();
@@ -226,11 +224,11 @@ namespace Space.ComponentSystem.Components.Behaviors
             var position = ((ITransform) AI.Manager.GetComponent(AI.Entity, TransformTypeId)).Position;
             var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
             var shipInfo = (ShipInfo) AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
-            var sensorRange = shipInfo != null ? shipInfo.RadarRange : 0f;
+            var sensorRange = shipInfo != null ? UnitConversion.ToSimulationUnits(shipInfo.RadarRange) : 0f;
             ISet<int> neighbors = new HashSet<int>();
             index.Find(
                 position,
-                UnitConversion.ToSimulationUnits(sensorRange > 0 ? Math.Min(sensorRange, range) : range),
+                sensorRange > 0 ? Math.Min(sensorRange, range) : range,
                 neighbors,
                 PhysicsSystem.IndexGroupMask);
             var closest = 0;
@@ -286,8 +284,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Look for evil neighbors, in particular suns and the like.
             var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(
-                position, AI.Configuration.MaxEscapeCheckDistance, neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, AI.Configuration.MaxEscapeCheckDistance, neighbors, DetectableSystem.IndexGroupMask);
             var escape = Vector2.Zero;
             var escapeNormalizer = 0;
             foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))

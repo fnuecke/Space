@@ -105,6 +105,15 @@ namespace Engine.ComponentSystem.Physics.Contacts
             return Manifold.Points[point].TangentImpulse;
         }
 
+        /// <summary>
+        ///     Disables the contact for this update. This can be useful to avoid collision resolving, e.g. to create
+        ///     one-sided edges or if one of the involved bodies is removed.
+        /// </summary>
+        public void Disable()
+        {
+            IsEnabled = false;
+        }
+
         /// <summary>Computes the world manifold data for this contact. This is relatively expensive, so use with care.</summary>
         /// <param name="normal">The world contact normal.</param>
         /// <param name="points">The contact points.</param>

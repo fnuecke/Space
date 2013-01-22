@@ -35,12 +35,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeBuildCommandLine>"$(MSBuildBinPath)\msbuild.exe" /m:$(NUMBER_OF_PROCESSORS) "$(SolutionDir)SpaceContent\Space.Content.csproj"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(MSBuildBinPath)\msbuild.exe" /m:$(NUMBER_OF_PROCESSORS) /nr:false "$(SolutionDir)SpaceContent\Space.Content.csproj"</NMakeBuildCommandLine>
     <NMakeOutput>Space.Content.BuildParallel.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>"$(MSBuildBinPath)\msbuild.exe" /m:$(NUMBER_OF_PROCESSORS) "$(SolutionDir)SpaceContent\Space.Content.csproj"</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(MSBuildBinPath)\msbuild.exe" /m:$(NUMBER_OF_PROCESSORS) /nr:false "$(SolutionDir)SpaceContent\Space.Content.csproj"</NMakeBuildCommandLine>
     <NMakeOutput>Space.Content.BuildParallel.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>

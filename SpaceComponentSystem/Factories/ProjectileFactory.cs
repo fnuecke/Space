@@ -261,7 +261,7 @@ namespace Space.ComponentSystem.Factories
             manager.AttachCircle(
                 body,
                 UnitConversion.ToSimulationUnits(_collisionRadius),
-                0.1f,
+                0,
                 restitution: 0.1f,
                 //isSensor: true,
                 collisionGroups: collisionGroup)
