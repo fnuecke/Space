@@ -62,6 +62,12 @@ namespace Space.ComponentSystem
             // Allow leveling up.
             manager.AddComponent<Experience>(entity).Initialize(100, 100f, 2.15f);
 
+            // Make player ships collide more precisely. We don't much care for NPC ships tunneling
+            // through stuff (unlikely as that may be anyways), but we really don't want it to happen
+            // for a player ship.
+            var body = (Body) manager.GetComponent(entity, Body.TypeId);
+            body.IsBullet = true;
+
             return entity;
         }
 

@@ -60,10 +60,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Fields
 
         /// <summary>Gets the current speed of the simulation.</summary>
-        private readonly Func<float> _simulationSpeed;
+        private readonly Func<float> _currentFps;
 
         /// <summary>List of all currently tracked entities.</summary>
-        private Dictionary<int, InterpolationEntry> _entries = new Dictionary<int, InterpolationEntry>();
+        private readonly Dictionary<int, InterpolationEntry> _entries = new Dictionary<int, InterpolationEntry>();
 
         /// <summary>The frame the current interpolation is based on.</summary>
         private long _currentFrame;
@@ -81,17 +81,20 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// </summary>
         private readonly ISet<int> _drawablesInView = new HashSet<int>();
 
+        /// <summary>The maximum frames per second, to scale down velocity when positioning newly tracked entities.</summary>
+        private readonly float _inverseMaxFps;
+
         #endregion
 
         #region Constructor
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="InterpolationSystem"/> class.
-        /// </summary>
-        /// <param name="simulationSpeed">A function getting the current simulation speed.</param>
-        protected InterpolationSystem(Func<float> simulationSpeed)
+        /// <summary>Initializes a new instance of the <see cref="InterpolationSystem"/> class.</summary>
+        /// <param name="currentFps">A function getting the current frames per second, based on simulation speed, to know how fast to interpolate.</param>
+        /// <param name="maxFps">The maximum FPS, for adjusting positions of newly tracked entities.</param>
+        protected InterpolationSystem(Func<float> currentFps, float maxFps)
         {
-            _simulationSpeed = simulationSpeed;
+            _currentFps = currentFps;
+            _inverseMaxFps = 1f / maxFps;
         }
 
         #endregion
@@ -107,10 +110,32 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var view = ComputeViewport();
             ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(view, _drawablesInView, IndexGroupMask);
 
-            // Skip there rest if nothing is visible.
+            // Synchronize interpolation to real data when we enter a new frame.
+            if (frame != _currentFrame)
+            {
+                // Remember current frame and reset relative time spent.
+                _currentFrame = frame;
+                _totalRelativeFrameTime = 0f;
+
+                foreach (var entity in _entries.Keys)
+                {
+                    var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
+                    if (transform == null)
+                    {
+                        continue;
+                    }
+
+                    var entry = _entries[entity];
+                    entry.PreviousPosition = entry.InterpolatedPosition;
+                    entry.Position = transform.Position;
+                    entry.PreviousAngle = entry.InterpolatedAngle;
+                    entry.Angle = transform.Angle;
+                }
+            }
+
+            // Find new entity positions and rotations.
             if (_drawablesInView.Count > 0)
             {
-                // Find new entity positions and rotations.
                 foreach (IIndexable indexable in _drawablesInView.Select(Manager.GetComponentById))
                 {
                     // If we already know this one, skip it. We will handle actual interpolation below.
@@ -135,10 +160,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
                         indexable.Entity,
                         new InterpolationEntry
                         {
+                            PreviousPosition = transform.Position - velocity.LinearVelocity * _inverseMaxFps,
                             Position = transform.Position,
-                            LinearVelocity = velocity.LinearVelocity,
-                            Angle = transform.Angle,
-                            AngularVelocity = velocity.AngularVelocity
+                            PreviousAngle = transform.Angle - velocity.AngularVelocity * _inverseMaxFps,
+                            Angle = transform.Angle
                         });
                 }
 
@@ -146,50 +171,12 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 _drawablesInView.Clear();
             }
 
-            // Synchronize interpolation to real data when we enter a new frame.
-            if (frame != _currentFrame)
-            {
-                // Remember current frame and reset relative time spent.
-                _currentFrame = frame;
-                _totalRelativeFrameTime = 0f;
-
-                foreach (var entity in _entries.Keys)
-                {
-                    var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
-                    var velocity = (IVelocity) Manager.GetComponent(entity, VelocityTypeId);
-                    
-                    if (transform == null || velocity == null)
-                    {
-                        continue;
-                    }
-
-                    var entry = _entries[entity];
-                    entry.Position = transform.Position;
-                    entry.Angle = MathHelper.WrapAngle(transform.Angle);
-                    if (velocity.Enabled)
-                    {
-                        entry.LinearVelocity = velocity.LinearVelocity;
-                        // We don't fully extrapolate our frames, because this tends to cause jitter
-                        // when interpolating low velocities. This leads to slightly less smooth rotation
-                        // on higher velocities, but it would seem the brain is a little more forgiving
-                        // towards rotational stutter as opposed to linear one (at least my brain is).
-                        entry.AngularVelocity = velocity.AngularVelocity * 0.6f;
-                    }
-                    else
-                    {
-                        entry.LinearVelocity = Vector2.Zero;
-                        entry.AngularVelocity = 0f;
-                    }
-                }
-            }
-
             // Update interpolated values.
-            _totalRelativeFrameTime += (elapsedMilliseconds / 1000f) * _simulationSpeed();
-            System.Diagnostics.Debug.Assert(_totalRelativeFrameTime <= 1f);
+            _totalRelativeFrameTime += (elapsedMilliseconds * (_currentFps() / 1000f));
             foreach (var entry in _entries.Values)
             {
-                entry.InterpolatedPosition = entry.Position + _totalRelativeFrameTime * entry.LinearVelocity;
-                entry.InterpolatedAngle = entry.Angle + _totalRelativeFrameTime * entry.AngularVelocity;
+                entry.InterpolatedPosition = WorldPoint.Lerp(entry.PreviousPosition, entry.Position, _totalRelativeFrameTime);
+                entry.InterpolatedAngle = MathHelper.Lerp(entry.PreviousAngle, entry.Angle, _totalRelativeFrameTime);
             }
         }
 
@@ -252,17 +239,17 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         private sealed class InterpolationEntry
         {
+            public WorldPoint PreviousPosition;
+
             public WorldPoint Position;
 
             public WorldPoint InterpolatedPosition;
 
-            public Vector2 LinearVelocity;
+            public float PreviousAngle;
 
             public float Angle;
 
             public float InterpolatedAngle;
-
-            public float AngularVelocity;
         }
 
         #endregion

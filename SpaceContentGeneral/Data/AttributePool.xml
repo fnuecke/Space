@@ -35,7 +35,7 @@
           <LevelScale>0</LevelScale>
         </Item>
         <Item>
-          <Attribute>4 to 8 AccelerationForce</Attribute>
+          <Attribute>30 to 50 AccelerationForce</Attribute>
           <Weight>1</Weight>
           <AllowRedraw>false</AllowRedraw>
           <LevelScale>0</LevelScale>
@@ -137,7 +137,7 @@
       <Name>Thruster Level 1</Name>
       <Attributes>
         <Item>
-          <Attribute>40 to 70 AccelerationForce</Attribute>
+          <Attribute>60 to 90 AccelerationForce</Attribute>
           <Weight>1</Weight>
           <AllowRedraw>false</AllowRedraw>
           <LevelScale>0.1</LevelScale>

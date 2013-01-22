@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -15,9 +16,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Initializes a new instance of the <see cref="CameraCenteredTextureRenderSystem"/> class.
         /// </summary>
-        /// <param name="simulationSpeed">A function getting the current simulation frame rate.</param>
-        public CameraCenteredInterpolationSystem(Func<float> simulationSpeed)
-            : base(simulationSpeed) {}
+        /// <param name="currentFps">A function getting the current simulation frame rate.</param>
+        public CameraCenteredInterpolationSystem(Func<float> currentFps)
+            : base(currentFps, Settings.TicksPerSecond) {}
 
         #endregion
 
