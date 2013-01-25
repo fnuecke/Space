@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Physics.Joints;
 using Engine.ComponentSystem.Physics.Math;
 using Engine.ComponentSystem.Physics.Systems;
+using Engine.ComponentSystem.Spatial.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -87,7 +88,7 @@ namespace Engine.ComponentSystem.Physics.Components
                         // Add our fixtures back to the index.
                         foreach (Fixture fixture in Fixtures)
                         {
-                            fixture.IndexGroupsMask |= PhysicsSystem.IndexGroupMask;
+                            fixture.IndexId = PhysicsSystem.IndexId;
                         }
 
                         // Contacts are created in the next update.
@@ -97,7 +98,7 @@ namespace Engine.ComponentSystem.Physics.Components
                         // Remove all our fixtures from the index.
                         foreach (Fixture fixture in Fixtures)
                         {
-                            fixture.IndexGroupsMask &= ~PhysicsSystem.IndexGroupMask;
+                            fixture.IndexId = -1;
                         }
 
                         // Free any contacts we're involved in.
@@ -891,6 +892,15 @@ namespace Engine.ComponentSystem.Physics.Components
             {
                 fixture.Synchronize(xf0, Transform);
             }
+
+            // Allow other, non-physics indexes to update their bounds. This will not
+            // change our bounds, as their "stationary" bounds are always contained
+            // in their expanded ones.
+            TranslationChanged translationChanged;
+            translationChanged.Component = this;
+            translationChanged.PreviousPosition = xf0.Translation;
+            translationChanged.CurrentPosition = Transform.Translation;
+            Manager.SendMessage(translationChanged);
         }
 
         /// <summary>Advance to the new safe time. This doesn't sync the broad-phase.</summary>

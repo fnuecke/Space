@@ -51,7 +51,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         #region Constants
 
         /// <summary>Start using indexes after the collision index.</summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int IndexId = IndexSystem.GetIndexId();
 
         #endregion
 
@@ -144,7 +144,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         /// <summary>Gets the number of (active) fixtures in this simulation.</summary>
         public int FixtureCount
         {
-            get { return Index[IndexGroupMask].Count; }
+            get { return Index[IndexId].Count; }
         }
 
         /// <summary>Gets the number of currently active contacts in the simulation.</summary>
@@ -189,13 +189,13 @@ namespace Engine.ComponentSystem.Physics.Systems
         /// <summary>Gets the depth of the index tree.</summary>
         public int IndexDepth
         {
-            get { return Index[IndexGroupMask].Depth; }
+            get { return Index[IndexId].Depth; }
         }
 
         /// <summary>Gets the fixture bounding boxes for the debug renderer.</summary>
         public IEnumerable<WorldBounds> FixtureBounds
         {
-            get { return Index[IndexGroupMask].Select(entry => entry.Item1); }
+            get { return Index[IndexId].Select(entry => entry.Item1); }
         }
 
         /// <summary>The index system.</summary>
@@ -342,7 +342,7 @@ namespace Engine.ComponentSystem.Physics.Systems
             // Get index reference once for better performance. This may change outside
             // of the update (e.g. during deserialization or copying), so we need to
             // fetch it again each time.
-            _index = Index[IndexGroupMask];
+            _index = Index[IndexId];
 
             // If new fixtures were added we want to look for contacts with that
             // fixtures before jumping into the actual update.
@@ -414,7 +414,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         public Fixture GetFixtureAt(WorldPoint worldPoint)
         {
             Fixture result = null;
-            Index[IndexGroupMask].Find(
+            Index[IndexId].Find(
                 worldPoint,
                 0,
                 value =>
@@ -488,7 +488,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         {
             foreach (Fixture fixture in body.Fixtures)
             {
-                Index.Touch(fixture.Id, IndexGroupMask);
+                Index.Touch(fixture.Id, IndexId);
             }
         }
 
@@ -503,8 +503,8 @@ namespace Engine.ComponentSystem.Physics.Systems
             while (body.ContactList >= 0)
             {
                 var contact = _contactEdges[body.ContactList].Contact;
-                Index.Untouch(_contacts[contact].FixtureIdA, IndexGroupMask);
-                Index.Untouch(_contacts[contact].FixtureIdB, IndexGroupMask);
+                Index.Untouch(_contacts[contact].FixtureIdA, IndexId);
+                Index.Untouch(_contacts[contact].FixtureIdB, IndexId);
                 DestroyContact(contact);
             }
 
@@ -525,7 +525,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                 }
             }
             // Touch fixture to allow new contact generation.
-            Index.Touch(fixture.Id, IndexGroupMask);
+            Index.Touch(fixture.Id, IndexId);
         }
 
         #endregion
@@ -1403,7 +1403,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         {
             // Check the list of entities that moved in the index.
             ISet<int> neighbors = new HashSet<int>();
-            foreach (var fixture in Index.GetChanged(IndexGroupMask))
+            foreach (var fixture in Index.GetChanged(IndexId))
             {
                 // Find contacts (possible collisions based on fattened bounds).
                 _index.Find(_index[fixture], neighbors);
@@ -1469,7 +1469,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                 neighbors.Clear();
             }
 
-            Index.ClearTouched(IndexGroupMask);
+            Index.ClearTouched(IndexId);
         }
 
         /// <summary>

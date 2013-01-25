@@ -264,8 +264,11 @@ namespace Space.ComponentSystem.Factories
                 0,
                 restitution: 0.1f,
                 //isSensor: true,
-                collisionGroups: collisionGroup)
-                   .IndexGroupsMask |= CameraSystem.IndexGroupMask | InterpolationSystem.IndexGroupMask;
+                collisionGroups: collisionGroup);
+
+            // Add to render system indexes. The padding these perform should be enough for any projectile.
+            manager.AddComponent<Indexable>(entity).Initialize(CameraSystem.IndexId);
+            manager.AddComponent<Indexable>(entity).Initialize(InterpolationSystem.IndexId);
 
             // If our emitter was moving, apply its velocity.
             if (emitterVelocity != null)

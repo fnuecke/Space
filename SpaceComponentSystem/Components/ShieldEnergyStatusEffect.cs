@@ -16,5 +16,8 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        /// <summary>The component id of the fixture that represents our shield.</summary>
+        public int Fixture;
     }
 }

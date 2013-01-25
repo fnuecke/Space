@@ -4,7 +4,6 @@ using System.Linq;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
-using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
@@ -31,7 +30,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Constants
 
         /// <summary>Index group to use for sound computations.</summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int IndexId = IndexSystem.GetIndexId();
         
         /// <summary>
         /// Get the interface's type id once, for performance.
@@ -136,7 +135,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             // in the current list of sounds playing will be stopped, as they are
             // out of range. The ones in range will be removed from that list and
             // added to our reusable list.
-            index.Find(listenerPosition, _maxAudibleDistance, _reusableNeighborList, IndexGroupMask);
+            index[IndexId].Find(listenerPosition, _maxAudibleDistance, _reusableNeighborList);
             foreach (IIndexable neighbor in _reusableNeighborList.Select(Manager.GetComponentById))
             {
                 // Get the sound component of the neighbor.

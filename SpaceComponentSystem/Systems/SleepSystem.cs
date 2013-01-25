@@ -15,6 +15,9 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class SleepSystem : AbstractComponentSystem<ArtificialIntelligence>, IUpdatingSystem
     {
+        /// <summary>Index group containing all entities that can be put to sleep (usually AIs).</summary>
+        public static readonly int IndexId = IndexSystem.GetIndexId();
+        
         /// <summary>The distance at which ships are put to sleep.</summary>
         private const float SleepDistance = CellSystem.CellSize / 4;
 
@@ -31,7 +34,7 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
-            var index = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[ArtificialIntelligence.AIIndexGroupMask];
+            var index = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[IndexId];
             if (index == null)
             {
                 // No AI ships were created yet, so we have nothing to do.

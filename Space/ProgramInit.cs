@@ -255,7 +255,6 @@ namespace Space
                 args =>
                 {
                     int index;
-                    ulong groupMask;
                     var system = _client.GetSystem<DebugIndexRenderSystem>();
                     if (!int.TryParse(args[1], out index))
                     {
@@ -265,23 +264,23 @@ namespace Space
                             case "collision":
                             case "collidable":
                             case "collidables":
-                                groupMask = PhysicsSystem.IndexGroupMask;
+                                index = PhysicsSystem.IndexId;
                                 break;
                             case "d":
                             case "detector":
                             case "detectable":
                             case "detectables":
-                                groupMask = DetectableSystem.IndexGroupMask;
+                                index = DetectableSystem.IndexId;
                                 break;
                             case "g":
                             case "grav":
                             case "gravitation":
-                                groupMask = GravitationSystem.IndexGroupMask;
+                                index = GravitationSystem.IndexId;
                                 break;
                             case "s":
                             case "sound":
                             case "sounds":
-                                groupMask = SoundSystem.IndexGroupMask;
+                                index = SoundSystem.IndexId;
                                 break;
                             default:
                                 _console.WriteLine(
@@ -289,21 +288,12 @@ namespace Space
                                 return;
                         }
                     }
-                    else if (index > 64)
-                    {
-                        _console.WriteLine("Invalid index, must be smaller or equal to 64.");
-                        return;
-                    }
                     else if (index == 0)
                     {
                         system.Enabled = false;
                         return;
                     }
-                    else
-                    {
-                        groupMask = 1ul << index;
-                    }
-                    system.IndexGroupMask = groupMask;
+                    system.IndexId = index;
                     system.Enabled = true;
                 },
                 "Enables rendering of the index with the given index.",

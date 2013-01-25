@@ -57,18 +57,18 @@ namespace Engine.ComponentSystem.Physics.Components
         #region Properties
 
         /// <summary>The index group mask determining which indexes the component will be tracked by.</summary>
-        public ulong IndexGroupsMask
+        public int IndexId
         {
-            get { return _indexGroupsMask; }
+            get { return _indexId; }
             set
             {
-                if (value == _indexGroupsMask)
+                if (value == _indexId)
                 {
                     return;
                 }
 
-                var oldMask = _indexGroupsMask;
-                _indexGroupsMask = value;
+                var oldIndexId = _indexId;
+                _indexId = value;
 
                 if (Manager == null)
                 {
@@ -77,8 +77,8 @@ namespace Engine.ComponentSystem.Physics.Components
 
                 IndexGroupsChanged message;
                 message.Component = this;
-                message.AddedIndexGroups = value & ~oldMask;
-                message.RemovedIndexGroups = oldMask & ~value;
+                message.NewIndexId = value;
+                message.OldIndexId = oldIndexId;
                 Manager.SendMessage(message);
             }
         }
@@ -221,7 +221,7 @@ namespace Engine.ComponentSystem.Physics.Components
         private float _restitution;
 
         /// <summary>The bit mask of our index group.</summary>
-        private ulong _indexGroupsMask = PhysicsSystem.IndexGroupMask;
+        private int _indexId = PhysicsSystem.IndexId;
 
         #endregion
 

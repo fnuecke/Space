@@ -1,5 +1,9 @@
-﻿using Engine.ComponentSystem.RPG.Components;
+﻿using System.Linq;
+using Engine.ComponentSystem.Physics;
+using Engine.ComponentSystem.Physics.Components;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
 using Space.ComponentSystem.Components;
 using Space.Data;
 using Space.Util;
@@ -47,6 +51,47 @@ namespace Space.ComponentSystem.Systems
                 }
             }
             return false;
+        }
+
+        public override void OnComponentAdded(Engine.ComponentSystem.Components.IComponent component)
+        {
+            base.OnComponentAdded(component);
+
+            var shield = component as ShieldEnergyStatusEffect;
+            if (shield == null)
+            {
+                return;
+            }
+
+            var body = Manager.GetComponent(shield.Entity, Body.TypeId) as Body;
+            if (body == null)
+            {
+                return;
+            }
+
+            var attributes = Manager.GetComponent(shield.Entity, Attributes<AttributeType>.TypeId) as Attributes<AttributeType>;
+            if (attributes == null)
+            {
+                return;
+            }
+
+            var shieldRadius = UnitConversion.ToSimulationUnits(attributes.GetValue(AttributeType.ShieldRadius));
+            shield.Fixture = Manager.AttachCircle(
+                body,
+                shieldRadius,
+                isSensor: true,
+                collisionGroups: ((Fixture) body.Fixtures.First()).CollisionGroups).Id;
+        }
+
+        public override void OnComponentRemoved(Engine.ComponentSystem.Components.IComponent component)
+        {
+            base.OnComponentRemoved(component);
+            
+            var shield = component as ShieldEnergyStatusEffect;
+            if (shield != null && shield.Fixture >= 0)
+            {
+                Manager.RemoveComponent(shield.Fixture);
+            }
         }
     }
 }

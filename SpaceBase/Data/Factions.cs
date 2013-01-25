@@ -17,57 +17,60 @@ namespace Space.Data
         /// <summary>Projectiles have their own group to allow "allying" them, which avoid inter-projectile collisions.</summary>
         Projectiles = 1 << 1,
 
+        /// <summary>Same concept as with projectiles, we want to put shields into one collision group (together with ships).</summary>
+        Shields = 1 << 2,
+
         /// <summary>A neutral faction that will always appear neutral to all other factions.</summary>
-        Neutral = 1 << 2,
+        Neutral = 1 << 3,
 
         /// <summary>Fraction one.</summary>
-        NPCFactionA = 1 << 3,
+        NPCFactionA = 1 << 4,
 
         /// <summary>Fraction two.</summary>
-        NPCFactionB = 1 << 4,
+        NPCFactionB = 1 << 5,
 
         /// <summary>Fraction two.</summary>
-        NPCFactionC = 1 << 5,
+        NPCFactionC = 1 << 6,
 
         /// <summary>Player one.</summary>
-        Player1 = 1 << 6,
+        Player1 = 1 << 7,
 
         /// <summary>Player two.</summary>
-        Player2 = 1 << 7,
+        Player2 = 1 << 8,
 
         /// <summary>Player three.</summary>
-        Player3 = 1 << 8,
+        Player3 = 1 << 9,
 
         /// <summary>Player four.</summary>
-        Player4 = 1 << 9,
+        Player4 = 1 << 10,
 
         /// <summary>Player five.</summary>
-        Player5 = 1 << 10,
+        Player5 = 1 << 11,
 
         /// <summary>Player six.</summary>
-        Player6 = 1 << 11,
+        Player6 = 1 << 12,
 
         /// <summary>Player seven.</summary>
-        Player7 = 1 << 12,
+        Player7 = 1 << 13,
 
         /// <summary>Player eight.</summary>
-        Player8 = 1 << 13,
+        Player8 = 1 << 14,
 
         /// <summary>Player nine.</summary>
-        Player9 = 1 << 14,
+        Player9 = 1 << 15,
 
         /// <summary>Player ten.</summary>
-        Player10 = 1 << 15,
+        Player10 = 1 << 16,
 
         /// <summary>Player eleven.</summary>
-        Player11 = 1 << 16,
+        Player11 = 1 << 17,
 
         /// <summary>Player twelve.</summary>
-        Player12 = 1 << 17,
+        Player12 = 1 << 18,
 
         /// <summary>Always represents the last entry, for masking when inverting.</summary>
         /// <remarks>Make sure to update this when adding or removing entries.</remarks>
-        End = Player12
+        End = Player12,
     }
 
     #region Conversion utils

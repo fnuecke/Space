@@ -65,14 +65,14 @@
     <Compile Include="..\EngineComponentSystemSpatial\Components\EllipsePath.cs">
       <Link>Components\EllipsePath.cs</Link>
     </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Components\Friction.cs">
-      <Link>Components\Friction.cs</Link>
-    </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\IDrawable.cs">
       <Link>Components\IDrawable.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\IIndexable.cs">
       <Link>Components\IIndexable.cs</Link>
+    </Compile>
+    <Compile Include="..\EngineComponentSystemSpatial\Components\Indexable.cs">
+      <Link>Components\Indexable.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Components\Intersection.cs">
       <Link>Components\Intersection.cs</Link>
@@ -115,9 +115,6 @@
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\EllipsePathSystem.cs">
       <Link>Systems\EllipsePathSystem.cs</Link>
-    </Compile>
-    <Compile Include="..\EngineComponentSystemSpatial\Systems\FrictionSystem.cs">
-      <Link>Systems\FrictionSystem.cs</Link>
     </Compile>
     <Compile Include="..\EngineComponentSystemSpatial\Systems\IndexSystem.cs">
       <Link>Systems\IndexSystem.cs</Link>

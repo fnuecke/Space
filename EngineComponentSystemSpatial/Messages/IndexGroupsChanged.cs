@@ -3,17 +3,17 @@
 namespace Engine.ComponentSystem.Spatial.Messages
 {
     /// <summary>
-    ///     Sent by <see cref="IIndexable"/> components when the index groups they define association to change.
+    ///     Sent by <see cref="IIndexable"/> components when the index id they define association to changes.
     /// </summary>
     public struct IndexGroupsChanged
     {
-        /// <summary>The index component for which the index groups changed.</summary>
+        /// <summary>The index component for which the index id changed.</summary>
         public IIndexable Component;
 
-        /// <summary>The index grouped we no longer belong to.</summary>
-        public ulong RemovedIndexGroups;
+        /// <summary>The index we no longer belong to.</summary>
+        public int OldIndexId;
 
-        /// <summary>The index groups we now belong to but did not before.</summary>
-        public ulong AddedIndexGroups;
+        /// <summary>The index we now belong to.</summary>
+        public int NewIndexId;
     }
 }

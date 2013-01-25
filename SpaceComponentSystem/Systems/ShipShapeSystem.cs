@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
@@ -35,6 +37,20 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>How many ticks cache entries are kept alive after their last use.</summary>
         private const int CacheEntryTimeToLive = (int) (10 * Settings.TicksPerSecond);
+
+        // Note: for the texture to polygon conversion, the tolerance defines how closely the
+        //       polygon shape represents the texture, where lower values mean a more accurate
+        //       approximation. The maximum value is 8.
+
+        /// <summary>
+        /// This determines how detailed (or crude) NPC ships are approximated for the physics system.
+        /// </summary>
+        private const float PlayerModelTolerance = 2f;
+        
+        /// <summary>
+        /// This determines how detailed (or crude) NPC ships are approximated for the physics system.
+        /// </summary>
+        private const float NPCModelTolerance = 8f;
 
         #endregion
 
@@ -142,11 +158,14 @@ namespace Space.ComponentSystem.Systems
                         // Build polygon hull.
                         var data = new uint[target.Width * target.Height];
                         target.GetData(data);
-                        var hull = TextureConverter.DetectVertices(data, target.Width, target.Height, 2f)[0];
+                        var abstraction = Manager.GetComponent(entity, Avatar.TypeId) == null
+                                              ? NPCModelTolerance
+                                              : PlayerModelTolerance;
+                        var hull = TextureConverter.DetectVertices(data, target.Width, target.Height, abstraction)[0];
                         for (var i = 0; i < hull.Count; ++i)
                         {
                             // Center at origin.
-                            hull[i] -= new Vector2(target.Width / 2f, target.Height / 2f);
+                            hull[i] += new Vector2(size.X, size.Y);
                             // Scale to simulation units.
                             hull[i] = XnaUnitConversion.ToSimulationUnits(hull[i]);
                         }
@@ -200,11 +219,13 @@ namespace Space.ComponentSystem.Systems
             Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
             Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
             Manager.AddMessageListener<GraphicsDeviceReset>(OnGraphicsDeviceReset);
+
+            LoadContent(((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Graphics);
         }
 
         private static void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
-            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+            LoadContent(message.Graphics);
         }
 
         private static void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
@@ -215,7 +236,15 @@ namespace Space.ComponentSystem.Systems
         private static void OnGraphicsDeviceReset(GraphicsDeviceReset message)
         {
             UnloadContent();
-            _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+            LoadContent(message.Graphics);
+        }
+
+        private static void LoadContent(IGraphicsDeviceService graphics)
+        {
+            if (_spriteBatch == null)
+            {
+                _spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
+            }
         }
 
         /// <summary>Called when the graphics device is being disposed, and any assets manually allocated should be disposed.</summary>

@@ -24,7 +24,7 @@ namespace Space.ComponentSystem.Systems
         #region Constants
 
         /// <summary>Index group to use for gravitational computations.</summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int IndexId = IndexSystem.GetIndexId();
 
         /// <summary>The maximum distance at which an attractor may look for attractees.</summary>
         private static readonly float MaxGravitationDistance = UnitConversion.ToSimulationUnits(30000f);
@@ -73,7 +73,7 @@ namespace Space.ComponentSystem.Systems
             // Then check all our neighbors. Use new list each time because we're running
             // in parallel, so we can't really keep one on a global level.
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(myTransform.Position, MaxGravitationDistance, neighbors, IndexGroupMask);
+            index[IndexId].Find(myTransform.Position, MaxGravitationDistance, neighbors);
             foreach (IIndexable neighbor in neighbors.Select(Manager.GetComponentById))
             {
                 // If they have an enabled gravitation component...

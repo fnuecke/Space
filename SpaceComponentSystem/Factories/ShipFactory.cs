@@ -231,22 +231,27 @@ namespace Space.ComponentSystem.Factories
             var entity = manager.AddEntity();
 
             var body = manager.AddBody(entity, type: Body.BodyType.Dynamic, worldPosition: position, allowSleep: false);
+            // We need at least one fixture to carry on our index and collision groups.
             manager.AttachCircle(
                 body,
                 UnitConversion.ToSimulationUnits(_collisionRadius),
-                density: 100,
-                collisionGroups: faction.ToCollisionGroup())
-                   .IndexGroupsMask |=
-                        // Can be detected.
-                        DetectableSystem.IndexGroupMask |
-                        // Can be attracted.
-                        GravitationSystem.IndexGroupMask |
-                        // Can make noise.
-                        SoundSystem.IndexGroupMask |
-                        // Must be detectable by the camera.
-                        CameraSystem.IndexGroupMask |
-                        // Rendering should be interpolated.
-                        InterpolationSystem.IndexGroupMask;
+                collisionGroups: faction.ToCollisionGroup());
+
+            // These are 'worst-case' bounds, i.e. no ship should get larger than this. We use it as
+            // a buffer for the camera and interpolation system, to allow them picking up on objects
+            // that are positioned outside the viewport, but reach into it due to their size.
+            var bounds = new FarRectangle(-2, -2, 4, 4);
+
+            // Can be detected.
+            manager.AddComponent<Indexable>(entity).Initialize(DetectableSystem.IndexId);
+            // Can be attracted.
+            manager.AddComponent<Indexable>(entity).Initialize(GravitationSystem.IndexId);
+            // Can make noise.
+            manager.AddComponent<Indexable>(entity).Initialize(SoundSystem.IndexId);
+            // Must be detectable by the camera.
+            manager.AddComponent<Indexable>(entity).Initialize(bounds, CameraSystem.IndexId);
+            // Rendering should be interpolated.
+            manager.AddComponent<Indexable>(entity).Initialize(bounds, InterpolationSystem.IndexId);
 
             // Although 'unrealistic' in space, make ships stop automatically if not accelerating.
             body.LinearDamping = LinearDamping;

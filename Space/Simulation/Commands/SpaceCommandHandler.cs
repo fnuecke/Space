@@ -341,7 +341,7 @@ from Space.Data import *
         private static readonly int DrawableTypeId = Manager.GetComponentTypeId<IDrawable>();
 
         /// <summary>Store for performance.</summary>
-        private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
+        private static readonly int TransformTypeId = Manager.GetComponentTypeId<ITransform>();
 
         private static void PickUp(PickUpCommand command, IManager manager)
         {
@@ -363,7 +363,7 @@ from Space.Data import *
             // lock this shared list.
             lock (_reusableItemList)
             {
-                index.Find(transform.Position, UnitConversion.ToSimulationUnits(100), _reusableItemList, PickupSystem.IndexGroupMask);
+                index[PickupSystem.IndexId].Find(transform.Position, UnitConversion.ToSimulationUnits(100), _reusableItemList);
                 foreach (IIndexable item in _reusableItemList.Select(manager.GetComponentById))
                 {
                     // Pick the item up.

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Engine.Collections;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Messages;
@@ -40,27 +38,13 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Group number distribution
 
         /// <summary>Next group index dealt out.</summary>
-        private static byte _nextGroup = 1;
+        private static int _nextIndexId;
 
-        /// <summary>Reserves a group number for use.</summary>
-        /// <returns>The reserved group number.</returns>
-        public static byte GetGroup()
+        /// <summary>Reserves an index ID for use.</summary>
+        /// <returns>The reserved ID.</returns>
+        public static int GetIndexId()
         {
-            return GetGroups(1);
-        }
-
-        /// <summary>Reserves multiple group numbers for use.</summary>
-        /// <param name="range">The number of group numbers to reserve.</param>
-        /// <returns>The start of the range of reserved group numbers.</returns>
-        public static byte GetGroups(byte range)
-        {
-            if (range + _nextGroup > 0xFF)
-            {
-                throw new InvalidOperationException("No more index groups available.");
-            }
-            var result = _nextGroup;
-            _nextGroup += range;
-            return result;
+            return _nextIndexId++;
         }
 
         #endregion
@@ -79,13 +63,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
             get { return _trees.Where(index => index != null).Sum(index => index.Count); }
         }
 
-        /// <summary>
-        ///     Gets the <em>first</em> index of the specified groups. This is a convenient shortcut when it is known that the
-        ///     group mask only represents a single index.
-        /// </summary>
-        public IIndex<int, WorldBounds, WorldPoint> this[ulong groups]
+        /// <summary>Gets the index of the specified ID.</summary>
+        public IIndex<int, WorldBounds, WorldPoint> this[int index]
         {
-            get { return IndexesForGroups(groups).Select(index => _trees[index]).FirstOrDefault(); }
+            get { return _trees[index]; }
         }
 
         #endregion
@@ -101,14 +82,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>The actual indexes we're using, mapping component positions to the components, allowing faster range queries.</summary>
         [CopyIgnore, PacketizerIgnore]
 #if FARMATH
-        private FarCollections.SpatialHashedQuadTree<int>[] _trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
+        private SparseArray<FarCollections.SpatialHashedQuadTree<int>> _trees = new SparseArray<FarCollections.SpatialHashedQuadTree<int>>();
 #else
-        private DynamicQuadTree<int>[] _trees = new DynamicQuadTree<int>[sizeof (ulong) * 8];
+        private SparseArray<DynamicQuadTree<int>> _trees = new SparseArray<DynamicQuadTree<int>>();
 #endif
 
         /// <summary>List of components for which the index entry changed in the last update.</summary>
         [CopyIgnore, PacketizerIgnore]
-        private HashSet<int>[] _changed = new HashSet<int>[sizeof (ulong) * 8];
+        private SparseArray<HashSet<int>> _changed = new SparseArray<HashSet<int>>();
 
         #endregion
 
@@ -134,12 +115,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="frame">The current simulation frame.</param>
         public void Update(long frame)
         {
-            // Reset for next update cycle.
-            //foreach (var changed in _changed.Where(changed => changed != null))
-            //{
-            //    changed.Clear();
-            //}
-
             // Reset query count until next run.
             _queryCountSinceLastUpdate = 0;
         }
@@ -153,7 +128,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var index = component as IIndexable;
             if (index != null)
             {
-                AddToGroups(index, index.IndexGroupsMask);
+                AddIndex(index, index.IndexId);
             }
         }
 
@@ -167,7 +142,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             if (index != null)
             {
                 // Remove from any indexes the component was part of.
-                RemoveFromGroups(index, index.IndexGroupsMask);
+                RemoveIndex(index, index.IndexId);
             }
         }
 
@@ -183,8 +158,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>Handle group changes (moving components from one index group to another).</summary>
         private void OnIndexGroupsChanged(IndexGroupsChanged message)
         {
-            AddToGroups(message.Component, message.AddedIndexGroups);
-            RemoveFromGroups(message.Component, message.RemovedIndexGroups);
+            RemoveIndex(message.Component, message.OldIndexId);
+            AddIndex(message.Component, message.NewIndexId);
         }
 
         /// <summary>Handle bound changes (size of actual bounds of simple index components).</summary>
@@ -195,28 +170,31 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var component = message.Component;
 
             // Update all indexes the component is part of.
-            foreach (var index in IndexesForGroups(component.IndexGroupsMask)
-                .Where(index => _trees[index].Update(bounds, delta, component.Id)))
+            if (component.IndexId >= 0 &&
+                _trees[component.IndexId].Update(bounds, delta, component.Id))
             {
                 // Mark as changed.
-                _changed[index].Add(component.Id);
+                _changed[component.IndexId].Add(component.Id);
             }
         }
+        
+        /// <summary>Prefetch for performance.</summary>
+        private static readonly int IndexableTypeId = ComponentSystem.Manager.GetComponentTypeId<IIndexable>();
 
         /// <summary>Handle position changes (moving components around in the world).</summary>
         private void OnTranslationChanged(TranslationChanged message)
         {
             var component = message.Component;
-            var bounds = component.ComputeWorldBounds();
             var velocity = (IVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());
             var delta = velocity != null ? velocity.LinearVelocity : Vector2.Zero;
-
-            // Update all indexes the component is part of.
-            foreach (var index in IndexesForGroups(component.IndexGroupsMask)
-                .Where(index => _trees[index].Update(bounds, delta, component.Id)))
+            foreach (IIndexable indexable in Manager.GetComponents(component.Entity, IndexableTypeId))
             {
-                // Mark as changed.
-                _changed[index].Add(component.Id);
+                var bounds = indexable.ComputeWorldBounds();
+                if(_trees[indexable.IndexId].Update(bounds, delta, indexable.Id))
+                {
+                    // Mark as changed.
+                    _changed[indexable.IndexId].Add(component.Id);
+                }
             }
         }
 
@@ -224,103 +202,60 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         #region Component lookup
 
-        /// <summary>Get all components in the specified range of the query point.</summary>
-        /// <param name="center">The point to use as a query point.</param>
-        /// <param name="radius">The distance up to which to get neighbors.</param>
-        /// <param name="results">The list to use for storing the results.</param>
-        /// <param name="groups">The bitmask representing the groups to check in.</param>
-        /// <returns>All components in range.</returns>
-        public void Find(WorldPoint center, float radius, ISet<int> results, ulong groups)
-        {
-            foreach (var tree in IndexesForGroups(groups)
-                .Select(index => _trees[index])
-                .Where(tree => tree != null))
-            {
-                Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
-                tree.Find(center, radius, results);
-            }
-        }
-
-        /// <summary>Get all components contained in the specified rectangle.</summary>
-        /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="results">The list to use for storing the results.</param>
-        /// <param name="groups">The bitmask representing the groups to check in.</param>
-        /// <returns>All components in range.</returns>
-        public void Find(WorldBounds rectangle, ISet<int> results, ulong groups)
-        {
-            foreach (var tree in IndexesForGroups(groups)
-                .Select(index => _trees[index])
-                .Where(tree => tree != null))
-            {
-                Interlocked.Add(ref _queryCountSinceLastUpdate, 1);
-                tree.Find(rectangle, results);
-            }
-        }
-
         /// <summary>Gets the list of components for which the index entry changed.</summary>
-        public IEnumerable<int> GetChanged(ulong groups)
+        public IEnumerable<int> GetChanged(int index)
         {
-            return IndexesForGroups(groups)
-                .SelectMany(index => _changed[index] ?? Enumerable.Empty<int>())
-                .Distinct();
+            return _changed[index];
         }
 
         /// <summary>Gets the bounds for the specified component in the first of the specified groups.</summary>
         /// <param name="component">The component.</param>
-        /// <param name="groups">The groups.</param>
+        /// <param name="index">The index.</param>
         /// <returns></returns>
-        public WorldBounds GetBounds(int component, ulong groups)
+        public WorldBounds GetBounds(int component, int index)
         {
-            return IndexesForGroups(groups)
-                .Select(index => _trees[index])
-                .Where(tree => tree.Contains(component))
-                .Select(tree => tree[component])
-                .FirstOrDefault();
+            return _trees[index][component];
         }
 
         /// <summary>Marks the component as changed in the specified groups.</summary>
         /// <param name="component">The component.</param>
-        /// <param name="groups">The index group mask.</param>
-        public void Touch(int component, ulong groups)
+        /// <param name="index">The index.</param>
+        public void Touch(int component, int index)
         {
-            foreach (var index in IndexesForGroups(groups))
-            {
-                _changed[index].Add(component);
-            }
+            _changed[index].Add(component);
         }
         
         /// <summary>Marks the component as unchanged in the specified groups.</summary>
         /// <param name="component">The component.</param>
-        /// <param name="groups">The index group mask.</param>
-        public void Untouch(int component, ulong groups)
+        /// <param name="index">The index.</param>
+        public void Untouch(int component, int index)
         {
-            foreach (var index in IndexesForGroups(groups))
-            {
-                _changed[index].Remove(component);
-            }
+            _changed[index].Remove(component);
         }
 
         /// <summary>Clears the list of changed components for the specified groups.</summary>
-        /// <param name="groups">The index group mask.</param>
-        public void ClearTouched(ulong groups)
+        /// <param name="index">The index.</param>
+        public void ClearTouched(int index)
         {
-            foreach (var changed in IndexesForGroups(groups)
-                .Select(index => _changed[index])
-                .Where(changed => changed != null))
-            {
-                changed.Clear();
-            }
+            _changed[index].Clear();
         }
 
         #endregion
 
         #region Utility methods
 
-        /// <summary>Utility method used to create indexes flagged in the specified bit mask if they don't already exist.</summary>
-        /// <param name="groups">The groups to create index structures for.</param>
-        private void EnsureIndexesExist(ulong groups)
+        /// <summary>Adds the specified component to the specified index.</summary>
+        /// <param name="component">The component to add.</param>
+        /// <param name="index">The index.</param>
+        private void AddIndex(IIndexable component, int index)
         {
-            foreach (var index in IndexesForGroups(groups).Where(index => _trees[index] == null))
+            // Ignore invalid ids, which can be used to disable components.
+            if (index < 0)
+            {
+                return;
+            }
+
+            if (_trees[index] == null)
             {
 #if FARMATH
                 _trees[index] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
@@ -329,56 +264,24 @@ namespace Engine.ComponentSystem.Spatial.Systems
 #endif
                 _changed[index] = new HashSet<int>();
             }
+
+            _trees[index].Add(component.ComputeWorldBounds(), component.Id);
+            _changed[index].Add(component.Id);
         }
 
-        /// <summary>
-        ///     Utility method that returns a list of all indexes flagged in the specified bit mask.
-        /// </summary>
-        /// <param name="groups">The groups to get the indexes for.</param>
-        /// <returns>A list of the specified indexes.</returns>
-        private static IEnumerable<int> IndexesForGroups(ulong groups)
+        /// <summary>Removes the specified component from the specified index.</summary>
+        /// <param name="component">The component to remove.</param>
+        /// <param name="index">The index to remove from.</param>
+        private void RemoveIndex(IIndexable component, int index)
         {
-            byte index = 0;
-            while (groups > 0)
+            // Ignore invalid ids, which can be used to disable components.
+            if (index < 0)
             {
-                if ((groups & 1) == 1)
-                {
-                    yield return index;
-                }
-                groups = groups >> 1;
-                ++index;
+                return;
             }
-        }
 
-        /// <summary>Adds the specified component to all indexes specified in groups.</summary>
-        /// <param name="component">The component to add.</param>
-        /// <param name="groups">The indexes to add to.</param>
-        private void AddToGroups(IIndexable component, ulong groups)
-        {
-            // Make sure the indexes exists.
-            EnsureIndexesExist(groups);
-
-            // Add the component to all its indexes.
-            foreach (var index in IndexesForGroups(groups))
-            {
-                // Add to each group.
-                _trees[index].Add(component.ComputeWorldBounds(), component.Id);
-                // Mark as changed.
-                _changed[index].Add(component.Id);
-            }
-        }
-
-        /// <summary>Removes the specified component from the specified indexes.</summary>
-        /// <param name="component">The index to remove.</param>
-        /// <param name="groups">The groups to remove from.</param>
-        private void RemoveFromGroups(IComponent component, ulong groups)
-        {
-            // Remove from each group.
-            foreach (var index in IndexesForGroups(groups))
-            {
-                _trees[index].Remove(component.Id);
-                _changed[index].Remove(component.Id);
-            }
+            _trees[index].Remove(component.Id);
+            _changed[index].Remove(component.Id);
         }
 
         #endregion
@@ -393,7 +296,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             base.Packetize(packet);
 
             packet.Write(IndexCount);
-            for (var index = 0; index < _trees.Length; ++index)
+            for (var index = 0; index < _nextIndexId; ++index)
             {
                 if (_trees[index] == null)
                 {
@@ -461,7 +364,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             base.Dump(w, indent);
 
             w.AppendIndent(indent).Write("Trees = {");
-            for (var i = 0; i < _trees.Length; ++i)
+            for (var i = 0; i < _nextIndexId; ++i)
             {
                 var tree = _trees[i];
                 if (tree == null)
@@ -504,11 +407,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var copy = (IndexSystem) base.NewInstance();
 
 #if FARMATH
-            copy._trees = new FarCollections.SpatialHashedQuadTree<int>[sizeof (ulong) * 8];
+            copy._trees = new SparseArray<FarCollections.SpatialHashedQuadTree<int>>();
 #else
-            copy._trees = new DynamicQuadTree<int>[sizeof (ulong) * 8];
+            copy._trees = new SparseArray<DynamicQuadTree<int>>();
 #endif
-            copy._changed = new HashSet<int>[sizeof (ulong) * 8];
+            copy._changed = new SparseArray<HashSet<int>>();
 
             return copy;
         }
@@ -537,7 +440,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 changed.Clear();
             }
 
-            for (var index = 0; index < _trees.Length; ++index)
+            for (var index = 0; index < _nextIndexId; ++index)
             {
                 if (_trees[index] == null)
                 {
@@ -578,18 +481,13 @@ namespace Engine.ComponentSystem.Spatial.Systems
         ///     Renders all index structures matching the specified index group bit mask using the specified shape at the
         ///     specified translation.
         /// </summary>
-        /// <param name="groups">Bit mask determining which indexes to draw.</param>
+        /// <param name="index">The index to draw.</param>
         /// <param name="shape">Shape to use for drawing.</param>
         /// <param name="translation">Translation to apply when drawing.</param>
         [Conditional("DEBUG")]
-        public void DrawIndex(ulong groups, AbstractShape shape, WorldPoint translation)
+        public void DrawIndex(int index, AbstractShape shape, WorldPoint translation)
         {
-            foreach (var tree in IndexesForGroups(groups)
-                .Select(index => _trees[index])
-                .Where(tree => tree != null))
-            {
-                tree.Draw(shape, translation);
-            }
+            _trees[index].Draw(shape, translation);
         }
 
         #endregion

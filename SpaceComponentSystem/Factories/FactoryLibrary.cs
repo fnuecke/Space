@@ -3,10 +3,7 @@ using Engine.ComponentSystem;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.FarMath;
 using Engine.Random;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Systems;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
@@ -210,30 +207,6 @@ namespace Space.ComponentSystem.Factories
             {
                 factory.SampleSunSystem(manager, cellCenter, random);
             }
-        }
-
-        /// <summary>Samples a new sun system with the specified name.</summary>
-        /// <param name="manager">The manager.</param>
-        /// <param name="cellCenter">The center of the cell for which the sun is created.</param>
-        /// <param name="random">The randomizer to use.</param>
-        public static void SampleTestObject(IManager manager, FarPosition cellCenter, IUniformRandom random)
-        {
-            var radius = 10f;
-            var entity = manager.AddEntity();
-            manager.AddComponent<Transform>(entity).Initialize(
-                new FarRectangle(-radius, -radius, radius * 2, radius * 2),
-                cellCenter,
-                0,
-                // Add to indexes for lookup.
-                DetectableSystem.IndexGroupMask | // Can be detected.
-                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CameraSystem.IndexGroupMask); // Must be detectable by the camera.
-                
-            manager.AddComponent<CellDeath>(entity).Initialize(false);
-            // Make it detectable.
-            manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
-            // Make it glow.
-            manager.AddComponent<TestObjectRenderer>(entity).Initialize(radius * 0.95f, Color.White);
         }
 
         /// <summary>Gets the item pool with the specified name.</summary>

@@ -135,10 +135,6 @@ namespace Space.Control
 
                     // ----- Stuff that updates positions of things ----- //
 
-                    // Friction has to be updated before acceleration is, to allow
-                    // maximum speed to be reached at the end of one cycle.
-                    //new FrictionSystem(),
-
                     // Apply gravitation before ship control, to allow it to
                     // compensate for the gravitation.
                     new GravitationSystem(),
@@ -160,7 +156,8 @@ namespace Space.Control
                     new TranslationSystem(),
 
                     // Update physics.
-                    new PhysicsSystem(1f / Settings.TicksPerSecond), 
+                    new EquipmentToFixtureSystem(),
+                    new PhysicsSystem(1f / Settings.TicksPerSecond),
                     
                     // ----- Stuff that creates new things ----- //
 

@@ -5,10 +5,10 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
-using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -25,13 +25,6 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
         public static readonly int TypeId = CreateTypeId();
-
-        #endregion
-
-        #region Constants
-        
-        /// <summary>Prefetch for performance.</summary>
-        private static readonly int IndexableTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<IIndexable>();
 
         #endregion
 
@@ -90,20 +83,21 @@ namespace Space.ComponentSystem.Systems
 
                 // Got some energy left, figure out coverage.
                 var equipment = (SpaceItemSlot) Manager.GetComponent(effect.Entity, ItemSlot.TypeId);
-                var attributes =
-                    (Attributes<AttributeType>) Manager.GetComponent(effect.Entity, Attributes<AttributeType>.TypeId);
+                var attributes = (Attributes<AttributeType>) Manager.GetComponent(effect.Entity, Attributes<AttributeType>.TypeId);
                 var coverage = 0f;
+                var radius = 0f;
                 if (attributes != null)
                 {
-                    coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage), 0f, 1f) *
-                               MathHelper.Pi;
+                    coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage), 0f, 1f) * MathHelper.Pi;
+                    radius = attributes.GetValue(AttributeType.ShieldRadius);
                 }
 
-                // Skip render if we have no coverage.
-                if (coverage <= 0f)
+                // Skip render if we have no coverage or a tiny radius.
+                if (coverage <= 0f || radius <= 5f)
                 {
                     continue;
                 }
+
 
                 // Figure out best shield (for texture).
                 var maxQuality = ItemQuality.None;
@@ -150,9 +144,7 @@ namespace Space.ComponentSystem.Systems
                 _shader.Center = (Vector2) FarUnitConversion.ToScreenUnits(position + camera.Translation);
 
                 // Set size.
-                var collidable = (IIndexable) Manager.GetComponent(effect.Entity, IndexableTypeId);
-                var bounds = FarUnitConversion.ToScreenUnits(collidable.ComputeWorldBounds());
-                _shader.SetSize(bounds.Width, bounds.Height);
+                _shader.SetSize(radius * 2);
 
                 // Set coverage of the shield.
                 _shader.Coverage = coverage;

@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Systems
         ///     Index group mask for the index we use to track positions of stuff that can be seen by the camera (and can
         ///     therefore appear in the list of visible entities).
         /// </summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int IndexId = IndexSystem.GetIndexId();
 
         #endregion
 
@@ -315,7 +315,7 @@ namespace Space.ComponentSystem.Systems
             _drawablesInView.Clear();
             var view = ComputeVisibleBounds();
             // Re-use drawables list to first get the visible components...
-            ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(view, _drawablesInView, IndexGroupMask);
+            ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[IndexId].Find(view, _drawablesInView);
             // ... and then extract their entities. As a list copy, otherwise the next
             // clear would destroy the iterator.
             var entities = _drawablesInView.Select(id => Manager.GetComponentById(id).Entity).ToList();

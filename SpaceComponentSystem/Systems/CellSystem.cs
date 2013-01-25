@@ -48,7 +48,7 @@ namespace Space.ComponentSystem.Systems
         public const int SubCellSize = 1 << SubCellSizeShiftAmount;
 
         /// <summary>Index used to track entities that should automatically be removed when a cell dies, and they are in that cell.</summary>
-        public static readonly ulong CellDeathAutoRemoveIndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int CellDeathAutoRemoveIndexId = IndexSystem.GetIndexId();
 
         /// <summary>
         ///     The time to wait before actually killing of a cell after it has gotten out of reach. This is to avoid
@@ -243,7 +243,7 @@ namespace Space.ComponentSystem.Systems
             _reusableBornCellsIds.Clear();
 
             // Check pending list, kill off old cells, notify systems etc.
-            var cellDeathIndex = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[CellDeathAutoRemoveIndexGroupMask];
+            var cellDeathIndex = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[CellDeathAutoRemoveIndexId];
             _reusablePendingList.AddRange(pending.Keys);
             foreach (var cellId in _reusablePendingList)
             {

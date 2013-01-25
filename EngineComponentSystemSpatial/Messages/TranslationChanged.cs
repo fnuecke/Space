@@ -18,7 +18,7 @@ namespace Engine.ComponentSystem.Spatial.Messages
     public struct TranslationChanged
     {
         /// <summary>The component for which the translation changed.</summary>
-        public IIndexable Component;
+        public ITransform Component;
 
         /// <summary>The previous translation before the change.</summary>
         public WorldPoint PreviousPosition;

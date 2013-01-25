@@ -163,6 +163,10 @@
       <Project>{24918E4F-32DF-4458-B480-5854D4782D2C}</Project>
       <Name>Awesomium.ScreenManagement</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineCollections\Engine.Collections.csproj">
+      <Project>{D73BAEF1-9B31-4548-A982-E19D68745757}</Project>
+      <Name>Engine.Collections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
       <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
       <Name>Engine.ComponentSystem.Common</Name>
@@ -182,6 +186,10 @@
     <ProjectReference Include="..\EngineController\Engine.Controller.csproj">
       <Project>{10945D08-8588-4F0E-9671-0E90D374EB78}</Project>
       <Name>Engine.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineFarCollections\Engine.FarCollections.csproj">
+      <Project>{CAEE2658-72AE-445C-B1A1-99C6B21D9D79}</Project>
+      <Name>Engine.FarCollections</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineFarMath\Engine.FarMath.csproj">
       <Project>{E7C1D14C-FB4B-4369-A081-FB8A2FCDE3E2}</Project>

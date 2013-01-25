@@ -16,13 +16,17 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Handles applying effects defined through attributes when two entities collide.</summary>
-    public sealed class CollisionAttributeEffectSystem : AbstractComponentSystem<DamagingStatusEffect>
+    public sealed class CollisionAttributeEffectSystem : AbstractComponentSystem<DamagingStatusEffect>, IUpdatingSystem
     {
         #region Fields
 
-        /// <summary>List of current collisions, mapping to their damage effect.</summary>
+        /// <summary>Tracks new collisions that occurred since the last update.</summary>
         [CopyIgnore, PacketizerIgnore]
-        private Dictionary<ulong, int> _collisions = new Dictionary<ulong, int>();
+        private Dictionary<ulong, BeginCollisionInfo> _newCollision = new Dictionary<ulong, BeginCollisionInfo>();
+
+        /// <summary>List of current collisions.</summary>
+        [CopyIgnore, PacketizerIgnore]
+        private Dictionary<ulong, ActiveCollisionInfo> _activeCollisions = new Dictionary<ulong, ActiveCollisionInfo>();
 
         /// <summary>Randomizer used for determining whether certain effects should be applied (e.g. dots, blocking, ...).</summary>
         private MersenneTwister _random = new MersenneTwister(0);
@@ -30,6 +34,36 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+        
+        public void Update(long frame)
+        {
+            foreach (var info in _newCollision)
+            {
+                // Check if we already have contact between the two entities.
+                ActiveCollisionInfo active;
+                if (_activeCollisions.TryGetValue(info.Key, out active))
+                {
+                    // Yes, just update the number of fixture contacts.
+                    active.Count += info.Value.Count;
+                }
+                else
+                {
+                    // Nothing yet, save the contact and apply effects.
+                    if (info.Value.Count > 0)
+                    {
+                        active = new ActiveCollisionInfo {Count = info.Value.Count};
+                        _activeCollisions.Add(info.Key, active);
+                    }
+
+                    int entityA, entityB;
+                    BitwiseMagic.Unpack(info.Key, out entityA, out entityB);
+
+                    OnEntityContact(entityA, entityB, info.Value.IsShieldA, info.Value.Normal);
+                    OnEntityContact(entityB, entityA, info.Value.IsShieldB, -info.Value.Normal);
+                }
+            }
+            _newCollision.Clear();
+        }
 
         public override void OnAddedToManager()
         {
@@ -41,16 +75,84 @@ namespace Space.ComponentSystem.Systems
 
         private void OnBeginContact(BeginContact message)
         {
-            // We only get one message for a collision pair, so we apply damage to both parties.
+            // We only get one message for a collision pair, so we handle it for both parties.
             var contact = message.Contact;
-            Vector2 normal;
-            IList<FarPosition> points;
-            contact.ComputeWorldManifold(out normal, out points);
-            var disableContact = BeginContact(contact.FixtureA.Entity, contact.FixtureB.Entity, normal);
-            disableContact = BeginContact(contact.FixtureB.Entity, contact.FixtureA.Entity, -normal) || disableContact;
-            if (disableContact)
+
+            // Get the two involved entities. We only handle one collision between
+            // two bodies per tick, to avoid damage being applied multiple times.
+            var entityA = Math.Min(contact.FixtureA.Entity, contact.FixtureB.Entity);
+            var entityB = Math.Max(contact.FixtureA.Entity, contact.FixtureB.Entity);
+            
+            // See if either one does some damage and/or should be removed.
+            var damageA = (CollisionDamage) Manager.GetComponent(entityA, CollisionDamage.TypeId);
+            var damageB = (CollisionDamage) Manager.GetComponent(entityB, CollisionDamage.TypeId);
+
+            var healthA = (Health) Manager.GetComponent(entityA, Health.TypeId);
+            var healthB = (Health) Manager.GetComponent(entityB, Health.TypeId);
+
+            // Ignore contacts where no damage is involved at all.
+            if ((damageA == null || healthB == null) &&
+                (damageB == null || healthA == null))
             {
+                return;
+            }
+
+            // See if the hit entity should be removed on collision.
+            var persistent = true;
+            if (damageA != null && damageA.RemoveOnCollision)
+            {
+                // Entity gets removed, so forget about handling the collision physically.
+                ((DeathSystem) Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(entityA);
                 contact.Disable();
+                persistent = false;
+            }
+            if (damageB != null && damageB.RemoveOnCollision)
+            {
+                // Entity gets removed, so forget about handling the collision physically.
+                ((DeathSystem) Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(entityB);
+                contact.Disable();
+                persistent = false;
+            }
+
+            // See if we already know something about this collision.
+            var key = BitwiseMagic.Pack(entityA, entityB);
+            BeginCollisionInfo info;
+            if (!_newCollision.TryGetValue(key, out info))
+            {
+                info = new BeginCollisionInfo();
+                _newCollision.Add(key, info);
+            }
+
+            // Track the number of persistent contacts. This is necessary for damage "fields",
+            // such as radiation in a certain area.
+            if (persistent)
+            {
+                ++info.Count;
+            }
+
+            // See if the shield was hit.
+            var shielded = false;
+            var shieldA = Manager.GetComponent(entityA, ShieldEnergyStatusEffect.TypeId) as ShieldEnergyStatusEffect;
+            if (shieldA != null && contact.FixtureA.Id == shieldA.Fixture)
+            {
+                info.IsShieldA = true;
+                shielded = true;
+            }
+            var shieldB = Manager.GetComponent(entityB, ShieldEnergyStatusEffect.TypeId) as ShieldEnergyStatusEffect;
+            if (shieldB != null && contact.FixtureA.Id == shieldB.Fixture)
+            {
+                info.IsShieldB = true;
+                shielded = true;
+            }
+
+            // For at least one of the involved entities a shield was hit, so get the normal.
+            // Note that this can potentially lead to 'wrong' results, if an entity is hit by
+            // multiple fixtures in the same frame. This is a problematic case, logically speaking:
+            // what to do if this happens?
+            if (shielded)
+            {
+                IList<FarPosition> points;
+                contact.ComputeWorldManifold(out info.Normal, out points);
             }
         }
 
@@ -58,43 +160,46 @@ namespace Space.ComponentSystem.Systems
         {
             // Stop damage that is being applied because of this collision.
             var contact = message.Contact;
-            EndContact(contact.FixtureA.Entity, contact.FixtureB.Entity);
-            EndContact(contact.FixtureB.Entity, contact.FixtureA.Entity);
+
+            // Get the two related entities.
+            var entityA = Math.Min(contact.FixtureA.Entity, contact.FixtureB.Entity);
+            var entityB = Math.Max(contact.FixtureB.Entity, contact.FixtureB.Entity);
+
+            // See if we're tracking such a collision.
+            var key = BitwiseMagic.Pack(entityA, entityB);
+            ActiveCollisionInfo active;
+            if (_activeCollisions.TryGetValue(key, out active))
+            {
+                // One less fixture contact.
+                --active.Count;
+                if (active.Count == 0)
+                {
+                    // That was the last one, stop tracking this and remove any "during contact" effects.
+                    _activeCollisions.Remove(key);
+
+                    // TODO figure out a nice way to let contact based debuffs know they can stop (radiation, ...)
+                    //int effectId;
+                    //if (_collisions.TryGetValue(BitwiseMagic.Pack(damagee, damager), out effectId))
+                    //{
+                    //    Manager.RemoveComponent(effectId);
+                    //}
+                }
+            }
         }
 
-        private bool BeginContact(int damagee, int damager, Vector2 normal)
+        private void OnEntityContact(int damagee, int damager, bool shieldHit, Vector2 normal)
         {
-            // Our return value is used to tell whether to disable the contact or not. We want
-            // to disable contacts involving bodies that are removed on collision, to avoid
-            // knock-back from those.
-            var disableContact = false;
-
             // Do we do any damage at all?
-            var damage = (CollisionDamage) Manager.GetComponent(damager, CollisionDamage.TypeId);
-            if (damage == null)
+            if (Manager.GetComponent(damager, CollisionDamage.TypeId) == null)
             {
-                // Damager does not apply any damage, forget about it.
-                return disableContact;
+                return;
             }
 
-            // Should the damager be removed when colliding (self-destructs)?
-            if (damage.RemoveOnCollision)
-            {
-                // Yep, mark it for removal.
-                ((DeathSystem) Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(damager);
-                disableContact = true;
-            }
-
-            // Apply damage to second entity if it has health, otherwise stop.
-            // We do this after the removal, because sometimes the damagee may
-            // be invulnerable/environmental (suns for example).
-            if (Manager.GetComponent(damagee, Health.TypeId) == null)
-            {
-                return disableContact;
-            }
+            // Otherwise we should not have accepted this contact!
+            System.Diagnostics.Debug.Assert(Manager.GetComponent(damagee, Health.TypeId) != null);
 
             // See if the damagee blocks.
-            if (!TryBlock(damagee, normal))
+            if (!shieldHit || !TryBlock(damagee, normal))
             {
                 // Not blocked. Build message to send to trigger systems actually applying damage.
                 DamageReceived message;
@@ -112,11 +217,6 @@ namespace Space.ComponentSystem.Systems
                 // Aaaand send the message.
                 Manager.SendMessage(message);
             }
-
-            //var effect = Manager.AddComponent<DamagingStatusEffect>(damagee).Initialize(DamagingStatusEffect.InfiniteDamageDuration, damage.Damage, damage.Cooldown, damage.Type, damager);
-            //_collisions.Add(BitwiseMagic.Pack(damagee, damager), effect.Id);
-
-            return disableContact;
         }
         
         /// <summary>Store for performance.</summary>
@@ -144,19 +244,14 @@ namespace Space.ComponentSystem.Systems
                 return false;
             }
 
-            // Check if our shields are up.
-            if (!((ShipControl) Manager.GetComponent(damagee, ShipControl.TypeId)).ShieldsActive)
-            {
-                // Shields are not active, so we cannot block.
-                return false;
-            }
+            // Otherwise we should not have flagged this contact as shielded!
+            System.Diagnostics.Debug.Assert(((ShipControl) Manager.GetComponent(damagee, ShipControl.TypeId)).ShieldsActive);
 
             // Check if shields are oriented properly to intercept the damage.
-            var rotation = (((ITransform) Manager.GetComponent(damagee, TransformTypeId)).Angle + MathHelper.TwoPi) %
-                           MathHelper.TwoPi;
-            var normalAngle = ((float) Math.Atan2(normal.Y, normal.X) + MathHelper.TwoPi) % MathHelper.TwoPi;
+            var angle = MathHelper.WrapAngle(((ITransform) Manager.GetComponent(damagee, TransformTypeId)).Angle);
+            var normalAngle = (float) Math.Atan2(normal.Y, normal.X);
             var coverage = attributes.GetValue(AttributeType.ShieldCoverage) * MathHelper.Pi;
-            if (Math.Abs(rotation - normalAngle) > coverage)
+            if (Math.Abs(Angle.MinAngle(angle, normalAngle)) > coverage)
             {
                 // Rotated the wrong way, damage hits where there is no shield coverage.
                 return false;
@@ -178,15 +273,6 @@ namespace Space.ComponentSystem.Systems
             return true;
         }
 
-        private void EndContact(int damagee, int damager)
-        {
-            int effectId;
-            if (_collisions.TryGetValue(BitwiseMagic.Pack(damagee, damager), out effectId))
-            {
-                Manager.RemoveComponent(effectId);
-            }
-        }
-
         #endregion
 
         #region Copying
@@ -197,7 +283,8 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (CollisionAttributeEffectSystem) base.NewInstance();
 
-            copy._collisions = new Dictionary<ulong, int>();
+            copy._newCollision = new Dictionary<ulong, BeginCollisionInfo>();
+            copy._activeCollisions = new Dictionary<ulong, ActiveCollisionInfo>();
             copy._random = new MersenneTwister(0);
 
             return copy;
@@ -205,10 +292,8 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>
         ///     Creates a deep copy of the system. The passed system must be of the same type.
-        ///     <para>
-        ///         This clones any contained data types to return an instance that represents a complete copy of the one passed
-        ///         in.
-        ///     </para>
+        ///     <para/>
+        ///     This clones any contained data types to return an instance that represents a complete copy of the one passed in.
         /// </summary>
         /// <param name="into">The instance to copy into.</param>
         public override void CopyInto(AbstractSystem into)
@@ -217,11 +302,103 @@ namespace Space.ComponentSystem.Systems
 
             var copy = (CollisionAttributeEffectSystem) into;
 
-            copy._collisions.Clear();
-            foreach (var collision in _collisions)
+            copy._newCollision.Clear();
+            foreach (var info in _newCollision)
             {
-                copy._collisions.Add(collision.Key, collision.Value);
+                copy._newCollision.Add(
+                    info.Key,
+                    new BeginCollisionInfo
+                    {
+                        Count = info.Value.Count,
+                        IsShieldA = info.Value.IsShieldA,
+                        IsShieldB = info.Value.IsShieldB,
+                        Normal = info.Value.Normal
+                    });
             }
+            copy._activeCollisions.Clear();
+            foreach (var collision in _activeCollisions)
+            {
+                copy._activeCollisions.Add(
+                    collision.Key,
+                    new ActiveCollisionInfo
+                    {
+                        Count = collision.Value.Count
+                    });
+            }
+        }
+
+        #endregion
+
+        #region Serialization
+
+        public override IWritablePacket Packetize(IWritablePacket packet)
+        {
+            base.Packetize(packet);
+
+            packet.Write(_newCollision.Count);
+            foreach (var info in _newCollision)
+            {
+                packet.Write(info.Key);
+                packet.Write(info.Value);
+            }
+
+            packet.Write(_activeCollisions.Count);
+            foreach (var info in _activeCollisions)
+            {
+                packet.Write(info.Key);
+                packet.Write(info.Value);
+            }
+
+            return packet;
+        }
+
+        public override void Depacketize(IReadablePacket packet)
+        {
+            base.Depacketize(packet);
+
+            _newCollision.Clear();
+            var newCollisionCount = packet.ReadInt32();
+            for (var i = 0; i < newCollisionCount; ++i)
+            {
+                var key = packet.ReadUInt64();
+                var value = packet.ReadPacketizable<BeginCollisionInfo>();
+                _newCollision.Add(key, value);
+            }
+
+            _activeCollisions.Clear();
+            var activeCollisionCount = packet.ReadInt32();
+            for (var i = 0; i < activeCollisionCount; ++i)
+            {
+                var key = packet.ReadUInt64();
+                var value = packet.ReadPacketizable<ActiveCollisionInfo>();
+                _activeCollisions.Add(key, value);
+            }
+        }
+
+        #endregion
+
+        #region Types
+
+        private sealed class BeginCollisionInfo : IPacketizable
+        {
+            /// <summary>Number of fixture collisions between the two entities.</summary>
+            public int Count;
+
+            /// <summary>Whether the first entity's shield was hit, potentially blocking damage.</summary>
+            public bool IsShieldA;
+
+            /// <summary>Whether the second entity's shield was hit, potentially blocking damage.</summary>
+            public bool IsShieldB;
+
+            /// <summary>The surface normal at the intersection, directed from the first towards the second entity.</summary>
+            /// <remarks>This is only set if a shield was hit.</remarks>
+            public Vector2 Normal;
+        }
+
+        private sealed class ActiveCollisionInfo : IPacketizable
+        {
+            /// <summary>The number of active fixture collisions. The collision becomes inactive when this reaches zero.</summary>
+            public int Count;
         }
 
         #endregion

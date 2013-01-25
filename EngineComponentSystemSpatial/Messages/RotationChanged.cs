@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Spatial.Components;
 
 namespace Engine.ComponentSystem.Spatial.Messages
 {
@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Spatial.Messages
     public struct RotationChanged
     {
         /// <summary>The component for which the rotation changed.</summary>
-        public Component Component;
+        public ITransform Component;
 
         /// <summary>The previous rotation before the change.</summary>
         public float PreviousRotation;

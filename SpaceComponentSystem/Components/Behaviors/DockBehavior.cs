@@ -53,7 +53,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var distanceSquared = float.MaxValue;
 
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, ScanRange, neighbors, DetectableSystem.IndexGroupMask);
+            index[DetectableSystem.IndexId].Find(position, ScanRange, neighbors);
             foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
             {
                 // See if it's a station.

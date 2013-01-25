@@ -225,12 +225,9 @@ namespace Space.ComponentSystem.Components.Behaviors
             var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
             var shipInfo = (ShipInfo) AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId);
             var sensorRange = shipInfo != null ? UnitConversion.ToSimulationUnits(shipInfo.RadarRange) : 0f;
+            sensorRange = sensorRange > 0 ? Math.Min(sensorRange, range) : range;
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(
-                position,
-                sensorRange > 0 ? Math.Min(sensorRange, range) : range,
-                neighbors,
-                PhysicsSystem.IndexGroupMask);
+            index[PhysicsSystem.IndexId].Find(position, sensorRange, neighbors);
             var closest = 0;
             var closestDistance = float.PositiveInfinity;
             foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
@@ -282,9 +279,9 @@ namespace Space.ComponentSystem.Components.Behaviors
             var mass = info.Mass;
 
             // Look for evil neighbors, in particular suns and the like.
-            var index = (IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId);
+            var index = ((IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId))[DetectableSystem.IndexId];
             ISet<int> neighbors = new HashSet<int>();
-            index.Find(position, AI.Configuration.MaxEscapeCheckDistance, neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, AI.Configuration.MaxEscapeCheckDistance, neighbors);
             var escape = Vector2.Zero;
             var escapeNormalizer = 0;
             foreach (IIndexable neighbor in neighbors.Select(AI.Manager.GetComponentById))
@@ -368,7 +365,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             // Check all neighbors in normal flocking range. If we're in a squad, skip
             // other squad members and take our squad position into account instead.
             neighbors.Clear();
-            index.Find(position, AI.Configuration.FlockingThreshold, neighbors, DetectableSystem.IndexGroupMask);
+            index.Find(position, AI.Configuration.FlockingThreshold, neighbors);
             var separation = Vector2.Zero;
             var separationNormalizer = 0;
             var cohesion = Vector2.Zero;

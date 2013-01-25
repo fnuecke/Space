@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Factories
 
             // Sample all values in advance, to allow reshuffling component creation
             // order in case we need to, without influencing the 'random' results.
-            var radius = SampleRadius(random);
+            var radius = UnitConversion.ToSimulationUnits(SampleRadius(random));
             var offset = SampleOffset(random);
             var mass = SampleMass(random);
 
@@ -131,18 +131,19 @@ namespace Space.ComponentSystem.Factories
             }
 
             var body = manager.AddBody(entity, offset + cellCenter);
-            manager.AttachCircle(body, UnitConversion.ToSimulationUnits(radius))
-                .IndexGroupsMask |= 
-                           // Can be detected.
-                           DetectableSystem.IndexGroupMask |
-                           // Can make noise.
-                           SoundSystem.IndexGroupMask |
-                           // Will be removed when out of bounds.
-                           CellSystem.CellDeathAutoRemoveIndexGroupMask |
-                           // Must be detectable by the camera.
-                           CameraSystem.IndexGroupMask;
+            manager.AttachCircle(body, radius);
+
+            var bounds = new FarRectangle(-radius, -radius, radius * 2, radius * 2);
+
+            // Can be detected.
+            manager.AddComponent<Indexable>(entity).Initialize(bounds, DetectableSystem.IndexId);
+            // Can make noise.
+            manager.AddComponent<Indexable>(entity).Initialize(SoundSystem.IndexId);
+            // Must be detectable by the camera.
+            manager.AddComponent<Indexable>(entity).Initialize(bounds, CameraSystem.IndexId);
             
-            // Remove when large containing cell dies.
+            // Remove when out of bounds or large containing cell dies.
+            manager.AddComponent<Indexable>(entity).Initialize(CellSystem.CellDeathAutoRemoveIndexId);
             manager.AddComponent<CellDeath>(entity).Initialize(false);
 
             // Make it attract stuff if it has mass.
@@ -166,8 +167,7 @@ namespace Space.ComponentSystem.Factories
 
             // Make it glow.
             manager.AddComponent<SunRenderer>(entity)
-                   .Initialize(
-                       radius * 0.95f, surfaceRotation, primaryTurbulenceRotation, secondaryTurbulenceRotation, _tint);
+                   .Initialize(UnitConversion.ToScreenUnits(radius) * 0.95f, surfaceRotation, primaryTurbulenceRotation, secondaryTurbulenceRotation, _tint);
 
             // Make it go whoooosh.
             manager.AddComponent<Sound>(entity).Initialize("Sun");

@@ -595,7 +595,8 @@ namespace Space.Tools.DataEditor
 
                 // Add a dummy owner for the item, to apply offset.
                 var dummy = manager.AddEntity();
-                manager.AddComponent<Transform>(dummy).Initialize(new FarRectangle(-0.5f, -0.5f, 0.5f, 0.5f), FarPosition.Zero);
+                manager.AddComponent<Transform>(dummy).Initialize(FarPosition.Zero);
+                manager.AddComponent<Indexable>(dummy).Initialize(new FarRectangle(-0.5f, -0.5f, 0.5f, 0.5f));
                 manager.AddComponent<ParticleEffects>(dummy);
                 var parentSlot = manager.AddComponent<SpaceItemSlot>(dummy).Initialize(item.GetTypeId(), factory.RequiredSlotSize, Vector2.Zero, 0);
                 parentSlot.Item = entity;

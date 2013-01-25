@@ -71,9 +71,6 @@ namespace Space.ComponentSystem
             return entity;
         }
 
-        /// <summary>Store for performance.</summary>
-        private static readonly int IndexableTypeId = Manager.GetComponentTypeId<IIndexable>();
-
         /// <summary>Creates a new, AI controlled ship.</summary>
         /// <param name="manager">The manager.</param>
         /// <param name="blueprint">The blueprint.</param>
@@ -99,11 +96,11 @@ namespace Space.ComponentSystem
 
             // Add to the index from which entities will automatically removed
             // on cell death and mark it (for translation checks into empty space).
-            var indexable = (IIndexable) manager.GetComponent(entity, IndexableTypeId);
-            indexable.IndexGroupsMask |=
-                CellSystem.CellDeathAutoRemoveIndexGroupMask |
-                ArtificialIntelligence.AIIndexGroupMask;
+            manager.AddComponent<Indexable>(entity).Initialize(CellSystem.CellDeathAutoRemoveIndexId);
             manager.AddComponent<CellDeath>(entity).Initialize(true);
+
+            // Add to AI index, to allow putting the AI to sleep.
+            manager.AddComponent<Indexable>(entity).Initialize(SleepSystem.IndexId);
 
             return entity;
         }
@@ -122,10 +119,9 @@ namespace Space.ComponentSystem
             var entity = manager.AddEntity();
 
             manager.AddComponent<Faction>(entity).Initialize(faction);
-            manager.AddComponent<Transform>(entity)
-                   .Initialize(
-                       ((Transform) manager.GetComponent(center, Transform.TypeId)).Position,
-                       indexGroupsMask: DetectableSystem.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
+            manager.AddComponent<Transform>(entity).Initialize(((Transform) manager.GetComponent(center, Transform.TypeId)).Position);
+            manager.AddComponent<Indexable>(DetectableSystem.IndexId);
+            manager.AddComponent<Indexable>(CellSystem.CellDeathAutoRemoveIndexId);
             manager.AddComponent<CellDeath>(entity).Initialize(false);
             manager.AddComponent<Velocity>(entity).Initialize(Vector2.Zero, MathHelper.Pi / period);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, orbitRadius, orbitRadius, 0, period, 0);

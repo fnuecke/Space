@@ -89,6 +89,9 @@ namespace Space.Data
         /// <summary>Shield coverage angle, i.e. the percentage of the ship covered by the shield.</summary>
         ShieldCoverage,
 
+        /// <summary>Shield radius, i.e. how large an area our shields will span.</summary>
+        ShieldRadius,
+
         /// <summary>Energy consumption of all active shields on the entity. The unit is energy per second.</summary>
         ShieldActiveEnergyConsumption,
 

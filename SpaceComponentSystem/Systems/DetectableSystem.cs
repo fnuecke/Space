@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Systems
         #region Constants
 
         /// <summary>Index group to use for gravitational computations.</summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int IndexId = IndexSystem.GetIndexId();
 
         #endregion
 

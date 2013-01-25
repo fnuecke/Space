@@ -107,7 +107,6 @@ namespace Space.Tools.DataEditor
                     new AvatarSystem(),
                     new ShipInfoSystem(),
                     new CharacterSystem<AttributeType>(),
-                    new FrictionSystem(),
                     new VelocitySystem(),
                     new TranslationSystem(),
                     new IndexSystem(16, 1),

@@ -2,7 +2,6 @@
 using System.IO;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Spatial.Components;
-using Engine.ComponentSystem.Spatial.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
@@ -165,9 +164,6 @@ namespace Space.ComponentSystem.Components
 
         #region Constants
 
-        /// <summary>Index group containing all entities with an AI component.</summary>
-        public static readonly ulong AIIndexGroupMask = 1ul << IndexSystem.GetGroup();
-        
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 

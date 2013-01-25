@@ -293,17 +293,20 @@ namespace Space.ComponentSystem.Factories
                                       : rotationSpeed;
 
             // Give it a position.
-            manager.AddComponent<Transform>(entity).Initialize(
-                new FarRectangle(-radius, -radius, radius * 2, radius * 2),
-                FarPosition.Zero,
-                0f,
-                // Add to indexes for lookup.
-                DetectableSystem.IndexGroupMask | // Can be detected.
-                SoundSystem.IndexGroupMask | // Can make noise.
-                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
-                CameraSystem.IndexGroupMask); // Must be detectable by the camera.
+            manager.AddComponent<Transform>(entity);
 
-            // Remove when large containing cell dies.
+            // Add it to some indexes.
+            var bounds = new FarRectangle(-radius, -radius, radius * 2, radius * 2);
+
+            // Can be detected.
+            manager.AddComponent<Indexable>(entity).Initialize(bounds, DetectableSystem.IndexId);
+            // Can make some noise.
+            manager.AddComponent<Indexable>(entity).Initialize(SoundSystem.IndexId);
+            // Must be detectable by the camera.
+            manager.AddComponent<Indexable>(entity).Initialize(bounds, CameraSystem.IndexId);
+
+            // Remove when out of bounds or large containing cell dies.
+            manager.AddComponent<Indexable>(entity).Initialize(CellSystem.CellDeathAutoRemoveIndexId);
             manager.AddComponent<CellDeath>(entity).Initialize(false);
 
             // Make it rotate.

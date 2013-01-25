@@ -14,7 +14,7 @@ using WorldBounds = Engine.Math.RectangleF;
 namespace Engine.ComponentSystem.Spatial.Components
 {
     /// <summary>Represents transformation of a 2d object (position/translation + angle/orientation).</summary>
-    public sealed class Transform : Component, ITransform, IIndexable
+    public sealed class Transform : Component, ITransform
     {
         #region Type ID
 
@@ -30,62 +30,6 @@ namespace Engine.ComponentSystem.Spatial.Components
         #endregion
 
         #region Properties
-
-        /// <summary>The index group mask determining which indexes the component will be tracked by.</summary>
-        public ulong IndexGroupsMask
-        {
-            get { return _indexGroupsMask; }
-            set
-            {
-                if (value == _indexGroupsMask)
-                {
-                    return;
-                }
-                
-                var oldMask = _indexGroupsMask;
-                _indexGroupsMask = value;
-
-                if (Manager == null)
-                {
-                    return;
-                }
-
-                IndexGroupsChanged message;
-                message.Component = this;
-                message.AddedIndexGroups = value & ~oldMask;
-                message.RemovedIndexGroups = oldMask & ~value;
-                Manager.SendMessage(message);
-            }
-        }
-
-        /// <summary>
-        ///     Gets or sets the size of this component's bounds. This will be offset by the component's translation to get
-        ///     the world bounds.
-        /// </summary>
-        public WorldBounds Bounds
-        {
-            get { return _bounds; }
-            set
-            {
-                if (_bounds.Equals(value))
-                {
-                    return;
-                }
-
-                _bounds = value;
-
-                if (Manager == null)
-                {
-                    return;
-                }
-
-                IndexBoundsChanged message;
-                message.Component = this;
-                message.Bounds = ComputeWorldBounds();
-                message.Delta = Vector2.Zero;
-                Manager.SendMessage(message);
-            }
-        }
 
         /// <summary>Current position of the object.</summary>
         public WorldPoint Position
@@ -114,12 +58,6 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Fields
 
-        /// <summary>Index group bitmask for the component.</summary>
-        private ulong _indexGroupsMask;
-
-        /// <summary>Local bounds of the component.</summary>
-        private WorldBounds _bounds;
-
         /// <summary>The current translation of the component.</summary>
         private WorldPoint _position;
 
@@ -143,16 +81,11 @@ namespace Engine.ComponentSystem.Spatial.Components
         #region Initialization
 
         /// <summary>Initialize with the specified values.</summary>
-        /// <param name="bounds">The bounds of the component.</param>
         /// <param name="translation">The initial translation.</param>
         /// <param name="rotation">The initial rotation.</param>
-        /// <param name="indexGroupsMask">The index groups mask.</param>
         /// <returns>This component.</returns>
-        public Transform Initialize(WorldBounds bounds, WorldPoint translation, float rotation = 0, ulong indexGroupsMask = 0)
+        public Transform Initialize(WorldPoint translation, float rotation = 0)
         {
-            Bounds = bounds;
-            IndexGroupsMask = indexGroupsMask;
-
             Position = translation;
             Angle = rotation;
 
@@ -165,22 +98,11 @@ namespace Engine.ComponentSystem.Spatial.Components
         }
 
         /// <summary>Initialize with the specified rotation.</summary>
-        /// <param name="translation">The initial translation.</param>
         /// <param name="rotation">The initial rotation.</param>
-        /// <param name="indexGroupsMask">The index groups mask.</param>
         /// <returns></returns>
-        public Transform Initialize(WorldPoint translation, float rotation = 0, ulong indexGroupsMask = 0)
+        public Transform Initialize(float rotation)
         {
-            return Initialize(WorldBounds.Empty, translation, rotation, indexGroupsMask);
-        }
-        
-        /// <summary>Initialize with the specified rotation.</summary>
-        /// <param name="rotation">The initial rotation.</param>
-        /// <param name="indexGroupsMask">The index groups mask.</param>
-        /// <returns></returns>
-        public Transform Initialize(float rotation = 0, ulong indexGroupsMask = 0)
-        {
-            return Initialize(WorldBounds.Empty, WorldPoint.Zero, rotation, indexGroupsMask);
+            return Initialize(WorldPoint.Zero, rotation);
         }
 
         /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
@@ -188,8 +110,6 @@ namespace Engine.ComponentSystem.Spatial.Components
         {
             base.Reset();
 
-            _indexGroupsMask = 0;
-            _bounds = WorldBounds.Empty;
             _position = WorldPoint.Zero;
             _nextPosition = WorldPoint.Zero;
             _positionChanged = false;
@@ -200,17 +120,8 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #endregion
 
-        #region Modifiers
+        #region Methods
         
-        /// <summary>Computes the current world bounds of the component, to allow adding it to indexes.</summary>
-        /// <returns>The current world bounds of the component.</returns>
-        public WorldBounds ComputeWorldBounds()
-        {
-            var worldBounds = _bounds;
-            worldBounds.Offset(_position);
-            return worldBounds;
-        }
-
         /// <summary>
         ///     Applies the translation set to be used next. Called from system, because we want to keep the setter in debug
         ///     private to make sure no one actually writes directly to the translation variable.

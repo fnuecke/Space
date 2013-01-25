@@ -9,7 +9,7 @@ namespace Space.ComponentSystem.Systems
         #region Constants
 
         /// <summary>Index group that tracks items</summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int IndexId = IndexSystem.GetIndexId();
 
         #endregion
     }

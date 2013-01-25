@@ -162,7 +162,7 @@ namespace Space.ComponentSystem.Systems
             var radius = (float) Math.Sqrt(a * a + b * b);
 
             // Loop through all our neighbors.
-            index.Find(position, radarRange, _reusableNeighborList, DetectableSystem.IndexGroupMask);
+            index[DetectableSystem.IndexId].Find(position, radarRange, _reusableNeighborList);
 
             // Begin drawing.
             _spriteBatch.Begin();

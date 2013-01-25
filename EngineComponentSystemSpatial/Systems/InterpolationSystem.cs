@@ -33,7 +33,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Constants
 
         /// <summary>Index group mask for the index we use to track positions of renderables.</summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+        public static readonly int IndexId = IndexSystem.GetIndexId();
         
         /// <summary>
         /// Get the interface's type id once, for performance.
@@ -108,7 +108,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
         {
             // Get all renderable entities in the viewport.
             var view = ComputeViewport();
-            ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId)).Find(view, _drawablesInView, IndexGroupMask);
+            var index = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[IndexId];
+            index.Find(view, _drawablesInView);
 
             // Synchronize interpolation to real data when we enter a new frame.
             if (frame != _currentFrame)
@@ -165,14 +166,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
                             PreviousAngle = transform.Angle - velocity.AngularVelocity * _inverseMaxFps,
                             Angle = transform.Angle
                         });
-                }
+                } 
 
                 // Clear for next iteration.
                 _drawablesInView.Clear();
             }
 
             // Update interpolated values.
-            _totalRelativeFrameTime += (elapsedMilliseconds * (_currentFps() / 1000f));
+            _totalRelativeFrameTime = System.Math.Min(1f, _totalRelativeFrameTime + elapsedMilliseconds * (_currentFps() / 1000f));
             foreach (var entry in _entries.Values)
             {
                 entry.InterpolatedPosition = WorldPoint.Lerp(entry.PreviousPosition, entry.Position, _totalRelativeFrameTime);
@@ -191,7 +192,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
             // Remove from positions list if it was in the index we use to find
             // entities to interpolate.
-            if (component is IIndexable && (((IIndexable) component).IndexGroupsMask & IndexGroupMask) != 0)
+            if (component is IIndexable && ((IIndexable) component).IndexId == IndexId)
             {
                 _entries.Remove(component.Entity);
             }

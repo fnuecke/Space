@@ -151,6 +151,7 @@
     <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DirectDamageApplyingSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
+    <Compile Include="Systems\EquipmentToFixtureSystem.cs" />
     <Compile Include="Systems\ExperienceSystem.cs" />
     <Compile Include="Systems\FloatingTextSystem.cs" />
     <Compile Include="Systems\FreezeOnHitSystem.cs" />

@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Systems
         public bool Enabled { get; set; }
 
         /// <summary>Gets or sets the index group mask to render.</summary>
-        public ulong IndexGroupMask { get; set; }
+        public int IndexId { get; set; }
 
         #endregion
 
@@ -36,12 +36,12 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            if (IndexGroupMask > 0)
+            if (IndexId > 0)
             {
                 var index = (IndexSystem) Manager.GetSystem(IndexSystem.TypeId);
                 var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
                 _indexRectangle.SetTransform(camera.Transform);
-                index.DrawIndex(IndexGroupMask, _indexRectangle, camera.Translation);
+                index.DrawIndex(IndexId, _indexRectangle, camera.Translation);
             }
         }
         
