@@ -90,13 +90,6 @@ namespace Space.ComponentSystem.Systems
             var healthA = (Health) Manager.GetComponent(entityA, Health.TypeId);
             var healthB = (Health) Manager.GetComponent(entityB, Health.TypeId);
 
-            // Ignore contacts where no damage is involved at all.
-            if ((damageA == null || healthB == null) &&
-                (damageB == null || healthA == null))
-            {
-                return;
-            }
-
             // See if the hit entity should be removed on collision.
             var persistent = true;
             if (damageA != null && damageA.RemoveOnCollision)
@@ -112,6 +105,13 @@ namespace Space.ComponentSystem.Systems
                 ((DeathSystem) Manager.GetSystem(DeathSystem.TypeId)).MarkForRemoval(entityB);
                 contact.Disable();
                 persistent = false;
+            }
+
+            // Ignore contacts where no damage is involved at all.
+            if ((damageA == null || healthB == null) &&
+                (damageB == null || healthA == null))
+            {
+                return;
             }
 
             // See if we already know something about this collision.

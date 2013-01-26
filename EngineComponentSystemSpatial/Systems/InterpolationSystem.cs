@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Math;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -59,17 +59,17 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         #region Fields
 
-        /// <summary>Gets the current speed of the simulation.</summary>
-        private readonly Func<float> _currentFps;
-
         /// <summary>List of all currently tracked entities.</summary>
         private readonly Dictionary<int, InterpolationEntry> _entries = new Dictionary<int, InterpolationEntry>();
+
+        /// <summary>We keep track of how long it took for the last update so that we know how fast to interpolate.</summary>
+        private readonly FloatSampling _frameTime;
 
         /// <summary>The frame the current interpolation is based on.</summary>
         private long _currentFrame;
 
         /// <summary>The total time spent in the current frame.</summary>
-        private float _totalRelativeFrameTime;
+        private float _totalFrameTime;
 
         #endregion
 
@@ -89,11 +89,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Constructor
 
         /// <summary>Initializes a new instance of the <see cref="InterpolationSystem"/> class.</summary>
-        /// <param name="currentFps">A function getting the current frames per second, based on simulation speed, to know how fast to interpolate.</param>
         /// <param name="maxFps">The maximum FPS, for adjusting positions of newly tracked entities.</param>
-        protected InterpolationSystem(Func<float> currentFps, float maxFps)
+        protected InterpolationSystem(float maxFps)
         {
-            _currentFps = currentFps;
+            _frameTime = new FloatSampling((int) (maxFps / 2));
             _inverseMaxFps = 1f / maxFps;
         }
 
@@ -116,7 +115,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
             {
                 // Remember current frame and reset relative time spent.
                 _currentFrame = frame;
-                _totalRelativeFrameTime = 0f;
+                _frameTime.Put(_totalFrameTime);
+                _totalFrameTime = 0f;
 
                 foreach (var entity in _entries.Keys)
                 {
@@ -173,11 +173,12 @@ namespace Engine.ComponentSystem.Spatial.Systems
             }
 
             // Update interpolated values.
-            _totalRelativeFrameTime = System.Math.Min(1f, _totalRelativeFrameTime + elapsedMilliseconds * (_currentFps() / 1000f));
+            _totalFrameTime += elapsedMilliseconds;
+            var totalRelativeFrameTime = System.Math.Min(1f, _totalFrameTime / _frameTime.Median());
             foreach (var entry in _entries.Values)
             {
-                entry.InterpolatedPosition = WorldPoint.Lerp(entry.PreviousPosition, entry.Position, _totalRelativeFrameTime);
-                entry.InterpolatedAngle = MathHelper.Lerp(entry.PreviousAngle, entry.Angle, _totalRelativeFrameTime);
+                entry.InterpolatedPosition = WorldPoint.Lerp(entry.PreviousPosition, entry.Position, totalRelativeFrameTime);
+                entry.InterpolatedAngle = MathHelper.Lerp(entry.PreviousAngle, entry.Angle, totalRelativeFrameTime);
             }
         }
 

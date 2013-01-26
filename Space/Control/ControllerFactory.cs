@@ -253,7 +253,6 @@ namespace Space.Control
             var audioRange = audioEngine.GetGlobalVariable("MaxAudibleDistance");
             var soundBank = (SoundBank) game.Services.GetService(typeof (SoundBank));
             var simulationSpeed = new Func<float>(() => controller.ActualSpeed);
-            var simulationFps = new Func<float>(() => controller.ActualSpeed * Settings.TicksPerSecond);
 
             manager.AddSystems(
                 new AbstractSystem[]
@@ -272,7 +271,7 @@ namespace Space.Control
                     // on the avatar position). It's not so bad if we use the viewport of the
                     // previous frame, but it's noticeable if the avatar is no longer at the
                     // center, so we do it this way around.
-                    new CameraCenteredInterpolationSystem(simulationFps) {Enabled = true},
+                    new CameraCenteredInterpolationSystem {Enabled = true},
 
                     // Update camera first, as it determines what to render.
                     new CameraSystem(game.GraphicsDevice, game.Services) {Enabled = true},

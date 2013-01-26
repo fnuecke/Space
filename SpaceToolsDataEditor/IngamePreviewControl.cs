@@ -118,7 +118,7 @@ namespace Space.Tools.DataEditor
 
                     new GraphicsDeviceSystem(_content, GraphicsDeviceManager) {Enabled = true},
 
-                    new CameraCenteredInterpolationSystem(() => 20f) {Enabled = true},
+                    new CameraCenteredInterpolationSystem {Enabled = true},
                     new LocalPlayerSystem(null),
                     new CameraSystem(GraphicsDeviceManager.GraphicsDevice, null) {Enabled = true},
 

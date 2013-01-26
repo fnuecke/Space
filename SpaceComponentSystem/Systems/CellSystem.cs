@@ -327,7 +327,8 @@ namespace Space.ComponentSystem.Systems
                 if (!IsSubCellActive(cellId))
                 {
                     // Dead space, kill it.
-                    Manager.RemoveEntity(message.Component.Entity);
+                    var deathSystem = (DeathSystem) Manager.GetSystem(DeathSystem.TypeId);
+                    deathSystem.MarkForRemoval(message.Component.Entity);
                 }
             }
             else
@@ -338,7 +339,8 @@ namespace Space.ComponentSystem.Systems
                 if (!IsCellActive(cellId))
                 {
                     // Dead space, kill it.
-                    Manager.RemoveEntity(message.Component.Entity);
+                    var deathSystem = (DeathSystem) Manager.GetSystem(DeathSystem.TypeId);
+                    deathSystem.MarkForRemoval(message.Component.Entity);
                 }
             }
         }
