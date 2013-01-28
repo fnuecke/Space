@@ -67,14 +67,14 @@ def setFactions():
 
 def ftext(value):
     """Displays the specified floating text at the player's location."""
-    manager.GetSystem(FloatingTextSystem.TypeId).Display(value, manager.GetComponent(1, Transform.TypeId).Translation)
+    manager.GetSystem(FloatingTextSystem.TypeId).Display(value, manager.GetComponent(1, Manager.GetComponentTypeId[ITransform]()).Position)
 
 def addAi(squadMember):
     """Adds a new AI ship to the squad of the specified AI."""
     squad = manager.GetComponent(squadMember, Squad.TypeId);
     if not squad:
         squad = manager.AddComponent[Squad](squadMember)
-    position = manager.GetComponent(squadMember, Transform.TypeId).Translation;
+    position = manager.GetComponent(squadMember, Manager.GetComponentTypeId[ITransform]()).Position;
     faction = manager.GetComponent(squadMember, Faction.TypeId).Value;
     ship = EntityFactory.CreateAIShip(manager, "L1_AI_Ship", faction, position, None)
     ai = manager.GetComponent(ship, ArtificialIntelligence.TypeId)

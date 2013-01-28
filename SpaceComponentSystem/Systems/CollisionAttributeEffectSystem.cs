@@ -133,13 +133,13 @@ namespace Space.ComponentSystem.Systems
             // See if the shield was hit.
             var shielded = false;
             var shieldA = Manager.GetComponent(entityA, ShieldEnergyStatusEffect.TypeId) as ShieldEnergyStatusEffect;
-            if (shieldA != null && contact.FixtureA.Id == shieldA.Fixture)
+            if (shieldA != null && (contact.FixtureA.Id == shieldA.Fixture || contact.FixtureB.Id == shieldA.Fixture))
             {
                 info.IsShieldA = true;
                 shielded = true;
             }
             var shieldB = Manager.GetComponent(entityB, ShieldEnergyStatusEffect.TypeId) as ShieldEnergyStatusEffect;
-            if (shieldB != null && contact.FixtureA.Id == shieldB.Fixture)
+            if (shieldB != null && (contact.FixtureA.Id == shieldB.Fixture || contact.FixtureA.Id == shieldB.Fixture))
             {
                 info.IsShieldB = true;
                 shielded = true;

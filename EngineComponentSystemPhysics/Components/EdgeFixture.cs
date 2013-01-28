@@ -63,20 +63,22 @@ namespace Engine.ComponentSystem.Physics.Components
         /// <param name="isSensor">
         ///     if set to <c>true</c> this fixture is marked as a sensor.
         /// </param>
-        /// <param name="collisionGroups">The collision groups for this fixture.</param>
+        /// <param name="collisionCategory">The collision groups for this fixture.</param>
+        /// <param name="collisionMask">The collision groups we collide with.</param>
         /// <returns></returns>
         public override Fixture Initialize(
             float density = 0,
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             // Edges can't have density because they have no area.
 // ReSharper disable CompareOfFloatsByEqualityOperator Intentional
-            System.Diagnostics.Debug.Assert(density == 0);
+            System.Diagnostics.Debug.Assert(density == 0f);
 // ReSharper restore CompareOfFloatsByEqualityOperator
-            base.Initialize(0, friction, restitution, isSensor, collisionGroups);
+            base.Initialize(0, friction, restitution, isSensor, collisionCategory, collisionMask);
 
             return this;
         }

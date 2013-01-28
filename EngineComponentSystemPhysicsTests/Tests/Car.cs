@@ -2,7 +2,6 @@
 using Engine.ComponentSystem.Physics.Joints;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
 
@@ -28,7 +27,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                 new Vector2(-20.0f, 0.0f),
                 new Vector2(20.0f, 0.0f),
                 friction: Friction,
-                collisionGroups: 1).Body;
+                collisionCategory: 2,
+                collisionMask: ~2u).Body;
             {
                 var hs = new[] {0.25f, 1.0f, 4.0f, 0.0f, 0.0f, -1.0f, -2.0f, -2.0f, -1.25f, 0.0f};
 
@@ -43,7 +43,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                         new Vector2(x, y1),
                         new Vector2(x + dx, y2),
                         friction: Friction,
-                        collisionGroups: 1);
+                        collisionCategory: 2,
+                        collisionMask: ~2u);
                     y1 = y2;
                     x += dx;
                 }
@@ -56,7 +57,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                         new Vector2(x, y1),
                         new Vector2(x + dx, y2),
                         friction: Friction,
-                        collisionGroups: 1);
+                        collisionCategory: 2,
+                        collisionMask: ~2u);
                     y1 = y2;
                     x += dx;
                 }
@@ -66,7 +68,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                     new Vector2(x, 0.0f),
                     new Vector2(x + 40.0f, 0.0f),
                     friction: Friction,
-                    collisionGroups: 1);
+                    collisionCategory: 2,
+                    collisionMask: ~2u);
 
                 x += 80.0f;
                 Manager.AttachEdge(
@@ -74,7 +77,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                     new Vector2(x, 0.0f),
                     new Vector2(x + 40.0f, 0.0f),
                     friction: Friction,
-                    collisionGroups: 1);
+                    collisionCategory: 2,
+                    collisionMask: ~2u);
 
                 x += 40.0f;
                 Manager.AttachEdge(
@@ -82,7 +86,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                     new Vector2(x, 0.0f),
                     new Vector2(x + 10.0f, 5.0f),
                     friction: Friction,
-                    collisionGroups: 1);
+                    collisionCategory: 2,
+                    collisionMask: ~2u);
 
                 x += 20.0f;
                 Manager.AttachEdge(
@@ -90,7 +95,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                     new Vector2(x, 0.0f),
                     new Vector2(x + 40.0f, 0.0f),
                     friction: Friction,
-                    collisionGroups: 1);
+                    collisionCategory: 2,
+                    collisionMask: ~2u);
 
                 x += 40.0f;
                 Manager.AttachEdge(
@@ -98,7 +104,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                     new Vector2(x, 0.0f),
                     new Vector2(x, 20.0f),
                     friction: Friction,
-                    collisionGroups: 1);
+                    collisionCategory: 2,
+                    collisionMask: ~2u);
             }
 
             // Teeter
@@ -109,7 +116,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                     type: Body.BodyType.Dynamic,
                     worldPosition: new WorldPoint(140, 1),
                     density: 1,
-                    collisionGroups: 1).Body;
+                    collisionCategory: 2,
+                    collisionMask: ~2u).Body;
 
                 Manager.AddRevoluteJoint(
                     body,
@@ -135,7 +143,8 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                         worldPosition: new WorldPoint(161 + 2 * i, -0.125f),
                         density: 1,
                         friction: Friction,
-                        collisionGroups: 1).Body;
+                        collisionCategory: 2,
+                        collisionMask: ~2u).Body;
 
                     Manager.AddRevoluteJoint(previousBody, body, new WorldPoint(160 + 2 * i, -0.125f));
 

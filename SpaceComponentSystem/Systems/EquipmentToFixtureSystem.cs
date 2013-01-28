@@ -42,17 +42,21 @@ namespace Space.ComponentSystem.Systems
                     continue;
                 }
 
-                uint collisionGroups = 0;
+                uint collisionCategory = 0, collisionMask = 0;
                 foreach (Fixture fixture in Manager.GetComponents(entity, Fixture.TypeId).ToList())
                 {
-                    collisionGroups |= fixture.CollisionGroups;
+                    collisionCategory |= fixture.CollisionCategory;
+                    collisionMask |= fixture.CollisionMask;
 
                     Manager.RemoveComponent(fixture);
                 }
 
+                // In case the shield is up we have to remove its group.
+                collisionCategory &= ~Factions.Shields.ToCollisionGroup();
+
                 foreach (var polygon in polygons)
                 {
-                    Manager.AttachPolygon(body, polygon, collisionGroups: collisionGroups);
+                    Manager.AttachPolygon(body, polygon, collisionCategory: collisionCategory, collisionMask: collisionMask);
                 }
 
                 // Enqueue for density recomputation.

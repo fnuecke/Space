@@ -2,13 +2,7 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Physics.Components;
 
-#if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
-using WorldPoint = Engine.FarMath.FarPosition;
-#else
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
-
-#endif
 
 namespace Engine.ComponentSystem.Physics
 {
@@ -28,7 +22,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>The created fixture.</returns>
         public static CircleFixture AttachCircle(
             this IManager manager,
@@ -39,7 +34,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (body == null)
             {
@@ -47,7 +43,7 @@ namespace Engine.ComponentSystem.Physics
             }
 
             var fixture = manager.AddComponent<CircleFixture>(body.Entity);
-            fixture.Initialize(density, friction, restitution, isSensor, collisionGroups);
+            fixture.Initialize(density, friction, restitution, isSensor, collisionCategory, collisionMask);
             fixture.InitializeShape(radius, localPosition);
 
             // Recompute mass data if necessary.
@@ -70,7 +66,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>The created fixture.</returns>
         public static CircleFixture AttachCircle(
             this IManager manager,
@@ -80,7 +77,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             return manager.AttachCircle(
                 body,
@@ -90,7 +88,8 @@ namespace Engine.ComponentSystem.Physics
                 friction,
                 restitution,
                 isSensor,
-                collisionGroups);
+                collisionCategory,
+                collisionMask);
         }
 
         #endregion
@@ -108,7 +107,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>The created fixture.</returns>
         public static EdgeFixture AttachEdge(
             this IManager manager,
@@ -118,7 +118,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (body == null)
             {
@@ -130,7 +131,8 @@ namespace Engine.ComponentSystem.Physics
                 friction: friction,
                 restitution: restitution,
                 isSensor: isSensor,
-                collisionGroups: collisionGroups);
+                collisionCategory: collisionCategory,
+                collisionMask: collisionMask);
             fixture.InitializeShape(localStart, localEnd);
 
             return fixture;
@@ -149,7 +151,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>The created fixture.</returns>
         public static EdgeFixture AttachEdge(
             this IManager manager,
@@ -161,7 +164,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (body == null)
             {
@@ -173,7 +177,8 @@ namespace Engine.ComponentSystem.Physics
                 friction: friction,
                 restitution: restitution,
                 isSensor: isSensor,
-                collisionGroups: collisionGroups);
+                collisionCategory: collisionCategory,
+                collisionMask: collisionMask);
             fixture.InitializeShape(ghostStart, localStart, localEnd, ghostEnd);
 
             return fixture;
@@ -197,7 +202,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         public static void AttachLoop(
             this IManager manager,
             Body body,
@@ -205,7 +211,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (body == null)
             {
@@ -213,7 +220,7 @@ namespace Engine.ComponentSystem.Physics
             }
             ValidateVertices(vertices, 3);
 
-            manager.AttachLoopUnchecked(body, vertices, friction, restitution, isSensor, collisionGroups);
+            manager.AttachLoopUnchecked(body, vertices, friction, restitution, isSensor, collisionCategory, collisionMask);
         }
 
         /// <summary>
@@ -230,7 +237,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>A proxy object that may be used to interact with the created chain.</returns>
         public static Chain AttachChain(
             this IManager manager,
@@ -239,7 +247,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (body == null)
             {
@@ -247,7 +256,7 @@ namespace Engine.ComponentSystem.Physics
             }
             ValidateVertices(vertices, 2);
 
-            return manager.AttachChainUnchecked(body, vertices, friction, restitution, isSensor, collisionGroups);
+            return manager.AttachChainUnchecked(body, vertices, friction, restitution, isSensor, collisionCategory, collisionMask);
         }
 
         /// <summary>Validates vertex input.</summary>
@@ -277,10 +286,11 @@ namespace Engine.ComponentSystem.Physics
             this IManager manager,
             Body body,
             IList<LocalPoint> vertices,
-            float friction = 0.2f,
-            float restitution = 0,
-            bool isSensor = false,
-            uint collisionGroups = 0)
+            float friction,
+            float restitution,
+            bool isSensor,
+            uint collisionGroups,
+            uint nonCollisionGroups)
         {
             for (var i = 0; i < vertices.Count; ++i)
             {
@@ -297,7 +307,8 @@ namespace Engine.ComponentSystem.Physics
                     friction,
                     restitution,
                     isSensor,
-                    collisionGroups);
+                    collisionGroups,
+                    nonCollisionGroups);
             }
         }
 
@@ -306,10 +317,11 @@ namespace Engine.ComponentSystem.Physics
             this IManager manager,
             Body body,
             IList<LocalPoint> vertices,
-            float friction = 0.2f,
-            float restitution = 0,
-            bool isSensor = false,
-            uint collisionGroups = 0)
+            float friction,
+            float restitution,
+            bool isSensor,
+            uint collisionGroups,
+            uint nonCollisionGroups)
         {
             // See if it's just a single edge.
             if (vertices.Count == 2)
@@ -325,7 +337,8 @@ namespace Engine.ComponentSystem.Physics
                 friction,
                 restitution,
                 isSensor,
-                collisionGroups);
+                collisionGroups,
+                nonCollisionGroups);
             head.Vertex3 = vertices[2];
             head.HasVertex3 = true;
 
@@ -340,7 +353,8 @@ namespace Engine.ComponentSystem.Physics
                     friction,
                     restitution,
                     isSensor,
-                    collisionGroups);
+                    collisionGroups,
+                    nonCollisionGroups);
             }
 
             var tail = manager.AttachEdge(
@@ -350,7 +364,8 @@ namespace Engine.ComponentSystem.Physics
                 friction,
                 restitution,
                 isSensor,
-                collisionGroups);
+                collisionGroups,
+                nonCollisionGroups);
             tail.Vertex0 = vertices[vertices.Count - 3];
             tail.HasVertex0 = true;
 
@@ -372,7 +387,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>The created fixture.</returns>
         public static PolygonFixture AttachPolygon(
             this IManager manager,
@@ -382,7 +398,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (body == null)
             {
@@ -394,7 +411,7 @@ namespace Engine.ComponentSystem.Physics
             }
 
             var fixture = manager.AddComponent<PolygonFixture>(body.Entity);
-            fixture.Initialize(density, friction, restitution, isSensor, collisionGroups);
+            fixture.Initialize(density, friction, restitution, isSensor, collisionCategory, collisionMask);
             fixture.InitializeShape(vertices);
 
             // Recompute mass data if necessary.
@@ -418,7 +435,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>The created fixture.</returns>
         public static PolygonFixture AttachRectangle(
             this IManager manager,
@@ -429,7 +447,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (width <= 0)
             {
@@ -452,7 +471,7 @@ namespace Engine.ComponentSystem.Physics
             };
 
             // Then create a normal polygon.
-            return manager.AttachPolygon(body, vertices, density, friction, restitution, isSensor, collisionGroups);
+            return manager.AttachPolygon(body, vertices, density, friction, restitution, isSensor, collisionCategory, collisionMask);
         }
 
         /// <summary>Attaches a rectangle fixture to the specified entity.</summary>
@@ -469,7 +488,8 @@ namespace Engine.ComponentSystem.Physics
         ///     if set to <c>true</c> the created fixture is marked as a sensor (i.e. it will fire collision events but the
         ///     collision will not be handled by the solver).
         /// </param>
-        /// <param name="collisionGroups">The collision groups.</param>
+        /// <param name="collisionCategory">The collision groups for the fixture.</param>
+        /// <param name="collisionMask">The collision groups to collide with.</param>
         /// <returns>The created fixture.</returns>
         public static PolygonFixture AttachRectangle(
             this IManager manager,
@@ -482,7 +502,8 @@ namespace Engine.ComponentSystem.Physics
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
             if (width <= 0)
             {
@@ -516,7 +537,7 @@ namespace Engine.ComponentSystem.Physics
             }
 
             // Then create a normal polygon.
-            return manager.AttachPolygon(body, vertices, density, friction, restitution, isSensor, collisionGroups);
+            return manager.AttachPolygon(body, vertices, density, friction, restitution, isSensor, collisionCategory, collisionMask);
         }
 
         #endregion

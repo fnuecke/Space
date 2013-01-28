@@ -2,9 +2,9 @@
 using Engine.ComponentSystem.Physics.Joints;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
+
 #else
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 #endif
@@ -15,9 +15,7 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
     {
         private int _motorJoint;
 
-        /// <summary>
-        /// Called when the scene should be set up (bodies and fixtures created).
-        /// </summary>
+        /// <summary>Called when the scene should be set up (bodies and fixtures created).</summary>
         protected override void Create()
         {
             var offset = new WorldPoint(0.0f, 8.0f);
@@ -34,29 +32,40 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
             // Balls
             for (var i = 0; i < 40; ++i)
             {
-                Manager.AddCircle(radius: 0.25f, type: Body.BodyType.Dynamic,
-                                  worldPosition: new WorldPoint(-40.0f + 2.0f * i, 0.5f),
-                                  density: 1);
+                Manager.AddCircle(
+                    radius: 0.25f,
+                    type: Body.BodyType.Dynamic,
+                    worldPosition: new WorldPoint(-40.0f + 2.0f * i, 0.5f),
+                    density: 1);
             }
 
             // Chassis
-            var chassis = Manager.AddRectangle(width: 5, height: 2,
-                                               type: Body.BodyType.Dynamic,
-                                               worldPosition: pivot + offset,
-                                               density: 1, collisionGroups: 1).Body;
+            var chassis = Manager.AddRectangle(
+                width: 5,
+                height: 2,
+                type: Body.BodyType.Dynamic,
+                worldPosition: pivot + offset,
+                density: 1,
+                collisionCategory: 2,
+                collisionMask: ~2u).Body;
 
             // Wheel
-            var wheel = Manager.AddCircle(radius: 1.6f,
-                                          type: Body.BodyType.Dynamic,
-                                          worldPosition: pivot + offset,
-                                          density: 1,
-                                          collisionGroups: 1).Body;
+            var wheel = Manager.AddCircle(
+                radius: 1.6f,
+                type: Body.BodyType.Dynamic,
+                worldPosition: pivot + offset,
+                density: 1,
+                collisionCategory: 2,
+                collisionMask: ~2u).Body;
 
             // Motor
-            _motorJoint = Manager.AddRevoluteJoint(wheel, chassis, pivot + offset,
-                                                   motorSpeed: 2.0f,
-                                                   maxMotorTorque: 400,
-                                                   enableMotor: true).Id;
+            _motorJoint = Manager.AddRevoluteJoint(
+                wheel,
+                chassis,
+                pivot + offset,
+                motorSpeed: 2.0f,
+                maxMotorTorque: 400,
+                enableMotor: true).Id;
 
             var wheelAnchor = pivot + new Vector2(0.0f, -0.8f);
 
@@ -104,12 +113,20 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
                 vertices2[2] = p5 - p4;
             }
 
-            var body1 = Manager.AddPolygon(vertices1, type: Body.BodyType.Dynamic,
-                                           worldPosition: offset,
-                                           density: 1, collisionGroups: 1).Body;
-            var body2 = Manager.AddPolygon(vertices2, type: Body.BodyType.Dynamic,
-                                           worldPosition: p4 + offset,
-                                           density: 1, collisionGroups: 1).Body;
+            var body1 = Manager.AddPolygon(
+                vertices1,
+                type: Body.BodyType.Dynamic,
+                worldPosition: offset,
+                density: 1,
+                collisionCategory: 2,
+                collisionMask: ~2u).Body;
+            var body2 = Manager.AddPolygon(
+                vertices2,
+                type: Body.BodyType.Dynamic,
+                worldPosition: p4 + offset,
+                density: 1,
+                collisionCategory: 2,
+                collisionMask: ~2u).Body;
 
             body1.AngularDamping = 10.0f;
             body2.AngularDamping = 10.0f;
@@ -131,7 +148,7 @@ namespace Engine.ComponentSystem.Physics.Tests.Tests
 
         public override void OnKeyDown(Keys key)
         {
-            var motorJoint = (RevoluteJoint)Manager.GetJointById(_motorJoint);
+            var motorJoint = (RevoluteJoint) Manager.GetJointById(_motorJoint);
             switch (key)
             {
                 case Keys.A:

@@ -90,21 +90,39 @@ namespace Engine.ComponentSystem.Physics.Components
         }
 
         /// <summary>
-        ///     This bit mask representing the collision groups this component is part of. Components sharing at least one
-        ///     group will not be tested against each other.
+        ///     The collision category this fixture is part of. This is checked via the <see cref="CollisionMask"/>.
         /// </summary>
-        public uint CollisionGroups
+        public uint CollisionCategory
         {
-            get { return CollisionGroupsInternal; }
+            get { return CollisionCategoryInternal; }
             set
             {
                 // Skip if nothing changed.
-                if (CollisionGroupsInternal == value)
+                if (CollisionCategoryInternal == value)
                 {
                     return;
                 }
 
-                CollisionGroupsInternal = value;
+                CollisionCategoryInternal = value;
+
+                // Mark this fixture as changed to look for new contacts.
+                Simulation.Refilter(this);
+            }
+        }
+
+        /// <summary>The bit mask representing the collision groups this fixture can collide with.</summary>
+        public uint CollisionMask
+        {
+            get { return CollisionMaskInternal; }
+            set
+            {
+                // Skip if nothing changed.
+                if (CollisionMaskInternal == value)
+                {
+                    return;
+                }
+
+                CollisionMaskInternal = value;
 
                 // Mark this fixture as changed to look for new contacts.
                 Simulation.Refilter(this);
@@ -205,8 +223,11 @@ namespace Engine.ComponentSystem.Physics.Components
         /// </summary>
         internal float Radius;
 
-        /// <summary>The collision groups the body is in, as a bit mask.</summary>
-        internal uint CollisionGroupsInternal;
+        /// <summary>The collision groups the fixture is in, as a bit mask.</summary>
+        internal uint CollisionCategoryInternal = 1;
+        
+        /// <summary>The collision groups the fixture can collide with, as a bit mask.</summary>
+        internal uint CollisionMaskInternal;
 
         /// <summary>Whether this fixture is a sensor or not (solver won't try to handle collisions).</summary>
         internal bool IsSensorInternal;
@@ -247,16 +268,19 @@ namespace Engine.ComponentSystem.Physics.Components
         /// <param name="isSensor">
         ///     if set to <c>true</c> this fixture is marked as a sensor.
         /// </param>
-        /// <param name="collisionGroups">The collision groups for this fixture.</param>
+        /// <param name="collisionCategory">The collision groups for this fixture.</param>
+        /// <param name="collisionMask">The collision groups we collide with.</param>
         /// <returns></returns>
         public virtual Fixture Initialize(
             float density = 0,
             float friction = 0.2f,
             float restitution = 0,
             bool isSensor = false,
-            uint collisionGroups = 0)
+            uint collisionCategory = 1,
+            uint collisionMask = 0xFFFFFFFF)
         {
-            CollisionGroupsInternal = collisionGroups;
+            CollisionCategoryInternal = collisionCategory;
+            CollisionMaskInternal = collisionMask;
             IsSensorInternal = isSensor;
             _density = density;
             _friction = friction;
@@ -271,7 +295,8 @@ namespace Engine.ComponentSystem.Physics.Components
             base.Reset();
 
             Radius = 0;
-            CollisionGroupsInternal = 0;
+            CollisionCategoryInternal = 1;
+            CollisionMaskInternal = 0;
             IsSensorInternal = false;
             _density = 0;
             _friction = 0.2f;

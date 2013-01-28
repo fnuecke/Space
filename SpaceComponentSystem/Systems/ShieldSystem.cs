@@ -75,12 +75,15 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
+            var existingFixture = (Fixture) body.Fixtures.First();
+            System.Diagnostics.Debug.Assert(existingFixture != null);
+
             var shieldRadius = UnitConversion.ToSimulationUnits(attributes.GetValue(AttributeType.ShieldRadius));
             shield.Fixture = Manager.AttachCircle(
                 body,
                 shieldRadius,
-                isSensor: true,
-                collisionGroups: ((Fixture) body.Fixtures.First()).CollisionGroups).Id;
+                collisionCategory: existingFixture.CollisionCategory | Factions.Shields.ToCollisionGroup(),
+                collisionMask: existingFixture.CollisionMask).Id;
         }
 
         public override void OnComponentRemoved(Engine.ComponentSystem.Components.IComponent component)

@@ -235,7 +235,8 @@ namespace Space.ComponentSystem.Factories
             manager.AttachCircle(
                 body,
                 UnitConversion.ToSimulationUnits(_collisionRadius),
-                collisionGroups: faction.ToCollisionGroup());
+                collisionCategory: faction.ToCollisionGroup(),
+                collisionMask: ~(faction.ToCollisionGroup() | Factions.Shields.ToCollisionGroup()));
 
             // These are 'worst-case' bounds, i.e. no ship should get larger than this. We use it as
             // a buffer for the camera and interpolation system, to allow them picking up on objects

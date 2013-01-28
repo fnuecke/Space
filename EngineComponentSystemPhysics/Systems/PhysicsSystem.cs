@@ -1346,8 +1346,9 @@ namespace Engine.ComponentSystem.Physics.Systems
                     // See if the collision is still valid.
                     if ( // Don't collide non-dynamic bodies against each other.
                         (bodyA.TypeInternal != Body.BodyType.Dynamic && bodyB.TypeInternal != Body.BodyType.Dynamic) ||
-                        // Things that share at least one group do not collide.
-                        (fixtureA.CollisionGroupsInternal & fixtureB.CollisionGroupsInternal) != 0 ||
+                        // Check if we should collide with the other fixture's collision category.
+                        (fixtureA.CollisionMaskInternal & fixtureB.CollisionCategoryInternal) != fixtureB.CollisionCategoryInternal ||
+                        (fixtureA.CollisionCategoryInternal & fixtureB.CollisionMaskInternal) != fixtureA.CollisionCategoryInternal ||
                         // See if we have any joints that prevent collision.
                         JointSuppressesCollision(bodyA.JointList, bodyB.Entity))
                     {
@@ -1442,8 +1443,9 @@ namespace Engine.ComponentSystem.Physics.Systems
                     // See if the two bodies should collide.
                     if ( // Don't collide non-dynamic bodies against each other.
                         (bodyA.TypeInternal != Body.BodyType.Dynamic && bodyB.TypeInternal != Body.BodyType.Dynamic) ||
-                        // Things that share at least one group do not collide.
-                        (fixtureA.CollisionGroupsInternal & fixtureB.CollisionGroupsInternal) != 0 ||
+                        // Check if we should collide with the other fixture's collision category.
+                        (fixtureA.CollisionMaskInternal & fixtureB.CollisionCategoryInternal) != fixtureB.CollisionCategoryInternal ||
+                        (fixtureA.CollisionCategoryInternal & fixtureB.CollisionMaskInternal) != fixtureA.CollisionCategoryInternal ||
                         // See if we have any joints that prevent collision.
                         JointSuppressesCollision(bodyA.JointList, bodyB.Entity))
                     {

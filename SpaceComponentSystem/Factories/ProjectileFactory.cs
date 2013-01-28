@@ -244,15 +244,15 @@ namespace Space.ComponentSystem.Factories
                 emitAngle = (float) Math.Atan2(velocity.Y, velocity.X);
             }
 
-            // See what we can bump into.
-            var collisionGroup = faction.ToCollisionGroup();
+            // See what we must not bump into.
+            var collisionMask = ~faction.ToCollisionGroup();
 
             // Normally projectiles won't test against each other, but some may be
             // shot down, such as missiles. If that's the case, don't add us to the
             // common projectile group.
             if (!_canBeShot)
             {
-                collisionGroup |= Factions.Projectiles.ToCollisionGroup();
+                collisionMask &= ~Factions.Projectiles.ToCollisionGroup();
             }
 
             // Create physical body.
@@ -263,8 +263,8 @@ namespace Space.ComponentSystem.Factories
                 UnitConversion.ToSimulationUnits(_collisionRadius),
                 0,
                 restitution: 0.1f,
-                //isSensor: true,
-                collisionGroups: collisionGroup);
+                collisionCategory: faction.ToCollisionGroup() | Factions.Projectiles.ToCollisionGroup(),
+                collisionMask: collisionMask);
 
             // Add to render system indexes. The padding these perform should be enough for any projectile.
             manager.AddComponent<Indexable>(entity).Initialize(CameraSystem.IndexId);
