@@ -156,12 +156,10 @@ namespace Space.ComponentSystem.Systems
                         _spriteBatch.GraphicsDevice.SetRenderTargets(previousRenderTargets);
 
                         // Build polygon hull.
-                        var data = new uint[target.Width * target.Height];
-                        target.GetData(data);
                         var abstraction = Manager.GetComponent(entity, Avatar.TypeId) == null
                                               ? NPCModelTolerance
                                               : PlayerModelTolerance;
-                        var hull = TextureConverter.DetectVertices(data, target.Width, target.Height, abstraction)[0];
+                        var hull = new List<Vector2>(TextureConverter.DetectVertices(target, abstraction)[0]);
                         for (var i = 0; i < hull.Count; ++i)
                         {
                             // Center at origin.

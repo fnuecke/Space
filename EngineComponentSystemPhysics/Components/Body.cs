@@ -172,7 +172,7 @@ namespace Engine.ComponentSystem.Physics.Components
         public bool IsAwake
         {
             get { return IsAwakeInternal; }
-            internal set
+            set
             {
                 if (value)
                 {

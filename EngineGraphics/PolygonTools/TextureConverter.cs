@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics.PolygonTools
 {
@@ -16,6 +17,86 @@ namespace Engine.Graphics.PolygonTools
         {
             {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}
         };
+
+        /// <summary>Cache for already analyzed textures.</summary>
+        private static readonly Dictionary<string, List<CacheEntry>> Cache = new Dictionary<string, List<CacheEntry>>();
+
+        private sealed class CacheEntry
+        {
+            public float HullTolerance;
+            public byte AlphaTolerance;
+            public bool MultiPartDetection;
+            public List<List<Vector2>> Result;
+        }
+
+        /// <summary>
+        ///     Clears any cached results from previous
+        ///     <see cref="DetectVertices(Microsoft.Xna.Framework.Graphics.Texture2D,float,byte,bool,string)"/> calls.
+        /// </summary>
+        public static void ClearCache()
+        {
+            Cache.Clear();
+        }
+        
+        /// <summary>Detects the vertices of the supplied texture.</summary>
+        /// <remarks>This caches results for a given parameterization for better performance.</remarks>
+        /// <param name="texture">The texture.</param>
+        /// <param name="hullTolerance">The hull tolerance.</param>
+        /// <param name="alphaTolerance">The alpha tolerance.</param>
+        /// <param name="multiPartDetection">
+        ///     if set to <c>true</c> it will perform multi part detection.
+        /// </param>
+        /// <param name="textureName">The name of the texture, for caching.</param>
+        /// <returns></returns>
+        public static List<List<Vector2>> DetectVertices(
+            Texture2D texture,
+            float hullTolerance = 1.5f,
+            byte alphaTolerance = 20,
+            bool multiPartDetection = false,
+            string textureName = null)
+        {
+            if (!string.IsNullOrWhiteSpace(textureName))
+            {
+                if (Cache.ContainsKey(textureName))
+                {
+                    foreach (var entry in Cache[textureName])
+                    {
+// ReSharper disable CompareOfFloatsByEqualityOperator Must be exact same to allow use of cached entries.
+                        if (entry.HullTolerance == hullTolerance &&
+// ReSharper restore CompareOfFloatsByEqualityOperator
+                            entry.AlphaTolerance == alphaTolerance &&
+                            entry.MultiPartDetection == multiPartDetection)
+                        {
+                            return entry.Result;
+                        }
+                    }
+                }
+                else
+                {
+                    Cache[textureName] = new List<CacheEntry>();
+                }
+            }
+
+            var data = new uint[texture.Width * texture.Height];
+            texture.GetData(data);
+            var result = DetectVertices(
+                data, texture.Width, texture.Height, hullTolerance, alphaTolerance, multiPartDetection);
+
+            if (!string.IsNullOrWhiteSpace(textureName))
+            {
+                Cache[textureName].Add(
+                    new CacheEntry
+                    {
+                        HullTolerance = hullTolerance,
+                        AlphaTolerance = alphaTolerance,
+                        MultiPartDetection = multiPartDetection,
+                        Result = result
+                    }
+                    );
+            }
+
+            return result;
+        }
 
         /// <summary>Detects the vertices of the supplied texture data.</summary>
         /// <param name="data">The texture data.</param>

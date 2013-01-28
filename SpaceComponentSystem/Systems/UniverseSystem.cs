@@ -1,10 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Physics;
+using Engine.ComponentSystem.Physics.Components;
+using Engine.ComponentSystem.Spatial.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Graphics.PolygonTools;
 using Engine.Random;
 using Engine.Serialization;
 using Engine.Util;
+using Engine.XnaExtensions;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
@@ -71,143 +81,263 @@ namespace Space.ComponentSystem.Systems
 
         private void OnCellStateChanged(CellStateChanged message)
         {
+            // Get random generator based on world seed and cell location.
+            var hasher = new Hasher();
+            hasher.Write(message.Id).Write(WorldSeed);
+            var random = new MersenneTwister(hasher.Value);
+
             if (message.IsSubCell)
             {
-                return;
-            }
-
-            if (message.IsActive)
-            {
-                // Get random generator based on world seed and cell location.
-                var hasher = new Hasher();
-                hasher.Write(message.Id).Write(WorldSeed);
-                var random = new MersenneTwister(hasher.Value);
-
-                // Check if we have a changed cell info.
-                if (!_cellInfo.ContainsKey(message.Id))
+                if (message.IsActive)
                 {
-                    // No, generate the default one. Get an independent
-                    // randomizer to avoid different results in other
-                    // sampling operations from when we have an existing
-                    // cell info.
-                    hasher.Reset();
-                    hasher.Write(message.Id).Write(WorldSeed);
-                    var independentRandom = new MersenneTwister(hasher.Value);
-
-                    // Figure out which faction should own this cell.
-                    Factions faction;
-                    switch (independentRandom.NextInt32(3))
-                    {
-                        case 0:
-                            faction = Factions.NPCFactionA;
-                            break;
-                        case 1:
-                            faction = Factions.NPCFactionB;
-                            break;
-                        default:
-                            faction = Factions.NPCFactionC;
-                            break;
-                    }
-
-                    // Figure out our tech level.
-                    // TODO make dependent on distance to center / start system.
-                    var techLevel = independentRandom.NextInt32(3);
-
-                    // Create the cell and push it.
-                    _cellInfo.Add(message.Id, new CellInfo(faction, techLevel));
+                    PopulateSubCell(message, random);
                 }
-
-                // Get center of our cell.
-                const int cellSize = CellSystem.CellSize;
-                var center = new FarPosition(
-                    cellSize * message.X + (cellSize >> 1),
-                    cellSize * message.Y + (cellSize >> 1));
-
-                // Check if it's the start system or not.
-                if (message.X == 0 && message.Y == 0)
+            }
+            else
+            {
+                if (message.IsActive)
                 {
-                    // It is, use a predefined number of planets and moons,
-                    // and make sure it's a solar system.
-                    FactoryLibrary.SampleSunSystem(Manager, "solar_system", center, random);
+                    PopulateCell(message, random);
                 }
                 else
                 {
-                    // It isn't, randomize.
-                    FactoryLibrary.SampleSunSystem(Manager, "sunsystem_1", center, random);
+                    // Remove cell info only if it does not deviate from the
+                    // procedural values.
+                    if (!_cellInfo[message.Id].Dirty)
+                    {
+                        _cellInfo.Remove(message.Id);
+                    }
+                    else
+                    {
+                        _cellInfo[message.Id].Stations.Clear();
+                    }
+                }
+            }
+        }
+
+        private void PopulateCell(CellStateChanged message, IUniformRandom random)
+        {
+            // Check if we have a changed cell info.
+            if (!_cellInfo.ContainsKey(message.Id))
+            {
+                // No, generate the default one. Get an independent
+                // randomizer to avoid different results in other
+                // sampling operations from when we have an existing
+                // cell info.
+                var hasher = new Hasher();
+                hasher.Write(message.Id).Write(WorldSeed);
+                var independentRandom = new MersenneTwister(hasher.Value);
+
+                // Figure out which faction should own this cell.
+                Factions faction;
+                switch (independentRandom.NextInt32(3))
+                {
+                    case 0:
+                        faction = Factions.NPCFactionA;
+                        break;
+                    case 1:
+                        faction = Factions.NPCFactionB;
+                        break;
+                    default:
+                        faction = Factions.NPCFactionC;
+                        break;
                 }
 
-                // Find nearby active cells and the stations in them, mark
-                // them as possible targets for all station sin this cell,
-                // and let them know about our existence, as well.
-                var cellSystem = (CellSystem) Manager.GetSystem(CellSystem.TypeId);
-                var stations = _cellInfo[message.Id].Stations;
-                for (var ny = message.Y - 1; ny <= message.Y + 1; ny++)
+                // Figure out our tech level.
+                // TODO make dependent on distance to center / start system.
+                var techLevel = independentRandom.NextInt32(3);
+
+                // Create the cell and push it.
+                _cellInfo.Add(message.Id, new CellInfo(faction, techLevel));
+            }
+
+            // Get center of our cell.
+            const int cellSize = CellSystem.CellSize;
+            var center = new FarPosition(
+                cellSize * message.X + (cellSize >> 1),
+                cellSize * message.Y + (cellSize >> 1));
+
+            // Check if it's the start system or not.
+            if (message.X == 0 && message.Y == 0)
+            {
+                // It is, use a predefined number of planets and moons,
+                // and make sure it's a solar system.
+                FactoryLibrary.SampleSunSystem(Manager, "solar_system", center, random);
+            }
+            else
+            {
+                // It isn't, randomize.
+                FactoryLibrary.SampleSunSystem(Manager, "sunsystem_1", center, random);
+            }
+
+            // Find nearby active cells and the stations in them, mark
+            // them as possible targets for all station sin this cell,
+            // and let them know about our existence, as well.
+            var cellSystem = (CellSystem) Manager.GetSystem(CellSystem.TypeId);
+            var stations = _cellInfo[message.Id].Stations;
+            for (var ny = message.Y - 1; ny <= message.Y + 1; ny++)
+            {
+                for (var nx = message.X - 1; nx <= message.X + 1; nx++)
                 {
-                    for (var nx = message.X - 1; nx <= message.X + 1; nx++)
+                    // Don't fly to cells that are diagonal to
+                    // ourselves, which we do by checking if the
+                    // sum of the coordinates is uneven.
+                    // This becomes more obvious when considering this:
+                    // +-+-+-+-+
+                    // |0|1|0|1|
+                    // +-+-+-+-+
+                    // |1|0|1|0|
+                    // +-+-+-+-+
+                    // |0|1|0|1|
+                    // +-+-+-+-+
+                    // |1|0|1|0|
+                    // +-+-+-+-+
+                    // Where 0 means the sum of the own coordinate is
+                    // even, 1 means it is odd. Then we can see that
+                    // the sum of diagonal pairs of cells is always
+                    // even, and the one of straight neighbors is
+                    // always odd.
+                    if (((message.X + message.Y + ny + nx) & 1) == 0)
                     {
-                        // Don't fly to cells that are diagonal to
-                        // ourselves, which we do by checking if the
-                        // sum of the coordinates is uneven.
-                        // This becomes more obvious when considering this:
-                        // +-+-+-+-+
-                        // |0|1|0|1|
-                        // +-+-+-+-+
-                        // |1|0|1|0|
-                        // +-+-+-+-+
-                        // |0|1|0|1|
-                        // +-+-+-+-+
-                        // |1|0|1|0|
-                        // +-+-+-+-+
-                        // Where 0 means the sum of the own coordinate is
-                        // even, 1 means it is odd. Then we can see that
-                        // the sum of diagonal pairs of cells is always
-                        // even, and the one of straight neighbors is
-                        // always odd.
-                        if (((message.X + message.Y + ny + nx) & 1) == 0)
+                        // Get the id, only mark the station if we have
+                        // info on it and it's an enemy cell.
+                        var id = BitwiseMagic.Pack(nx, ny);
+                        if (cellSystem.IsCellActive(id) &&
+                            _cellInfo.ContainsKey(id) &&
+                            (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[message.Id].Faction)))
                         {
-                            // Get the id, only mark the station if we have
-                            // info on it and it's an enemy cell.
-                            var id = BitwiseMagic.Pack(nx, ny);
-                            if (cellSystem.IsCellActive(id) &&
-                                _cellInfo.ContainsKey(id) &&
-                                (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[message.Id].Faction)))
+                            // Tell the other stations.
+                            foreach (var stationId in _cellInfo[id].Stations)
                             {
-                                // Tell the other stations.
-                                foreach (var stationId in _cellInfo[id].Stations)
+                                var spawn = ((ShipSpawner) Manager.GetComponent(stationId, ShipSpawner.TypeId));
+                                foreach (var otherStationId in stations)
                                 {
-                                    var spawn = ((ShipSpawner) Manager.GetComponent(stationId, ShipSpawner.TypeId));
-                                    foreach (var otherStationId in stations)
-                                    {
-                                        spawn.Targets.Add(otherStationId);
-                                    }
+                                    spawn.Targets.Add(otherStationId);
                                 }
-                                // Tell our own stations.
-                                foreach (var stationId in stations)
+                            }
+                            // Tell our own stations.
+                            foreach (var stationId in stations)
+                            {
+                                var spawner = ((ShipSpawner) Manager.GetComponent(stationId, ShipSpawner.TypeId));
+                                foreach (var otherStationId in _cellInfo[id].Stations)
                                 {
-                                    var spawner = ((ShipSpawner) Manager.GetComponent(stationId, ShipSpawner.TypeId));
-                                    foreach (var otherStationId in _cellInfo[id].Stations)
-                                    {
-                                        spawner.Targets.Add(otherStationId);
-                                    }
+                                    spawner.Targets.Add(otherStationId);
                                 }
                             }
                         }
                     }
                 }
             }
-            else
+        }
+
+        private void PopulateSubCell(CellStateChanged message, IUniformRandom random)
+        {
+            // Number of asteroid fields in this cell?
+            var fieldCount = random.NextInt32(8, 12);
+
+            // Determine number of rows and cols for base positions.
+            var cols = (int) Math.Ceiling(Math.Sqrt(fieldCount));
+            
+            // Build sampling list.
+            var cells = new List<Tuple<int, int>>(cols * cols);
+            for (var x = 0; x < cols; ++x)
             {
-                // Remove cell info only if it does not deviate from the
-                // procedural values.
-                if (!_cellInfo[message.Id].Dirty)
+                for (var y = 0; y < cols; ++y)
                 {
-                    _cellInfo.Remove(message.Id);
-                }
-                else
-                {
-                    _cellInfo[message.Id].Stations.Clear();
+                    cells.Add(Tuple.Create(x, y));
                 }
             }
+
+            // Size of a cell in our sub grid.
+            var gridSize = CellSystem.SubCellSize / (float) cols;
+
+            // Cell top left corner position.
+            var cellPosition = new FarPosition(message.X, message.Y) * CellSystem.SubCellSize;
+
+            // Generate asteroid fields.
+            for (var i = 0; i < fieldCount; ++i)
+            {
+                // Get base position.
+                var positionIndex = random.NextInt32(cells.Count);
+                var fieldIndex = cells[positionIndex];
+                cells.RemoveAt(positionIndex);
+
+                var asteroidCount = random.NextInt32(30, 60);
+                var center = cellPosition + new FarPosition(
+                    fieldIndex.Item1 * gridSize + (float) random.NextDouble(0, gridSize),
+                    fieldIndex.Item2 * gridSize + (float) random.NextDouble(0, gridSize));
+                
+                // We grow our asteroid fields as spirals, with a little jitter.
+                const float jitter = 2.5f;
+                const float radiusStep = 0.4f;
+                const float angleStep = 2.25f;
+                var theta = angleStep / radiusStep;
+
+                // Create first one at the center.
+                CreateAsteroid(center, random);
+
+                for (var j = 1; j < asteroidCount; ++j)
+                {
+                    // Compute position in our spiral.
+                    var radius = radiusStep * theta;
+                    var position = center;
+                    position.X += (float) Math.Cos(theta) * radius;
+                    position.Y += (float) Math.Sin(theta) * radius;
+                    position.X += (float) random.NextDouble(-jitter / 2, jitter / 2);
+                    position.Y += (float) random.NextDouble(-jitter / 2, jitter / 2);
+                    theta += angleStep / radius;
+
+                    CreateAsteroid(position, random);
+                }
+            }
+        }
+
+        private void CreateAsteroid(FarPosition position, IUniformRandom random)
+        {
+            var content = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content;
+
+            // Randomly scale and rotate it.
+            var scale = (float) random.NextDouble(0.5f, 1f);
+            var angle = (float) random.NextDouble() * MathHelper.TwoPi;
+
+            // Determine shape for physics system.
+            var textureName = "Textures/Asteroids/rock_" + random.NextInt32(1, 14);
+            var texture = content.Load<Texture2D>(textureName);
+            var hull = new List<Vector2>(TextureConverter.DetectVertices(texture, 8f, textureName: textureName)[0]);
+            for (var k = 0; k < hull.Count; ++k)
+            {
+                hull[k] -= new Vector2(texture.Width / 2f, texture.Height / 2f);
+                hull[k] = XnaUnitConversion.ToSimulationUnits(hull[k]) * scale;
+            }
+            var polygons = EarClipDecomposer.ConvexPartition(hull);
+
+            // Create physical representation.
+            var entity = Manager.AddEntity();
+            var body = Manager.AddBody(entity, position, angle, Body.BodyType.Dynamic);
+            foreach (var polygon in polygons)
+            {
+                Manager.AttachPolygon(body, polygon, density: 1000f, restitution: 0.2f);
+            }
+            // Slow down to allow reaching sleep state again.
+            body.LinearDamping = 0.05f * Space.Util.Settings.TicksPerSecond;
+            body.AngularDamping = 0.025f * Space.Util.Settings.TicksPerSecond;
+                    
+            // Rendering stuff.
+            Manager.AddComponent<Indexable>(entity).Initialize(CameraSystem.IndexId);
+            Manager.AddComponent<Indexable>(entity).Initialize(InterpolationSystem.IndexId);
+            Manager.AddComponent<SimpleTextureDrawable>(entity).Initialize(textureName, scale);
+
+            // Auto removal.
+            Manager.AddComponent<CellDeath>(entity).Initialize(true);
+            Manager.AddComponent<Indexable>(entity).Initialize(CellSystem.CellDeathAutoRemoveIndexId);
+
+            // Make it destructible.
+            var health = Manager.AddComponent<Health>(entity);
+            health.Value = health.MaxValue = 200 * scale;
+            health.Regeneration = 0f;
+
+            // As they don't move on their own, start asteroids as sleeping to save performance.
+            body.IsAwake = false;
         }
 
         #endregion

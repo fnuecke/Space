@@ -53,9 +53,8 @@ namespace Space.ComponentSystem.Systems
             var position = ((ITransform) Manager.GetComponent(message.Entity, TransformTypeId)).Position;
             var value = (int) Math.Round(message.Amount);
             var scale = message.IsCriticalHit ? 1f : 0.5f;
-            var isLocalPlayerFaction = (_localPlayerFaction &
-                                        ((Faction) Manager.GetComponent(message.Entity, Faction.TypeId)).Value) !=
-                                        Factions.None;
+            var faction = Manager.GetComponent(message.Entity, Faction.TypeId) as Faction;
+            var isLocalPlayerFaction = faction != null && (_localPlayerFaction & faction.Value) != Factions.None;
             if (value > 0)
             {
                 // Normal damage.
