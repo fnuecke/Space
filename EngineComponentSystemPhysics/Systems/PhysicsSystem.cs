@@ -1421,8 +1421,8 @@ namespace Engine.ComponentSystem.Physics.Systems
                     var fixtureIdB = System.Math.Max(fixture, neighbor);
 
                     // Get the actual components.
-                    var fixtureA = (Fixture)Manager.GetComponentById(fixtureIdA);
-                    var fixtureB = (Fixture)Manager.GetComponentById(fixtureIdB);
+                    var fixtureA = (Fixture) Manager.GetComponentById(fixtureIdA);
+                    var fixtureB = (Fixture) Manager.GetComponentById(fixtureIdB);
 
                     // Get the actual collidable information for more filtering.
                     var bodyA = fixtureA.Body;

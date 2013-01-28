@@ -16,8 +16,9 @@
     <XnaProfile>Reach</XnaProfile>
     <XnaCrossPlatformGroupID>6a048ec3-78d9-436e-8124-1d8297298f93</XnaCrossPlatformGroupID>
     <XnaOutputType>Game</XnaOutputType>
-    <ApplicationIcon>Game.ico</ApplicationIcon>
-    <Thumbnail>GameThumbnail.png</Thumbnail>
+    <ApplicationIcon>..\EngineComponentSystemPhysicsTests\Game.ico</ApplicationIcon>
+    <Thumbnail>C:\Users\fnuecke\documents\visual studio 2010\Projects\Space\EngineComponentSystemPhysicsTests\GameThumbnail.png</Thumbnail>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,7 +31,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>

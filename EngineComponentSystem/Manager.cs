@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -89,6 +90,31 @@ namespace Engine.ComponentSystem
         private readonly Dictionary<Type, IList<object>> _messageCallbacks = new Dictionary<Type, IList<object>>();
 
         #endregion
+
+        /// <summary>
+        ///     Determine type ids for all loaded assemblies. This helps getting a more deterministic order when registering
+        ///     types, thus not messing with serialized data.
+        /// </summary>
+        static Manager()
+        {
+            foreach (var type in Assembly
+                .GetExecutingAssembly()
+                .GetLoadedModules()
+                .SelectMany(module => module.GetTypes())
+                .Where(t => t.IsSubclassOf(typeof (Component))))
+            {
+                GetComponentTypeId(type);
+            }
+
+            foreach (var type in Assembly
+                .GetExecutingAssembly()
+                .GetLoadedModules()
+                .SelectMany(module => module.GetTypes())
+                .Where(t => t.IsSubclassOf(typeof (AbstractSystem))))
+            {
+                GetSystemTypeId(type);
+            }
+        }
 
         #region Logic
 

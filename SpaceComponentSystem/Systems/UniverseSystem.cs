@@ -232,6 +232,18 @@ namespace Space.ComponentSystem.Systems
 
         private void PopulateSubCell(CellStateChanged message, IUniformRandom random)
         {
+            // We randomly spawn some asteroid fields in sub-cells. These are laid out as follows:
+            // - we decide how many fields we want to spawn.
+            // - we build a grid inside the cell that has enough entries for our asteroid fields,
+            //   i.e. we take the next higher squared number (e.g. if we have 5 fields, we generate
+            //   a 3x3 grid).
+            // - For each field we randomly pick one such grid cell to determine it's basic position,
+            //   and shift it to a random position inside that grid cell.
+            // - To position the actual asteroids, we want it to be somewhat circular, but it should
+            //   not look too regular. We lay out our asteroids in a spiral, on which we place our
+            //   asteroids in a fixed interval. Finally we add some random offset to make the spiral
+            //   non-obvious.
+
             // Number of asteroid fields in this cell?
             var fieldCount = random.NextInt32(8, 12);
 
@@ -269,13 +281,14 @@ namespace Space.ComponentSystem.Systems
                 
                 // We grow our asteroid fields as spirals, with a little jitter.
                 const float jitter = 2.5f;
-                const float radiusStep = 0.4f;
-                const float angleStep = 2.25f;
+                const float radiusStep = 0.4f; //< how fast we move outwards.
+                const float angleStep = 2.25f; //< the asteroid interval on the spiral.
                 var theta = angleStep / radiusStep;
 
                 // Create first one at the center.
                 CreateAsteroid(center, random);
 
+                // Generate rest of the spiral.
                 for (var j = 1; j < asteroidCount; ++j)
                 {
                     // Compute position in our spiral.
@@ -292,6 +305,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        // TODO in case we need this somewhere else it might be a good idea to move this to the EntityFactory
         private void CreateAsteroid(FarPosition position, IUniformRandom random)
         {
             var content = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content;
