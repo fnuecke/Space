@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Awesomium.ScreenManagement;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Graphics;
 using Engine.Math;
 using Engine.Serialization;
@@ -113,9 +112,6 @@ namespace Space
 
         private readonly FloatSampling _componentsHistory = new FloatSampling(600);
         private Graph _componentGraph;
-
-        private readonly FloatSampling _indexQueryHistory = new FloatSampling(600);
-        private Graph _indexQueryGraph;
 
         private readonly FloatSampling _gameSpeedHistory = new FloatSampling(600);
         private Graph _gameSpeedGraph;
@@ -233,8 +229,6 @@ namespace Space
             if (manager != null)
             {
                 _componentsHistory.Put(manager.ComponentCount);
-                var index = (IndexSystem) manager.GetSystem(IndexSystem.TypeId);
-                _indexQueryHistory.Put(index.QueryCountSinceLastUpdate);
             }
 
             // Update the audio engine if we have one (setting one up can cause
@@ -307,7 +301,6 @@ namespace Space
                 _drawGraph.Draw();
                 _memoryGraph.Draw();
                 _componentGraph.Draw();
-                _indexQueryGraph.Draw();
                 _gameSpeedGraph.Draw();
                 _gameLoadGraph.Draw();
             }

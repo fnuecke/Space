@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using Engine.ComponentSystem.Physics.Systems;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -251,55 +250,6 @@ namespace Space
                 "r_entity 1|0 - set whether to render entity info.");
 
             _console.AddCommand(
-                "r_index",
-                args =>
-                {
-                    int index;
-                    var system = _client.GetSystem<DebugIndexRenderSystem>();
-                    if (!int.TryParse(args[1], out index))
-                    {
-                        switch (args[1])
-                        {
-                            case "c":
-                            case "collision":
-                            case "collidable":
-                            case "collidables":
-                                index = PhysicsSystem.IndexId;
-                                break;
-                            case "d":
-                            case "detector":
-                            case "detectable":
-                            case "detectables":
-                                index = DetectableSystem.IndexId;
-                                break;
-                            case "g":
-                            case "grav":
-                            case "gravitation":
-                                index = GravitationSystem.IndexId;
-                                break;
-                            case "s":
-                            case "sound":
-                            case "sounds":
-                                index = SoundSystem.IndexId;
-                                break;
-                            default:
-                                _console.WriteLine(
-                                    "Invalid named index, known aliases are: collidable (c), detectable (d), gravitation (g) and sound (s).");
-                                return;
-                        }
-                    }
-                    else if (index == 0)
-                    {
-                        system.Enabled = false;
-                        return;
-                    }
-                    system.IndexId = index;
-                    system.Enabled = true;
-                },
-                "Enables rendering of the index with the given index.",
-                "r_index <index> - render the cells of the specified index.");
-
-            _console.AddCommand(
                 "r_interpolate",
                 args =>
                 {
@@ -321,6 +271,9 @@ namespace Space
                             case 'f':
                                 physics.RenderFixtures = enable;
                                 break;
+                            case 'b':
+                                physics.RenderFixtureBounds = enable;
+                                break;
                             case 'c':
                                 physics.RenderContactPoints = enable;
                                 break;
@@ -340,7 +293,7 @@ namespace Space
                     }
                 },
                 "Sets for which parts of the physics simulation to render debug representations for.",
-                "r_physics [fcmni]+ 1|0");
+                "r_physics [fbcmni]+ 1|0");
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after

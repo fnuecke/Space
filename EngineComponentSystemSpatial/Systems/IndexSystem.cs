@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Engine.Collections;
@@ -7,13 +6,11 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.Graphics;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using Engine.FarCollections;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
@@ -26,7 +23,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     /// <summary>
     ///     This class represents a simple index structure for nearest neighbor queries.
     /// </summary>
-    public sealed class IndexSystem : AbstractSystem, IUpdatingSystem
+    public sealed class IndexSystem : AbstractSystem
     {
         #region Type ID
 
@@ -110,14 +107,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #endregion
 
         #region Logic
-
-        /// <summary>Updates the index based on translations that happened this frame.</summary>
-        /// <param name="frame">The current simulation frame.</param>
-        public void Update(long frame)
-        {
-            // Reset query count until next run.
-            _queryCountSinceLastUpdate = 0;
-        }
 
         /// <summary>Adds index components to all their indexes.</summary>
         /// <param name="component">The component that was added.</param>
@@ -459,35 +448,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 _trees[index].CopyInto(copy._trees[index]);
                 copy._changed[index].UnionWith(_changed[index]);
             }
-        }
-
-        #endregion
-
-        #region Debug stuff
-
-        /// <summary>
-        ///     Total number of queries over all index structures since the last update. This will always be zero when not
-        ///     running in debug mode.
-        /// </summary>
-        public int QueryCountSinceLastUpdate
-        {
-            get { return _queryCountSinceLastUpdate; }
-        }
-
-        /// <summary>For ref usage in interlocked update.</summary>
-        private int _queryCountSinceLastUpdate;
-
-        /// <summary>
-        ///     Renders all index structures matching the specified index group bit mask using the specified shape at the
-        ///     specified translation.
-        /// </summary>
-        /// <param name="index">The index to draw.</param>
-        /// <param name="shape">Shape to use for drawing.</param>
-        /// <param name="translation">Translation to apply when drawing.</param>
-        [Conditional("DEBUG")]
-        public void DrawIndex(int index, AbstractShape shape, WorldPoint translation)
-        {
-            _trees[index].Draw(shape, translation);
         }
 
         #endregion

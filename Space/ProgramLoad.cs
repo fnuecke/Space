@@ -151,13 +151,6 @@ namespace Space
                 Data = _componentsHistory
             };
 
-            _indexQueryGraph = new Graph(Content, GraphicsDeviceManager)
-            {
-                Title = "Index queries",
-                Smoothing = 10,
-                Data = _indexQueryHistory
-            };
-
             _gameSpeedGraph = new Graph(Content, GraphicsDeviceManager)
             {
                 Title = "Game speed",
@@ -185,7 +178,6 @@ namespace Space
                 _drawGraph,
                 _memoryGraph,
                 _componentGraph,
-                _indexQueryGraph,
                 _gameSpeedGraph,
                 _gameLoadGraph
             })

@@ -336,7 +336,6 @@ namespace Space.Control
                 {
                     new DebugEntityIdRenderSystem(),
                     new DebugAIRenderSystem(),
-                    new DebugIndexRenderSystem(),
                     new DebugPhysicsRenderSystem {Enabled = true}
                 });
         }
