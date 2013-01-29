@@ -223,8 +223,8 @@ namespace Space.Tools.DataEditor
                     FarPosition sunPos;
                     sunPos.X = mousePos.X - Width / 2f;
                     sunPos.Y = mousePos.Y - Height / 2f;
-                    var t = (ITransform)Manager.GetComponent(_sunId, TransformTypeId);
-                    t.Position = sunPos;
+                    var t = (ITransform) Manager.GetComponent(_sunId, TransformTypeId);
+                    t.Position = FarUnitConversion.ToSimulationUnits(sunPos);
                 }
 
                 // Draw our mini simulation.

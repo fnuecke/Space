@@ -120,7 +120,7 @@ namespace Engine.ComponentSystem
                 var id = GetComponentTypeId(type);
                 
                 ++count;
-                Logger.Debug("  {0}: {1}", id, type.FullName);
+                Logger.Trace("  {0}: {1}", id, type.FullName);
             }
             Logger.Info("Found {0} component types.", count);
 
@@ -136,7 +136,7 @@ namespace Engine.ComponentSystem
             {
                 var id = GetSystemTypeId(type);
                 ++count;
-                Logger.Debug("  {0}: {1}", id, type.FullName);
+                Logger.Trace("  {0}: {1}", id, type.FullName);
 
                 // Run static constructors to force deterministic order when initializing
                 // static fields (such as index ids).
@@ -260,7 +260,7 @@ namespace Engine.ComponentSystem
             {
                 AddSystem(system.NewInstance());
             }
-            System.Diagnostics.Debug.Assert(_systemsByTypeId[systemTypeId] != null);
+            Debug.Assert(_systemsByTypeId[systemTypeId] != null);
             system.CopyInto(_systemsByTypeId[systemTypeId]);
         }
 
@@ -354,19 +354,21 @@ namespace Engine.ComponentSystem
         /// <summary>Removes all entities (and their components) from the system.</summary>
         public void Clear()
         {
-            var next = _entityIds.GetId();
-            _entityIds.ReleaseId(next);
-
-            for (var i = next - 1; i >= 0; i--)
+            lock (this)
             {
-                if (HasEntity(i))
-                {
-                    RemoveEntity(i);
-                }
-            }
+                var next = _entityIds.GetId();
+                _entityIds.ReleaseId(next);
 
-            Debug.Assert(_entityIds.Count == 0);
-            Debug.Assert(_componentIds.Count == 0);
+                for (var i = next - 1; i >= 1; i--)
+                {
+                    if (HasEntity(i))
+                    {
+                        RemoveEntity(i);
+                    }
+                }
+
+                Debug.Assert(_entityIds.Count == 0 && _componentIds.Count == 0);
+            }
         }
 
         /// <summary>Creates a new component for the specified entity.</summary>

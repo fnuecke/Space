@@ -405,7 +405,7 @@ namespace Space.Session
             if (_data == null)
             {
                 // No data yet, meaning the profile isn't initialized, yet.
-                return EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new FarPosition(50000, 50000));
+                return EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new FarPosition(677, 670));
             }
 
             // OK, start from scratch.

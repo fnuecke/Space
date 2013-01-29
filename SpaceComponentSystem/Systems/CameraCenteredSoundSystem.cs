@@ -17,7 +17,10 @@ namespace Space.ComponentSystem.Systems
         /// <param name="soundbank">The soundbank.</param>
         /// <param name="maxAudibleDistance">The maximum distance at which sound is heard.</param>
         public CameraCenteredSoundSystem(SoundBank soundbank, float maxAudibleDistance)
-            : base(soundbank, maxAudibleDistance) {}
+            : base(soundbank, maxAudibleDistance)
+        {
+            PlayMusic("Music01");
+        }
 
         #endregion
 

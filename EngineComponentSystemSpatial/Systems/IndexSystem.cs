@@ -63,7 +63,19 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>Gets the index of the specified ID.</summary>
         public IIndex<int, WorldBounds, WorldPoint> this[int index]
         {
-            get { return _trees[index]; }
+            get
+            {
+                if (_trees[index] == null)
+                {
+#if FARMATH
+                    _trees[index] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
+#else
+                    _trees[index] = new DynamicQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
+#endif
+                    _changed[index] = new HashSet<int>();
+                }
+                return _trees[index];
+            }
         }
 
         #endregion
@@ -244,17 +256,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 return;
             }
 
-            if (_trees[index] == null)
-            {
-#if FARMATH
-                _trees[index] = new FarCollections.SpatialHashedQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
-#else
-                _trees[index] = new DynamicQuadTree<int>(_maxEntriesPerNode, _minNodeBounds, 0.1f, 2f, (p, v) => p.Write(v), p => p.ReadInt32());
-#endif
-                _changed[index] = new HashSet<int>();
-            }
-
-            _trees[index].Add(component.ComputeWorldBounds(), component.Id);
+            this[index].Add(component.ComputeWorldBounds(), component.Id);
             _changed[index].Add(component.Id);
         }
 
@@ -269,7 +271,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 return;
             }
 
-            _trees[index].Remove(component.Id);
+            this[index].Remove(component.Id);
             _changed[index].Remove(component.Id);
         }
 
@@ -287,8 +289,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
             packet.Write(IndexCount);
             for (var index = 0; index < _nextIndexId; ++index)
             {
-                if (_trees[index] == null)
+                // Skip non-existing and empty trees.
+                if (_trees[index] == null || _trees[index].Count == 0)
                 {
+                    System.Diagnostics.Debug.Assert(_changed[index] == null || _changed[index].Count == 0);
                     continue;
                 }
                 packet.Write(index);

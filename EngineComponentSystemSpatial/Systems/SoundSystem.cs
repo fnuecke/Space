@@ -71,6 +71,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>All Currently playing sounds mapped to the entry id</summary>
         private Dictionary<int, Cue> _playingSounds = new Dictionary<int, Cue>();
 
+        /// <summary>The currently playing music.</summary>
+        private Cue _music;
+
         #endregion
 
         #region Single-Allocation
@@ -299,6 +302,31 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 velocity = velocityComponent.LinearVelocity;
             }
             return Play(soundCue, ref position, ref velocity);
+        }
+
+        /// <summary>Stops any other playing track and starts playing the specified music track.</summary>
+        /// <param name="trackName">The name of the music track to play.</param>
+        /// <param name="transition">
+        ///     if set to <c>true</c> music will transition as authored, else the current track will be forced to stop immediately.
+        /// </param>
+        public void PlayMusic(string trackName, bool transition = true)
+        {
+            StopMusic(transition);
+            _music = _soundBank.GetCue(trackName);
+            _music.Play();
+        }
+
+        /// <summary>Stops playing any currently playing music.</summary>
+        /// <param name="transition">
+        ///     if set to <c>true</c> music will transition as authored, else the current track will be forced to stop immediately.
+        /// </param>
+        public void StopMusic(bool transition = true)
+        {
+            if (_music != null)
+            {
+                _music.Stop(transition ? AudioStopOptions.AsAuthored : AudioStopOptions.Immediate);
+            }
+            _music = null;
         }
 
         #endregion

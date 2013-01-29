@@ -43,6 +43,8 @@
     <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
@@ -57,7 +59,9 @@
   <ItemGroup>
     <Compile Include="IGaussianRandom.cs" />
     <Compile Include="IUniformRandom.cs" />
+    <Compile Include="ListExtensions.cs" />
     <Compile Include="MersenneTwister.cs" />
+    <Compile Include="Noise.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ziggurat.cs" />
   </ItemGroup>
@@ -69,6 +73,10 @@
     <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JetBrainsAnnotations\JetBrains.Annotations.csproj">
+      <Project>{173331FF-F188-464C-9D6F-C46B75B623B3}</Project>
+      <Name>JetBrains.Annotations</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
