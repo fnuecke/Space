@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using Engine.ComponentSystem;
 
 namespace Space
 {
@@ -11,6 +12,8 @@ namespace Space
         [STAThread]
         private static void Main()
         {
+            Manager.Initialize();
+
             using (var game = new Program())
             {
                 // Get some general system information, for reference.

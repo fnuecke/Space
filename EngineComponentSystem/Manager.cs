@@ -9,6 +9,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 
 namespace Engine.ComponentSystem
 {
@@ -31,6 +32,12 @@ namespace Engine.ComponentSystem
     [DebuggerDisplay("Systems = {_systems.Count}, Components = {_componentIds.Count}")]
     public sealed partial class Manager : IManager
     {
+        #region Logger
+
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Properties
 
         /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
@@ -91,30 +98,54 @@ namespace Engine.ComponentSystem
 
         #endregion
 
+        #region Initialization
+
         /// <summary>
         ///     Determine type ids for all loaded assemblies. This helps getting a more deterministic order when registering
-        ///     types, thus not messing with serialized data.
+        ///     types, thus not messing with serialized data. It should be called before any other program logic is performed.
         /// </summary>
-        static Manager()
+        [PublicAPI]
+        public static void Initialize()
         {
+            Logger.Info("Checking for components...");
+            var count = 0;
             foreach (var type in Assembly
-                .GetExecutingAssembly()
-                .GetLoadedModules()
-                .SelectMany(module => module.GetTypes())
-                .Where(t => t.IsSubclassOf(typeof (Component))))
+                .GetEntryAssembly()
+                .GetReferencedAssemblies()
+                .Select(Assembly.Load)
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(t => t.IsSubclassOf(typeof (Component)))
+                .OrderBy(t => t.AssemblyQualifiedName))
             {
-                GetComponentTypeId(type);
+                var id = GetComponentTypeId(type);
+                
+                ++count;
+                Logger.Debug("  {0}: {1}", id, type.FullName);
             }
+            Logger.Info("Found {0} component types.", count);
 
+            Logger.Trace("Checking for systems...");
+            count = 0;
             foreach (var type in Assembly
-                .GetExecutingAssembly()
-                .GetLoadedModules()
-                .SelectMany(module => module.GetTypes())
-                .Where(t => t.IsSubclassOf(typeof (AbstractSystem))))
+                .GetEntryAssembly()
+                .GetReferencedAssemblies()
+                .Select(Assembly.Load)
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(t => t.IsSubclassOf(typeof (AbstractSystem)))
+                .OrderBy(t => t.AssemblyQualifiedName))
             {
-                GetSystemTypeId(type);
+                var id = GetSystemTypeId(type);
+                ++count;
+                Logger.Debug("  {0}: {1}", id, type.FullName);
+
+                // Run static constructors to force deterministic order when initializing
+                // static fields (such as index ids).
+                System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
             }
+            Logger.Info("Found {0} system types.", count);
         }
+        
+        #endregion
 
         #region Logic
 
@@ -229,6 +260,7 @@ namespace Engine.ComponentSystem
             {
                 AddSystem(system.NewInstance());
             }
+            System.Diagnostics.Debug.Assert(_systemsByTypeId[systemTypeId] != null);
             system.CopyInto(_systemsByTypeId[systemTypeId]);
         }
 

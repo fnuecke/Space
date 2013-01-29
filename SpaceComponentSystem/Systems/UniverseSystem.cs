@@ -14,6 +14,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
@@ -244,6 +245,9 @@ namespace Space.ComponentSystem.Systems
             //   asteroids in a fixed interval. Finally we add some random offset to make the spiral
             //   non-obvious.
 
+            // Get content manager to fetch textures from which to generate physics models.
+            var content = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content;
+
             // Number of asteroid fields in this cell?
             var fieldCount = random.NextInt32(8, 12);
 
@@ -286,7 +290,7 @@ namespace Space.ComponentSystem.Systems
                 var theta = angleStep / radiusStep;
 
                 // Create first one at the center.
-                CreateAsteroid(center, random);
+                CreateAsteroid(center, random, content);
 
                 // Generate rest of the spiral.
                 for (var j = 1; j < asteroidCount; ++j)
@@ -300,16 +304,53 @@ namespace Space.ComponentSystem.Systems
                     position.Y += (float) random.NextDouble(-jitter / 2, jitter / 2);
                     theta += angleStep / radius;
 
-                    CreateAsteroid(position, random);
+                    CreateAsteroid(position, random, content);
                 }
             }
+
+            //// Sprinkle some asteroids in the background, for depth and movement perception.
+            //for (var i = 0; i < 1000; ++i)
+            //{
+            //    var center = cellPosition + new FarPosition(
+            //        (float) random.NextDouble(0, CellSystem.SubCellSize),
+            //        (float) random.NextDouble(0, CellSystem.SubCellSize));
+
+            //    // Randomly scale and rotate it.
+            //    var layer = (float) random.NextDouble(0.5f, 0.75f);
+            //    var scale = (float) random.NextDouble(0.6f, 0.9f);
+            //    var angle = (float) random.NextDouble() * MathHelper.TwoPi;
+                
+            //    // Determine shape for physics system.
+            //    var textureName = "Textures/Asteroids/rock_" + random.NextInt32(1, 14);
+            //    var texture = content.Load<Texture2D>(textureName);
+
+            //    // Create component that will be rendered.
+            //    var entity = Manager.AddEntity();
+            //    Manager.AddComponent<Transform>(entity).Initialize(center, angle);
+                
+            //    // Expand bounds based on layer for camera and interpolation system, so that they
+            //    // can see the asteroids in time (lower parallax = farther in background = moving
+            //    // slower = longer in screen = wider actual viewport necessary to check).
+            //    var width = UnitConversion.ToSimulationUnits(texture.Width);
+            //    var height = UnitConversion.ToSimulationUnits(texture.Height);
+            //    var diagonal = 8f * (float) Math.Sqrt(width * width + height * height) / layer / scale;
+            //    var bounds = new FarRectangle(-diagonal / 2f, -diagonal / 2f, diagonal, diagonal);
+
+            //    // Rendering stuff.
+            //    Manager.AddComponent<Parallax>(entity).Initialize(layer);
+            //    Manager.AddComponent<Indexable>(entity).Initialize(bounds, CameraSystem.IndexId);
+            //    Manager.AddComponent<Indexable>(entity).Initialize(bounds, InterpolationSystem.IndexId);
+            //    Manager.AddComponent<SimpleTextureDrawable>(entity).Initialize(textureName, new Color(100, 100, 100, 255), scale);
+
+            //    // Auto removal.
+            //    Manager.AddComponent<CellDeath>(entity).Initialize(true);
+            //    Manager.AddComponent<Indexable>(entity).Initialize(CellSystem.CellDeathAutoRemoveIndexId);
+            //}
         }
 
         // TODO in case we need this somewhere else it might be a good idea to move this to the EntityFactory
-        private void CreateAsteroid(FarPosition position, IUniformRandom random)
+        private void CreateAsteroid(FarPosition position, IUniformRandom random, ContentManager content)
         {
-            var content = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content;
-
             // Randomly scale and rotate it.
             var scale = (float) random.NextDouble(0.5f, 1f);
             var angle = (float) random.NextDouble() * MathHelper.TwoPi;
@@ -335,10 +376,17 @@ namespace Space.ComponentSystem.Systems
             // Slow down to allow reaching sleep state again.
             body.LinearDamping = 0.05f * Space.Util.Settings.TicksPerSecond;
             body.AngularDamping = 0.025f * Space.Util.Settings.TicksPerSecond;
-                    
+
+            // Bounds of the asteroid for rendering culling. We use the diagonal for a loose fit that
+            // contains every possible rotated state of the texture.
+            var width = UnitConversion.ToSimulationUnits(texture.Width);
+            var height = UnitConversion.ToSimulationUnits(texture.Height);
+            var diagonal = (float) Math.Sqrt(width * width + height * height);
+            var bounds = new FarRectangle(-diagonal / 2, -diagonal / 2, diagonal, diagonal);
+
             // Rendering stuff.
-            Manager.AddComponent<Indexable>(entity).Initialize(CameraSystem.IndexId);
-            Manager.AddComponent<Indexable>(entity).Initialize(InterpolationSystem.IndexId);
+            Manager.AddComponent<Indexable>(entity).Initialize(bounds, CameraSystem.IndexId);
+            Manager.AddComponent<Indexable>(entity).Initialize(bounds, InterpolationSystem.IndexId);
             Manager.AddComponent<SimpleTextureDrawable>(entity).Initialize(textureName, scale);
 
             // Auto removal.

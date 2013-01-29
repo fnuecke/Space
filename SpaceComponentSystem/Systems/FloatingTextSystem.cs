@@ -65,8 +65,8 @@ namespace Space.ComponentSystem.Systems
         public FloatingTextSystem()
         {
             DefaultColor = Color.White;
-            DefaultDuration = 4;
-            FloatDistance = 20;
+            DefaultDuration = 1.5f;
+            FloatDistance = 100;
         }
 
         #endregion

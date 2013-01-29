@@ -63,24 +63,27 @@ namespace Space.ComponentSystem.Systems
                 background.FadeTo(
                     new[]
                     {
-                        "Textures/Space/stars",
-                        "Textures/Space/dark_matter",
+                        "Textures/Space/small_stars",
+                        "Textures/Space/large_stars",
+                        "Textures/Space/huge_stars",
                         "Textures/Space/debris_small",
                         "Textures/Space/debris_large"
                     },
                     new[]
                     {
                         Color.White,
-                        Color.White * 0.95f,
-                        Color.DarkSlateGray * 0.75f,
-                        Color.SlateGray * 0.25f
+                        Color.White,
+                        Color.White,
+                        Color.DarkSlateGray * 0.3f,
+                        Color.SlateGray * 0.05f
                     },
                     new[]
                     {
+                        0.01f,
+                        0.025f,
                         0.05f,
-                        0.1f,
-                        0.65f,
-                        0.95f
+                        0.10f,
+                        0.975f
                     },
                     5);
             }

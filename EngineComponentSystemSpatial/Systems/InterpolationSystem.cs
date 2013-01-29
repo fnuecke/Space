@@ -5,10 +5,10 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
 using Microsoft.Xna.Framework;
-
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
+
 #else
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
@@ -34,15 +34,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         /// <summary>Index group mask for the index we use to track positions of renderables.</summary>
         public static readonly int IndexId = IndexSystem.GetIndexId();
-        
-        /// <summary>
-        /// Get the interface's type id once, for performance.
-        /// </summary>
+
+        /// <summary>Get the interface's type id once, for performance.</summary>
         private static readonly int TransformTypeId = ComponentSystem.Manager.GetComponentTypeId<ITransform>();
-        
-        /// <summary>
-        /// Get the interface's type id once, for performance.
-        /// </summary>
+
+        /// <summary>Get the interface's type id once, for performance.</summary>
         private static readonly int VelocityTypeId = ComponentSystem.Manager.GetComponentTypeId<IVelocity>();
 
         #endregion
@@ -88,7 +84,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         #region Constructor
 
-        /// <summary>Initializes a new instance of the <see cref="InterpolationSystem"/> class.</summary>
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="InterpolationSystem"/> class.
+        /// </summary>
         /// <param name="maxFps">The maximum FPS, for adjusting positions of newly tracked entities.</param>
         protected InterpolationSystem(float maxFps)
         {
@@ -118,15 +116,13 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 _frameTime.Put(_totalFrameTime);
                 _totalFrameTime = 0f;
 
-                foreach (var entity in _entries.Keys)
+                foreach (var pair in _entries)
                 {
-                    var transform = (ITransform) Manager.GetComponent(entity, TransformTypeId);
-                    if (transform == null)
-                    {
-                        continue;
-                    }
+                    var transform = (ITransform) Manager.GetComponent(pair.Key, TransformTypeId);
 
-                    var entry = _entries[entity];
+                    System.Diagnostics.Debug.Assert(transform != null, "Transform component was removed from currently being rendered entity.");
+
+                    var entry = pair.Value;
                     entry.PreviousPosition = entry.InterpolatedPosition;
                     entry.Position = transform.Position;
                     entry.PreviousAngle = entry.InterpolatedAngle;
@@ -145,13 +141,15 @@ namespace Engine.ComponentSystem.Spatial.Systems
                         continue;
                     }
 
+                    // Cannot interpolate stuff that has no position.
                     var transform = (ITransform) Manager.GetComponent(indexable.Entity, TransformTypeId);
-                    var velocity = (IVelocity) Manager.GetComponent(indexable.Entity, VelocityTypeId);
-
                     if (transform == null || !transform.Enabled)
                     {
                         continue;
                     }
+
+                    // No need to interpolate stuff that isn't moving.
+                    var velocity = (IVelocity) Manager.GetComponent(indexable.Entity, VelocityTypeId);
                     if (velocity == null || !velocity.Enabled)
                     {
                         continue;
@@ -166,7 +164,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                             PreviousAngle = transform.Angle - velocity.AngularVelocity * _inverseMaxFps,
                             Angle = transform.Angle
                         });
-                } 
+                }
 
                 // Clear for next iteration.
                 _drawablesInView.Clear();

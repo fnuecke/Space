@@ -659,8 +659,9 @@ namespace Engine.Serialization
                 type = type.BaseType;
             }
 
-            // And we're done.
-            return result;
+            // And we're done. Sort by field name, so as not to rely on any possible ordering
+            // reflection may or may not provide.
+            return result.OrderBy(f => f.Name);
         }
 
         #endregion

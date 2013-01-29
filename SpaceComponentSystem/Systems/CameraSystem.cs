@@ -164,8 +164,6 @@ namespace Space.ComponentSystem.Systems
                 Width = width,
                 Height = height
             };
-            // Add a margin as safety for larger objects and moving stuff (e.g. for interpolation).
-            result.Inflate(UnitConversion.ToSimulationUnits(100), UnitConversion.ToSimulationUnits(100));
             return result;
         }
 
@@ -309,7 +307,7 @@ namespace Space.ComponentSystem.Systems
             var viewport = _graphics.Viewport;
             // Apply zoom and viewport offset via normal matrix.
             _transform = Matrix.CreateScale(new Vector3(Zoom, Zoom, 1)) *
-                         Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
+                         Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0f));
             // Update the list of visible entities. This method is called each
             // draw, so we can do this here.
             _drawablesInView.Clear();

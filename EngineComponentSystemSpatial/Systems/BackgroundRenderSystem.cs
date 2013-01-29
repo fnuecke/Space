@@ -112,6 +112,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             Quaternion rotation;
             Vector3 localTranslation;
             transform.Decompose(out scale, out rotation, out localTranslation);
+            scale *= 2;
 
             // Get the bounds to render to. We oversize this a little to allow using
             // that margin for offsetting, thus making it possible to translate the
@@ -165,7 +166,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                         0,
                         floatOffset,
                         SpriteEffects.None,
-                        0);
+                        1f);
                 }
             }
             _spriteBatch.End();

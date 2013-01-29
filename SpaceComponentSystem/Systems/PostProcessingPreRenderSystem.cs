@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Systems
             // Set our custom render target to render everything into an
             // off-screen texture, first.
             _scene.GraphicsDevice.SetRenderTarget(_scene);
-            _scene.GraphicsDevice.Clear(Color.DarkSlateGray);
+            _scene.GraphicsDevice.Clear(Color.Black);
         }
 
         public override void OnAddedToManager()

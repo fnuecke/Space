@@ -155,7 +155,7 @@ namespace Space
                 PreferredBackBufferWidth = Settings.Instance.ScreenResolution.X,
                 PreferredBackBufferHeight = Settings.Instance.ScreenResolution.Y,
                 IsFullScreen = Settings.Instance.Fullscreen,
-                SynchronizeWithVerticalRetrace = true,
+                SynchronizeWithVerticalRetrace = false,
                 PreferMultiSampling = true
             };
 
@@ -270,7 +270,7 @@ namespace Space
             GraphicsDevice.SamplerStates[1] = SamplerState.LinearClamp;
 
             // Clear screen.
-            GraphicsDevice.Clear(Color.DarkSlateGray);
+            GraphicsDevice.Clear(Color.Black);
 
             // Draw world elements if we're in a game.
             if (_client != null)

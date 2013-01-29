@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Engine.ComponentSystem;
 
 namespace Space.Tools.DataEditor
 {
@@ -11,6 +12,8 @@ namespace Space.Tools.DataEditor
         [STAThread]
         static void Main()
         {
+            Manager.Initialize();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new DataEditor());

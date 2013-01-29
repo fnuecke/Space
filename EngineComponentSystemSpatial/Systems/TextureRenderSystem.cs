@@ -79,8 +79,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var cameraTranslation = GetTranslation();
 
             // Begin rendering.
-            SpriteBatch.Begin(
-                SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, cameraTransform);
+            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, null, null, null, cameraTransform);
 
             // We increment the base depth for each component we render, as a tie breaker,
             // i.e. to avoid z-fighting.
@@ -109,9 +108,10 @@ namespace Engine.ComponentSystem.Spatial.Systems
                     SpriteBatch,
                     ((Vector2) (position + cameraTranslation)) * parallaxLayer,
                     angle,
-                    UnitConversion.ToSimulationUnits(1f),
-                    SpriteEffects.None, 
-                    layerDepth);
+                    UnitConversion.ToSimulationUnits(parallaxLayer),
+                    SpriteEffects.None,
+                    // HACK not entirely sure why the "shrinking" of the values is necessary... value range should be [0,1], but whatever.
+                    UnitConversion.ToSimulationUnits(layerDepth + (1f - parallaxLayer)));
 
                 // Tie breaker.
                 layerDepth += 0.00001f;

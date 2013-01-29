@@ -239,7 +239,16 @@ namespace Space
                 },
                 "Enables rendering debug information on AI ships.",
                 "r_ai 1|0 - set whether to enabled rendering AI debug info.");
-
+            
+            _console.AddCommand(
+                "r_background",
+                args =>
+                {
+                    _client.GetSystem<BackgroundRenderSystem>().Enabled = ParseBool(args[1]);
+                },
+                "Enables or disables background rendering.",
+                "r_background 1|0 - set whether to render the background.");
+            
             _console.AddCommand(
                 "r_entity",
                 args =>
@@ -257,6 +266,24 @@ namespace Space
                 },
                 "Enables or disables position and angle interpolation for rendering.",
                 "r_interpolate 1|0 - set whether to interpolate positions and angles.");
+            
+            _console.AddCommand(
+                "r_pfx",
+                args =>
+                {
+                    _client.GetSystem<ParticleEffectSystem>().Enabled = ParseBool(args[1]);
+                },
+                "Enables or disables particle effect rendering.",
+                "r_pfx 1|0 - set whether to render particle effects.");
+            
+            _console.AddCommand(
+                "r_postprocessing",
+                args =>
+                {
+                    _client.GetSystem<TextureRenderSystem>().Enabled = ParseBool(args[1]);
+                },
+                "Enables or disables post-processing effects such as bloom.",
+                "r_postprocessing 1|0 - set whether to apply post-processing effects.");
             
             _console.AddCommand(
                 "r_physics",
@@ -294,7 +321,34 @@ namespace Space
                 },
                 "Sets for which parts of the physics simulation to render debug representations for.",
                 "r_physics [fbcmni]+ 1|0");
-
+            
+            _console.AddCommand(
+                "r_radar",
+                args =>
+                {
+                    _client.GetSystem<RadarRenderSystem>().Enabled = ParseBool(args[1]);
+                },
+                "Enables or disables radar rendering.",
+                "r_radar 1|0 - set whether to render the radar.");
+            
+            _console.AddCommand(
+                "r_sound",
+                args =>
+                {
+                    _client.GetSystem<SoundSystem>().Enabled = ParseBool(args[1]);
+                },
+                "Enables or disables sound.",
+                "r_sound 1|0 - set whether to play sound.");
+            
+            _console.AddCommand(
+                "r_textures",
+                args =>
+                {
+                    _client.GetSystem<TextureRenderSystem>().Enabled = ParseBool(args[1]);
+                },
+                "Enables or disables texture rendering.",
+                "r_textures 1|0 - set whether to render textures.");
+            
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
             // the game has crashed.
