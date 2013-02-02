@@ -4,6 +4,7 @@ using System.Linq;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
@@ -15,6 +16,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Tracks camera position, either based on player's position and input state, or via a set position.</summary>
+    [Packetizable(false)]
     public sealed class CameraSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

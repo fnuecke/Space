@@ -8,6 +8,7 @@ using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
+    [Packetizable(false)]
     public class CameraMovementSystem : AbstractSystem, IDrawingSystem
     {
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>

@@ -262,12 +262,6 @@ namespace Engine.ComponentSystem
         /// <param name="system">The system to copy.</param>
         public void CopySystem(AbstractSystem system)
         {
-            // Make sure we have a valid system.
-            if (system is IDrawingSystem)
-            {
-                throw new ArgumentException("Cannot copy presentation systems.", "system");
-            }
-
             var systemTypeId = GetSystemTypeId(system.GetType());
             if (_systemsByTypeId[systemTypeId] == null)
             {
@@ -549,14 +543,9 @@ namespace Engine.ComponentSystem
             // Write systems, with their types, as these will only be read back
             // via <c>ReadPacketizableInto()</c> to keep some variables that
             // can only passed in the constructor.
-            packet.Write(_systems.Count(s => !(s is IDrawingSystem)));
+            packet.Write(_systems.Count(Packetizable.IsPacketizable));
             for (int i = 0, j = _systems.Count; i < j; ++i)
             {
-                // Don't serialize presentation systems.
-                if (_systems[i] is IDrawingSystem)
-                {
-                    continue;
-                }
                 packet.Write(_systems[i].GetType());
                 packet.Write(_systems[i]);
             }

@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Graphics;
@@ -11,6 +12,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders suns.</summary>
+    [Packetizable(false)]
     public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>, IDrawingSystem
     {
         #region Fields

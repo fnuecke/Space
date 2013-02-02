@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -21,8 +22,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     Basic implementation of a render system. Subclasses may override the GetTranslation() method to implement
     ///     camera positioning.
     /// </summary>
-    public abstract class TextureRenderSystem
-        : AbstractComponentSystem<IDrawable>, IDrawingSystem
+    [Packetizable(false)]
+    public abstract class TextureRenderSystem : AbstractComponentSystem<IDrawable>, IDrawingSystem
     {
         #region Type ID
 

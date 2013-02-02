@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
 using Engine.ComponentSystem.Common.Messages;
 using Microsoft.Xna.Framework.Content;
@@ -14,7 +15,8 @@ namespace Space.ComponentSystem.Systems
     ///     This System is used to easily display text. A System that wants to be displayed must Implement the
     ///     IInformation interface.
     /// </summary>
-    public class InformationDisplaySystem : AbstractSystem, IDrawingSystem
+    [Packetizable(false)]
+    public sealed class InformationDisplaySystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID
 
@@ -25,17 +27,17 @@ namespace Space.ComponentSystem.Systems
 
         #region Fields
 
-        /// <summary>Wether this System shall be called for rendering or not</summary>
+        /// <summary>Whether this System shall be called for rendering or not</summary>
         public bool Enabled { get; set; }
 
         /// <summary>The sprite batch to render textures into.</summary>
-        protected SpriteBatch SpriteBatch;
+        private SpriteBatch SpriteBatch;
 
         /// <summary>The Font to render with</summary>
-        protected SpriteFont Font;
+        private SpriteFont Font;
 
         /// <summary>A List of all IInformations to display. Currently not working</summary>
-        protected List<IInformation> Informations = new List<IInformation>(); //not used maybe some different aproach?
+        private List<IInformation> Informations = new List<IInformation>(); //not used maybe some different aproach?
 
         #endregion
 
@@ -93,14 +95,14 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Called when the graphics device has been (re)created, and assets should be loaded.</summary>
         /// <param name="content">The content manager.</param>
         /// <param name="graphics">The graphics device service.</param>
-        protected virtual void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
+        private void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
         {
             SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
             Font = content.Load<SpriteFont>("Fonts/visitor");
         }
 
         /// <summary>Called when the graphics device is being disposed, and any assets manually allocated should be disposed.</summary>
-        protected virtual void UnloadContent()
+        private void UnloadContent()
         {
             if (SpriteBatch != null)
             {

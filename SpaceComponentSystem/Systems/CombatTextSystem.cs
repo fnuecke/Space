@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
@@ -9,6 +10,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system interprets messages and triggers combat floating text accordingly.</summary>
+    [Packetizable(false)]
     public sealed class CombatTextSystem : AbstractSystem, IDrawingSystem
     {
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>

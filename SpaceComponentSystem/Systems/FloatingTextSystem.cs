@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Engine.Util;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
@@ -15,6 +16,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system can render floating texts, which can be useful for drawing damage numbers and the like.</summary>
+    [Packetizable(false)]
     public sealed class FloatingTextSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

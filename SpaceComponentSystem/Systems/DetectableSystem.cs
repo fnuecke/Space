@@ -2,12 +2,14 @@
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Loads icons for detectable components.</summary>
+    [Packetizable(false)]
     public sealed class DetectableSystem : AbstractComponentSystem<Detectable>, IDrawingSystem
     {
         #region Constants

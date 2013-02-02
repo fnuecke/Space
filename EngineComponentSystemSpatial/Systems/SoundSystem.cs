@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -18,6 +19,7 @@ using WorldUnitConversion = Engine.XnaExtensions.XnaUnitConversion;
 namespace Engine.ComponentSystem.Spatial.Systems
 {
     /// <summary>System that manages sound components, querying them for cue names to play in a single update.</summary>
+    [Packetizable(false)]
     public abstract class SoundSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

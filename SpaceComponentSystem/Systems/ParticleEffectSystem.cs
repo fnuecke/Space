@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using ProjectMercury;
 using ProjectMercury.Renderers;
@@ -15,8 +16,8 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Controls the particle components in a game, passing them some information about how to render themselves.</summary>
-    public abstract class ParticleEffectSystem
-        : AbstractComponentSystem<ParticleEffects>, IDrawingSystem
+    [Packetizable(false)]
+    public abstract class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>, IDrawingSystem
     {
         #region Type ID
 

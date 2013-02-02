@@ -1,9 +1,11 @@
 ﻿using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework.Content;
 
 namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>This system is used to centrally provide content.</summary>
+    [Packetizable(false)]
     public class ContentSystem : AbstractSystem
     {
         #region Type ID

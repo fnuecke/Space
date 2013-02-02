@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -10,6 +11,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
+    [Packetizable(false)]
     public sealed class DebugSlotRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

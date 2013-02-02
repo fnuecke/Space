@@ -7,6 +7,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
+using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
@@ -16,6 +17,11 @@ using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {
+    /// <summary>
+    ///     This system renders orbits of planets, and zones close to 'dangerous' objects, i.e. damaging entities with
+    ///     gravitation, such as suns.
+    /// </summary>
+    [Packetizable(false)]
     public sealed class OrbitRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Constants

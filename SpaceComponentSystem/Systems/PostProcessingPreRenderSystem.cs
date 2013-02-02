@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -10,6 +11,7 @@ namespace Space.ComponentSystem.Systems
     ///     processed in the <see cref="PostProcessingPostRenderSystem"/>. This system should run before any other render
     ///     systems.
     /// </summary>
+    [Packetizable(false)]
     public sealed class PostProcessingPreRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,8 +12,8 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class DebugAIRenderSystem
-        : AbstractComponentSystem<ArtificialIntelligence>, IDrawingSystem
+    [Packetizable(false)]
+    public sealed class DebugAIRenderSystem : AbstractComponentSystem<ArtificialIntelligence>, IDrawingSystem
     {
         #region Properties
 

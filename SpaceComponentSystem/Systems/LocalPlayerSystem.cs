@@ -9,6 +9,7 @@ namespace Space.ComponentSystem.Systems
     ///     Utility class providing information on who the local player is in this simulation (i.e. what his ship's entity
     ///     ID is). This allows a centralized lookup, and avoids having to store the session all over the place.
     /// </summary>
+    [Packetizable(false)]
     public sealed class LocalPlayerSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

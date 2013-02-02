@@ -7,6 +7,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,6 +18,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system handles rendering whatever the local player's radar picks up.</summary>
+    [Packetizable(false)]
     public sealed class RadarRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Types

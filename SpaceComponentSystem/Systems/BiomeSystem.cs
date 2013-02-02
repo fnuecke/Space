@@ -1,10 +1,12 @@
 ﻿using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Systems
 {
+    [Packetizable(false)]
     public sealed class BiomeSystem : AbstractSystem, IDrawingSystem
     {
         #region Properties

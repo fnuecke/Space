@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,6 +12,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders entity ids at their position, if they have a position.</summary>
+    [Packetizable(false)]
     public sealed class DebugEntityIdRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Properties

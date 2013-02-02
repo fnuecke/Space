@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -20,6 +21,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     This system is responsible for rendering textures in a wrapping mode to the full viewport. It supports fading
     ///     between different sets of textures.
     /// </summary>
+    [Packetizable(false)]
     public abstract class BackgroundRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

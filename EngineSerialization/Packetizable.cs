@@ -109,6 +109,24 @@ namespace Engine.Serialization
         {
             return IsPacketizable(typeof (T));
         }
+        
+        /// <summary>
+        ///     Tests whether the the specified object is packetizable, i.e. it is a class and its class has the
+        ///     <see cref="PacketizableAttribute"/> and the value of <see cref="PacketizableAttribute.IsPacketizable"/> is
+        ///     <c>true</c>.
+        /// </summary>
+        /// <param name="value">The value to check.</param>
+        /// <returns>Whether the value is packetizable.</returns>
+        /// <remarks>Cannot be use for <c>null</c> values, if the type is known use an appropriate overload.</remarks>
+        public static bool IsPacketizable(object value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
+            return IsPacketizable(value.GetType());
+        }
 
         /// <summary>
         ///     Writes the specified packetizable. This will work with <c>null</c> values. The reader must have knowledge about the

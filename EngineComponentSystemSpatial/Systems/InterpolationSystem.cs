@@ -4,11 +4,12 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
+
 #if FARMATH
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
-
 #else
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
@@ -21,6 +22,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     will only keep interpolated values for entities that are in the current viewport, thus keeping computational
     ///     overhead at a minimum.
     /// </summary>
+    [Packetizable(false)]
     public abstract class InterpolationSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

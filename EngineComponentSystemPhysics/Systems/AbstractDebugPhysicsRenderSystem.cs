@@ -7,6 +7,7 @@ using Engine.Graphics;
 using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.Physics.Contacts;
 using Engine.ComponentSystem.Physics.Joints;
+using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
@@ -22,6 +23,7 @@ using WorldTransform = Microsoft.Xna.Framework.Matrix;
 
 namespace Engine.ComponentSystem.Physics.Systems
 {
+    [Packetizable(false)]
     public abstract class AbstractDebugPhysicsRenderSystem : AbstractSystem, IDrawingSystem
     {
         #region Constants

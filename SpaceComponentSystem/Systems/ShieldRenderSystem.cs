@@ -8,6 +8,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -17,8 +18,8 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system renders active shields, detecting them via their energy consumption debuff.</summary>
-    public sealed class ShieldRenderSystem
-        : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem
+    [Packetizable(false)]
+    public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem
     {
         #region Type ID
 
