@@ -23,16 +23,9 @@ namespace Engine.ComponentSystem.RPG.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<ItemEquipped>(OnItemEquipped);
-            Manager.AddMessageListener<ItemUnequipped>(OnItemUnequipped);
-        }
-
         /// <summary>Recompute if an item with attribute modifiers was added.</summary>
-        private void OnItemEquipped(ItemEquipped message)
+        [MessageCallback]
+        public void OnItemEquipped(ItemEquipped message)
         {
             if (Manager.GetComponent(message.Item, Attribute<TAttribute>.TypeId) != null)
             {
@@ -47,7 +40,8 @@ namespace Engine.ComponentSystem.RPG.Systems
         }
 
         /// <summary>Recompute if an item with attribute modifiers was removed.</summary>
-        private void OnItemUnequipped(ItemUnequipped message)
+        [MessageCallback]
+        public void OnItemUnequipped(ItemUnequipped message)
         {
             if (Manager.GetComponent(message.Item, Attribute<TAttribute>.TypeId) != null)
             {

@@ -522,21 +522,15 @@ namespace Engine.ComponentSystem.Physics.Systems
 
         #region Logic
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _graphicsDevice = message.Graphics.GraphicsDevice;
             _primitiveBatch = new PrimitiveBatch(_graphicsDevice);
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             _graphicsDevice = null;
             if (_primitiveBatch != null)

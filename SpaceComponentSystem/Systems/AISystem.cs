@@ -32,16 +32,9 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<EntityDied>(OnEntityDied);
-            Manager.AddMessageListener<DamageReceived>(OnDamageReceived);
-        }
-
         /// <summary>Stop shooting if it's dead.</summary>
-        private void OnEntityDied(EntityDied message)
+        [MessageCallback]
+        public void OnEntityDied(EntityDied message)
         {
             foreach (var ai in Components)
             {
@@ -54,7 +47,8 @@ namespace Space.ComponentSystem.Systems
         /// we want to make sure it tries to defend itself.
         /// </summary>
         /// <param name="message"></param>
-        private void OnDamageReceived(DamageReceived message)
+        [MessageCallback]
+        public void OnDamageReceived(DamageReceived message)
         {
             var ai = (ArtificialIntelligence) Manager.GetComponent(message.Damagee, ArtificialIntelligence.TypeId);
             if (ai != null && ai.CurrentBehavior != ArtificialIntelligence.BehaviorType.Attack &&

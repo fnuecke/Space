@@ -271,15 +271,8 @@ namespace Space.ComponentSystem.Systems
             _reusableNeighborList.Clear();
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
@@ -304,7 +297,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             if (_spriteBatch != null)
             {

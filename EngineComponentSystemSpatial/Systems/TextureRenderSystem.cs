@@ -142,26 +142,20 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <returns>The translation.</returns>
         protected abstract WorldPoint GetTranslation();
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-            Manager.AddMessageListener<GraphicsDeviceReset>(OnGraphicsDeviceReset);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             LoadContent(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, message.Graphics);
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             UnloadContent();
         }
 
-        private void OnGraphicsDeviceReset(GraphicsDeviceReset message)
+        [MessageCallback]
+        public void OnGraphicsDeviceReset(GraphicsDeviceReset message)
         {
             UnloadContent();
             LoadContent(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, message.Graphics);

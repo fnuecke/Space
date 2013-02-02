@@ -57,15 +57,8 @@ namespace Space.ComponentSystem.Systems
             _scene.GraphicsDevice.Clear(Color.Black);
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             var pp = message.Graphics.GraphicsDevice.PresentationParameters;
             _scene = new RenderTarget2D(
@@ -79,7 +72,8 @@ namespace Space.ComponentSystem.Systems
                 RenderTargetUsage.PreserveContents);
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             if (_scene != null)
             {

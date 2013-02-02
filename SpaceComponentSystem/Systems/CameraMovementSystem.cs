@@ -115,14 +115,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<MoveCamera>(OnMoveCamera);
-        }
-
-        private void OnMoveCamera(MoveCamera message)
+        [MessageCallback]
+        public void OnMoveCamera(MoveCamera message)
         {
             Move(message);
         }

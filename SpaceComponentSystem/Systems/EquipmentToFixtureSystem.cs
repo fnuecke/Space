@@ -107,26 +107,20 @@ namespace Space.ComponentSystem.Systems
             _changedMass.Remove(entity);
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<ItemEquipped>(OnItemEquipped);
-            Manager.AddMessageListener<ItemUnequipped>(OnItemUnequipped);
-            Manager.AddMessageListener<CharacterStatsInvalidated>(OnCharacterStatsInvalidated);
-        }
-
-        private void OnItemEquipped(ItemEquipped message)
+        [MessageCallback]
+        public void OnItemEquipped(ItemEquipped message)
         {
             _changedShape.Add(message.Slot.Root.Entity);
         }
 
-        private void OnItemUnequipped(ItemUnequipped message)
+        [MessageCallback]
+        public void OnItemUnequipped(ItemUnequipped message)
         {
             _changedShape.Add(message.Slot.Root.Entity);
         }
         
-        private void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
+        [MessageCallback]
+        public void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
         {
             _changedMass.Add(message.Entity);
         }

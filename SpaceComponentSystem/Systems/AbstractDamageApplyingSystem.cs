@@ -18,14 +18,8 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<DamageReceived>(OnDamageReceived);
-        }
-
-        private void OnDamageReceived(DamageReceived message)
+        [MessageCallback]
+        public void OnDamageReceived(DamageReceived message)
         {
             ApplyDamage(message.Owner, message.Attributes, message.Damagee);
         }

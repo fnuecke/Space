@@ -302,14 +302,8 @@ namespace Space.ComponentSystem.Systems
             _reusableNewCellIds.Clear();
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-            
-            Manager.AddMessageListener<TranslationChanged>(OnTranslationChanged);
-        }
-
-        private void OnTranslationChanged(TranslationChanged message)
+        [MessageCallback]
+        public void OnTranslationChanged(TranslationChanged message)
         {
             // Only remove entities marked for removal.
             var cellDeath = (CellDeath) Manager.GetComponent(message.Component.Entity, CellDeath.TypeId);

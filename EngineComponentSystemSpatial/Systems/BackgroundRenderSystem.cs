@@ -187,19 +187,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <returns>The translation.</returns>
         protected abstract WorldPoint GetTranslation();
 
-        /// <summary>
-        ///     Called by the manager when the system was added to it. This allows for the system to register its message
-        ///     listener and do other one-time initialization.
-        /// </summary>
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
 
@@ -213,7 +202,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
             }
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             if (_spriteBatch != null)
             {

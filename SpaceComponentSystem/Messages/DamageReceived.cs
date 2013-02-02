@@ -7,7 +7,7 @@ namespace Space.ComponentSystem.Messages
     ///     This message is fired when damage should actually be applied (this is essentially the alternative branch to
     ///     <c>DamageBlocked</c>).
     /// </summary>
-    internal struct DamageReceived
+    public struct DamageReceived
     {
         /// <summary>The root cause for the damage.</summary>
         public int Owner;

@@ -163,15 +163,8 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The translation.</returns>
         protected abstract FarPosition GetTranslation();
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            // TODO do we have to dispose and recreate the renderer?
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             if (_renderer == null)
@@ -200,6 +193,8 @@ namespace Space.ComponentSystem.Systems
                 effect.Value.LoadContent(content);
             }
         }
+
+        // TODO do we have to dispose and recreate the renderer, i.e. handle OnGraphicsDeviceDisposing?
 
         #endregion
 

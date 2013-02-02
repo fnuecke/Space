@@ -249,14 +249,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<CellStateChanged>(OnCellStateChanged);
-        }
-
-        private void OnCellStateChanged(CellStateChanged message)
+        [MessageCallback]
+        public void OnCellStateChanged(CellStateChanged message)
         {
             if (!message.IsSubCell)
             {

@@ -246,15 +246,8 @@ namespace Space.ComponentSystem.Systems
                             Math.Exp(-(n * n) / (2 * theta * theta)));
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             var device = message.Graphics.GraphicsDevice;
             var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
@@ -288,7 +281,8 @@ namespace Space.ComponentSystem.Systems
                 DepthFormat.None);
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             if (_spriteBatch != null)
             {

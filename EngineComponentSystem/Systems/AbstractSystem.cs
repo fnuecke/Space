@@ -10,6 +10,17 @@ using JetBrains.Annotations;
 
 namespace Engine.ComponentSystem.Systems
 {
+    /// <summary>
+    ///     This attribute can be used to mark methods in systems that serve as message callbacks. The <see cref="Manager"/>
+    ///     will look for methods marked this way in newly added systems, to know what to call when messages are sent using
+    ///     <see cref="IManager.SendMessage{T}"/>.
+    ///     <para/>
+    ///     The type of message handled is inferred from the method's signature, which must take exactly one argument and must
+    ///     not return anything.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method), MeansImplicitUse, PublicAPI]
+    public sealed class MessageCallbackAttribute : Attribute {}
+
     /// <summary>Base class for systems, implementing default basic functionality.</summary>
     [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
     [Packetizable]

@@ -411,15 +411,8 @@ namespace Space.ComponentSystem.Systems
                        : string.Format("{0:f1}{1}", distance, unitName);
         }
         
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
 
@@ -437,7 +430,8 @@ namespace Space.ComponentSystem.Systems
             _distanceFont = content.Load<SpriteFont>("Fonts/visitor");
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             if (_spriteBatch != null)
             {

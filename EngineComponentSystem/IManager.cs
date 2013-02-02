@@ -154,14 +154,6 @@ namespace Engine.ComponentSystem
 
         #region Messaging
 
-        /// <summary>Registers a new message listener with the system.</summary>
-        /// <typeparam name="T">The type of the message the callback handles.</typeparam>
-        /// <param name="callback">
-        ///     The function to call when a message of type <typeparamref name="T"/> is sent.
-        /// </param>
-        [PublicAPI]
-        void AddMessageListener<T>(MessageCallback<T> callback);
-
         /// <summary>Inform all interested systems of a message.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>

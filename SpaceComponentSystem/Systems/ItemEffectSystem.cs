@@ -11,15 +11,8 @@ namespace Space.ComponentSystem.Systems
     {
         #region Implementation of IMessagingSystem
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<ItemEquipped>(OnItemEquipped);
-            Manager.AddMessageListener<ItemUnequipped>(OnItemUnequipped);
-        }
-
-        private void OnItemEquipped(ItemEquipped message)
+        [MessageCallback]
+        public void OnItemEquipped(ItemEquipped message)
         {
             // Check if we can show effects.
             var effects = (ParticleEffects) Manager.GetComponent(message.Slot.Root.Entity, ParticleEffects.TypeId);
@@ -50,7 +43,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private void OnItemUnequipped(ItemUnequipped message)
+        [MessageCallback]
+        public void OnItemUnequipped(ItemUnequipped message)
         {
             // Check if we can show effects.
             var effects = (ParticleEffects) Manager.GetComponent(message.Slot.Root.Entity, ParticleEffects.TypeId);

@@ -42,15 +42,8 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<DamageApplied>(OnDamageApplied);
-            Manager.AddMessageListener<DamageBlocked>(OnDamageBlocked);
-        }
-
-        private void OnDamageApplied(DamageApplied message)
+        [MessageCallback]
+        public void OnDamageApplied(DamageApplied message)
         {
             var position = ((ITransform) Manager.GetComponent(message.Entity, TransformTypeId)).Position;
             var value = (int) Math.Round(message.Amount);
@@ -91,7 +84,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private void OnDamageBlocked(DamageBlocked message)
+        [MessageCallback]
+        public void OnDamageBlocked(DamageBlocked message)
         {
             var position = ((ITransform) Manager.GetComponent(message.Entity, TransformTypeId)).Position;
             ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))

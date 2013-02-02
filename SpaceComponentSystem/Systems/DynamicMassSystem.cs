@@ -13,14 +13,8 @@ namespace Space.ComponentSystem.Systems
     {
         #region Logic
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<CharacterStatsInvalidated>(OnCharacterStatsInvalidated);
-        }
-
-        private void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
+        [MessageCallback]
+        public void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
         {
             // Module removed or added, recompute mass.
             var entity = message.Entity;

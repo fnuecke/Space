@@ -63,14 +63,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<EntityDied>(OnEntityDied);
-        }
-
-        private void OnEntityDied(EntityDied message)
+        [MessageCallback]
+        public void OnEntityDied(EntityDied message)
         {
             var entity = message.KilledEntity;
 

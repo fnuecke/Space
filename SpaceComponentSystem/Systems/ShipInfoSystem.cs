@@ -12,14 +12,8 @@ namespace Space.ComponentSystem.Systems
     {
         #region Logic
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<CharacterStatsInvalidated>(OnCharacterStatsInvalidated);
-        }
-
-        private void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
+        [MessageCallback]
+        public void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
         {
             var entity = message.Entity;
             var shipInfo = ((ShipInfo) Manager.GetComponent(entity, ShipInfo.TypeId));

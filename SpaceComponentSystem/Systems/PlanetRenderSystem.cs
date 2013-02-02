@@ -139,14 +139,8 @@ namespace Space.ComponentSystem.Systems
             return sun;
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             if (_planet == null)

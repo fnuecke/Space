@@ -193,15 +193,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<ItemEquipped>(OnItemEquipped);
-            Manager.AddMessageListener<ItemUnequipped>(OnItemUnequipped);
-        }
-
-        private void OnItemEquipped(ItemEquipped message)
+        [MessageCallback]
+        public void OnItemEquipped(ItemEquipped message)
         {
             if (Manager.GetComponent(message.Item, Weapon.TypeId) != null)
             {
@@ -210,7 +203,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private void OnItemUnequipped(ItemUnequipped message)
+        [MessageCallback]
+        public void OnItemUnequipped(ItemUnequipped message)
         {
             if (Manager.GetComponent(message.Item, Weapon.TypeId) != null)
             {

@@ -116,15 +116,8 @@ namespace Space.ComponentSystem.Systems
                 0);
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
             var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
@@ -132,7 +125,8 @@ namespace Space.ComponentSystem.Systems
             _arrow = content.Load<Texture2D>("Textures/arrow");
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             if (_spriteBatch != null)
             {

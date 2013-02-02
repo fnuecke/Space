@@ -147,24 +147,17 @@ namespace Engine.ComponentSystem.Spatial.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<IndexGroupsChanged>(OnIndexGroupsChanged);
-            Manager.AddMessageListener<IndexBoundsChanged>(OnIndexBoundsChanged);
-            Manager.AddMessageListener<TranslationChanged>(OnTranslationChanged);
-        }
-
         /// <summary>Handle group changes (moving components from one index group to another).</summary>
-        private void OnIndexGroupsChanged(IndexGroupsChanged message)
+        [MessageCallback]
+        public void OnIndexGroupsChanged(IndexGroupsChanged message)
         {
             RemoveIndex(message.Component, message.OldIndexId);
             AddIndex(message.Component, message.NewIndexId);
         }
 
         /// <summary>Handle bound changes (size of actual bounds of simple index components).</summary>
-        private void OnIndexBoundsChanged(IndexBoundsChanged message)
+        [MessageCallback]
+        public void OnIndexBoundsChanged(IndexBoundsChanged message)
         {
             var bounds = message.Bounds;
             var delta = message.Delta;
@@ -183,7 +176,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
         private static readonly int IndexableTypeId = ComponentSystem.Manager.GetComponentTypeId<IIndexable>();
 
         /// <summary>Handle position changes (moving components around in the world).</summary>
-        private void OnTranslationChanged(TranslationChanged message)
+        [MessageCallback]
+        public void OnTranslationChanged(TranslationChanged message)
         {
             var component = message.Component;
             var velocity = (IVelocity) Manager.GetComponent(component.Entity, ComponentSystem.Manager.GetComponentTypeId<IVelocity>());

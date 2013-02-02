@@ -101,15 +101,8 @@ namespace Space.ComponentSystem.Systems
             _spriteBatch.End();
         }
         
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-        }
-
-        private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
 
@@ -123,7 +116,8 @@ namespace Space.ComponentSystem.Systems
             _textures.Add(Wing.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_wing"));
         }
 
-        private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             if (_spriteBatch != null)
             {

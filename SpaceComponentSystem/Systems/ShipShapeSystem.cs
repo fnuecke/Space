@@ -214,24 +214,23 @@ namespace Space.ComponentSystem.Systems
         {
             base.OnAddedToManager();
 
-            Manager.AddMessageListener<GraphicsDeviceCreated>(OnGraphicsDeviceCreated);
-            Manager.AddMessageListener<GraphicsDeviceDisposing>(OnGraphicsDeviceDisposing);
-            Manager.AddMessageListener<GraphicsDeviceReset>(OnGraphicsDeviceReset);
-
             LoadContent(((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Graphics);
         }
 
-        private static void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
+        [MessageCallback]
+        public static void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             LoadContent(message.Graphics);
         }
 
-        private static void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
+        [MessageCallback]
+        public static void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
         {
             UnloadContent();
         }
 
-        private static void OnGraphicsDeviceReset(GraphicsDeviceReset message)
+        [MessageCallback]
+        public static void OnGraphicsDeviceReset(GraphicsDeviceReset message)
         {
             UnloadContent();
             LoadContent(message.Graphics);

@@ -16,14 +16,8 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<EntityDied>(OnEntityDied);
-        }
-
-        private void OnEntityDied(EntityDied message)
+        [MessageCallback]
+        public void OnEntityDied(EntityDied message)
         {
             // See if the entity that died gives XP.
             var xp = (ExperiencePoints) Manager.GetComponent(message.KilledEntity, ExperiencePoints.TypeId);

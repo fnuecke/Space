@@ -25,14 +25,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<CharacterStatsInvalidated>(OnCharacterStatsInvalidated);
-        }
-
-        private void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
+        [MessageCallback]
+        public void OnCharacterStatsInvalidated(CharacterStatsInvalidated message)
         {
             foreach (var component in Manager.GetComponents(message.Entity, AbstractRegeneratingValue.TypeId))
             {

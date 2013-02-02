@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
@@ -75,15 +76,27 @@ namespace Engine.ComponentSystem
 
         #region Fields
 
+        /// <summary>List of systems registered with this manager.</summary>
+        [PacketizeIgnore]
+        private readonly List<AbstractSystem> _systems = new List<AbstractSystem>();
+
+        /// <summary>Lookup table for quick access to systems by their type id.</summary>
+        [PacketizeIgnore]
+        private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
+
         /// <summary>Manager for entity ids.</summary>
         private readonly IdManager _entityIds = new IdManager();
+
+        /// <summary>Keeps track of entity->component relationships.</summary>
+        [PacketizeIgnore]
+        private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
 
         /// <summary>Manager for entity ids.</summary>
         private readonly IdManager _componentIds = new IdManager();
 
-        /// <summary>List of systems registered with this manager.</summary>
+        /// <summary>Lookup table for quick access to components by their id.</summary>
         [PacketizeIgnore]
-        private readonly List<AbstractSystem> _systems = new List<AbstractSystem>();
+        private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
         /// <summary>List of all updating systems registered with this manager.</summary>
         [PacketizeIgnore]
@@ -93,21 +106,9 @@ namespace Engine.ComponentSystem
         [PacketizeIgnore]
         private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
 
-        /// <summary>Lookup table for quick access to systems by their type id.</summary>
-        [PacketizeIgnore]
-        private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
-
-        /// <summary>Keeps track of entity->component relationships.</summary>
-        [PacketizeIgnore]
-        private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
-
-        /// <summary>Lookup table for quick access to components by their id.</summary>
-        [PacketizeIgnore]
-        private readonly SparseArray<Component> _components = new SparseArray<Component>();
-
         /// <summary>Table of registered message callbacks, by type.</summary>
         [PacketizeIgnore]
-        private readonly Dictionary<Type, IList<object>> _messageCallbacks = new Dictionary<Type, IList<object>>();
+        private readonly Dictionary<Type, Delegate> _messageCallbacks = new Dictionary<Type, Delegate>();
 
         #endregion
 
@@ -216,6 +217,10 @@ namespace Engine.ComponentSystem
                 throw new ArgumentException("You can not add more than one system of a single type.");
             }
 
+            // Look for message callbacks in the system. This throws if a callback signature is invalid,
+            // which is why we want to do this before registering the system.
+            var messageTypes = GetMessageCallbackTypes(system.GetType());
+
             // Register the system.
             while (systemTypeId != 0)
             {
@@ -241,6 +246,12 @@ namespace Engine.ComponentSystem
 
             // Set the manager so that the system knows it belongs to us.
             system.Manager = this;
+
+            // Rebuild message dispatchers for all changed types.
+            foreach (var messageType in messageTypes)
+            {
+                RebuildMessageDispatcher(messageType);
+            }
 
             // Tell the system it was added.
             system.OnAddedToManager();
@@ -299,6 +310,12 @@ namespace Engine.ComponentSystem
             _drawingSystems.Remove(system as IDrawingSystem);
             system.Manager = null;
 
+            // Remove callbacks.
+            foreach (var messageType in GetMessageCallbackTypes(system.GetType()))
+            {
+                RebuildMessageDispatcher(messageType);
+            }
+
             return true;
         }
 
@@ -308,6 +325,70 @@ namespace Engine.ComponentSystem
         public AbstractSystem GetSystem(int typeId)
         {
             return _systemsByTypeId[typeId];
+        }
+
+        private static IEnumerable<Type> GetMessageCallbackTypes(Type systemType)
+        {
+            var callbacks = new HashSet<Type>();
+            foreach (var method in systemType
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(m => m.IsDefined(typeof (MessageCallbackAttribute), true)))
+            {
+                if (method.ReturnType != typeof (void))
+                {
+                    var declaringType = method.DeclaringType ?? systemType;
+                    throw new ArgumentException(
+                        string.Format(
+                            "Invalid message callback {0}.{1}, must have void return type.",
+                            declaringType.Name,
+                            method.Name));
+                }
+
+                if (method.IsGenericMethodDefinition)
+                {
+                    var declaringType = method.DeclaringType ?? systemType;
+                    throw new ArgumentException(
+                        string.Format(
+                            "Invalid message callback {0}.{1}, must not be generic.",
+                            declaringType.Name,
+                            method.Name));
+                }
+
+                var parameters = method.GetParameters();
+                if (parameters.Length != 1 ||
+                    parameters[0].IsOut ||
+                    parameters[0].ParameterType.IsByRef)
+                {
+                    var declaringType = method.DeclaringType ?? systemType;
+                    throw new ArgumentException(
+                        string.Format(
+                            "Invalid message callback {0}.{1}, must have exactly one argument, which must not be a ref and not be an out argument.",
+                            declaringType.Name,
+                            method.Name));
+                }
+
+                // All green!
+                callbacks.Add(parameters[0].ParameterType);
+            }
+            return callbacks;
+        }
+
+        private void RebuildMessageDispatcher(Type messageType)
+        {
+            var messageParameter = Expression.Parameter(messageType);
+            _messageCallbacks[messageType] =
+                Expression.Lambda(
+                    Expression.Block(
+                        from system in _systems
+                        from method in
+                            system.GetType()
+                                  .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                                  .Where(m => m.IsDefined(typeof (MessageCallbackAttribute), true))
+                                  .Where(m => m.GetParameters()[0].ParameterType == messageType)
+                        select Expression.Call(Expression.Constant(system), method, messageParameter)),
+                    messageParameter).Compile();
+
+            // TODO manual IL generation, compare performance
         }
 
         #endregion
@@ -484,37 +565,15 @@ namespace Engine.ComponentSystem
 
         #region Messaging
 
-        /// <summary>Registers a new message listener with the system.</summary>
-        /// <typeparam name="T">The type of the message the callback handles.</typeparam>
-        /// <param name="callback">
-        ///     The function to call when a message of type <typeparamref name="T"/> is sent.
-        /// </param>
-        public void AddMessageListener<T>(MessageCallback<T> callback)
-        {
-            IList<object> callbacks;
-            if (!_messageCallbacks.TryGetValue(typeof (T), out callbacks))
-            {
-                callbacks = new List<object> {callback};
-                _messageCallbacks.Add(typeof (T), callbacks);
-            }
-            else
-            {
-                callbacks.Add(callback);
-            }
-        }
-
         /// <summary>Inform all interested systems of a message.</summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(T message)
         {
-            IList<object> callbacks;
+            Delegate callbacks;
             if (_messageCallbacks.TryGetValue(typeof (T), out callbacks))
             {
-                foreach (MessageCallback<T> callback in callbacks)
-                {
-                    callback(message);
-                }
+                callbacks.DynamicInvoke(message);
             }
         }
 

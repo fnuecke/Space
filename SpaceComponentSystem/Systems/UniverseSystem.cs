@@ -73,14 +73,8 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<CellStateChanged>(OnCellStateChanged);
-        }
-
-        private void OnCellStateChanged(CellStateChanged message)
+        [MessageCallback]
+        public void OnCellStateChanged(CellStateChanged message)
         {
             // Get random generator based on world seed and cell location.
             var hasher = new Hasher();

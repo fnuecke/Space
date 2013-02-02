@@ -65,15 +65,8 @@ namespace Space.ComponentSystem.Systems
             _newCollision.Clear();
         }
 
-        public override void OnAddedToManager()
-        {
-            base.OnAddedToManager();
-
-            Manager.AddMessageListener<BeginContact>(OnBeginContact);
-            Manager.AddMessageListener<EndContact>(OnEndContact);
-        }
-
-        private void OnBeginContact(BeginContact message)
+        [MessageCallback]
+        public void OnBeginContact(BeginContact message)
         {
             // We only get one message for a collision pair, so we handle it for both parties.
             var contact = message.Contact;
@@ -156,7 +149,8 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private void OnEndContact(EndContact message)
+        [MessageCallback]
+        public void OnEndContact(EndContact message)
         {
             // Stop damage that is being applied because of this collision.
             var contact = message.Contact;
