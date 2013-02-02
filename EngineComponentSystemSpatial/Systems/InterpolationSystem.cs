@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -23,7 +24,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     overhead at a minimum.
     /// </summary>
     [Packetizable(false)]
-    public abstract class InterpolationSystem : AbstractSystem, IDrawingSystem
+    public abstract class InterpolationSystem : AbstractSystem
     {
         #region Type ID
 
@@ -51,6 +52,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -101,20 +103,24 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Logic
 
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Get all renderable entities in the viewport.
             var view = ComputeViewport();
             var index = ((IndexSystem) Manager.GetSystem(IndexSystem.TypeId))[IndexId];
             index.Find(view, _drawablesInView);
 
             // Synchronize interpolation to real data when we enter a new frame.
-            if (frame != _currentFrame)
+            if (message.Frame != _currentFrame)
             {
                 // Remember current frame and reset relative time spent.
-                _currentFrame = frame;
+                _currentFrame = message.Frame;
                 _frameTime.Put(_totalFrameTime);
                 _totalFrameTime = 0f;
 
@@ -173,7 +179,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             }
 
             // Update interpolated values.
-            _totalFrameTime += elapsedMilliseconds;
+            _totalFrameTime += message.ElapsedMilliseconds;
             var totalRelativeFrameTime = System.Math.Min(1f, _totalFrameTime / _frameTime.Median());
             foreach (var entry in _entries.Values)
             {

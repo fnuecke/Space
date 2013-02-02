@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
@@ -17,7 +18,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system can render floating texts, which can be useful for drawing damage numbers and the like.</summary>
     [Packetizable(false)]
-    public sealed class FloatingTextSystem : AbstractSystem, IDrawingSystem
+    public sealed class FloatingTextSystem : AbstractSystem
     {
         #region Type ID
 
@@ -32,18 +33,22 @@ namespace Space.ComponentSystem.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         /// <summary>Gets or sets the default color for floating texts.</summary>
+        [PublicAPI]
         public Color DefaultColor { get; set; }
 
         /// <summary>Gets or sets the default display duration for floating texts.</summary>
+        [PublicAPI]
         public float DefaultDuration { get; set; }
 
         /// <summary>
         ///     Gets or sets the float distance for texts, i.e. how many pixels the text will wander "up" before being
         ///     removed.
         /// </summary>
+        [PublicAPI]
         public float FloatDistance { get; set; }
 
         #endregion
@@ -78,10 +83,14 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var camera = ((CameraSystem) Manager.GetSystem(CameraSystem.TypeId));
             var cameraTransform = camera.Transform;
             var cameraTranslation = camera.Translation;

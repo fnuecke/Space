@@ -64,15 +64,15 @@
     <Compile Include="Manager.cs" />
     <Compile Include="Messages\ComponentAdded.cs" />
     <Compile Include="Messages\ComponentRemoved.cs" />
+    <Compile Include="Messages\Draw.cs" />
     <Compile Include="Messages\EntityRemoved.cs" />
+    <Compile Include="Messages\Update.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\AbstractComponentSystem.cs" />
     <Compile Include="Systems\AbstractSystem.cs" />
     <Compile Include="Systems\AbstractParallelComponentSystem.cs" />
     <Compile Include="Systems\AbstractUpdatingComponentSystem.cs" />
     <Compile Include="ManagerTypeIds.cs" />
-    <Compile Include="Systems\IDrawingSystem.cs" />
-    <Compile Include="Systems\IUpdatingSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">

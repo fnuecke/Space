@@ -1,5 +1,9 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Components
@@ -19,17 +23,40 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+        
+        #region Constants
+
+        /// <summary>Index group to use for gravitational computations.</summary>
+        public static readonly int IndexId = IndexSystem.GetIndexId();
+
+        #endregion
 
         #region Properties
 
+        /// <summary>The actual icon texture representing this detectable.</summary>
+        [PublicAPI]
+        public Texture2D Texture
+        {
+            get
+            {
+                if (_texture == null && !String.IsNullOrWhiteSpace(TextureName))
+                {
+                    var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
+                    _texture = content.Load<Texture2D>(TextureName);
+                }
+                return _texture;
+            }
+        }
+
         /// <summary>The name of the texture to use for rendering the physics object.</summary>
+        [PublicAPI]
         public string TextureName
         {
             get { return _textureName; }
             set
             {
                 _textureName = value;
-                Texture = null;
+                _texture = null;
             }
         }
 
@@ -39,7 +66,7 @@ namespace Space.ComponentSystem.Components
 
         /// <summary>The actual texture with the set name.</summary>
         [PacketizeIgnore]
-        public Texture2D Texture;
+        private Texture2D _texture;
 
         /// <summary>Whether to use the objects rotation to rotate the detectable's icon.</summary>
         public bool RotateIcon;
@@ -84,7 +111,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Texture = null;
+            _texture = null;
         }
 
         #endregion

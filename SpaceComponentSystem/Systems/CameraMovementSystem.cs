@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -9,14 +10,8 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     [Packetizable(false)]
-    public class CameraMovementSystem : AbstractSystem, IDrawingSystem
+    public class CameraMovementSystem : AbstractSystem
     {
-        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
-        /// <value>
-        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
-        /// </value>
-        public bool Enabled { get; set; }
-
         [PacketizeIgnore]
         private List<MoveCamera.Positions> _positions = new List<MoveCamera.Positions>();
 
@@ -28,7 +23,8 @@ namespace Space.ComponentSystem.Systems
         private bool _returnToSender;
         private long _returnSpeed;
 
-        public void Draw(long frame, float ellapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
             if (_positions.Count <= 0)
             {

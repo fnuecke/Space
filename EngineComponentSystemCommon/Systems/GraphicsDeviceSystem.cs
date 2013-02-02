@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,7 +12,7 @@ namespace Engine.ComponentSystem.Common.Systems
     ///     required.
     /// </summary>
     [Packetizable(false)]
-    public sealed class GraphicsDeviceSystem : AbstractSystem, IDrawingSystem
+    public sealed class GraphicsDeviceSystem : AbstractSystem
     {
         #region Type ID
 
@@ -96,14 +97,18 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Logic
 
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Trigger loading for the first time, then disable self.
-            GraphicsDeviceCreated message;
-            message.Graphics = _graphics;
-            Manager.SendMessage(message);
+            GraphicsDeviceCreated created;
+            created.Graphics = _graphics;
+            Manager.SendMessage(created);
 
             Enabled = false;
         }

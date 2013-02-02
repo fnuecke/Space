@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
@@ -13,7 +14,7 @@ namespace Space.ComponentSystem.Systems
     ///     This system takes care of putting AI components to sleep for ships that are very far away from players, to
     ///     reduce CPU load.
     /// </summary>
-    public sealed class SleepSystem : AbstractComponentSystem<ArtificialIntelligence>, IUpdatingSystem
+    public sealed class SleepSystem : AbstractComponentSystem<ArtificialIntelligence>
     {
         /// <summary>Index group containing all entities that can be put to sleep (usually AIs).</summary>
         public static readonly int IndexId = IndexSystem.GetIndexId();
@@ -25,11 +26,11 @@ namespace Space.ComponentSystem.Systems
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
         /// <summary>Updates the system.</summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             // Only update every so often, as this can be quite expensive.
-            if (frame % 10 != 0)
+            if (message.Frame % 10 != 0)
             {
                 return;
             }

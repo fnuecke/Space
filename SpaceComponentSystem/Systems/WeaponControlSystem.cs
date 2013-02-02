@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void Update(long frame)
+        public override void OnUpdate(Update message)
         {
             // Reduce cooldowns.
             _reusableEntities.AddRange(_cooldowns.Keys);
@@ -66,7 +66,7 @@ namespace Space.ComponentSystem.Systems
             _reusableEntities.Clear();
 
             // Update components (in parallel) to see if someone's shooting.
-            base.Update(frame);
+            base.OnUpdate(message);
 
             // Create projectiles that were requested. Sort projectiles by
             // emitter id to get deterministic behavior even though we're

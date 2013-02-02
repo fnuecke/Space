@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Session;
@@ -10,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     ///     ID is). This allows a centralized lookup, and avoids having to store the session all over the place.
     /// </summary>
     [Packetizable(false)]
-    public sealed class LocalPlayerSystem : AbstractSystem, IDrawingSystem
+    public sealed class LocalPlayerSystem : AbstractSystem
     {
         #region Type ID
 
@@ -20,12 +21,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Properties
-
-        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
-        /// <value>
-        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
-        /// </value>
-        public bool Enabled { get; set; }
 
         /// <summary>
         ///     Gets the entity ID of the local player's avatar. This can be an invalid value (zero) in case the player
@@ -59,19 +54,22 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        /// <summary>Keep the cached avatar ID up-to-date</summary>
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
-            // Keep the cached avatar ID up-to-date.
+            DetermineLocalPlayer();
+        }
+
+        private void DetermineLocalPlayer()
+        {
             if (_session == null || _session.ConnectionState != ClientState.Connected)
             {
                 LocalPlayerAvatar = 0;
                 return;
             }
-            LocalPlayerAvatar =
-                ((AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
+            var avatars = ((AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId));
+            LocalPlayerAvatar = avatars.GetAvatar(_session.LocalPlayer.Number);
         }
 
         #endregion
@@ -83,7 +81,7 @@ namespace Space.ComponentSystem.Systems
         {
             base.OnCopied();
 
-            Draw(0, 0);
+            DetermineLocalPlayer();
         }
 
         #endregion
@@ -95,7 +93,7 @@ namespace Space.ComponentSystem.Systems
         {
             base.OnDepacketized();
 
-            Draw(0, 0);
+            DetermineLocalPlayer();
         }
 
         #endregion

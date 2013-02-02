@@ -762,18 +762,18 @@ namespace Engine.Simulation
                     throw new InvalidOperationException("Cannot add systems after simulation has started.");
                 }
 
-                if (system is IDrawingSystem)
-                {
-                    // Only insert in leading simulation.
-                    _tss.LeadingSimulation.Manager.AddSystem(system);
-                }
-                else
+                if (Packetizable.IsPacketizable(system))
                 {
                     // Insert in all simulations.
                     foreach (var state in _tss._simulations)
                     {
                         state.Manager.CopySystem(system);
                     }
+                }
+                else
+                {
+                    // Only insert in leading simulation.
+                    _tss.LeadingSimulation.Manager.AddSystem(system);
                 }
 
                 return this;
@@ -898,14 +898,6 @@ namespace Engine.Simulation
             #endregion
 
             #region Messaging
-
-            /// <summary>Adds the message listener.</summary>
-            /// <typeparam name="T"></typeparam>
-            /// <param name="callback">The callback.</param>
-            public void AddMessageListener<T>(MessageCallback<T> callback)
-            {
-                throw new NotSupportedException();
-            }
 
             /// <summary>Inform all interested systems of a message.</summary>
             /// <typeparam name="T">The type of the message.</typeparam>

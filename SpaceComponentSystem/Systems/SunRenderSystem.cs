@@ -1,9 +1,11 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Graphics;
@@ -13,7 +15,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders suns.</summary>
     [Packetizable(false)]
-    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>, IDrawingSystem
+    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>
     {
         #region Fields
 
@@ -25,6 +27,7 @@ namespace Space.ComponentSystem.Systems
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -34,16 +37,20 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Set/get loop invariants.
             var transform = camera.Transform;
             var translation = camera.Translation;
-            _sun.Time = frame / Settings.TicksPerSecond;
+            _sun.Time = message.Frame / Settings.TicksPerSecond;
 
             // Render everything in sight.
             foreach (var entity in camera.VisibleEntities)

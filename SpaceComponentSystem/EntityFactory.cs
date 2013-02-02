@@ -120,7 +120,7 @@ namespace Space.ComponentSystem
 
             manager.AddComponent<Faction>(entity).Initialize(faction);
             manager.AddComponent<Transform>(entity).Initialize(((Transform) manager.GetComponent(center, Transform.TypeId)).Position);
-            manager.AddComponent<Indexable>(DetectableSystem.IndexId);
+            manager.AddComponent<Indexable>(Detectable.IndexId);
             manager.AddComponent<Indexable>(CellSystem.CellDeathAutoRemoveIndexId);
             manager.AddComponent<CellDeath>(entity).Initialize(false);
             manager.AddComponent<Velocity>(entity).Initialize(Vector2.Zero, MathHelper.Pi / period);

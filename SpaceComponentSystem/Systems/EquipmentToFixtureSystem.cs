@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// This system's sole purpose is to update a ship's physics representation (in Box2D terms: its fixture) when its equipment changes.
     /// </summary>
-    public class EquipmentToFixtureSystem : AbstractSystem, IUpdatingSystem
+    public class EquipmentToFixtureSystem : AbstractSystem
     {
         /// <summary>List of entities for which the equipment changed since the last update.</summary>
         [CopyIgnore, PacketizeIgnore]
@@ -26,7 +26,8 @@ namespace Space.ComponentSystem.Systems
         [CopyIgnore, PacketizeIgnore]
         private HashSet<int> _changedMass = new HashSet<int>(); 
 
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             var shipShapeSystem = (ShipShapeSystem) Manager.GetSystem(ShipShapeSystem.TypeId);
             foreach (var entity in _changedShape)

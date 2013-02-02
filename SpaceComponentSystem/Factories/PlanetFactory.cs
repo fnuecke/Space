@@ -299,7 +299,7 @@ namespace Space.ComponentSystem.Factories
             var bounds = new FarRectangle(-radius, -radius, radius * 2, radius * 2);
 
             // Can be detected.
-            manager.AddComponent<Indexable>(entity).Initialize(bounds, DetectableSystem.IndexId);
+            manager.AddComponent<Indexable>(entity).Initialize(bounds, Detectable.IndexId);
             // Can make some noise.
             manager.AddComponent<Indexable>(entity).Initialize(SoundSystem.IndexId);
             // Must be detectable by the camera.

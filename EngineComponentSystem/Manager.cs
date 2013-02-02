@@ -99,17 +99,14 @@ namespace Engine.ComponentSystem
         [PacketizeIgnore]
         private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
-        /// <summary>List of all updating systems registered with this manager.</summary>
-        [PacketizeIgnore]
-        private readonly List<IUpdatingSystem> _updatingSystems = new List<IUpdatingSystem>();
-
-        /// <summary>List of all drawing systems registered with this manager.</summary>
-        [PacketizeIgnore]
-        private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
-
         /// <summary>Table of registered message callbacks, by type.</summary>
         [PacketizeIgnore]
         private readonly Dictionary<Type, Delegate> _messageCallbacks = new Dictionary<Type, Delegate>();
+
+        /// <summary>
+        ///     Used to track the nesting of <see cref="SendMessage{T}"/> calls, to know when removed components can be released.
+        /// </summary>
+        private int _messageDepth;
 
         #endregion
 
@@ -168,15 +165,9 @@ namespace Engine.ComponentSystem
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
-            for (int i = 0, j = _updatingSystems.Count; i < j; ++i)
-            {
-                _updatingSystems[i].Update(frame);
-            }
-
-            // Make released component instances from the last update available
-            // for reuse, as we can be sure they're not referenced in our
-            // systems anymore.
-            ReleaseDirty();
+            Update message;
+            message.Frame = frame;
+            SendMessage(message);
         }
 
         /// <summary>Renders all registered systems.</summary>
@@ -184,13 +175,10 @@ namespace Engine.ComponentSystem
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
-            for (int i = 0, j = _drawingSystems.Count; i < j; ++i)
-            {
-                if (_drawingSystems[i].Enabled)
-                {
-                    _drawingSystems[i].Draw(frame, elapsedMilliseconds);
-                }
-            }
+            Draw message;
+            message.Frame = frame;
+            message.ElapsedMilliseconds = elapsedMilliseconds;
+            SendMessage(message);
         }
 
         #endregion
@@ -202,13 +190,6 @@ namespace Engine.ComponentSystem
         /// <returns>This manager, for chaining.</returns>
         public IManager AddSystem(AbstractSystem system)
         {
-            // We do not allow systems to be both logic and presentation related.
-            if (system is IUpdatingSystem && system is IDrawingSystem)
-            {
-                throw new ArgumentException(
-                    "Systems must be either logic related (IUpdatingSystem) or presentation related (IDrawingSystem), but never both.");
-            }
-
             // Get type ID for that system.
             var systemTypeId = GetSystemTypeId(system.GetType());
 
@@ -222,27 +203,14 @@ namespace Engine.ComponentSystem
             // which is why we want to do this before registering the system.
             var messageTypes = GetMessageCallbackTypes(system.GetType());
 
-            // Register the system.
+            // Add to general list, for serialization and hashing and general iteration.
+            _systems.Add(system);
+
+            // Register the system by type, for fast lookup.
             while (systemTypeId != 0)
             {
                 _systemsByTypeId[systemTypeId] = system;
                 systemTypeId = SystemHierarchy[systemTypeId];
-            }
-
-            // Add to general list, for serialization and hashing.
-            _systems.Add(system);
-
-            // Add to updating list, for update iteration.
-            var updatingSystem = system as IUpdatingSystem;
-            if (updatingSystem != null)
-            {
-                _updatingSystems.Add(updatingSystem);
-            }
-            // Add to drawing list, for draw iteration.
-            var drawingSystem = system as IDrawingSystem;
-            if (drawingSystem != null)
-            {
-                _drawingSystems.Add(drawingSystem);
             }
 
             // Set the manager so that the system knows it belongs to us.
@@ -301,17 +269,16 @@ namespace Engine.ComponentSystem
             }
 
             // Unregister the system.
+            _systems.Remove(system);
+            
             while (systemTypeId != 0)
             {
                 _systemsByTypeId[systemTypeId] = null;
                 systemTypeId = SystemHierarchy[systemTypeId];
             }
-            _systems.Remove(system);
-            _updatingSystems.Remove(system as IUpdatingSystem);
-            _drawingSystems.Remove(system as IDrawingSystem);
+
             system.Manager = null;
 
-            // Remove callbacks.
             foreach (var messageType in GetMessageCallbackTypes(system.GetType()))
             {
                 RebuildMessageDispatcher(messageType);
@@ -567,7 +534,21 @@ namespace Engine.ComponentSystem
             Delegate dispatcher;
             if (_messageCallbacks.TryGetValue(typeof (T), out dispatcher))
             {
-                ((Action<T>) dispatcher)(message);
+                ++_messageDepth;
+                try
+                {
+                    ((Action<T>) dispatcher)(message);
+                }
+                finally
+                {
+                    if (--_messageDepth == 0)
+                    {
+                        // Make released component instances from the last update available
+                        // for reuse, as we can be sure they're not referenced in our
+                        // systems anymore.
+                        ReleaseDirty();
+                    }
+                }
             }
         }
 
@@ -785,11 +766,11 @@ namespace Engine.ComponentSystem
 
             // Write systems.
             w.AppendIndent(indent).Write("SystemCount (excluding IDrawingSystems) = ");
-            w.Write(_systems.Count(s => !(s is IDrawingSystem)));
+            w.Write(_systems.Count(Packetizable.IsPacketizable));
             w.AppendIndent(indent).Write("Systems = {");
             for (int i = 0, j = _systems.Count; i < j; ++i)
             {
-                if (_systems[i] is IDrawingSystem)
+                if (!Packetizable.IsPacketizable(_systems[i]))
                 {
                     continue;
                 }
@@ -862,7 +843,7 @@ namespace Engine.ComponentSystem
 
             // Copy systems after copying components so they can fetch their
             // components again.
-            foreach (var item in _systems.Where(s => !(s is IDrawingSystem)))
+            foreach (var item in _systems.Where(Packetizable.IsPacketizable))
             {
                 copy.CopySystem(item);
             }

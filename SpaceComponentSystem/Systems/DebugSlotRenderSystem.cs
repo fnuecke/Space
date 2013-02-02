@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -12,7 +14,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     [Packetizable(false)]
-    public sealed class DebugSlotRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class DebugSlotRenderSystem : AbstractSystem
     {
         #region Type ID
 
@@ -27,6 +29,7 @@ namespace Space.ComponentSystem.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -46,8 +49,14 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Get all renderable entities in the viewport.

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Random;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
@@ -13,7 +15,7 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Manages item drops by reacting to death events.</summary>
-    public sealed class DropSystem : AbstractSystem, IUpdatingSystem
+    public sealed class DropSystem : AbstractSystem
     {
         #region Constants
         
@@ -36,8 +38,8 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>Removes entities that died this frame from the manager.</summary>
-        /// <param name="frame">The current simulation frame.</param>
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             // Remove dead entities (getting out of bounds).
             foreach (var drop in _dropsToSample)
@@ -53,6 +55,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="poolName">The name of the item pool to sample from.</param>
         /// <param name="position">The position at which to drop the items.</param>
+        [PublicAPI]
         public void Drop(string poolName, ref FarPosition position)
         {
             lock (_dropsToSample)

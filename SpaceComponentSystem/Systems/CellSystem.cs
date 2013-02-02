@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
@@ -10,6 +11,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
 using Space.Util;
@@ -24,7 +26,7 @@ namespace Space.ComponentSystem.Systems
     ///         transform components (nearest neighbor search).
     ///     </para>
     /// </summary>
-    public sealed class CellSystem : AbstractSystem, IUpdatingSystem
+    public sealed class CellSystem : AbstractSystem
     {
         #region Type ID
 
@@ -62,12 +64,14 @@ namespace Space.ComponentSystem.Systems
         #region Properties
 
         /// <summary>A list of the IDs of all cells that are currently active.</summary>
+        [PublicAPI]
         public IEnumerator<ulong> ActiveCells
         {
             get { return _livingCells.GetEnumerator(); }
         }
 
         /// <summary>A list of the IDs of all cells that are currently active.</summary>
+        [PublicAPI]
         public IEnumerator<ulong> ActiveSubCells
         {
             get { return _livingSubCells.GetEnumerator(); }
@@ -124,6 +128,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Tests if the specified cell is currently active.</summary>
         /// <param name="cellId">The id of the cell to check/</param>
         /// <returns>Whether the cell is active or not.</returns>
+        [PublicAPI]
         public bool IsCellActive(ulong cellId)
         {
             return _livingCells.Contains(cellId) || _pendingCells.ContainsKey(cellId);
@@ -132,6 +137,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Tests if the specified cell is currently active.</summary>
         /// <param name="cellId">The id of the cell to check/</param>
         /// <returns>Whether the cell is active or not.</returns>
+        [PublicAPI]
         public bool IsSubCellActive(ulong cellId)
         {
             return _livingSubCells.Contains(cellId) || _pendingSubCells.ContainsKey(cellId);
@@ -140,6 +146,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Gets the cell id for a given position.</summary>
         /// <param name="position">The position.</param>
         /// <returns>The id of the cell containing that position.</returns>
+        [PublicAPI]
         public static ulong GetCellIdFromCoordinates(FarPosition position)
         {
             const float segmentFactor = (float) FarValue.SegmentSize / (float) CellSize;
@@ -151,6 +158,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Gets the cell coordinates for the specified cell id.</summary>
         /// <param name="id">The id of the cell.</param>
+        [PublicAPI]
         public static FarPosition GetCellCoordinatesFromId(ulong id)
         {
             int x, y;
@@ -161,6 +169,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Gets the cell id for a given position.</summary>
         /// <param name="position">The position.</param>
         /// <returns>The id of the cell containing that position.</returns>
+        [PublicAPI]
         public static ulong GetSubCellIdFromCoordinates(FarPosition position)
         {
             const float segmentFactor = (float) FarValue.SegmentSize / (float) SubCellSize;
@@ -172,6 +181,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Gets the cell coordinates for the specified cell id.</summary>
         /// <param name="id">The id of the cell.</param>
+        [PublicAPI]
         public static FarPosition GetSubCellCoordinatesFromId(ulong id)
         {
             int x, y;
@@ -190,17 +200,17 @@ namespace Space.ComponentSystem.Systems
         ///     Checks all players' positions to determine which cells are active and which are not. Sends messages if a
         ///     cell's state changes.
         /// </summary>
-        /// <param name="frame">The frame the update applies to.</param>
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             // Only check from time to time.
-            if (frame % 10 != 0)
+            if (message.Frame % 10 != 0)
             {
                 return;
             }
 
-            UpdateCellState(frame, false, CellSize, _livingCells, _pendingCells);
-            UpdateCellState(frame, true, SubCellSize, _livingSubCells, _pendingSubCells);
+            UpdateCellState(message.Frame, false, CellSize, _livingCells, _pendingCells);
+            UpdateCellState(message.Frame, true, SubCellSize, _livingSubCells, _pendingSubCells);
         }
 
         private void UpdateCellState(long frame, bool isSubCell, int size, ISet<ulong> living, IDictionary<ulong, long> pending)

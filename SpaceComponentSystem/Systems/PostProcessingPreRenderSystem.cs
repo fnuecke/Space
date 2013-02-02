@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
@@ -12,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     ///     systems.
     /// </summary>
     [Packetizable(false)]
-    public sealed class PostProcessingPreRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class PostProcessingPreRenderSystem : AbstractSystem
     {
         #region Type ID
 
@@ -22,12 +23,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Properties
-
-        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
-        /// <value>
-        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
-        /// </value>
-        public bool Enabled { get; set; }
 
         /// <summary>Gets the render target used for capturing the rendered image.</summary>
         public Texture2D RenderTarget
@@ -47,9 +42,8 @@ namespace Space.ComponentSystem.Systems
         #region Logic
         
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
             // Set our custom render target to render everything into an
             // off-screen texture, first.

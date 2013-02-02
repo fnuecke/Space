@@ -2,10 +2,12 @@
 using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -23,12 +25,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     camera positioning.
     /// </summary>
     [Packetizable(false)]
-    public abstract class TextureRenderSystem : AbstractComponentSystem<IDrawable>, IDrawingSystem
+    public abstract class TextureRenderSystem : AbstractComponentSystem<IDrawable>
     {
         #region Type ID
-
-        /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
-        public static readonly int TypeId = CreateTypeId();
 
         /// <summary>Interface type id, get once for better performance.</summary>
         private static readonly int DrawableTypeId = ComponentSystem.Manager.GetComponentTypeId<IDrawable>();
@@ -41,6 +40,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -48,7 +48,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Fields
 
         /// <summary>The sprite batch to render textures into.</summary>
-        protected SpriteBatch SpriteBatch;
+        private SpriteBatch _spriteBatch;
 
         #endregion
 
@@ -69,10 +69,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>
         ///     Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public virtual void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Get the interpolation system for interpolated positions.
             var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
 
@@ -81,7 +85,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             var cameraTranslation = GetTranslation();
 
             // Begin rendering.
-            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, null, null, null, cameraTransform);
+            _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, null, null, null, cameraTransform);
 
             // We increment the base depth for each component we render, as a tie breaker,
             // i.e. to avoid z-fighting.
@@ -107,7 +111,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
                 // Draw.
                 drawable.Draw(
-                    SpriteBatch,
+                    _spriteBatch,
                     ((Vector2) (position + cameraTranslation)) * parallaxLayer,
                     angle,
                     UnitConversion.ToSimulationUnits(parallaxLayer),
@@ -120,7 +124,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
             }
 
             // Done rendering.
-            SpriteBatch.End();
+            _spriteBatch.End();
         }
 
         /// <summary>Gets the list of currently visible entities.</summary>
@@ -164,9 +168,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>Called when the graphics device has been (re)created, and assets should be loaded.</summary>
         /// <param name="content">The content manager.</param>
         /// <param name="graphics">The graphics device service.</param>
-        protected virtual void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
+        private void LoadContent(ContentManager content, IGraphicsDeviceService graphics)
         {
-            SpriteBatch = new SpriteBatch(graphics.GraphicsDevice);
+            _spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
             foreach (var component in Components)
             {
                 component.LoadContent(content, graphics);
@@ -174,12 +178,12 @@ namespace Engine.ComponentSystem.Spatial.Systems
         }
 
         /// <summary>Called when the graphics device is being disposed, and any assets manually allocated should be disposed.</summary>
-        protected virtual void UnloadContent()
+        private void UnloadContent()
         {
-            if (SpriteBatch != null)
+            if (_spriteBatch != null)
             {
-                SpriteBatch.Dispose();
-                SpriteBatch = null;
+                _spriteBatch.Dispose();
+                _spriteBatch = null;
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -9,7 +10,7 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Handles the death of entities due to leaving the valid area or being killed an not respawning.</summary>
-    public sealed class DeathSystem : AbstractSystem, IUpdatingSystem
+    public sealed class DeathSystem : AbstractSystem
     {
         #region Type ID
 
@@ -32,8 +33,8 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>Removes entities that died this frame from the manager.</summary>
-        /// <param name="frame">The current simulation frame.</param>
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             // Remove dead entities (getting out of bounds).
             foreach (var entity in _entitiesToRemove)

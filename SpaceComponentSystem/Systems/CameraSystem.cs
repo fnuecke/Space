@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
@@ -17,7 +19,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>Tracks camera position, either based on player's position and input state, or via a set position.</summary>
     [Packetizable(false)]
-    public sealed class CameraSystem : AbstractSystem, IDrawingSystem
+    public sealed class CameraSystem : AbstractSystem
     {
         #region Type ID
 
@@ -29,12 +31,15 @@ namespace Space.ComponentSystem.Systems
         #region Constants
 
         /// <summary>The maximum zoom scale.</summary>
+        [PublicAPI]
         public const float MaximumZoom = 1.0f;
 
         /// <summary>The minimum zoom scale.</summary>
+        [PublicAPI]
         public const float MinimumZoom = 0.5f;
 
         /// <summary>The maximum zoom scale.</summary>
+        [PublicAPI]
         public const float ZoomStep = 0.1f;
 
         /// <summary>
@@ -47,10 +52,8 @@ namespace Space.ComponentSystem.Systems
 
         #region Properties
 
-        /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
-        public bool Enabled { get; set; }
-
         /// <summary>The current camera position.</summary>
+        [PublicAPI]
         public FarPosition CameraPosition
         {
             get { return _customCameraPosition ?? (_cameraPosition + _currentOffset); }
@@ -59,6 +62,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Gets the transformation to use for perspective projection.</summary>
         /// <returns>The transformation.</returns>
+        [PublicAPI]
         public Matrix Transform
         {
             get { return _transform; }
@@ -66,12 +70,14 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Gets the translation to use for perspective projection.</summary>
         /// <returns>The translation.</returns>
+        [PublicAPI]
         public FarPosition Translation
         {
             get { return -CameraPosition; }
         }
 
         /// <summary>The Current camera zoom</summary>
+        [PublicAPI]
         public float Zoom
         {
             get { return _customZoom ?? _currentZoom; }
@@ -79,12 +85,14 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>The zoom set in the camera must not necessarily represent the current actually used zoom</summary>
+        [PublicAPI]
         public float CameraZoom
         {
             get { return _currentZoom; }
         }
 
         /// <summary>The list of currently visible entities.</summary>
+        [PublicAPI]
         public IEnumerable<int> VisibleEntities
         {
             get { return _drawablesInView; }
@@ -109,14 +117,14 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Flag to tell if the current camera position was set from outside, or was dynamically computed.</summary>
         private FarPosition? _customCameraPosition;
 
-        /// <summary>The current zoom of the camera which is interpolated towards the actual target zoom.</summary>
-        private float? _customZoom;
-
         /// <summary>The current target zoom of the camera.</summary>
         private float _targetZoom = 1.0f;
 
         /// <summary>The current zoom of the camera which is interpolated towards the actual target zoom.</summary>
         private float _currentZoom = 1.0f;
+
+        /// <summary>The current zoom of the camera, manually set overriding the automatic value.</summary>
+        private float? _customZoom;
 
         /// <summary>The transformation to use for perspective projection.</summary>
         private Matrix _transform;
@@ -170,22 +178,28 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Set the current and target zoom to the specified value. This instantly sets the current zoom.</summary>
+        [PublicAPI]
         public void SetZoom(float value)
         {
             _currentZoom = _targetZoom = MathHelper.Clamp(value, MinimumZoom, MaximumZoom);
         }
 
+        /// <summary>Resets the camera to its automatic position.</summary>
+        [PublicAPI]
         public void ResetCamera()
         {
             _customCameraPosition = null;
         }
 
+        /// <summary>Resets the zoom to its automatic value.</summary>
+        [PublicAPI]
         public void ResetZoom()
         {
             _customZoom = null;
         }
 
         /// <summary>Set the target zoom to the specified value. This slowly interpolates to the specified zoom value.</summary>
+        [PublicAPI]
         public void ZoomTo(float value)
         {
             _targetZoom = MathHelper.Clamp(value, MinimumZoom, MaximumZoom);
@@ -194,6 +208,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Zoom in by one <em>ZoomStep</em>.
         /// </summary>
+        [PublicAPI]
         public void ZoomIn()
         {
             ZoomTo(_targetZoom + ZoomStep);
@@ -202,6 +217,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Zoom out by one <em>ZoomStep</em>.
         /// </summary>
+        [PublicAPI]
         public void ZoomOut()
         {
             ZoomTo(_targetZoom - ZoomStep);
@@ -211,13 +227,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        ///     Used to update the camera position. We don't do this in the draw, to make sure it's up-to-date before
-        ///     *anything* else is drawn, especially stuff outside the simulation, to avoid "lagging".
-        /// </summary>
-        /// <param name="frame">The frame the update applies to.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        /// <summary>Used to update the camera position.</summary>
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
             // Don't update if our position is fixed or we're not in a game/don't have an avatar.
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;

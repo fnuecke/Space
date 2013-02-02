@@ -258,11 +258,8 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    // Load textures for detectables before trying to render radar.
-                    new DetectableSystem {Enabled = true},
-
                     // Provide local player's avatar ID.
-                    new LocalPlayerSystem(session) {Enabled = true},
+                    new LocalPlayerSystem(session),
 
                     // Trigger combat text rendering.
                     new CombatTextSystem {Enabled = true},
@@ -275,8 +272,8 @@ namespace Space.Control
                     new CameraCenteredInterpolationSystem {Enabled = true},
 
                     // Update camera first, as it determines what to render.
-                    new CameraSystem(game.GraphicsDevice, game.Services) {Enabled = true},
-                    new CameraMovementSystem {Enabled = true},
+                    new CameraSystem(game.GraphicsDevice, game.Services),
+                    new CameraMovementSystem(),
 
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, audioRange) {Enabled = true},
@@ -285,7 +282,7 @@ namespace Space.Control
                     new BiomeSystem {Enabled = true},
 
                     // Setup for post processing.
-                    new PostProcessingPreRenderSystem {Enabled = true},
+                    new PostProcessingPreRenderSystem(),
 
                     // Draw background behind everything else.
                     new CameraCenteredBackgroundSystem {Enabled = true},

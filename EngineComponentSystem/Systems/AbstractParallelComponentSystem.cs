@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -9,15 +10,14 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     /// <typeparam name="TComponent">The type of component handled in this system.</typeparam>
     public abstract class AbstractParallelComponentSystem<TComponent> : AbstractUpdatingComponentSystem<TComponent>
-        where TComponent : Component
+        where TComponent : IComponent
     {
         #region Logic
 
         /// <summary>
         ///     Loops over all components and calls <c>UpdateComponent()</c>.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(long frame)
+        public override void OnUpdate(Update message)
         {
             // We can use the components collection directly, because we must not
             // change the manager in parallel mode, anyway.
@@ -27,7 +27,7 @@ namespace Engine.ComponentSystem.Systems
                 {
                     if (component.Enabled)
                     {
-                        UpdateComponent(frame, component);
+                        UpdateComponent(message.Frame, component);
                     }
                 });
         }

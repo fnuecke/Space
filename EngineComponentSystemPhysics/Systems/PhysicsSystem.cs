@@ -15,6 +15,7 @@ using Engine.ComponentSystem.Physics.Math;
 using Engine.ComponentSystem.Physics.Messages;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -39,7 +40,7 @@ namespace Engine.ComponentSystem.Physics.Systems
     ///     </para>
     /// </summary>
     [DebuggerDisplay("Bodies = {BodyCount}, Contacts = {ContactCount}")]
-    public sealed class PhysicsSystem : AbstractComponentSystem<Body>, IUpdatingSystem
+    public sealed class PhysicsSystem : AbstractComponentSystem<Body>
     {
         #region Type ID
 
@@ -58,6 +59,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         #region Properties
 
         /// <summary>Gets or sets the global gravity vector.</summary>
+        [PublicAPI]
         public Vector2 Gravity
         {
             get { return _gravity; }
@@ -74,6 +76,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         ///     cycles per update, allowing for a lot better performance. You'll probably never want to disable this, unless it's
         ///     for testing purposes.
         /// </summary>
+        [PublicAPI]
         public bool AllowSleep
         {
             get { return _allowSleep; }
@@ -100,15 +103,18 @@ namespace Engine.ComponentSystem.Physics.Systems
         ///     Gets a value indicating whether this instance is locked. The system will lock itself during an update,
         ///     disallowing changes to its state from the outside.
         /// </summary>
+        [PublicAPI]
         public bool IsLocked { get; private set; }
 
         /// <summary>Gets all bodies in the simulation.</summary>
+        [PublicAPI]
         public IEnumerable<Body> Bodies
         {
             get { return Components; }
         }
 
         /// <summary>Gets all active the contacts.</summary>
+        [PublicAPI]
         public IEnumerable<Contact> Contacts
         {
             get
@@ -124,6 +130,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         }
 
         /// <summary>Gets all joints in the simulation.</summary>
+        [PublicAPI]
         public IEnumerable<Joint> Joints
         {
             get
@@ -136,24 +143,28 @@ namespace Engine.ComponentSystem.Physics.Systems
         }
 
         /// <summary>Gets the number of bodies in this simulation.</summary>
+        [PublicAPI]
         public int BodyCount
         {
             get { return Components.Count; }
         }
 
         /// <summary>Gets the number of (active) fixtures in this simulation.</summary>
+        [PublicAPI]
         public int FixtureCount
         {
             get { return Index[IndexId].Count; }
         }
 
         /// <summary>Gets the number of currently active contacts in the simulation.</summary>
+        [PublicAPI]
         public int ContactCount
         {
             get { return _contactCount; }
         }
 
         /// <summary>Gets the number of joints in this simulation.</summary>
+        [PublicAPI]
         public int JointCount
         {
             get { return _jointCount; }
@@ -163,6 +174,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         ///     Gets the a body without fixtures, that serves as fix point in the world. This can be useful for attaching
         ///     joints to 'the world', as opposed to another body.
         /// </summary>
+        [PublicAPI]
         public Body FixPoint
         {
             get
@@ -181,18 +193,21 @@ namespace Engine.ComponentSystem.Physics.Systems
         ///     Profiling data for this simulation. This will be updated each time <see cref="Update"/>
         ///     is called and will hold the time in milliseconds that different parts of the simulation took to run.
         /// </summary>
+        [PublicAPI]
         public Profile Profile
         {
             get { return _profile; }
         }
         
         /// <summary>Gets the depth of the index tree.</summary>
+        [PublicAPI]
         public int IndexDepth
         {
             get { return Index[IndexId].Depth; }
         }
 
         /// <summary>Gets the fixture bounding boxes for the debug renderer.</summary>
+        [PublicAPI]
         public IEnumerable<WorldBounds> FixtureBounds
         {
             get { return Index[IndexId].Select(entry => entry.Item1); }
@@ -330,8 +345,8 @@ namespace Engine.ComponentSystem.Physics.Systems
         #region Logic
 
         /// <summary>Updates the system.</summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             _profile.BeginStep();
 

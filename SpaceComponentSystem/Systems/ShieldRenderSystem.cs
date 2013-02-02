@@ -9,6 +9,7 @@ using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -19,7 +20,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system renders active shields, detecting them via their energy consumption debuff.</summary>
     [Packetizable(false)]
-    public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem
+    public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>
     {
         #region Properties
 
@@ -27,6 +28,7 @@ namespace Space.ComponentSystem.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -47,10 +49,14 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
             var interpolation = (CameraCenteredInterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
 
@@ -142,7 +148,7 @@ namespace Space.ComponentSystem.Systems
                 _shader.Coverage = coverage;
 
                 // Rotate the structure.
-                _shader.StructureRotation = MathHelper.ToRadians(frame / Settings.TicksPerSecond * 5);
+                _shader.StructureRotation = MathHelper.ToRadians(message.Frame / Settings.TicksPerSecond * 5);
 
                 // Set transform, including rotation of owner and slot.
                 _shader.Transform = Matrix.CreateRotationZ(-angle) * camera.Transform;

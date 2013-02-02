@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using ProjectMercury;
 using ProjectMercury.Renderers;
@@ -17,7 +19,7 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>Controls the particle components in a game, passing them some information about how to render themselves.</summary>
     [Packetizable(false)]
-    public abstract class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>, IDrawingSystem
+    public abstract class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>
     {
         #region Type ID
 
@@ -29,6 +31,7 @@ namespace Space.ComponentSystem.Systems
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -62,16 +65,20 @@ namespace Space.ComponentSystem.Systems
         #region Logic
         
         /// <summary>Flags our system as the presenting instance and renders all effects.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Get global transform.
             var transform = GetTransform();
             var translation = GetTranslation();
 
             // Get delta to keep update speed constant regardless of framerate.
-            var delta = (elapsedMilliseconds / 1000f) * _simulationSpeed();
+            var delta = (message.ElapsedMilliseconds / 1000f) * _simulationSpeed();
 
             // Get the interpolation system to get an interpolated position for the effect generator.
             var interpolation = (InterpolationSystem) Manager.GetSystem(InterpolationSystem.TypeId);
@@ -206,8 +213,14 @@ namespace Space.ComponentSystem.Systems
         /// <param name="impulse">The initial (additional) impulse of the particle.</param>
         /// <param name="rotation">The rotation.</param>
         /// <param name="scale">The scale.</param>
+        [PublicAPI]
         public void Play(string effect, FarPosition position, Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Check if it's in bounds, i.e. whether we have to render it at all.
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
             if (!camera.ComputeVisibleBounds().Contains(position))
@@ -234,6 +247,7 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>
         ///     The entity must have a <c>Transform</c> component.
         /// </remarks>
+        [PublicAPI]
         public void Play(string effect, int entity, Vector2 offset, float scale = 1.0f)
         {
             // Get the interpolation system to get an interpolated position for the effect generator.
@@ -258,7 +272,7 @@ namespace Space.ComponentSystem.Systems
                 impulse *= _simulationSpeed() * Settings.TicksPerSecond;
             }
 
-            Play(effect, position, impulse, rotation: angle, scale: scale);
+            Play(effect, position, impulse, angle, scale);
         }
         
         /// <summary>Plays an effect with the specified name as if it were emitted by the specified entity.</summary>
@@ -268,10 +282,11 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>
         ///     The entity must have a <c>Transform</c> component.
         /// </remarks>
+        [PublicAPI]
         public void Play(string effect, int entity, float scale = 1.0f)
         {
             var offset = Vector2.Zero;
-            Play(effect, entity, offset, scale: scale);
+            Play(effect, entity, offset, scale);
         }
 
         #endregion

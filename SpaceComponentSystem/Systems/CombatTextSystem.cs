@@ -1,7 +1,9 @@
 ﻿using System;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
@@ -11,12 +13,13 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system interprets messages and triggers combat floating text accordingly.</summary>
     [Packetizable(false)]
-    public sealed class CombatTextSystem : AbstractSystem, IDrawingSystem
+    public sealed class CombatTextSystem : AbstractSystem
     {
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #region Fields
@@ -29,10 +32,14 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             _localPlayerFaction = avatar > 0
                                       ? ((Faction) Manager.GetComponent(avatar, Faction.TypeId)).Value

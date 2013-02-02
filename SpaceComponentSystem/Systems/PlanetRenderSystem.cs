@@ -1,9 +1,11 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,11 +17,12 @@ namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders planets.</summary>
     [Packetizable(false)]
-    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>, IDrawingSystem
+    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>
     {
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -36,16 +39,20 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         ///     Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var camera = (CameraSystem) Manager.GetSystem(CameraSystem.TypeId);
 
             // Set/get loop invariants.
             var translation = camera.Translation;
             _planet.Transform = camera.Transform;
-            _planet.Time = frame / Settings.TicksPerSecond;
+            _planet.Time = message.Frame / Settings.TicksPerSecond;
 
             // Draw everything in view.
             foreach (var entity in camera.VisibleEntities)

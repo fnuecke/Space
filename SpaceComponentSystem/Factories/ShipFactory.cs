@@ -244,7 +244,7 @@ namespace Space.ComponentSystem.Factories
             var bounds = new FarRectangle(-2, -2, 4, 4);
 
             // Can be detected.
-            manager.AddComponent<Indexable>(entity).Initialize(DetectableSystem.IndexId);
+            manager.AddComponent<Indexable>(entity).Initialize(Detectable.IndexId);
             // Can be attracted.
             manager.AddComponent<Indexable>(entity).Initialize(GravitationSystem.IndexId);
             // Can make noise.

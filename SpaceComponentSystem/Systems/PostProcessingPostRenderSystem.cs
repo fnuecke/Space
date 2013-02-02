@@ -1,8 +1,10 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -14,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     ///     to apply post processing effects. This system should run after all other render systems.
     /// </summary>
     [Packetizable(false)]
-    public sealed class PostProcessingPostRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class PostProcessingPostRenderSystem : AbstractSystem
     {
         #region Type ID
 
@@ -26,27 +28,35 @@ namespace Space.ComponentSystem.Systems
         #region Types
 
         /// <summary>Available bloom presets.</summary>
+        [PublicAPI]
         public enum BloomType
         {
             /// <summary>Disables bloom.</summary>
+            [PublicAPI]
             None,
 
             /// <summary>Default bloom preset.</summary>
+            [PublicAPI]
             Default,
 
             /// <summary>Soft bloom preset.</summary>
+            [PublicAPI]
             Soft,
 
             /// <summary>Desaturated bloom preset.</summary>
+            [PublicAPI]
             Desaturated,
 
             /// <summary>Saturated bloom preset.</summary>
+            [PublicAPI]
             Saturated,
 
             /// <summary>Blurry bloom preset.</summary>
+            [PublicAPI]
             Blurry,
 
             /// <summary>Subtle bloom preset.</summary>
+            [PublicAPI]
             Subtle
         }
 
@@ -58,16 +68,11 @@ namespace Space.ComponentSystem.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
-        public bool Enabled
-        {
-            get { return true; }
-            // We always have to render (to blit the scene in the buffer), instead
-            // when we're disabled, we simply copy it directly instead of applying
-            // any effects at all.
-            set { _enabled = value; }
-        }
+        [PublicAPI]
+        public bool Enabled { get; set; }
 
         /// <summary>Gets or sets the bloom preset in use.</summary>
+        [PublicAPI]
         public BloomType Bloom { get; set; }
 
         #endregion
@@ -89,21 +94,20 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Temporary render targets at half screen size.</summary>
         private RenderTarget2D _renderTarget1, _renderTarget2;
 
-        /// <summary>Whether to apply any post processing at all or not.</summary>
-        private bool _enabled;
-
         #endregion
 
         #region Logic
         
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
             var preprocessor = (PostProcessingPreRenderSystem) Manager.GetSystem(PostProcessingPreRenderSystem.TypeId);
 
-            if (!_enabled || Bloom == BloomType.None)
+            // We always have to render (to blit the scene in the buffer), instead
+            // when we're disabled, we simply copy it directly instead of applying
+            // any effects at all.
+            if (!Enabled || Bloom == BloomType.None)
             {
                 // Reset our graphics device (pop our off-screen render target).
                 _spriteBatch.GraphicsDevice.SetRenderTarget(null);

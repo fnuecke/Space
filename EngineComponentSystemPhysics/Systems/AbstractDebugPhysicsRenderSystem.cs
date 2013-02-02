@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
 using Engine.ComponentSystem.Physics.Components;
@@ -10,6 +11,7 @@ using Engine.ComponentSystem.Physics.Joints;
 using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -24,7 +26,7 @@ using WorldTransform = Microsoft.Xna.Framework.Matrix;
 namespace Engine.ComponentSystem.Physics.Systems
 {
     [Packetizable(false)]
-    public abstract class AbstractDebugPhysicsRenderSystem : AbstractSystem, IDrawingSystem
+    public abstract class AbstractDebugPhysicsRenderSystem : AbstractSystem
     {
         #region Constants
 
@@ -78,27 +80,35 @@ namespace Engine.ComponentSystem.Physics.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         /// <summary>Gets or sets whether to render fixture shapes.</summary>
+        [PublicAPI]
         public bool RenderFixtures { get; set; }
 
         /// <summary>Gets or sets whether to render fixture bounding boxes.</summary>
+        [PublicAPI]
         public bool RenderFixtureBounds { get; set; }
 
         /// <summary>Gets or sets whether to render the center of mass of bodies.</summary>
+        [PublicAPI]
         public bool RenderCenterOfMass { get; set; }
 
         /// <summary>Gets or sets whether to render contact points.</summary>
+        [PublicAPI]
         public bool RenderContactPoints { get; set; }
 
         /// <summary>Gets or sets whether to render contact normals.</summary>
+        [PublicAPI]
         public bool RenderContactNormals { get; set; }
 
         /// <summary>Gets or sets whether to render contact points' normal impulse.</summary>
+        [PublicAPI]
         public bool RenderContactPointNormalImpulse { get; set; }
 
         /// <summary>Gets or sets whether to render joint edges.</summary>
+        [PublicAPI]
         public bool RenderJoints { get; set; }
 
         #endregion
@@ -203,12 +213,11 @@ namespace Engine.ComponentSystem.Physics.Systems
         #region Rendering
 
         /// <summary>Draws the system.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
             // Skip if we have nothing to draw.
-            if (
+            if (!Enabled ||
                 !(RenderFixtureBounds || RenderFixtures || RenderCenterOfMass || RenderContactPoints ||
                   RenderContactNormals || RenderContactPointNormalImpulse))
             {

@@ -36,7 +36,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
-        public override void Update(long frame)
+        public override void OnUpdate(Update message)
         {
             // See if we have some pending spawns.
             if (_cellSpawns.Count > 0)
@@ -79,7 +79,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
-            base.Update(frame);
+            base.OnUpdate(message);
         }
 
         /// <summary>Updates the component by checking if it's time to spawn a new entity.</summary>

@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Systems
 {
     /// <summary>Base class for component systems, pre-implementing adding / removal of components.</summary>
     /// <typeparam name="TComponent">The type of component handled in this system.</typeparam>
-    public abstract class AbstractUpdatingComponentSystem<TComponent>
-        : AbstractComponentSystem<TComponent>, IUpdatingSystem
-        where TComponent : Component
+    public abstract class AbstractUpdatingComponentSystem<TComponent> : AbstractComponentSystem<TComponent>
+        where TComponent : IComponent
     {
         #region Single-Allocation
 
@@ -26,8 +26,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         ///     Loops over all components and calls <c>UpdateComponent()</c>.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public virtual void Update(long frame)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public virtual void OnUpdate(Update message)
         {
             _updatingComponents.AddRange(Components);
             for (int i = 0, j = _updatingComponents.Count; i < j; ++i)
@@ -35,7 +36,7 @@ namespace Engine.ComponentSystem.Systems
                 var component = _updatingComponents[i];
                 if (component.Enabled)
                 {
-                    UpdateComponent(frame, component);
+                    UpdateComponent(message.Frame, component);
                 }
             }
             _updatingComponents.Clear();

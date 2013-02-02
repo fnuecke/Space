@@ -280,7 +280,7 @@ namespace Space.ComponentSystem.Components.Behaviors
             var mass = info.Mass;
 
             // Look for evil neighbors, in particular suns and the like.
-            var index = ((IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId))[DetectableSystem.IndexId];
+            var index = ((IndexSystem) AI.Manager.GetSystem(IndexSystem.TypeId))[Detectable.IndexId];
             ISet<int> neighbors = new HashSet<int>();
             index.Find(position, AI.Configuration.MaxEscapeCheckDistance, neighbors);
             var escape = Vector2.Zero;

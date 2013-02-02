@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
@@ -10,6 +11,7 @@ using Engine.Graphics;
 using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -22,7 +24,7 @@ namespace Space.ComponentSystem.Systems
     ///     gravitation, such as suns.
     /// </summary>
     [Packetizable(false)]
-    public sealed class OrbitRenderSystem : AbstractSystem, IDrawingSystem
+    public sealed class OrbitRenderSystem : AbstractSystem
     {
         #region Constants
 
@@ -46,6 +48,7 @@ namespace Space.ComponentSystem.Systems
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -73,10 +76,14 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>Render our local radar system, with whatever detectables are close enough.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Get local player's avatar.
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             if (avatar <= 0)
@@ -129,7 +136,7 @@ namespace Space.ComponentSystem.Systems
             radius /= zoom;
 
             // Loop through all our neighbors.
-            index[DetectableSystem.IndexId].Find(position, radarRange, _reusableNeighborList);
+            index[Detectable.IndexId].Find(position, radarRange, _reusableNeighborList);
 
             // Begin drawing.
             _spriteBatch.Begin();
@@ -245,7 +252,7 @@ namespace Space.ComponentSystem.Systems
                     _filledEllipse.Draw();
                     
                     // Make the lines pulsate a bit.
-                    var phase = (0.6f + (float) (Math.Sin(MathHelper.ToRadians(frame * 6)) + 1) * 0.125f);
+                    var phase = (0.6f + (float) (Math.Sin(MathHelper.ToRadians(message.Frame * 6)) + 1) * 0.125f);
 
                     _ellipse.Radius = dangerRadius - UnitConversion.ToScreenUnits(DeadZoneDiffuseWidth) * 0.5f;
                     _ellipse.Color = Color.Red * phase * 0.7f;

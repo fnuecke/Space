@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Physics.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
@@ -16,7 +17,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Handles applying effects defined through attributes when two entities collide.</summary>
-    public sealed class CollisionAttributeEffectSystem : AbstractComponentSystem<DamagingStatusEffect>, IUpdatingSystem
+    public sealed class CollisionAttributeEffectSystem : AbstractComponentSystem<DamagingStatusEffect>
     {
         #region Fields
 
@@ -35,7 +36,8 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
         
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             foreach (var info in _newCollision)
             {

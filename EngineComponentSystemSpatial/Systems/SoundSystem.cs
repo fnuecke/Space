@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
@@ -20,7 +22,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 {
     /// <summary>System that manages sound components, querying them for cue names to play in a single update.</summary>
     [Packetizable(false)]
-    public abstract class SoundSystem : AbstractSystem, IDrawingSystem
+    public abstract class SoundSystem : AbstractSystem
     {
         #region Type ID
         
@@ -49,6 +51,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -110,10 +113,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Logic
 
         /// <summary>Check for sound in range and play.</summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Bail if we don't have a soundbank.
             if (_soundBank == null)
             {
@@ -123,7 +130,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
             // No need to check *all* the time... this saves quite some performance
             // if a lot of sound emitting objects are in range.
-            if (frame % 3 != 0)
+            if (message.Frame % 3 != 0)
             {
                 return;
             }
@@ -231,10 +238,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
         /// <param name="velocity">The velocity of the sound's emitter.</param>
+        [PublicAPI]
         public Cue Play(string soundCue, ref WorldPoint position, ref Vector2 velocity)
         {
             // Only if we have a sound bank.
-            if (_soundBank == null)
+            if (!Enabled || _soundBank == null)
             {
                 return null;
             }
@@ -281,6 +289,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <summary>Plays a sound cue with the specified name at the specified location.</summary>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
+        [PublicAPI]
         public Cue Play(string soundCue, ref WorldPoint position)
         {
             var zero = Vector2.Zero;
@@ -294,6 +303,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// </remarks>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="entity">The entity that emits the sound.</param>
+        [PublicAPI]
         public Cue Play(string soundCue, int entity)
         {
             var position = ((ITransform) Manager.GetComponent(entity, TransformTypeId)).Position;
@@ -311,8 +321,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="transition">
         ///     if set to <c>true</c> music will transition as authored, else the current track will be forced to stop immediately.
         /// </param>
+        [PublicAPI]
         public void PlayMusic(string trackName, bool transition = true)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             StopMusic(transition);
             _music = _soundBank.GetCue(trackName);
             _music.Play();
@@ -322,6 +338,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="transition">
         ///     if set to <c>true</c> music will transition as authored, else the current track will be forced to stop immediately.
         /// </param>
+        [PublicAPI]
         public void StopMusic(bool transition = true)
         {
             if (_music != null)

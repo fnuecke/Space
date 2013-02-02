@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,7 +17,7 @@ namespace Space.ComponentSystem.Systems
     ///     IInformation interface.
     /// </summary>
     [Packetizable(false)]
-    public sealed class InformationDisplaySystem : AbstractSystem, IDrawingSystem
+    public sealed class InformationDisplaySystem : AbstractSystem
     {
         #region Type ID
 
@@ -106,10 +107,14 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Draw all Informations</summary>
-        /// <param name="frame"></param>
-        /// <param name="elapsedMilliseconds"></param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var newList = new List<IInformation>();
             var localEntity = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             if (localEntity > 0)

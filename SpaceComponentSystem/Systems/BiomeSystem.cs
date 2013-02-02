@@ -1,13 +1,15 @@
-﻿using Engine.ComponentSystem.Spatial.Components;
+﻿using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Systems
 {
     [Packetizable(false)]
-    public sealed class BiomeSystem : AbstractSystem, IDrawingSystem
+    public sealed class BiomeSystem : AbstractSystem
     {
         #region Properties
 
@@ -15,6 +17,7 @@ namespace Space.ComponentSystem.Systems
         /// <value>
         ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
         /// </value>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -34,11 +37,15 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Store for performance.</summary>
         private static readonly int TransformTypeId = Engine.ComponentSystem.Manager.GetComponentTypeId<ITransform>();
 
-        /// <summary>Checks the sector the local player is currently in and adjusts background, ambience, etc. accordingly.</summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        /// <summary>Checks the sector the local player is currently in and adjusts background, ambiance, etc. accordingly.</summary>
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             // Fetch the local avatar.
             var avatar = ((LocalPlayerSystem) Manager.GetSystem(LocalPlayerSystem.TypeId)).LocalPlayerAvatar;
             if (avatar <= 0)

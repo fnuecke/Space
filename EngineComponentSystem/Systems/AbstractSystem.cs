@@ -106,12 +106,6 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The copy.</returns>
         public virtual AbstractSystem NewInstance()
         {
-            // Not supported for presentation types.
-            if (this is IDrawingSystem)
-            {
-                throw new InvalidOperationException("Drawing systems cannot be copied.");
-            }
-
             var copy = (AbstractSystem) MemberwiseClone();
 
             copy.Manager = null;
@@ -130,12 +124,6 @@ namespace Engine.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the manager into which the system is being copied.</remarks>
         public virtual void CopyInto(AbstractSystem into)
         {
-            // Not supported for presentation types.
-            if (this is IDrawingSystem)
-            {
-                throw new InvalidOperationException("Drawing systems cannot be copied.");
-            }
-
             // Don't allow identity copying.
             Debug.Assert(into != this, "Cannot copy into self, is this intentional?");
             if (into == this)

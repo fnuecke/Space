@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -22,7 +24,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     between different sets of textures.
     /// </summary>
     [Packetizable(false)]
-    public abstract class BackgroundRenderSystem : AbstractSystem, IDrawingSystem
+    public abstract class BackgroundRenderSystem : AbstractSystem
     {
         #region Type ID
 
@@ -34,6 +36,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should perform updates and react to events.</summary>
+        [PublicAPI]
         public bool Enabled { get; set; }
 
         #endregion
@@ -54,10 +57,14 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Logic
 
         /// <summary>Draws the current background.</summary>
-        /// <param name="frame">The frame that should be rendered.</param>
-        /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
-        public void Draw(long frame, float elapsedMilliseconds)
+        [MessageCallback]
+        public void OnDraw(Draw message)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
 
             // Update all our backgrounds.
@@ -86,7 +93,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 }
 
                 // Update alpha for transitioning.
-                background.Alpha += elapsedMilliseconds / background.TransitionMilliseconds;
+                background.Alpha += message.ElapsedMilliseconds / background.TransitionMilliseconds;
 
                 // Stop if one background reaches 100%.
                 if (background.Alpha >= 1.0f)

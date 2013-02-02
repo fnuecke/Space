@@ -111,7 +111,6 @@
     <Compile Include="Components\ShipInfo.cs" />
     <Compile Include="Components\SunRenderer.cs" />
     <Compile Include="Components\ItemEffect.cs" />
-    <Compile Include="Components\TestObjectRenderer.cs" />
     <Compile Include="Components\WeaponControl.cs" />
     <Compile Include="Components\Wing.cs" />
     <Compile Include="EntityFactory.cs" />
@@ -147,7 +146,6 @@
     <Compile Include="Systems\DebugEntityIdRenderSystem.cs" />
     <Compile Include="Systems\DebugPhysicsRenderSystem.cs" />
     <Compile Include="Systems\DebugSlotRenderSystem.cs" />
-    <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DirectDamageApplyingSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Systems\EquipmentToFixtureSystem.cs" />
@@ -180,7 +178,6 @@
     <Compile Include="Systems\SquadSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\ItemEffectSystem.cs" />
-    <Compile Include="Systems\TestObjectRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Systems\WeaponControlSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />

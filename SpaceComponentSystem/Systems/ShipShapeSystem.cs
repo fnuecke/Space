@@ -3,6 +3,7 @@ using System.Linq;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
@@ -24,7 +25,7 @@ namespace Space.ComponentSystem.Systems
     ///     Second, it is used to generate polygon representations of the ships, using their rendered texture. These shapes are
     ///     used in the physics system.
     /// </summary>
-    public sealed class ShipShapeSystem : AbstractSystem, IUpdatingSystem
+    public sealed class ShipShapeSystem : AbstractSystem
     {
         #region Type ID
 
@@ -190,7 +191,8 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public void Update(long frame)
+        [MessageCallback]
+        public void OnUpdate(Update message)
         {
             // Increase age of entries.
             // TODO probably possible to merge this into the 'Where' below.
