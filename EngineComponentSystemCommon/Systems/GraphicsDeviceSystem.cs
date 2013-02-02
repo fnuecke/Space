@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -27,12 +26,6 @@ namespace Engine.ComponentSystem.Common.Systems
         /// </value>
         public bool Enabled { get; set; }
 
-        /// <summary>Gets the content manager used for loading assets.</summary>
-        public ContentManager Content
-        {
-            get { return _content; }
-        }
-
         /// <summary>The graphics device service used to keep track of our graphics device.</summary>
         public IGraphicsDeviceService Graphics
         {
@@ -42,9 +35,6 @@ namespace Engine.ComponentSystem.Common.Systems
         #endregion
 
         #region Fields
-
-        /// <summary>The content manager used to load our assets.</summary>
-        private readonly ContentManager _content;
 
         /// <summary>The graphics device service used to keep track of our graphics device.</summary>
         private readonly IGraphicsDeviceService _graphics;
@@ -56,11 +46,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphicsDeviceSystem"/> class.
         /// </summary>
-        /// <param name="content">The content manager to use for loading.</param>
         /// <param name="graphics">The graphics device service.</param>
-        public GraphicsDeviceSystem(ContentManager content, IGraphicsDeviceService graphics)
+        public GraphicsDeviceSystem(IGraphicsDeviceService graphics)
         {
-            _content = content;
             _graphics = graphics;
 
             graphics.DeviceCreated += GraphicsOnDeviceCreated;
@@ -112,7 +100,6 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             // Trigger loading for the first time, then disable self.
             GraphicsDeviceCreated message;
-            message.Content = _content;
             message.Graphics = _graphics;
             Manager.SendMessage(message);
 
@@ -122,7 +109,6 @@ namespace Engine.ComponentSystem.Common.Systems
         private void GraphicsOnDeviceCreated(object sender, EventArgs eventArgs)
         {
             GraphicsDeviceCreated message;
-            message.Content = _content;
             message.Graphics = _graphics;
             Manager.SendMessage(message);
         }
@@ -136,7 +122,6 @@ namespace Engine.ComponentSystem.Common.Systems
         private void GraphicsOnDeviceReset(object sender, EventArgs eventArgs)
         {
             GraphicsDeviceReset message;
-            message.Content = _content;
             message.Graphics = _graphics;
             Manager.SendMessage(message);
         }

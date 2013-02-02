@@ -95,9 +95,9 @@ namespace Space.ComponentSystem.Systems
                     // Load / initialize particle effects if they aren't yet.
                     if (effect.Effect == null)
                     {
-                        var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                        effect.Effect = graphicsSystem.Content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
-                        effect.Effect.LoadContent(graphicsSystem.Content);
+                        var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
+                        effect.Effect = content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
+                        effect.Effect.LoadContent(content);
                         effect.Effect.Initialise();
                     }
 
@@ -172,32 +172,31 @@ namespace Space.ComponentSystem.Systems
 
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             if (_renderer == null)
             {
                 _renderer = new SpriteBatchRenderer {GraphicsDeviceService = message.Graphics};
             }
-            _renderer.LoadContent(message.Content);
+            _renderer.LoadContent(content);
             foreach (var component in Components)
             {
                 foreach (var effect in component.Effects)
                 {
                     if (effect.Effect == null)
                     {
-                        var graphicsSystem =
-                            ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                        effect.Effect = graphicsSystem.Content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
-                        effect.Effect.LoadContent(message.Content);
+                        effect.Effect = content.Load<ParticleEffect>(effect.AssetName).DeepCopy();
+                        effect.Effect.LoadContent(content);
                         effect.Effect.Initialise();
                     }
                     else
                     {
-                        effect.Effect.LoadContent(message.Content);
+                        effect.Effect.LoadContent(content);
                     }
                 }
             }
             foreach (var effect in _effects)
             {
-                effect.Value.LoadContent(message.Content);
+                effect.Value.LoadContent(content);
             }
         }
 
@@ -300,9 +299,9 @@ namespace Space.ComponentSystem.Systems
                     if (!_effects.ContainsKey(effectName))
                     {
                         // Nope, really don't have it yet, load and init.
-                        var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                        var effect = graphicsSystem.Content.Load<ParticleEffect>(effectName).DeepCopy();
-                        effect.LoadContent(graphicsSystem.Content);
+                        var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
+                        var effect = content.Load<ParticleEffect>(effectName).DeepCopy();
+                        effect.LoadContent(content);
                         effect.Initialise();
                         _effects.Add(effectName, effect);
                     }

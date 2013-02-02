@@ -96,10 +96,11 @@ namespace Space.Control
 
                     // ---- Informational and passive things ----- //
                     
-                    // This system provides content manager and graphics device to other systems.
-                    // We need this in the server also, because we generate the collision bounds
-                    // for objects from their textures dynamically.
-                    new GraphicsDeviceSystem(game.Content, game.GraphicsDeviceManager) {Enabled = true},
+                    // These systems provide content and graphics device to other systems.
+                    // We need this in the server also, because we generate the collision
+                    // bounds for objects from their textures dynamically.
+                    new ContentSystem(game.Content),
+                    new GraphicsDeviceSystem(game.GraphicsDeviceManager) {Enabled = true},
 
                     // The index system will update its indexes when the translation
                     // of an object changes, and remembers which movements triggered

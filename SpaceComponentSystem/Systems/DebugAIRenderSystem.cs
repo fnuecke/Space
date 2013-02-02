@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -125,8 +126,9 @@ namespace Space.ComponentSystem.Systems
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
-            _font = message.Content.Load<SpriteFont>("Fonts/ConsoleFont");
-            _arrow = message.Content.Load<Texture2D>("Textures/arrow");
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
+            _font = content.Load<SpriteFont>("Fonts/ConsoleFont");
+            _arrow = content.Load<Texture2D>("Textures/arrow");
         }
 
         private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)

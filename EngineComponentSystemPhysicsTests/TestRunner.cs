@@ -148,10 +148,12 @@ namespace Engine.ComponentSystem.Physics.Tests
         {
             _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
             _font = new ResourceContentManager(Services, GameResource.ResourceManager).Load<SpriteFont>("ConsoleFont");
-
+            
             _manager.AddSystem(new IndexSystem(16, 1));
-            _manager.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
             _manager.AddSystem(_physics = new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
+
+            _manager.AddSystem(new ContentSystem(Content));
+            _manager.AddSystem(new GraphicsDeviceSystem(_graphics) {Enabled = true});
             _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
             _renderer.RenderFixtures = true;
@@ -498,10 +500,12 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                     if (_manager != null)
                     {
                         var copy = new Manager();
+                        copy.AddSystem(new ContentSystem(Content));
                         copy.AddSystem(new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
-                        copy.AddSystem(new GraphicsDeviceSystem(Content, _graphics) {Enabled = true});
-                        copy.AddSystem(
-                            new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
+                        
+                        copy.AddSystem(new ContentSystem(Content));
+                        copy.AddSystem(new GraphicsDeviceSystem(_graphics) {Enabled = true});
+                        copy.AddSystem(new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
                         _manager.CopyInto(copy);
                         _manager.Clear();

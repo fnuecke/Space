@@ -74,8 +74,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Load the texture if we don't have it yet.
-            var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-            LoadPlanetTextures(factory, component, graphicsSystem.Content);
+            LoadPlanetTextures(factory, component, ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content);
 
             // The position and orientation we're rendering at and in.
             var transform = ((ITransform) Manager.GetComponent(component.Entity, TransformTypeId));
@@ -147,9 +146,10 @@ namespace Space.ComponentSystem.Systems
 
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             if (_planet == null)
             {
-                _planet = new Planet(message.Content, message.Graphics);
+                _planet = new Planet(content, message.Graphics);
                 _planet.LoadContent();
             }
             foreach (var component in Components)
@@ -159,7 +159,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     continue;
                 }
-                LoadPlanetTextures(factory, component, message.Content);
+                LoadPlanetTextures(factory, component, content);
             }
         }
 

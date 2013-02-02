@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
@@ -420,16 +421,18 @@ namespace Space.ComponentSystem.Systems
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
 
-            _radarDirection[(int) RadarDirection.Top] = message.Content.Load<Texture2D>("Textures/Radar/top");
-            _radarDirection[(int) RadarDirection.Left] = message.Content.Load<Texture2D>("Textures/Radar/left");
-            _radarDirection[(int) RadarDirection.Right] = message.Content.Load<Texture2D>("Textures/Radar/right");
-            _radarDirection[(int) RadarDirection.Bottom] = message.Content.Load<Texture2D>("Textures/Radar/bottom");
-            _radarDirection[(int) RadarDirection.TopLeft] = message.Content.Load<Texture2D>("Textures/Radar/top_left");
-            _radarDirection[(int) RadarDirection.TopRight] = message.Content.Load<Texture2D>("Textures/Radar/top_right");
-            _radarDirection[(int) RadarDirection.BottomLeft] = message.Content.Load<Texture2D>("Textures/Radar/bottom_left");
-            _radarDirection[(int) RadarDirection.BottomRight] = message.Content.Load<Texture2D>("Textures/Radar/bottom_right");
-            _radarDistance = message.Content.Load<Texture2D>("Textures/Radar/distance");
-            _distanceFont = message.Content.Load<SpriteFont>("Fonts/visitor");
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
+
+            _radarDirection[(int) RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
+            _radarDirection[(int) RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");
+            _radarDirection[(int) RadarDirection.Right] = content.Load<Texture2D>("Textures/Radar/right");
+            _radarDirection[(int) RadarDirection.Bottom] = content.Load<Texture2D>("Textures/Radar/bottom");
+            _radarDirection[(int) RadarDirection.TopLeft] = content.Load<Texture2D>("Textures/Radar/top_left");
+            _radarDirection[(int) RadarDirection.TopRight] = content.Load<Texture2D>("Textures/Radar/top_right");
+            _radarDirection[(int) RadarDirection.BottomLeft] = content.Load<Texture2D>("Textures/Radar/bottom_left");
+            _radarDirection[(int) RadarDirection.BottomRight] = content.Load<Texture2D>("Textures/Radar/bottom_right");
+            _radarDistance = content.Load<Texture2D>("Textures/Radar/distance");
+            _distanceFont = content.Load<SpriteFont>("Fonts/visitor");
         }
 
         private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)

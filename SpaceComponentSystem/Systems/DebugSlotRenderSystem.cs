@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
@@ -110,13 +111,14 @@ namespace Space.ComponentSystem.Systems
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
 
-            _textures.Add(Fuselage.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_fuselage"));
-            _textures.Add(Reactor.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_reactor"));
-            _textures.Add(Sensor.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_sensor"));
-            _textures.Add(Shield.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_shield"));
-            _textures.Add(Thruster.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_thruster"));
-            _textures.Add(Weapon.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_weapon"));
-            _textures.Add(Wing.TypeId, message.Content.Load<Texture2D>("Textures/Items/mountpoint_wing"));
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
+            _textures.Add(Fuselage.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_fuselage"));
+            _textures.Add(Reactor.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_reactor"));
+            _textures.Add(Sensor.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_sensor"));
+            _textures.Add(Shield.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_shield"));
+            _textures.Add(Thruster.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_thruster"));
+            _textures.Add(Weapon.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_weapon"));
+            _textures.Add(Wing.TypeId, content.Load<Texture2D>("Textures/Items/mountpoint_wing"));
         }
 
         private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)

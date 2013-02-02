@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -254,12 +255,13 @@ namespace Space.ComponentSystem.Systems
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             var device = message.Graphics.GraphicsDevice;
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
 
             _spriteBatch = new SpriteBatch(device);
 
-            _bloomExtractEffect = message.Content.Load<Effect>("Shaders/BloomExtract");
-            _bloomCombineEffect = message.Content.Load<Effect>("Shaders/BloomCombine");
-            _gaussianBlurEffect = message.Content.Load<Effect>("Shaders/GaussianBlur");
+            _bloomExtractEffect = content.Load<Effect>("Shaders/BloomExtract");
+            _bloomCombineEffect = content.Load<Effect>("Shaders/BloomCombine");
+            _gaussianBlurEffect = content.Load<Effect>("Shaders/GaussianBlur");
 
             // Create two rendertargets for the bloom processing. These are half the
             // size of the backbuffer, in order to minimize fillrate costs. Reducing

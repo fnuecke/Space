@@ -57,8 +57,7 @@ namespace Space.ComponentSystem.Components
             {
                 if (_fallbackTextureName == null && !string.IsNullOrWhiteSpace(_fallbackTextureName))
                 {
-                    var graphics = (GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId);
-                    _fallbackTexture = graphics.Content.Load<Texture2D>(_fallbackTextureName);
+                    _fallbackTexture = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content.Load<Texture2D>(_fallbackTextureName);
                 }
                 return _fallbackTexture;
             }
@@ -106,8 +105,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="scale">The scale.</param>
         /// <param name="effects">The effects.</param>
         /// <param name="layerDepth">The base layer depth to use, used for tie breaking.</param>
-        public void Draw(
-            SpriteBatch batch, Vector2 position, float angle, float scale, SpriteEffects effects, float layerDepth)
+        public void Draw(SpriteBatch batch, Vector2 position, float angle, float scale, SpriteEffects effects, float layerDepth)
         {
             var shapeSystem = (ShipShapeSystem) Manager.GetSystem(ShipShapeSystem.TypeId);
             Texture2D texture;
@@ -144,7 +142,7 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        public override void Depacketize(Engine.Serialization.IReadablePacket packet)
+        public override void Depacketize(IReadablePacket packet)
         {
             base.Depacketize(packet);
 

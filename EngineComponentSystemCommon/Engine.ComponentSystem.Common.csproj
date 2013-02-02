@@ -64,6 +64,7 @@
     <Compile Include="Components\Avatar.cs" />
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="IInformation.cs" />
+    <Compile Include="Systems\ContentSystem.cs" />
     <Compile Include="Systems\GraphicsDeviceSystem.cs" />
     <Compile Include="Components\Owner.cs" />
     <Compile Include="Messages\GraphicsDeviceCreated.cs" />

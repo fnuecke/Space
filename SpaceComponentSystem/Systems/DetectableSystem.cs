@@ -34,13 +34,13 @@ namespace Space.ComponentSystem.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             foreach (var component in Components)
             {
                 // Load our texture, if it's not set.
                 if (component.Texture == null)
                 {
-                    var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                    component.Texture = graphicsSystem.Content.Load<Texture2D>(component.TextureName);
+                    component.Texture = content.Load<Texture2D>(component.TextureName);
                 }
             }
         }
@@ -54,9 +54,10 @@ namespace Space.ComponentSystem.Systems
 
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             foreach (var component in Components)
             {
-                component.Texture = message.Content.Load<Texture2D>(component.TextureName);
+                component.Texture = content.Load<Texture2D>(component.TextureName);
             }
         }
 

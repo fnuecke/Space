@@ -246,7 +246,7 @@ namespace Space.ComponentSystem.Systems
             //   non-obvious.
 
             // Get content manager to fetch textures from which to generate physics models.
-            var content = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content;
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
 
             // Number of asteroid fields in this cell?
             var fieldCount = random.NextInt32(8, 12);

@@ -8,7 +8,6 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -124,8 +123,7 @@ namespace Space.ComponentSystem.Systems
                         // Load texture if necessary.
                         if (shield.Structure == null && !string.IsNullOrWhiteSpace(shield.Factory.Structure))
                         {
-                            var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                            shield.Structure = graphicsSystem.Content.Load<Texture2D>(shield.Factory.Structure);
+                            shield.Structure = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content.Load<Texture2D>(shield.Factory.Structure);
                         }
 
                         // Set structure overlay and custom color.
@@ -169,16 +167,17 @@ namespace Space.ComponentSystem.Systems
 
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             if (_shader == null)
             {
-                _shader = new Graphics.Shield(message.Content, message.Graphics);
+                _shader = new Graphics.Shield(content, message.Graphics);
                 _shader.LoadContent();
             }
             foreach (var component in _shields)
             {
                 if (!string.IsNullOrWhiteSpace(component.Factory.Structure))
                 {
-                    component.Structure = message.Content.Load<Texture2D>(component.Factory.Structure);
+                    component.Structure = content.Load<Texture2D>(component.Factory.Structure);
                 }
             }
         }

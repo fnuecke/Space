@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
@@ -151,7 +152,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
-            LoadContent(message.Content, message.Graphics);
+            LoadContent(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, message.Graphics);
         }
 
         private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
@@ -162,7 +163,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         private void OnGraphicsDeviceReset(GraphicsDeviceReset message)
         {
             UnloadContent();
-            LoadContent(message.Content, message.Graphics);
+            LoadContent(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, message.Graphics);
         }
 
         /// <summary>Called when the graphics device has been (re)created, and assets should be loaded.</summary>

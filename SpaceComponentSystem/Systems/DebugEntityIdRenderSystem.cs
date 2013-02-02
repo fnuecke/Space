@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
@@ -100,7 +101,7 @@ namespace Space.ComponentSystem.Systems
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
-            _font = message.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+            _font = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content.Load<SpriteFont>("Fonts/ConsoleFont");
         }
 
         private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)

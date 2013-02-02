@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Util;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Util;
@@ -190,7 +192,7 @@ namespace Space.ComponentSystem.Systems
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
-            _font = message.Content.Load<SpriteFont>("Fonts/bauhaus");
+            _font = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content.Load<SpriteFont>("Fonts/bauhaus");
         }
 
         private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
@@ -212,6 +214,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
+        [PublicAPI]
         public void Display(string value, FarPosition position, Color color, float scale, float duration)
         {
             // Don't draw stuff that's way off-screen.
@@ -242,6 +245,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
+        [PublicAPI]
         public void Display(string value, FarPosition position, Color color, float scale = 1f)
         {
             Display(value, position, color, scale, DefaultDuration);
@@ -250,6 +254,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Displays the specified text at the specified world coordinates.</summary>
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
+        [PublicAPI]
         public void Display(string value, FarPosition position)
         {
             Display(value, position, DefaultColor, 1f, DefaultDuration);
@@ -261,6 +266,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
+        [PublicAPI]
         public void Display(StringBuilder value, FarPosition position, Color color, float scale, float duration)
         {
             // Don't draw stuff that's way off-screen.
@@ -291,6 +297,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
+        [PublicAPI]
         public void Display(StringBuilder value, FarPosition position, Color color, float scale = 1f)
         {
             Display(value, position, color, scale, DefaultDuration);
@@ -299,6 +306,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Displays the specified text at the specified world coordinates.</summary>
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
+        [PublicAPI]
         public void Display(StringBuilder value, FarPosition position)
         {
             Display(value, position, DefaultColor, 1f, DefaultDuration);
@@ -310,6 +318,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
+        [PublicAPI]
         public void Display(float value, FarPosition position, Color color, float scale, float duration)
         {
             // Don't draw stuff that's way off-screen.
@@ -327,6 +336,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
+        [PublicAPI]
         public void Display(float value, FarPosition position, Color color, float scale = 1f)
         {
             Display(value, position, color, scale, DefaultDuration);
@@ -335,6 +345,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Displays the specified text at the specified world coordinates.</summary>
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
+        [PublicAPI]
         public void Display(float value, FarPosition position)
         {
             Display(value, position, DefaultColor, 1f, DefaultDuration);
@@ -346,6 +357,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
         /// <param name="duration">How long to display the text, in seconds.</param>
+        [PublicAPI]
         public void Display(int value, FarPosition position, Color color, float scale, float duration)
         {
             // Don't draw stuff that's way off-screen.
@@ -363,6 +375,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="position">The position to display it at.</param>
         /// <param name="color">The color of the text.</param>
         /// <param name="scale">The scale of the text.</param>
+        [PublicAPI]
         public void Display(int value, FarPosition position, Color color, float scale = 1f)
         {
             Display(value, position, color, scale, DefaultDuration);
@@ -371,6 +384,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Displays the specified text at the specified world coordinates.</summary>
         /// <param name="value">The value to display.</param>
         /// <param name="position">The position to display it at.</param>
+        [PublicAPI]
         public void Display(int value, FarPosition position)
         {
             Display(value, position, DefaultColor, 1f, DefaultDuration);

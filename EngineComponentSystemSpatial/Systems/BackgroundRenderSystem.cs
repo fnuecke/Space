@@ -56,6 +56,8 @@ namespace Engine.ComponentSystem.Spatial.Systems
         /// <param name="elapsedMilliseconds">The elapsed milliseconds.</param>
         public void Draw(long frame, float elapsedMilliseconds)
         {
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
+
             // Update all our backgrounds.
             for (var i = _backgrounds.Count - 1; i >= 0; i--)
             {
@@ -72,8 +74,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
                     }
 
                     // Otherwise load the texture.
-                    var graphicsSystem = ((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId));
-                    background.Textures[j] = graphicsSystem.Content.Load<Texture2D>(background.TextureNames[j]);
+                    background.Textures[j] = content.Load<Texture2D>(background.TextureNames[j]);
                 }
 
                 // Stop if we're already at full alpha.
@@ -199,11 +200,13 @@ namespace Engine.ComponentSystem.Spatial.Systems
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
+
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             foreach (var background in _backgrounds)
             {
                 for (var i = 0; i < background.TextureNames.Length; i++)
                 {
-                    background.Textures[i] = message.Content.Load<Texture2D>(background.TextureNames[i]);
+                    background.Textures[i] = content.Load<Texture2D>(background.TextureNames[i]);
                 }
             }
         }

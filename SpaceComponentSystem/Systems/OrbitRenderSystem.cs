@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
@@ -274,10 +275,11 @@ namespace Space.ComponentSystem.Systems
 
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
+            var content = ((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content;
             _spriteBatch = new SpriteBatch(message.Graphics.GraphicsDevice);
             if (_ellipse == null)
             {
-                _ellipse = new Ellipse(message.Content, message.Graphics)
+                _ellipse = new Ellipse(content, message.Graphics)
                 {
                     Thickness = OrbitThickness,
                     BlendState = BlendState.Additive
@@ -286,7 +288,7 @@ namespace Space.ComponentSystem.Systems
             }
             if (_filledEllipse == null)
             {
-                _filledEllipse = new FilledEllipse(message.Content, message.Graphics)
+                _filledEllipse = new FilledEllipse(content, message.Graphics)
                 {
                     Gradient = DeadZoneDiffuseWidth,
                     Color = DeadZoneColor,

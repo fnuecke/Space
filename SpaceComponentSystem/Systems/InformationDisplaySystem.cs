@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework.Graphics;
 using Engine.ComponentSystem.Common.Messages;
@@ -75,7 +76,7 @@ namespace Space.ComponentSystem.Systems
 
         private void OnGraphicsDeviceCreated(GraphicsDeviceCreated message)
         {
-            LoadContent(message.Content, message.Graphics);
+            LoadContent(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, message.Graphics);
         }
 
         private void OnGraphicsDeviceDisposing(GraphicsDeviceDisposing message)
@@ -86,7 +87,7 @@ namespace Space.ComponentSystem.Systems
         private void OnGraphicsDeviceReset(GraphicsDeviceReset message)
         {
             UnloadContent();
-            LoadContent(message.Content, message.Graphics);
+            LoadContent(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, message.Graphics);
         }
 
         /// <summary>Called when the graphics device has been (re)created, and assets should be loaded.</summary>

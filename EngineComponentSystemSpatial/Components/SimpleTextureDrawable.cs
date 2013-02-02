@@ -53,7 +53,7 @@ namespace Engine.ComponentSystem.Spatial.Components
             {
                 if (!string.IsNullOrWhiteSpace(_textureName))
                 {
-                    LoadContent(((GraphicsDeviceSystem) Manager.GetSystem(GraphicsDeviceSystem.TypeId)).Content, null);
+                    LoadContent(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, null);
                 }
                 return _texture;
             }

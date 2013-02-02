@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -93,7 +94,7 @@ namespace Space.ComponentSystem.Systems
         {
             if (_sun == null)
             {
-                _sun = new Sun(message.Content, message.Graphics);
+                _sun = new Sun(((ContentSystem) Manager.GetSystem(ContentSystem.TypeId)).Content, message.Graphics);
                 _sun.LoadContent();
             }
         }
