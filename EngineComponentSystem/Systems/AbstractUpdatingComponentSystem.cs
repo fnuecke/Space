@@ -16,7 +16,7 @@ namespace Engine.ComponentSystem.Systems
         ///     Reused for iterating components when updating, to avoid modifications to the list of components breaking the
         ///     update.
         /// </summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private List<TComponent> _updatingComponents = new List<TComponent>();
 
         #endregion

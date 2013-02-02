@@ -49,7 +49,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>A lists of active effects with the effect name and the position to display the effect at.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         internal readonly List<PositionedEffect> Effects = new List<PositionedEffect>();
 
         #endregion
@@ -228,7 +228,8 @@ namespace Space.ComponentSystem.Components
         #region Types
 
         /// <summary>Utility structure to represent particle effects with the offset.</summary>
-        internal sealed class PositionedEffect : IPacketizable
+        [Packetizable]
+        internal sealed class PositionedEffect
         {
             /// <summary>The id the effect is referenced by (usually the component that caused its creation).</summary>
             public int Id;
@@ -243,7 +244,7 @@ namespace Space.ComponentSystem.Components
             public float Direction;
 
             /// <summary>The actual particle effect structure.</summary>
-            [PacketizerIgnore]
+            [PacketizeIgnore]
             public ParticleEffect Effect;
 
             /// <summary>The offset relative to the owner's position.</summary>

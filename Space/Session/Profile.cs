@@ -17,6 +17,7 @@ using Space.Util;
 namespace Space.Session
 {
     /// <summary>Implements profile save and restore functionality.</summary>
+    [Packetizable]
     internal sealed class Profile : IProfile
     {
         #region Logger

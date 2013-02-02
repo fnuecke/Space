@@ -71,7 +71,7 @@ namespace Space.ComponentSystem.Components
 
         private string _fallbackTextureName;
 
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private Texture2D _fallbackTexture;
 
         #endregion

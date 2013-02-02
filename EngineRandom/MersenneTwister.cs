@@ -44,7 +44,8 @@ using Engine.Util;
 namespace Engine.Random
 {
     /// <summary>Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).</summary>
-    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICopyable<MersenneTwister>
+    [Packetizable]
+    public sealed class MersenneTwister : IUniformRandom, ICopyable<MersenneTwister>
     {
         #region Constants: period parameters
 
@@ -68,7 +69,7 @@ namespace Engine.Random
         #region Fields
 
         /// <summary>The array for the state vector.</summary>
-        [DeepCopy, PacketizerIgnore]
+        [DeepCopy, PacketizeIgnore]
         private readonly ulong[] _mt = new ulong[N];
 
         /// <summary>Current state of this randomizer.</summary>

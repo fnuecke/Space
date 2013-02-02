@@ -14,6 +14,7 @@ namespace Engine.Simulation
 {
     /// <summary>Implements a Trailing State Synchronization.</summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
+    [Packetizable]
     public sealed class TSS : IReversibleSimulation
     {
         #region Logger
@@ -28,7 +29,7 @@ namespace Engine.Simulation
         /// <summary>
         ///     Dispatched when the state needs to roll back further than it can to accommodate an authoritative command / a user
         ///     rollback request. The handler must trigger the process of getting a valid snapshot, which is fed back to this state
-        ///     (normally via <see cref="Packetizable.ReadPacketizableInto"/>).
+        ///     (normally via <see cref="Packetizable.ReadPacketizableInto{T}"/>).
         /// </summary>
         public event EventHandler<EventArgs> Invalidated;
 
@@ -46,11 +47,11 @@ namespace Engine.Simulation
         }
 
         /// <summary>The component system manager in use in this simulation.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public IManager Manager { get; private set; }
 
         /// <summary>Tells if the state is currently waiting to be synchronized.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public bool WaitingForSynchronization { get; private set; }
 
         /// <summary>Get the trailing simulation.</summary>
@@ -70,34 +71,34 @@ namespace Engine.Simulation
         #region Fields
 
         /// <summary>The delays of the individual simulations.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly uint[] _delays;
 
         /// <summary>The parameterization for the different threads.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly ThreadData[] _threadData;
 
         /// <summary>Tasks used to update different simulations.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Task[] _tasks;
 
         /// <summary>
         ///     The list of running simulations. They are ordered in in increasing delay, i.e. the state at slot 0 is the
         ///     leading one, 1 is the next newest, and so on.
         /// </summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly IAuthoritativeSimulation[] _simulations;
 
         /// <summary>List of object ids to remove from delayed simulations when they reach the given frame.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Dictionary<long, List<int>> _removes = new Dictionary<long, List<int>>();
 
         /// <summary>List of commands to push in delayed simulations when they reach the given frame.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
 
         /// <summary>A list that is re-used for marking entries for removal.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly List<long> _reusableDeprecationList = new List<long>();
 
         #endregion
@@ -682,19 +683,31 @@ namespace Engine.Simulation
         {
             #region Properties
 
-            /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
-            IEnumerable<IComponent> IManager.Components
-            {
-                get { throw new NotSupportedException(); }
-            }
-
             /// <summary>A list of all systems registered with this manager.</summary>
             IEnumerable<AbstractSystem> IManager.Systems
             {
                 get { throw new NotSupportedException(); }
             }
 
-            /// <summary>Number of components currently registered in this system.</summary>
+            /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
+            IEnumerable<IComponent> IManager.Components
+            {
+                get { throw new NotSupportedException(); }
+            }
+
+            /// <summary>Number of systems currently registered in this manager.</summary>
+            public int SystemCount
+            {
+                get { return _tss.LeadingSimulation.Manager.SystemCount; }
+            }
+
+            /// <summary>Number of entities currently registered in this manager.</summary>
+            public int EntityCount
+            {
+                get { return _tss.LeadingSimulation.Manager.EntityCount; }
+            }
+
+            /// <summary>Number of components currently registered in this manager.</summary>
             public int ComponentCount
             {
                 get { return _tss.LeadingSimulation.Manager.ComponentCount; }

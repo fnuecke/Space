@@ -25,7 +25,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>A list of stations this spawner may send ships to.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         public readonly HashSet<int> Targets = new HashSet<int>();
 
         /// <summary>The interval in which new entities are being spawned, in ticks.</summary>

@@ -224,11 +224,11 @@ namespace Engine.ComponentSystem.Physics.Systems
         private int _contactCount;
 
         /// <summary>List of active contacts between bodies (i.e. current active collisions).</summary>
-        [DeepCopy, PacketizerIgnore]
+        [DeepCopy, PacketizeIgnore]
         private Contact[] _contacts = new Contact[0];
 
         /// <summary>List of contact edges, two per contact.</summary>
-        [DeepCopy, PacketizerIgnore]
+        [DeepCopy, PacketizeIgnore]
         private ContactEdge[] _contactEdges = new ContactEdge[0];
 
         /// <summary>The start of the linked list of used contacts.</summary>
@@ -239,25 +239,25 @@ namespace Engine.ComponentSystem.Physics.Systems
         ///     maintained using the 'Previous' reference, to allow keeping the 'Next' reference intact when deleting contacts
         ///     during iteration of the active contact list.
         /// </summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private int _freeContacts = -1;
 
         /// <summary>The number of joints in the simulation.</summary>
         private int _jointCount;
 
         /// <summary>List of all joints in the simulation.</summary>
-        [DeepCopy, PacketizerIgnore]
+        [DeepCopy, PacketizeIgnore]
         private Joint[] _joints = new Joint[0];
 
         /// <summary>List of joint edges, two per joint (although sometimes only one might actually be used).</summary>
-        [DeepCopy, PacketizerIgnore]
+        [DeepCopy, PacketizeIgnore]
         private JointEdge[] _jointEdges = new JointEdge[0];
 
         /// <summary>Start of the linked list of used joints.</summary>
         private int _usedJoints = -1;
 
         /// <summary>Start of the linked list of available joints.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private int _freeJoints = -1;
 
         /// <summary>
@@ -265,7 +265,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         ///     attached to them. This way we can quickly remove gear joints when one of the joints they are attached to is
         ///     removed.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Dictionary<int, HashSet<int>> _gearJoints = new Dictionary<int, HashSet<int>>();
 
         /// <summary>
@@ -275,14 +275,14 @@ namespace Engine.ComponentSystem.Physics.Systems
         private bool _findContactsBeforeNextUpdate;
 
         /// <summary>Reused every update for solving simulation constraints.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Island _island;
 
         /// <summary>
         ///     Proxies for fixtures used in time of impact computation. We keep those two instances alive to avoid producing
         ///     garbage.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Algorithms.DistanceProxy _proxyA = new Algorithms.DistanceProxy(),
                                          _proxyB = new Algorithms.DistanceProxy();
 
@@ -290,11 +290,11 @@ namespace Engine.ComponentSystem.Physics.Systems
         private int _fixPoint;
 
         /// <summary>Profiling data.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Profile _profile = new Profile();
 
         /// <summary>Temporarily holds a reference to the actual index during updates, for better performance.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private IIndex<int, WorldBounds, WorldPoint> _index;
 
         #endregion

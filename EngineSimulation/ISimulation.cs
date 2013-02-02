@@ -1,12 +1,11 @@
 ﻿using Engine.ComponentSystem;
-using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
 
 namespace Engine.Simulation
 {
     /// <summary>Minimal interface to be implemented by simulation states.</summary>
-    public interface ISimulation : IPacketizable, ICopyable<ISimulation>
+    public interface ISimulation : ICopyable<ISimulation>
     {
         /// <summary>The current frame of the simulation the state represents.</summary>
         long CurrentFrame { get; }

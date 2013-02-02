@@ -78,19 +78,19 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>List of cells that are currently marked as alive.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<ulong> _livingCells = new HashSet<ulong>();
 
         /// <summary>Cells awaiting cleanup, with the time when they became invalid.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Dictionary<ulong, long> _pendingCells = new Dictionary<ulong, long>();
 
         /// <summary>List of cells that are currently marked as alive.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<ulong> _livingSubCells = new HashSet<ulong>();
 
         /// <summary>Cells awaiting cleanup, with the time when they became invalid.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Dictionary<ulong, long> _pendingSubCells = new Dictionary<ulong, long>();
 
         #endregion
@@ -98,23 +98,23 @@ namespace Space.ComponentSystem.Systems
         #region Single-Allocation
 
         /// <summary>Reused each update, avoids memory re-allocation.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<ulong> _reusableNewCellIds = new HashSet<ulong>();
 
         /// <summary>Reused each update, avoids memory re-allocation.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<ulong> _reusableBornCellsIds = new HashSet<ulong>();
 
         /// <summary>Reused each update, avoids memory re-allocation.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<ulong> _reusableDeceasedCellsIds = new HashSet<ulong>();
 
         /// <summary>Reused each update, avoids memory re-allocation.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private List<ulong> _reusablePendingList = new List<ulong>();
 
         /// <summary>Reused for querying entities contained in a dying cell.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private ISet<int> _reusableComponentList = new HashSet<int>();
 
         #endregion

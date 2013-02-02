@@ -329,7 +329,7 @@ namespace Engine.Controller
             #region Fields
 
             /// <summary>The controller this managed wrapper belongs to.</summary>
-            [PacketizerIgnore]
+            [PacketizeIgnore]
             private readonly AbstractTssController<TSession> _controller;
 
             #endregion

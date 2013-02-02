@@ -102,7 +102,7 @@ namespace Engine.ComponentSystem.Physics.Joints
             public Vector2 C;
         }
 
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SolverTemp _tmp;
 
         #endregion

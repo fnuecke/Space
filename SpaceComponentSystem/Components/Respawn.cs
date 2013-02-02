@@ -40,7 +40,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>A list of components which should be disabled while dead.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         public readonly List<int> ComponentsToDisable = new List<int>();
 
         /// <summary>The number of ticks to wait before respawning the entity.</summary>

@@ -54,7 +54,7 @@ namespace Space.ComponentSystem.Systems
         ///     Tracks cell information for active cells and inactive cells that are in a changed state (deviating from the
         ///     one that would be procedurally generated).
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Dictionary<ulong, CellInfo> _cellInfo = new Dictionary<ulong, CellInfo>();
 
         #endregion
@@ -502,7 +502,8 @@ namespace Space.ComponentSystem.Systems
         #region CellInfo
 
         /// <summary>Class used to track persistent information on a single cell.</summary>
-        public sealed class CellInfo : IPacketizable
+        [Packetizable]
+        public sealed class CellInfo
         {
             #region Properties
 
@@ -534,7 +535,7 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
-            [PacketizerIgnore]
+            [PacketizeIgnore]
             public List<int> Stations = new List<int>();
 
             #endregion

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Engine.Serialization;
 
 namespace Engine.Session
 {
@@ -43,13 +42,13 @@ namespace Engine.Session
         /// <param name="remote">the remote host that runs the session.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="data">additional data to be associated with our player.</param>
-        void Join(IPEndPoint remote, string playerName, IPacketizable data);
+        void Join(IPEndPoint remote, string playerName, object data);
 
         /// <summary>Join a local game.</summary>
         /// <param name="server">the local server to join.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="data">additional data to be associated with our player.</param>
-        void Join(IServerSession server, string playerName, IPacketizable data);
+        void Join(IServerSession server, string playerName, object data);
 
         /// <summary>Leave the session.</summary>
         void Leave();

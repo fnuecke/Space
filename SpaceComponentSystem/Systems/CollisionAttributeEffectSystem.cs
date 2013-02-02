@@ -21,11 +21,11 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>Tracks new collisions that occurred since the last update.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Dictionary<ulong, BeginCollisionInfo> _newCollision = new Dictionary<ulong, BeginCollisionInfo>();
 
         /// <summary>List of current collisions.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Dictionary<ulong, ActiveCollisionInfo> _activeCollisions = new Dictionary<ulong, ActiveCollisionInfo>();
 
         /// <summary>Randomizer used for determining whether certain effects should be applied (e.g. dots, blocking, ...).</summary>
@@ -379,7 +379,8 @@ namespace Space.ComponentSystem.Systems
 
         #region Types
 
-        private sealed class BeginCollisionInfo : IPacketizable
+        [Packetizable]
+        private sealed class BeginCollisionInfo
         {
             /// <summary>Number of fixture collisions between the two entities.</summary>
             public int Count;
@@ -395,7 +396,8 @@ namespace Space.ComponentSystem.Systems
             public Vector2 Normal;
         }
 
-        private sealed class ActiveCollisionInfo : IPacketizable
+        [Packetizable]
+        private sealed class ActiveCollisionInfo
         {
             /// <summary>The number of active fixture collisions. The collision becomes inactive when this reaches zero.</summary>
             public int Count;

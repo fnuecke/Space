@@ -98,7 +98,7 @@ namespace Engine.ComponentSystem.Physics.Joints
             public float AngularMass;
         }
 
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SolverTemp _tmp;
 
         #endregion

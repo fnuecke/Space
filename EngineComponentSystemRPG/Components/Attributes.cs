@@ -49,14 +49,14 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>Base values for attributes.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
         ///     Modified values, based on equipment and status effects. This stores the absolute value as well as the
         ///     multiplier for the value.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
         #endregion
@@ -64,12 +64,12 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Single allocation
 
         /// <summary>Reusable list for modifier computation.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList =
             new List<AttributeModifier<TAttribute>>();
 
         /// <summary>Reusable list for modifier computation.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList =
             new List<AttributeModifier<TAttribute>>();
 

@@ -23,7 +23,8 @@ namespace Space.ComponentSystem.Factories
 {
     /// <summary>Contains data about a single projectile fired by a weapon.</summary>
     [TypeConverter(typeof (ExpandableObjectConverter))]
-    public sealed class ProjectileFactory : IPacketizable
+    [Packetizable]
+    public sealed class ProjectileFactory
     {
         #region Properties
 

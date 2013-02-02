@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace Engine.Serialization
 {
@@ -15,28 +16,17 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
+        [PublicAPI]
         public static IWritablePacket Write(this IWritablePacket packet, byte[] data)
         {
             return data == null ? packet.Write(-1) : packet.Write(data, 0, data.Length);
-        }
-
-        /// <summary>
-        ///     Writes the specified packet.
-        ///     <para/>
-        ///     May be <c>null</c>.
-        /// </summary>
-        /// <param name="packet">The packet.</param>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public static IWritablePacket Write(this IWritablePacket packet, IWritablePacket data)
-        {
-            return data == null ? packet.Write(-1) : packet.Write(data.GetBuffer(), 0, data.Length);
         }
 
         /// <summary>Writes the specified string value using UTF8 encoding.</summary>
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
+        [PublicAPI]
         public static IWritablePacket Write(this IWritablePacket packet, string data)
         {
             return data == null ? packet.Write((byte[]) null) : packet.Write(Encoding.UTF8.GetBytes(data));
@@ -46,6 +36,7 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
+        [PublicAPI]
         public static IWritablePacket Write(this IWritablePacket packet, Type data)
         {
             return data == null ? packet.Write((string) null) : packet.Write(data.AssemblyQualifiedName);
@@ -62,8 +53,9 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
+        [PublicAPI]
         public static IWritablePacket Write<T>(this IWritablePacket packet, ICollection<T> data)
-            where T : class, IPacketizable
+            where T : class
         {
             if (data == null)
             {
@@ -89,8 +81,9 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
+        [PublicAPI]
         public static IWritablePacket WriteWithTypeInfo<T>(this IWritablePacket packet, ICollection<T> data)
-            where T : class, IPacketizable
+            where T : class
         {
             if (data == null)
             {

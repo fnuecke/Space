@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Engine.Serialization
 {
@@ -8,6 +9,7 @@ namespace Engine.Serialization
     ///     This implementation allows hashing of an arbitrary format of data, one just has to keep calling one of the 'Write'
     ///     variants. A snapshot of the current hash can always be obtained via the <see cref="Value"/> property.
     /// </summary>
+    [PublicAPI]
     public sealed class Hasher : IWritablePacket
     {
         #region Properties
@@ -16,6 +18,7 @@ namespace Engine.Serialization
         ///     Current value of the hash, based on the data given thus far. This performs some postprocessing, so keep a copy
         ///     if you reuse this a lot.
         /// </summary>
+        [PublicAPI]
         public uint Value
         {
             get

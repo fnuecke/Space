@@ -17,6 +17,7 @@ namespace Engine.Simulation
     ///         </list>
     ///     </para>
     /// </summary>
+    [Packetizable]
     public abstract class AbstractSimulation : ISimulation
     {
         #region Properties
@@ -32,7 +33,7 @@ namespace Engine.Simulation
         #region Fields
 
         /// <summary>List of queued commands to execute in the next step.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         protected List<Command> Commands = new List<Command>();
 
         #endregion

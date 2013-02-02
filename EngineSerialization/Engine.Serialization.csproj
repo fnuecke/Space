@@ -59,7 +59,6 @@
     <Compile Include="IReadablePacket.cs" />
     <Compile Include="Packetizable.cs" />
     <Compile Include="Hasher.cs" />
-    <Compile Include="IPacketizable.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="PacketException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

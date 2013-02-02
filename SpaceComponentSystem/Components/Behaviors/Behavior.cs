@@ -21,7 +21,8 @@ namespace Space.ComponentSystem.Components.Behaviors
     ///     vegetative nervous system of the AI. For example, it tries to keep the AI away from danger, and 'automatically'
     ///     navigates to a desired destination.
     /// </summary>
-    internal abstract class Behavior : IPacketizable, ICopyable<Behavior>
+    [Packetizable]
+    internal abstract class Behavior : ICopyable<Behavior>
     {
         #region Constants
         
@@ -36,7 +37,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         #region Fields
 
         /// <summary>The AI component this behavior belongs to.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         protected readonly ArtificialIntelligence AI;
 
         /// <summary>The randomizer we use to make pseudo random decisions.</summary>
@@ -44,11 +45,11 @@ namespace Space.ComponentSystem.Components.Behaviors
         ///     The "owner" of this instance is the AI component we belong to, so we do not need to take care of serialization
         ///     or copying.
         /// </remarks>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         protected readonly IUniformRandom Random;
 
         /// <summary>The poll rate in ticks how often to update this behavior.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly int _pollRate;
 
         /// <summary>How many more ticks to wait before calling update on</summary>
@@ -510,16 +511,16 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Debugging
 
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private Vector2 _lastEscape;
 
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private Vector2 _lastSeparation;
 
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private Vector2 _lastCohesion;
 
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private Vector2 _lastFormation;
 
 #if DEBUG

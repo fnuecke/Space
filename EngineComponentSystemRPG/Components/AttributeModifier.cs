@@ -24,7 +24,8 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     /// <typeparam name="TAttribute">The enum of possible attributes.</typeparam>
     [TypeConverter(typeof (ExpandableObjectConverter))]
-    public sealed class AttributeModifier<TAttribute> : IPacketizable, ICopyable<AttributeModifier<TAttribute>>
+    [Packetizable]
+    public sealed class AttributeModifier<TAttribute> : ICopyable<AttributeModifier<TAttribute>>
     {
         #region Fields
 

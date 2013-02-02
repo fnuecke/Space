@@ -42,7 +42,7 @@ namespace Space.ComponentSystem.Systems
         private IdManager _squadIds = new IdManager();
 
         /// <summary>The list of actual squads, mapping squad id to squad data.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SparseArray<SquadData> _squads = new SparseArray<SquadData>();
 
         #endregion
@@ -423,7 +423,8 @@ namespace Space.ComponentSystem.Systems
         ///     Base class defining the interface all formation implementations must implement. Formations are implemented by
         ///     providing an enumerator over the positions of the single members of a squad.
         /// </summary>
-        public abstract class AbstractFormation : IEnumerable<Vector2>, IPacketizable
+        [Packetizable]
+        public abstract class AbstractFormation : IEnumerable<Vector2>
         {
             /// <summary>Returns an enumerator that iterates through the collection.</summary>
             /// <returns>
@@ -707,7 +708,7 @@ namespace Space.ComponentSystem.Systems
             /// <summary>A simple wrapper for parameterless formation implementations.</summary>
             private class SimpleFormation : AbstractFormation
             {
-                [PacketizerIgnore]
+                [PacketizeIgnore]
                 private readonly IEnumerable<Vector2> _enumerable;
 
                 protected SimpleFormation(IEnumerable<Vector2> formation)

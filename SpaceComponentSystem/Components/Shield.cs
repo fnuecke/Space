@@ -24,11 +24,11 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>The factory that created this shield.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public ShieldFactory Factory;
 
         /// <summary>The texture to use as a structure for the shield.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public Texture2D Structure;
 
         #endregion

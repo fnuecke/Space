@@ -95,7 +95,7 @@ namespace Engine.ComponentSystem.Physics.Joints
             public float Mass;
         }
 
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SolverTemp _tmp;
 
         #endregion

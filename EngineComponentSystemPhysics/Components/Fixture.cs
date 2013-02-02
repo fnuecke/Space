@@ -214,7 +214,7 @@ namespace Engine.ComponentSystem.Physics.Components
         #region Fields
 
         /// <summary>The type of this fixture, for fast evaluation method lookup in contact creation.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         internal readonly FixtureType Type;
 
         /// <summary>

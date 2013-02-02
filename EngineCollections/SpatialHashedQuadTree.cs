@@ -34,8 +34,8 @@ namespace Engine.Collections
     ///     areas using quad trees. On that level the index works with normal float values for better performance.
     /// </summary>
     /// <typeparam name="T">The type to store in the index.</typeparam>
-    public sealed class SpatialHashedQuadTree<T>
-        : IIndex<T, TRectangle, TPoint>, IPacketizable, ICopyable<SpatialHashedQuadTree<T>>
+    [Packetizable]
+    public sealed class SpatialHashedQuadTree<T> : IIndex<T, TRectangle, TPoint>, ICopyable<SpatialHashedQuadTree<T>>
     {
         #region Constants
 
@@ -67,11 +67,11 @@ namespace Engine.Collections
         #region Fields
 
         /// <summary>A callback that can be used to write an object stored in the tree to a packet for serialization.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Action<IWritablePacket, T> _packetizer;
 
         /// <summary>A callback that can be used to read an object stored in the tree from a packet for deserialization.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Func<IReadablePacket, T> _depacketizer;
 
         /// <summary>The max entries per node in quad trees.</summary>
@@ -93,12 +93,12 @@ namespace Engine.Collections
         private readonly float _movingBoundMultiplier;
 
         /// <summary>The buckets with the quad trees storing the actual entries.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Dictionary<ulong, Collections.DynamicQuadTree<T>> _cells =
             new Dictionary<ulong, Collections.DynamicQuadTree<T>>();
 
         /// <summary>Maps entries back to their bounds, for removal.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Dictionary<T, TRectangle> _entryBounds = new Dictionary<T, TRectangle>();
 
         #endregion

@@ -14,7 +14,7 @@ namespace Engine.ComponentSystem.Systems
         #region Fields
 
         /// <summary>List of all currently registered components.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         protected List<TComponent> Components = new List<TComponent>();
 
         #endregion

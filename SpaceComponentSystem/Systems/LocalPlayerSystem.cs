@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Systems
         ///     Gets the entity ID of the local player's avatar. This can be an invalid value (zero) in case the player
         ///     currently does not have an avatar, or the session was closed.
         /// </summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public int LocalPlayerAvatar { get; private set; }
 
         #endregion
@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>The session this system belongs to, for fetching the local player.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly IClientSession _session;
 
         #endregion

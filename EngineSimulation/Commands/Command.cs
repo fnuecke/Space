@@ -4,12 +4,13 @@ using Engine.Serialization;
 namespace Engine.Simulation.Commands
 {
     /// <summary>Base class for commands.</summary>
-    public abstract class Command : IPacketizable, IEquatable<Command>, IComparable<Command>
+    [Packetizable]
+    public abstract class Command : IEquatable<Command>, IComparable<Command>
     {
         #region Fields
 
         /// <summary>The type of the command.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public readonly Enum Type;
 
         /// <summary>

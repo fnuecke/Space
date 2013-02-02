@@ -18,11 +18,11 @@ namespace Space.ComponentSystem.Systems
     public class EquipmentToFixtureSystem : AbstractSystem, IUpdatingSystem
     {
         /// <summary>List of entities for which the equipment changed since the last update.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<int> _changedShape = new HashSet<int>();
         
         /// <summary>List of entities for which the mass changed since the last update, meaning we have to recompute our fixture's density.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<int> _changedMass = new HashSet<int>(); 
 
         public void Update(long frame)

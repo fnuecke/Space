@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
         /// </value>
         public bool Enabled { get; set; }
 
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private List<MoveCamera.Positions> _positions = new List<MoveCamera.Positions>();
 
         private long _frame;

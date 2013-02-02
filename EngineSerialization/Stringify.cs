@@ -225,7 +225,7 @@ namespace Engine.Serialization
 
         /// <summary>
         ///     Utility method the gets a list of all fields in a type, including this in its base classes all the way up the
-        ///     hierarchy. Fields with the <see cref="PacketizerIgnoreAttribute"/> are not returned. This will also include
+        ///     hierarchy. Fields with the <see cref="PacketizeIgnoreAttribute"/> are not returned. This will also include
         ///     automatically generated field backing properties, unless the property has said attribute.
         /// </summary>
         /// <param name="type">The type to start parsing at.</param>
@@ -253,7 +253,7 @@ namespace Engine.Serialization
                         // when we parse the properties.
                         .Where(
                             f => f.DeclaringType == t &&
-                                 !f.IsDefined(typeof (PacketizerIgnoreAttribute), true) &&
+                                 !f.IsDefined(typeof (PacketizeIgnoreAttribute), true) &&
                                  !f.IsDefined(typeof (CompilerGeneratedAttribute), false)));
 
                 // Look for properties with automatically generated backing fields.
@@ -269,7 +269,7 @@ namespace Engine.Serialization
                         //   (which we can deduce from the getter/setter being compiler generated).
                         .Where(
                             p => p.DeclaringType == t &&
-                                 !p.IsDefined(typeof (PacketizerIgnoreAttribute), true) &&
+                                 !p.IsDefined(typeof (PacketizeIgnoreAttribute), true) &&
                                  (p.GetGetMethod(true) ?? p.GetSetMethod(true))
                                      .IsDefined(typeof (CompilerGeneratedAttribute), false))
                         // Get the backing field. There is no "hard link" we can follow, but the

@@ -117,15 +117,15 @@ namespace Engine.ComponentSystem.RPG.Components
         private int _value;
 
         /// <summary>The current level.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private int _level = 1;
 
         /// <summary>Experience required to reach current level.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private int _currentLevelValue;
 
         /// <summary>Experience required to reach next level.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private int _nextLevelValue;
 
         #endregion

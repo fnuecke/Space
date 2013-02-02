@@ -8,7 +8,8 @@ using Engine.Serialization;
 namespace Engine.Util
 {
     /// <summary>Class that handles giving out unique ids, and releasing old ones so they may be reused.</summary>
-    public sealed class IdManager : IPacketizable, ICopyable<IdManager>, IEnumerable<int>
+    [Packetizable]
+    public sealed class IdManager : ICopyable<IdManager>, IEnumerable<int>
     {
         #region Properties
 
@@ -23,7 +24,7 @@ namespace Engine.Util
         #region Fields
 
         /// <summary>The list of ids that were released and may be reused.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private SortedSet<int> _reusableIds = new SortedSet<int>();
 
         /// <summary>The next id we'll create if we have no reusable ids.</summary>

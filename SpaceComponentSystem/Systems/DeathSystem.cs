@@ -24,7 +24,7 @@ namespace Space.ComponentSystem.Systems
         ///     List of entities to kill when we update. This is accumulated from translation events, to allow thread safe
         ///     removal in one go.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private HashSet<int> _entitiesToRemove = new HashSet<int>();
 
         #endregion

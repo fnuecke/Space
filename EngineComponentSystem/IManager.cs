@@ -13,17 +13,28 @@ namespace Engine.ComponentSystem
     public delegate void MessageCallback<in T>(T message);
 
     /// <summary>Interface for component system managers.</summary>
-    public interface IManager : IPacketizable, ICopyable<IManager>
+    public interface IManager : ICopyable<IManager>
     {
         #region Properties
 
-        /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
-        IEnumerable<IComponent> Components { get; }
-
         /// <summary>A list of all systems registered with this manager.</summary>
+        [PublicAPI]
         IEnumerable<AbstractSystem> Systems { get; }
 
-        /// <summary>Number of components currently registered in this system.</summary>
+        /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
+        [PublicAPI]
+        IEnumerable<IComponent> Components { get; }
+
+        /// <summary>Number of systems currently registered in this manager.</summary>
+        [PublicAPI]
+        int SystemCount { get; }
+
+        /// <summary>Number of entities currently registered in this manager.</summary>
+        [PublicAPI]
+        int EntityCount { get; }
+
+        /// <summary>Number of components currently registered in this manager.</summary>
+        [PublicAPI]
         int ComponentCount { get; }
 
         #endregion
@@ -165,7 +176,7 @@ namespace Engine.ComponentSystem
         ///     Write a complete entity, meaning all its components, to the specified packet. Entities saved this way can be
         ///     restored using the <see cref="DepacketizeEntity"/> method.
         ///     <para/>
-        ///     This uses the components' <see cref="IPacketizable"/> facilities.
+        ///     This uses the components' serialization facilities.
         /// </summary>
         /// <param name="packet">The packet to write to.</param>
         /// <param name="entity">The entity to write.</param>
@@ -183,7 +194,7 @@ namespace Engine.ComponentSystem
         ///     This will act as though all of the written components were added, i.e. for each restored component all systems'
         ///     <see cref="AbstractSystem.OnComponentAdded"/> method will be called.
         ///     <para/>
-        ///     This uses the components' <see cref="IPacketizable"/> facilities.
+        ///     This uses the components' serialization facilities.
         /// </summary>
         /// <param name="packet">The packet to read the entity from.</param>
         /// <param name="componentIdMap">A mapping of how components' ids changed due to serialization, mapping old id to new id.</param>

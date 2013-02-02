@@ -16,6 +16,7 @@ namespace Engine.ComponentSystem.Components
     ///     </para>
     /// </summary>
     [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
+    [Packetizable]
     public abstract class Component : IComponent, ICopyable<Component>
     {
         #region Type ID
@@ -43,7 +44,7 @@ namespace Engine.ComponentSystem.Components
         #region Properties
 
         /// <summary>The manager the component lives in.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public IManager Manager { get; internal set; }
 
         /// <summary>

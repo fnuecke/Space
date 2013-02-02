@@ -7,6 +7,7 @@ using Engine.ComponentSystem.Physics.Math;
 using Engine.ComponentSystem.Physics.Messages;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -19,7 +20,8 @@ namespace Engine.ComponentSystem.Physics.Contacts
 {
     /// <summary>Represents a contact between two fixtures.</summary>
     [DebuggerDisplay("FixtureA = {FixtureIdA}, FixtureB = {FixtureIdB}, IsTouching = {IsTouching}")]
-    public sealed class Contact : ICopyable<Contact>, IPacketizable
+    [Packetizable]
+    public sealed class Contact : ICopyable<Contact>
     {
         #region Linked list data (unused/free)
 
@@ -78,28 +80,32 @@ namespace Engine.ComponentSystem.Physics.Contacts
         #region Interface
 
         /// <summary>The manager of the simulation this contact lives in. Used to look up involved members.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         internal IManager Manager;
 
         /// <summary>Gets the first fixture involved in this contact.</summary>
+        [PublicAPI]
         public Fixture FixtureA
         {
             get { return Manager.GetComponentById(FixtureIdA) as Fixture; }
         }
 
         /// <summary>Gets the second fixture involved in this contact.</summary>
+        [PublicAPI]
         public Fixture FixtureB
         {
             get { return Manager.GetComponentById(FixtureIdB) as Fixture; }
         }
 
         /// <summary>Gets the normal impulse of the specified contact point (separation).</summary>
+        [PublicAPI]
         public float GetNormalImpulse(int point)
         {
             return Manifold.Points[point].NormalImpulse;
         }
 
         /// <summary>Gets the tangent impulse of the specified contact point (friction).</summary>
+        [PublicAPI]
         public float GetTangentImpulse(int point)
         {
             return Manifold.Points[point].TangentImpulse;
@@ -109,6 +115,7 @@ namespace Engine.ComponentSystem.Physics.Contacts
         ///     Disables the contact for this update. This can be useful to avoid collision resolving, e.g. to create
         ///     one-sided edges or if one of the involved bodies is removed.
         /// </summary>
+        [PublicAPI]
         public void Disable()
         {
             IsEnabled = false;
@@ -117,6 +124,7 @@ namespace Engine.ComponentSystem.Physics.Contacts
         /// <summary>Computes the world manifold data for this contact. This is relatively expensive, so use with care.</summary>
         /// <param name="normal">The world contact normal.</param>
         /// <param name="points">The contact points.</param>
+        [PublicAPI]
         public void ComputeWorldManifold(out Vector2 normal, out IList<WorldPoint> points)
         {
             if (Manifold.PointCount < 1)
@@ -436,7 +444,8 @@ namespace Engine.ComponentSystem.Physics.Contacts
     }
 
     /// <summary>Represents a connection between two (potentially) colliding objects.</summary>
-    internal sealed class ContactEdge : ICopyable<ContactEdge>, IPacketizable
+    [Packetizable]
+    internal sealed class ContactEdge : ICopyable<ContactEdge>
     {
         #region Fields
 

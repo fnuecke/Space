@@ -81,7 +81,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         private string _textureName;
 
         /// <summary>The actual texture we draw. If this is null we will try to load it in the next Draw call.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private Texture2D _texture;
 
         #endregion

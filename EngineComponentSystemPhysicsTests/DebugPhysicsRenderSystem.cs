@@ -38,11 +38,11 @@ namespace Engine.ComponentSystem.Physics.Tests
         #region Fields
 
         /// <summary>Backing scale field for initial value.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private float _scale = 1;
 
         /// <summary>Backing offset field for transformation on setting (to avoid recomputation each render pass).</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private WorldPoint _offset = WorldPoint.Zero;
 
         #endregion

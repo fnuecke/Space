@@ -27,11 +27,11 @@ namespace Engine.ComponentSystem.Physics.Components
         #region Fields
 
         /// <summary>The vertices that make up this polygon.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         internal readonly LocalPoint[] Vertices = new LocalPoint[Settings.MaxPolygonVertices];
 
         /// <summary>The surface normals of the edges of this polygon.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         internal readonly Vector2[] Normals = new Vector2[Settings.MaxPolygonVertices];
 
         /// <summary>The number of vertices in this fixture.</summary>

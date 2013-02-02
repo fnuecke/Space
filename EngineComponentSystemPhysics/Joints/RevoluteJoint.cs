@@ -200,7 +200,7 @@ namespace Engine.ComponentSystem.Physics.Joints
             public float MotorMass; // effective mass for motor/limit angular constraint.
         }
 
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SolverTemp _tmp;
 
         #endregion

@@ -47,7 +47,8 @@ namespace Engine.Collections
     ///     The minimum node size can be specified as an arbitrary value larger than zero.
     /// </remarks>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>, IPacketizable, ICopyable<DynamicQuadTree<T>>
+    [Packetizable]
+    public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>, ICopyable<DynamicQuadTree<T>>
     {
         #region Properties
 
@@ -74,11 +75,11 @@ namespace Engine.Collections
         #region Fields
 
         /// <summary>A callback that can be used to write an object stored in the tree to a packet for serialization.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Action<IWritablePacket, T> _packetizer;
 
         /// <summary>A callback that can be used to read an object stored in the tree from a packet for deserialization.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Func<IReadablePacket, T> _depacketizer;
 
         /// <summary>The number of items in a single cell allowed before we try splitting it.</summary>
@@ -106,11 +107,11 @@ namespace Engine.Collections
         private TRectangle _bounds;
 
         /// <summary>The root node of the tree.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Node _root;
 
         /// <summary>Mapping back from value to entry, for faster value to entry lookup when removing or updating items.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Dictionary<T, Entry> _values = new Dictionary<T, Entry>();
 
         #endregion

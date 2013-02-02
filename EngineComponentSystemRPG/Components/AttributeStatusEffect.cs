@@ -26,7 +26,7 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>The actual attribute modifiers which are applied.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         public readonly List<AttributeModifier<TAttribute>> Modifiers = new List<AttributeModifier<TAttribute>>();
 
         #endregion

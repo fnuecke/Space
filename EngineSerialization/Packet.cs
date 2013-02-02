@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using JetBrains.Annotations;
 
 namespace Engine.Serialization
 {
@@ -8,6 +9,7 @@ namespace Engine.Serialization
     ///     Serialization utility class, for packing basic types into a byte array and reading them back. Actual packet
     ///     structure is implied by the program structure, i.e. the caller must know what the next thing to read should be.
     /// </summary>
+    [Packetizable]
     public sealed class Packet : IEquatable<Packet>, IWritablePacket, IReadablePacket
     {
         #region Properties
@@ -29,7 +31,7 @@ namespace Engine.Serialization
         #region Fields
 
         /// <summary>The underlying memory stream used for buffering.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private MemoryStream _stream;
 
         #endregion
@@ -658,6 +660,7 @@ namespace Engine.Serialization
         /// <returns>
         ///     A byte array representing the packet's internal buffer, or <c>null</c> if the packet itself was <c>null</c>.
         /// </returns>
+        [PublicAPI]
         public static explicit operator byte[](Packet value)
         {
             if (value == null)
@@ -679,6 +682,7 @@ namespace Engine.Serialization
         /// <returns>
         ///     A packet using the byte array as its internal buffer, or <c>null</c> if the packet itself was <c>null</c>.
         /// </returns>
+        [PublicAPI]
         public static explicit operator Packet(byte[] value)
         {
             return value == null ? null : new Packet(value, false);
@@ -691,6 +695,7 @@ namespace Engine.Serialization
         /// <summary>Tests for equality with the specified object.</summary>
         /// <param name="other">The object to test for equality with.</param>
         /// <returns>Whether this and the specified object are equal.</returns>
+        [PublicAPI]
         public bool Equals(Packet other)
         {
             return other != null &&
@@ -698,6 +703,7 @@ namespace Engine.Serialization
                    SafeNativeMethods.memcmp(other._stream.GetBuffer(), _stream.GetBuffer(), _stream.Length) == 0;
         }
 
+        [UsedImplicitly]
         internal class SafeNativeMethods
         {
             /// <summary>Compares two byte arrays.</summary>
@@ -709,6 +715,30 @@ namespace Engine.Serialization
             internal static extern int memcmp(byte[] b1, byte[] b2, long count);
 
             private SafeNativeMethods() {}
+        }
+
+        #endregion
+
+        #region Serialization
+
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
+        {
+            return packet.Write(GetBuffer(), 0, Length);
+        }
+
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
+        {
+            // Get actual data.
+            var data = packet.ReadByteArray();
+
+            // Start writing from the start, overwriting everything.
+            _stream.Position = 0;
+            _stream.Write(data, 0, data.Length);
+
+            // Reset to start for reading.
+            _stream.Position = 0;
         }
 
         #endregion

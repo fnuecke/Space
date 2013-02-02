@@ -1,5 +1,4 @@
-﻿using Engine.Serialization;
-using Engine.Session;
+﻿using Engine.Session;
 using Engine.Simulation;
 
 namespace Engine.Controller
@@ -10,7 +9,7 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
     public sealed class SimpleServerController<TPlayerData> : AbstractTssServer
-        where TPlayerData : class, IPacketizable, new()
+        where TPlayerData : class, new()
     {
         #region Constructor
 

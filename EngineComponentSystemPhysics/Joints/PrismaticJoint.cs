@@ -241,7 +241,7 @@ namespace Engine.ComponentSystem.Physics.Joints
             public float MotorMass;
         }
 
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SolverTemp _tmp;
 
         #endregion

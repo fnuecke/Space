@@ -9,7 +9,7 @@ using Engine.Serialization;
 namespace Engine.Session
 {
     public sealed class HybridClientSession<TPlayerData> : AbstractHybridSession, IClientSession
-        where TPlayerData : class, IPacketizable, new()
+        where TPlayerData : class, new()
     {
         #region Logger
 
@@ -141,7 +141,7 @@ namespace Engine.Session
                                         : TrafficTypes.Protocol);
                                 Info.PutIncomingPacketSize(packet.Length);
 
-                                using (var data = packet.ReadPacket())
+                                using (var data = packet.ReadPacketizable<Packet>())
                                 {
                                     HandleTcpData(type, data);
                                 }
@@ -186,7 +186,7 @@ namespace Engine.Session
         /// <param name="remote">the remote host that runs the session.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="playerData">additional data to be associated with our player.</param>
-        public void Join(IPEndPoint remote, string playerName, IPacketizable playerData)
+        public void Join(IPEndPoint remote, string playerName, object playerData)
         {
             if (ConnectionState != ClientState.Unconnected)
             {
@@ -209,7 +209,7 @@ namespace Engine.Session
         /// <param name="server">the local server to join.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="playerData">additional data to be associated with our player.</param>
-        public void Join(IServerSession server, string playerName, IPacketizable playerData)
+        public void Join(IServerSession server, string playerName, object playerData)
         {
             if (ConnectionState != ClientState.Unconnected)
             {
@@ -219,6 +219,11 @@ namespace Engine.Session
             {
                 throw new InvalidOperationException("Incompatible server type.");
             }
+            if (!(playerData is TPlayerData))
+            {
+                throw new ArgumentException("Invalid type.", "playerData");
+            }
+
             Logger.Debug("Begin connecting to local server.");
             _playerName = playerName;
             _playerData = (TPlayerData) playerData;
@@ -378,7 +383,7 @@ namespace Engine.Session
             var type = (SessionMessage) e.Data.ReadByte();
 
             // Get additional data.
-            using (var packet = e.Data.ReadPacket())
+            using (var packet = e.Data.ReadPacketizable<Packet>())
             {
                 switch (type)
                 {
@@ -402,7 +407,7 @@ namespace Engine.Session
                                     var playerCount = packet.ReadInt32();
 
                                     // Get additional data.
-                                    using (var customData = packet.ReadPacket())
+                                    using (var customData = packet.ReadPacketizable<Packet>())
                                     {
                                         Logger.Trace(
                                             "Got game info from host '{0}': {1}/{2} players, data of length {3}.",
@@ -483,7 +488,7 @@ namespace Engine.Session
                         Players = new Player[MaxPlayers];
 
                         // Get other game relevant data.
-                        using (var joinData = packet.ReadPacket())
+                        using (var joinData = packet.ReadPacketizable<Packet>())
                         {
                             // Get info on players already in the session, including us.
                             for (var i = 0; i < PlayerCount; i++)

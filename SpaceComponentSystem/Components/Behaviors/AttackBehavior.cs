@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         public int Target;
 
         /// <summary>The position we were at when we started attacking.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private FarPosition? _start;
 
         #endregion

@@ -3,18 +3,21 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Engine.Serialization;
+using JetBrains.Annotations;
 
 namespace Engine.Math
 {
     /// <summary>Represents an interval of the specified type.</summary>
     /// <typeparam name="T">The interval type.</typeparam>
     [TypeConverter(typeof (IntervalConverter))]
-    public abstract class Interval<T> : IPacketizable where T : IComparable<T>, IEquatable<T>
+    [Packetizable]
+    public abstract class Interval<T> where T : IComparable<T>, IEquatable<T>
     {
         #region Properties
 
         /// <summary>The low endpoint of the interval.</summary>
         [Description("The lower inclusive bound of the interval.")]
+        [PublicAPI]
         public T Low
         {
             get { return _low; }
@@ -23,6 +26,7 @@ namespace Engine.Math
 
         /// <summary>The high endpoint of the interval.</summary>
         [Description("The upper inclusive bound of the interval.")]
+        [PublicAPI]
         public T High
         {
             get { return _high; }
@@ -96,6 +100,7 @@ namespace Engine.Math
         #region Constants
 
         /// <summary>Default 'zero' value for an interval.</summary>
+        [PublicAPI]
         public static IntInterval Zero
         {
             get { return ConstZero; }
@@ -129,6 +134,7 @@ namespace Engine.Math
         #region Constants
 
         /// <summary>Default 'zero' value for an interval.</summary>
+        [PublicAPI]
         public static FloatInterval Zero
         {
             get { return ConstZero; }
@@ -162,6 +168,7 @@ namespace Engine.Math
         #region Constants
 
         /// <summary>Default 'zero' value for an interval.</summary>
+        [PublicAPI]
         public static DoubleInterval Zero
         {
             get { return ConstZero; }

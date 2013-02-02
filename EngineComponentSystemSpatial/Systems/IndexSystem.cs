@@ -89,7 +89,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
         private readonly float _minNodeBounds;
 
         /// <summary>The actual indexes we're using, mapping component positions to the components, allowing faster range queries.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
 #if FARMATH
         private SparseArray<FarCollections.SpatialHashedQuadTree<int>> _trees = new SparseArray<FarCollections.SpatialHashedQuadTree<int>>();
 #else
@@ -97,7 +97,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
 #endif
 
         /// <summary>List of components for which the index entry changed in the last update.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SparseArray<HashSet<int>> _changed = new SparseArray<HashSet<int>>();
 
         #endregion

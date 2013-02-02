@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>The factory of this planet, it's "type".</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public PlanetFactory Factory;
 
         /// <summary>The scale at which to render the texture.</summary>
@@ -38,23 +38,23 @@ namespace Space.ComponentSystem.Components
         public float SurfaceRotation;
 
         /// <summary>The actual texture with the set name.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public Texture2D Albedo;
 
         /// <summary>The actual texture with the set name.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public Texture2D Normals;
 
         /// <summary>The actual texture with the set name.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public Texture2D Specular;
 
         /// <summary>The actual texture with the set name.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public Texture2D Lights;
 
         /// <summary>The actual texture with the set name.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public Texture2D Clouds;
 
         #endregion

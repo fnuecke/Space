@@ -24,7 +24,7 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>Cooldowns of known weapon components.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
 
         /// <summary>Randomizer used for sampling projectiles.</summary>
@@ -34,7 +34,7 @@ namespace Space.ComponentSystem.Systems
         ///     List of projectiles we want to create. We iterate in parallel, but the creation has do be done synchronously
         ///     because the manager is not thread safe.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private List<PendingProjectile> _projectilesToCreate = new List<PendingProjectile>(16);
 
         #endregion
@@ -45,7 +45,7 @@ namespace Space.ComponentSystem.Systems
         ///     Used to iterate the cooldown mapping. We change it (by changing single fields, which seems to suffice) so we
         ///     can't directly iterate over the key collection.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private List<int> _reusableEntities = new List<int>();
 
         #endregion

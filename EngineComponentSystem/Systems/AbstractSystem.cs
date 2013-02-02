@@ -12,7 +12,8 @@ namespace Engine.ComponentSystem.Systems
 {
     /// <summary>Base class for systems, implementing default basic functionality.</summary>
     [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
-    public abstract class AbstractSystem : ICopyable<AbstractSystem>, IPacketizable
+    [Packetizable]
+    public abstract class AbstractSystem : ICopyable<AbstractSystem>
     {
         #region Type ID
 
@@ -36,7 +37,7 @@ namespace Engine.ComponentSystem.Systems
         #region Properties
 
         /// <summary>The component system manager this system is part of.</summary>
-        [CopyIgnore, PacketizerIgnore, PublicAPI]
+        [CopyIgnore, PacketizeIgnore, PublicAPI]
         public IManager Manager { get; set; }
 
         #endregion

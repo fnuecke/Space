@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         ///     List of drops to sample when we update. This is accumulated from death events, to allow thread safe sampling
         ///     in one go.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private List<Tuple<string, FarPosition>> _dropsToSample = new List<Tuple<string, FarPosition>>();
 
         #endregion

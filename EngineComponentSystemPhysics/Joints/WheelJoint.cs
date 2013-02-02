@@ -203,7 +203,7 @@ namespace Engine.ComponentSystem.Physics.Joints
             public float Gamma;
         }
 
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SolverTemp _tmp;
 
         #endregion

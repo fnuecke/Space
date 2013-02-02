@@ -21,7 +21,7 @@ namespace Engine.Controller
     /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
     public sealed class ThinClientController<TPlayerData>
         : AbstractController<IClientSession, FrameCommand>, IClientController<FrameCommand>
-        where TPlayerData : class, IPacketizable, new()
+        where TPlayerData : class, new()
     {
         #region Properties
         
@@ -78,7 +78,7 @@ namespace Engine.Controller
         {
             _server = server;
 
-            this.Session.Join(_server.Session, playerName, playerData);
+            Session.Join(_server.Session, playerName, playerData);
         }
 
         /// <summary>
@@ -89,9 +89,9 @@ namespace Engine.Controller
         {
             if (disposing)
             {
-                if (this.Session.ConnectionState != ClientState.Unconnected)
+                if (Session.ConnectionState != ClientState.Unconnected)
                 {
-                    this.Session.Leave();
+                    Session.Leave();
                 }
 
                 Session.Dispose();

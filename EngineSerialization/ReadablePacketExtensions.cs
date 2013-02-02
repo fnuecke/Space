@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace Engine.Serialization
 {
@@ -11,6 +12,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out bool data)
         {
             data = packet.ReadBoolean();
@@ -22,6 +24,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out byte data)
         {
             data = packet.ReadByte();
@@ -33,6 +36,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out float data)
         {
             data = packet.ReadSingle();
@@ -44,6 +48,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out double data)
         {
             data = packet.ReadDouble();
@@ -55,6 +60,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out short data)
         {
             data = packet.ReadInt16();
@@ -66,6 +72,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out int data)
         {
             data = packet.ReadInt32();
@@ -77,6 +84,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out long data)
         {
             data = packet.ReadInt64();
@@ -88,6 +96,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out ushort data)
         {
             data = packet.ReadUInt16();
@@ -99,6 +108,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out uint data)
         {
             data = packet.ReadUInt32();
@@ -110,6 +120,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out ulong data)
         {
             data = packet.ReadUInt64();
@@ -123,6 +134,7 @@ namespace Engine.Serialization
         /// <param name="count">The number of bytes to read.</param>
         /// <param name="length">The number of bytes read.</param>
         /// <returns>This packet, for call chaining.</returns>
+        [PublicAPI]
         public static IReadablePacket Read(
             this IReadablePacket packet, byte[] buffer, int offset, int count, out int length)
         {
@@ -140,25 +152,10 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out byte[] data)
         {
             data = packet.ReadByteArray();
-            return packet;
-        }
-
-        /// <summary>
-        ///     Reads a packet.
-        ///     <para>
-        ///         May yield <c>null</c>.
-        ///     </para>
-        /// </summary>
-        /// <param name="packet">The packet.</param>
-        /// <param name="data">The read value.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
-        public static IReadablePacket Read(this IReadablePacket packet, out IReadablePacket data)
-        {
-            data = packet.ReadPacket();
             return packet;
         }
 
@@ -167,6 +164,7 @@ namespace Engine.Serialization
         /// <param name="data">The read value</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out string data)
         {
             data = packet.ReadString();
@@ -178,30 +176,18 @@ namespace Engine.Serialization
         /// <param name="data">The read value.</param>
         /// <returns>This packet, for call chaining.</returns>
         /// <exception cref="PacketException">The type is not known in the local assembly.</exception>
+        [PublicAPI]
         public static IReadablePacket Read(this IReadablePacket packet, out Type data)
         {
             data = packet.ReadType();
             return packet;
         }
 
-        /// <summary>
-        ///     Reads a packet.
-        ///     <para>
-        ///         May return <c>null</c>.
-        ///     </para>
-        /// </summary>
-        /// <param name="packet">The packet.</param>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
-        public static IReadablePacket ReadPacket(this IReadablePacket packet)
-        {
-            return (Packet) packet.ReadByteArray();
-        }
-
         /// <summary>Reads a string value using UTF8 encoding.</summary>
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static string ReadString(this IReadablePacket packet)
         {
             if (!packet.HasString())
@@ -216,6 +202,7 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The type is not known in the local assembly.</exception>
+        [PublicAPI]
         public static Type ReadType(this IReadablePacket packet)
         {
             var typeName = packet.ReadString();
@@ -241,8 +228,9 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static T[] ReadPacketizables<T>(this IReadablePacket packet)
-            where T : class, IPacketizable, new()
+            where T : class, new()
         {
             return packet.ReadPacketizables(Packetizable.ReadPacketizable<T>);
         }
@@ -257,8 +245,9 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough available data for the read operation.</exception>
+        [PublicAPI]
         public static T[] ReadPacketizablesWithTypeInfo<T>(this IReadablePacket packet)
-            where T : class, IPacketizable
+            where T : class
         {
             return packet.ReadPacketizables(Packetizable.ReadPacketizableWithTypeInfo<T>);
         }
@@ -268,8 +257,9 @@ namespace Engine.Serialization
         /// <param name="packet">The packet.</param>
         /// <param name="reader">The reader.</param>
         /// <returns></returns>
+        [PublicAPI]
         private static T[] ReadPacketizables<T>(this IReadablePacket packet, Func<IReadablePacket, T> reader)
-            where T : IPacketizable
+            where T : class
         {
             var packetizableCount = packet.ReadInt32();
             if (packetizableCount < 0)

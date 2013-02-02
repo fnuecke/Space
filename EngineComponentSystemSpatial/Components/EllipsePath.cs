@@ -88,32 +88,32 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private float _precomputedA;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private float _precomputedB;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private float _precomputedC;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private float _precomputedD;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private float _precomputedE;
 
         /// <summary>Precomputed for position calculation.</summary>
         /// <remarks>Do not change manually.</remarks>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private float _precomputedF;
 
         /// <summary>Actual value of the angle.</summary>

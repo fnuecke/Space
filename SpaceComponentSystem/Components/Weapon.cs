@@ -33,11 +33,11 @@ namespace Space.ComponentSystem.Components
         ///     Attributes that are local to this weapon and only used for computing this weapon's damage, cooldown, energy
         ///     consumption etc.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         public readonly Dictionary<AttributeType, float> Attributes = new Dictionary<AttributeType, float>();
 
         /// <summary>The projectiles this weapon fires.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public ProjectileFactory[] Projectiles;
 
         #endregion

@@ -20,7 +20,8 @@ namespace Engine.ComponentSystem.Physics.Joints
     ///     alone in all cases. Often they will belong to two, that being the two entities (bodies) they are attached to.
     /// </summary>
     [DebuggerDisplay("Id = {Index}, Used = {Manager != null}")]
-    public abstract class Joint : ICopyable<Joint>, IPacketizable
+    [Packetizable]
+    public abstract class Joint : ICopyable<Joint>
     {
         #region Types
 
@@ -83,11 +84,11 @@ namespace Engine.ComponentSystem.Physics.Joints
         #region Fields
 
         /// <summary>The type of this joint.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         internal readonly JointType Type;
 
         /// <summary>The manager of the component system the bodies of this joint live in.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         internal IManager Manager;
 
         /// <summary>Used for the global doubly linked list of joints.</summary>
@@ -197,7 +198,8 @@ namespace Engine.ComponentSystem.Physics.Joints
     ///     Represents a connection between up to two entities a joint is attached to. If the joint is only attached to one
     ///     real entity, the other end is usually attached to the "world", and <see cref="Other"/> will be zero.
     /// </summary>
-    internal sealed class JointEdge : ICopyable<JointEdge>, IPacketizable
+    [Packetizable]
+    internal sealed class JointEdge : ICopyable<JointEdge>
     {
         #region Fields
 

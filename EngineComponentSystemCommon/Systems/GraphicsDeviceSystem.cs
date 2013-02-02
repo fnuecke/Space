@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Common.Systems
@@ -9,6 +10,7 @@ namespace Engine.ComponentSystem.Common.Systems
     ///     This system keeps track of our graphics device, and sends messages in case unloading / reloading if assets is
     ///     required.
     /// </summary>
+    [Packetizable(false)]
     public sealed class GraphicsDeviceSystem : AbstractSystem, IDrawingSystem
     {
         #region Type ID

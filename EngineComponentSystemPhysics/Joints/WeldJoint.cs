@@ -110,7 +110,7 @@ namespace Engine.ComponentSystem.Physics.Joints
             public Matrix33 Mass;
         }
 
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private SolverTemp _tmp;
 
         #endregion

@@ -12,7 +12,7 @@ namespace Engine.Session
 {
     public sealed class HybridServerSession<TPlayerData>
         : AbstractHybridSession, IServerSession
-        where TPlayerData : class, IPacketizable, new()
+        where TPlayerData : class, new()
     {
         #region Logger
 
@@ -197,7 +197,7 @@ namespace Engine.Session
                                     : TrafficTypes.Protocol);
                             Info.PutIncomingPacketSize(packet.Length);
 
-                            using (var data = packet.ReadPacket())
+                            using (var data = packet.ReadPacketizable<Packet>())
                             {
                                 HandleTcpData(i, type, data);
                             }
@@ -248,7 +248,7 @@ namespace Engine.Session
                         if (packet != null)
                         {
                             var type = (SessionMessage) packet.ReadByte();
-                            using (var data = packet.ReadPacket())
+                            using (var data = packet.ReadPacketizable<Packet>())
                             {
                                 HandlePendingData(i, type, data);
                             }
@@ -387,7 +387,7 @@ namespace Engine.Session
 
             // Get additional data.
             // TODO what happens with data?
-            using (var data = e.Data.ReadPacket())
+            using (var data = e.Data.ReadPacketizable<Packet>())
             {
                 switch (type)
                 {

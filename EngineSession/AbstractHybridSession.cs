@@ -196,7 +196,7 @@ namespace Engine.Session
         /// <returns>if the player is in the session or not.</returns>
         public bool HasPlayer(Player player)
         {
-            return HasPlayer(player.Number) && GetPlayer(player.Number) == player;
+            return HasPlayer(player.Number) && ReferenceEquals(GetPlayer(player.Number), player);
         }
 
         /// <summary>Received some data from a client, let's see what we got.</summary>

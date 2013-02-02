@@ -110,7 +110,7 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>A list of items currently in this inventory.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly List<int> _items = new List<int>();
 
         /// <summary>Whether we have a fixed length list.</summary>

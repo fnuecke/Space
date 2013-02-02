@@ -67,7 +67,8 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>This class contains some settings controlling an AI's behavior.</summary>
-        public sealed class AIConfiguration : IPacketizable, ICopyable<AIConfiguration>
+        [Packetizable]
+        public sealed class AIConfiguration : ICopyable<AIConfiguration>
         {
             #region Fields
 
@@ -194,14 +195,14 @@ namespace Space.ComponentSystem.Components
         private AIConfiguration _config = new AIConfiguration();
 
         /// <summary>The currently running behaviors, ordered as they were issued.</summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Stack<BehaviorType> _currentBehaviors = new Stack<BehaviorType>();
 
         /// <summary>
         ///     List of all possible behaviors. This keeps us from having to re-allocate them over and over again. The only
         ///     down-side is, that we cannot stack multiple behaviors of the same type, but that's probably not needed anyway.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Dictionary<BehaviorType, Behavior> _behaviors = new Dictionary<BehaviorType, Behavior>();
 
         #endregion

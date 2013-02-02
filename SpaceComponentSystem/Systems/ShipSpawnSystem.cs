@@ -25,7 +25,7 @@ namespace Space.ComponentSystem.Systems
         ///     Tracks remaining number of mob groups to spawn per cell (after a cell was toggled to 'living'). This is used
         ///     to spread the spawning across several frames to reduce freezes.
         /// </summary>
-        [CopyIgnore, PacketizerIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private List<Tuple<ulong, int>> _cellSpawns = new List<Tuple<ulong, int>>();
 
         #endregion

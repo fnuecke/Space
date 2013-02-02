@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>The actual texture with the set name.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         public Texture2D Texture;
 
         /// <summary>Whether to use the objects rotation to rotate the detectable's icon.</summary>

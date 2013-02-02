@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem;
-using Engine.Serialization;
 
 namespace Space.Data
 {
     /// <summary>Interface to allow storing profile in the settings.</summary>
-    public interface IProfile : IPacketizable
+    public interface IProfile
     {
         /// <summary>A list of all existing profiles.</summary>
         IEnumerable<string> Profiles { get; }

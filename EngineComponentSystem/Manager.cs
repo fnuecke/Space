@@ -30,6 +30,7 @@ namespace Engine.ComponentSystem
     ///     </para>
     /// </remarks>
     [DebuggerDisplay("Systems = {_systems.Count}, Components = {_componentIds.Count}")]
+    [Packetizable]
     public sealed partial class Manager : IManager
     {
         #region Logger
@@ -40,19 +41,31 @@ namespace Engine.ComponentSystem
 
         #region Properties
 
-        /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
-        public IEnumerable<IComponent> Components
-        {
-            get { return _componentIds.Select(id => _components[id]); }
-        }
-
         /// <summary>A list of all systems registered with this manager.</summary>
         public IEnumerable<AbstractSystem> Systems
         {
             get { return _systems; }
         }
 
-        /// <summary>Number of components currently registered in this system.</summary>
+        /// <summary>A list of all components currently registered with this manager, in order of their ID.</summary>
+        public IEnumerable<IComponent> Components
+        {
+            get { return _componentIds.Select(id => _components[id]); }
+        }
+
+        /// <summary>Number of systems currently registered in this manager.</summary>
+        public int SystemCount
+        {
+            get { return _systems.Count; }
+        }
+
+        /// <summary>Number of entities currently registered in this manager.</summary>
+        public int EntityCount
+        {
+            get { return _entityIds.Count; }
+        }
+
+        /// <summary>Number of components currently registered in this manager.</summary>
         public int ComponentCount
         {
             get { return _componentIds.Count; }
@@ -69,31 +82,31 @@ namespace Engine.ComponentSystem
         private readonly IdManager _componentIds = new IdManager();
 
         /// <summary>List of systems registered with this manager.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>();
 
         /// <summary>List of all updating systems registered with this manager.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly List<IUpdatingSystem> _updatingSystems = new List<IUpdatingSystem>();
 
         /// <summary>List of all drawing systems registered with this manager.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly List<IDrawingSystem> _drawingSystems = new List<IDrawingSystem>();
 
         /// <summary>Lookup table for quick access to systems by their type id.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
 
         /// <summary>Keeps track of entity->component relationships.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
 
         /// <summary>Lookup table for quick access to components by their id.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
         /// <summary>Table of registered message callbacks, by type.</summary>
-        [PacketizerIgnore]
+        [PacketizeIgnore]
         private readonly Dictionary<Type, IList<object>> _messageCallbacks = new Dictionary<Type, IList<object>>();
 
         #endregion
@@ -634,7 +647,7 @@ namespace Engine.ComponentSystem
         ///     internal states, so if they keep references to other entities or components via their id, these ids will obviously
         ///     be wrong after depacketizing. You will have to take care of fixing these references yourself.
         ///     <para/>
-        ///     This uses the components' <see cref="IPacketizable"/> facilities.
+        ///     This uses the components' serialization facilities.
         /// </summary>
         /// <param name="packet">The packet to write to.</param>
         /// <param name="entity">The entity to write.</param>
@@ -654,7 +667,7 @@ namespace Engine.ComponentSystem
         ///     This will act as though all of the written components were added, i.e. for each restored component all systems'
         ///     <see cref="AbstractSystem.OnComponentAdded"/> method will be called.
         ///     <para/>
-        ///     This uses the components' <see cref="IPacketizable"/> facilities.
+        ///     This uses the components' serialization facilities.
         /// </summary>
         /// <param name="packet">The packet to read the entity from.</param>
         /// <param name="componentIdMap">A mapping of how components' ids changed due to serialization, mapping old id to new id.</param>
