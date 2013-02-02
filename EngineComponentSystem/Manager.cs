@@ -380,15 +380,11 @@ namespace Engine.ComponentSystem
                 Expression.Lambda(
                     Expression.Block(
                         from system in _systems
-                        from method in
-                            system.GetType()
-                                  .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                                  .Where(m => m.IsDefined(typeof (MessageCallbackAttribute), true))
-                                  .Where(m => m.GetParameters()[0].ParameterType == messageType)
+                        from method in system.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                        where method.IsDefined(typeof (MessageCallbackAttribute), true)
+                        where method.GetParameters()[0].ParameterType == messageType
                         select Expression.Call(Expression.Constant(system), method, messageParameter)),
                     messageParameter).Compile();
-
-            // TODO manual IL generation, compare performance
         }
 
         #endregion
@@ -570,10 +566,10 @@ namespace Engine.ComponentSystem
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(T message)
         {
-            Delegate callbacks;
-            if (_messageCallbacks.TryGetValue(typeof (T), out callbacks))
+            Delegate dispatcher;
+            if (_messageCallbacks.TryGetValue(typeof (T), out dispatcher))
             {
-                callbacks.DynamicInvoke(message);
+                ((Action<T>) dispatcher)(message);
             }
         }
 

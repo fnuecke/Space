@@ -439,14 +439,9 @@ namespace Engine.Serialization
         /// <returns>Two delegates for the generated methods.</returns>
         private static Tuple<Packetizer, Depacketizer> CreatePacketizer(Type type)
         {
-            // Must not be null for the following. This is used to provide a context
-            // for the generated method, which will avoid a number of costly security
-            // checks, which could slow down the generated method immensly.
-            var declaringType = MethodBase.GetCurrentMethod().DeclaringType;
-            if (declaringType == null)
-            {
-                return null;
-            }
+            // This is used to provide a context for the generated method, which will avoid a number
+            // of costly security checks, which could slow down the generated method immensly.
+            var declaringType = typeof (Packetizable);
 
             // Invariant method shortcuts.
             var writeInt32 = typeof (IWritablePacket)
