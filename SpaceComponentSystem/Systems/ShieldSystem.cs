@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Physics;
 using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.RPG.Components;
@@ -53,11 +54,11 @@ namespace Space.ComponentSystem.Systems
             return false;
         }
 
-        public override void OnComponentAdded(Engine.ComponentSystem.Components.IComponent component)
+        public override void OnComponentAdded(ComponentAdded message)
         {
-            base.OnComponentAdded(component);
+            base.OnComponentAdded(message);
 
-            var shield = component as ShieldEnergyStatusEffect;
+            var shield = message.Component as ShieldEnergyStatusEffect;
             if (shield == null)
             {
                 return;
@@ -86,11 +87,11 @@ namespace Space.ComponentSystem.Systems
                 collisionMask: existingFixture.CollisionMask).Id;
         }
 
-        public override void OnComponentRemoved(Engine.ComponentSystem.Components.IComponent component)
+        public override void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
+            base.OnComponentRemoved(message);
             
-            var shield = component as ShieldEnergyStatusEffect;
+            var shield = message.Component as ShieldEnergyStatusEffect;
             if (shield != null && shield.Fixture >= 0)
             {
                 Manager.RemoveComponent(shield.Fixture);

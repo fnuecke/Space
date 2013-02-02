@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
@@ -21,13 +21,6 @@ namespace Space.ComponentSystem.Systems
     [Packetizable(false)]
     public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>, IDrawingSystem
     {
-        #region Type ID
-
-        /// <summary>The unique type ID for this system, by which it is referred to in the manager.</summary>
-        public static readonly int TypeId = CreateTypeId();
-
-        #endregion
-
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
@@ -182,13 +175,13 @@ namespace Space.ComponentSystem.Systems
         #region Shield list maintenance
 
         /// <summary>Called by the manager when a new component was added.</summary>
-        /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(IComponent component)
+        /// <param name="message"></param>
+        public override void OnComponentAdded(ComponentAdded message)
         {
-            base.OnComponentAdded(component);
+            base.OnComponentAdded(message);
 
             // Check if the component is of the right type.
-            var shield = component as Shield;
+            var shield = message.Component as Shield;
             if (shield != null)
             {
                 var typedComponent = shield;
@@ -201,13 +194,13 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Called by the manager when a new component was removed.</summary>
-        /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        public override void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
+            base.OnComponentRemoved(message);
 
             // Check if the component is of the right type.
-            var shield = component as Shield;
+            var shield = message.Component as Shield;
             if (shield != null)
             {
                 var typedComponent = shield;

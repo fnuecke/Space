@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
-using Engine.ComponentSystem.Components;
 using Engine.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
@@ -54,18 +53,6 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Manager Events
-
-        /// <summary>Called by the manager when an entity was removed.</summary>
-        /// <param name="entity">The entity that was removed.</param>
-        public virtual void OnEntityRemoved(int entity) {}
-
-        /// <summary>Called by the manager when a new component was added.</summary>
-        /// <param name="component">The component that was added.</param>
-        public virtual void OnComponentAdded(IComponent component) {}
-
-        /// <summary>Called by the manager when a component was removed.</summary>
-        /// <param name="component">The component that was removed.</param>
-        public virtual void OnComponentRemoved(IComponent component) {}
 
         /// <summary>
         ///     Called by the manager when the complete environment has been depacketized. Called from the <see cref="Manager"/>.

@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
 
@@ -18,17 +19,16 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Called by the manager when an entity was removed.</summary>
-        /// <param name="entity">The entity that was removed.</param>
-        public override void OnEntityRemoved(int entity)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnEntityRemoved(EntityRemoved message)
         {
-            base.OnEntityRemoved(entity);
-            
             // If an entity was removed from the system we want to make sure
             // that no AI is targeting it anymore. Otherwise the id may be
             // re-used before the AI is updated, leading to bad references.
             foreach (var ai in Components)
             {
-                ai.OnEntityInvalidated(entity);
+                ai.OnEntityInvalidated(message.Entity);
             }
         }
 

@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -421,10 +422,9 @@ namespace Engine.ComponentSystem
             ReleaseEntity(instance);
 
             // Send a message to all systems.
-            foreach (var system in _systems)
-            {
-                system.OnEntityRemoved(entity);
-            }
+            EntityRemoved message;
+            message.Entity = entity;
+            SendMessage(message);
         }
 
         /// <summary>Test whether the specified entity exists.</summary>
@@ -476,10 +476,9 @@ namespace Engine.ComponentSystem
             _entities[entity].Add(component);
 
             // Send a message to all systems.
-            foreach (var system in _systems)
-            {
-                system.OnComponentAdded(component);
-            }
+            ComponentAdded message;
+            message.Component = component;
+            SendMessage(message);
 
             // Return the created component.
             return component;
@@ -494,10 +493,9 @@ namespace Engine.ComponentSystem
             Debug.Assert(HasComponent(component.Id), "No such component in the system.");
 
             // Send a message to all systems.
-            foreach (var system in _systems)
-            {
-                system.OnComponentRemoved(component);
-            }
+            ComponentRemoved message;
+            message.Component = component;
+            SendMessage(message);
 
             // Remove it from the mapping and release the id for reuse.
             _entities[component.Entity].Remove(component);
@@ -751,10 +749,9 @@ namespace Engine.ComponentSystem
                     undo.Push(() => RemoveComponent(id));
 
                     // Send a message to all systems.
-                    foreach (var system in _systems)
-                    {
-                        system.OnComponentAdded(component);
-                    }
+                    ComponentAdded message;
+                    message.Component = component;
+                    SendMessage(message);
                 }
 
                 // Yay, all went well. Return the id of the read entity.

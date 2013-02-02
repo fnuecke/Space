@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -238,14 +239,13 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Called by the manager when an entity was removed.</summary>
-        /// <param name="entity">The entity that was removed.</param>
-        public override void OnEntityRemoved(int entity)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnEntityRemoved(EntityRemoved message)
         {
-            base.OnEntityRemoved(entity);
-
             foreach (var shipSpawner in Components)
             {
-                shipSpawner.Targets.Remove(entity);
+                shipSpawner.Targets.Remove(message.Entity);
             }
         }
 

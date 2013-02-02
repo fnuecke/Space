@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -22,18 +23,17 @@ namespace Engine.ComponentSystem.Systems
         #region Manager Events
 
         /// <summary>Called by the manager when a new component was added.</summary>
-        /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public virtual void OnComponentAdded(ComponentAdded message)
         {
-            base.OnComponentAdded(component);
-
-            Debug.Assert(component.Entity > 0, "component.Entity > 0");
-            Debug.Assert(component.Id > 0, "component.Id > 0");
+            Debug.Assert(message.Component.Entity > 0, "component.Entity > 0");
+            Debug.Assert(message.Component.Id > 0, "component.Id > 0");
 
             // Check if the component is of the right type.
-            if (component is TComponent)
+            if (message.Component is TComponent)
             {
-                var typedComponent = (TComponent) component;
+                var typedComponent = (TComponent) message.Component;
 
                 // Keep components in order, to stay deterministic.
                 var index = Components.BinarySearch(typedComponent);
@@ -43,18 +43,17 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>Called by the manager when a new component was removed.</summary>
-        /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public virtual void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
-
-            Debug.Assert(component.Entity > 0, "component.Entity > 0");
-            Debug.Assert(component.Id > 0, "component.Id > 0");
+            Debug.Assert(message.Component.Entity > 0, "component.Entity > 0");
+            Debug.Assert(message.Component.Id > 0, "component.Id > 0");
 
             // Check if the component is of the right type.
-            if (component is TComponent)
+            if (message.Component is TComponent)
             {
-                var typedComponent = (TComponent) component;
+                var typedComponent = (TComponent) message.Component;
 
                 // Take advantage of the fact that the list is sorted.
                 var index = Components.BinarySearch(typedComponent);

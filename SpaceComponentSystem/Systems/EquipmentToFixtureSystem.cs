@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Physics;
 using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.RPG.Components;
@@ -99,12 +100,11 @@ namespace Space.ComponentSystem.Systems
             _changedMass.Clear();
         }
 
-        public override void OnEntityRemoved(int entity)
+        [MessageCallback]
+        public void OnEntityRemoved(EntityRemoved message)
         {
-            base.OnEntityRemoved(entity);
-
-            _changedShape.Remove(entity);
-            _changedMass.Remove(entity);
+            _changedShape.Remove(message.Entity);
+            _changedMass.Remove(message.Entity);
         }
 
         [MessageCallback]

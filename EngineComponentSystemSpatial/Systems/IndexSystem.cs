@@ -2,12 +2,13 @@
 using System.IO;
 using System.Linq;
 using Engine.Collections;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Messages;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -49,18 +50,21 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Properties
 
         /// <summary>Total number of index structures currently in use.</summary>
+        [PublicAPI]
         public int IndexCount
         {
             get { return _trees.Count(index => index != null); }
         }
 
         /// <summary>Total number of entries over all index structures.</summary>
+        [PublicAPI]
         public int Count
         {
             get { return _trees.Where(index => index != null).Sum(index => index.Count); }
         }
 
         /// <summary>Gets the index of the specified ID.</summary>
+        [PublicAPI]
         public IIndex<int, WorldBounds, WorldPoint> this[int index]
         {
             get
@@ -121,12 +125,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
         #region Logic
 
         /// <summary>Adds index components to all their indexes.</summary>
-        /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnComponentAdded(ComponentAdded message)
         {
-            base.OnComponentAdded(component);
-
-            var index = component as IIndexable;
+            var index = message.Component as IIndexable;
             if (index != null)
             {
                 AddIndex(index, index.IndexId);
@@ -134,12 +137,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
         }
 
         /// <summary>Remove index components from all indexes.</summary>
-        /// <param name="component">The component.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
-
-            var index = component as IIndexable;
+            var index = message.Component as IIndexable;
             if (index != null)
             {
                 // Remove from any indexes the component was part of.
@@ -201,15 +203,6 @@ namespace Engine.ComponentSystem.Spatial.Systems
         public IEnumerable<int> GetChanged(int index)
         {
             return _changed[index];
-        }
-
-        /// <summary>Gets the bounds for the specified component in the first of the specified groups.</summary>
-        /// <param name="component">The component.</param>
-        /// <param name="index">The index.</param>
-        /// <returns></returns>
-        public WorldBounds GetBounds(int component, int index)
-        {
-            return _trees[index][component];
         }
 
         /// <summary>Marks the component as changed in the specified groups.</summary>

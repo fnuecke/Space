@@ -5,12 +5,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Engine.Collections;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
 using Engine.Serialization;
 using Engine.Util;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 
@@ -54,6 +55,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>
         ///     <c>true</c> if the specified squad exists; otherwise, <c>false</c>.
         /// </returns>
+        [PublicAPI]
         public bool HasSquad(int squad)
         {
             return _squadIds.InUse(squad);
@@ -65,6 +67,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>
         ///     <c>true</c> if the squad contains the specified entity; otherwise, <c>false</c>.
         /// </returns>
+        [PublicAPI]
         public bool Contains(int squad, int entity)
         {
             Debug.Assert(HasSquad(squad));
@@ -74,6 +77,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Gets the leader of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The leader of the squad.</returns>
+        [PublicAPI]
         public int GetLeader(int squad)
         {
             Debug.Assert(HasSquad(squad));
@@ -83,6 +87,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Gets the members of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The members of the squad.</returns>
+        [PublicAPI]
         public IEnumerable<int> GetMembers(int squad)
         {
             Debug.Assert(HasSquad(squad));
@@ -92,6 +97,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Gets the number of members of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The number of squad members.</returns>
+        [PublicAPI]
         public int GetCount(int squad)
         {
             Debug.Assert(HasSquad(squad));
@@ -101,6 +107,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Gets the formation for the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The formation type of that squad.</returns>
+        [PublicAPI]
         public AbstractFormation GetFormation(int squad)
         {
             Debug.Assert(HasSquad(squad));
@@ -110,6 +117,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Sets the formation of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <param name="value">The formation to set.</param>
+        [PublicAPI]
         public void SetFormation(int squad, AbstractFormation value)
         {
             Debug.Assert(HasSquad(squad));
@@ -120,6 +128,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Gets the formation spacing for the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <returns>The formation spacing of that squad.</returns>
+        [PublicAPI]
         public float GetFormationSpacing(int squad)
         {
             Debug.Assert(HasSquad(squad));
@@ -129,6 +138,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>Sets the formation spacing of the specified squad.</summary>
         /// <param name="squad">The squad.</param>
         /// <param name="value">The formation spacing to set.</param>
+        [PublicAPI]
         public void SetFormationSpacing(int squad, float value)
         {
             Debug.Assert(HasSquad(squad));
@@ -141,6 +151,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="squad">The squad to add to.</param>
         /// <param name="entity">The entity to add to the squad.</param>
+        [PublicAPI]
         public void AddMember(int squad, int entity)
         {
             Debug.Assert(HasSquad(squad));
@@ -170,6 +181,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="squad">The squad to remove from.</param>
         /// <param name="entity">The entity to remove.</param>
+        [PublicAPI]
         public void RemoveMember(int squad, int entity)
         {
             Debug.Assert(HasSquad(squad));
@@ -243,31 +255,29 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Called by the manager when a new component was added.</summary>
-        /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnComponentAdded(ComponentAdded message)
         {
-            base.OnComponentAdded(component);
-
-            var cc = component as Squad;
-            if (cc != null)
+            var squad = message.Component as Squad;
+            if (squad != null)
             {
-                MakeIdentitySquad(cc);
+                MakeIdentitySquad(squad);
             }
         }
 
         /// <summary>Called when a component is removed.</summary>
-        /// <param name="component">The component.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
-
-            var cc = component as Squad;
-            if (cc != null)
+            var squad = message.Component as Squad;
+            if (squad != null)
             {
                 // Remove from squad moving it to its identity squad.
-                RemoveMember(cc.SquadId, component.Entity);
+                RemoveMember(squad.SquadId, squad.Entity);
                 // Remove the component's identity squad.
-                _squadIds.ReleaseId(cc.SquadId);
+                _squadIds.ReleaseId(squad.SquadId);
             }
         }
 
@@ -466,6 +476,7 @@ namespace Space.ComponentSystem.Systems
             ///     This is the 'null' implementation, which simply returns nothing and causes the cache to fall-back to the
             ///     default value.
             /// </summary>
+            [PublicAPI]
             public static readonly AbstractFormation None = new NoneFormation();
 
             private sealed class NoneFormation : SimpleFormation
@@ -490,6 +501,7 @@ namespace Space.ComponentSystem.Systems
             ///      ...
             ///     </code>
             /// </summary>
+            [PublicAPI]
             public static readonly AbstractFormation Line = new LineFormation();
 
             private sealed class LineFormation : SimpleFormation
@@ -517,6 +529,7 @@ namespace Space.ComponentSystem.Systems
             ///      ...
             ///     </code>
             /// </summary>
+            [PublicAPI]
             public static readonly AbstractFormation Column = new ColumnFormation();
 
             private sealed class ColumnFormation : SimpleFormation
@@ -544,6 +557,7 @@ namespace Space.ComponentSystem.Systems
             ///       0
             ///     </code>
             /// </summary>
+            [PublicAPI]
             public static readonly AbstractFormation Vee = new VeeFormation();
 
             private sealed class VeeFormation : SimpleFormation
@@ -572,6 +586,7 @@ namespace Space.ComponentSystem.Systems
             ///      ...
             ///     </code>
             /// </summary>
+            [PublicAPI]
             public static readonly AbstractFormation Wedge = new WedgeFormation();
 
             private sealed class WedgeFormation : SimpleFormation
@@ -601,6 +616,7 @@ namespace Space.ComponentSystem.Systems
             ///      ...
             ///     </code>
             /// </summary>
+            [PublicAPI]
             public static readonly AbstractFormation FilledWedge = new FilledWedgeFormation();
 
             private sealed class FilledWedgeFormation : SimpleFormation
@@ -625,6 +641,7 @@ namespace Space.ComponentSystem.Systems
             ///    ...
             ///     </code>
             /// </summary>
+            [PublicAPI]
             public static readonly AbstractFormation Block = new BlockFormation();
 
             private sealed class BlockFormation : SimpleFormation
@@ -633,6 +650,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             /// <summary>This in an implementation for a Sierpinski formation. See https://en.wikipedia.org/wiki/Sierpinski_triangle</summary>
+            [PublicAPI]
             public static readonly AbstractFormation Sierpinski = new SierpinskiFormation();
 
             private sealed class SierpinskiFormation : SimpleFormation

@@ -257,8 +257,8 @@ namespace Engine.ComponentSystem.Physics.Systems
                     // Get model transform based on body transform.
                     var body = bodyInfo.Item1;
                     var bodyPosition = bodyInfo.Item2;
-                    var bodyAngle = bodyInfo.Item3;
 #if FARMATH
+                    var bodyAngle = bodyInfo.Item3;
                     var bodyTranslation = (Vector2)(bodyPosition + view.Translation);
                     var model = Matrix.CreateRotationZ(bodyAngle) *
                                 Matrix.CreateTranslation(UnitConversion.ToScreenUnits(bodyTranslation.X),

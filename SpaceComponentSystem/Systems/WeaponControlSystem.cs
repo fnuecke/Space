@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
@@ -181,15 +181,15 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Called when a component is removed.</summary>
-        /// <param name="component">The component.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        public override void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
+            base.OnComponentRemoved(message);
 
-            if (component is Item)
+            if (message.Component is Item)
             {
                 // An item was removed, clear its cooldowns.
-                _cooldowns.Remove(component.Entity);
+                _cooldowns.Remove(message.Component.Entity);
             }
         }
 

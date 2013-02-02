@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 
@@ -13,26 +14,27 @@ namespace Engine.ComponentSystem.RPG.Systems
         #region Logic
 
         /// <summary>Check for removed entities to remove them from inventories.</summary>
-        /// <param name="component">The removed component.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        public override void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
+            base.OnComponentRemoved(message);
 
-            if (component is Item)
+            var item = message.Component as Item;
+            if (item != null)
             {
                 // Remove items that were equipped inside this item. Do this first,
                 // to keep the hierarchy alive as long as possible (due to this
                 // recursing this will delete bottom up). This is necessary to allow
                 // other systems to check the root node (e.g. thruster effect system).
                 Component slot;
-                while ((slot = Manager.GetComponent(component.Entity, ItemSlot.TypeId)) != null)
+                while ((slot = Manager.GetComponent(item.Entity, ItemSlot.TypeId)) != null)
                 {
                     Manager.RemoveComponent(slot);
                 }
             }
             else
             {
-                var itemSlot = component as ItemSlot;
+                var itemSlot = message.Component as ItemSlot;
                 if (itemSlot != null)
                 {
                     // An equipment was removed, remove its item. This will
@@ -48,15 +50,14 @@ namespace Engine.ComponentSystem.RPG.Systems
         }
 
         /// <summary>Unequips items that were removed from the simulation.</summary>
-        /// <param name="entity">The entity that was removed.</param>
-        public override void OnEntityRemoved(int entity)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnEntityRemoved(EntityRemoved message)
         {
-            base.OnEntityRemoved(entity);
-
             // An item was removed, unequip it everywhere.
             foreach (var slot in Components)
             {
-                if (slot.Item == entity)
+                if (slot.Item == message.Entity)
                 {
                     slot.Item = 0;
                 }

@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
@@ -13,13 +13,15 @@ namespace Engine.ComponentSystem.RPG.Systems
         #region Logic
 
         /// <summary>Called by the manager when a new component was added.</summary>
-        /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnComponentAdded(ComponentAdded message)
         {
             // Check if the component is of the right type.
-            if (component is Attributes<TAttribute>)
+            var attributes = message.Component as Attributes<TAttribute>;
+            if (attributes != null)
             {
-                ((Attributes<TAttribute>) component).RecomputeAttributes();
+                attributes.RecomputeAttributes();
             }
         }
 

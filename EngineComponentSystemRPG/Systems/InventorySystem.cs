@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 
@@ -13,12 +13,12 @@ namespace Engine.ComponentSystem.RPG.Systems
         #region Logic
 
         /// <summary>Check for removed entities to remove them from inventories.</summary>
-        /// <param name="component">The removed component.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        public override void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
+            base.OnComponentRemoved(message);
 
-            if (component is Item)
+            if (message.Component is Item)
             {
                 // An item was removed, remove it from all inventories.
                 foreach (var inventory in Components)
@@ -28,7 +28,7 @@ namespace Engine.ComponentSystem.RPG.Systems
             }
             else
             {
-                var inventory = component as Inventory;
+                var inventory = message.Component as Inventory;
                 if (inventory != null)
                 {
                     // An inventory was removed, remove all items in it.

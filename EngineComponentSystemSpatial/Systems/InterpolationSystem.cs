@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
 using Engine.Serialization;
@@ -186,13 +186,13 @@ namespace Engine.ComponentSystem.Spatial.Systems
         protected abstract WorldBounds ComputeViewport();
 
         /// <summary>Called by the manager when a new component was removed.</summary>
-        /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnComponentRemoved(ComponentRemoved message)
         {
-            base.OnComponentRemoved(component);
-
             // Remove from positions list if it was in the index we use to find
             // entities to interpolate.
+            var component = message.Component;
             if (component is IIndexable && ((IIndexable) component).IndexId == IndexId)
             {
                 _entries.Remove(component.Entity);

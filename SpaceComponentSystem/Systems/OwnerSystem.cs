@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Systems
@@ -36,16 +37,15 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>Called by the manager when an entity was removed.</summary>
-        /// <param name="entity">The entity that was removed.</param>
-        public override void OnEntityRemoved(int entity)
+        /// <param name="message"></param>
+        [MessageCallback]
+        public void OnEntityRemoved(EntityRemoved message)
         {
-            base.OnEntityRemoved(entity);
-
             // Unset owner for all components where the removed entity
             // was the owner.
             foreach (var component in Components)
             {
-                if (component.Value == entity)
+                if (component.Value == message.Entity)
                 {
                     component.Value = 0;
                 }

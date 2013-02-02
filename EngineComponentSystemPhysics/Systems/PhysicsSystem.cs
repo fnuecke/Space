@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Engine.Collections;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.ComponentSystem.Physics.Collision;
@@ -533,11 +533,11 @@ namespace Engine.ComponentSystem.Physics.Systems
         #region Message handling (Body/Fixture creation/destruction)
 
         /// <summary>Called by the manager when a new component was added.</summary>
-        /// <param name="component">The component that was added.</param>
-        public override void OnComponentAdded(IComponent component)
+        /// <param name="message"></param>
+        public override void OnComponentAdded(ComponentAdded message)
         {
-            var fixture = component as Fixture;
-            var body = component as Body;
+            var fixture = message.Component as Fixture;
+            var body = message.Component as Body;
             if ((body != null || fixture != null) && IsLocked)
             {
                 throw new InvalidOperationException("Must not add bodies, fixtures or joints during update.");
@@ -553,7 +553,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                 // All green, we can save our base class some work by just
                 // passing this on in here (because it'll check again if
                 // the component is a body).
-                base.OnComponentAdded(component);
+                base.OnComponentAdded(message);
             }
             else if (fixture != null)
             {
@@ -575,11 +575,11 @@ namespace Engine.ComponentSystem.Physics.Systems
         }
 
         /// <summary>Called by the manager when a component was removed.</summary>
-        /// <param name="component">The component that was removed.</param>
-        public override void OnComponentRemoved(IComponent component)
+        /// <param name="message"></param>
+        public override void OnComponentRemoved(ComponentRemoved message)
         {
-            var fixture = component as Fixture;
-            var body = component as Body;
+            var fixture = message.Component as Fixture;
+            var body = message.Component as Body;
             if ((body != null || fixture != null) && IsLocked)
             {
                 throw new InvalidOperationException("Must not remove bodies, fixtures or joints during update.");
@@ -616,7 +616,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                 // Remove from parent list. As with the added handler, we save
                 // our base class some work because it only cares for body
                 // components anyway, so we just pass this on in here.
-                base.OnComponentRemoved(component);
+                base.OnComponentRemoved(message);
             }
             else if (fixture != null)
             {
