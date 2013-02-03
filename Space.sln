@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Awesomium.ScreenManagement"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Awesomium.ContentPipeline", "AwesomiumContentPipeline\Awesomium.ContentPipeline.csproj", "{ECECA87C-C991-4DA1-81C2-72690ABA79F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Gui.Content", "SpaceGuiContent\Space.Gui.Content.contentproj", "{4248B6C3-D2EE-496F-9C4B-0B923962449B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Content.Gui", "SpaceContentGui\Space.Content.Gui.contentproj", "{4248B6C3-D2EE-496F-9C4B-0B923962449B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Tests", "EngineTests\Engine.Tests.csproj", "{383E3C11-C642-47D6-9B75-3E680F9E1A17}"
 EndProject

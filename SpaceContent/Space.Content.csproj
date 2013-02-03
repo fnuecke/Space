@@ -76,9 +76,9 @@
       <Name>Space.Content.Textures %28data/Textures%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceGuiContent\Space.Gui.Content.contentproj">
+    <ProjectReference Include="..\SpaceContentGui\Space.Content.Gui.contentproj">
       <Project>{4248B6C3-D2EE-496F-9C4B-0B923962449B}</Project>
-      <Name>Space.Gui.Content %28data%29</Name>
+      <Name>Space.Content.Gui %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
