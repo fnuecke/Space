@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -41,6 +42,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         #region Properties
 
         /// <summary>The angle of the ellipse's major axis to the global x axis.</summary>
+        [PublicAPI]
         public float Angle
         {
             get { return _angle; }
@@ -52,6 +54,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         }
 
         /// <summary>The radius of the ellipse along the major axis.</summary>
+        [PublicAPI]
         public float MajorRadius
         {
             get { return _majorRadius; }
@@ -63,6 +66,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         }
 
         /// <summary>The radius of the ellipse along the minor axis.</summary>
+        [PublicAPI]
         public float MinorRadius
         {
             get { return _minorRadius; }
@@ -78,12 +82,15 @@ namespace Engine.ComponentSystem.Spatial.Components
         #region Fields
 
         /// <summary>The id of the entity the entity this component belongs to rotates around.</summary>
+        [PublicAPI]
         public int CenterEntityId;
 
         /// <summary>The time in frames it takes for the component to perform a full rotation around its center.</summary>
+        [PublicAPI]
         public float Period;
 
         /// <summary>Starting offset of our period (otherwise all objects with the same period will always be at the same angle...)</summary>
+        [PublicAPI]
         public float PeriodOffset;
 
         /// <summary>Precomputed for position calculation.</summary>

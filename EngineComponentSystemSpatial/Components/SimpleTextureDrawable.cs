@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.Math;
 using Engine.Serialization;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -28,14 +29,17 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         /// <summary>Gets or sets the scale to draw the texture with.</summary>
         /// <value>The scale.</value>
+        [PublicAPI]
         public float Scale { get; set; }
 
         /// <summary>Gets or sets the color tint to draw the texture with.</summary>
         /// <value>The tint.</value>
+        [PublicAPI]
         public Color Tint { get; set; }
 
         /// <summary>Gets or sets the name of the texture to draw.</summary>
         /// <value>The name of the texture.</value>
+        [PublicAPI]
         public string TextureName
         {
             get { return _textureName; }
@@ -47,6 +51,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         }
 
         /// <summary>Gets the actual texture.</summary>
+        [PublicAPI]
         public Texture2D Texture
         {
             get
@@ -60,6 +65,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         }
 
         /// <summary>The area this drawable needs to render itself.</summary>
+        [PublicAPI]
         public RectangleF Bounds
         {
             get

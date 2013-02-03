@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -16,7 +17,7 @@ namespace Engine.ComponentSystem.Systems
         ///     Reused for iterating components when updating, to avoid modifications to the list of components breaking the
         ///     update.
         /// </summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private List<TComponent> _updatingComponents = new List<TComponent>();
 
         #endregion

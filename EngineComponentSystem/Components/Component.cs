@@ -42,7 +42,7 @@ namespace Engine.ComponentSystem.Components
         #region Properties
 
         /// <summary>The manager the component lives in.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         public IManager Manager { get; internal set; }
 
         /// <summary>
@@ -96,7 +96,11 @@ namespace Engine.ComponentSystem.Components
         /// <returns>The copy.</returns>
         public virtual Component NewInstance()
         {
-            return (Component) MemberwiseClone();
+            var copy = (Component) MemberwiseClone();
+
+            copy.Manager = null;
+
+            return copy;
         }
         
         /// <summary>Creates a deep copy of the object, reusing the given object.</summary>

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.ComponentSystem
@@ -15,30 +14,24 @@ namespace Engine.ComponentSystem
         #region Type mapping
 
         /// <summary>Manages unique IDs for system types.</summary>
-        [PacketizeIgnore]
         private static readonly IdManager SystemTypeIds = new IdManager();
 
         /// <summary>Maps actual system types to their IDs.</summary>
-        [PacketizeIgnore]
         private static readonly Dictionary<Type, int> SystemTypes = new Dictionary<Type, int>();
 
         /// <summary>Keeps track of type hierarchy among systems, i.e. stores for each system its most direct, known parent.</summary>
-        [PacketizeIgnore]
         private static readonly SparseArray<int> SystemHierarchy = new SparseArray<int>();
 
         /// <summary>Manages unique IDs for component types.</summary>
-        [PacketizeIgnore]
         private static readonly IdManager ComponentTypeIds = new IdManager();
 
         /// <summary>Maps actual component types to their IDs.</summary>
-        [PacketizeIgnore]
         private static readonly Dictionary<Type, int> ComponentTypes = new Dictionary<Type, int>();
 
         /// <summary>
         ///     Keeps track of type hierarchy among components, i.e. stores for each component its direct and indirect
         ///     parents. We also use sets to support multiple inheritance (in particular for interfaces).
         /// </summary>
-        [PacketizeIgnore]
         private static readonly SparseArray<HashSet<int>> ComponentHierarchy = new SparseArray<HashSet<int>>();
 
         #endregion

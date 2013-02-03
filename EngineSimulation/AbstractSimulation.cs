@@ -4,6 +4,7 @@ using System.IO;
 using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
+using Engine.Util;
 
 namespace Engine.Simulation
 {
@@ -33,7 +34,7 @@ namespace Engine.Simulation
         #region Fields
 
         /// <summary>List of queued commands to execute in the next step.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         protected List<Command> Commands = new List<Command>();
 
         #endregion

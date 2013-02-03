@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem
 {
@@ -16,15 +17,13 @@ namespace Engine.ComponentSystem
         ///     Objects that were released this very update run, so we don't want to reuse them until we enter the next
         ///     update, to avoid reuse of components that might still be referenced in running system update loops.
         /// </summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly SparseArray<Stack<Component>> _dirtyPool = new SparseArray<Stack<Component>>();
 
         /// <summary>Object pool for reusable instances.</summary>
-        [PacketizeIgnore]
         private static readonly SparseArray<Stack<Component>> ComponentPool = new SparseArray<Stack<Component>>();
 
         /// <summary>Pool for entities (index structure only, used for faster component queries).</summary>
-        [PacketizeIgnore]
         private static readonly Stack<Entity> EntityPool = new Stack<Entity>();
 
         /// <summary>Try fetching an instance from the pool, if that fails, create a new one.</summary>

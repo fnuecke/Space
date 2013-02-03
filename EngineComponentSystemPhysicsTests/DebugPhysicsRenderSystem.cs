@@ -1,13 +1,10 @@
 ﻿using Engine.ComponentSystem.Physics.Systems;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldTransform = Engine.FarMath.FarTransform;
 #else
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Microsoft.Xna.Framework.Vector2;
 using WorldTransform = Microsoft.Xna.Framework.Matrix;
 #endif
@@ -38,11 +35,9 @@ namespace Engine.ComponentSystem.Physics.Tests
         #region Fields
 
         /// <summary>Backing scale field for initial value.</summary>
-        [PacketizeIgnore]
         private float _scale = 1;
 
         /// <summary>Backing offset field for transformation on setting (to avoid recomputation each render pass).</summary>
-        [PacketizeIgnore]
         private WorldPoint _offset = WorldPoint.Zero;
 
         #endregion

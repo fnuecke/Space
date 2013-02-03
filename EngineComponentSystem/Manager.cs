@@ -77,29 +77,29 @@ namespace Engine.ComponentSystem
         #region Fields
 
         /// <summary>List of systems registered with this manager.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>();
 
         /// <summary>Lookup table for quick access to systems by their type id.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
 
         /// <summary>Manager for entity ids.</summary>
         private readonly IdManager _entityIds = new IdManager();
 
         /// <summary>Keeps track of entity->component relationships.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
 
         /// <summary>Manager for entity ids.</summary>
         private readonly IdManager _componentIds = new IdManager();
 
         /// <summary>Lookup table for quick access to components by their id.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
         /// <summary>Table of registered message callbacks, by type.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         private readonly Dictionary<Type, Delegate> _messageCallbacks = new Dictionary<Type, Delegate>();
 
         /// <summary>
