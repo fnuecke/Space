@@ -27,9 +27,6 @@ namespace Space
             // Tell the console how to render itself.
             LoadConsole();
 
-            // Initialize scripting environment for debugging.
-            SpaceCommandHandler.InitializeScriptEnvironment(Content);
-
             // Load generator constraints.
             FactoryLibrary.LoadContent(Content);
 

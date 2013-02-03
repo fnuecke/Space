@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Serialization;
-using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
@@ -141,7 +141,7 @@ namespace Space
                 });
 
             // Add hints for auto completion to also complete python methods.
-            _console.AddAutoCompletionLookup(SpaceCommandHandler.GetGlobalNames);
+            _console.AddAutoCompletionLookup(() => _client != null ? _client.GetSystem<ScriptSystem>().GlobalNames : Enumerable.Empty<string>());
             
             _console.AddCommand(
                 "d_dump",

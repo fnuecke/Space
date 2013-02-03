@@ -101,6 +101,9 @@ namespace Space.Control
                     // bounds for objects from their textures dynamically.
                     new ContentSystem(game.Content),
                     new GraphicsDeviceSystem(game.GraphicsDeviceManager),
+                    
+                    // Script system, mainly used for debugging.
+                    new ScriptSystem(game.Content.Load<string>("Misc/ScriptInit")),
 
                     // The index system will update its indexes when the translation
                     // of an object changes, and remembers which movements triggered

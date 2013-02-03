@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
@@ -10,9 +9,6 @@ using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
 using Engine.Simulation.Commands;
 using Engine.Util;
-using IronPython.Hosting;
-using Microsoft.Scripting.Hosting;
-using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Data;
@@ -28,92 +24,9 @@ namespace Space.Simulation.Commands
 
         #endregion
 
-        #region Scripting environment
-
-        /// <summary>Symbol imports for scripting convenience.</summary>
-        private const string ScriptNamespaces =
-            @"
-from Engine.ComponentSystem import *
-from Engine.ComponentSystem.Components import *
-from Engine.ComponentSystem.Systems import *
-from Engine.ComponentSystem.Common.Components import *
-from Engine.ComponentSystem.Common.Systems import *
-from Engine.ComponentSystem.RPG.Components import *
-from Engine.ComponentSystem.RPG.Systems import *
-from Engine.ComponentSystem.Spatial.Components import *
-from Engine.ComponentSystem.Spatial.Systems import *
-from Engine.FarMath import *
-from Space.ComponentSystem import *
-from Space.ComponentSystem.Components import *
-from Space.ComponentSystem.Factories import *
-from Space.ComponentSystem.Systems import *
-from Space.Data import *
-";
-
-        /// <summary>The global scripting engine we'll be using.</summary>
-        private static readonly ScriptEngine Script = Python.CreateEngine();
-
-        /// <summary>Used to keep multiple threads (TSS) from trying to execute scripts at the same time.</summary>
-        private static readonly object ScriptLock = new object();
-
-        /// <summary>We only use this in debug mode, so don't even bother setting it up in if we're not debugging.</summary>
-        [Conditional("DEBUG")]
-        public static void InitializeScriptEnvironment(ContentManager content)
-        {
-            // Load the executing and all referenced assemblies into the script
-            // environment so they can be used for debugging.
-            var executingAssembly = Assembly.GetExecutingAssembly();
-            Script.Runtime.LoadAssembly(executingAssembly);
-            foreach (var assembly in executingAssembly.GetReferencedAssemblies())
-            {
-                Script.Runtime.LoadAssembly(Assembly.Load(assembly));
-            }
-
-            // Also import all symbols from the namespaces we might need.
-            try
-            {
-                Script.Execute(ScriptNamespaces, Script.Runtime.Globals);
-            }
-            catch (Exception ex)
-            {
-                Logger.WarnException("Failed initializing script engine.", ex);
-            }
-
-            // Redirect scripting output to the logger.
-            var infoStream = new System.IO.MemoryStream();
-            var errorStream = new System.IO.MemoryStream();
-            Script.Runtime.IO.SetOutput(infoStream, new InfoStreamWriter(infoStream));
-            Script.Runtime.IO.SetErrorOutput(errorStream, new ErrorStreamWriter(errorStream));
-
-            // Register some macros in our scripting environment.
-            try
-            {
-                Script.Execute(content.Load<string>("Misc/ScriptInit"), Script.Runtime.Globals);
-            }
-            catch (Exception ex)
-            {
-                Logger.WarnException("Failed initializing script engine.", ex);
-            }
-        }
-
-        /// <summary>Gets the global names currently registered in the scripting environment.</summary>
-        /// <returns>List of global variable names.</returns>
-        public static IEnumerable<string> GetGlobalNames()
-        {
-            return Script.Runtime.Globals.GetVariableNames();
-        }
-
-        /// <summary>The frame number in which we executed the last command.</summary>
-        private static long _lastScriptFrame;
-
-        /// <summary>Whether to currently ignore script output.</summary>
-        private static bool _ignoreScriptOutput;
-
-        #endregion
-
         #region Single allocation
 
-        private static ISet<int> _reusableItemList = new HashSet<int>();
+        private static readonly ISet<int> ReusableItemList = new HashSet<int>();
 
         #endregion
 
@@ -361,10 +274,10 @@ from Space.Data import *
 
             // We may be called from a multi threaded environment (TSS), so
             // lock this shared list.
-            lock (_reusableItemList)
+            lock (ReusableItemList)
             {
-                index[PickupSystem.IndexId].Find(transform.Position, UnitConversion.ToSimulationUnits(100), _reusableItemList);
-                foreach (IIndexable item in _reusableItemList.Select(manager.GetComponentById))
+                index[PickupSystem.IndexId].Find(transform.Position, UnitConversion.ToSimulationUnits(100), ReusableItemList);
+                foreach (IIndexable item in ReusableItemList.Select(manager.GetComponentById))
                 {
                     // Pick the item up.
                     // TODO: check if the item belongs to the player.
@@ -376,7 +289,7 @@ from Space.Data import *
                         drawable.Enabled = false;
                     }
                 }
-                _reusableItemList.Clear();
+                ReusableItemList.Clear();
             }
         }
         
@@ -559,95 +472,23 @@ from Space.Data import *
             // We only have one engine in a potential multi threaded
             // environment, so make sure we only access it once at a
             // time.
-            lock (ScriptLock)
+            var scriptSystem = (ScriptSystem) manager.GetSystem(ScriptSystem.TypeId);
+            scriptSystem.Call("setExecutingPlayer", command.PlayerNumber);
+            try
             {
-                // Avoid multiple prints of the same message (each
-                // simulation in TSS calls this).
-                if (command.Frame > _lastScriptFrame)
+                var result = scriptSystem.Execute(command.Script);
+                if (result != null)
                 {
-                    _lastScriptFrame = command.Frame;
-                    _ignoreScriptOutput = false;
-                }
-                else
-                {
-                    _ignoreScriptOutput = true;
-                }
-
-                // Create context. This is again the case because of TSS,
-                // so that the different simulations don't interfere with
-                // each other.
-                var scope = Script.Runtime.Globals;
-
-                // Some more utility variables used frequently.
-                scope.SetVariable("manager", manager);
-                scope.SetVariable("avatar", avatar);
-                scope.SetVariable("attributes", manager.GetComponent(avatar, Attributes<AttributeType>.TypeId));
-                scope.SetVariable("inventory", manager.GetComponent(avatar, Inventory.TypeId));
-                scope.SetVariable("equipment", manager.GetComponent(avatar, ItemSlot.TypeId));
-
-                // Try executing our script.
-                try
-                {
-                    if (!_ignoreScriptOutput)
-                    {
-                        Logger.Info("> {0}", command.Script);
-                    }
-                    var result = Script.Execute(command.Script, scope);
-                    if (!_ignoreScriptOutput)
-                    {
-                        Logger.Info("< {0}", result != null ? result.ToString() : "null");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (!_ignoreScriptOutput)
-                    {
-                        Logger.Error(
-                            "Error executing script.\n{0}", Script.GetService<ExceptionOperations>().FormatException(ex));
-                    }
-                }
-                finally
-                {
-                    scope.RemoveVariable("manager");
-                    scope.RemoveVariable("avatar");
-                    scope.RemoveVariable("attributes");
-                    scope.RemoveVariable("inventory");
-                    scope.RemoveVariable("equipment");
+                    scriptSystem.Call("print", result);
                 }
             }
-        }
-
-        #endregion
-
-        #region Stream classes for script IO
-
-        /// <summary>Writes informational messages from the scripting VM to the log.</summary>
-        private sealed class InfoStreamWriter : System.IO.StreamWriter
-        {
-            public InfoStreamWriter(System.IO.Stream stream)
-                : base(stream) {}
-
-            public override void Write(string value)
+            catch (InvalidOperationException ex)
             {
-                if (!_ignoreScriptOutput && !string.IsNullOrWhiteSpace(value))
-                {
-                    Logger.Info(value);
-                }
+                Logger.ErrorException("Error executing script.\n", ex);
             }
-        }
-
-        /// <summary>Writes error messages from the scripting VM to the log.</summary>
-        private sealed class ErrorStreamWriter : System.IO.StreamWriter
-        {
-            public ErrorStreamWriter(System.IO.Stream stream)
-                : base(stream) {}
-
-            public override void Write(string value)
+            finally
             {
-                if (!_ignoreScriptOutput && !string.IsNullOrWhiteSpace(value))
-                {
-                    Logger.Error(value);
-                }
+                scriptSystem.Call("setExecutingPlayer", -1);
             }
         }
 

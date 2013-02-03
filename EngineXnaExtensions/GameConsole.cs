@@ -199,11 +199,11 @@ namespace Engine.XnaExtensions
         /// <summary>The current scrolling offset.</summary>
         private int _scroll;
 
-        /// <summary>Index of last used tab completion option.</summary>
-        private int _tabCompleteIndex = -1;
+        /// <summary>List of potential commands for tab completion.</summary>
+        private List<string> _tabCompleteList;
 
-        /// <summary>Tracks whether we're currently at the last matching command for auto complete cycling.</summary>
-        private bool _tabCompleteAtEnd;
+        /// <summary>Index of last used tab completion option.</summary>
+        private int _tabCompleteIndex;
 
         /// <summary>Whether to open the console in the next update. Used to skip the hot key from being printed in the console.</summary>
         private bool _shouldOpen;
@@ -753,89 +753,38 @@ namespace Engine.XnaExtensions
                     case Keys.Tab:
                         if (_cursor > 0)
                         {
-                            if (_inputBeforeTab == null)
+                            if (_tabCompleteList == null)
                             {
                                 // First time we're trying to complete,
                                 // remember what our initial input was,
                                 // i.e. the string we're trying to complete.
                                 _inputBeforeTab = _input.ToString().Substring(0, _cursor).Trim();
-                            }
-                            if (_inputBeforeTab.Length > 0)
-                            {
-                                // For looping backwards.
-                                var previousIndex = _tabCompleteIndex;
-                                // Tracks the index in the command list we're
-                                // currently at.
-                                var matchCount = -1;
-                                // This flag is set if we find something, and
-                                // unset if we continue iterating. This allows
-                                // us to wrap back to the beginning.
-                                // In reverse search, this flag is used to
-                                // track whether we already had a match.
-                                var flag = false;
                                 // Build a list of all available terms.
-                                var commands = new HashSet<string>();
-                                foreach (var command in _commands)
+                                if (_inputBeforeTab.Length > 0)
                                 {
-                                    commands.Add(command.Key);
+                                    _tabCompleteList =
+                                        _commands.Keys.Union(_additionalCommandNameGetters.SelectMany(g => g()))
+                                                 .Where(c => c.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
+                                                 .OrderBy(c => c).ToList();
                                 }
-                                foreach (var callback in _additionalCommandNameGetters)
+                            }
+                            else
+                            {
+                                if (IsShiftPressed())
                                 {
-                                    foreach (var command in callback())
-                                    {
-                                        commands.Add(command);
-                                    }
+                                    --_tabCompleteIndex;
                                 }
-                                foreach (var command in commands)
+                                else
                                 {
-                                    if (command.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
-                                    {
-                                        // Got a match.
-                                        ++matchCount;
-                                        // Check which way we're actually searching.
-                                        if (IsShiftPressed())
-                                        {
-                                            // Backwards. If we had a match but
-                                            // are past the current element,
-                                            // stop now. Otherwise go as far to
-                                            // the right as we can.
-                                            if (flag && previousIndex == matchCount)
-                                            {
-                                                break;
-                                            }
-                                            // Found a match we can use.
-                                            _input.Clear();
-                                            _input.Append(command);
-                                            _cursor = _input.Length;
-                                            _tabCompleteIndex = matchCount;
-                                            flag = true;
-                                        }
-                                        else
-                                        {
-                                            // Forwards.
-                                            if (!flag && (_tabCompleteAtEnd || _tabCompleteIndex < matchCount))
-                                            {
-                                                // Found a match we can use.
-                                                _input.Clear();
-                                                _input.Append(command);
-                                                _cursor = _input.Length;
-                                                _tabCompleteIndex = matchCount;
-                                                flag = true;
-                                            }
-                                            else if (flag)
-                                            {
-                                                flag = false;
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    ++_tabCompleteIndex;
                                 }
-                                // We stopped at the last match in the list,
-                                // rewind.
-                                if (!IsShiftPressed())
-                                {
-                                    _tabCompleteAtEnd = flag;
-                                }
+                            }
+                            if (_tabCompleteList != null)
+                            {
+                                _tabCompleteIndex = (_tabCompleteIndex + _tabCompleteList.Count) % _tabCompleteList.Count;
+                                _input.Clear();
+                                _input.Append(_tabCompleteList[_tabCompleteIndex]);
+                                _cursor = _input.Length;
                             }
                             else
                             {
@@ -1034,7 +983,8 @@ namespace Engine.XnaExtensions
         private void ResetTabCompletion()
         {
             _inputBeforeTab = null;
-            _tabCompleteIndex = -1;
+            _tabCompleteList = null;
+            _tabCompleteIndex = 0;
         }
 
         private void OnLineWritten(LineWrittenEventArgs e)

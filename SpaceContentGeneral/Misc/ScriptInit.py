@@ -1,4 +1,49 @@
-﻿def goto(x, y):
+﻿"""
+Import anything we may need to interact with the simulation.
+"""
+
+from Engine.ComponentSystem import *
+from Engine.ComponentSystem.Components import *
+from Engine.ComponentSystem.Systems import *
+from Engine.ComponentSystem.Common.Components import *
+from Engine.ComponentSystem.Common.Systems import *
+from Engine.ComponentSystem.RPG.Components import *
+from Engine.ComponentSystem.RPG.Systems import *
+from Engine.ComponentSystem.Spatial.Components import *
+from Engine.ComponentSystem.Spatial.Systems import *
+from Engine.FarMath import *
+from Space.ComponentSystem import *
+from Space.ComponentSystem.Components import *
+from Space.ComponentSystem.Factories import *
+from Space.ComponentSystem.Systems import *
+from Space.Data import *
+
+"""
+One global variable is always available, 'manager', which refers to the manager this script lives in.
+"""
+
+# Some context sensitive values, adjusted if a command is executed for a specific player.
+avatar = None
+attributes = None
+inventory = None
+equipment = None
+
+def setExecutingPlayer(player):
+    """Prepares the environment for executing a command for a player."""
+    global avatar, attributes, inventory, equipment
+    if player >= 0:
+        avatar = manager.GetSystem(AvatarSystem.TypeId).GetAvatar(player)
+        attributes = manager.GetComponent(avatar, Attributes[AttributeType].TypeId)
+        inventory = manager.GetComponent(avatar, Inventory.TypeId)
+        equipment = manager.GetComponent(avatar, ItemSlot.TypeId)
+    else:
+        avatar = attributes = inventory = equipment = None
+
+"""
+Debugging utility stuff.
+"""
+
+def goto(x, y):
     """Moves the player's ship to the specified coordinates."""
     component = manager.GetComponent(avatar, manager.GetComponentTypeId[ITransform]())
     component.Position = FarPosition(x, y)

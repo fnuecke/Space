@@ -43,6 +43,10 @@
     <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="IronPython, Version=2.7.0.40, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
@@ -167,6 +171,7 @@
     <Compile Include="Systems\RegeneratingValueSystem.cs" />
     <Compile Include="Systems\ResistanceDebuffApplyingSystem.cs" />
     <Compile Include="Systems\RespawnSystem.cs" />
+    <Compile Include="Systems\ScriptSystem.cs" />
     <Compile Include="Systems\ShieldRenderSystem.cs" />
     <Compile Include="Systems\ShieldSystem.cs" />
     <Compile Include="Systems\ShipControlSystem.cs" />

@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Components.Behaviors
         #region Fields
 
         /// <summary>The AI component this behavior belongs to.</summary>
-        [PacketizeIgnore]
+        [CopyIgnore, PacketizeIgnore]
         protected readonly ArtificialIntelligence AI;
 
         /// <summary>The randomizer we use to make pseudo random decisions.</summary>
