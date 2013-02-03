@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -8,7 +9,8 @@ namespace Engine.Graphics.PolygonTools
 {
     /// <summary>
     ///     This class can be used to analyze textures and extract polygons from them. This was taken from the FarSeer
-    ///     Physics Engine, to which is was a contribution by 'Sickbattery'.
+    ///     Physics Engine, to which is was a contribution by 'Sickbattery'. Some modifications, such as caching, have been
+    ///     made.
     /// </summary>
     public static class TextureConverter
     {
@@ -33,11 +35,12 @@ namespace Engine.Graphics.PolygonTools
         ///     Clears any cached results from previous
         ///     <see cref="DetectVertices(Microsoft.Xna.Framework.Graphics.Texture2D,float,byte,bool,string)"/> calls.
         /// </summary>
+        [PublicAPI]
         public static void ClearCache()
         {
             Cache.Clear();
         }
-        
+
         /// <summary>Detects the vertices of the supplied texture.</summary>
         /// <remarks>This caches results for a given parameterization for better performance.</remarks>
         /// <param name="texture">The texture.</param>
@@ -108,6 +111,7 @@ namespace Engine.Graphics.PolygonTools
         ///     if set to <c>true</c> it will perform multi part detection.
         /// </param>
         /// <returns></returns>
+        [PublicAPI]
         public static List<List<Vector2>> DetectVertices(
             uint[] data,
             int width,
@@ -128,7 +132,9 @@ namespace Engine.Graphics.PolygonTools
         private static List<List<Vector2>> DetectVertices(ref PolygonCreationAssistance assistance)
         {
             // Check the array we just got.
-            Debug.Assert(assistance.IsValid(), "Sizes don't match: Color array must contain texture width * texture height elements.");
+            Debug.Assert(
+                assistance.IsValid(),
+                "Sizes don't match: Color array must contain texture width * texture height elements.");
 
             var polygons = new List<List<Vector2>>();
             Vector2? polygonEntrance = null;
@@ -197,7 +203,8 @@ namespace Engine.Graphics.PolygonTools
             return polygons;
         }
 
-        private static bool DistanceToHullAcceptable(PolygonCreationAssistance assistance, IList<Vector2> polygon, Vector2 point)
+        private static bool DistanceToHullAcceptable(
+            PolygonCreationAssistance assistance, List<Vector2> polygon, Vector2 point)
         {
             if (polygon == null || polygon.Count <= 2)
             {
@@ -218,7 +225,7 @@ namespace Engine.Graphics.PolygonTools
             return true;
         }
 
-        private static bool InPolygon(PolygonCreationAssistance assistance, IList<Vector2> polygon, Vector2 point)
+        private static bool InPolygon(PolygonCreationAssistance assistance, List<Vector2> polygon, Vector2 point)
         {
             if (!DistanceToHullAcceptable(assistance, polygon, point))
             {
@@ -240,7 +247,7 @@ namespace Engine.Graphics.PolygonTools
             return false;
         }
 
-        private static Vector2? GetTopMostVertex(IList<Vector2> vertices)
+        private static Vector2? GetTopMostVertex(List<Vector2> vertices)
         {
             var topMostValue = float.MaxValue;
             Vector2? topMost = null;
@@ -257,7 +264,7 @@ namespace Engine.Graphics.PolygonTools
             return topMost;
         }
 
-        private static List<CrossingEdgeInfo> GetCrossingEdges(IList<Vector2> polygon, int checkLine)
+        private static List<CrossingEdgeInfo> GetCrossingEdges(List<Vector2> polygon, int checkLine)
         {
             var edges = new List<CrossingEdgeInfo>();
 
@@ -300,7 +307,8 @@ namespace Engine.Graphics.PolygonTools
 
                         if (addCrossingPoint)
                         {
-                            var crossingPoint = new Vector2((checkLine - vertex.Y) / slope.Y * slope.X + vertex.X, checkLine);
+                            var crossingPoint = new Vector2(
+                                (checkLine - vertex.Y) / slope.Y * slope.X + vertex.X, checkLine);
                             edges.Add(new CrossingEdgeInfo(crossingPoint));
                         }
                     }
@@ -312,7 +320,8 @@ namespace Engine.Graphics.PolygonTools
             return edges;
         }
 
-        private static List<Vector2> CreateSimplePolygon(PolygonCreationAssistance assistance, Vector2 entrance, Vector2 last)
+        private static List<Vector2> CreateSimplePolygon(
+            PolygonCreationAssistance assistance, Vector2 entrance, Vector2 last)
         {
             var entranceFound = false;
             var endOfHull = false;
@@ -414,7 +423,8 @@ namespace Engine.Graphics.PolygonTools
             return polygon;
         }
 
-        private static bool SearchNearPixels(PolygonCreationAssistance assistance, bool searchingForSolidPixel, Vector2 current, out Vector2 foundPixel)
+        private static bool SearchNearPixels(
+            PolygonCreationAssistance assistance, bool searchingForSolidPixel, Vector2 current, out Vector2 foundPixel)
         {
             for (var i = 0; i < 8; i++)
             {
@@ -441,7 +451,7 @@ namespace Engine.Graphics.PolygonTools
                 if (x >= 0 && x <= assistance.Width && y >= 0 && y <= assistance.Height &&
                     x == (int) near.X && y == (int) near.Y)
                 {
-                        return true;
+                    return true;
                 }
             }
             return false;
@@ -465,7 +475,8 @@ namespace Engine.Graphics.PolygonTools
             return false;
         }
 
-        private static bool GetNextHullEntrance(PolygonCreationAssistance assistance, Vector2 start, out Vector2? entrance)
+        private static bool GetNextHullEntrance(
+            PolygonCreationAssistance assistance, Vector2 start, out Vector2? entrance)
         {
             // Search for first solid pixel.
             var size = assistance.Height * assistance.Width;
@@ -522,7 +533,7 @@ namespace Engine.Graphics.PolygonTools
         }
 
         private static bool SearchForOutstandingVertex(
-            IList<Vector2> hullArea, float hullTolerance, out Vector2 outstanding)
+            List<Vector2> hullArea, float hullTolerance, out Vector2 outstanding)
         {
             var outstandingResult = Vector2.Zero;
             var found = false;
@@ -651,14 +662,11 @@ namespace Engine.Graphics.PolygonTools
                 {
                     return -1;
                 }
-                else if (CrossingPoint.X > info.CrossingPoint.X)
+                if (CrossingPoint.X > info.CrossingPoint.X)
                 {
                     return 1;
                 }
-                else
-                {
-                    return 0;
-                }
+                return 0;
             }
         }
 

@@ -69,6 +69,7 @@
     <Compile Include="GradientRectangle.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="Grid.cs" />
+    <Compile Include="PolygonTools\BooleanOperations.cs" />
     <Compile Include="PolygonTools\EarclipDecomposer.cs" />
     <Compile Include="PolygonTools\Simplification.cs" />
     <Compile Include="PrimitiveBatch.cs" />
@@ -80,6 +81,10 @@
     <ProjectReference Include="..\EngineMath\Engine.Math.csproj">
       <Project>{A20DF43A-1130-4998-A214-2F4737BA21D0}</Project>
       <Name>Engine.Math</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JetBrainsAnnotations\JetBrains.Annotations.csproj">
+      <Project>{173331FF-F188-464C-9D6F-C46B75B623B3}</Project>
+      <Name>JetBrains.Annotations</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

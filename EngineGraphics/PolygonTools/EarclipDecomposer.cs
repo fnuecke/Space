@@ -38,13 +38,14 @@ namespace Engine.Graphics.PolygonTools
     public static class EarClipDecomposer
     {
         /// <summary>
-        /// box2D rev 32 - for details, see http://www.box2d.org/forum/viewtopic.php?f=4&t=83&start=50 and http://www.ewjordan.com/earClip/
+        ///     box2D rev 32 - for details, see http://www.box2d.org/forum/viewtopic.php?f=4&t=83&start=50 and
+        ///     http://www.ewjordan.com/earClip/
         /// </summary>
         private const float Tolerance = .001f;
 
         /// <summary>
-        ///     Decomposes a non-convex polygon into a number of convex polygons, up to maxPolygons (remaining pieces are thrown out).
-        ///     Each resulting polygon will have no more than Settings.MaxPolygonVertices vertices.
+        ///     Decomposes a non-convex polygon into a number of convex polygons, up to maxPolygons (remaining pieces are thrown
+        ///     out). Each resulting polygon will have no more than Settings.MaxPolygonVertices vertices.
         ///     <para/>
         ///     Warning: Only works on simple polygons
         /// </summary>
@@ -52,7 +53,8 @@ namespace Engine.Graphics.PolygonTools
         /// <param name="maxPolygons">The maximum number of polygons.</param>
         /// <param name="tolerance">The tolerance.</param>
         /// <returns></returns>
-        public static List<List<Vector2>> ConvexPartition(List<Vector2> vertices, int maxPolygons = int.MaxValue, float tolerance = 0)
+        public static List<List<Vector2>> ConvexPartition(
+            List<Vector2> vertices, int maxPolygons = int.MaxValue, float tolerance = 0)
         {
             if (vertices.Count < 3)
             {
@@ -102,8 +104,8 @@ namespace Engine.Graphics.PolygonTools
         ///     Turns a list of triangles into a list of convex polygons. Very simple method - start with a seed triangle, keep
         ///     adding triangles to it until you can't add any more without making the polygon non-convex.
         ///     <para/>
-        ///     Returns an integer telling how many polygons were created.  Will fill polygons array up to maxPolygons entries, which
-        ///     may be smaller or larger than the return value.
+        ///     Returns an integer telling how many polygons were created.  Will fill polygons array up to maxPolygons entries,
+        ///     which may be smaller or larger than the return value.
         ///     <para/>
         ///     Takes O(N///P) where P is the number of resultant polygons, N is triangle count.
         ///     <para/>
@@ -113,7 +115,8 @@ namespace Engine.Graphics.PolygonTools
         /// <param name="maxPolygons">The maximum number of polygons</param>
         /// <param name="tolerance">The tolerance</param>
         /// <returns></returns>
-        private static List<List<Vector2>> PolygonizeTriangles(IList<Triangle> triangulated, int maxPolygons, float tolerance)
+        private static List<List<Vector2>> PolygonizeTriangles(
+            IList<Triangle> triangulated, int maxPolygons, float tolerance)
         {
             var polygons = new List<List<Vector2>>(50);
 
@@ -592,14 +595,14 @@ namespace Engine.Graphics.PolygonTools
             }
             return true;
         }
-        
+
         /// <summary>
-        /// Assuming the polygon is simple; determines whether the polygon is convex.
-        /// <para/>
-        /// NOTE: It will also return false if the input contains collinear edges.
+        ///     Assuming the polygon is simple; determines whether the polygon is convex.
+        ///     <para/>
+        ///     NOTE: It will also return false if the input contains collinear edges.
         /// </summary>
         /// <returns>
-        /// 	<c>true</c> if it is convex; otherwise, <c>false</c>.
+        ///     <c>true</c> if it is convex; otherwise, <c>false</c>.
         /// </returns>
         private static bool IsConvex(IList<Vector2> polygon)
         {
@@ -637,7 +640,7 @@ namespace Engine.Graphics.PolygonTools
             {
                 return true;
             }
-            
+
             var area = 0f;
             for (var i = 0; i < polygon.Count; i++)
             {
@@ -653,9 +656,7 @@ namespace Engine.Graphics.PolygonTools
             public readonly float[] X;
             public readonly float[] Y;
 
-            /// <summary>
-            /// Constructor automatically fixes orientation to counter clockwise.
-            /// </summary>
+            /// <summary>Constructor automatically fixes orientation to counter clockwise.</summary>
             public Triangle(float x1, float y1, float x2, float y2, float x3, float y3)
             {
                 X = new float[3];
