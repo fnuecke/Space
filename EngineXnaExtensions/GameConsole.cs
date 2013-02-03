@@ -781,10 +781,14 @@ namespace Engine.XnaExtensions
                             }
                             if (_tabCompleteList != null)
                             {
-                                _tabCompleteIndex = (_tabCompleteIndex + _tabCompleteList.Count) % _tabCompleteList.Count;
-                                _input.Clear();
-                                _input.Append(_tabCompleteList[_tabCompleteIndex]);
-                                _cursor = _input.Length;
+                                if (_tabCompleteList.Count > 0)
+                                {
+                                    _tabCompleteIndex = (_tabCompleteIndex + _tabCompleteList.Count) %
+                                                        _tabCompleteList.Count;
+                                    _input.Clear();
+                                    _input.Append(_tabCompleteList[_tabCompleteIndex]);
+                                    _cursor = _input.Length;
+                                }
                             }
                             else
                             {
