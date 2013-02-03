@@ -175,7 +175,7 @@ namespace Space.Session
                     var playerClass = (PlayerClassType) packet.ReadByte();
 
                     // And the actual data.
-                    var data = packet.ReadByteArray();
+                    var data = packet.ReadPacketizable<Packet>();
 
                     // Check if the hash matches.
                     var hasher = new Hasher();
@@ -188,7 +188,7 @@ namespace Space.Session
                     {
                         // All is well, keep the data, drop our old data, if any.
                         PlayerClass = playerClass;
-                        _data = new Packet(data, true);
+                        _data = data;
                     }
                 }
             }
@@ -206,7 +206,7 @@ namespace Space.Session
             hasher.Write((byte) PlayerClass);
             if (_data != null)
             {
-                hasher.Write((byte[]) _data);
+                hasher.Write(_data);
             }
 
             // Write it to a packet, compress it, encrypt it and save it.
@@ -216,7 +216,7 @@ namespace Space.Session
                 packet.Write(Header);
                 packet.Write(hasher.Value);
                 packet.Write((byte) PlayerClass);
-                packet.Write((IWritablePacket) _data);
+                packet.Write(_data);
 
                 // Compress and encrypt, then save.
                 var compressed = SimpleCompression.Compress(packet.GetBuffer(), packet.Length);
