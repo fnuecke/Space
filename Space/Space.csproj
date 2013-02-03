@@ -231,10 +231,6 @@
       <Project>{96E70AC4-C288-478C-866E-5C7280067642}</Project>
       <Name>Engine.Simulation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
-      <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
-      <Name>Engine.Base</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
@@ -242,6 +238,10 @@
     <ProjectReference Include="..\EngineXnaExtensions\Engine.XnaExtensions.csproj">
       <Project>{02E58AD2-0B98-4088-9E03-290A0D2920EA}</Project>
       <Name>Engine.XnaExtensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JetBrainsAnnotations\JetBrains.Annotations.csproj">
+      <Project>{173331FF-F188-464C-9D6F-C46B75B623B3}</Project>
+      <Name>JetBrains.Annotations</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
       <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>

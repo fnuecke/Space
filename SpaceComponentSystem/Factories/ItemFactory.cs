@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
@@ -262,7 +263,7 @@ namespace Space.ComponentSystem.Factories
                 // Get how many attributes to sample.
                 foreach (
                     var attribute in
-                        SampleAttributes(SampleAdditionalAttributeCount(random), _additionalAttributes, random))
+                        SampleAttributes(SampleAdditionalAttributeCount(random), random))
                 {
                     manager.AddComponent<Attribute<AttributeType>>(entity).Initialize(attribute);
                 }
@@ -276,10 +277,8 @@ namespace Space.ComponentSystem.Factories
         ///     pools.
         /// </summary>
         /// <param name="count">The number of attributes to sample.</param>
-        /// <param name="attributePools">The attribute pools to sample from.</param>
         /// <param name="random">The randomizer to use.</param>
-        protected IEnumerable<AttributeModifier<AttributeType>> SampleAttributes(
-            int count, string[] attributePools, IUniformRandom random)
+        protected IEnumerable<AttributeModifier<AttributeType>> SampleAttributes(int count, IUniformRandom random)
         {
             if (count <= 0)
             {
@@ -290,19 +289,16 @@ namespace Space.ComponentSystem.Factories
             // there are, so we don't have to resize our list of all attributes
             // while adding them.
             var summedWeights = 0;
-            var numAttributes = 0;
+            var attributeCount = 0;
             for (var i = 0; i < _additionalAttributes.Length; i++)
             {
                 var pool = FactoryLibrary.GetAttributePool(_additionalAttributes[i]);
-                numAttributes += pool.Attributes.Length;
-                foreach (var attribute in pool.Attributes)
-                {
-                    summedWeights += attribute.Weight;
-                }
+                attributeCount += pool.Attributes.Length;
+                summedWeights += pool.Attributes.Sum(attribute => attribute.Weight);
             }
 
             // Get the actual list of available attributes.
-            var attributes = new List<AttributePool.AttributeInfo>(numAttributes);
+            var attributes = new List<AttributePool.AttributeInfo>(attributeCount);
             for (var i = 0; i < _additionalAttributes.Length; i++)
             {
                 attributes.AddRange(FactoryLibrary.GetAttributePool(_additionalAttributes[i]).Attributes);

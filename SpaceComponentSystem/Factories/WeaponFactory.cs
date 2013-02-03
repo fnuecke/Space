@@ -128,7 +128,7 @@ namespace Space.ComponentSystem.Factories
             {
                 foreach (
                     var attributeModifier in
-                        SampleAttributes(SampleLocalAttributeCount(random), _additionalLocalAttributes, random))
+                        SampleAttributes(SampleLocalAttributeCount(random), random))
                 {
                     AccumulateModifier(attributeModifier, ref attributes, ref multipliers);
                 }

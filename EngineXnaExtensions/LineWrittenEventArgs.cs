@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Engine.Util
+namespace Engine.XnaExtensions
 {
     /// <summary>
     ///     Event args used for line written events in the <see cref="GameConsole"/>.

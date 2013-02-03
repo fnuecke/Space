@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
-namespace Engine.Util
+namespace Engine.XnaExtensions
 {
 
     #region Delegates
@@ -51,21 +52,25 @@ namespace Engine.Util
         ///     Fired when an entry is added via WriteLine(). Event args are of type
         ///     <see cref="LineWrittenEventArgs"/>.
         /// </summary>
+        [PublicAPI]
         event EventHandler<EventArgs> LineWritten;
 
         /// <summary>Whether the console is currently open (visible) or not.</summary>
+        [PublicAPI]
         bool IsOpen { get; set; }
 
         /// <summary>Register a new command with the given name.</summary>
         /// <param name="name">the name of the command.</param>
         /// <param name="handler">the function that will handle the command.</param>
         /// <param name="help">optional help that may be displayed for this command.</param>
+        [PublicAPI]
         void AddCommand(string name, CommandHandler handler, params string[] help);
 
         /// <summary>Register a new command with aliases.</summary>
         /// <param name="names">command names  (first is considered the main name).</param>
         /// <param name="handler">the function that will handle the command.</param>
         /// <param name="help">optional help that may be displayed for this command.</param>
+        [PublicAPI]
         void AddCommand(string[] names, CommandHandler handler, params string[] help);
 
         /// <summary>
@@ -73,6 +78,7 @@ namespace Engine.Util
         ///     handler, back to the default.
         /// </summary>
         /// <param name="handler">The command handler to use for unknown commands.</param>
+        [PublicAPI]
         void SetDefaultCommandHandler(DefaultHandler handler);
 
         /// <summary>
@@ -84,18 +90,22 @@ namespace Engine.Util
         ///     handler.
         /// </remarks>
         /// <param name="getGlobalNames">Callback used to get available commands.</param>
+        [PublicAPI]
         void AddAutoCompletionLookup(Func<IEnumerable<string>> getGlobalNames);
 
         /// <summary>Clears the complete buffer.</summary>
+        [PublicAPI]
         void Clear();
 
         /// <summary>Execute a command in the format it would be written in the console, i.e. 'command arg0 arg1 ...'.</summary>
         /// <param name="command">the command to execute.</param>
+        [PublicAPI]
         void Execute(string command);
 
         /// <summary>Log some formatted text to the console.</summary>
         /// <param name="format">the text format.</param>
         /// <param name="args">the parameters to insert.</param>
+        [PublicAPI]
         void WriteLine(string format, params object[] args);
     }
 }

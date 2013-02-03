@@ -5,12 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
 
-namespace Engine.Util
+namespace Engine.XnaExtensions
 {
     /// <summary>
     ///     This is a simple console which can easily be plugged into an XNA game. It supports:
@@ -86,15 +87,17 @@ namespace Engine.Util
         #region Properties
 
         /// <summary>The texture used as the console background.</summary>
+        [PublicAPI]
         public Color BackgroundColor { get; set; }
 
         /// <summary>The maximum number of lines to keep.</summary>
+        [PublicAPI]
         public int BufferSize
         {
             get { return _bufferSize; }
             set
             {
-                _bufferSize = Math.Max(1, value);
+                _bufferSize = System.Math.Max(1, value);
                 if (_buffer.Count > _bufferSize)
                 {
                     _buffer.RemoveRange(BufferSize, _buffer.Count - BufferSize);
@@ -104,24 +107,30 @@ namespace Engine.Util
         }
 
         /// <summary>The color of the caret (input position marker).</summary>
+        [PublicAPI]
         public Color CaretColor { get; set; }
 
         /// <summary>The number of entries to skip when scrolling either via page up / down or the mouse wheel.</summary>
+        [PublicAPI]
         public int EntriesToScroll { get; set; }
 
         /// <summary>The font to use for rendering text on the console.</summary>
+        [PublicAPI]
         public SpriteFont Font { get; set; }
 
         /// <summary>The list of recent commands a user entered.</summary>
+        [PublicAPI]
         public ICollection<string> History
         {
             get { return new List<string>(_history.ToArray()); }
         }
 
         /// <summary>The hot-key used for opening the console.</summary>
+        [PublicAPI]
         public Keys Hotkey { get; set; }
 
         /// <summary>Whether the console is currently open (visible) or not.</summary>
+        [PublicAPI]
         public bool IsOpen
         {
             get { return _isOpen; }
@@ -136,9 +145,11 @@ namespace Engine.Util
         }
 
         /// <summary>SpriteBatch used for rendering.</summary>
+        [PublicAPI]
         public SpriteBatch SpriteBatch { get; set; }
 
         /// <summary>Color to use for console text.</summary>
+        [PublicAPI]
         public Color TextColor { get; set; }
 
         #endregion
@@ -694,27 +705,27 @@ namespace Engine.Util
                     case Keys.Left:
                         if (IsControlPressed())
                         {
-                            int startIndex = Math.Max(0, _cursor - 1);
+                            int startIndex = System.Math.Max(0, _cursor - 1);
                             while (startIndex > 0 && startIndex < _input.Length && _input[startIndex] == ' ')
                             {
                                 --startIndex;
                             }
                             var index = _input.ToString().LastIndexOf(' ', startIndex);
-                            _cursor = index == -1 ? 0 : Math.Min(_input.Length, index + 1);
+                            _cursor = index == -1 ? 0 : System.Math.Min(_input.Length, index + 1);
                         }
                         else
                         {
-                            _cursor = Math.Max(0, _cursor - 1);
+                            _cursor = System.Math.Max(0, _cursor - 1);
                         }
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
-                        _scroll = IsShiftPressed() ? 0 : Math.Max(0, _scroll - EntriesToScroll);
+                        _scroll = IsShiftPressed() ? 0 : System.Math.Max(0, _scroll - EntriesToScroll);
                         break;
                     case Keys.PageUp:
                         _scroll = IsShiftPressed()
-                                      ? Math.Max(0, _buffer.Count - 1)
-                                      : Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
+                                      ? System.Math.Max(0, _buffer.Count - 1)
+                                      : System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
                         break;
                     case Keys.Right:
                         if (IsControlPressed())
@@ -726,7 +737,7 @@ namespace Engine.Util
                             }
                             else
                             {
-                                _cursor = Math.Min(_input.Length, index + 1);
+                                _cursor = System.Math.Min(_input.Length, index + 1);
                                 while (_cursor < _input.Length && _input[_cursor] == ' ')
                                 {
                                     ++_cursor;
@@ -735,7 +746,7 @@ namespace Engine.Util
                         }
                         else
                         {
-                            _cursor = Math.Min(_input.Length, _cursor + 1);
+                            _cursor = System.Math.Min(_input.Length, _cursor + 1);
                         }
                         ResetTabCompletion();
                         break;
@@ -927,7 +938,7 @@ namespace Engine.Util
         {
             if (IsOpen)
             {
-                _scroll = Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + Math.Sign(ticks) * EntriesToScroll));
+                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + System.Math.Sign(ticks) * EntriesToScroll));
             }
         }
 

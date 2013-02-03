@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Engine.Diagnostics
+namespace Engine.Util
 {
     /// <summary>Utility proxy for easier viewing of deep hierarchy objects in debugger.</summary>
     public sealed class FlattenHierarchyProxy

@@ -5,7 +5,7 @@ using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
 
-namespace Engine.Util
+namespace Engine.XnaExtensions
 {
     /// <summary>Target to log to a GameConsole instance attached to a given game.</summary>
     [Target("GameConsole")]
@@ -46,7 +46,7 @@ namespace Engine.Util
         /// <param name="logEvent">the log event to process.</param>
         protected override void Write(LogEventInfo logEvent)
         {
-            _console.WriteLine(this.Layout.Render(logEvent));
+            _console.WriteLine(Layout.Render(logEvent));
         }
     }
 }

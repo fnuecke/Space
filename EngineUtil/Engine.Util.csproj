@@ -60,6 +60,7 @@
     <Compile Include="Compression.cs" />
     <Compile Include="Copyable.cs" />
     <Compile Include="Direction.cs" />
+    <Compile Include="FlattenHierarchyProxy.cs" />
     <Compile Include="ICopyable.cs" />
     <Compile Include="IdManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

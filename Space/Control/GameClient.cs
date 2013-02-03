@@ -8,7 +8,7 @@ using Engine.Controller;
 using Engine.FarMath;
 using Engine.Session;
 using Engine.Simulation.Commands;
-using Engine.Util;
+using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;

@@ -46,9 +46,16 @@
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
+    <Reference Include="Nuclex.Input">
+      <HintPath>..\Space\bin\x86\Debug\Nuclex.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -59,6 +66,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DirectionExtensions.cs" />
+    <Compile Include="GameConsole.cs" />
+    <Compile Include="GameConsoleTarget.cs" />
+    <Compile Include="IGameConsole.cs" />
+    <Compile Include="LineWrittenEventArgs.cs" />
     <Compile Include="LocalizedContentManager.cs" />
     <Compile Include="PacketExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -76,6 +87,10 @@
     <ProjectReference Include="..\EngineUtil\Engine.Util.csproj">
       <Project>{970BC7CC-D816-48C3-B61B-1897C58C7A97}</Project>
       <Name>Engine.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JetBrainsAnnotations\JetBrains.Annotations.csproj">
+      <Project>{173331FF-F188-464C-9D6F-C46B75B623B3}</Project>
+      <Name>JetBrains.Annotations</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
