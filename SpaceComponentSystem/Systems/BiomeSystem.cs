@@ -95,6 +95,9 @@ namespace Space.ComponentSystem.Systems
                         0.975f
                     },
                     5);
+
+                var soundSystem = (SoundSystem) Manager.GetSystem(SoundSystem.TypeId);
+                soundSystem.PlayMusic("Music01");
             }
         }
 

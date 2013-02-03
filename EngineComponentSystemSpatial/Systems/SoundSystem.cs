@@ -329,6 +329,11 @@ namespace Engine.ComponentSystem.Spatial.Systems
                 return;
             }
 
+            if (_music != null && trackName == _music.Name)
+            {
+                return;
+            }
+
             StopMusic(transition);
             _music = _soundBank.GetCue(trackName);
             _music.Play();
