@@ -21,7 +21,7 @@ using WorldUnitConversion = Engine.XnaExtensions.XnaUnitConversion;
 namespace Engine.ComponentSystem.Spatial.Systems
 {
     /// <summary>System that manages sound components, querying them for cue names to play in a single update.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public abstract class SoundSystem : AbstractSystem
     {
         #region Type ID

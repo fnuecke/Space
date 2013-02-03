@@ -23,7 +23,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     will only keep interpolated values for entities that are in the current viewport, thus keeping computational
     ///     overhead at a minimum.
     /// </summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public abstract class InterpolationSystem : AbstractSystem
     {
         #region Type ID

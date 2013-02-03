@@ -153,7 +153,7 @@ namespace Engine.ComponentSystem.Physics.Tests
             _manager.AddSystem(_physics = new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
 
             _manager.AddSystem(new ContentSystem(Content));
-            _manager.AddSystem(new GraphicsDeviceSystem(_graphics) {Enabled = true});
+            _manager.AddSystem(new GraphicsDeviceSystem(_graphics));
             _manager.AddSystem(_renderer = new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
             _renderer.RenderFixtures = true;
@@ -504,7 +504,7 @@ SolveTOI      {21,7:0.00} [{22,7:0.00}] ({23,7:0.00})",
                         copy.AddSystem(new PhysicsSystem(1 / UpdatesPerSecond, new Vector2(0, -10f)));
                         
                         copy.AddSystem(new ContentSystem(Content));
-                        copy.AddSystem(new GraphicsDeviceSystem(_graphics) {Enabled = true});
+                        copy.AddSystem(new GraphicsDeviceSystem(_graphics));
                         copy.AddSystem(new DebugPhysicsRenderSystem {Enabled = true, Scale = 0.1f, Offset = new WorldPoint(0, -12)});
 
                         _manager.CopyInto(copy);

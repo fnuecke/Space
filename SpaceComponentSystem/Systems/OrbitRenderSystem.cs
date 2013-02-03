@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Systems
     ///     This system renders orbits of planets, and zones close to 'dangerous' objects, i.e. damaging entities with
     ///     gravitation, such as suns.
     /// </summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class OrbitRenderSystem : AbstractSystem
     {
         #region Constants

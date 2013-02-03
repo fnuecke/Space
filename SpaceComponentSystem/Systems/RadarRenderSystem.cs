@@ -20,7 +20,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system handles rendering whatever the local player's radar picks up.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class RadarRenderSystem : AbstractSystem
     {
         #region Types

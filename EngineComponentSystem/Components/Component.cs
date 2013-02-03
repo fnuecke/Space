@@ -14,8 +14,7 @@ namespace Engine.ComponentSystem.Components
     ///         they do (caching) they must invalidate these references when cloning.
     ///     </para>
     /// </summary>
-    [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
-    [Packetizable]
+    [Packetizable, DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
     public abstract class Component : IComponent, ICopyable<Component>
     {
         #region Type ID

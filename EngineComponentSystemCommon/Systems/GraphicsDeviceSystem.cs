@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Common.Systems
     ///     required.
     /// </summary>
     [Packetizable(false)]
-    public sealed class GraphicsDeviceSystem : AbstractSystem
+    public sealed class GraphicsDeviceSystem : AbstractSystem, IDisposable
     {
         #region Type ID
 
@@ -22,12 +22,6 @@ namespace Engine.ComponentSystem.Common.Systems
         #endregion
 
         #region Properties
-
-        /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
-        /// <value>
-        ///     <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
-        /// </value>
-        public bool Enabled { get; set; }
 
         /// <summary>The graphics device service used to keep track of our graphics device.</summary>
         public IGraphicsDeviceService Graphics
@@ -41,6 +35,9 @@ namespace Engine.ComponentSystem.Common.Systems
 
         /// <summary>The graphics device service used to keep track of our graphics device.</summary>
         private readonly IGraphicsDeviceService _graphics;
+
+        /// <summary>Whether the system has been initialized, i.e. the first 'device created' message has been sent.</summary>
+        private bool _initialized;
 
         #endregion
 
@@ -87,8 +84,11 @@ namespace Engine.ComponentSystem.Common.Systems
                 _graphics.DeviceCreated -= GraphicsOnDeviceCreated;
                 _graphics.DeviceDisposing -= GraphicsOnDeviceDisposing;
                 _graphics.DeviceReset -= GraphicsOnDeviceReset;
-                GraphicsDeviceDisposing message;
-                Manager.SendMessage(message);
+                if (Manager != null)
+                {
+                    GraphicsDeviceDisposing message;
+                    Manager.SendMessage(message);
+                }
             }
         }
 
@@ -100,7 +100,7 @@ namespace Engine.ComponentSystem.Common.Systems
         [MessageCallback]
         public void OnDraw(Draw message)
         {
-            if (!Enabled)
+            if (_initialized)
             {
                 return;
             }
@@ -110,27 +110,36 @@ namespace Engine.ComponentSystem.Common.Systems
             created.Graphics = _graphics;
             Manager.SendMessage(created);
 
-            Enabled = false;
+            _initialized = true;
         }
 
         private void GraphicsOnDeviceCreated(object sender, EventArgs eventArgs)
         {
-            GraphicsDeviceCreated message;
-            message.Graphics = _graphics;
-            Manager.SendMessage(message);
+            if (Manager != null)
+            {
+                GraphicsDeviceCreated message;
+                message.Graphics = _graphics;
+                Manager.SendMessage(message);
+            }
         }
 
         private void GraphicsOnDeviceDisposing(object sender, EventArgs eventArgs)
         {
-            GraphicsDeviceDisposing message;
-            Manager.SendMessage(message);
+            if (Manager != null)
+            {
+                GraphicsDeviceDisposing message;
+                Manager.SendMessage(message);
+            }
         }
 
         private void GraphicsOnDeviceReset(object sender, EventArgs eventArgs)
         {
-            GraphicsDeviceReset message;
-            message.Graphics = _graphics;
-            Manager.SendMessage(message);
+            if (Manager != null)
+            {
+                GraphicsDeviceReset message;
+                message.Graphics = _graphics;
+                Manager.SendMessage(message);
+            }
         }
 
         #endregion

@@ -24,7 +24,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     Basic implementation of a render system. Subclasses may override the GetTranslation() method to implement
     ///     camera positioning.
     /// </summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public abstract class TextureRenderSystem : AbstractComponentSystem<IDrawable>
     {
         #region Type ID

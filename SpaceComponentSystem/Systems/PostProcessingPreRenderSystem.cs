@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Systems
     ///     processed in the <see cref="PostProcessingPostRenderSystem"/>. This system should run before any other render
     ///     systems.
     /// </summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class PostProcessingPreRenderSystem : AbstractSystem
     {
         #region Type ID

@@ -16,7 +16,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders planets.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>
     {
         #region Properties

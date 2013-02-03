@@ -17,7 +17,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system can render floating texts, which can be useful for drawing damage numbers and the like.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class FloatingTextSystem : AbstractSystem
     {
         #region Type ID

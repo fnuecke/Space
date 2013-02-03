@@ -100,7 +100,7 @@ namespace Space.Control
                     // We need this in the server also, because we generate the collision
                     // bounds for objects from their textures dynamically.
                     new ContentSystem(game.Content),
-                    new GraphicsDeviceSystem(game.GraphicsDeviceManager) {Enabled = true},
+                    new GraphicsDeviceSystem(game.GraphicsDeviceManager),
 
                     // The index system will update its indexes when the translation
                     // of an object changes, and remembers which movements triggered

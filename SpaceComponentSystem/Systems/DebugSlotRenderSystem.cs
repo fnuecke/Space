@@ -13,7 +13,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class DebugSlotRenderSystem : AbstractSystem
     {
         #region Type ID

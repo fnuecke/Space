@@ -46,8 +46,7 @@ namespace Engine.Collections
     ///     <para/>
     ///     The minimum node size can be specified as an arbitrary value larger than zero.
     /// </remarks>
-    [DebuggerDisplay("Count = {Count}")]
-    [Packetizable]
+    [Packetizable, DebuggerDisplay("Count = {Count}")]
     public sealed class DynamicQuadTree<T> : IIndex<T, TRectangle, TPoint>, ICopyable<DynamicQuadTree<T>>
     {
         #region Properties

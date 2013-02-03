@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     ///     This System is used to easily display text. A System that wants to be displayed must Implement the
     ///     IInformation interface.
     /// </summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class InformationDisplaySystem : AbstractSystem
     {
         #region Type ID

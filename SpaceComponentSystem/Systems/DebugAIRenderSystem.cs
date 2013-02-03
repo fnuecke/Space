@@ -14,7 +14,7 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class DebugAIRenderSystem : AbstractComponentSystem<ArtificialIntelligence>
     {
         #region Properties

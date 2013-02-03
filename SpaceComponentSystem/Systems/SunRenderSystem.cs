@@ -14,7 +14,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders suns.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>
     {
         #region Fields

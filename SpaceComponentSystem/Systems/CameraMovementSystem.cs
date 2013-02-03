@@ -9,7 +9,7 @@ using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public class CameraMovementSystem : AbstractSystem
     {
         [PacketizeIgnore]

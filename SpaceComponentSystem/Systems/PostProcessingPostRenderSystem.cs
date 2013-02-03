@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     ///     <see cref="PostProcessingPreRenderSystem"/>
     ///     to apply post processing effects. This system should run after all other render systems.
     /// </summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class PostProcessingPostRenderSystem : AbstractSystem
     {
         #region Type ID

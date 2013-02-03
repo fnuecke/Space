@@ -9,8 +9,7 @@ namespace Engine.Math
 {
     /// <summary>Represents an interval of the specified type.</summary>
     /// <typeparam name="T">The interval type.</typeparam>
-    [TypeConverter(typeof (IntervalConverter))]
-    [Packetizable]
+    [Packetizable, TypeConverter(typeof (IntervalConverter))]
     public abstract class Interval<T> where T : IComparable<T>, IEquatable<T>
     {
         #region Properties

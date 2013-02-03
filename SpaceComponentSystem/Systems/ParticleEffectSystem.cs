@@ -18,7 +18,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Controls the particle components in a game, passing them some information about how to render themselves.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public abstract class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>
     {
         #region Type ID

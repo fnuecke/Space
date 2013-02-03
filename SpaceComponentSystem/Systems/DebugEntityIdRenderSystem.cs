@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>Renders entity ids at their position, if they have a position.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class DebugEntityIdRenderSystem : AbstractSystem
     {
         #region Properties

@@ -19,9 +19,15 @@ namespace Engine.ComponentSystem.Systems
     [AttributeUsage(AttributeTargets.Method), MeansImplicitUse, PublicAPI]
     public sealed class MessageCallbackAttribute : Attribute {}
 
+    /// <summary>
+    ///     This attribute can be used to mark systems that are used exclusively for simulation presentation (rendering,
+    ///     sound output) and have no actual impact on simulation logic.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class PresentationOnlyAttribute : Attribute {}
+
     /// <summary>Base class for systems, implementing default basic functionality.</summary>
-    [DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
-    [Packetizable]
+    [Packetizable, DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
     public abstract class AbstractSystem : ICopyable<AbstractSystem>
     {
         #region Type ID

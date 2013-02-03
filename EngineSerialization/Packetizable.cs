@@ -94,7 +94,11 @@ namespace Engine.Serialization
         [PublicAPI]
         public static bool IsPacketizable(Type type)
         {
-            return type.IsClass && type.GetCustomAttributes(typeof (PacketizableAttribute), true).Cast<PacketizableAttribute>().All(p => p.IsPacketizable);
+            return type.GetCustomAttributes(typeof (PacketizableAttribute), true)
+                       .Cast<PacketizableAttribute>()
+                       .Select(a => a.IsPacketizable)
+                       .DefaultIfEmpty(false)
+                       .All(b => b);
         }
         
         /// <summary>
@@ -349,7 +353,7 @@ namespace Engine.Serialization
             }
             
             // Make sure we can depacketize to this type.
-            System.Diagnostics.Debug.Assert(IsPacketizable<T>());
+            System.Diagnostics.Debug.Assert(IsPacketizable(result));
 
             // See if we have anything at all, or if the written value was null.
             if (packet.ReadBoolean())
@@ -520,24 +524,8 @@ namespace Engine.Serialization
                 }
 
                 // Find a write and read function for the type.
-                if (f.FieldType.IsClass &&
-                    // String is the only exception to the pattern 'value type via overload, class type via attribute'.
-                    // Strings are generally treated as value type, but are, in their implementation, actually classes.
-                    // (Primarily for performance/efficiency reasons, as the actual string value should never really be
-                    // stored on the stack anyway, and otherwise boxing may occur unnecessarily).
-                    f.FieldType != typeof(string))
+                if (IsPacketizable(f.FieldType))
                 {
-                    // Got a class, make sure it's packetizable.
-                    if (!IsPacketizable(f.FieldType))
-                    {
-                        // It is not!
-                        throw new ArgumentException(
-                            string.Format(
-                                "Cannot build packetizer for type {0}, encountered non-packetizable class-type member '{1}'.",
-                                type.Name,
-                                f.Name));
-                    }
-
                     // Is packetizable, build serializer part.
                     packetizeGenerator.Emit(OpCodes.Ldarg_1);
                     packetizeGenerator.Emit(OpCodes.Ldfld, f);

@@ -19,7 +19,7 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system renders active shields, detecting them via their energy consumption debuff.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>
     {
         #region Properties

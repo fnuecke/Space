@@ -31,8 +31,7 @@ namespace Engine.ComponentSystem
     ///         Note that this does <em>not</em> guarantee the thread safety of the individual components.
     ///     </para>
     /// </remarks>
-    [DebuggerDisplay("Systems = {_systems.Count}, Components = {_componentIds.Count}")]
-    [Packetizable]
+    [Packetizable, DebuggerDisplay("Systems = {_systems.Count}, Components = {_componentIds.Count}")]
     public sealed partial class Manager : IManager
     {
         #region Logger
@@ -580,8 +579,11 @@ namespace Engine.ComponentSystem
             packet.Write(_systems.Count(Packetizable.IsPacketizable));
             for (int i = 0, j = _systems.Count; i < j; ++i)
             {
-                packet.Write(_systems[i].GetType());
-                packet.Write(_systems[i]);
+                if (Packetizable.IsPacketizable(_systems[i]))
+                {
+                    packet.Write(_systems[i].GetType());
+                    packet.Write(_systems[i]);
+                }
             }
 
             return packet;
@@ -843,9 +845,10 @@ namespace Engine.ComponentSystem
 
             // Copy systems after copying components so they can fetch their
             // components again.
-            foreach (var item in _systems.Where(Packetizable.IsPacketizable))
+            foreach (var system in _systems
+                .Where(system => !system.GetType().IsDefined(typeof (PresentationOnlyAttribute), true)))
             {
-                copy.CopySystem(item);
+                copy.CopySystem(system);
             }
 
             // All done, send message to allow post-processing.

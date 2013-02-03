@@ -19,8 +19,7 @@ using WorldPoint = Microsoft.Xna.Framework.Vector2;
 namespace Engine.ComponentSystem.Physics.Contacts
 {
     /// <summary>Represents a contact between two fixtures.</summary>
-    [DebuggerDisplay("FixtureA = {FixtureIdA}, FixtureB = {FixtureIdB}, IsTouching = {IsTouching}")]
-    [Packetizable]
+    [Packetizable, DebuggerDisplay("FixtureA = {FixtureIdA}, FixtureB = {FixtureIdB}, IsTouching = {IsTouching}")]
     public sealed class Contact : ICopyable<Contact>
     {
         #region Linked list data (unused/free)

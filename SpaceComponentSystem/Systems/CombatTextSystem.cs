@@ -12,7 +12,7 @@ using Space.Data;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>This system interprets messages and triggers combat floating text accordingly.</summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class CombatTextSystem : AbstractSystem
     {
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>

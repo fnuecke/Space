@@ -23,7 +23,7 @@ namespace Engine.ComponentSystem.Spatial.Systems
     ///     This system is responsible for rendering textures in a wrapping mode to the full viewport. It supports fading
     ///     between different sets of textures.
     /// </summary>
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public abstract class BackgroundRenderSystem : AbstractSystem
     {
         #region Type ID

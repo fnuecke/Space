@@ -25,7 +25,7 @@ using WorldTransform = Microsoft.Xna.Framework.Matrix;
 
 namespace Engine.ComponentSystem.Physics.Systems
 {
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public abstract class AbstractDebugPhysicsRenderSystem : AbstractSystem
     {
         #region Constants

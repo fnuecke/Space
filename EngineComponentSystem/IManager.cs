@@ -13,6 +13,7 @@ namespace Engine.ComponentSystem
     public delegate void MessageCallback<in T>(T message);
 
     /// <summary>Interface for component system managers.</summary>
+    [Packetizable]
     public interface IManager : ICopyable<IManager>
     {
         #region Properties

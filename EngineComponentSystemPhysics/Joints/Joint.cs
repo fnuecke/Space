@@ -19,8 +19,7 @@ namespace Engine.ComponentSystem.Physics.Joints
     ///     exist in pairs, with one per attached body. Joints are not components, because they do not belong to one entity
     ///     alone in all cases. Often they will belong to two, that being the two entities (bodies) they are attached to.
     /// </summary>
-    [DebuggerDisplay("Id = {Index}, Used = {Manager != null}")]
-    [Packetizable]
+    [Packetizable, DebuggerDisplay("Id = {Index}, Used = {Manager != null}")]
     public abstract class Joint : ICopyable<Joint>
     {
         #region Types

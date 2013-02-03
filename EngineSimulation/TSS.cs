@@ -762,18 +762,18 @@ namespace Engine.Simulation
                     throw new InvalidOperationException("Cannot add systems after simulation has started.");
                 }
 
-                if (Packetizable.IsPacketizable(system))
+                if (system.GetType().IsDefined(typeof(PresentationOnlyAttribute), true))
+                {
+                    // Only insert in leading simulation.
+                    _tss.LeadingSimulation.Manager.AddSystem(system);
+                }
+                else
                 {
                     // Insert in all simulations.
                     foreach (var state in _tss._simulations)
                     {
                         state.Manager.CopySystem(system);
                     }
-                }
-                else
-                {
-                    // Only insert in leading simulation.
-                    _tss.LeadingSimulation.Manager.AddSystem(system);
                 }
 
                 return this;

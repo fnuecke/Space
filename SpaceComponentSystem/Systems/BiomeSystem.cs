@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Systems
 {
-    [Packetizable(false)]
+    [Packetizable(false), PresentationOnlyAttribute]
     public sealed class BiomeSystem : AbstractSystem
     {
         #region Properties
