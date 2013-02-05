@@ -43,8 +43,8 @@ namespace Engine.ComponentSystem.Systems
         protected static int CreateTypeId() { return ComponentSystem.Manager.GetSystemTypeId(new StackFrame(1, false).GetMethod().DeclaringType); }
 
         /// <summary>The component system manager this system is part of.</summary>
-        [CopyIgnore, PacketizeIgnore, PublicAPI]
-        public IManager Manager { get; set; }
+        [CopyIgnore, PacketizeIgnore]
+        public IManager Manager { get; internal set; }
 
         /// <summary>Called by the manager when the system was added to it.</summary>
         public virtual void OnAddedToManager() { }

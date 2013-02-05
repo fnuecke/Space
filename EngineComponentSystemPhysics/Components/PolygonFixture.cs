@@ -27,11 +27,11 @@ namespace Engine.ComponentSystem.Physics.Components
         #region Fields
 
         /// <summary>The vertices that make up this polygon.</summary>
-        [CopyIgnore, PacketizeIgnore]
+        [DeepCopy, PacketizeIgnore]
         internal readonly LocalPoint[] Vertices = new LocalPoint[Settings.MaxPolygonVertices];
 
         /// <summary>The surface normals of the edges of this polygon.</summary>
-        [CopyIgnore, PacketizeIgnore]
+        [DeepCopy, PacketizeIgnore]
         internal readonly Vector2[] Normals = new Vector2[Settings.MaxPolygonVertices];
 
         /// <summary>The number of vertices in this fixture.</summary>
@@ -50,23 +50,6 @@ namespace Engine.ComponentSystem.Physics.Components
         public PolygonFixture() : base(FixtureType.Polygon)
         {
             Radius = Settings.PolygonRadius;
-        }
-
-        /// <summary>Initialize the component by using another instance of its type.</summary>
-        /// <param name="other">The component to copy the values from.</param>
-        /// <returns></returns>
-        public override Component Initialize(Component other)
-        {
-            base.Initialize(other);
-
-            var otherPolygon = (PolygonFixture) other;
-            for (var i = 0; i < otherPolygon.Count; ++i)
-            {
-                Vertices[i] = otherPolygon.Vertices[i];
-                Normals[i] = otherPolygon.Normals[i];
-            }
-
-            return this;
         }
 
         /// <summary>
