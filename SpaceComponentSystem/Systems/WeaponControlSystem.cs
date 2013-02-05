@@ -217,13 +217,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             packet.Write(_cooldowns.Count);
             foreach (var kv in _cooldowns)
             {
@@ -234,12 +230,9 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             _cooldowns.Clear();
             var cooldownsCount = packet.ReadInt32();
             for (var i = 0; i < cooldownsCount; i++)
@@ -250,14 +243,9 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Dumps the specified sb.</summary>
-        /// <param name="w">The sb.</param>
-        /// <param name="indent">The indent.</param>
-        /// <returns></returns>
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("Cooldowns = {");
             foreach (var cooldown in _cooldowns)
             {

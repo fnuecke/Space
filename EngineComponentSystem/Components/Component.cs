@@ -32,10 +32,7 @@ namespace Engine.ComponentSystem.Components
         ///     execution stack to determine calling type.
         /// </remarks>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected static int CreateTypeId()
-        {
-            return ComponentSystem.Manager.GetComponentTypeId(new StackFrame(1, false).GetMethod().DeclaringType);
-        }
+        protected static int CreateTypeId() { return ComponentSystem.Manager.GetComponentTypeId(new StackFrame(1, false).GetMethod().DeclaringType); }
 
         #endregion
 
@@ -91,7 +88,7 @@ namespace Engine.ComponentSystem.Components
         #endregion
 
         #region Copyable
-        
+
         /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
         public virtual Component NewInstance()
@@ -102,45 +99,11 @@ namespace Engine.ComponentSystem.Components
 
             return copy;
         }
-        
+
         /// <summary>Creates a deep copy of the object, reusing the given object.</summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public virtual void CopyInto(Component into)
-        {
-            Copyable.CopyInto(this, into);
-        }
-
-        #endregion
-
-        #region Serialization / Hashing
-
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        [OnPacketize]
-        public virtual IWritablePacket Packetize(IWritablePacket packet)
-        {
-            return packet;
-        }
-
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
-        ///     performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        [OnPostDepacketize]
-        public virtual void Depacketize(IReadablePacket packet) {}
-
-        /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="w"> </param>
-        /// <param name="indent">The indentation level.</param>
-        /// <returns>The string builder, for call chaining.</returns>
-        [OnStringify]
-        public virtual StreamWriter Dump(StreamWriter w, int indent)
-        {
-            return w;
-        }
+        public virtual void CopyInto(Component into) { Copyable.CopyInto(this, into); }
 
         #endregion
 
@@ -154,19 +117,13 @@ namespace Engine.ComponentSystem.Components
         ///     Zero This object is equal to <paramref name="other"/>. Greater than zero This object is greater than
         ///     <paramref name="other"/>.
         /// </returns>
-        public int CompareTo(IComponent other)
-        {
-            return Id - other.Id;
-        }
+        public int CompareTo(IComponent other) { return Id - other.Id; }
 
         /// <summary>Serves as a hash function for a particular type.</summary>
         /// <returns>
         ///     A hash code for the current <see cref="T:System.Object"/>.
         /// </returns>
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() { return Id.GetHashCode(); }
 
         #endregion
     }

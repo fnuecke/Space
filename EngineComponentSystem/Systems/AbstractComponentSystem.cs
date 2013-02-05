@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
@@ -31,15 +32,16 @@ namespace Engine.ComponentSystem.Systems
             Debug.Assert(message.Component.Id > 0, "component.Id > 0");
 
             // Check if the component is of the right type.
-            if (message.Component is TComponent)
+            if (!(message.Component is TComponent))
             {
-                var typedComponent = (TComponent) message.Component;
-
-                // Keep components in order, to stay deterministic.
-                var index = Components.BinarySearch(typedComponent);
-                Debug.Assert(index < 0);
-                Components.Insert(~index, typedComponent);
+                return;
             }
+
+            // Keep components in order, to stay deterministic.
+            var component = (TComponent) message.Component;
+            var index = Components.BinarySearch(component);
+            Debug.Assert(index < 0);
+            Components.Insert(~index, component);
         }
 
         /// <summary>Called by the manager when a new component was removed.</summary>
@@ -51,48 +53,29 @@ namespace Engine.ComponentSystem.Systems
             Debug.Assert(message.Component.Id > 0, "component.Id > 0");
 
             // Check if the component is of the right type.
-            if (message.Component is TComponent)
+            if (!(message.Component is TComponent))
             {
-                var typedComponent = (TComponent) message.Component;
-
-                // Take advantage of the fact that the list is sorted.
-                var index = Components.BinarySearch(typedComponent);
-                Debug.Assert(index >= 0);
-                Components.RemoveAt(index);
+                return;
             }
+
+            // Take advantage of the fact that the list is sorted.
+            var component = (TComponent) message.Component;
+            var index = Components.BinarySearch(component);
+            Debug.Assert(index >= 0);
+            Components.RemoveAt(index);
         }
 
-        /// <summary>Called by the manager when the complete environment has been depacketized.</summary>
-        public override void OnDepacketized()
-        {
-            base.OnDepacketized();
-
-            RebuildComponentList();
-        }
-
-        /// <summary>Called by the manager when the complete environment has been copied from another manager.</summary>
-        public override void OnCopied()
-        {
-            base.OnCopied();
-
-            RebuildComponentList();
-        }
-
-        /// <summary>Rebuilds the component list by fetching all components handled by us.</summary>
-        private void RebuildComponentList()
+        /// <summary>Called by the manager when the complete environment has been copied or depacketized.</summary>
+        [MessageCallback]
+        public virtual void OnInitialize(Initialize message)
         {
             Components.Clear();
-            foreach (var component in Manager.Components)
+            foreach (var typedComponent in Manager.Components.OfType<TComponent>())
             {
-                if (component is TComponent)
-                {
-                    var typedComponent = (TComponent) component;
-
-                    // Components are in order (we are iterating in order), so
-                    // just add it at the end.
-                    Debug.Assert(Components.BinarySearch(typedComponent) < 0);
-                    Components.Add(typedComponent);
-                }
+                // Components are in order (we are iterating in order), so
+                // just add it at the end.
+                Debug.Assert(Components.BinarySearch(typedComponent) < 0);
+                Components.Add(typedComponent);
             }
         }
 
@@ -124,7 +107,7 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         /// <remarks>
         ///     This will <em>not</em> fill the copy with the same components as this one has; this is done in the
-        ///     <see cref="OnCopied"/> callback, to allow proper copying even for systems that may not be present in the manager
+        ///     <see cref="OnInitialize"/> callback, to allow proper copying even for systems that may not be present in the manager
         ///     that was the source (in particular: presentation related systems).
         /// </remarks>
         public override void CopyInto(AbstractSystem into)

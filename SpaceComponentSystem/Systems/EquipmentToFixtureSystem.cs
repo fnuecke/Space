@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Physics;
@@ -126,6 +127,74 @@ namespace Space.ComponentSystem.Systems
             _changedMass.Add(message.Entity);
         }
 
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
+        {
+            packet.Write(_changedShape.Count);
+            foreach (var entity in _changedShape)
+            {
+                packet.Write(entity);
+            }
+            
+            packet.Write(_changedMass.Count);
+            foreach (var entity in _changedMass)
+            {
+                packet.Write(entity);
+            }
+
+            return packet;
+        }
+
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
+        {   
+            _changedShape.Clear();
+            var changedShapeCount = packet.ReadInt32();
+            for (var i = 0; i < changedShapeCount; i++)
+            {
+                _changedShape.Add(packet.ReadInt32());
+            }
+
+            _changedMass.Clear();
+            var changedMassCount = packet.ReadInt32();
+            for (var i = 0; i < changedMassCount; i++)
+            {
+                _changedMass.Add(packet.ReadInt32());
+            }
+        }
+
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
+        {
+            w.AppendIndent(indent).Write("_changedShape = [");
+            var doneWithFirst = false;
+            foreach (var entity in _changedShape)
+            {
+                if (doneWithFirst)
+                {
+                    w.Write(", ");
+                }
+                doneWithFirst = true;
+                w.Write(entity);
+            }
+            w.Write("]");
+
+            w.AppendIndent(indent).Write("_changedMass = [");
+            doneWithFirst = false;
+            foreach (var entity in _changedMass)
+            {
+                if (doneWithFirst)
+                {
+                    w.Write(", ");
+                }
+                doneWithFirst = true;
+                w.Write(entity);
+            }
+            w.Write("]");
+
+            return w;
+        }
+
         public override AbstractSystem NewInstance()
         {
             var copy = (EquipmentToFixtureSystem) base.NewInstance();
@@ -145,44 +214,6 @@ namespace Space.ComponentSystem.Systems
             copy._changedShape.UnionWith(_changedShape);
             copy._changedMass.Clear();
             copy._changedMass.UnionWith(_changedMass);
-        }
-
-        public override IWritablePacket Packetize(IWritablePacket packet)
-        {
-            base.Packetize(packet);
-
-            packet.Write(_changedShape.Count);
-            foreach (var entity in _changedShape)
-            {
-                packet.Write(entity);
-            }
-            
-            packet.Write(_changedMass.Count);
-            foreach (var entity in _changedMass)
-            {
-                packet.Write(entity);
-            }
-
-            return packet;
-        }
-
-        public override void Depacketize(IReadablePacket packet)
-        {
-            base.Depacketize(packet);
-            
-            _changedShape.Clear();
-            var changedShapeCount = packet.ReadInt32();
-            for (var i = 0; i < changedShapeCount; i++)
-            {
-                _changedShape.Add(packet.ReadInt32());
-            }
-
-            _changedMass.Clear();
-            var changedMassCount = packet.ReadInt32();
-            for (var i = 0; i < changedMassCount; i++)
-            {
-                _changedMass.Add(packet.ReadInt32());
-            }
         }
     }
 }

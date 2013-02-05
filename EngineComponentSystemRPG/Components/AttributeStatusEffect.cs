@@ -72,33 +72,21 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-            packet.Write((ICollection<AttributeModifier<TAttribute>>) Modifiers);
-            return packet;
+            return packet.Write((ICollection<AttributeModifier<TAttribute>>) Modifiers);
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             Modifiers.AddRange(packet.ReadPacketizables<AttributeModifier<TAttribute>>());
         }
 
-        /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="w"> </param>
-        /// <param name="indent">The indentation level.</param>
-        /// <returns>The string builder, for call chaining.</returns>
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("Modifiers = {");
             foreach (var modifier in Modifiers)
             {

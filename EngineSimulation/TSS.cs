@@ -296,8 +296,6 @@ namespace Engine.Simulation
 
         #region Serialization / Hashing
 
-        /// <summary>Serialize a simulation to a packet.</summary>
-        /// <param name="packet">the packet to write the data to.</param>
         [OnPacketize]
         public IWritablePacket Packetize(IWritablePacket packet)
         {
@@ -328,8 +326,6 @@ namespace Engine.Simulation
             return packet;
         }
 
-        /// <summary>Deserialize a simulation from a packet.</summary>
-        /// <param name="packet">The packet to read the data from.</param>
         [OnPostDepacketize]
         public void Depacketize(IReadablePacket packet)
         {

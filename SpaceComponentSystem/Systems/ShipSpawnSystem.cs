@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Spatial.Components;
@@ -271,23 +272,20 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
             packet.Write(_cellSpawns.Count);
-            for (var i = 0; i < _cellSpawns.Count; i++)
+            foreach (var entry in _cellSpawns)
             {
-                packet.Write(_cellSpawns[i].Item1);
-                packet.Write(_cellSpawns[i].Item2);
+                packet.Write(entry.Item1);
+                packet.Write(entry.Item2);
             }
             return packet;
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
             _cellSpawns.Clear();
             var spawnCount = packet.ReadInt32();
@@ -297,6 +295,23 @@ namespace Space.ComponentSystem.Systems
                 var count = packet.ReadInt32();
                 _cellSpawns.Add(Tuple.Create(id, count));
             }
+        }
+
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
+        {
+            w.AppendIndent(indent).Write("_cellSpawns = {");
+            foreach (var entry in _cellSpawns)
+            {
+                w.AppendIndent(indent + 1).Write("(");
+                w.Write(entry.Item1);
+                w.Write(", ");
+                w.Write(entry.Item2);
+                w.Write(")");
+            }
+            w.AppendIndent(indent).Write("}");
+
+            return w;
         }
 
         #endregion

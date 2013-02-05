@@ -266,13 +266,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             packet.Write(IndexCount);
             for (var index = 0; index < _nextIndexId; ++index)
             {
@@ -296,12 +292,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
             return packet;
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             foreach (var tree in _trees.Where(tree => tree != null))
             {
                 tree.Clear();
@@ -339,10 +332,9 @@ namespace Engine.ComponentSystem.Spatial.Systems
             }
         }
 
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("Trees = {");
             for (var i = 0; i < _nextIndexId; ++i)
             {

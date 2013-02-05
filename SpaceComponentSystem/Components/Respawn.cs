@@ -101,14 +101,6 @@ namespace Space.ComponentSystem.Components
             return this;
         }
 
-        /// <summary>Initialize with the specified parameters.</summary>
-        /// <param name="delay">The delay.</param>
-        /// <param name="disableComponents">The disable components.</param>
-        public Respawn Initialize(int delay = 0, IEnumerable<Type> disableComponents = null)
-        {
-            return Initialize(delay, disableComponents, FarPosition.Zero);
-        }
-
         /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
         {
@@ -125,13 +117,9 @@ namespace Space.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             packet.Write(ComponentsToDisable.Count);
             foreach (var componentType in ComponentsToDisable)
             {
@@ -141,12 +129,9 @@ namespace Space.ComponentSystem.Components
             return packet;
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             ComponentsToDisable.Clear();
             var componentCount = packet.ReadInt32();
             for (var i = 0; i < componentCount; i++)
@@ -155,14 +140,9 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="w"> </param>
-        /// <param name="indent">The indentation level.</param>
-        /// <returns>The string builder, for call chaining.</returns>
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("ComponentsToDisable = {");
             var first = true;
             foreach (var component in ComponentsToDisable)

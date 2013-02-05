@@ -19,7 +19,6 @@ using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
-using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldPoint = Engine.FarMath.FarPosition;
 using WorldBounds = Engine.FarMath.FarRectangle;
 #else
@@ -48,7 +47,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         public static readonly int TypeId = CreateTypeId();
 
         #endregion
-        
+
         #region Constants
 
         /// <summary>Start using indexes after the collision index.</summary>
@@ -198,7 +197,7 @@ namespace Engine.ComponentSystem.Physics.Systems
         {
             get { return _profile; }
         }
-        
+
         /// <summary>Gets the depth of the index tree.</summary>
         [PublicAPI]
         public int IndexDepth
@@ -435,7 +434,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                 value =>
                 {
                     // Get the fixture and its body.
-                    var fixture = (Fixture)Manager.GetComponentById(value);
+                    var fixture = (Fixture) Manager.GetComponentById(value);
                     var body = fixture.Body;
 
                     // Check if it's an actual hit.
@@ -978,7 +977,6 @@ namespace Engine.ComponentSystem.Physics.Systems
                 }
                 bodyB.JointList = edgeB;
             }
-
         }
 
         /// <summary>Updates the global joint lists by popping the next free one and appending it to the list of used joints.</summary>
@@ -1129,7 +1127,7 @@ namespace Engine.ComponentSystem.Physics.Systems
 
             // Initialize with the basics.
             gearJoint.Initialize(Manager, jointA, jointB, bodyA, bodyB, ratio);
-            
+
             // Update linked lists in bodies.
             UpdateBodyJointList(joint, gearJoint.BodyA, gearJoint.BodyB);
 
@@ -1242,7 +1240,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                     bodyB.JointList = next;
                 }
             }
-            
+
             // Depending on whether this is a gear joint or not we proceed differently.
             // This is because gear joints don't have edges and no "own" bodies.
             if (_joints[joint] is GearJoint)
@@ -1362,8 +1360,10 @@ namespace Engine.ComponentSystem.Physics.Systems
                     if ( // Don't collide non-dynamic bodies against each other.
                         (bodyA.TypeInternal != Body.BodyType.Dynamic && bodyB.TypeInternal != Body.BodyType.Dynamic) ||
                         // Check if we should collide with the other fixture's collision category.
-                        (fixtureA.CollisionMaskInternal & fixtureB.CollisionCategoryInternal) != fixtureB.CollisionCategoryInternal ||
-                        (fixtureA.CollisionCategoryInternal & fixtureB.CollisionMaskInternal) != fixtureA.CollisionCategoryInternal ||
+                        (fixtureA.CollisionMaskInternal & fixtureB.CollisionCategoryInternal) !=
+                        fixtureB.CollisionCategoryInternal ||
+                        (fixtureA.CollisionCategoryInternal & fixtureB.CollisionMaskInternal) !=
+                        fixtureA.CollisionCategoryInternal ||
                         // See if we have any joints that prevent collision.
                         JointSuppressesCollision(bodyA.JointList, bodyB.Entity))
                     {
@@ -1459,8 +1459,10 @@ namespace Engine.ComponentSystem.Physics.Systems
                     if ( // Don't collide non-dynamic bodies against each other.
                         (bodyA.TypeInternal != Body.BodyType.Dynamic && bodyB.TypeInternal != Body.BodyType.Dynamic) ||
                         // Check if we should collide with the other fixture's collision category.
-                        (fixtureA.CollisionMaskInternal & fixtureB.CollisionCategoryInternal) != fixtureB.CollisionCategoryInternal ||
-                        (fixtureA.CollisionCategoryInternal & fixtureB.CollisionMaskInternal) != fixtureA.CollisionCategoryInternal ||
+                        (fixtureA.CollisionMaskInternal & fixtureB.CollisionCategoryInternal) !=
+                        fixtureB.CollisionCategoryInternal ||
+                        (fixtureA.CollisionCategoryInternal & fixtureB.CollisionMaskInternal) !=
+                        fixtureA.CollisionCategoryInternal ||
                         // See if we have any joints that prevent collision.
                         JointSuppressesCollision(bodyA.JointList, bodyB.Entity))
                     {
@@ -1674,7 +1676,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                         if (_jointEdges[edge].Other > 0)
                         {
                             // Get the other body this contact is attached to.
-                            var other = (Body)Manager.GetComponent(_jointEdges[edge].Other, Body.TypeId);
+                            var other = (Body) Manager.GetComponent(_jointEdges[edge].Other, Body.TypeId);
 
                             // Don't simulate joints connected to inactive bodies.
                             if (!other.Enabled)
@@ -1969,7 +1971,7 @@ namespace Engine.ComponentSystem.Physics.Systems
                 }
 
                 // Get the other party involved in this contact.
-                var other = (Body)Manager.GetComponent(edge.Other, Body.TypeId);
+                var other = (Body) Manager.GetComponent(edge.Other, Body.TypeId);
 
                 Debug.Assert(other.Enabled, "Contact to disabled body.");
 
@@ -2041,14 +2043,10 @@ namespace Engine.ComponentSystem.Physics.Systems
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
             Debug.Assert(!IsLocked);
-
-            base.Packetize(packet);
 
             packet.Write(_contacts.Length);
             for (var contact = _usedContacts; contact >= 0; contact = _contacts[contact].Next)
@@ -2082,12 +2080,9 @@ namespace Engine.ComponentSystem.Physics.Systems
             return packet;
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             _contacts = new Contact[packet.ReadInt32()];
             _contactEdges = new ContactEdge[_contacts.Length * 2];
             for (var i = 0; i < _contactCount; ++i)
@@ -2157,10 +2152,9 @@ namespace Engine.ComponentSystem.Physics.Systems
             _island = null;
         }
 
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("ContactCapacity = ");
             w.Write(_contacts.Length);
             w.AppendIndent(indent).Write("Contacts = {");
@@ -2265,7 +2259,8 @@ namespace Engine.ComponentSystem.Physics.Systems
 
             var copy = (PhysicsSystem) into;
 
-            foreach (var contact in copy._contacts) {
+            foreach (var contact in copy._contacts)
+            {
                 contact.Manager = copy.Manager;
             }
 

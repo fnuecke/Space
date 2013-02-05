@@ -249,14 +249,16 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Serialization
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             return PacketizeLocal(packet);
+        }
+
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
+        {
+            DepacketizeLocal(packet);
         }
 
         /// <summary>Special purpose packetize method, only writing own data, not that of the base class. Used for saving.</summary>
@@ -279,18 +281,6 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             return packet;
-        }
-
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
-        ///     performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
-        {
-            base.Depacketize(packet);
-
-            DepacketizeLocal(packet);
         }
 
         /// <summary>
@@ -317,14 +307,9 @@ namespace Engine.ComponentSystem.RPG.Components
             }
         }
 
-        /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="w">The writer.</param>
-        /// <param name="indent">The indentation level.</param>
-        /// <returns>The string builder, for call chaining.</returns>
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("BaseAttributes = {");
             foreach (var attribute in _baseAttributes)
             {

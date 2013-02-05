@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Physics.Messages;
 using Engine.ComponentSystem.RPG.Components;
@@ -23,7 +24,7 @@ namespace Space.ComponentSystem.Systems
 
         /// <summary>Tracks new collisions that occurred since the last update.</summary>
         [CopyIgnore, PacketizeIgnore]
-        private Dictionary<ulong, BeginCollisionInfo> _newCollision = new Dictionary<ulong, BeginCollisionInfo>();
+        private Dictionary<ulong, NewCollisionInfo> _newCollisions = new Dictionary<ulong, NewCollisionInfo>();
 
         /// <summary>List of current collisions.</summary>
         [CopyIgnore, PacketizeIgnore]
@@ -39,7 +40,7 @@ namespace Space.ComponentSystem.Systems
         [MessageCallback]
         public void OnUpdate(Update message)
         {
-            foreach (var info in _newCollision)
+            foreach (var info in _newCollisions)
             {
                 // Check if we already have contact between the two entities.
                 ActiveCollisionInfo active;
@@ -64,7 +65,7 @@ namespace Space.ComponentSystem.Systems
                     OnEntityContact(entityB, entityA, info.Value.IsShieldB, -info.Value.Normal);
                 }
             }
-            _newCollision.Clear();
+            _newCollisions.Clear();
         }
 
         [MessageCallback]
@@ -111,11 +112,11 @@ namespace Space.ComponentSystem.Systems
 
             // See if we already know something about this collision.
             var key = BitwiseMagic.Pack(entityA, entityB);
-            BeginCollisionInfo info;
-            if (!_newCollision.TryGetValue(key, out info))
+            NewCollisionInfo info;
+            if (!_newCollisions.TryGetValue(key, out info))
             {
-                info = new BeginCollisionInfo();
-                _newCollision.Add(key, info);
+                info = new NewCollisionInfo();
+                _newCollisions.Add(key, info);
             }
 
             // Track the number of persistent contacts. This is necessary for damage "fields",
@@ -279,7 +280,7 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (CollisionAttributeEffectSystem) base.NewInstance();
 
-            copy._newCollision = new Dictionary<ulong, BeginCollisionInfo>();
+            copy._newCollisions = new Dictionary<ulong, NewCollisionInfo>();
             copy._activeCollisions = new Dictionary<ulong, ActiveCollisionInfo>();
             copy._random = new MersenneTwister(0);
 
@@ -298,12 +299,12 @@ namespace Space.ComponentSystem.Systems
 
             var copy = (CollisionAttributeEffectSystem) into;
 
-            copy._newCollision.Clear();
-            foreach (var info in _newCollision)
+            copy._newCollisions.Clear();
+            foreach (var info in _newCollisions)
             {
-                copy._newCollision.Add(
+                copy._newCollisions.Add(
                     info.Key,
-                    new BeginCollisionInfo
+                    new NewCollisionInfo
                     {
                         Count = info.Value.Count,
                         IsShieldA = info.Value.IsShieldA,
@@ -327,12 +328,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization
 
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
-            packet.Write(_newCollision.Count);
-            foreach (var info in _newCollision)
+            packet.Write(_newCollisions.Count);
+            foreach (var info in _newCollisions)
             {
                 packet.Write(info.Key);
                 packet.Write(info.Value);
@@ -348,17 +348,16 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
-            _newCollision.Clear();
+            _newCollisions.Clear();
             var newCollisionCount = packet.ReadInt32();
             for (var i = 0; i < newCollisionCount; ++i)
             {
                 var key = packet.ReadUInt64();
-                var value = packet.ReadPacketizable<BeginCollisionInfo>();
-                _newCollision.Add(key, value);
+                var value = packet.ReadPacketizable<NewCollisionInfo>();
+                _newCollisions.Add(key, value);
             }
 
             _activeCollisions.Clear();
@@ -370,13 +369,45 @@ namespace Space.ComponentSystem.Systems
                 _activeCollisions.Add(key, value);
             }
         }
+        
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
+        {
+            w.AppendIndent(indent).Write("_newCollisions = {");
+            foreach (var info in _newCollisions)
+            {
+                w.AppendIndent(indent + 1).Write(info.Key);
+                w.Write(" = { Count = ");
+                w.Write(info.Value.Count);
+                w.Write(", IsShieldA = ");
+                w.Write(info.Value.IsShieldA);
+                w.Write(", IsShieldB = ");
+                w.Write(info.Value.IsShieldB);
+                w.Write(", Normal = ");
+                w.Write(info.Value.Normal);
+                w.Write(" }");
+            }
+            w.AppendIndent(indent).Write("}");
+            
+            w.AppendIndent(indent).Write("_activeCollisions = {");
+            foreach (var info in _activeCollisions)
+            {
+                w.AppendIndent(indent + 1).Write(info.Key);
+                w.Write(" = { Count = ");
+                w.Write(info.Value.Count);
+                w.Write(" }");
+            }
+            w.AppendIndent(indent).Write("}");
+
+            return w;
+        }
 
         #endregion
 
         #region Types
 
         [Packetizable]
-        private sealed class BeginCollisionInfo
+        private sealed class NewCollisionInfo
         {
             /// <summary>Number of fixture collisions between the two entities.</summary>
             public int Count;

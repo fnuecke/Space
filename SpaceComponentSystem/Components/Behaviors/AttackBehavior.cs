@@ -200,38 +200,30 @@ namespace Space.ComponentSystem.Components.Behaviors
 
         #region Serialization
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet).Write(_start.HasValue);
+            packet.Write(_start.HasValue);
             if (_start.HasValue)
             {
                 packet.Write(_start.Value);
             }
+
             return packet;
         }
 
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
-        ///     performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             if (packet.ReadBoolean())
             {
                 _start = packet.ReadFarPosition();
             }
         }
 
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("Start = ");
             w.Write(_start.HasValue ? _start.Value.ToString() : "null");
 

@@ -375,13 +375,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             packet.Write(_livingCells.Count);
             foreach (var cellId in _livingCells)
             {
@@ -409,12 +405,9 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             _livingCells.Clear();
             var livingCellCount = packet.ReadInt32();
             for (var i = 0; i < livingCellCount; i++)
@@ -446,10 +439,9 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("LivingCells = {");
             {
                 var first = true;
@@ -463,7 +455,6 @@ namespace Space.ComponentSystem.Systems
                     w.Write(cell);
                 }
             }
-            string.Join(", ", _livingCells);
             w.Write("}");
             w.AppendIndent(indent).Write("PendingCells {");
             {

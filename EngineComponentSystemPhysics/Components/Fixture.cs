@@ -365,19 +365,5 @@ namespace Engine.ComponentSystem.Physics.Components
         }
 
         #endregion
-
-        #region Serialization / Hashing
-
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
-        {
-            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
-
-            return base.Packetize(packet);
-        }
-
-        #endregion
     }
 }

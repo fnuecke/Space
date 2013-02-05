@@ -165,15 +165,9 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Serialization
 
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
-        ///     performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             _level = 1 + (int) System.Math.Pow(_value / _multiplier, 1f / _exponent);
             _currentLevelValue = (int) (_multiplier * System.Math.Pow(_level - 1, _exponent));
             _nextLevelValue = (int) (_multiplier * System.Math.Pow(_level, _exponent));

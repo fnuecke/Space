@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Messages;
@@ -218,38 +219,19 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        /// <summary>Called by the manager when the complete environment has been depacketized.</summary>
-        public override void OnDepacketized()
+        /// <summary>Called by the manager when the complete environment has been copied or depacketized.</summary>
+        [MessageCallback]
+        public override void OnInitialize(Initialize message)
         {
-            base.OnDepacketized();
+            base.OnInitialize(message);
 
-            RebuildComponentList();
-        }
-
-        /// <summary>Called by the manager when the complete environment has been copied from another manager.</summary>
-        public override void OnCopied()
-        {
-            base.OnCopied();
-
-            RebuildComponentList();
-        }
-
-        /// <summary>Rebuilds the component list by fetching all components handled by us.</summary>
-        private void RebuildComponentList()
-        {
             _shields.Clear();
-            foreach (var component in Manager.Components)
+            foreach (var typedComponent in Manager.Components.OfType<Shield>())
             {
-                var shield = component as Shield;
-                if (shield != null)
-                {
-                    var typedComponent = shield;
-
-                    // Components are in order (we are iterating in order), so
-                    // just add it at the end.
-                    Debug.Assert(_shields.BinarySearch(typedComponent) < 0);
-                    _shields.Add(typedComponent);
-                }
+                // Components are in order (we are iterating in order), so
+                // just add it at the end.
+                Debug.Assert(_shields.BinarySearch(typedComponent) < 0);
+                _shields.Add(typedComponent);
             }
         }
 

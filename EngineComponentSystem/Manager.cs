@@ -129,7 +129,7 @@ namespace Engine.ComponentSystem
                 .OrderBy(t => t.AssemblyQualifiedName))
             {
                 var id = GetComponentTypeId(type);
-                
+
                 ++count;
                 Logger.Trace("  {0}: {1}", id, type.FullName);
             }
@@ -155,7 +155,7 @@ namespace Engine.ComponentSystem
             }
             Logger.Info("Found {0} system types.", count);
         }
-        
+
         #endregion
 
         #region Logic
@@ -269,7 +269,7 @@ namespace Engine.ComponentSystem
 
             // Unregister the system.
             _systems.Remove(system);
-            
+
             while (systemTypeId != 0)
             {
                 _systemsByTypeId[systemTypeId] = null;
@@ -555,15 +555,13 @@ namespace Engine.ComponentSystem
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
         [OnPacketize]
         public IWritablePacket Packetize(IWritablePacket packet)
         {
             // Write the components, which are enough to implicitly restore the
             // entity to component mapping as well, so we don't need to write
-            // the entity mapping.
+            // the entity mapping. Entities without any components are already
+            // known via the entity ids.    
             packet.Write(_componentIds.Count);
             foreach (var component in Components)
             {
@@ -574,34 +572,31 @@ namespace Engine.ComponentSystem
             }
 
             // Write systems, with their types, as these will only be read back
-            // via <c>ReadPacketizableInto()</c> to keep some variables that
-            // can only passed in the constructor.
+            // via ReadPacketizableInto() to keep some variables that can only
+            // passed in the constructor (in particular for presentation systems).
             packet.Write(_systems.Count(Packetizable.IsPacketizable));
-            for (int i = 0, j = _systems.Count; i < j; ++i)
+            foreach (var system in _systems.Where(Packetizable.IsPacketizable))
             {
-                if (Packetizable.IsPacketizable(_systems[i]))
-                {
-                    packet.Write(_systems[i].GetType());
-                    packet.Write(_systems[i]);
-                }
+                packet.Write(system.GetType());
+                packet.Write(system);
             }
 
             return packet;
         }
 
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called before automatic depacketization is
-        ///     performed.
-        /// </summary>
         [OnPreDepacketize]
         public void PreDepacketize()
         {
-            // Release all current objects.
+            // Release all current objects. We need to do this before the rest of
+            // the depacketization process because the auto-packetizer will read
+            // the entity and component ids.
+
             foreach (var entity in _entityIds)
             {
                 ReleaseEntity(_entities[entity]);
             }
             _entities.Clear();
+
             foreach (var component in _componentIds.Select(id => _components[id]))
             {
                 ReleaseComponent(component);
@@ -609,16 +604,18 @@ namespace Engine.ComponentSystem
             _components.Clear();
         }
 
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
-        ///     performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
         [OnPostDepacketize]
         public void PostDepacketize(IReadablePacket packet)
         {
-            // Read back all components, fill in entity info as well, as that
-            // is stored implicitly in the components.
+            // Restore entity objects (which we use for faster lookup of components
+            // on an entity). This in particular re-creates empty entities, i.e.
+            // entities with no components.
+            foreach (var entityId in _entityIds)
+            {
+                _entities[entityId] = AllocateEntity();
+            }
+
+            // Read back all components.
             var componentCount = packet.ReadInt32();
             for (var i = 0; i < componentCount; ++i)
             {
@@ -627,43 +624,23 @@ namespace Engine.ComponentSystem
                 packet.ReadPacketizableInto(component);
                 component.Manager = this;
                 _components[component.Id] = component;
-
-                // Add to entity mapping, create entries as necessary.
-                if (_entities[component.Entity] == null)
-                {
-                    _entities[component.Entity] = AllocateEntity();
-                }
                 _entities[component.Entity].Add(component);
             }
-            // Fill in empty entities. This is to re-create empty entities, i.e.
-            // entities with no components.
-            foreach (var entityId in _entityIds)
-            {
-                if (_entities[entityId] == null)
-                {
-                    _entities[entityId] = AllocateEntity();
-                }
-            }
 
-            // Read back all systems. This must be done after reading the components,
-            // because the systems will fetch their components again at this point.
+            // Read back all systems.
             var systemCount = packet.ReadInt32();
             for (var i = 0; i < systemCount; ++i)
             {
                 var type = packet.ReadType();
-                if (!SystemTypes.ContainsKey(type))
-                {
-                    throw new PacketException("Could not depacketize system of unknown type " + type.FullName);
-                }
                 var instance = _systemsByTypeId[GetSystemTypeId(type)];
+                Debug.Assert(instance != null);
                 packet.ReadPacketizableInto(instance);
             }
 
-            // All done, send message to allow post-processing.
-            foreach (var system in _systems)
-            {
-                system.OnDepacketized();
-            }
+            // All done, send message to allow post-processing, e.g. for fetching
+            // their components again, which is why this has to come last.
+            Initialize message;
+            SendMessage(message);
         }
 
         /// <summary>
@@ -852,10 +829,8 @@ namespace Engine.ComponentSystem
             }
 
             // All done, send message to allow post-processing.
-            foreach (var system in copy._systems)
-            {
-                system.OnCopied();
-            }
+            Initialize message;
+            SendMessage(message);
         }
 
         #endregion

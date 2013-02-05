@@ -61,6 +61,13 @@ namespace Space.ComponentSystem.Systems
             DetermineLocalPlayer();
         }
 
+        /// <summary>Called by the manager when the complete environment has been copied or depacketized.</summary>
+        [MessageCallback]
+        public void OnInitialize(Initialize message)
+        {
+            DetermineLocalPlayer();
+        }
+
         private void DetermineLocalPlayer()
         {
             if (_session == null || _session.ConnectionState != ClientState.Connected)
@@ -70,30 +77,6 @@ namespace Space.ComponentSystem.Systems
             }
             var avatars = ((AvatarSystem) Manager.GetSystem(AvatarSystem.TypeId));
             LocalPlayerAvatar = avatars.GetAvatar(_session.LocalPlayer.Number);
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>Called by the manager when the complete environment has been copied from another manager.</summary>
-        public override void OnCopied()
-        {
-            base.OnCopied();
-
-            DetermineLocalPlayer();
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>Called by the manager when the complete environment has been depacketized.</summary>
-        public override void OnDepacketized()
-        {
-            base.OnDepacketized();
-
-            DetermineLocalPlayer();
         }
 
         #endregion

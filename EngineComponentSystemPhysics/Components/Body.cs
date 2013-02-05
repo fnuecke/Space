@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Physics.Joints;
 using Engine.ComponentSystem.Physics.Math;
 using Engine.ComponentSystem.Physics.Systems;
 using Engine.ComponentSystem.Spatial.Messages;
-using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 #if FARMATH
@@ -926,20 +925,6 @@ namespace Engine.ComponentSystem.Physics.Components
         {
             ForceInternal = Vector2.Zero;
             Torque = 0;
-        }
-
-        #endregion
-
-        #region Serialization / Hashing
-
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
-        {
-            System.Diagnostics.Debug.Assert(!Simulation.IsLocked);
-
-            return base.Packetize(packet);
         }
 
         #endregion

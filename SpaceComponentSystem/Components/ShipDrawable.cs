@@ -142,10 +142,9 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             _fallbackTexture = null;
         }
     }

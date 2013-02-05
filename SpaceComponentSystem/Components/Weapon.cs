@@ -94,13 +94,9 @@ namespace Space.ComponentSystem.Components
 
         #region Serialization / Hashing / Cloning
 
-        /// <summary>Packetizes the specified packet.</summary>
-        /// <param name="packet">The packet.</param>
-        /// <returns></returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             packet.Write(Attributes.Count);
             foreach (var attribute in Attributes)
             {
@@ -113,12 +109,9 @@ namespace Space.ComponentSystem.Components
             return packet;
         }
 
-        /// <summary>Depacketizes the specified packet.</summary>
-        /// <param name="packet">The packet.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             var attributeCount = packet.ReadInt32();
             for (var i = 0; i < attributeCount; i++)
             {
@@ -129,14 +122,9 @@ namespace Space.ComponentSystem.Components
             Projectiles = packet.ReadPacketizables<ProjectileFactory>();
         }
 
-        /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="w"> </param>
-        /// <param name="indent">The indentation level.</param>
-        /// <returns>The string builder, for call chaining.</returns>
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("Attributes = {");
             foreach (var attribute in Attributes)
             {

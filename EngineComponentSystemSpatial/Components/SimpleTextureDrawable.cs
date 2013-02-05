@@ -18,10 +18,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         public static readonly int TypeId = CreateTypeId();
 
         /// <summary>The type id unique to the entity/component system in the current program.</summary>
-        public override int GetTypeId()
-        {
-            return TypeId;
-        }
+        public override int GetTypeId() { return TypeId; }
 
         #endregion
 
@@ -112,10 +109,7 @@ namespace Engine.ComponentSystem.Spatial.Components
         /// <param name="textureName">Name of the texture.</param>
         /// <param name="scale">The scale.</param>
         /// <returns></returns>
-        public SimpleTextureDrawable Initialize(string textureName, float scale = 1f)
-        {
-            return Initialize(textureName, Color.White, scale);
-        }
+        public SimpleTextureDrawable Initialize(string textureName, float scale = 1f) { return Initialize(textureName, Color.White, scale); }
 
         /// <summary>Reset the component to its initial state, so that it may be reused without side effects.</summary>
         public override void Reset()
@@ -139,7 +133,8 @@ namespace Engine.ComponentSystem.Spatial.Components
         /// <param name="scale">The scale.</param>
         /// <param name="effects">The effects.</param>
         /// <param name="layerDepth">The base layer depth to use, used for tie breaking.</param>
-        public void Draw(SpriteBatch batch, Vector2 position, float angle, float scale, SpriteEffects effects, float layerDepth)
+        public void Draw(
+            SpriteBatch batch, Vector2 position, float angle, float scale, SpriteEffects effects, float layerDepth)
         {
             Vector2 origin;
             origin.X = Texture.Width / 2f;
@@ -174,14 +169,8 @@ namespace Engine.ComponentSystem.Spatial.Components
 
         #region Serialization
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
-        {
-            base.Depacketize(packet);
-
-            _texture = null;
-        }
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet) { _texture = null; }
 
         #endregion
     }

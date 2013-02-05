@@ -30,8 +30,6 @@ namespace Engine.ComponentSystem.Systems
     [Packetizable, DebuggerTypeProxy(typeof (FlattenHierarchyProxy))]
     public abstract class AbstractSystem : ICopyable<AbstractSystem>
     {
-        #region Type ID
-
         /// <summary>
         ///     Gets the component type id for the calling currently-being-initialized component type class. This will create
         ///     a new ID if necessary.
@@ -42,70 +40,14 @@ namespace Engine.ComponentSystem.Systems
         ///     execution stack to determine calling type.
         /// </remarks>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected static int CreateTypeId()
-        {
-            return ComponentSystem.Manager.GetSystemTypeId(new StackFrame(1, false).GetMethod().DeclaringType);
-        }
-
-        #endregion
-
-        #region Properties
+        protected static int CreateTypeId() { return ComponentSystem.Manager.GetSystemTypeId(new StackFrame(1, false).GetMethod().DeclaringType); }
 
         /// <summary>The component system manager this system is part of.</summary>
         [CopyIgnore, PacketizeIgnore, PublicAPI]
         public IManager Manager { get; set; }
 
-        #endregion
-
-        #region Manager Events
-
-        /// <summary>
-        ///     Called by the manager when the complete environment has been depacketized. Called from the <see cref="Manager"/>.
-        /// </summary>
-        public virtual void OnDepacketized() {}
-
-        /// <summary>
-        ///     Called by the manager when the complete environment has been copied from another manager. Called from the
-        ///     <see cref="Manager"/>.
-        /// </summary>
-        public virtual void OnCopied() {}
-
-        /// <summary>
-        ///     Called by the manager when the system was added to it. This allows for the system to register its message
-        ///     listener and do other one-time initialization.
-        /// </summary>
-        public virtual void OnAddedToManager() {}
-
-        #endregion
-
-        #region Serialization / Hashing
-
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        [OnPacketize]
-        public virtual IWritablePacket Packetize(IWritablePacket packet)
-        {
-            return packet;
-        }
-
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called before automatic depacketization is
-        ///     performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        [OnPostDepacketize]
-        public virtual void Depacketize(IReadablePacket packet) {}
-
-        [OnStringify]
-        public virtual StreamWriter Dump(StreamWriter w, int indent)
-        {
-            return w;
-        }
-
-        #endregion
-
-        #region Copying
+        /// <summary>Called by the manager when the system was added to it.</summary>
+        public virtual void OnAddedToManager() { }
 
         /// <summary>Creates a new copy of the object, that shares no mutable references with this instance.</summary>
         /// <returns>The copy.</returns>
@@ -151,7 +93,5 @@ namespace Engine.ComponentSystem.Systems
             // Use dynamic function to do basic copying.
             Copyable.CopyInto(this, into);
         }
-
-        #endregion
     }
 }

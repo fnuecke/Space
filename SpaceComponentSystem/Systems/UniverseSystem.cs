@@ -400,13 +400,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization
 
-        /// <summary>Packetizes the specified packet.</summary>
-        /// <param name="packet">The packet.</param>
-        /// <returns></returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             packet.Write(_cellInfo.Count);
             foreach (var item in _cellInfo)
             {
@@ -417,12 +413,9 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
-        /// <summary>Depacketizes the specified packet.</summary>
-        /// <param name="packet">The packet.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             _cellInfo.Clear();
             var cellCount = packet.ReadInt32();
             for (var i = 0; i < cellCount; i++)
@@ -433,10 +426,9 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("StoredCellCount = ");
             w.Write(_cellInfo.Count);
             w.AppendIndent(indent).Write("Cells = {");

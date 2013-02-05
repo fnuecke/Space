@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Engine.ComponentSystem.Physics.Systems;
 using Engine.ComponentSystem.Spatial.Components;
@@ -459,33 +458,6 @@ namespace Space.ComponentSystem.Components.Behaviors
             }
 
             return direction;
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        [OnPacketize]
-        public virtual IWritablePacket Packetize(IWritablePacket packet)
-        {
-            return packet;
-        }
-
-        /// <summary>
-        ///     Bring the object to the state in the given packet. This is called after automatic depacketization has been
-        ///     performed.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        [OnPostDepacketize]
-        public virtual void Depacketize(IReadablePacket packet) {}
-
-        [OnStringify]
-        public virtual StreamWriter Dump(StreamWriter w, int indent)
-        {
-            return w;
         }
 
         #endregion

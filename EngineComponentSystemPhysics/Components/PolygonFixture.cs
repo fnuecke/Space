@@ -7,10 +7,10 @@ using Engine.Serialization;
 using Engine.Util;
 using Engine.XnaExtensions;
 using Microsoft.Xna.Framework;
-
 #if FARMATH
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.FarMath.FarRectangle;
+
 #else
 using LocalPoint = Microsoft.Xna.Framework.Vector2;
 using WorldBounds = Engine.Math.RectangleF;
@@ -374,13 +374,9 @@ namespace Engine.ComponentSystem.Physics.Components
 
         #region Serialization / Hashing
 
-        /// <summary>Write the object's state to the given packet.</summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>The packet after writing.</returns>
-        public override IWritablePacket Packetize(IWritablePacket packet)
+        [OnPacketize]
+        public IWritablePacket Packetize(IWritablePacket packet)
         {
-            base.Packetize(packet);
-
             for (var i = 0; i < Count; ++i)
             {
                 packet.Write(Vertices[i]);
@@ -390,12 +386,9 @@ namespace Engine.ComponentSystem.Physics.Components
             return packet;
         }
 
-        /// <summary>Bring the object to the state in the given packet.</summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(IReadablePacket packet)
+        [OnPostDepacketize]
+        public void Depacketize(IReadablePacket packet)
         {
-            base.Depacketize(packet);
-
             for (var i = 0; i < Count; ++i)
             {
                 Vertices[i] = packet.ReadVector2();
@@ -403,14 +396,9 @@ namespace Engine.ComponentSystem.Physics.Components
             }
         }
 
-        /// <summary>Writes a string representation of the object to a string builder.</summary>
-        /// <param name="w"> </param>
-        /// <param name="indent">The indentation level.</param>
-        /// <returns>The string builder, for call chaining.</returns>
-        public override StreamWriter Dump(StreamWriter w, int indent)
+        [OnStringify]
+        public StreamWriter Dump(StreamWriter w, int indent)
         {
-            base.Dump(w, indent);
-
             w.AppendIndent(indent).Write("Vertices = {");
             for (var i = 0; i < Count; i++)
             {
