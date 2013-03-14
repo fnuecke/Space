@@ -6,6 +6,7 @@ using System.Text;
 using Awesomium.Core;
 using Awesomium.Core.Data;
 using Awesomium.Xna;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -48,6 +49,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <summary>
         /// How many pixels to scroll per tick.
         /// </summary>
+        [PublicAPI]
         public int ScrollAmount { get; set; }
 
         #endregion
@@ -271,6 +273,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// Pushes the screen with the specified name to the top.
         /// </summary>
         /// <param name="screenName">Name of the screen.</param>
+        [PublicAPI]
         public void PushScreen(string screenName)
         {
             // Create our screen.
@@ -311,6 +314,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <summary>
         /// Pops the top screen and disposes it.
         /// </summary>
+        [PublicAPI]
         public void PopScreen()
         {
             if (_screens.Count < 1)
@@ -334,6 +338,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <param name="nameSpace">The name space to add the callback to.</param>
         /// <param name="name">The name of the callback.</param>
         /// <param name="callback">The callback.</param>
+        [PublicAPI]
         public void AddCallback(string nameSpace, string name, JavascriptMethodEventHandler callback)
         {
             if (String.IsNullOrWhiteSpace(nameSpace))
@@ -364,6 +369,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <param name="nameSpace">The name space to add the callback to.</param>
         /// <param name="name">The name of the callback.</param>
         /// <param name="callback">The callback.</param>
+        [PublicAPI]
         public void AddCallbackWithReturnValue(string nameSpace, string name, JavascriptMethodEventHandler callback)
         {
             if (String.IsNullOrWhiteSpace(nameSpace))
@@ -393,6 +399,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <param name="nameSpace">The name of the global object in which the method resides.</param>
         /// <param name="name">The name of the method to call.</param>
         /// <param name="args">The arguments to pass to the method.</param>
+        [PublicAPI]
         public void Call(string nameSpace, string name, params JSValue[] args)
         {
             if (String.IsNullOrWhiteSpace(nameSpace))
@@ -412,7 +419,7 @@ input[type=""text""], input[type=""password""], textarea {
             var obj = GetNamespace(_screens.Peek(), nameSpace, false);
             if (obj.HasMethod(name))
             {
-                obj.Invoke(name, args);
+                obj.InvokeAsync(name, args);
             }
         }
 
@@ -431,7 +438,7 @@ input[type=""text""], input[type=""password""], textarea {
             {
                 return ns;
             }
-            else if (create)
+            if (create)
             {
                 // Not an object, but if there is something there, log a warning, as we're overwriting it.
                 if (!ns.IsUndefined && !ns.IsNull)

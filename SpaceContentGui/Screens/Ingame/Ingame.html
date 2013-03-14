@@ -18,16 +18,13 @@
 	<body>
         <script type="text/javascript">
             var Screens = {};
-            var Callbacks = {
-                setZoom: function(value) {
-                    $("body").css("zoom", value);
-                }
-            };
             $(document).ready(function () {
                 // Wait for init to make sure callbacks are registered.
                 Screens.onInit = function() {
                     // Set scaling retrieved from settings.
-                    Space.getSetting("GuiScale", "Callbacks.setZoom");
+                    Space.getSetting("GuiScale", function(value) {
+                        $("body").css("zoom", value);
+                    });
                 };
 
                 /* ************************************************* */

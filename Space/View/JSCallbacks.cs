@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
 using Awesomium.Core;
 using Engine.Session;
 using Microsoft.Xna.Framework;
@@ -189,9 +188,6 @@ namespace Space.View
         {
             return (sender, args) =>
             {
-                // The webview that triggered the callback.
-                var webView = (WebView) sender;
-
                 // Make sure we have the right number of args.
                 if (args.Arguments.Length != 1 + argumentCount)
                 {
@@ -199,156 +195,17 @@ namespace Space.View
                     return;
                 }
 
-                // Make sure the callback is a string.
-                var callback = args.Arguments[args.Arguments.Length - 1];
-                if (!callback.IsString)
-                {
-                    Logger.Warn("Bad JS callback for '{0}', callback name is not a string.", args.MethodName);
-                    return;
-                }
-
                 // Run actual handler
                 try
                 {
-                    var result = f(new ArraySegment<JSValue>(args.Arguments, 0, argumentCount).Array);
-                    webView.ExecuteJavascript(callback + "(JSON.parse(" + ToJSON(result) + "))");
+                    var callback = (JSObject) args.Arguments[args.Arguments.Length - 1];
+                    callback.InvokeAsync("call", JSValue.Null, f(new ArraySegment<JSValue>(args.Arguments, 0, argumentCount).Array));
                 }
                 catch (Exception ex)
                 {
                     Logger.WarnException("Error in JavaScript callback '" + args.MethodName + "'.", ex);
                 }
-
-                //// Make sure the callback is an object.
-                //if (!args.Arguments[args.Arguments.Length - 1].IsObject)
-                //{
-                //    Logger.Warn("Bad JS callback for '{0}', callback does not appear to be a function.", args.MethodName);
-                //    return;
-                //}
-
-                //// Get callback and make sure it's a function (or pretends it's one, at least).
-                //var callback = (JSObject)args.Arguments[args.Arguments.Length - 1];
-                //if (!callback.HasMethod("call"))
-                //{
-                //    Logger.Warn("Bad JS callback for '{0}', callback does not appear to be a function.", args.MethodName);
-                //    return;
-                //}
-
-                //// Run actual handler
-                //try
-                //{
-                //    var result = f(new ArraySegment<JSValue>(args.Arguments, 0, argumentCount).Array);
-                //    callback.Invoke("call", JSValue.Null, result);
-                //}
-                //catch (Exception ex)
-                //{
-                //    Logger.WarnException("Error in JavaScript callback '" + args.MethodName + "'.", ex);
-                //}
             };
-        }
-
-        private static string ToJSON(JSValue value)
-        {
-            var s = new StringBuilder();
-            Stringify(value, s);
-            return s.ToString();
-        }
-
-        private static void Stringify(JSValue value, StringBuilder s)
-        {
-            if (value.IsObject)
-            {
-                var obj = (JSObject) value;
-                s.Append('{');
-                var entries = obj.GetPropertyNames();
-                if (entries.Length > 0)
-                {
-                    Stringify(entries[0], s);
-                    s.Append(':');
-                    Stringify(obj[entries[0]], s);
-                    for (var i = 1; i < entries.Length; i++)
-                    {
-                        s.Append(',');
-                        Stringify(entries[1], s);
-                        s.Append(':');
-                        Stringify(obj[entries[1]], s);
-                    }
-                }
-                s.Append('}');
-            }
-            else if (value.IsArray)
-            {
-                s.Append('[');
-                var entries = (JSValue[]) value;
-                if (entries.Length > 0)
-                {
-                    Stringify(entries[0], s);
-                    for (var i = 1; i < entries.Length; i++)
-                    {
-                        s.Append(',');
-                        Stringify(entries[i], s);
-                    }
-                }
-                s.Append(']');
-            }
-            else if (value.IsString)
-            {
-                s.Append('"');
-                var stringValue = (string) value;
-                foreach (var c in stringValue) {
-                    switch (c)
-                    {
-                        case '\\':
-                        case '"':
-                            s.Append('\\');
-                            s.Append(c);
-                            break;
-                        case '\b':
-                            s.Append('\\');
-                            s.Append('b');
-                            break;
-                        case '\f':
-                            s.Append('\\');
-                            s.Append('f');
-                            break;
-                        case '\n':
-                            s.Append('\\');
-                            s.Append('n');
-                            break;
-                        case '\r':
-                            s.Append('\\');
-                            s.Append('r');
-                            break;
-                        case '\t':
-                            s.Append('\\');
-                            s.Append('t');
-                            break;
-                        default:
-                            s.Append(c);
-                            break;
-                    }
-                }
-                s.Append('"');
-            }
-            else if (value.IsInteger)
-            {
-                s.Append((int) value);
-            }
-            else if (value.IsDouble)
-            {
-                s.Append((double) value);
-            }
-            else if (value.IsBoolean)
-            {
-                s.Append((bool) value ? "true" : "false");
-            }
-            else if (value.IsNull)
-            {
-                s.Append("null");
-            }
-            else if (value.IsUndefined)
-            {
-                s.Append("\"undefined\"");
-            }
         }
 
         #region Localization

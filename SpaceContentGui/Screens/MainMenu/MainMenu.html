@@ -21,7 +21,9 @@
 				// Wait for init to make sure callbacks are registered.
 				Screens.onInit = function() {
 	                // Set scaling retrieved from settings.
-	                $("body").css("zoom", Space.getSetting("GuiScale"));
+	                Space.getSetting("GuiScale", function(value) {
+	                	$("body").css("zoom", value);
+	                });
 	            }
 
 				Space.onGameInfoReceived = function(e) {

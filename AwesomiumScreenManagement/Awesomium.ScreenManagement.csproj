@@ -80,6 +80,10 @@
       <Project>{321A57BE-BAA7-46B6-A40D-7DDD83AD638F}</Project>
       <Name>Awesomium.Xna</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JetBrainsAnnotations\JetBrains.Annotations.csproj">
+      <Project>{173331FF-F188-464C-9D6F-C46B75B623B3}</Project>
+      <Name>JetBrains.Annotations</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />

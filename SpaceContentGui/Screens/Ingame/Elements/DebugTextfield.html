@@ -23,59 +23,44 @@
         }
     });
 
-    var Callbacks = {
-        setPositionX: function(value) {
-            $("#positionx").html(value);
-        },
-        setPositionY: function(value) {
-            $("#positiony").html(value);
-        },
-        setCellX: function(value) {
-            $("#cellx").html(value);
-        },
-        setCellY: function(value) {
-            $("#celly").html(value);
-        },
-        setSpeed: function(value) {
-            $("#speed").html(value);
-        },
-        setMaxSpeed: function(value) {
-            $("#maxspeed").html(value);
-        },
-        setMaxAcceleration: function(value) {
-            $("#maxaccel").html(value);
-        },
-        setMass: function(value) {
-            $("#mass").html(value);
-        },
-        setHealth: function(value) {
-            $("#health").html(value);
-        },
-        setMaxHealth: function(value) {
-            $("#maxhealth").html(value);
-        },
-        setEnergy: function(value) {
-            $("#energy").html(value);
-        },
-        setMaxEnergy: function(value) {
-            $("#maxenergy").html(value);
-        },
-    };
-
     (function ($) {
         setInterval(function () {
-            Space.getPositionX("Callbacks.setPositionX");
-            Space.getPositionY("Callbacks.setPositionY");
-            Space.getCellX("Callbacks.setCellX");
-            Space.getCellY("Callbacks.setCellY");
-            Space.getSpeed("Callbacks.setSpeed");
-            Space.getMaxSpeed("Callbacks.setMaxSpeed");
-            Space.getMaxAcceleration("Callbacks.setMaxAcceleration");
-            Space.getMass("Callbacks.setMass");
-            Space.getHealth("Callbacks.setHealth");
-            Space.getMaxHealth("Callbacks.setMaxHealth");
-            Space.getEnergy("Callbacks.setEnergy");
-            Space.getMaxEnergy("Callbacks.setMaxEnergy");
+            Space.getPositionX(function(value) {
+                $("#positionx").html(value);
+            });
+            Space.getPositionY(function(value) {
+                $("#positiony").html(value);
+            });
+            Space.getCellX(function(value) {
+                $("#cellx").html(value);
+            });
+            Space.getCellY(function(value) {
+                $("#celly").html(value);
+            });
+            Space.getSpeed(function(value) {
+                $("#speed").html(value);
+            });
+            Space.getMaxSpeed(function(value) {
+                $("#maxspeed").html(value);
+            });
+            Space.getMaxAcceleration(function(value) {
+                $("#maxaccel").html(value);
+            });
+            Space.getMass(function(value) {
+                $("#mass").html(value);
+            });
+            Space.getHealth(function(value) {
+                $("#health").html(value);
+            });
+            Space.getMaxHealth(function(value) {
+                $("#maxhealth").html(value);
+            });
+            Space.getEnergy(function(value) {
+                $("#energy").html(value);
+            });
+            Space.getMaxEnergy(function(value) {
+                $("#maxenergy").html(value);
+            });
         }, 100);
     }) (jQuery);
 </script>
