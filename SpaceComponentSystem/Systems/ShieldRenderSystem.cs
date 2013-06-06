@@ -23,6 +23,13 @@ namespace Space.ComponentSystem.Systems
     [Packetizable(false), PresentationOnlyAttribute]
     public sealed class ShieldRenderSystem : AbstractComponentSystem<ShieldEnergyStatusEffect>
     {
+        #region Type ID
+
+        /// <summary>The unique type ID for this object, by which it is referred to in the manager.</summary>
+        public static readonly int TypeId = CreateTypeId();
+
+        #endregion
+
         #region Properties
 
         /// <summary>Determines whether this system is enabled, i.e. whether it should draw.</summary>
@@ -88,7 +95,7 @@ namespace Space.ComponentSystem.Systems
                 var radius = 0f;
                 if (attributes != null)
                 {
-                    coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage), 0f, 1f) * MathHelper.Pi;
+                    coverage = MathHelper.Clamp(attributes.GetValue(AttributeType.ShieldCoverage), 0f, 1f) * MathHelper.TwoPi;
                     radius = attributes.GetValue(AttributeType.ShieldRadius);
                 }
 

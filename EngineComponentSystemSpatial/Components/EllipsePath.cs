@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
@@ -151,6 +152,10 @@ namespace Engine.ComponentSystem.Spatial.Components
             float period,
             float periodOffset)
         {
+            if (period == 0.0)
+            {
+                throw new ArgumentException("Period must not be zero.", "period");
+            }
             CenterEntityId = centerEntityId;
             if (majorRadius < minorRadius)
             {
@@ -182,7 +187,7 @@ namespace Engine.ComponentSystem.Spatial.Components
             MajorRadius = 0;
             MinorRadius = 0;
             CenterEntityId = 0;
-            Period = 0;
+            Period = MathHelper.TwoPi;
             PeriodOffset = 0;
         }
 

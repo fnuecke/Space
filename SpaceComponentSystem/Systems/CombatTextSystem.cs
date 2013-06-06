@@ -60,7 +60,6 @@ namespace Space.ComponentSystem.Systems
             if (value > 0)
             {
                 // Normal damage.
-
                 var color = isLocalPlayerFaction
                                 ? Color.Red
                                 : (message.IsCriticalHit ? Color.Yellow : Color.White);
@@ -74,7 +73,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     // Shield damage.
                     var color = isLocalPlayerFaction
-                                    ? Color.Red
+                                    ? Color.Violet
                                     : (message.IsCriticalHit ? Color.Yellow : Color.LightBlue);
                     ((FloatingTextSystem) Manager.GetSystem(FloatingTextSystem.TypeId))
                         .Display(value, position, color, scale);

@@ -283,7 +283,7 @@ namespace Space.Tools.DataEditor
             {
                 // Give it an ellipse path. This will not move the entity, but it'll allow
                 // lighting.
-                manager.AddComponent<EllipsePath>(entity).Initialize(sun, 0, 0, 0, 0, 0);
+                manager.AddComponent<EllipsePath>(entity).Initialize(sun, 0, 0, 0, MathHelper.TwoPi, 0);
 
                 // If it has a radius, add the renderer indicating max bounds (if low and high differ).
                 if (factory.Radius != null && factory.Radius.Low != factory.Radius.High)
@@ -329,7 +329,7 @@ namespace Space.Tools.DataEditor
             // Get furthest out orbit to know how to scale.
             var sunFactory = FactoryManager.GetFactory(factory.Sun) as SunFactory;
             float padding, scale;
-            ComputeScaleAndOffset(CellSystem.CellSize / 2f, out scale, out padding);
+            ComputeScaleAndOffset(Engine.Util.UnitConversion.ToScreenUnits(CellSystem.CellSize) / 2f, out scale, out padding);
 
             // Render all objects from left to right, starting with the sun.
             using (var g = System.Drawing.Graphics.FromImage(pbPreview.Image))

@@ -2089,6 +2089,10 @@ namespace Engine.ComponentSystem.Physics.Systems
             {
                 var contact = packet.ReadInt32();
                 _contacts[contact] = packet.ReadPacketizable<Contact>();
+                if (_contacts[contact] == null)
+                {
+                    throw new PacketException("Invalid contact.");
+                }
                 _contacts[contact].Manager = Manager;
                 _contactEdges[contact * 2] = packet.ReadPacketizable<ContactEdge>();
                 _contactEdges[contact * 2 + 1] = packet.ReadPacketizable<ContactEdge>();
@@ -2096,17 +2100,18 @@ namespace Engine.ComponentSystem.Physics.Systems
             _freeContacts = -1;
             for (var contact = 0; contact < _contacts.Length; contact++)
             {
-                if (_contacts[contact] == null)
+                if (_contacts[contact] != null)
                 {
-                    _contacts[contact] = new Contact
-                    {
-                        Manager = Manager,
-                        Previous = _freeContacts
-                    };
-                    _contactEdges[contact * 2] = new ContactEdge();
-                    _contactEdges[contact * 2 + 1] = new ContactEdge();
-                    _freeContacts = contact;
+                    continue;
                 }
+                _contacts[contact] = new Contact
+                {
+                    Manager = Manager,
+                    Previous = _freeContacts
+                };
+                _contactEdges[contact * 2] = new ContactEdge();
+                _contactEdges[contact * 2 + 1] = new ContactEdge();
+                _freeContacts = contact;
             }
 
             _joints = new Joint[packet.ReadInt32()];
@@ -2115,6 +2120,10 @@ namespace Engine.ComponentSystem.Physics.Systems
             {
                 var joint = packet.ReadInt32();
                 _joints[joint] = packet.ReadPacketizableWithTypeInfo<Joint>();
+                if (_joints[joint] == null)
+                {
+                    throw new PacketException("Invalid joint.");
+                }
                 _joints[joint].Manager = Manager;
                 _jointEdges[joint * 2] = packet.ReadPacketizable<JointEdge>();
                 _jointEdges[joint * 2 + 1] = packet.ReadPacketizable<JointEdge>();

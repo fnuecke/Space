@@ -247,7 +247,7 @@ namespace Space.ComponentSystem.Systems
             // Check if shields are oriented properly to intercept the damage.
             var angle = MathHelper.WrapAngle(((ITransform) Manager.GetComponent(damagee, TransformTypeId)).Angle);
             var normalAngle = (float) Math.Atan2(normal.Y, normal.X);
-            var coverage = attributes.GetValue(AttributeType.ShieldCoverage) * MathHelper.Pi;
+            var coverage = attributes.GetValue(AttributeType.ShieldCoverage) * MathHelper.TwoPi;
             if (Math.Abs(Angle.MinAngle(angle, normalAngle)) > coverage)
             {
                 // Rotated the wrong way, damage hits where there is no shield coverage.

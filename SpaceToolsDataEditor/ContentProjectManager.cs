@@ -272,21 +272,9 @@ namespace Space.Tools.DataEditor
                         }
                     }
                 }
-                catch (FileNotFoundException ex)
+                catch (Exception ex)
                 {
-                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                catch (SecurityException ex)
-                {
-                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                catch (XmlException ex)
-                {
-                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); 
+                    MessageBox.Show("Error loading content project " + projectPath + ":\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

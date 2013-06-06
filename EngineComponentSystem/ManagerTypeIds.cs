@@ -126,7 +126,6 @@ namespace Engine.ComponentSystem
                 ComponentHierarchy[typeId] = new HashSet<int> {typeId};
 
                 // New entry, update hierarchy.
-                Type closestParentType = null;
                 foreach (var otherType in ComponentTypes.Keys)
                 {
                     // Check for parents.
@@ -148,24 +147,6 @@ namespace Engine.ComponentSystem
                 ComponentTypes[type] = typeId;
             }
             return typeId;
-        }
-
-        /// <summary>
-        ///     Gets the component type for type id. This is an inverse dictionary lookup, which is a linear search and thus
-        ///     slow. But we only use it when adding component types, which shouldn't happen that often.
-        /// </summary>
-        /// <param name="typeId">The type id.</param>
-        /// <returns>The actual component type.</returns>
-        private static Type GetComponentTypeForTypeId(int typeId)
-        {
-            foreach (var i in ComponentTypes)
-            {
-                if (i.Value == typeId)
-                {
-                    return i.Key;
-                }
-            }
-            throw new ArgumentException("Unknown type.");
         }
 
         /// <summary>

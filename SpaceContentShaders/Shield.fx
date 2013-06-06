@@ -57,12 +57,12 @@ float4 PixelShaderFunction(VSOut input) : COLOR0
     // See if we're in the covered angle (plus a buffer for fading out
     // in case we're drawing).
     float angle = abs(atan2(input.TextureCoordinate.y, input.TextureCoordinate.x));
-    if (angle > Coverage + 0.3) {
+    if (angle > Coverage * 0.5 + 0.3) {
         discard;
     }
 
     // Fade out towards sides.
-    angle = min(1, 1 - (angle - Coverage) / 0.3);
+    angle = min(1, 1 - (angle - Coverage * 0.5) / 0.3);
 
     // See if we have some structure.
     float4 color = Color;

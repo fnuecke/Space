@@ -3,6 +3,8 @@ using System.Linq;
 using System.Windows.Forms;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Physics.Systems;
 using Engine.ComponentSystem.RPG.Systems;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Spatial.Systems;
@@ -16,6 +18,7 @@ using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.Data;
+using Space.Util;
 
 namespace Space.Tools.DataEditor
 {
@@ -82,6 +85,10 @@ namespace Space.Tools.DataEditor
                 _sunId = _manager.AddEntity();
                 _manager.AddComponent<Transform>(_sunId);
             }
+            else
+            {
+                _sunId = 0;
+            }
         }
 
         protected override void Initialize()
@@ -115,12 +122,16 @@ namespace Space.Tools.DataEditor
                     new ItemSlotSystem(),
                     new ItemEffectSystem(),
                     new RegeneratingValueSystem(),
+                    new PhysicsSystem(1f / Settings.TicksPerSecond),
 
-                    new GraphicsDeviceSystem(_content, GraphicsDeviceManager) {Enabled = true},
+                    new GraphicsDeviceSystem(GraphicsDeviceManager),
+                    new ContentSystem(_content), 
+                    
+                    new ShipShapeSystem(),
 
                     new CameraCenteredInterpolationSystem {Enabled = true},
                     new LocalPlayerSystem(null),
-                    new CameraSystem(GraphicsDeviceManager.GraphicsDevice, null) {Enabled = true},
+                    new CameraSystem(GraphicsDeviceManager.GraphicsDevice, null),
 
                     new PlanetMaxBoundsRenderer(_content, GraphicsDeviceManager) {Enabled = true},
 
@@ -128,7 +139,7 @@ namespace Space.Tools.DataEditor
                     new SunRenderSystem {Enabled = true},
 
                     new CameraCenteredTextureRenderSystem {Enabled = true},
-                    new CameraCenteredParticleEffectSystem(() => 20f) {Enabled = true},
+                    new CameraCenteredParticleEffectSystem(() => 1f) {Enabled = true},
                     new ShieldRenderSystem {Enabled = true},
                     
                     new DebugSlotRenderSystem {Enabled = true}
@@ -268,7 +279,7 @@ namespace Space.Tools.DataEditor
             public float MaxRadius;
         }
 
-        private sealed class PlanetMaxBoundsRenderer : AbstractComponentSystem<PlanetMaxBounds>, IDrawingSystem
+        private sealed class PlanetMaxBoundsRenderer : AbstractComponentSystem<PlanetMaxBounds>
         {
             #region Type ID
 
@@ -293,8 +304,9 @@ namespace Space.Tools.DataEditor
                 };
                 _ellipse.LoadContent();
             }
-
-            public void Draw(long frame, float elapsedMilliseconds)
+            
+            [MessageCallback]
+            public void OnDraw(Draw message)
             {
                 var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
                 foreach (var component in Components)

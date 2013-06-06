@@ -422,7 +422,8 @@ namespace Space.Tools.DataEditor
                         // Check if we're too large (exceeding cell size). Only trigger this message
                         // for the first object exceeding the bounds, not for its children.
                         childRadius += orbiter.OrbitRadius.High;
-                        if (radius < CellSystem.CellSize / 2f && childRadius >= CellSystem.CellSize / 2f)
+                        if (radius < Engine.Util.UnitConversion.ToScreenUnits(CellSystem.CellSize) / 2f &&
+                            childRadius >= Engine.Util.UnitConversion.ToScreenUnits(CellSystem.CellSize) / 2f)
                         {
                             AddIssue("Accumulative radii of orbits potentially exceed cell size.", factory, localPrefix + "OrbitRadius", IssueType.Warning);
                         }

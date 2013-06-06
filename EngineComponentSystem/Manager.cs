@@ -666,8 +666,8 @@ namespace Engine.ComponentSystem
         ///     In particular, all re-created components will likely have different different ids as well, so this method is not
         ///     suited for storing components that reference other components, even if just by their ID.
         ///     <para/>
-        ///     This will act as though all of the written components were added, i.e. for each restored component all systems'
-        ///     <see cref="AbstractSystem.OnComponentAdded"/> method will be called.
+        ///     This will act as though all of the written components were added, i.e. for each restored component a
+        ///     <see cref="ComponentAdded"/> message will be sent.
         ///     <para/>
         ///     This uses the components' serialization facilities.
         /// </summary>
