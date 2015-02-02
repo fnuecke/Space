@@ -59,7 +59,7 @@
     <Item>
       <Name>L1_AI_Fuselage</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Stolen/Ships/hyperion_ff</Model>
+      <Model>Textures/Items/Fuselage/test_fuselage</Model>
       <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
       <Effects />

@@ -4,7 +4,7 @@
     <Item>
       <Name>StarterShield</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Stolen/Weapons/flechette_storm_turret_recoil</Model>
+      <Model>Textures/Items/mountpoint_weapon</Model>
       <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
       <Effects />

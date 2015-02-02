@@ -53,7 +53,7 @@
     </Reference>
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="Nuclex.Input">
-      <HintPath>..\Space\bin\x86\Debug\Nuclex.Input.dll</HintPath>
+      <HintPath>..\Libraries\Nuclex.Input.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System">

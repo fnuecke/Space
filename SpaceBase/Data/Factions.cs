@@ -71,6 +71,9 @@ namespace Space.Data
         /// <summary>Always represents the last entry, for masking when inverting.</summary>
         /// <remarks>Make sure to update this when adding or removing entries.</remarks>
         End = Player12,
+
+        /// <summary>Compound group for all players.</summary>
+        Players = Player1 | Player2 | Player3 | Player4 | Player5 | Player6 | Player7 | Player8 | Player9 | Player10 | Player11 | Player12
     }
 
     #region Conversion utils

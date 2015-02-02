@@ -43,7 +43,7 @@
     <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IronPython, Version=2.7.0.40, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
+    <Reference Include="IronPython, Version=2.7.5.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
@@ -93,6 +93,7 @@
     <Compile Include="Components\ItemInfo.cs" />
     <Compile Include="Components\ShieldEnergyStatusEffect.cs" />
     <Compile Include="Components\ShipDrawable.cs" />
+    <Compile Include="Components\ShipGroupSpawner.cs" />
     <Compile Include="Components\SpaceItemSlot.cs" />
     <Compile Include="Components\SpaceItem.cs" />
     <Compile Include="Components\AbstractRegeneratingValue.cs" />

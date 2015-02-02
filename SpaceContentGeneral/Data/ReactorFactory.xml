@@ -4,7 +4,7 @@
     <Item>
       <Name>StarterReactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Stolen/Weapons/gauss_cannon_hardpoint_base</Model>
+      <Model>Textures/Items/mountpoint_weapon</Model>
       <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
       <Effects />
@@ -21,7 +21,7 @@
     <Item>
       <Name>L1_AI_Reactor</Name>
       <Icon>Images/Icons/Buffs/default</Icon>
-      <Model>Textures/Stolen/Weapons/hypervelocity_driver_hardpoint_base</Model>
+      <Model>Textures/Items/mountpoint_weapon</Model>
       <ModelOffset>0 0</ModelOffset>
       <ModelBelowParent>false</ModelBelowParent>
       <Effects />

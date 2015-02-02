@@ -45,7 +45,7 @@
     </Item>
     <Item>
       <Name>L1_AI_Ship</Name>
-      <Texture>Textures/Stolen/Ships/broadsword_hftr</Texture>
+      <Texture>Textures/Ships/player</Texture>
       <CollisionRadius>25</CollisionRadius>
       <ItemPool>Starter</ItemPool>
       <ExperiencePoints>10</ExperiencePoints>

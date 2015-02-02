@@ -459,6 +459,7 @@ namespace Space.Control
 
                 case GameCommand.TestCommand:
                     //Testing time
+                    /*
                     var move = new MoveCamera
                     {
                         Player = 0,
@@ -473,6 +474,7 @@ namespace Space.Control
                     move.Position.Add(
                         new MoveCamera.Positions {Destination = new FarPosition(51000, 49000), Speed = 100, Zoom = 0.7f});
                     _game.Client.GetSystem<CameraMovementSystem>().Move(move);
+                    */
                     break;
             }
 

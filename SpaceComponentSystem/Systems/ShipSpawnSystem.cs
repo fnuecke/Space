@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Physics;
+using Engine.ComponentSystem.Physics.Components;
 using Engine.ComponentSystem.Spatial.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.FarMath;
@@ -186,8 +188,8 @@ namespace Space.ComponentSystem.Systems
 
                 // Get a position nearby the spawn (avoids spawning all ships in one point).
                 var spawnPosition = spawnPoint;
-                spawnPoint.X += UnitConversion.ToSimulationUnits(_random.NextInt32(-100, 100));
-                spawnPoint.Y += UnitConversion.ToSimulationUnits(_random.NextInt32(-100, 100));
+                spawnPosition.X += UnitConversion.ToSimulationUnits(_random.NextInt32(-100, 100));
+                spawnPosition.Y += UnitConversion.ToSimulationUnits(_random.NextInt32(-100, 100));
 
                 // Create the ship and get the AI component.
                 var ship = EntityFactory.CreateAIShip(
@@ -198,21 +200,23 @@ namespace Space.ComponentSystem.Systems
                 ai.Roam(ref cellArea);
 
                 // If we have a squad push the squad component.
-                if (ships.Length > 1)
+                if (ships.Length <= 1)
                 {
-                    var squad = Manager.AddComponent<Squad>(ship);
-                    // If we're not the leader we guard him, otherwise mark us as
-                    // the squad leader (ergo: first loop iteration).
-                    if (leaderSquad != null)
-                    {
-                        leaderSquad.AddMember(ship);
-                        ai.Guard(leaderSquad.Entity);
-                    }
-                    else
-                    {
-                        leaderSquad = squad;
-                        squad.Formation = formation;
-                    }
+                    // No squad, skip squad component.
+                    continue;
+                }
+                var squad = Manager.AddComponent<Squad>(ship);
+                // If we're not the leader we guard him, otherwise mark us as
+                // the squad leader (ergo: first loop iteration).
+                if (leaderSquad != null)
+                {
+                    leaderSquad.AddMember(ship);
+                    ai.Guard(leaderSquad.Entity);
+                }
+                else
+                {
+                    leaderSquad = squad;
+                    squad.Formation = formation;
                 }
             }
         }
@@ -265,6 +269,90 @@ namespace Space.ComponentSystem.Systems
             else
             {
                 _cellSpawns.Add(Tuple.Create(message.Id, 5));
+                /*
+                // Get the cell position.
+                var position = CellSystem.GetSubCellCoordinatesFromId(message.Id);
+
+                // Get the cell info to know what faction we're spawning for. Use the large cell id for that,
+                // because we only store info for that.
+                var cellInfo = ((UniverseSystem) Manager.GetSystem(UniverseSystem.TypeId))
+                    .GetCellInfo(CellSystem.GetCellIdFromCoordinates(position));
+
+                // The area covered by the cell.
+                FarRectangle cellArea;
+                cellArea.X = position.X;
+                cellArea.Y = position.Y;
+                cellArea.Width = CellSystem.SubCellSize;
+                cellArea.Height = CellSystem.SubCellSize;
+
+                // Get center point for spawn group.
+                FarPosition spawnPoint;
+                spawnPoint.X = _random.NextInt32((int) cellArea.Left, (int) cellArea.Right);
+                spawnPoint.Y = _random.NextInt32((int) cellArea.Top, (int) cellArea.Bottom);
+
+                // TODO number of groups based on cell/biome type
+
+                // Configuration for spawned ships.
+                string[] ships;
+                ArtificialIntelligence.AIConfiguration[] configurations = null;
+                var formation = SquadSystem.Formations.None;
+
+                // TODO different groups, based on cell info? definable via editor maybe?
+                if (_random.NextDouble() < 0.5f)
+                {
+                    ships = new[]
+                    {
+                        "L1_AI_Ship",
+                        "L1_AI_Ship",
+                        "L1_AI_Ship",
+                        "L1_AI_Ship",
+                        "L1_AI_Ship",
+                        "L1_AI_Ship"
+                    };
+                    configurations = new[]
+                    {
+                        new ArtificialIntelligence.AIConfiguration
+                        {
+                            AggroRange = UnitConversion.ToSimulationUnits(600)
+                        }
+                    };
+                    formation = SquadSystem.Formations.Block;
+                }
+                else
+                {
+                    ships = new[]
+                    {
+                        "L1_AI_Ship",
+                        "L1_AI_Ship",
+                        "L1_AI_Ship",
+                        "L1_AI_Ship",
+                        "L1_AI_Ship"
+                    };
+                    configurations = new[]
+                    {
+                        new ArtificialIntelligence.AIConfiguration
+                        {
+                            AggroRange = UnitConversion.ToSimulationUnits(800)
+                        }
+                    };
+                    formation = SquadSystem.Formations.Vee;
+                }
+
+                // Generate spawns.
+                for (var i = 0; i < 5; ++i)
+                {
+                    var entity = Manager.AddEntity();
+                    var body = Manager.AddBody(
+                        entity, type: Body.BodyType.Static, worldPosition: spawnPoint);
+                    Manager.AttachCircle(
+                        body,
+                        UnitConversion.ToSimulationUnits(5000),
+                        collisionCategory: Factions.Nature.ToCollisionGroup(),
+                        collisionMask: Factions.Players.ToCollisionGroup(),
+                        isSensor: true);
+
+                }
+                */
             }
         }
 
